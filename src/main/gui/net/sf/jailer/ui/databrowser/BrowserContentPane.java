@@ -1222,41 +1222,38 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						}
 						last = si;
 					}
-					if (left >= 0) {
-						rowIntervall.add(new Pair<Integer, Integer>(left, last));
+					if (top >= 0) {
+						rowIntervall.add(new Pair<Integer, Integer>(top, last));
 					}
 					for (Pair<Integer, Integer> iv: intervall) {
-						for (Pair<Integer, Integer> iv: intervall) {
+						for (Pair<Integer, Integer> rowIv: rowIntervall) {
 							int[] selectedRows = rowsTable.getSelectedRows();
-						if (selectedRows.length > 0) {
-							x[0] = Integer.MAX_VALUE;
-							y[0] = Integer.MAX_VALUE;
-							x[1] = Integer.MIN_VALUE;
-							y[1] = Integer.MIN_VALUE;
-							for (int i: selectedRows) {
-								int vi = i;
-								Rectangle r = rowsTable.getCellRect(vi, iv.a, false);
+							if (selectedRows.length > 0) {
+								x[0] = Integer.MAX_VALUE;
+								y[0] = Integer.MAX_VALUE;
+								x[1] = Integer.MIN_VALUE;
+								y[1] = Integer.MIN_VALUE;
+								Rectangle r = rowsTable.getCellRect(rowIv.a, iv.a, false);
 								x[0] = Math.min((int) r.getMinX(), x[0]);
 								y[0] = Math.min((int) r.getMinY(), y[0]);
-								r = rowsTable.getCellRect(vi, iv.b, false);
+								r = rowsTable.getCellRect(rowIv.b, iv.b, false);
 								x[1] = Math.max((int) r.getMaxX(), x[1]);
 								y[1] = Math.max((int) r.getMaxY(), y[1]);
-							}
-							x[0] = (int) Math.max(visRect.getMinX(), x[0]) + 1;
-							y[0] = (int) Math.max(visRect.getMinY(), y[0]);
-							x[1] = (int) Math.min(visRect.getMaxX(), x[1]) - 2;
-							y[1] = (int) Math.min(visRect.getMaxY() - 1, y[1]);
-							if (x[0] < x[1] && y[0] < y[1]) {
-								g2d.setColor(UIUtil.BG_FLATMOUSEOVER);
-								BasicStroke stroke = new BasicStroke();
-								g2d.setStroke(stroke);
-								g2d.drawRoundRect(x[0], y[0], x[1] - x[0], y[1] - y[0], 8, 8);
-								g2d.setColor(new Color(0, 0, 200, 100));
-								g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 11f, 5f }, (float) ((System.currentTimeMillis() / 50.0 * getAnimationFactor()) % 16)));
-								g2d.drawRoundRect(x[0], y[0], x[1] - x[0], y[1] - y[0], 8, 8);
+								x[0] = (int) Math.max(visRect.getMinX(), x[0]) + 1;
+								y[0] = (int) Math.max(visRect.getMinY(), y[0]);
+								x[1] = (int) Math.min(visRect.getMaxX(), x[1]) - 2;
+								y[1] = (int) Math.min(visRect.getMaxY() - 1, y[1]);
+								if (x[0] < x[1] && y[0] < y[1]) {
+									g2d.setColor(UIUtil.BG_FLATMOUSEOVER);
+									BasicStroke stroke = new BasicStroke();
+									g2d.setStroke(stroke);
+									g2d.drawRoundRect(x[0], y[0], x[1] - x[0], y[1] - y[0], 8, 8);
+									g2d.setColor(new Color(0, 0, 200, 100));
+									g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 11f, 5f }, (float) ((System.currentTimeMillis() / 50.0 * getAnimationFactor()) % 16)));
+									g2d.drawRoundRect(x[0], y[0], x[1] - x[0], y[1] - y[0], 8, 8);
+								}
 							}
 						}
-						
 //					}
 				}
 			}

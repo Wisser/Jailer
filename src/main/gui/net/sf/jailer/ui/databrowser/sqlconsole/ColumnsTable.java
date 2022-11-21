@@ -15,12 +15,16 @@
  */
 package net.sf.jailer.ui.databrowser.sqlconsole;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -61,6 +65,7 @@ import net.sf.jailer.ui.ExtendetCopyPanel;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
 import net.sf.jailer.ui.databrowser.Row;
+import net.sf.jailer.util.Pair;
 
 /**
  * "Column view" of a query result table.
@@ -327,6 +332,13 @@ public class ColumnsTable extends JTable {
 							((JLabel) render).setBackground(blend(((JLabel) render).getBackground()));
 						}
 					}
+					if (isSelected && column > 0) {
+						if (UIUtil.TABLE_BACKGROUND_COLOR_1.equals(render.getBackground())) {
+							render.setBackground(UIUtil.TABLE_BG1SELECTED);
+						} else {
+							render.setBackground(UIUtil.TABLE_BG2SELECTED);
+						}
+					}
 					if ("found".equals(render.getName())) {
 						Color background = render.getBackground();
 						render.setBackground(
@@ -506,6 +518,85 @@ public class ColumnsTable extends JTable {
 	public void clear() {
 		currentRow = -1;
 		repaint();
+	}
+
+	@Override
+	public void paint(Graphics graphics) {
+		super.paint(graphics);
+		if (!(graphics instanceof Graphics2D)) {
+			return;
+		}
+		Rectangle visRect = getVisibleRect();
+
+		Graphics2D g2d = (Graphics2D) graphics;
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2d.setStroke(new BasicStroke(1));
+
+		int left = -1;
+		int last = -1;
+		List<Pair<Integer, Integer>> intervall = new ArrayList<Pair<Integer, Integer>>();
+		for (int si : getSelectedColumns()) {
+			if (left < 0) {
+				left = si;
+			} else if (last < si - 1) {
+				intervall.add(new Pair<Integer, Integer>(left, last));
+				left = si;
+			}
+			last = si;
+		}
+		if (left >= 0) {
+			intervall.add(new Pair<Integer, Integer>(left, last));
+		}
+
+		int top = -1;
+		last = -1;
+		List<Pair<Integer, Integer>> rowIntervall = new ArrayList<Pair<Integer, Integer>>();
+		for (int si : getSelectedRows()) {
+			if (top < 0) {
+				top = si;
+			} else if (last < si - 1) {
+				rowIntervall.add(new Pair<Integer, Integer>(top, last));
+				top = si;
+			}
+			last = si;
+		}
+		if (top >= 0) {
+			rowIntervall.add(new Pair<Integer, Integer>(top, last));
+		}
+		int x[] = new int[2];
+		int y[] = new int[2];
+		for (Pair<Integer, Integer> iv : intervall) {
+			for (Pair<Integer, Integer> rowIv : rowIntervall) {
+				int[] selectedRows = getSelectedRows();
+				if (selectedRows.length > 0) {
+					x[0] = Integer.MAX_VALUE;
+					y[0] = Integer.MAX_VALUE;
+					x[1] = Integer.MIN_VALUE;
+					y[1] = Integer.MIN_VALUE;
+					Rectangle r = getCellRect(rowIv.a, iv.a, false);
+					x[0] = Math.min((int) r.getMinX(), x[0]);
+					y[0] = Math.min((int) r.getMinY(), y[0]);
+					r = getCellRect(rowIv.b, iv.b, false);
+					x[1] = Math.max((int) r.getMaxX(), x[1]);
+					y[1] = Math.max((int) r.getMaxY(), y[1]);
+					x[0] = (int) Math.max(visRect.getMinX(), x[0]) + 1;
+					y[0] = (int) Math.max(visRect.getMinY(), y[0]);
+					x[1] = (int) Math.min(visRect.getMaxX(), x[1]) - 2;
+					y[1] = (int) Math.min(visRect.getMaxY() - 1, y[1]);
+					if (x[0] < x[1] && y[0] < y[1]) {
+						g2d.setColor(UIUtil.BG_FLATMOUSEOVER);
+						BasicStroke stroke = new BasicStroke();
+						g2d.setStroke(stroke);
+						g2d.drawRoundRect(x[0], y[0], x[1] - x[0], y[1] - y[0] - 1, 8, 8);
+						g2d.setColor(new Color(0, 0, 200, 100));
+						g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(),
+								stroke.getMiterLimit(), new float[] { 11f, 5f },
+								0f));
+						g2d.drawRoundRect(x[0], y[0], x[1] - x[0], y[1] - y[0] - 1, 8, 8);
+					}
+				}
+			}
+		}
 	}
 
 }

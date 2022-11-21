@@ -1324,12 +1324,12 @@ public class UIUtil {
 	/**
 	 * Background color of selected even table rows.
 	 */
-	public static final Color TABLE_BG1SELECTED = new Color(255, 230, 200);
+	public static final Color TABLE_BG1SELECTED = new Color(255, 246, 226);
 	
 	/**
 	 * Background color of selected odd table rows.
 	 */
-	public static final Color TABLE_BG2SELECTED  = new Color(255, 240, 215);
+	public static final Color TABLE_BG2SELECTED  = new Color(255, 250, 235);
 				
 	/**
 	 * Background color of even table rows in closure.

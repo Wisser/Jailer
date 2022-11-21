@@ -15,13 +15,19 @@
  */
 package net.sf.jailer.ui;
 
+import java.awt.BasicStroke;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.Window;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.ImageIcon;
@@ -46,6 +52,7 @@ import javax.swing.table.TableModel;
 
 import net.sf.jailer.ui.databrowser.sqlconsole.TabContentPanel;
 import net.sf.jailer.util.LogUtil;
+import net.sf.jailer.util.Pair;
 
 /**
  * Extendet Copy Panel.
@@ -125,9 +132,13 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
     	
     	// TODO max rows/cols in preview
     	// TODO column-table in console: Ext.CopyPanel for rowsTable and col.Table for initial position + check "rotate" checkbox initially
-    	
+
     	// TODO
     	// TODO formatted (html): checkboxes: +- background-colors and +-alignment (left/right)
+    	
+    	// TODO icons for all items
+    	
+    	recreateContentTable();
     	
     	Object[] colNames = new Object[jTable.getColumnCount()];
     	for (int i = 0; i < colNames.length; ++i) {
@@ -170,9 +181,6 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
 					boolean hasFocus, int row, int column) {
 				int dmColumn = column;
-//				if (dmColumn  > 0) {
-//					--dmColumn;
-//				}
 				Component render = jTable.getCellRenderer(row, dmColumn).getTableCellRendererComponent(contentTable, value, false, hasFocus, row, dmColumn);
 				if (render instanceof JLabel) {
 					if (isSelected) {
@@ -182,41 +190,6 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 							render.setBackground(UIUtil.TABLE_BG2SELECTED);
 						}
 					}
-					
-//					if (column == 0) {
-//						((JLabel) render).setBackground(BGCOLUMNS);
-//					}
-//					if (column == 0) {
-//						String text = ((JLabel) render).getText();
-//						String tabName = useTableName? tableName.get(row) : null;
-//						if (tabName != null) {
-//							JLabel tab = new JLabel("<html>&nbsp;" + tabName + "&nbsp;</html>");
-//							tab.setForeground(new Color(0, 0, 180));
-//							tab.setBackground(render.getBackground());
-//							tab.setOpaque(render.isOpaque());
-//							JPanel panel = new JPanel(new GridBagLayout());
-//							panel.setToolTipText(text);
-//							GridBagConstraints gridBagConstraints;
-//							gridBagConstraints = new java.awt.GridBagConstraints();
-//					        gridBagConstraints.gridx = 1;
-//					        gridBagConstraints.gridy = 1;
-//					        gridBagConstraints.fill = GridBagConstraints.BOTH;
-//					        gridBagConstraints.weightx = 1;
-//					        gridBagConstraints.weighty = 1;
-//					        gridBagConstraints.anchor = GridBagConstraints.WEST;
-//					        panel.add(tab, gridBagConstraints);
-//					        gridBagConstraints = new java.awt.GridBagConstraints();
-//					        gridBagConstraints.gridx = 3;
-//					        gridBagConstraints.gridy = 1;
-//					        gridBagConstraints.anchor = GridBagConstraints.EAST;
-//					        gridBagConstraints.fill = GridBagConstraints.BOTH;
-//					        gridBagConstraints.weighty = 1;
-//					        panel.add(render, gridBagConstraints);
-//					        ((JLabel) render).setText(text + "  ");
-//							return panel;
-//						}
-//						((JLabel) render).setText(" " + text);
-//					}
 					if ("found".equals(render.getName())) {
 						Color background = render.getBackground();
 						render.setBackground(
@@ -279,6 +252,90 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 				updatePreview();
 			}
 		});
+	}
+
+	private void recreateContentTable() {
+		contentTable = new JTable() {
+			@Override
+			public void paint(Graphics graphics) {
+				super.paint(graphics);
+				if (!(graphics instanceof Graphics2D)) {
+					return;
+				}
+				Rectangle visRect = getVisibleRect();
+
+				Graphics2D g2d = (Graphics2D) graphics;
+				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+				g2d.setStroke(new BasicStroke(1));
+
+				int left = -1;
+				int last = -1;
+				List<Pair<Integer, Integer>> intervall = new ArrayList<Pair<Integer, Integer>>();
+				for (int si : getSelectedColumns()) {
+					if (left < 0) {
+						left = si;
+					} else if (last < si - 1) {
+						intervall.add(new Pair<Integer, Integer>(left, last));
+						left = si;
+					}
+					last = si;
+				}
+				if (left >= 0) {
+					intervall.add(new Pair<Integer, Integer>(left, last));
+				}
+
+				int top = -1;
+				last = -1;
+				List<Pair<Integer, Integer>> rowIntervall = new ArrayList<Pair<Integer, Integer>>();
+				for (int si : getSelectedRows()) {
+					if (top < 0) {
+						top = si;
+					} else if (last < si - 1) {
+						rowIntervall.add(new Pair<Integer, Integer>(top, last));
+						top = si;
+					}
+					last = si;
+				}
+				if (top >= 0) {
+					rowIntervall.add(new Pair<Integer, Integer>(top, last));
+				}
+				int x[] = new int[2];
+				int y[] = new int[2];
+				for (Pair<Integer, Integer> iv : intervall) {
+					for (Pair<Integer, Integer> rowIv : rowIntervall) {
+						int[] selectedRows = getSelectedRows();
+						if (selectedRows.length > 0) {
+							x[0] = Integer.MAX_VALUE;
+							y[0] = Integer.MAX_VALUE;
+							x[1] = Integer.MIN_VALUE;
+							y[1] = Integer.MIN_VALUE;
+							Rectangle r = getCellRect(rowIv.a, iv.a, false);
+							x[0] = Math.min((int) r.getMinX(), x[0]);
+							y[0] = Math.min((int) r.getMinY(), y[0]);
+							r = getCellRect(rowIv.b, iv.b, false);
+							x[1] = Math.max((int) r.getMaxX(), x[1]);
+							y[1] = Math.max((int) r.getMaxY(), y[1]);
+							x[0] = (int) Math.max(visRect.getMinX(), x[0]) + 1;
+							y[0] = (int) Math.max(visRect.getMinY(), y[0]);
+							x[1] = (int) Math.min(visRect.getMaxX(), x[1]) - 2;
+							y[1] = (int) Math.min(visRect.getMaxY() - 1, y[1]);
+							if (x[0] < x[1] && y[0] < y[1]) {
+								g2d.setColor(UIUtil.BG_FLATMOUSEOVER);
+								BasicStroke stroke = new BasicStroke();
+								g2d.setStroke(stroke);
+								g2d.drawRoundRect(x[0], y[0], x[1] - x[0], y[1] - y[0] - 1, 8, 8);
+								g2d.setColor(new Color(0, 0, 200, 100));
+								g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(),
+										stroke.getMiterLimit(), new float[] { 11f, 5f },
+										0f));
+								g2d.drawRoundRect(x[0], y[0], x[1] - x[0], y[1] - y[0] - 1, 8, 8);
+							}
+						}
+					}
+				}
+			}
+		};
+		jScrollPane1.setViewportView(contentTable);
 	}
 
 	private void updatePreview() {
