@@ -591,7 +591,7 @@ public class ColumnsTable extends JTable {
 						g2d.setColor(new Color(0, 0, 200, 100));
 						g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(),
 								stroke.getMiterLimit(), new float[] { 11f, 5f },
-								0f));
+								(float) ((System.currentTimeMillis() / 50.0 * 1.1) % 16))); // TODO
 						g2d.drawRoundRect(x[0], y[0], x[1] - x[0], y[1] - y[0] - 1, 8, 8);
 					}
 				}

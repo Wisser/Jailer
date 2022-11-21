@@ -6965,7 +6965,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected abstract int getReloadLimit();
 	protected abstract void setReloadLimit(int limit);
 	protected double getAnimationFactor() {
-		return 0;
+		return 1f;
 	}
 	
 	protected Integer ownLimit = null;

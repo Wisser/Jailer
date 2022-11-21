@@ -1299,12 +1299,19 @@ public class DataBrowser extends javax.swing.JFrame {
 
 	private static Timer tabSelectionAnimationTimer = null;
 	
-	private synchronized void initTabSelectionAnimationManager() {
+	private static synchronized void initTabSelectionAnimationManager() {
 		if (tabSelectionAnimationTimer == null) {
 			tabSelectionAnimationTimer = new Timer(200, e -> {
 				for (Window w : Window.getWindows()) {
-		            if (w.isShowing()) {
-		                return;
+					if (w instanceof DataBrowser) {
+						DataBrowser b = (DataBrowser) w;
+						if (!w.isShowing()) {
+							continue;
+						}
+						SQLConsole sqlConsole = b.getSqlConsole(false);
+						if (sqlConsole != null) {
+							sqlConsole.repaintShowingAnimatedTables();
+						}
 		            }
 		        }
 			});

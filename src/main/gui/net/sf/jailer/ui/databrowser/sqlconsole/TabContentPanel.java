@@ -55,6 +55,7 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.ranges.RangeException;
 
 import com.formdev.flatlaf.FlatClientProperties;
 
@@ -888,7 +889,14 @@ public class TabContentPanel extends javax.swing.JPanel {
 		}
     }//GEN-LAST:event_rotateCheckBoxActionPerformed
 
-    public void destroy() {
+	public void repaintShowingAnimatedTables() {
+		columnsScrollPane.repaint();
+		if (theRowsTable != null) {
+			theRowsTable.repaint();
+		}
+	}
+	
+	public void destroy() {
     	if (theRowsTable != null) {
     		theRowsTable.setModel(new DefaultTableModel());
     	}
@@ -942,4 +950,5 @@ public class TabContentPanel extends javax.swing.JPanel {
         // load images
         cancelIcon = UIUtil.readImage("/buttoncancel.png");
 	}
+
 }

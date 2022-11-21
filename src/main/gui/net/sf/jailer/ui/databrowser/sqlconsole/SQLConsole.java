@@ -185,6 +185,7 @@ import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
+import sun.awt.www.content.image.jpeg;
 
 /**
  * SQL Console.
@@ -3767,6 +3768,23 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		} catch (Throwable t) {
 			t.printStackTrace();
 			// ignore
+		}
+	}
+
+	public void repaintShowingAnimatedTables() {
+		Component selTab = jTabbedPane1.getSelectedComponent();
+		TabContentPanel tabContentPanel = null;
+		Object firstComp;
+		if (selTab instanceof TabContentPanel) {
+			tabContentPanel = (TabContentPanel) selTab;
+		} else if (selTab instanceof JPanel) {
+			firstComp = ((JPanel) selTab).getComponentCount() > 0? ((JPanel) selTab).getComponent(0) : null;
+			if (firstComp instanceof TabContentPanel) {
+				tabContentPanel = (TabContentPanel) firstComp;
+			}
+		}
+		if (tabContentPanel != null) {
+			tabContentPanel.repaintShowingAnimatedTables();
 		}
 	}
 
