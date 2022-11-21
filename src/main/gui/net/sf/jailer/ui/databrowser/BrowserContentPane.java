@@ -1189,36 +1189,60 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						}
 					}
 				}
-				if (BrowserContentPane.this.getQueryBuilderDialog() != null) { // SQL Console
-					int[] selectedRows = rowsTable.getSelectedRows();
-					if (selectedRows.length > 0) {
-						x[0] = Integer.MAX_VALUE;
-						y[0] = Integer.MAX_VALUE;
-						x[1] = Integer.MIN_VALUE;
-						y[1] = Integer.MIN_VALUE;
-						for (int i: selectedRows) {
-							int vi = i;
-							Rectangle r = rowsTable.getCellRect(vi, 0, false);
-							x[0] = Math.min((int) r.getMinX(), x[0]);
-							y[0] = Math.min((int) r.getMinY(), y[0]);
-							r = rowsTable.getCellRect(vi, rowsTable.getColumnCount() - 1, false);
-							x[1] = Math.max((int) r.getMaxX(), x[1]);
-							y[1] = Math.max((int) r.getMaxY(), y[1]);
+//				if (BrowserContentPane.this.getQueryBuilderDialog() != null) { // SQL Console
+					int left = -1;
+					int last = -1;
+					List<Pair<Integer, Integer>> intervall = new ArrayList<Pair<Integer,Integer>>();
+					if (copyAllColumns()) {
+						intervall.add(new Pair<Integer, Integer>(0, rowsTable.getColumnCount() - 1));
+					} else {
+						for (int si: rowsTable.getSelectedColumns()) {
+							if (left < 0) {
+								left = si;
+							} else if (last < si - 1) {
+								intervall.add(new Pair<Integer, Integer>(left, last));
+								left = si;
+							}
+							last = si;
 						}
-						x[0] = (int) Math.max(visRect.getMinX(), x[0]) + 1;
-						y[0] = (int) Math.max(visRect.getMinY(), y[0]);
-						x[1] = (int) Math.min(visRect.getMaxX(), x[1]) - 2;
-						y[1] = (int) Math.min(visRect.getMaxY() - 1, y[1]);
-						if (x[0] < x[1] && y[0] < y[1]) {
-							g2d.setColor(UIUtil.BG_FLATMOUSEOVER);
-							BasicStroke stroke = new BasicStroke();
-							g2d.setStroke(stroke);
-							g2d.drawRoundRect(x[0], y[0], x[1] - x[0], y[1] - y[0], 8, 8);
-							g2d.setColor(new Color(0, 0, 200, 100));
-							g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 11f, 5f }, (float) ((System.currentTimeMillis() / 50.0 * getAnimationFactor()) % 16)));
-							g2d.drawRoundRect(x[0], y[0], x[1] - x[0], y[1] - y[0], 8, 8);
+						if (left >= 0) {
+							intervall.add(new Pair<Integer, Integer>(left, last));
 						}
 					}
+					
+					int top = -1;
+					last = -1;
+					for (Pair<Integer, Integer> iv: intervall) {
+						int[] selectedRows = rowsTable.getSelectedRows();
+						if (selectedRows.length > 0) {
+							x[0] = Integer.MAX_VALUE;
+							y[0] = Integer.MAX_VALUE;
+							x[1] = Integer.MIN_VALUE;
+							y[1] = Integer.MIN_VALUE;
+							for (int i: selectedRows) {
+								int vi = i;
+								Rectangle r = rowsTable.getCellRect(vi, iv.a, false);
+								x[0] = Math.min((int) r.getMinX(), x[0]);
+								y[0] = Math.min((int) r.getMinY(), y[0]);
+								r = rowsTable.getCellRect(vi, iv.b, false);
+								x[1] = Math.max((int) r.getMaxX(), x[1]);
+								y[1] = Math.max((int) r.getMaxY(), y[1]);
+							}
+							x[0] = (int) Math.max(visRect.getMinX(), x[0]) + 1;
+							y[0] = (int) Math.max(visRect.getMinY(), y[0]);
+							x[1] = (int) Math.min(visRect.getMaxX(), x[1]) - 2;
+							y[1] = (int) Math.min(visRect.getMaxY() - 1, y[1]);
+							if (x[0] < x[1] && y[0] < y[1]) {
+								g2d.setColor(UIUtil.BG_FLATMOUSEOVER);
+								BasicStroke stroke = new BasicStroke();
+								g2d.setStroke(stroke);
+								g2d.drawRoundRect(x[0], y[0], x[1] - x[0], y[1] - y[0], 8, 8);
+								g2d.setColor(new Color(0, 0, 200, 100));
+								g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 11f, 5f }, (float) ((System.currentTimeMillis() / 50.0 * getAnimationFactor()) % 16)));
+								g2d.drawRoundRect(x[0], y[0], x[1] - x[0], y[1] - y[0], 8, 8);
+							}
+						}
+//					}
 				}
 			}
 		};
@@ -2643,20 +2667,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * Creates popup menu for navigation.
 	 */
 	public JPopupMenu createPopupMenu(final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows, boolean withSingleRow, boolean forColumnsTable) {
-		return createPopupMenu(row, rowIndex, x, y, navigateFromAllRows, null, null, withSingleRow, forColumnsTable);
+		return createPopupMenu(rowsTable, row, rowIndex, x, y, navigateFromAllRows, null, null, null, true, withSingleRow, forColumnsTable);
 	}
 
 	/**
 	 * Creates popup menu for navigation.
 	 */
-	public JPopupMenu createPopupMenu(final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows, JMenuItem altCopyTCB, final Runnable repaint, boolean withSingleRow, boolean forColumnsTable) {
-		return createPopupMenu(rowsTable, row, rowIndex, x, y, navigateFromAllRows, altCopyTCB, repaint, true, withSingleRow, forColumnsTable);
-	}
-
-	/**
-	 * Creates popup menu for navigation.
-	 */
-	public JPopupMenu createPopupMenu(final JTable contextJTable, final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows, JMenuItem altCopyTCB, final Runnable repaint, final boolean withKeyStroke, boolean withSingleRow, boolean forColumnsTable) {
+	public JPopupMenu createPopupMenu(final JTable contextJTable, final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows, Action altCopyTCB, Action ealtCopyTCB, final Runnable repaint, final boolean withKeyStroke, boolean withSingleRow, boolean forColumnsTable) {
 		JMenuItem tableFilter = new JCheckBoxMenuItem("Table Filter");
 		tableFilter.setIcon(UIUtil.scaleIcon(tableFilter, UIUtil.readImage("/filter.png")));
 		if (withKeyStroke) {
@@ -2687,13 +2704,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			}
 		});
-		JMenuItem copyTCB;
-		if (altCopyTCB != null) {
-			copyTCB = altCopyTCB;
-		} else {
-			copyTCB = null;
-		}
-
+		
 		List<String> assList = new ArrayList<String>();
 		Map<String, Association> assMap = new HashMap<String, Association>();
 		for (Association a : table.associations) {
@@ -2934,19 +2945,31 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				JMenuItem copyItem = new JMenuItem("Copy");
 				copyItem.setAccelerator(KS_COPY_TO_CLIPBOARD);
 				copyItem.setIcon(copyIcon);
-				copyItem.addActionListener(e -> copyAction.actionPerformed(e));
+				copyItem.addActionListener(e -> {
+					if (altCopyTCB != null) {
+						altCopyTCB.actionPerformed(e);
+					} else {
+						copyAction.actionPerformed(e);
+					}
+				});
 				popup.add(copyItem);
 				JMenuItem ecopyItem = new JMenuItem("Extended Copy...");
 				ecopyItem.setAccelerator(KS_ECOPY_TO_CLIPBOARD);
 				ecopyItem.setIcon(ecopyIcon);
-				ecopyItem.addActionListener(e -> ecopyAction.actionPerformed(e));
+				ecopyItem.addActionListener(e -> {
+					if (ealtCopyTCB != null) {
+						ealtCopyTCB.actionPerformed(e);
+					} else {
+						ecopyAction.actionPerformed(e);
+					}
+				});
 				popup.add(ecopyItem);
 			}
 			if (!withSingleRow || 
 					BrowserContentPane.this.getQueryBuilderDialog() == null // SQL Console
 					) {
 				if (BrowserContentPane.this.getQueryBuilderDialog() == null // SQL Console
-					&& copyTCB == null
+					&& altCopyTCB == null
 						) {
 					popup.add(new JSeparator());
 				}

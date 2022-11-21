@@ -79,6 +79,8 @@ public class ColumnsTable extends JTable {
 	private final boolean inDesktop;
 	private boolean inClosure;
 	private int currentRow = -1;
+	private Action copyAction;
+	private Action ecopyAction;
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public ColumnsTable(final BrowserContentPane rb, boolean inDesktop) {
@@ -196,6 +198,7 @@ public class ColumnsTable extends JTable {
 			}
 		};
 		am.put(key, a);
+		copyAction = a;
 		key = "ecopyClipboard";
 		im.put(KS_ECOPY_TO_CLIPBOARD, key);
 		am = getActionMap();
@@ -209,7 +212,8 @@ public class ColumnsTable extends JTable {
 			}
 		};
 		am.put(key, a);
-
+		ecopyAction = a;
+		
 		addMouseListener(new MouseListener() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
@@ -388,7 +392,7 @@ public class ColumnsTable extends JTable {
 //		});
 		Point p = new Point(e.getX(), e.getY());
 		SwingUtilities.convertPointToScreen(p, this);
-		return rb.createPopupMenu(this, row, i, (int) p.getX(), (int) p.getY(), false, copyTCB, new Runnable() {
+		return rb.createPopupMenu(this, row, i, (int) p.getX(), (int) p.getY(), false, copyAction, ecopyAction, new Runnable() {
 			@Override
 			public void run() {
 				for (int i = 0; i < getColumnCount(); i++) {
