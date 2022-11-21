@@ -686,17 +686,44 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
         gridBagConstraints.weightx = 0;
-        searchButton = StringSearchPanel.createSearchButton(parent, tablesComboBox, "Select Table", new Runnable() {
-            @Override
-            public void run() {
-                onSelectTable();
-            }
-        }, new StringSearchPanel.Prepare() {
-            @Override
-            public void prepare(Set<MDSchema> selectedSchemas) {
-                updateTablesCombobox(selectedSchemas);
-            }
-        }, metaDataSource, dataModel);
+		final Window owner = parent;
+		final MetaDataSource metaDataSource1 = metaDataSource;
+        searchButton = StringSearchPanel.createSearchButton(owner, tablesComboBox, "Select Table", new Runnable() {
+		    @Override
+		    public void run() {
+		        onSelectTable();
+		    }
+		}, new StringSearchPanel.Prepare() {
+		    @Override
+		    public void prepare(Set<MDSchema> selectedSchemas) {
+		        updateTablesCombobox(selectedSchemas);
+		    }
+		}, metaDataSource1, dataModel, false, null, true, false, null, false, 
+        		() -> {
+        			Map<String, Integer> stringCount = new HashMap<String, Integer>();
+        			if (metaDataSource != null) {
+        		        for (int i = 0; i < tablesComboBox.getModel().getSize(); ++i) {
+        		        	Object item = tablesComboBox.getModel().getElementAt(i);
+        		        	MDTable mdTable = null;
+        		        	if (item != null) {
+        		                Table table = dataModel.getTableByDisplayName(item.toString());
+        		                if (table != null) {
+        		                    mdTable = metaDataSource.toMDTable(table);
+        		                } else {
+        		                	mdTable = tablesComboboxMDTablePerName.get(item);
+        		                }
+        		            }
+        		        	if (mdTable != null) {
+        		        		Long count = mdTable.getEstimatedRowCount();
+        		        		if (count != null) {
+        		        			stringCount.put((String) item, count.intValue());
+        		        		}
+         		        	}
+        	        	}
+        	        }
+        			return stringCount;
+        		}
+        );
         jToolBar1.add(searchButton);
 
         tablesComboBox.setVisible(false);

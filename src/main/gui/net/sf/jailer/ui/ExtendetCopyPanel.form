@@ -75,8 +75,8 @@
                 <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                   <Color blue="80" green="80" id="gray" palette="1" red="80" type="palette"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;i&gt;Ctrl-Click:&lt;/i&gt;Toggle row/column selection.&lt;i&gt;Ctrl-A:&lt;/i&gt;Select All&lt;/html&gt;"/>
-                <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;&lt;i&gt;Ctrl-Click:&lt;/i&gt;Toggle row/column selection.&lt;br&gt;&#xa;&lt;i&gt;Ctrl-A:&lt;/i&gt;Select All&lt;/html&gt;"/>
+                <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;i&gt;Ctrl-Click:&lt;/i&gt; Toggle row/column selection.&lt;i&gt; Ctrl-A:&lt;/i&gt; Select All.&lt;/html&gt;"/>
+                <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;&lt;i&gt;Ctrl-Click: &lt;/i&gt;Toggle row/column selection.&lt;br&gt;&#xa;&lt;i&gt;Ctrl-A:&lt;/i&gt; Select All&lt;/html&gt;"/>
               </Properties>
               <Constraints>
                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">

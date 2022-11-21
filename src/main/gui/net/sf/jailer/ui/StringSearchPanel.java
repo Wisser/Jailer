@@ -51,6 +51,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -122,10 +123,10 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	}
 	
 	public static JToggleButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel, boolean alternativeIcon, final AdditionalComponentFactory additionalComponentFactory, final boolean locateUnderButton) {
-		return createSearchButton(owner, comboBox, titel, onSuccess, prepare, metaDataSource, dataModel, alternativeIcon, additionalComponentFactory, locateUnderButton, false, null, false);
+		return createSearchButton(owner, comboBox, titel, onSuccess, prepare, metaDataSource, dataModel, alternativeIcon, additionalComponentFactory, locateUnderButton, false, null, false, null);
 	}
 
-	public static JToggleButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel, boolean alternativeIcon, final AdditionalComponentFactory additionalComponentFactory, final boolean locateUnderButton, final boolean keepSearchText, final Map<String, Consumer<JLabel>> renderConsumer, boolean closeOwner) {
+	public static JToggleButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel, boolean alternativeIcon, final AdditionalComponentFactory additionalComponentFactory, final boolean locateUnderButton, final boolean keepSearchText, final Map<String, Consumer<JLabel>> renderConsumer, boolean closeOwner, Supplier<Map<String, Integer>> rowCountSuppier) {
 		final JToggleButton button = new JToggleButton();
 		button.setIcon(getSearchIcon(alternativeIcon, button));
 		button.addActionListener(new ActionListener() {
@@ -154,6 +155,9 @@ public class StringSearchPanel extends javax.swing.JPanel {
 								Window ownerWindow = owner;
 								if (ownerWindow == null) {
 									ownerWindow = SwingUtilities.getWindowAncestor(comboBox);
+								}
+								if (rowCountSuppier != null) {
+									searchPanel.setStringCount(rowCountSuppier.get());
 								}
 								searchPanel.find(ownerWindow, titel, location.x, location.y, locateUnderButton);
 				        	}
@@ -722,7 +726,19 @@ public class StringSearchPanel extends javax.swing.JPanel {
 							gbc.weightx = 0;
 							gbc.fill = GridBagConstraints.NONE;
 							gbc.anchor = GridBagConstraints.EAST;
-							cl = new JLabel(" " + Math.abs(count) + "  ");
+							
+							String countAsString;
+							if (count == 0) {
+								countAsString = " ";
+							} else if (count >= 1000000) {
+								countAsString = String.format("%,1.1f M", (double) count / 1000000.0);
+				     		} else if (count >= 1000) {
+				     			countAsString = String.format("%,1.1f K", (double) count / 1000.0);
+				     		} else {
+				     			countAsString = count.toString();
+				     		}
+				     		
+							cl = new JLabel(" " + countAsString + "  ");
 							cl.setForeground(lightCounters? new Color(160, 130, 100) : new Color(0, 130, 0));
 							panel.add(cl, gbc);
 						}

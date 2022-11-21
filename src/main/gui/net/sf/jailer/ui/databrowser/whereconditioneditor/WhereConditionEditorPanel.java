@@ -345,7 +345,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			    public void run() {
 			        addColumn();
 			    }
-			}, null, null, null, false, null, true, false, columnLabelConsumers, asPopup);
+			}, null, null, null, false, null, true, false, columnLabelConsumers, asPopup, null);
 	        searchButton.setText("Add Search Field");
 	        gridBagConstraints = new GridBagConstraints();
 	        gridBagConstraints.gridx = 1;

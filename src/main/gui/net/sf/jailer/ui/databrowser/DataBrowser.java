@@ -15,18 +15,24 @@
  */
 package net.sf.jailer.ui.databrowser;
 
+import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.FontMetrics;
 import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.datatransfer.DataFlavor;
@@ -62,12 +68,15 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Vector;
 import java.util.stream.Collectors;
@@ -103,14 +112,18 @@ import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.WindowConstants;
+import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputAdapter;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import net.sf.jailer.ExecutionContext;
@@ -329,6 +342,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		}
 		initComponents();
 		initMenu();
+		initNavTree();
 		
 		boolean zoom = Boolean.TRUE.equals(UISettings.restore(UISettings.ZOOM_WITH_MOUSE_WHEEL));
 		zoomWithMouseWheelMenuItem.setSelected(Boolean.TRUE.equals(UISettings.restore(UISettings.ZOOM_WITH_MOUSE_WHEEL)));
@@ -501,7 +515,30 @@ public class DataBrowser extends javax.swing.JFrame {
 			public void run() {
 				openTableButtonActionPerformed(null);
 			}
-		});
+		}, null, null, null, false, null, true, false, null, false,
+		() -> {
+			Map<String, Integer> stringCount = new HashMap<String, Integer>();
+			MetaDataSource metaDataSource = session != null? getMetaDataSource(session) : null;
+			if (metaDataSource != null && this.datamodel.get() != null) {
+		        for (int i = 0; i < tablesComboBox.getModel().getSize(); ++i) {
+		        	Object e = tablesComboBox.getModel().getElementAt(i);
+		        	if (e instanceof String) {
+		        		Table table = this.datamodel.get().getTableByDisplayName((String) e);
+		        		if (table != null) {
+		        			MDTable mdTable = metaDataSource.toMDTable(table);
+		        			if (mdTable != null) {
+		        				Long count = mdTable.getEstimatedRowCount();
+		        				if (count != null) {
+		        					stringCount.put((String) e, count.intValue());
+		        				}
+		        			}
+		        		}
+		        	}
+	        	}
+	        }
+			return stringCount;
+		}
+		);
 		jToolBar2.add(searchButton);
 
 		tablesComboBox.setVisible(false);
@@ -1546,11 +1583,12 @@ public class DataBrowser extends javax.swing.JFrame {
         jSplitPane4 = new javax.swing.JSplitPane();
         tableTreesTabbedPane = new javax.swing.JTabbedPane();
         navigationPanel = new javax.swing.JPanel();
-        navigationTreeScrollPane = new javax.swing.JScrollPane();
-        navigationTree = new javax.swing.JTree();
         outLinePanel = new javax.swing.JPanel();
         jToolBar2 = new javax.swing.JToolBar();
         openTableButton = new javax.swing.JButton();
+        navTreeLayeredPane = new javax.swing.JLayeredPane();
+        navigationTreeScrollPane = new javax.swing.JScrollPane();
+        navigationTree = new javax.swing.JTree();
         tablesCardPanel = new javax.swing.JPanel();
         tablesPanel = new javax.swing.JPanel();
         jPanel6 = new javax.swing.JPanel();
@@ -2076,22 +2114,6 @@ public class DataBrowser extends javax.swing.JFrame {
 
         navigationPanel.setLayout(new java.awt.GridBagLayout());
 
-        navigationTree.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                navigationTreeMouseClicked(evt);
-            }
-        });
-        navigationTreeScrollPane.setViewportView(navigationTree);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        navigationPanel.add(navigationTreeScrollPane, gridBagConstraints);
-
         outLinePanel.setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -2121,6 +2143,33 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         navigationPanel.add(jToolBar2, gridBagConstraints);
+
+        navTreeLayeredPane.setLayout(new java.awt.GridBagLayout());
+
+        navigationTree.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                navigationTreeMouseClicked(evt);
+            }
+        });
+        navigationTreeScrollPane.setViewportView(navigationTree);
+
+        navTreeLayeredPane.setLayer(navigationTreeScrollPane, javax.swing.JLayeredPane.PALETTE_LAYER);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        navTreeLayeredPane.add(navigationTreeScrollPane, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        navigationPanel.add(navTreeLayeredPane, gridBagConstraints);
 
         tableTreesTabbedPane.addTab("Navigation", navigationPanel);
 
@@ -3726,6 +3775,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPanel metaDataViewPanel;
     private javax.swing.JLabel modelName;
     private javax.swing.JLabel modelPath;
+    private javax.swing.JLayeredPane navTreeLayeredPane;
     private javax.swing.JPanel navigationPanel;
     private javax.swing.JTree navigationTree;
     private javax.swing.JScrollPane navigationTreeScrollPane;
@@ -4224,6 +4274,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		};
 
 		navigationTree.getSelectionModel().addTreeSelectionListener(navigationTreeListener);
+		updateRowCounters();
 	}
 
 	private void addChildNodes(DefaultMutableTreeNode node, RowBrowser browser, int[] count) {
@@ -4269,7 +4320,13 @@ public class DataBrowser extends javax.swing.JFrame {
 				return;
 			}
 		}
-		closureView = new DBClosureView(this) {
+		closureView = new DBClosureView(this, () -> {
+			if (session != null) {
+				return getMetaDataSource(session);
+			}
+			return null;
+			
+		}) {
 			private RowBrowser closureRoot = rowBrowser;
 
 			@Override
@@ -4739,6 +4796,11 @@ public class DataBrowser extends javax.swing.JFrame {
 					if (metaDataPanel == null) {
 						metaDataPanel = new MetaDataPanel(DataBrowser.this, fMetaDataSource, metaDataDetailsPanel,
 								datamodel.get(), executionContext) {
+							@Override
+							public void refresh() {
+								UIUtil.invokeLater(() -> updateNavigationTree());
+							}
+							
 							@Override
 							protected void open(Table table) {
 								if (!selectNavTreeNode(navigationTree.getModel().getRoot(), table)) {
@@ -5553,7 +5615,137 @@ public class DataBrowser extends javax.swing.JFrame {
 	private WhereConditionEditorPanel whereConditionEditorPanel;
 	private BrowserContentPane whereConditionEditorSubject;
 	private JComponent whereConditionEditorCloseButton;
+	
+	private void initNavTree() {
+		JPanel p;
+		p = new JPanel(new BorderLayout()) {
+        	{
+        		setOpaque(false);
+        	}
+			@Override
+			public void paint(Graphics g) {
+				super.paint(g);
+				if (g instanceof Graphics2D) {
+					paintRowCounters((Graphics2D) g, getBounds());
+				}
+			}
+        };
+        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        navTreeLayeredPane.add(p, gridBagConstraints);
+		navTreeLayeredPane.setLayer(p, javax.swing.JLayeredPane.POPUP_LAYER);
+        navigationTree.addComponentListener(new ComponentListener() {
+        	int width = -1;
+			@Override
+			public void componentResized(ComponentEvent e) {
+				if (navigationTree.getWidth() != width) {
+					width = navigationTree.getWidth();
+					updateRowCounters();
+				}
+			}
+			@Override
+			public void componentShown(ComponentEvent e) {
+			}
+			@Override
+			public void componentMoved(ComponentEvent e) {
+			}
+			@Override
+			public void componentHidden(ComponentEvent e) {
+			}
+		});
+        
+        navigationTree.addTreeExpansionListener(new TreeExpansionListener() {
+			@Override
+			public void treeExpanded(TreeExpansionEvent event) {
+				updateRowCounters();
+			}
+			@Override
+			public void treeCollapsed(TreeExpansionEvent event) {
+				updateRowCounters();
+			}
+		});
+	}
+	
+    private NavigableMap<Integer, MDTable> rowCounters = new TreeMap<Integer, MDTable>();
+	
+    private void paintRowCounters(Graphics2D g, Rectangle bounds) {
+		Rectangle visibleRect = navigationTree.getVisibleRect();
+		g.clipRect(1, 1, visibleRect.width + 1, visibleRect.height);
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
+		g.setRenderingHint(RenderingHints.KEY_RENDERING,
+                RenderingHints.VALUE_RENDER_QUALITY);
+		int oh = UIUtil.plaf == PLAF.NIMBUS? 3 : 0;
+		int ow = UIUtil.plaf == PLAF.NIMBUS? 1 : 0;
+		
+		rowCounters.subMap(visibleRect.y - 16, visibleRect.y + visibleRect.height + 16).forEach((ry, mdTable) -> {
+			Long rc = mdTable.getEstimatedRowCount();
+			if (rc != null) {
+				String value;
+				if (rc == 0) {
+					value = " ";
+				} else if (rc >= 1000000) {
+					value = String.format("%,1.1f M", (double) rc / 1000000.0);
+	     		} else if (rc >= 1000) {
+	     			value = String.format("%,1.1f K", (double) rc / 1000.0);
+	     		} else {
+	     			value = rc.toString();
+	     		}
+	     		FontMetrics fontMetrics = getFontMetrics(getFont());
+				int x = visibleRect.width - fontMetrics.stringWidth(value) - 8;
+				int y = ry - visibleRect.y + fontMetrics.getHeight() - 1;
+				g.setFont(getFont());
+				g.setColor(new Color(255, 255, 255));
+				g.fillRect(x - 8, y - fontMetrics.getHeight() + 2, visibleRect.width - x + 9 + ow, fontMetrics.getHeight() + 2 + oh);
+				g.setColor(new Color(0, 0, 255));
+				g.drawString(value, x, y);
+			}
+		});
+	}
 
+    private void updateRowCounters() {
+		DefaultTreeModel m = (DefaultTreeModel) navigationTree.getModel();
+		TreeNode root2 = (TreeNode) m.getRoot();
+		rowCounters = new TreeMap<Integer, MDTable>();
+		if (session != null) {
+			MetaDataSource metaDataSource = getMetaDataSource(session);
+			if (metaDataSource != null) {
+				trav(m, root2, new TreePath(root2), metaDataSource, rowCounters);
+			}
+		}
+        navTreeLayeredPane.repaint();	
+	}
+	
+	private void trav(DefaultTreeModel m, TreeNode n, TreePath path, MetaDataSource metaDataSource, Map<Integer, MDTable> rowCounters) {
+//		if (n.isLeaf()) {
+			Rectangle b = navigationTree.getPathBounds(path);
+			if (b != null) {
+				Object uo = ((DefaultMutableTreeNode) n).getUserObject();
+				if (uo instanceof TreeNodeForRowBrowser) {
+					Table table = ((TreeNodeForRowBrowser) uo).rowBrowser.browserContentPane.table;
+					if (table != null) {
+						MDTable mdTable = metaDataSource.toMDTable(table);
+						if (mdTable != null) {
+							boolean isView = mdTable.isView();
+		                    if (!isView) {
+		                    	rowCounters.put(b.y, mdTable);
+		                    }
+	                    }
+					}
+        		}
+			}
+//		}
+		Enumeration<? extends TreeNode> e = n.children();
+		while (e != null && e.hasMoreElements()) {
+			TreeNode nextElement = e.nextElement();
+			trav(m, nextElement, path.pathByAddingChild(nextElement), metaDataSource, rowCounters);
+		}
+	}
+	
 	private ImageIcon tableIcon;
 	private ImageIcon databaseIcon;
 	private ImageIcon redIcon;

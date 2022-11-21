@@ -27,6 +27,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Window;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,6 +40,7 @@ import javax.swing.JViewport;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
@@ -110,6 +113,18 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 		shrink(window, copyPanel);
 		
 		copyPanel.updatePreview();
+		Timer timer = new Timer(100, e -> {
+			copyPanel.contentTable.repaint();
+		});
+		timer.setInitialDelay(100);
+		timer.setRepeats(true);
+		timer.start();
+		window.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosed(WindowEvent e) {
+				timer.stop();
+			}
+		});
 		window.setVisible(true);
 	}
 
@@ -124,19 +139,15 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 	}
 
     private void initContentTable(JTable jTable, boolean allColumnsSelected) {
-    	// TODO
-    	// TODO resp. column order: resp. order in Copy2CB too
-    	// TODO resp. row order
-    	
-    	// TODO test performance
-    	
-    	// TODO max rows/cols in preview
+
     	// TODO column-table in console: Ext.CopyPanel for rowsTable and col.Table for initial position + check "rotate" checkbox initially
 
     	// TODO
     	// TODO formatted (html): checkboxes: +- background-colors and +-alignment (left/right)
     	
     	// TODO icons for all items
+    	
+    	// TODO silent mode for normal copy
     	
     	recreateContentTable();
     	
@@ -323,12 +334,12 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 								g2d.setColor(UIUtil.BG_FLATMOUSEOVER);
 								BasicStroke stroke = new BasicStroke();
 								g2d.setStroke(stroke);
-								g2d.drawRoundRect(x[0], y[0], x[1] - x[0], y[1] - y[0] - 1, 8, 8);
+								g2d.drawRoundRect(x[0], y[0], x[1] - x[0], y[1] - y[0], 8, 8);
 								g2d.setColor(new Color(0, 0, 200, 100));
 								g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(),
 										stroke.getMiterLimit(), new float[] { 11f, 5f },
-										0f));
-								g2d.drawRoundRect(x[0], y[0], x[1] - x[0], y[1] - y[0] - 1, 8, 8);
+										(float) ((System.currentTimeMillis() / 50.0 * 1.1) % 16)));
+								g2d.drawRoundRect(x[0], y[0], x[1] - x[0], y[1] - y[0], 8, 8);
 							}
 						}
 					}
@@ -417,8 +428,8 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 
         jLabel1.setFont(jLabel1.getFont().deriveFont(jLabel1.getFont().getSize()-1f));
         jLabel1.setForeground(java.awt.Color.gray);
-        jLabel1.setText("<html><i>Ctrl-Click:</i>Toggle row/column selection.<i>Ctrl-A:</i>Select All</html>");
-        jLabel1.setToolTipText("<html><i>Ctrl-Click:</i>Toggle row/column selection.<br>\n<i>Ctrl-A:</i>Select All</html>");
+        jLabel1.setText("<html><i>Ctrl-Click:</i> Toggle row/column selection.<i> Ctrl-A:</i> Select All.</html>");
+        jLabel1.setToolTipText("<html><i>Ctrl-Click: </i>Toggle row/column selection.<br>\n<i>Ctrl-A:</i> Select All</html>");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;

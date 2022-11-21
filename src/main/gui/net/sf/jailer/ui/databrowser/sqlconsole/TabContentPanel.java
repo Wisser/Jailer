@@ -365,6 +365,9 @@ public class TabContentPanel extends javax.swing.JPanel {
     private final boolean onlySelectedCells;
     
     public void updateTextView(JTable rowsTable) {
+    	final int maxColumns = 500;
+    	final int maxRows = 500;
+    	
     	theRowsTable = rowsTable;
 		Object sep = columnSeparatorComboBox.getEditor().getItem();
 		if (columnSeparatorComboBox.isVisible()) {
@@ -398,8 +401,14 @@ public class TabContentPanel extends javax.swing.JPanel {
     	for (int y = 0; y < cell.length; ++y) {
 			cell[y] = rotate? new String[sorter.getViewRowCount() + 1] : new String[rDm.getColumnCount()];
     	}
+    	int yCount = 0;
     	for (int y = 0; y < cell.length; ++y) {
-			for (int x = 0; x < cell[y].length; ++x) {
+    		if (yCount > maxRows) {
+    			cell[y][0] = "truncated...";
+    			break;
+    		}
+    		int xCount = 0;
+        	for (int x = 0; x < cell[y].length; ++x) {
 				int mx;
 				int my;
 				int vx;
@@ -456,19 +465,30 @@ public class TabContentPanel extends javax.swing.JPanel {
 						cellContent = "\"" + (cellContent.replaceAll("\"", "\"\"")) + "\"";
 					}
 				}
+				 ++xCount;
+				boolean stop = xCount > maxColumns;
+				if (stop) {
+					cellContent = yCount == 1? "truncated..." : "";
+				}
 				cell[y][x] = cellContent;
 				maxLength[x] = Math.max(maxLineLength(cellContent), maxLength[x]);
+				if (stop) {
+					break;
+				}
 			}
+        	if (xCount > 0) {
+        		++yCount;
+        	}
 		}
 		StringBuilder sb = new StringBuilder();
 		synchronized (rowColumnTypes) {
 			for (int y = !rotate? 0 : startI; y < cell.length; ++y) {
 				int sbLength = sb.length();
 				for (int x = !rotate? startI : 0; x < cell[y].length; ++x) {
-					if ((rotate && x == 0 || !rotate && y == 0) && !incHeader) {
+					if (cell[y][x] == null) {
 						continue;
 					}
-					if (cell[y][x] == null) {
+					if ((rotate && x == 0 || !rotate && y == 0) && !incHeader) {
 						continue;
 					}
 					if (sep != null) {

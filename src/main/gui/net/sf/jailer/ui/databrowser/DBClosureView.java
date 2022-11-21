@@ -52,8 +52,10 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Vector;
+import java.util.function.Supplier;
 
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -79,6 +81,8 @@ import net.sf.jailer.ui.StringSearchPanel.AdditionalComponentFactory;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
+import net.sf.jailer.ui.databrowser.metadata.MDTable;
+import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.pathfinder.HistoryPanel;
 import net.sf.jailer.ui.pathfinder.PathFinder;
 import net.sf.jailer.ui.pathfinder.PathFinder.Result;
@@ -352,14 +356,16 @@ public abstract class DBClosureView extends javax.swing.JDialog {
     private Set<Pair<String, String>> dependencies = new HashSet<Pair<String,String>>();
     private Map<Table, Integer> currentForcedDistance = null;
     private final JFrame parent;
+    private final Supplier<MetaDataSource> metaDataSourceSupplier;
 
 	private TableMouseListener tableMouseListener;
 
     /** Creates new form FindDialog
      */
-    public DBClosureView(JFrame parent) {
+    public DBClosureView(JFrame parent, Supplier<MetaDataSource> metaDataSourceSupplier) {
         super();
         this.parent = parent;
+        this.metaDataSourceSupplier = metaDataSourceSupplier;
         initComponents();
 
         AutoCompletion.enable(searchComboBox);
@@ -387,7 +393,9 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 		    public void run() {
 		        findButtonActionPerformed(null);
 		    }
-		}, null, null, null, false, null, false);
+		}, null, null, null, false, null, false, false, null, false,
+        		() -> createStringCount(metaDataSourceSupplier));
+        createStringCount(metaDataSourceSupplier);
         tablePanel.add(searchButton, gridBagConstraints);
 
         searchComboBox.setVisible(false);
@@ -412,15 +420,13 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 20;
-		JToggleButton stFindPathButton = StringSearchPanel.createSearchButton(
-				this.parent, findPathComboBox,
-				new Object() {
+		final JComboBox comboBox1 = findPathComboBox;
+		JToggleButton stFindPathButton = StringSearchPanel.createSearchButton(this.parent, comboBox1, new Object() {
 					public String toString() {
 						Table rootTable = getRootTable();
 						return (rootTable != null? ("From " + getDataModel().getDisplayName(rootTable) + " - ") : "") + "Select destination or choose from History";
 					}
-				},
-				new Runnable() {
+				}, new Runnable() {
 					@Override
 		            public void run() {
 		            	Object toFind = findPathComboBox.getSelectedItem();
@@ -436,12 +442,12 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 			public JComponent create(final StringSearchPanel searchPanel) {
 				HistoryPanel historyPanel = new HistoryPanel(getRootTable(), getDataModel()) {
 					private static final long serialVersionUID = 1L;
-
+		
 					@Override
 					protected void close() {
 						searchPanel.close(true);
 					}
-
+		
 					@Override
 					protected void apply(Table source, Table destination) {
 						tableMouseListener.openPathFinder(destination, true);
@@ -449,7 +455,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 				};
 		        return historyPanel;
 			}
-		}, false);
+		}, false, false, null, false, () -> createStringCount(metaDataSourceSupplier));
 		tablePanel.add(stFindPathButton, gridBagConstraints);
 
         findPathComboBox.setVisible(false);
@@ -630,6 +636,33 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         jLabel8.setVisible(false);
         jLabel9.setVisible(false);
     }
+
+	/**
+	 * @param metaDataSourceSupplier
+	 * @return 
+	 */
+	private Map<String, Integer> createStringCount(Supplier<MetaDataSource> metaDataSourceSupplier) {
+		Map<String, Integer> stringCount = new HashMap<String, Integer>();
+		MetaDataSource metaDataSource = metaDataSourceSupplier.get();
+		if (metaDataSource != null) {
+	        for (int i = 0; i < searchComboBox.getModel().getSize(); ++i) {
+	        	Object e = searchComboBox.getModel().getElementAt(i);
+	        	if (e instanceof String) {
+	        		Table table = getDataModel().getTableByDisplayName((String) e);
+	        		if (table != null) {
+	        			MDTable mdTable = metaDataSource.toMDTable(table);
+	        			if (mdTable != null) {
+	        				Long count = mdTable.getEstimatedRowCount();
+	        				if (count != null) {
+	        					stringCount.put((String) e, count.intValue());
+	        				}
+	        			}
+	        		}
+	        	}
+        	}
+        }
+		return stringCount;
+	}
 
 	protected String toolTip(String tableName, CellInfo theCellInfo) {
         if (theCellInfo == null || theCellInfo.table == null|| theCellInfo.level >= Integer.MAX_VALUE / 2) {

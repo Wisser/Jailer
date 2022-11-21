@@ -1022,7 +1022,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		
 		setPendingState(false, false);
 
-		sqlLabel1.setIcon(dropDownIcon);
+		sqlLabel1.setIcon(menuIcon);
 		sortColumnsLabel.setIcon(sort123Icon);
 		sortColumnsLabel.setText(null);
 		sortColumnsPanel.setToolTipText("Sort Columns");
@@ -2619,6 +2619,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 		AllNonEmptyItem() {
 			setEnabled(false);
+			setIcon(allDotIcon);
 			addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -2797,9 +2798,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 		if (withSingleRow) {
 			JMenuItem det = new JMenuItem("Details");
-			if (getQueryBuilderDialog() == null) { /* SQL Console */
-				det.setIcon(detailsIcon);
-			}
+			det.setIcon(detailsIcon);
 			det.setEnabled(row != null);
 			popup.insert(det, 0);
 			popup.insert(new JSeparator(), 1);
@@ -2830,6 +2829,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				if (!currentSelectedRowCondition.equals("") && rows != null &&
 						(rows.size() == 1 || toSelect.size() == rows.size())) {
 					JMenuItem sr = new JMenuItem(rows.size() == 1? "Deselect Row" : ("Deselect Rows (" + rows.size() + ")"));
+					sr.setIcon(selectIcon);
 					sr.setEnabled(row != null);
 					popup.insert(sr, 0);
 					sr.addActionListener(new ActionListener() {
@@ -2840,6 +2840,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					});
 				} else {
 					JMenuItem sr = new JMenuItem(toSelect.size() <= 1? "Select Row" : ("Select Rows (" + toSelect.size() + ")"));
+					sr.setIcon(selectIcon);
 					sr.setEnabled(row != null && rows != null && rows.size() > 1 && !row.rowId.isEmpty());
 					popup.insert(sr, 0);
 					sr.addActionListener(new ActionListener() {
@@ -2851,7 +2852,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 
 				JMenu sql = new JMenu("Create SQL");
-//				sql.setIcon(genSQLIcon);
+				sql.setIcon(genSQLIcon);
 				final String rowName = row != null? (!(table instanceof SqlStatementTable)? dataModel.getDisplayName(table) + "(" + SqlUtil.replaceAliases(row.rowId, null, null) + ")" : "") : "";
 				JMenuItem update = new JMenuItem("Update");
 				sql.add(update);
@@ -3025,7 +3026,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 		if (row != null && getQueryBuilderDialog() != null /* SQL Console */) {
 			popup.add(new JSeparator());
-			JMenu window = new JMenu("Window");
+			JMenu window = new JMenu("Menu");
+			window.setIcon(menuIcon);
 			popup.add(window);
 			for (Component comp: createPopupMenu(null, -1, 0, 0, false, false, false).getComponents()) {
 				window.add(comp);
@@ -7994,6 +7996,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private static ImageIcon copyIcon;
 	private static ImageIcon ecopyIcon;
 	private static ImageIcon detailsIcon;
+	private static ImageIcon selectIcon;
+	private static ImageIcon menuIcon;
+	private static ImageIcon allDotIcon;
 	
 	static {
         // load images
@@ -8020,10 +8025,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
       	copyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/copy.png"));
       	ecopyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/ecopy.png"));
       	detailsIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/ieditdetails_64.png"));
+     	selectIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/select.png"));
+     	menuIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/menu.png"));
+     	allDotIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/alldot.gif"));
 	}
-	
-	// TODO
-	// TODO copy ctrl-C
-	// TODO extended copy shift-ctrl-C
 
 }
