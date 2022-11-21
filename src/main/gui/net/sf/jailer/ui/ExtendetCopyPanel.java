@@ -145,8 +145,6 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
     	// TODO
     	// TODO formatted (html): checkboxes: +- background-colors and +-alignment (left/right)
     	
-    	// TODO icons for all items
-    	
     	// TODO silent mode for normal copy
     	
     	recreateContentTable();

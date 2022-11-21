@@ -331,6 +331,8 @@ public class DataBrowser extends javax.swing.JFrame {
 				? new DbConnectionDialog(this, dbConnectionDialog, DataBrowserContext.getAppName(), executionContext)
 				: null;
 		this.borderBrowser = new AssociationListUI("Resolve", "Resolve selected Associations", true) {
+			private static final long serialVersionUID = 183805595423236039L;
+
 			@Override
 			protected void applyAction(Collection<AssociationModel> selection) {
 				resolveSelection(selection);
@@ -343,6 +345,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		initComponents();
 		initMenu();
 		initNavTree();
+		initTabSelectionAnimationManager();
 		
 		boolean zoom = Boolean.TRUE.equals(UISettings.restore(UISettings.ZOOM_WITH_MOUSE_WHEEL));
 		zoomWithMouseWheelMenuItem.setSelected(Boolean.TRUE.equals(UISettings.restore(UISettings.ZOOM_WITH_MOUSE_WHEEL)));
@@ -1292,6 +1295,23 @@ public class DataBrowser extends javax.swing.JFrame {
 
 		navigationTree.getSelectionModel().addTreeSelectionListener(treeListener);
 		initDnD(this);
+	}
+
+	private static Timer tabSelectionAnimationTimer = null;
+	
+	private synchronized void initTabSelectionAnimationManager() {
+		if (tabSelectionAnimationTimer == null) {
+			tabSelectionAnimationTimer = new Timer(200, e -> {
+				for (Window w : Window.getWindows()) {
+		            if (w.isShowing()) {
+		                return;
+		            }
+		        }
+			});
+			tabSelectionAnimationTimer.setInitialDelay(200);
+			tabSelectionAnimationTimer.start();
+		}
+		
 	}
 
 	private void linkToolbarButton(AbstractButton button, JMenuItem menuItem) {
