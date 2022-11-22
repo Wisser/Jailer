@@ -55,6 +55,7 @@ public class FixedColumnTable implements ChangeListener, PropertyChangeListener
 		fixed.setAutoCreateColumnsFromModel( false );
 		fixed.setModel(main.getModel());
 		fixed.setDefaultRenderer(Object.class, main.getDefaultRenderer(Object.class));
+		fixed.setName("columnNames");
 
 		//  Remove the fixed columns from the main table
 		//  and add them to the fixed table

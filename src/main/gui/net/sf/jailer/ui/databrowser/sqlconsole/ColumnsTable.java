@@ -65,6 +65,7 @@ import net.sf.jailer.ui.ExtendetCopyPanel;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
 import net.sf.jailer.ui.databrowser.Row;
+import net.sf.jailer.ui.util.FixedColumnTable;
 import net.sf.jailer.util.Pair;
 
 /**
@@ -199,7 +200,7 @@ public class ColumnsTable extends JTable {
 			public void actionPerformed(ActionEvent e) {
 				JTable tab = rowsTable.isShowing()? rowsTable : ColumnsTable.this;
 				// TODO
-				UIUtil.copyToClipboard(tab, true);
+				UIUtil.copyToClipboard(tab, true); // TODO weg
 			}
 		};
 		am.put(key, a);
@@ -210,10 +211,10 @@ public class ColumnsTable extends JTable {
 		a = new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JTable tab = rowsTable.isShowing()? rowsTable : ColumnsTable.this;
+				JTable tab = ColumnsTable.this;
 				// TODO
 				List<Integer> types = new ArrayList<Integer>();
-				ExtendetCopyPanel.openDialog(tab, tab == rowsTable? rb.copyAllColumns() : true, "?no-name?", types);
+				ExtendetCopyPanel.openDialog(tab, false, "?no-name?", types, true);
 			}
 		};
 		am.put(key, a);
@@ -287,7 +288,7 @@ public class ColumnsTable extends JTable {
 				Component render = rowsTable.getCellRenderer(dmColumn, row).getTableCellRendererComponent(ColumnsTable.this, value, false, hasFocus, dmColumn, row);
 				int currentColumn = rb.getCurrentRowSelection();
 				if (render instanceof JLabel) {
-					if (column == 0) {
+					if (column == 0 && (inDesktop || "columnNames".equals(table.getName()))) {
 						((JLabel) render).setBackground(BGCOLUMNS);
 						if (ColumnsTable.this.inClosure && !inTempClosure()) {
 							((JLabel) render).setBackground(row % 2 == 0? UIUtil.TABLE_BACKGROUND_COLOR_1_INCLOSURE : UIUtil.TABLE_BACKGROUND_COLOR_2_INCLOSURE);
@@ -299,7 +300,7 @@ public class ColumnsTable extends JTable {
 					}
 					if (column == 0) {
 						String text = ((JLabel) render).getText();
-						String tabName = useTableName? tableName.get(row) : null;
+						String tabName = useTableName && (table == ColumnsTable.this || "columnNames".equals(table.getName()))? tableName.get(row) : null;
 						if (tabName != null) {
 							JLabel tab = new JLabel("<html>&nbsp;" + tabName + "&nbsp;</html>");
 							tab.setForeground(new Color(0, 0, 180));

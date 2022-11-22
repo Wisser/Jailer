@@ -27,6 +27,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Window;
+import java.awt.event.ItemListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
@@ -65,33 +66,44 @@ import net.sf.jailer.util.Pair;
 @SuppressWarnings("serial")
 public class ExtendetCopyPanel extends javax.swing.JPanel {
 
-	public static void openDialog(JTable jTable, boolean allColumnsSelected, String tableName, List<Integer> rowColumnTypes) {
+	public static void openDialog(JTable jTable, boolean allColumnsSelected, String tableName, List<Integer> rowColumnTypes, boolean columnNamesInFirstRow) {
 		Window owner = SwingUtilities.getWindowAncestor(jTable);
 		JDialog window = new JDialog(owner, "Extended Copy");
 		window.setModal(false);
 		
 		window.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		ExtendetCopyPanel copyPanel = new ExtendetCopyPanel();
-		copyPanel.initContentTable(jTable, allColumnsSelected);
+		copyPanel.initContentTable(jTable, allColumnsSelected, columnNamesInFirstRow);
 		
 		window.getContentPane().add(copyPanel);
 		
 		window.pack();
 		window.setSize(Math.max(window.getWidth(), jTable.getParent().getWidth()), window.getHeight());
-		copyPanel.previewPanel.setMinimumSize(new Dimension(1, 160));
+		copyPanel.previewPanel.setMinimumSize(new Dimension(1, 180));
 		copyPanel.previewPanel.setPreferredSize(copyPanel.previewPanel.getMinimumSize());
-		copyPanel.tabContentPanel = new TabContentPanel(new JLabel(""), new JLabel(""), tableName, 
+		copyPanel.tabContentPanel = new TabContentPanel(new JLabel(""), null, new JLabel(""), tableName, 
 				false,
 				null,
 				null,
 				rowColumnTypes,
-				allColumnsSelected);
+				true);
+		copyPanel.tabContentPanel.setColumnNamesInFirstRow(columnNamesInFirstRow);
 		copyPanel.plainPanel.add(copyPanel.tabContentPanel.textTabPanel, java.awt.BorderLayout.CENTER);
 		copyPanel.tabContentPanel.copyCBButton.setVisible(false);
 		copyPanel.controlsPanel.add(copyPanel.tabContentPanel.headerCheckBox);
 		copyPanel.controlsPanel.add(copyPanel.tabContentPanel.rotateCheckBox);
+		copyPanel.controlsPanel.add(copyPanel.tabContentPanel.columnSeparatorLabel);
+		copyPanel.controlsPanel.add(copyPanel.tabContentPanel.columnSeparatorComboBox);
+		ItemListener l;
+		copyPanel.formattedCheckBox.addItemListener(l = e -> {
+			copyPanel.tabContentPanel.columnSeparatorLabel.setVisible(!copyPanel.formattedCheckBox.isSelected());
+			copyPanel.tabContentPanel.columnSeparatorComboBox.setVisible(!copyPanel.formattedCheckBox.isSelected());
+		});
+		l.itemStateChanged(null);
 		copyPanel.tabContentPanel.textSortedStateLabel.setVisible(false);
-		
+		copyPanel.tabContentPanel.headerCheckBox.addItemListener(e -> copyPanel.updatePreview());
+		copyPanel.tabContentPanel.rotateCheckBox.addItemListener(e -> copyPanel.updatePreview());
+				
 		Point off = new Point();
 		off = SwingUtilities.convertPoint(copyPanel, off, copyPanel.contentTable.getParent());
 
@@ -138,9 +150,7 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 		}
 	}
 
-    private void initContentTable(JTable jTable, boolean allColumnsSelected) {
-
-    	// TODO column-table in console: Ext.CopyPanel for rowsTable and col.Table for initial position + check "rotate" checkbox initially
+    private void initContentTable(JTable jTable, boolean allColumnsSelected, boolean columnNamesInFirstRow) {
 
     	// TODO
     	// TODO formatted (html): checkboxes: +- background-colors and +-alignment (left/right)
@@ -261,6 +271,9 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 				updatePreview();
 			}
 		});
+		if (columnNamesInFirstRow) {
+			contentTable.getColumnModel().removeColumn(contentTable.getColumnModel().getColumn(0));
+		}
 	}
 
 	private void recreateContentTable() {
@@ -353,6 +366,8 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 				updatePending = false;
 				if (!formattedCheckBox.isSelected()) {
 					tabContentPanel.updateTextView(contentTable);
+				} else {
+					formattedContentLabel.setText(UIUtil.toHTML(tabContentPanel.getHTMLContent(contentTable), 100000));
 				}
 				((CardLayout) previewPanel.getLayout()).show(previewPanel, formattedCheckBox.isSelected()? "formatted" : "plain");
 			});
@@ -388,7 +403,9 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         previewPanel = new javax.swing.JPanel();
         plainPanel = new javax.swing.JPanel();
         formattedScrollPane = new javax.swing.JScrollPane();
-        jEditorPane1 = new javax.swing.JEditorPane();
+        jPanel3 = new javax.swing.JPanel();
+        formattedContentLabel = new javax.swing.JLabel();
+        jPanel4 = new javax.swing.JPanel();
         panel = new javax.swing.JPanel();
         controlsPanel = new javax.swing.JPanel();
         formattedCheckBox = new javax.swing.JCheckBox();
@@ -465,7 +482,27 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         plainPanel.setLayout(new java.awt.BorderLayout());
         previewPanel.add(plainPanel, "plain");
 
-        formattedScrollPane.setViewportView(jEditorPane1);
+        jPanel3.setBackground(java.awt.Color.white);
+        jPanel3.setLayout(new java.awt.GridBagLayout());
+
+        formattedContentLabel.setText("jLabel2");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.weightx = 1.0;
+        jPanel3.add(formattedContentLabel, gridBagConstraints);
+
+        jPanel4.setLayout(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel3.add(jPanel4, gridBagConstraints);
+
+        formattedScrollPane.setViewportView(jPanel3);
 
         previewPanel.add(formattedScrollPane, "formatted");
 
@@ -564,11 +601,13 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
     private javax.swing.JPanel controlsPanel;
     private javax.swing.JButton copyCloseButton;
     private javax.swing.JCheckBox formattedCheckBox;
+    private javax.swing.JLabel formattedContentLabel;
     private javax.swing.JScrollPane formattedScrollPane;
-    private javax.swing.JEditorPane jEditorPane1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JToolBar jToolBar1;

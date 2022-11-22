@@ -55,7 +55,6 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.ranges.RangeException;
 
 import com.formdev.flatlaf.FlatClientProperties;
 
@@ -85,11 +84,12 @@ public class TabContentPanel extends javax.swing.JPanel {
      * Creates new form TabContentPanel
      * @param caretDotMark 
      */
-    public TabContentPanel(JLabel rowsCount, JComponent metaDataDetails, String type, boolean explain, javax.swing.JPanel shimPanel, Pair<Integer, Integer> caretDotMark, List<Integer> rowColumnTypes, boolean onlySelectedCells) {
+    public TabContentPanel(JLabel rowsCount, JTable theRowsTable, JComponent metaDataDetails, String type, boolean explain, javax.swing.JPanel shimPanel, Pair<Integer, Integer> caretDotMark, List<Integer> rowColumnTypes, boolean onlySelectedCells) {
     	this.shimPanel = shimPanel == null? new javax.swing.JPanel(new GridBagLayout()) : shimPanel;
     	this.caretDotMark = caretDotMark;
         this.rowColumnTypes = rowColumnTypes;
         this.onlySelectedCells = onlySelectedCells;
+        this.theRowsTable = theRowsTable;
         initComponents();
         if (UIUtil.plaf == PLAF.FLAT) {
 			tabbedPane.putClientProperty(FlatClientProperties.TABBED_PANE_TAB_HEIGHT, 16);
@@ -192,8 +192,8 @@ public class TabContentPanel extends javax.swing.JPanel {
 					update();
 				}
 				private void update() {
-					if (theRowsTable != null) {
-						updateTextView(theRowsTable);
+					if (TabContentPanel.this.theRowsTable != null) {
+						updateTextView(TabContentPanel.this.theRowsTable);
 					}
 				}
 			});
@@ -218,7 +218,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 			tabbedPane.remove(contentPanel);
 			tabbedPane.remove(columnsPanel);
 			tabbedPane.remove(metaTabPanel);
-			jLabel1.setVisible(false);
+			columnSeparatorLabel.setVisible(false);
 			headerCheckBox.setVisible(false);
 			copyCBButton.setVisible(false);
 			columnSeparatorComboBox.setVisible(false);
@@ -360,15 +360,17 @@ public class TabContentPanel extends javax.swing.JPanel {
 
     private JTable theRowsTable = null;
     protected boolean forDetailsView = false;
+    private boolean columnNamesInFirstRow = false;
     
-    private static Boolean lastHeaderCheckBoxIsSelected;
+    public void setColumnNamesInFirstRow(boolean columnNamesInFirstRow) {
+		this.columnNamesInFirstRow = columnNamesInFirstRow;
+	}
+
+	private static Boolean lastHeaderCheckBoxIsSelected;
     private static Object lastColumnSeparator;
     private final boolean onlySelectedCells;
     
     public void updateTextView(JTable rowsTable) {
-    	final int maxColumns = 500;
-    	final int maxRows = 500;
-    	
     	theRowsTable = rowsTable;
 		Object sep = columnSeparatorComboBox.getEditor().getItem();
 		if (columnSeparatorComboBox.isVisible()) {
@@ -381,6 +383,23 @@ public class TabContentPanel extends javax.swing.JPanel {
 		} else if (SEPARATOR_TAB.equals(sep)) {
 			sep = "\t";
 		}
+    	StringBuilder sb = createContent(rowsTable, sep);
+
+		Point vPos = textViewScrollPane.getViewport().getViewPosition();
+		textArea.setText(sb.toString());
+		textArea.setCaretPosition(0);
+		textArea.setEditable(false);
+		textArea.discardAllEdits();
+		if (UIUtil.plaf == PLAF.FLAT) {
+			textArea.setBackground(Color.white);
+		}
+		UIUtil.invokeLater(() -> textViewScrollPane.getViewport().setViewPosition(vPos));
+	}
+
+	private StringBuilder createContent(JTable rowsTable, Object sep) {
+		final int maxColumns = 500;
+    	final int maxRows = 500;
+    	
     	TableColumnModel cm = rowsTable.getColumnModel();
     	TableModel rDm = rowsTable.getModel();
     	RowSorter<? extends TableModel> sorter = rowsTable.getRowSorter();
@@ -397,10 +416,10 @@ public class TabContentPanel extends javax.swing.JPanel {
 				incHeader = false;
 			}
 		}
-		String[][] cell = rotate? new String[rDm.getColumnCount()][] : new String[sorter.getViewRowCount() + 1][];
-    	int[] maxLength = rotate? new int[sorter.getViewRowCount() + 1] : new int[rDm.getColumnCount()];
+		String[][] cell = columnNamesInFirstRow? (rotate? new String[rDm.getColumnCount()][] : new String[sorter.getViewRowCount()][]) : rotate? new String[rDm.getColumnCount()][] : new String[sorter.getViewRowCount() + 1][];
+    	int[] maxLength = columnNamesInFirstRow? (rotate? new int[sorter.getViewRowCount()] : new int[rDm.getColumnCount()]) : rotate? new int[sorter.getViewRowCount() + 1] : new int[rDm.getColumnCount()];
     	for (int y = 0; y < cell.length; ++y) {
-			cell[y] = rotate? new String[sorter.getViewRowCount() + 1] : new String[rDm.getColumnCount()];
+			cell[y] = columnNamesInFirstRow? (rotate? new String[sorter.getViewRowCount()] : new String[rDm.getColumnCount()]) : rotate? new String[sorter.getViewRowCount() + 1] : new String[rDm.getColumnCount()];
     	}
     	int yCount = 0;
     	for (int y = 0; y < cell.length; ++y) {
@@ -416,25 +435,47 @@ public class TabContentPanel extends javax.swing.JPanel {
 				int vy;
 				String colName;
 				boolean isColName;
-				if (rotate) {
-					isColName = x == 0;
-					vx = y;
-					vy = x - 1;
-					mx = cm.getColumn(y).getModelIndex();
-					my = x == 0? 0 : sorter.convertRowIndexToModel(x - 1);
-					colName = rDm.getColumnName(mx);
+				if (columnNamesInFirstRow) {
+					if (!rotate) {
+						isColName = x == 0;
+						vx = x - 1;
+						vy = y;
+						mx = x == 0? 0 : cm.getColumn(x - 1).getModelIndex();
+						my = sorter.convertRowIndexToModel(y);
+						colName = String.valueOf(rDm.getValueAt(my, 0));
+					} else {
+						isColName = y == 0;
+						vx = y - 1;
+						vy = x;
+						mx = y == 0? 0 : cm.getColumn(y - 1).getModelIndex();
+						my = x == 0? 0 : sorter.convertRowIndexToModel(x);
+						colName = String.valueOf(rDm.getValueAt(my, 0));
+					}
 				} else {
-					isColName = y == 0;
-					vx = x;
-					vy = y - 1;
-					mx = cm.getColumn(x).getModelIndex();
-					my = y == 0? 0 : sorter.convertRowIndexToModel(y - 1);
-					colName = rDm.getColumnName(mx);
+					if (rotate) {
+						isColName = x == 0;
+						vx = y;
+						vy = x - 1;
+						mx = cm.getColumn(y).getModelIndex();
+						my = x == 0? 0 : sorter.convertRowIndexToModel(x - 1);
+						colName = rDm.getColumnName(mx);
+					} else {
+						isColName = y == 0;
+						vx = x;
+						vy = y - 1;
+						mx = cm.getColumn(x).getModelIndex();
+						my = y == 0? 0 : sorter.convertRowIndexToModel(y - 1);
+						colName = rDm.getColumnName(mx);
+					}
 				}
 				Object value;
 				if (isColName) {
-					if (onlySelectedCells && !rowsTable.isColumnSelected(vx)) {
-						continue;
+					if (onlySelectedCells) {
+						if (columnNamesInFirstRow && !rowsTable.isRowSelected(vy)
+								||
+							!columnNamesInFirstRow && !rowsTable.isColumnSelected(vx)) {
+							continue;
+						}
 					}
 					value = colName;
 					if (value != null && value.toString().startsWith("<html>")) {
@@ -489,16 +530,20 @@ public class TabContentPanel extends javax.swing.JPanel {
 					if (cell[y][x] == null) {
 						continue;
 					}
-					if ((rotate && x == 0 || !rotate && y == 0) && !incHeader) {
+					if (columnNamesInFirstRow && (!rotate && x == 0 || rotate && y == 0) && !incHeader) {
+						continue;
+					}
+					if (!columnNamesInFirstRow && (rotate && x == 0 || !rotate && y == 0) && !incHeader) {
 						continue;
 					}
 					if (sep != null) {
+						if (sb.length() > sbLength) {
+							sb.append(sep);
+						}
 						sb.append(cell[y][x]);
-						if (x < cell[y].length - 1)
-						sb.append(sep);
 					} else {
 						boolean rightAlign = false;
-						if (!rotate) {
+						if (!rotate && !columnNamesInFirstRow) {
 							int mx = cm.getColumn(x).getModelIndex();
 							if (rowColumnTypes.size() > mx) {
 								switch (rowColumnTypes.get(mx)) {
@@ -542,7 +587,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 				if (y < cell.length - 1 && sb.length() > sbLength) {
 					sb.append(UIUtil.LINE_SEPARATOR);
 				}
-				if (y == 0 && sep == null && incHeader && !rotate) {
+				if (y == 0 && sep == null && incHeader && !(rotate ^ columnNamesInFirstRow)) {
 					for (int x = 0; x < cell[y].length; ++x) {
 						for (int i = 2 + maxLength[x]; i > 0; --i) {
 							sb.append("-");
@@ -552,16 +597,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 				}
 			}
 		}
-
-		Point vPos = textViewScrollPane.getViewport().getViewPosition();
-		textArea.setText(sb.toString());
-		textArea.setCaretPosition(0);
-		textArea.setEditable(false);
-		textArea.discardAllEdits();
-		if (UIUtil.plaf == PLAF.FLAT) {
-			textArea.setBackground(Color.white);
-		}
-		UIUtil.invokeLater(() -> textViewScrollPane.getViewport().setViewPosition(vPos));
+		return sb;
 	}
 
     private int lastLineLength(String cellContent) {
@@ -589,6 +625,10 @@ public class TabContentPanel extends javax.swing.JPanel {
 			}
 		}
 		return maxLength;
+	}
+
+	public String getHTMLContent(JTable rowsTable) {
+		return createContent(rowsTable, "<>").toString();
 	}
 
 	/**
@@ -622,7 +662,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         jTextArea = new javax.swing.JTextArea();
         columnSeparatorComboBox = new javax.swing.JComboBox<>();
         copyCBButton = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
+        columnSeparatorLabel = new javax.swing.JLabel();
         headerCheckBox = new javax.swing.JCheckBox();
         textSortedStateLabel = new javax.swing.JLabel();
         rotateCheckBox = new javax.swing.JCheckBox();
@@ -777,12 +817,12 @@ public class TabContentPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
         textTabPanel.add(copyCBButton, gridBagConstraints);
 
-        jLabel1.setText(" Column Separator ");
+        columnSeparatorLabel.setText("  Separator ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        textTabPanel.add(jLabel1, gridBagConstraints);
+        textTabPanel.add(columnSeparatorLabel, gridBagConstraints);
 
         headerCheckBox.setSelected(true);
         headerCheckBox.setText("Include Column Names");
@@ -890,9 +930,11 @@ public class TabContentPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_rotateCheckBoxActionPerformed
 
 	public void repaintShowingAnimatedTables() {
-		columnsScrollPane.repaint();
-		if (theRowsTable != null) {
-			theRowsTable.repaint();
+		if (isShowing()) {
+			columnsScrollPane.repaint();
+			if (theRowsTable != null) {
+				theRowsTable.repaint();
+			}
 		}
 	}
 	
@@ -911,7 +953,8 @@ public class TabContentPanel extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     javax.swing.JButton cancelLoadButton;
-    private javax.swing.JComboBox<String> columnSeparatorComboBox;
+    public javax.swing.JComboBox<String> columnSeparatorComboBox;
+    public javax.swing.JLabel columnSeparatorLabel;
     public javax.swing.JPanel columnsPanel;
     public javax.swing.JScrollPane columnsScrollPane;
     public javax.swing.JLabel columnsSortedStateLabel;
@@ -920,7 +963,6 @@ public class TabContentPanel extends javax.swing.JPanel {
     public javax.swing.JButton copyCBButton;
     public javax.swing.JPanel fullTSearchPanel;
     public javax.swing.JCheckBox headerCheckBox;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLayeredPane jLayeredPane1;
     private javax.swing.JPanel jPanel1;

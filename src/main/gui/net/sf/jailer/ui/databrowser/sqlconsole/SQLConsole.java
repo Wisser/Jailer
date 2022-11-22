@@ -1211,13 +1211,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						}
 						tabContentPanel =
                         		new TabContentPanel(rb.rowsCount,
+                        				rb.rowsTable,
                         				metaDataRenderer,
                         				finalResultSetType,
                         				explain,
                         				origTabContentPanel == null? null : origTabContentPanel.shimPanel,
                         				caretDotMark,
-                        				rb.rowColumnTypes,
-                        				false);
+                        				rb.rowColumnTypes, true);
                         tabContentPanel.contentPanel.add(rTabContainer);
 
                         rb.setCurrentRowsTable(new Reference<JTable>() {

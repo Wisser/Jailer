@@ -1301,7 +1301,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	
 	private static synchronized void initTabSelectionAnimationManager() {
 		if (tabSelectionAnimationTimer == null) {
-			tabSelectionAnimationTimer = new Timer(200, e -> {
+			tabSelectionAnimationTimer = new Timer(100, e -> {
 				for (Window w : Window.getWindows()) {
 					if (w instanceof DataBrowser) {
 						DataBrowser b = (DataBrowser) w;
@@ -1315,7 +1315,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		            }
 		        }
 			});
-			tabSelectionAnimationTimer.setInitialDelay(200);
+			tabSelectionAnimationTimer.setInitialDelay(100);
 			tabSelectionAnimationTimer.start();
 		}
 		
