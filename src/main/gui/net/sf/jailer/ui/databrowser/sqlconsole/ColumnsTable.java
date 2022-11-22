@@ -214,6 +214,11 @@ public class ColumnsTable extends JTable {
 				JTable tab = ColumnsTable.this;
 				// TODO
 				List<Integer> types = new ArrayList<Integer>();
+				if (rb != null && rb.browserContentCellEditor != null) {
+					for (int type: rb.browserContentCellEditor.getColumnTypes()) {
+						types.add(type);
+					}
+				}
 				ExtendetCopyPanel.openDialog(tab, false, "?no-name?", types, true);
 			}
 		};

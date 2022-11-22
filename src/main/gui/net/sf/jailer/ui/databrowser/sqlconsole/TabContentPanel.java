@@ -424,7 +424,7 @@ public class TabContentPanel extends javax.swing.JPanel {
     	int yCount = 0;
     	for (int y = 0; y < cell.length; ++y) {
     		if (yCount > maxRows) {
-    			cell[y][0] = "truncated...";
+    			cell[y][0] = "Preview stops here...";
     			break;
     		}
     		int xCount = 0;
@@ -510,7 +510,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 				 ++xCount;
 				boolean stop = xCount > maxColumns;
 				if (stop) {
-					cellContent = yCount == 1? "truncated..." : "";
+					cellContent = yCount == 1? "Preview stops here..." : "";
 				}
 				cell[y][x] = cellContent;
 				maxLength[x] = Math.max(maxLineLength(cellContent), maxLength[x]);
@@ -545,6 +545,21 @@ public class TabContentPanel extends javax.swing.JPanel {
 						boolean rightAlign = false;
 						if (!rotate && !columnNamesInFirstRow) {
 							int mx = cm.getColumn(x).getModelIndex();
+							if (rowColumnTypes.size() > mx) {
+								switch (rowColumnTypes.get(mx)) {
+								case Types.BIGINT:
+								case Types.DECIMAL:
+								case Types.DOUBLE:
+								case Types.FLOAT:
+								case Types.INTEGER:
+								case Types.NUMERIC:
+								case Types.REAL:
+								case Types.SMALLINT:
+									rightAlign = true;
+								}
+							}
+						} else if (rotate && columnNamesInFirstRow) {
+							int mx = sorter.convertRowIndexToModel(x);
 							if (rowColumnTypes.size() > mx) {
 								switch (rowColumnTypes.get(mx)) {
 								case Types.BIGINT:

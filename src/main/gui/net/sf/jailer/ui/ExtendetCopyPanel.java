@@ -154,8 +154,19 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 
     	// TODO
     	// TODO formatted (html): checkboxes: +- background-colors and +-alignment (left/right)
+    	// TODO "select all" button
+    	// TODO "Preview" label more present (bg/fg color?)
+    	
+    	// TODO
+    	// TODO "truncate..." not when copy to clipboard
+    	// TODO "<Doctype html>"
     	
     	// TODO silent mode for normal copy
+    	
+    	// TODO store "rotate" state (like "separator"/"Include Column Names")
+    	// TODO sync TabContPan-state-context with ExtCopyPa-state-context
+    	
+    	// TODO "formatted" here: store setting (per context?)
     	
     	recreateContentTable();
     	
@@ -274,6 +285,9 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 		if (columnNamesInFirstRow) {
 			contentTable.getColumnModel().removeColumn(contentTable.getColumnModel().getColumn(0));
 		}
+		
+		formattedScrollPane.getHorizontalScrollBar().setUnitIncrement(32);
+		formattedScrollPane.getVerticalScrollBar().setUnitIncrement(32);
 	}
 
 	private void recreateContentTable() {
@@ -368,6 +382,15 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 					tabContentPanel.updateTextView(contentTable);
 				} else {
 					formattedContentLabel.setText(UIUtil.toHTML(tabContentPanel.getHTMLContent(contentTable), 100000));
+					
+					formattedContentLabel.setText(
+					// "<!DOCTYPE html>\r\n"
+					"<html>\r\n"
+					+ "<head>\r\n"
+					+ "<meta charset=\"UTF-8\"/>\r\n"
+					+ "</head>\r\n"
+					+ "<body>\r\n"
+					+ "<table><tr><td>5</td><td>AFRICAN EGG</td><td>A Fast-Paced Documentary of a Pastry Chef And a Dentist who must Pursue a Forensic Psychologist in The Gulf of Mexico</td><td>2006</td><td>1</td><td></td><td>6</td><td>2.99</td><td>130</td><td>22.99</td><td>G</td><td>Deleted Scenes</td><td>2006-02-15 05:03:42.0</td></tr><tr bgcolor=\"#eeffee\"<td>6</td><td>AGENT TRUMAN</td><td>A Intrepid Panorama of a Robot And a Boy who must Escape a Sumo Wrestler in Ancient China</td><td>2006</td><td>1</td><td></td><td>3</td><td>2.99</td><td>169</td><td>17.99</td><td>PG</td><td>Deleted Scenes</td><td>2006-02-15 05:03:42.0</td></tr><tr><td>7</td><td>AIRPLANE SIERRA</td><td>A Touching Saga of a Hunter And a Butler who must Discover a Butler in A Jet Boat</td><td>2006</td><td>1</td><td></td><td>6</td><td>4.99</td><td>62</td><td>28.99</td><td>PG-13</td><td>Trailers,Deleted Scenes</td><td>2006-02-15 05:03:42.0</td></tr><tr bgcolor=\"#eeffee\"<td>8</td><td>AIRPORT POLLOCK</td><td>A Epic Tale of a Moose And a Girl who must Confront a Monkey in Ancient India</td><td>2006</td><td>1</td><td></td><td>6</td><td>4.99</td><td>54</td><td>15.99</td><td>R</td><td>Trailers</td><td>2006-02-15 05:03:42.0</td></tr><tr><td>9</td><td>ALABAMA DEVIL</td><td>A Thoughtful Panorama of a Database Administrator And a Mad Scientist who must Outgun a Mad Scientist in A Jet Boat</td><td>2006</td><td>1</td><td></td><td>3</td><td>2.99</td><td>114</td><td>21.99</td><td>PG-13</td><td>Trailers,Deleted Scenes</td><td>2006-02-15 05:03:42.0</td></tr><tr bgcolor=\"#eeffee\"<td>10</td><td>ALADDIN CALENDAR</td><td>A Action-Packed Tale of a Man And a Lumberjack who must Reach a Feminist in Ancient China</td><td>2006</td><td>1</td><td></td><td>6</td><td>4.99</td><td>63</td><td>24.99</td><td>NC-17</td><td>Trailers,Deleted Scenes</td><td>2006-02-15 05:03:42.0</td></tr></table></body></html>");
 				}
 				((CardLayout) previewPanel.getLayout()).show(previewPanel, formattedCheckBox.isSelected()? "formatted" : "plain");
 			});
@@ -406,6 +429,7 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         jPanel3 = new javax.swing.JPanel();
         formattedContentLabel = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
         panel = new javax.swing.JPanel();
         controlsPanel = new javax.swing.JPanel();
         formattedCheckBox = new javax.swing.JCheckBox();
@@ -476,7 +500,6 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        previewPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Preview"));
         previewPanel.setLayout(new java.awt.CardLayout());
 
         plainPanel.setLayout(new java.awt.BorderLayout());
@@ -513,6 +536,15 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         jPanel2.add(previewPanel, gridBagConstraints);
+
+        jLabel2.setFont(jLabel2.getFont().deriveFont(jLabel2.getFont().getSize()+2f));
+        jLabel2.setText("Preview");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(2, 4, 0, 0);
+        jPanel2.add(jLabel2, gridBagConstraints);
 
         jSplitPane1.setRightComponent(jPanel2);
 
@@ -604,6 +636,7 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
     private javax.swing.JLabel formattedContentLabel;
     private javax.swing.JScrollPane formattedScrollPane;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
