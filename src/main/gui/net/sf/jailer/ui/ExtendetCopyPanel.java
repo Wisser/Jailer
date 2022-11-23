@@ -26,18 +26,32 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.ImageIcon;
+import javax.swing.InputMap;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JViewport;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter;
 import javax.swing.SwingUtilities;
@@ -66,7 +80,13 @@ import net.sf.jailer.util.Pair;
 @SuppressWarnings("serial")
 public class ExtendetCopyPanel extends javax.swing.JPanel {
 
-	public static void openDialog(JTable jTable, boolean allColumnsSelected, String tableName, List<Integer> rowColumnTypes, boolean columnNamesInFirstRow) {
+	private static final KeyStroke KS_COPY_TO_CLIPBOARD = KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK);
+
+	private static Boolean lastColored;
+	private static Boolean lastAligned;
+	private static Boolean lastFormatted;
+	
+	public static void openDialog(JTable jTable, boolean allColumnsSelected, String tableName, List<Integer> rowColumnTypes, boolean columnNamesInFirstRow, boolean silent) {
 		Window owner = SwingUtilities.getWindowAncestor(jTable);
 		JDialog window = new JDialog(owner, "Extended Copy");
 		window.setModal(false);
@@ -86,23 +106,43 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 				null,
 				null,
 				rowColumnTypes,
-				true);
+				true, silent);
 		copyPanel.tabContentPanel.setColumnNamesInFirstRow(columnNamesInFirstRow);
 		copyPanel.plainPanel.add(copyPanel.tabContentPanel.textTabPanel, java.awt.BorderLayout.CENTER);
 		copyPanel.tabContentPanel.copyCBButton.setVisible(false);
-		copyPanel.controlsPanel.add(copyPanel.tabContentPanel.headerCheckBox);
-		copyPanel.controlsPanel.add(copyPanel.tabContentPanel.rotateCheckBox);
-		copyPanel.controlsPanel.add(copyPanel.tabContentPanel.columnSeparatorLabel);
-		copyPanel.controlsPanel.add(copyPanel.tabContentPanel.columnSeparatorComboBox);
+		copyPanel.controlsPanel.add(copyPanel.tabContentPanel.headerCheckBox, new java.awt.GridBagConstraints());
+		copyPanel.controlsPanel.add(copyPanel.tabContentPanel.rotateCheckBox, new java.awt.GridBagConstraints());
+		copyPanel.controlsPanel2.add(copyPanel.tabContentPanel.columnSeparatorLabel, new java.awt.GridBagConstraints());
+		copyPanel.controlsPanel2.add(copyPanel.tabContentPanel.columnSeparatorComboBox, new java.awt.GridBagConstraints());
+		if (!silent) {
+			if (lastAligned != null) {
+				copyPanel.alignedCheckBox.setSelected(lastAligned);
+			}
+			if (lastColored != null) {
+				copyPanel.coloredCheckBox.setSelected(lastColored);
+			}
+			if (lastFormatted != null) {
+				copyPanel.formattedCheckBox.setSelected(lastFormatted);
+			}
+		} else {
+			if (columnNamesInFirstRow && jTable.getSelectedRowCount() <= 1) {
+				copyPanel.tabContentPanel.headerCheckBox.setSelected(false);
+			}
+		}
 		ItemListener l;
 		copyPanel.formattedCheckBox.addItemListener(l = e -> {
 			copyPanel.tabContentPanel.columnSeparatorLabel.setVisible(!copyPanel.formattedCheckBox.isSelected());
+			copyPanel.tabContentPanel.columnSeparatorComboBox.setVisible(!copyPanel.formattedCheckBox.isSelected());
+			copyPanel.coloredCheckBox.setVisible(copyPanel.formattedCheckBox.isSelected());
+			copyPanel.alignedCheckBox.setVisible(copyPanel.formattedCheckBox.isSelected());
 			copyPanel.tabContentPanel.columnSeparatorComboBox.setVisible(!copyPanel.formattedCheckBox.isSelected());
 		});
 		l.itemStateChanged(null);
 		copyPanel.tabContentPanel.textSortedStateLabel.setVisible(false);
 		copyPanel.tabContentPanel.headerCheckBox.addItemListener(e -> copyPanel.updatePreview());
 		copyPanel.tabContentPanel.rotateCheckBox.addItemListener(e -> copyPanel.updatePreview());
+		copyPanel.coloredCheckBox.setVisible(copyPanel.formattedCheckBox.isSelected());
+		copyPanel.alignedCheckBox.setVisible(copyPanel.formattedCheckBox.isSelected());
 				
 		Point off = new Point();
 		off = SwingUtilities.convertPoint(copyPanel, off, copyPanel.contentTable.getParent());
@@ -135,9 +175,23 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 			@Override
 			public void windowClosed(WindowEvent e) {
 				timer.stop();
+				if (!silent) {
+					lastAligned = copyPanel.alignedCheckBox.isSelected();
+					lastColored = copyPanel.coloredCheckBox.isSelected();
+					lastFormatted = copyPanel.formattedCheckBox.isSelected();
+				}
 			}
 		});
-		window.setVisible(true);
+		Dimension size = window.getSize();
+		window.pack();
+		window.revalidate();
+		window.setSize(Math.max(size.width, window.getWidth()), size.height);
+		if (!silent) {
+			window.setVisible(true);
+		} else {
+			window.dispose();
+			copyPanel.copyToClipboard(jTable);
+		}
 	}
 
 	private static void shrink(JDialog window, ExtendetCopyPanel copyPanel) {
@@ -148,26 +202,15 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 			window.setSize(window.getWidth(), Math.max(h, 364));
 			window.revalidate();
 		}
+		int w = copyPanel.jScrollPane1.getWidth() - copyPanel.contentTable.getWidth() - 48;
+		if (w > 0) {
+			w = window.getWidth() - w;
+			window.setSize(Math.max(w, 100), window.getHeight());
+			window.revalidate();
+		}
 	}
 
     private void initContentTable(JTable jTable, boolean allColumnsSelected, boolean columnNamesInFirstRow) {
-
-    	// TODO
-    	// TODO formatted (html): checkboxes: +- background-colors and +-alignment (left/right)
-    	// TODO "select all" button
-    	// TODO "Preview" label more present (bg/fg color?)
-    	
-    	// TODO
-    	// TODO "truncate..." not when copy to clipboard
-    	// TODO "<Doctype html>"
-    	
-    	// TODO silent mode for normal copy
-    	
-    	// TODO store "rotate" state (like "separator"/"Include Column Names")
-    	// TODO sync TabContPan-state-context with ExtCopyPa-state-context
-    	
-    	// TODO "formatted" here: store setting (per context?)
-    	
     	recreateContentTable();
     	
     	Object[] colNames = new Object[jTable.getColumnCount()];
@@ -372,6 +415,17 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 			}
 		};
 		jScrollPane1.setViewportView(contentTable);
+		InputMap im = contentTable.getInputMap();
+		Object key = "copyClipboard";
+		im.put(KS_COPY_TO_CLIPBOARD, key);
+		ActionMap am = contentTable.getActionMap();
+		Action a = new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				copyToClipboard(ExtendetCopyPanel.this);
+			}
+		};
+		am.put(key, a);
 	}
 
 	private void updatePreview() {
@@ -381,16 +435,16 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 				if (!formattedCheckBox.isSelected()) {
 					tabContentPanel.updateTextView(contentTable);
 				} else {
-					formattedContentLabel.setText(UIUtil.toHTML(tabContentPanel.getHTMLContent(contentTable), 100000));
+					formattedContentLabel.setText(tabContentPanel.getHTMLContent(contentTable, alignedCheckBox.isSelected(), coloredCheckBox.isSelected(), 50, 80));
 					
-					formattedContentLabel.setText(
-					// "<!DOCTYPE html>\r\n"
-					"<html>\r\n"
-					+ "<head>\r\n"
-					+ "<meta charset=\"UTF-8\"/>\r\n"
-					+ "</head>\r\n"
-					+ "<body>\r\n"
-					+ "<table><tr><td>5</td><td>AFRICAN EGG</td><td>A Fast-Paced Documentary of a Pastry Chef And a Dentist who must Pursue a Forensic Psychologist in The Gulf of Mexico</td><td>2006</td><td>1</td><td></td><td>6</td><td>2.99</td><td>130</td><td>22.99</td><td>G</td><td>Deleted Scenes</td><td>2006-02-15 05:03:42.0</td></tr><tr bgcolor=\"#eeffee\"<td>6</td><td>AGENT TRUMAN</td><td>A Intrepid Panorama of a Robot And a Boy who must Escape a Sumo Wrestler in Ancient China</td><td>2006</td><td>1</td><td></td><td>3</td><td>2.99</td><td>169</td><td>17.99</td><td>PG</td><td>Deleted Scenes</td><td>2006-02-15 05:03:42.0</td></tr><tr><td>7</td><td>AIRPLANE SIERRA</td><td>A Touching Saga of a Hunter And a Butler who must Discover a Butler in A Jet Boat</td><td>2006</td><td>1</td><td></td><td>6</td><td>4.99</td><td>62</td><td>28.99</td><td>PG-13</td><td>Trailers,Deleted Scenes</td><td>2006-02-15 05:03:42.0</td></tr><tr bgcolor=\"#eeffee\"<td>8</td><td>AIRPORT POLLOCK</td><td>A Epic Tale of a Moose And a Girl who must Confront a Monkey in Ancient India</td><td>2006</td><td>1</td><td></td><td>6</td><td>4.99</td><td>54</td><td>15.99</td><td>R</td><td>Trailers</td><td>2006-02-15 05:03:42.0</td></tr><tr><td>9</td><td>ALABAMA DEVIL</td><td>A Thoughtful Panorama of a Database Administrator And a Mad Scientist who must Outgun a Mad Scientist in A Jet Boat</td><td>2006</td><td>1</td><td></td><td>3</td><td>2.99</td><td>114</td><td>21.99</td><td>PG-13</td><td>Trailers,Deleted Scenes</td><td>2006-02-15 05:03:42.0</td></tr><tr bgcolor=\"#eeffee\"<td>10</td><td>ALADDIN CALENDAR</td><td>A Action-Packed Tale of a Man And a Lumberjack who must Reach a Feminist in Ancient China</td><td>2006</td><td>1</td><td></td><td>6</td><td>4.99</td><td>63</td><td>24.99</td><td>NC-17</td><td>Trailers,Deleted Scenes</td><td>2006-02-15 05:03:42.0</td></tr></table></body></html>");
+//					formattedContentLabel.setText(
+//					// "<!DOCTYPE html>\r\n"
+//					"<html>\r\n"
+//					+ "<head>\r\n"
+//					+ "<meta charset=\"UTF-8\"/>\r\n"
+//					+ "</head>\r\n"
+//					+ "<body>\r\n"
+//					+ "<table><tr><td>5</td><td>AFRICAN EGG</td><td>A Fast-Paced Documentary of a Pastry Chef And a Dentist who must Pursue a Forensic Psychologist in The Gulf of Mexico</td><td>2006</td><td>1</td><td></td><td>6</td><td>2.99</td><td>130</td><td>22.99</td><td>G</td><td>Deleted Scenes</td><td>2006-02-15 05:03:42.0</td></tr><tr bgcolor=\"#eeffee\"<td>6</td><td>AGENT TRUMAN</td><td>A Intrepid Panorama of a Robot And a Boy who must Escape a Sumo Wrestler in Ancient China</td><td>2006</td><td>1</td><td></td><td>3</td><td>2.99</td><td>169</td><td>17.99</td><td>PG</td><td>Deleted Scenes</td><td>2006-02-15 05:03:42.0</td></tr><tr><td>7</td><td>AIRPLANE SIERRA</td><td>A Touching Saga of a Hunter And a Butler who must Discover a Butler in A Jet Boat</td><td>2006</td><td>1</td><td></td><td>6</td><td>4.99</td><td>62</td><td>28.99</td><td>PG-13</td><td>Trailers,Deleted Scenes</td><td>2006-02-15 05:03:42.0</td></tr><tr bgcolor=\"#eeffee\"<td>8</td><td>AIRPORT POLLOCK</td><td>A Epic Tale of a Moose And a Girl who must Confront a Monkey in Ancient India</td><td>2006</td><td>1</td><td></td><td>6</td><td>4.99</td><td>54</td><td>15.99</td><td>R</td><td>Trailers</td><td>2006-02-15 05:03:42.0</td></tr><tr><td>9</td><td>ALABAMA DEVIL</td><td>A Thoughtful Panorama of a Database Administrator And a Mad Scientist who must Outgun a Mad Scientist in A Jet Boat</td><td>2006</td><td>1</td><td></td><td>3</td><td>2.99</td><td>114</td><td>21.99</td><td>PG-13</td><td>Trailers,Deleted Scenes</td><td>2006-02-15 05:03:42.0</td></tr><tr bgcolor=\"#eeffee\"<td>10</td><td>ALADDIN CALENDAR</td><td>A Action-Packed Tale of a Man And a Lumberjack who must Reach a Feminist in Ancient China</td><td>2006</td><td>1</td><td></td><td>6</td><td>4.99</td><td>63</td><td>24.99</td><td>NC-17</td><td>Trailers,Deleted Scenes</td><td>2006-02-15 05:03:42.0</td></tr></table></body></html>");
 				}
 				((CardLayout) previewPanel.getLayout()).show(previewPanel, formattedCheckBox.isSelected()? "formatted" : "plain");
 			});
@@ -404,6 +458,10 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 	private ExtendetCopyPanel() {
         initComponents();
         maximizeButton.setIcon(maximizeIcon);
+        selectAllButton.setIcon(selectIcon);
+        copyButton.setIcon(copyIcon);
+        closeCloseButton.setIcon(cancelIcon);
+        copyCloseButton.setIcon(copyCloseIcon);
 	}
 
     /**
@@ -421,6 +479,7 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         contentTable = new javax.swing.JTable();
         jLabel1 = new javax.swing.JLabel();
         jToolBar1 = new javax.swing.JToolBar();
+        selectAllButton = new javax.swing.JButton();
         maximizeButton = new javax.swing.JToggleButton();
         jPanel2 = new javax.swing.JPanel();
         previewPanel = new javax.swing.JPanel();
@@ -431,9 +490,17 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         jPanel4 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         panel = new javax.swing.JPanel();
+        copyCloseButton = new javax.swing.JButton();
+        closeCloseButton = new javax.swing.JButton();
+        copyButton = new javax.swing.JButton();
+        jPanel5 = new javax.swing.JPanel();
         controlsPanel = new javax.swing.JPanel();
         formattedCheckBox = new javax.swing.JCheckBox();
-        copyCloseButton = new javax.swing.JButton();
+        controlsPanel2 = new javax.swing.JPanel();
+        alignedCheckBox = new javax.swing.JCheckBox();
+        coloredCheckBox = new javax.swing.JCheckBox();
+        jPanel6 = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -480,6 +547,17 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         jToolBar1.setFloatable(false);
         jToolBar1.setRollover(true);
 
+        selectAllButton.setText("Select all");
+        selectAllButton.setFocusable(false);
+        selectAllButton.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        selectAllButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        selectAllButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectAllButtonActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(selectAllButton);
+
         maximizeButton.setText("Maximize");
         maximizeButton.setToolTipText("Maximize size of dialog");
         maximizeButton.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
@@ -515,6 +593,7 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel3.add(formattedContentLabel, gridBagConstraints);
 
         jPanel4.setLayout(null);
@@ -537,13 +616,13 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         jPanel2.add(previewPanel, gridBagConstraints);
 
-        jLabel2.setFont(jLabel2.getFont().deriveFont(jLabel2.getFont().getSize()+2f));
+        jLabel2.setFont(jLabel2.getFont().deriveFont(jLabel2.getFont().getSize()+4f));
         jLabel2.setText("Preview");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(2, 4, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(2, 4, 4, 0);
         jPanel2.add(jLabel2, gridBagConstraints);
 
         jSplitPane1.setRightComponent(jPanel2);
@@ -558,7 +637,48 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 
         panel.setLayout(new java.awt.GridBagLayout());
 
-        controlsPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 5, 0));
+        copyCloseButton.setText("Copy and CLose");
+        copyCloseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                copyCloseButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 4);
+        panel.add(copyCloseButton, gridBagConstraints);
+
+        closeCloseButton.setText("CLose");
+        closeCloseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                closeCloseButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 6;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 4);
+        panel.add(closeCloseButton, gridBagConstraints);
+
+        copyButton.setText("Copy to Clipboard");
+        copyButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                copyButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 4);
+        panel.add(copyButton, gridBagConstraints);
+
+        jPanel5.setLayout(new java.awt.GridBagLayout());
+
+        controlsPanel.setLayout(new java.awt.GridBagLayout());
 
         formattedCheckBox.setSelected(true);
         formattedCheckBox.setText("Formatted");
@@ -567,28 +687,67 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
                 formattedCheckBoxActionPerformed(evt);
             }
         });
-        controlsPanel.add(formattedCheckBox);
+        controlsPanel.add(formattedCheckBox, new java.awt.GridBagConstraints());
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        panel.add(controlsPanel, gridBagConstraints);
+        jPanel5.add(controlsPanel, gridBagConstraints);
 
-        copyCloseButton.setText("Copy and CLose");
+        controlsPanel2.setLayout(new java.awt.GridBagLayout());
+
+        alignedCheckBox.setSelected(true);
+        alignedCheckBox.setText("Aligned");
+        alignedCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                alignedCheckBoxActionPerformed(evt);
+            }
+        });
+        controlsPanel2.add(alignedCheckBox, new java.awt.GridBagConstraints());
+
+        coloredCheckBox.setSelected(true);
+        coloredCheckBox.setText("Colored");
+        coloredCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                coloredCheckBoxActionPerformed(evt);
+            }
+        });
+        controlsPanel2.add(coloredCheckBox, new java.awt.GridBagConstraints());
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        jPanel5.add(controlsPanel2, gridBagConstraints);
+
+        jPanel6.setLayout(new java.awt.GridBagLayout());
+
+        jLabel3.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        jPanel6.add(jLabel3, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        jPanel5.add(jPanel6, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 2);
-        panel.add(copyCloseButton, gridBagConstraints);
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 16);
+        panel.add(jPanel5, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 1, 0);
         add(panel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
@@ -627,20 +786,129 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         updatePreview();
     }//GEN-LAST:event_formattedCheckBoxActionPerformed
 
+    private void alignedCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_alignedCheckBoxActionPerformed
+    	updatePreview();
+    }//GEN-LAST:event_alignedCheckBoxActionPerformed
+
+    private void coloredCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_coloredCheckBoxActionPerformed
+    	updatePreview();
+    }//GEN-LAST:event_coloredCheckBoxActionPerformed
+
+    private void selectAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectAllButtonActionPerformed
+        try {
+        	UIUtil.setWaitCursor(this);
+        	contentTable.selectAll();
+        } finally {
+        	UIUtil.resetWaitCursor(this);
+        }
+    }//GEN-LAST:event_selectAllButtonActionPerformed
+
+    private void copyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_copyButtonActionPerformed
+    	copyToClipboard(this);
+    }//GEN-LAST:event_copyButtonActionPerformed
+
+    private void copyCloseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_copyCloseButtonActionPerformed
+    	copyToClipboard(this);
+    	Window window = SwingUtilities.getWindowAncestor(this);
+    	window.setVisible(false);
+    	window.dispose();
+    }//GEN-LAST:event_copyCloseButtonActionPerformed
+
+    private void closeCloseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeCloseButtonActionPerformed
+    	Window window = SwingUtilities.getWindowAncestor(this);
+    	window.setVisible(false);
+    	window.dispose();
+    }//GEN-LAST:event_closeCloseButtonActionPerformed
+
+    private void copyToClipboard(Component cursorSubject) {
+    	try {
+    		UIUtil.setWaitCursor(cursorSubject);
+    		String html = null;
+    		if (formattedCheckBox.isSelected()) {
+	    		html = tabContentPanel.getHTMLContent(contentTable, alignedCheckBox.isSelected(), coloredCheckBox.isSelected(), Integer.MAX_VALUE, Integer.MAX_VALUE);
+				html = html.replaceFirst("<html>", "<!DOCTYPE html>\n"
+					+ "<html>\n"
+					+ "<head>\n"
+					+ "<meta charset=\"UTF-8\"/>\n"
+					+ "</head>\n");
+    		}
+    		HtmlSelection htmlSelection = new HtmlSelection(html, tabContentPanel.getPlainContent(contentTable, alignedCheckBox.isSelected(), coloredCheckBox.isSelected(), Integer.MAX_VALUE, Integer.MAX_VALUE));
+		    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+		    clipboard.setContents(htmlSelection, htmlSelection);
+    	} finally {
+    		UIUtil.resetWaitCursor(cursorSubject);
+    	}
+	}
+
+    private static class HtmlSelection implements Transferable, ClipboardOwner {
+	
+	    private List<DataFlavor> htmlFlavors = new ArrayList<>(3);
+	    private DataFlavor htmlDataFlavor;
+	    
+	    private String html;
+	    private String plainText;
+	
+	    public HtmlSelection(String html, String plainText) {
+	        this.html = html;
+	        this.plainText = plainText;
+	        try {
+	        	if (plainText != null) {
+	        		htmlFlavors.add(DataFlavor.stringFlavor);
+	        	}
+	        	if (html != null) {
+		        	htmlFlavors.add(htmlDataFlavor = new DataFlavor("text/html;charset=unicode;class=java.lang.String"));
+	        	}
+			} catch (ClassNotFoundException e) {
+				LogUtil.warn(e);
+			}
+	    }
+	
+	    public DataFlavor[] getTransferDataFlavors() {
+	        return (DataFlavor[]) htmlFlavors.toArray(new DataFlavor[htmlFlavors.size()]);
+	    }
+	
+	    public boolean isDataFlavorSupported(DataFlavor flavor) {
+	        return htmlFlavors.contains(flavor);
+	    }
+	
+	    public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
+	
+	        String toBeExported = plainText;
+	        if (flavor == htmlDataFlavor) {
+	            toBeExported = html;
+	        }
+	
+	        if (String.class.equals(flavor.getRepresentationClass())) {
+	            return toBeExported;
+	        }
+	        throw new UnsupportedFlavorException(flavor);
+	    }
+	
+	    public void lostOwnership(Clipboard clipboard, Transferable contents) {
+	    }
+	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox alignedCheckBox;
+    private javax.swing.JButton closeCloseButton;
+    private javax.swing.JCheckBox coloredCheckBox;
     private javax.swing.JTable contentTable;
     private javax.swing.JPanel controlsPanel;
+    private javax.swing.JPanel controlsPanel2;
+    private javax.swing.JButton copyButton;
     private javax.swing.JButton copyCloseButton;
     private javax.swing.JCheckBox formattedCheckBox;
     private javax.swing.JLabel formattedContentLabel;
     private javax.swing.JScrollPane formattedScrollPane;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JToolBar jToolBar1;
@@ -648,14 +916,24 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
     private javax.swing.JPanel panel;
     private javax.swing.JPanel plainPanel;
     private javax.swing.JPanel previewPanel;
+    private javax.swing.JButton selectAllButton;
     // End of variables declaration//GEN-END:variables
     
 	private static ImageIcon maximizeIcon;
 	private static ImageIcon unmaximizeIcon;
+	private static ImageIcon selectIcon;
+	private static ImageIcon copyIcon;
+	private static ImageIcon cancelIcon;
+	private static ImageIcon copyCloseIcon;
+	
 	static {
 		// load images
 		maximizeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/maximizec.png"));
 		unmaximizeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/unmaximize.png"));
+		selectIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/select.png"));
+        copyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/copy.png"));
+        copyCloseIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/copyclose.png"));
+        cancelIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/buttoncancel.png"));
 	}
 	
 }

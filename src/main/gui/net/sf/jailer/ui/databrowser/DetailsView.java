@@ -1188,7 +1188,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 				null,
 				null,
 				cTypes,
-				false) {
+				false, false) {
 			{ forDetailsView = true; }
 		};
 		

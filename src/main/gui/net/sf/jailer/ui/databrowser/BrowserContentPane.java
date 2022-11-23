@@ -1344,13 +1344,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				JTable tab = rowsTable;
-				UIUtil.copyToClipboard(tab, copyAllColumns());
 				List<Integer> types = new ArrayList<Integer>();
-				for (int t: browserContentCellEditor.getColumnTypes()) {
-					types.add(t);
+				if (tab == rowsTable) {
+					for (int t: browserContentCellEditor.getColumnTypes()) {
+						types.add(t);
+					}
 				}
-				// TODO
-//				ExtendetCopyPanel.openDialog(tab, copyAllColumns(), "?no-name?", types);
+				ExtendetCopyPanel.openDialog(tab, copyAllColumns(), "?no-name?", types, false, true);
 			}
 		};
 		am.put(key, a);
@@ -1362,14 +1362,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				JTable tab = rowsTable;
-				// TODO
 				List<Integer> types = new ArrayList<Integer>();
 				if (tab == rowsTable) {
 					for (int t: browserContentCellEditor.getColumnTypes()) {
 						types.add(t);
 					}
 				}
-				ExtendetCopyPanel.openDialog(tab, copyAllColumns(), "?no-name?", types, false);
+				ExtendetCopyPanel.openDialog(tab, copyAllColumns(), "?no-name?", types, false, false);
 			}
 		};
 		am.put(key, a);
@@ -8029,5 +8028,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
      	menuIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/menu.png"));
      	allDotIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/alldot.gif"));
 	}
+	
+	// TODO
+	// TODO "selectAll" of large rowsTable is too slow
 
 }

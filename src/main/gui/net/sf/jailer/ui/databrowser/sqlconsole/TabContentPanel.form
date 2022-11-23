@@ -347,7 +347,7 @@
                     <Component class="javax.swing.JCheckBox" name="headerCheckBox">
                       <Properties>
                         <Property name="selected" type="boolean" value="true"/>
-                        <Property name="text" type="java.lang.String" value="Include Column Names"/>
+                        <Property name="text" type="java.lang.String" value="Column Names"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="headerCheckBoxActionPerformed"/>
@@ -379,7 +379,7 @@
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="rotateCheckBox">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Rotate"/>
+                        <Property name="text" type="java.lang.String" value="Rotated"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="rotateCheckBoxActionPerformed"/>

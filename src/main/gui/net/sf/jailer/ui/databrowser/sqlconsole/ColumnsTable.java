@@ -198,9 +198,14 @@ public class ColumnsTable extends JTable {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JTable tab = rowsTable.isShowing()? rowsTable : ColumnsTable.this;
-				// TODO
-				UIUtil.copyToClipboard(tab, true); // TODO weg
+				JTable tab = ColumnsTable.this;
+				List<Integer> types = new ArrayList<Integer>();
+				if (rb != null && rb.browserContentCellEditor != null) {
+					for (int type: rb.browserContentCellEditor.getColumnTypes()) {
+						types.add(type);
+					}
+				}
+				ExtendetCopyPanel.openDialog(tab, false, "?no-name?", types, true, true);
 			}
 		};
 		am.put(key, a);
@@ -212,14 +217,13 @@ public class ColumnsTable extends JTable {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				JTable tab = ColumnsTable.this;
-				// TODO
 				List<Integer> types = new ArrayList<Integer>();
 				if (rb != null && rb.browserContentCellEditor != null) {
 					for (int type: rb.browserContentCellEditor.getColumnTypes()) {
 						types.add(type);
 					}
 				}
-				ExtendetCopyPanel.openDialog(tab, false, "?no-name?", types, true);
+				ExtendetCopyPanel.openDialog(tab, false, "?no-name?", types, true, false);
 			}
 		};
 		am.put(key, a);
@@ -597,7 +601,7 @@ public class ColumnsTable extends JTable {
 						g2d.setColor(new Color(0, 0, 200, 100));
 						g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(),
 								stroke.getMiterLimit(), new float[] { 11f, 5f },
-								(float) ((System.currentTimeMillis() / 50.0 * 1.1) % 16))); // TODO
+								(float) ((System.currentTimeMillis() / 50.0 * 1.1) % 16)));
 						g2d.drawRoundRect(x[0], y[0], x[1] - x[0], y[1] - y[0] - 1, 8, 8);
 					}
 				}

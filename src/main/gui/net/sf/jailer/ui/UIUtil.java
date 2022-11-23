@@ -35,11 +35,6 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.ClipboardOwner;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -103,9 +98,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
-import javax.swing.JTable;
 import javax.swing.KeyStroke;
-import javax.swing.RowSorter;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
@@ -113,8 +106,6 @@ import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.WindowConstants;
 import javax.swing.border.Border;
 import javax.swing.plaf.BorderUIResource;
-import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableModel;
 import javax.swing.text.DefaultEditorKit;
 
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
@@ -136,7 +127,6 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ddl.DDLCreator;
 import net.sf.jailer.progress.ProgressListener;
 import net.sf.jailer.subsetting.RowLimitExceededException;
-import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
 import net.sf.jailer.ui.databrowser.DetailsView;
 import net.sf.jailer.ui.databrowser.Row;
 import net.sf.jailer.ui.scrollmenu.JScrollC2PopupMenu;
@@ -1348,129 +1338,6 @@ public class UIUtil {
 	
 	public static String LINE_SEPARATOR = System.getProperty("line.separator", "\n");
 
-	/**
-	 * Copies selected cells of a rows table into the clipboard.
-	 *
-	 * @param table the table
-	 */
-	public static void copyToClipboard(JTable table, boolean lineOnSingeCell) {
-		String nl = System.getProperty("line.separator", "\n");
-		StringBuilder sb = new StringBuilder();
-		StringBuilder htmlText = new StringBuilder("<!DOCTYPE html>\n"
-				+ "<html>\n"
-				+ "<head>\n"
-				+ "<meta charset=\"UTF-8\"/>\n"
-				+ "</head>\n"
-				+ "<body>\n"
-				+ "<table>");
-		boolean prepNL = table.getSelectedRows().length > 1;
-		int[] selectedColumns = table.getSelectedColumns();
-		if (lineOnSingeCell) {
-			prepNL = true;
-			selectedColumns = new int[table.getColumnCount()];
-			for (int i = 0; i < selectedColumns.length; ++i) {
-				selectedColumns[i] = i;
-			}
-		}
-		RowSorter<? extends TableModel> rowSorter = table.getRowSorter();
-		TableColumnModel columnModel = table.getColumnModel();
-		boolean firstLine = true;
-		int rowNum = 0;
-		for (int row: table.getSelectedRows()) {
-			if (!firstLine) {
-				sb.append(nl);
-			}
-			htmlText.append(rowNum % 2 == 0? "<tr>" : "<tr bgcolor=\"#eeffee\"");
-			++rowNum;
-			boolean f = true;
-			for (int col: selectedColumns) {
-				Object value = table.getModel().getValueAt(
-						rowSorter == null? row : rowSorter.convertRowIndexToModel(row),
-						columnModel.getColumn(col).getModelIndex());
-				if (value instanceof Row) {
-					Object[] values = ((Row) value).values;
-					for (Object v: values) {
-						if (v instanceof TableModelItem) {
-							v = ((TableModelItem) v).value;
-						}
-						if (!f) {
-							sb.append("\t");
-						}
-						f = false;
-						sb.append(v == NULL || v == null? "" : v);
-						htmlText.append("<td>" + (v == NULL || v == null? "" : toHTMLFragment(v.toString(), -1, true, false)) + "</td>");	
-					}
-				} else {
-					if (value instanceof TableModelItem) {
-						value = ((TableModelItem) value).value;
-					}
-					if (!f) {
-						sb.append("\t");
-					}
-					f = false;
-					sb.append(value == NULL || value == null? "" : value);
-					htmlText.append("<td>" + (value == NULL || value == null? "" : toHTMLFragment(value.toString(), -1, true, false)) + "</td>");	
-				}
-			}
-			htmlText.append("</tr>");
-			firstLine = false;
-		}
-		if (prepNL) {
-			sb.append(nl);
-		}
-		htmlText.append("</table></body></html>");
-		HtmlSelection htmlSelection = new HtmlSelection(htmlText.toString(), sb.toString());
-        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        clipboard.setContents(htmlSelection, htmlSelection);
-    }
-
-    private static class HtmlSelection implements Transferable, ClipboardOwner {
-
-        private List<DataFlavor> htmlFlavors = new ArrayList<>(3);
-        private DataFlavor htmlDataFlavor;
-        
-        {
-            try {
-            	htmlFlavors.add(DataFlavor.stringFlavor);
-				htmlFlavors.add(htmlDataFlavor = new DataFlavor("text/html;charset=unicode;class=java.lang.String"));
-			} catch (ClassNotFoundException e) {
-				LogUtil.warn(e);
-			}
-        }
-
-        private String html;
-        private String plainText;
-
-        public HtmlSelection(String html, String plainText) {
-            this.html = html;
-            this.plainText = plainText;
-        }
-
-        public DataFlavor[] getTransferDataFlavors() {
-            return (DataFlavor[]) htmlFlavors.toArray(new DataFlavor[htmlFlavors.size()]);
-        }
-
-        public boolean isDataFlavorSupported(DataFlavor flavor) {
-            return htmlFlavors.contains(flavor);
-        }
-
-        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
-
-            String toBeExported = plainText;
-            if (flavor == htmlDataFlavor) {
-                toBeExported = html;
-            }
-
-            if (String.class.equals(flavor.getRepresentationClass())) {
-                return toBeExported;
-            }
-            throw new UnsupportedFlavorException(flavor);
-        }
-
-        public void lostOwnership(Clipboard clipboard, Transferable contents) {
-        }
-    }
-    
 	/**
 	 * Pair of Icon and Text.
 	 */
