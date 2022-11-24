@@ -1,3 +1,8 @@
+12.8.2
+  - The new "Extended Copy" feature allows table data to be copied in a variety of ways,
+    both as plain text and as formatted text.
+  - Some improvements to the user interface of the data browser.
+
 12.8.1
   - The new Extraction Model Wizzard simplifies the creation of new models.
   - Feature "HTML Renderer - Fetch Database Comments #97".
