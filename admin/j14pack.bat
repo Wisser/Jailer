@@ -73,7 +73,7 @@ for /f "tokens=*" %%f in ('dir /b c:\tmp\_\jdbc_lib\*') do (
 cd c:\tmp\_
 echo "" > .singleuser
 
-jlink --add-modules ALL-MODULE-PATH --output jre%version% 
+jlink --add-modules java.se --output jre%version% 
 jpackage --name "Jailer Database Tools" --input . --main-jar jailer.jar --type msi --icon jailer.ico --win-menu --win-menu-group Jailer --vendor Wisser --app-version %version% --win-upgrade-uuid d636b4ee-6f10-451e-bf57-c89656780e22 --runtime-image jre%version%
 
 move *.msi C:\Users\ralfw\tmp\"Jailer-database-tools-%version%.msi"
