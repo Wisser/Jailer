@@ -632,7 +632,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 							}
 							if (incHeader && ((rotate ^ columnNamesInFirstRow)? (x == 0) : (y == 0))) {
 								if (colored) {
-									sb.append(" bgcolor=\"#eeeeff\""); // TODO
+									sb.append(" bgcolor=\"#eeeeff\"");
 								}
 							} else {
 								if (colored) {

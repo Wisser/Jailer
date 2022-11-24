@@ -1309,8 +1309,6 @@ public class UIUtil {
 	 */
 	public static final Color TABLE_BACKGROUND_COLOR_2 = new Color(255, 255, 255);
 
-	// TODO
-	// TODO check
 	/**
 	 * Background color of selected even table rows.
 	 */
