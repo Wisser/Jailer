@@ -185,7 +185,6 @@ import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
-import sun.awt.www.content.image.jpeg;
 
 /**
  * SQL Console.
