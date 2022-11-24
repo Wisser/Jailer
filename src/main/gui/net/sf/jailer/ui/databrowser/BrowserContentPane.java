@@ -8028,8 +8028,5 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
      	menuIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/menu.png"));
      	allDotIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/alldot.gif"));
 	}
-	
-	// TODO
-	// TODO "selectAll" of large rowsTable is too slow
 
 }
