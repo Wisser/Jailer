@@ -206,7 +206,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 		if (!silent && !explain && lastHeaderCheckBoxIsSelected != null) {
 			headerCheckBox.setSelected(lastHeaderCheckBoxIsSelected);
 		}
-		if (!silent && lastRotated != null) {
+		if (!silent && !explain && lastRotated != null) {
 			rotateCheckBox.setSelected(lastRotated);
 		}
 		
@@ -228,6 +228,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 			columnSeparatorLabel.setVisible(false);
 			headerCheckBox.setVisible(false);
 			copyCBButton.setVisible(false);
+			rotateCheckBox.setVisible(false);
 			columnSeparatorComboBox.setVisible(false);
 			// controlsContainer.setVisible(false);
 			rowsCount.setVisible(false);
@@ -442,10 +443,17 @@ public class TabContentPanel extends javax.swing.JPanel {
     	for (int y = 0; y < cell.length; ++y) {
 			cell[y] = columnNamesInFirstRow? (rotate? new String[sorter.getViewRowCount()] : new String[rDm.getColumnCount()]) : rotate? new String[sorter.getViewRowCount() + 1] : new String[rDm.getColumnCount()];
     	}
+    	int pSHX = -1;
     	int yCount = 0;
     	for (int y = 0; y < cell.length; ++y) {
     		if (yCount > maxRows) {
     			cell[y][0] = html? "Preview\nstops here..." : "Preview stops here...";
+    			if (pSHX > 0) {
+    				for (int x = 1; x < pSHX; ++x) {
+    					cell[y][x] = "";
+    				}
+    				cell[y][pSHX] = cell[y][0];
+    			}
     			break;
     		}
     		int xCount = 0;
@@ -531,10 +539,15 @@ public class TabContentPanel extends javax.swing.JPanel {
 				 ++xCount;
 				boolean stop = xCount > maxColumns;
 				if (stop) {
-					cellContent = yCount == 1? "Preview stops here..." : "";
+					if (yCount == 1) {
+						cellContent = "Preview stops here...";
+					} else {
+						cellContent = "";
+					}
 				}
 				cell[y][x] = cellContent;
 				maxLength[x] = Math.max(maxLineLength(cellContent), maxLength[x]);
+				pSHX = Math.max(pSHX, x);
 				if (stop) {
 					break;
 				}
@@ -638,7 +651,9 @@ public class TabContentPanel extends javax.swing.JPanel {
 						}
 					} else {
 						if (x < cell[y].length - 1) {
-							sb.append(" ");
+							if (sb.length() > sbLength) {
+								sb.append(" ");
+							}
 							if (rightAlign) {
 								for (int i = maxLength[x] - lastLineLength(cell[y][x]); i > 0; --i) {
 									sb.append(" ");
@@ -670,9 +685,13 @@ public class TabContentPanel extends javax.swing.JPanel {
 					sb.append(UIUtil.LINE_SEPARATOR);
 				}
 				if (y == 0 && sep == null && incHeader && !(rotate ^ columnNamesInFirstRow)) {
+					int o = 2;
 					for (int x = 0; x < cell[y].length; ++x) {
-						for (int i = 2 + maxLength[x]; i > 0; --i) {
-							sb.append("-");
+						if (maxLength[x] > 0) {
+							for (int i = 2 + maxLength[x]; i > o; --i) {
+								sb.append("-");
+							}
+							o = 0;
 						}
 					}
 					sb.append(UIUtil.LINE_SEPARATOR);

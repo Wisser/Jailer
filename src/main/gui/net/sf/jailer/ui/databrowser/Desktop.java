@@ -947,6 +947,8 @@ public abstract class Desktop extends JDesktopPane {
 				return Desktop.this;
 			}
 			
+			private boolean pendingUpdates = false;
+			
 			@Override
 			protected void findClosure(Row row) {
 				invalidateIFramesBuffers();
@@ -965,17 +967,23 @@ public abstract class Desktop extends JDesktopPane {
 					rowsClosure.parentPath.add(p.browserContentPane);
 				}
 				
-				try {
-					Set<BrowserContentPane> browserInClosure = new HashSet<BrowserContentPane>();
-					for (Pair<BrowserContentPane, Row> rid: rowsClosure.currentClosure) {
-						browserInClosure.add(rid.a);
-					}
-	
-					for (RowBrowser rb: tableBrowsers) {
-						rb.browserContentPane.updateRowsCountLabel(browserInClosure);
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
+				if (!pendingUpdates) {
+					pendingUpdates = true;
+					UIUtil.invokeLater(() -> {
+						pendingUpdates = false;
+						try {
+							Set<BrowserContentPane> browserInClosure = new HashSet<BrowserContentPane>();
+							for (Pair<BrowserContentPane, Row> rid: rowsClosure.currentClosure) {
+								browserInClosure.add(rid.a);
+							}
+			
+							for (RowBrowser rb: tableBrowsers) {
+								rb.browserContentPane.updateRowsCountLabel(browserInClosure);
+							}
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					});
 				}
 			}
 

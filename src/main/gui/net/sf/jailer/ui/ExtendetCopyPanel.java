@@ -86,13 +86,15 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 	private static Boolean lastAligned;
 	private static Boolean lastFormatted;
 	
+	private final boolean columnNamesInFirstRow;
+	
 	public static void openDialog(JTable jTable, boolean allColumnsSelected, String tableName, List<Integer> rowColumnTypes, boolean columnNamesInFirstRow, boolean silent) {
 		Window owner = SwingUtilities.getWindowAncestor(jTable);
 		JDialog window = new JDialog(owner, "Extended Copy");
 		window.setModal(false);
 		
 		window.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		ExtendetCopyPanel copyPanel = new ExtendetCopyPanel();
+		ExtendetCopyPanel copyPanel = new ExtendetCopyPanel(columnNamesInFirstRow);
 		copyPanel.initContentTable(jTable, allColumnsSelected, columnNamesInFirstRow);
 		
 		window.getContentPane().add(copyPanel);
@@ -282,6 +284,7 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 				TableColumn col = jTable.getColumnModel().getColumn(i);
 				contentTable.getColumnModel().getColumn(i).setModelIndex(col.getModelIndex());
 			}
+			dtm.setColumnIdentifiers(colNames);
 			contentTable.getSelectionModel();
 			for (int r: jTable.getSelectedRows()) {
 				contentTable.addRowSelectionInterval(r, r);
@@ -435,16 +438,14 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 				if (!formattedCheckBox.isSelected()) {
 					tabContentPanel.updateTextView(contentTable);
 				} else {
-					formattedContentLabel.setText(tabContentPanel.getHTMLContent(contentTable, alignedCheckBox.isSelected(), coloredCheckBox.isSelected(), 50, 80));
-					
-//					formattedContentLabel.setText(
-//					// "<!DOCTYPE html>\r\n"
-//					"<html>\r\n"
-//					+ "<head>\r\n"
-//					+ "<meta charset=\"UTF-8\"/>\r\n"
-//					+ "</head>\r\n"
-//					+ "<body>\r\n"
-//					+ "<table><tr><td>5</td><td>AFRICAN EGG</td><td>A Fast-Paced Documentary of a Pastry Chef And a Dentist who must Pursue a Forensic Psychologist in The Gulf of Mexico</td><td>2006</td><td>1</td><td></td><td>6</td><td>2.99</td><td>130</td><td>22.99</td><td>G</td><td>Deleted Scenes</td><td>2006-02-15 05:03:42.0</td></tr><tr bgcolor=\"#eeffee\"<td>6</td><td>AGENT TRUMAN</td><td>A Intrepid Panorama of a Robot And a Boy who must Escape a Sumo Wrestler in Ancient China</td><td>2006</td><td>1</td><td></td><td>3</td><td>2.99</td><td>169</td><td>17.99</td><td>PG</td><td>Deleted Scenes</td><td>2006-02-15 05:03:42.0</td></tr><tr><td>7</td><td>AIRPLANE SIERRA</td><td>A Touching Saga of a Hunter And a Butler who must Discover a Butler in A Jet Boat</td><td>2006</td><td>1</td><td></td><td>6</td><td>4.99</td><td>62</td><td>28.99</td><td>PG-13</td><td>Trailers,Deleted Scenes</td><td>2006-02-15 05:03:42.0</td></tr><tr bgcolor=\"#eeffee\"<td>8</td><td>AIRPORT POLLOCK</td><td>A Epic Tale of a Moose And a Girl who must Confront a Monkey in Ancient India</td><td>2006</td><td>1</td><td></td><td>6</td><td>4.99</td><td>54</td><td>15.99</td><td>R</td><td>Trailers</td><td>2006-02-15 05:03:42.0</td></tr><tr><td>9</td><td>ALABAMA DEVIL</td><td>A Thoughtful Panorama of a Database Administrator And a Mad Scientist who must Outgun a Mad Scientist in A Jet Boat</td><td>2006</td><td>1</td><td></td><td>3</td><td>2.99</td><td>114</td><td>21.99</td><td>PG-13</td><td>Trailers,Deleted Scenes</td><td>2006-02-15 05:03:42.0</td></tr><tr bgcolor=\"#eeffee\"<td>10</td><td>ALADDIN CALENDAR</td><td>A Action-Packed Tale of a Man And a Lumberjack who must Reach a Feminist in Ancient China</td><td>2006</td><td>1</td><td></td><td>6</td><td>4.99</td><td>63</td><td>24.99</td><td>NC-17</td><td>Trailers,Deleted Scenes</td><td>2006-02-15 05:03:42.0</td></tr></table></body></html>");
+					int cols = 1 + ((tabContentPanel.rotateCheckBox.isSelected()) ^ columnNamesInFirstRow? contentTable.getSelectedRows().length : contentTable.getSelectedColumnCount());
+					int maxColumns = 50;
+					int maxRows = 30;
+					if (maxColumns > cols) {
+						maxRows = (maxColumns * maxRows) / cols;
+						maxColumns = cols;
+					}
+					formattedContentLabel.setText(tabContentPanel.getHTMLContent(contentTable, alignedCheckBox.isSelected(), coloredCheckBox.isSelected(), maxColumns, maxRows));
 				}
 				((CardLayout) previewPanel.getLayout()).show(previewPanel, formattedCheckBox.isSelected()? "formatted" : "plain");
 			});
@@ -455,7 +456,8 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 	
     private TabContentPanel tabContentPanel;
     
-	private ExtendetCopyPanel() {
+	private ExtendetCopyPanel(boolean columnNamesInFirstRow) {
+		this.columnNamesInFirstRow = columnNamesInFirstRow;
         initComponents();
         maximizeButton.setIcon(maximizeIcon);
         selectAllButton.setIcon(selectIcon);
