@@ -237,6 +237,7 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
     	contentTable.setModel(dtm);
     	contentTable.setIntercellSpacing(new Dimension(0, 0));
     	contentTable.setAutoCreateRowSorter(true);
+    	contentTable.setAutoCreateColumnsFromModel(false);
     	contentTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
     	
     	for (int i = 0; i < colNames.length; ++i) {
