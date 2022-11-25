@@ -2099,10 +2099,12 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 					value = " ";
 				} else if (rc >= 1000000) {
 					value = String.format("%,1.1f M", (double) rc / 1000000.0);
-	     		} else if (rc >= 1000) {
-	     			value = String.format("%,1.1f K", (double) rc / 1000.0);
+					// TODO
+					// TODO render with different color
+//	     		} else if (rc >= 1000) {
+//	     			value = String.format("%,1.1f K", (double) rc / 1000.0);
 	     		} else {
-	     			value = rc.toString();
+	     			value = String.format("%,1.0f", (double) rc);
 	     		}
 	     		FontMetrics fontMetrics = getFontMetrics(getFont());
 				int x = visibleRect.width - fontMetrics.stringWidth(value) - 8;

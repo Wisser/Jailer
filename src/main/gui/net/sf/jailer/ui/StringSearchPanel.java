@@ -732,10 +732,10 @@ public class StringSearchPanel extends javax.swing.JPanel {
 								countAsString = " ";
 							} else if (count >= 1000000) {
 								countAsString = String.format("%,1.1f M", (double) count / 1000000.0);
-				     		} else if (count >= 1000) {
-				     			countAsString = String.format("%,1.1f K", (double) count / 1000.0);
+								// TODO
+								// TODO render with different color
 				     		} else {
-				     			countAsString = count.toString();
+				     			countAsString = String.format("%,1.0f", (double) count);
 				     		}
 				     		
 							cl = new JLabel(" " + countAsString + "  ");
