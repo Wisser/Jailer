@@ -237,6 +237,11 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
     	contentTable.setModel(dtm);
     	contentTable.setIntercellSpacing(new Dimension(0, 0));
     	contentTable.setAutoCreateRowSorter(true);
+    	
+    	// TODO
+    	// TODO still doesn't work after "sort columns alphab.", Preview uses wrong column names
+    	
+    	
     	contentTable.setAutoCreateColumnsFromModel(false);
     	contentTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
     	
