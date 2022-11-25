@@ -443,11 +443,16 @@ public class TabContentPanel extends javax.swing.JPanel {
     	for (int y = 0; y < cell.length; ++y) {
 			cell[y] = columnNamesInFirstRow? (rotate? new String[sorter.getViewRowCount()] : new String[rDm.getColumnCount()]) : rotate? new String[sorter.getViewRowCount() + 1] : new String[rDm.getColumnCount()];
     	}
-    	int pSHX = -1;
+    	int pSHX = -1; // TODO remove, see above
     	int yCount = 0;
     	for (int y = 0; y < cell.length; ++y) {
     		if (yCount > maxRows) {
     			cell[y][0] = html? "Preview\nstops here..." : "Preview stops here...";
+    			
+    			// TODO
+    			// TODO don't "render" something here. Tell caller, that row/column limit exceeded and let him render this
+    			
+    			
     			if (pSHX > 0) {
     				for (int x = 1; x < pSHX; ++x) {
     					cell[y][x] = "";
@@ -539,6 +544,8 @@ public class TabContentPanel extends javax.swing.JPanel {
 				 ++xCount;
 				boolean stop = xCount > maxColumns;
 				if (stop) {
+	    			// TODO
+	    			// TODO dont "render" something here. Tell caller, that row/column limit exceeded and let him render this
 					if (yCount == 1) {
 						cellContent = "Preview stops here...";
 					} else {
@@ -547,7 +554,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 				}
 				cell[y][x] = cellContent;
 				maxLength[x] = Math.max(maxLineLength(cellContent), maxLength[x]);
-				pSHX = Math.max(pSHX, x);
+				pSHX = Math.max(pSHX, x); // TODO see up
 				if (stop) {
 					break;
 				}

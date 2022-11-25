@@ -65,7 +65,6 @@ import net.sf.jailer.ui.ExtendetCopyPanel;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
 import net.sf.jailer.ui.databrowser.Row;
-import net.sf.jailer.ui.util.FixedColumnTable;
 import net.sf.jailer.util.Pair;
 
 /**
@@ -609,4 +608,7 @@ public class ColumnsTable extends JTable {
 		}
 	}
 
+	// TODO
+	// TODO shortcut Cntrl-c also for ColumnTabTable (see FixedColumnTable)
+	
 }

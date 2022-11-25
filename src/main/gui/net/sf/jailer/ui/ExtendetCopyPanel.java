@@ -938,4 +938,13 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         cancelIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/buttoncancel.png"));
 	}
 	
+	// TODO
+	// TODO formatted text:
+	//           - more options:
+	//             - padding (0-12, "none")
+	//       (important to allow "pure" html table without any rendering attributes)
+	//        "none" is 3 internally (current default), but nothing externally.
+	
+	// TODO offer other flavors: JSON, XML, ...
+	
 }

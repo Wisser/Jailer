@@ -148,7 +148,11 @@ public class ResultSetRenderer extends javax.swing.JPanel {
             rowsTableScrollPane.setWheelScrollingEnabled(true);
             statusPanel.setVisible(false);
     	}
-        @Override
+    	@Override
+		protected double getAnimationFactor() {
+			return 0.0;
+		}
+		@Override
         protected int getReloadLimit() {
         	if (limit == null) {
         		return Integer.MAX_VALUE;

@@ -5822,5 +5822,9 @@ public class DataBrowser extends javax.swing.JFrame {
 		tbZoomInIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/tb_zoomin.png"));
 		tbZoomOutIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/tb_zoomout.png"));
 	}
+	
+	// TODO
+	// TODO row-counts in NavTree/StringSearch/MetaDataTree: right aligned number, left aligned K/M/G-row
+	// TODO no "K", "000" instead (M/G in other color?)
 
 }
