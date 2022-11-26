@@ -5713,14 +5713,16 @@ public class DataBrowser extends javax.swing.JFrame {
 			Long rc = mdTable.getEstimatedRowCount();
 			if (rc != null) {
 				String value;
+				Color fg = new Color(0, 80, 200);
+				
 				if (rc == 0) {
 					value = " ";
+				} else if (rc >= 1000000000) {
+					value = String.format("%,1.1f G", (double) rc / 1000000000.0);
+					fg = new Color(150, 0, 100);
 				} else if (rc >= 1000000) {
 					value = String.format("%,1.1f M", (double) rc / 1000000.0);
-					// TODO
-					// TODO render with different color
-//	     		} else if (rc >= 1000) {
-//	     			value = String.format("%,1.1f K", (double) rc / 1000.0);
+					fg = new Color(0, 0, 150);
 	     		} else {
 	     			value = String.format("%,1.0f", (double) rc);
 	     		}
@@ -5730,7 +5732,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				g.setFont(getFont());
 				g.setColor(new Color(255, 255, 255));
 				g.fillRect(x - 8, y - fontMetrics.getHeight() + 2, visibleRect.width - x + 9 + ow, fontMetrics.getHeight() + 2 + oh);
-				g.setColor(new Color(0, 0, 255));
+				g.setColor(fg);
 				g.drawString(value, x, y);
 			}
 		});
@@ -5824,9 +5826,5 @@ public class DataBrowser extends javax.swing.JFrame {
 		tbZoomInIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/tb_zoomin.png"));
 		tbZoomOutIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/tb_zoomout.png"));
 	}
-	
-	// TODO
-	// TODO row-counts in NavTree/StringSearch/MetaDataTree: right aligned number, left aligned K/M/G-row
-	// TODO no "K", "000" instead (M/G in other color?)
 
 }

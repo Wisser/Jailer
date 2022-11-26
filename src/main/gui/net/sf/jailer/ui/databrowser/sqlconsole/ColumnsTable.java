@@ -45,7 +45,6 @@ import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JLabel;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
@@ -402,15 +401,6 @@ public class ColumnsTable extends JTable {
 		} else {
 			return null;
 		}
-		JMenuItem copyTCB = null; // new JMenuItem("Copy to Clipboard");
-//		// copyTCB.setAccelerator(KS_COPY_TO_CLIPBOARD);
-//		copyTCB.setEnabled(getSelectedColumnCount() > 0);
-//		copyTCB.addActionListener(new ActionListener() {
-//			@Override
-//			public void actionPerformed(ActionEvent e) {
-//				UIUtil.copyToClipboard(ColumnsTable.this, false);
-//			}
-//		});
 		Point p = new Point(e.getX(), e.getY());
 		SwingUtilities.convertPointToScreen(p, this);
 		return rb.createPopupMenu(this, row, i, (int) p.getX(), (int) p.getY(), false, copyAction, ecopyAction, new Runnable() {
@@ -520,8 +510,19 @@ public class ColumnsTable extends JTable {
 					fixed.repaint();
 				}
 				repaint();
+				ColumnsTable.this.setRowSelectionInterval(currentRow, currentRow);
+				ColumnsTable.this.setColumnSelectionInterval(0, ColumnsTable.this.getColumnCount() - 1);
 			}
 		});
+		InputMap im = fixed.getInputMap();
+		Object key = "copyClipboard";
+		im.put(KS_COPY_TO_CLIPBOARD, key);
+		ActionMap am = fixed.getActionMap();
+		am.put(key, copyAction);
+		key = "ecopyClipboard";
+		im.put(KS_ECOPY_TO_CLIPBOARD, key);
+		am = fixed.getActionMap();
+		am.put(key, ecopyAction);
 	}
 	
 	public void clear() {
@@ -608,7 +609,4 @@ public class ColumnsTable extends JTable {
 		}
 	}
 
-	// TODO
-	// TODO shortcut Cntrl-c also for ColumnTabTable (see FixedColumnTable)
-	
 }

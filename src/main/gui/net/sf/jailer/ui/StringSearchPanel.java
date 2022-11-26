@@ -726,20 +726,23 @@ public class StringSearchPanel extends javax.swing.JPanel {
 							gbc.weightx = 0;
 							gbc.fill = GridBagConstraints.NONE;
 							gbc.anchor = GridBagConstraints.EAST;
-							
+									
 							String countAsString;
+							Color fg = new Color(0, 80, 200);
 							if (count == 0) {
 								countAsString = " ";
+							} else if (count >= 1000000000) {
+								countAsString = String.format("%,1.1f G", (double) count / 1000000000.0);
+								fg = new Color(150, 0, 100);
 							} else if (count >= 1000000) {
 								countAsString = String.format("%,1.1f M", (double) count / 1000000.0);
-								// TODO
-								// TODO render with different color
-				     		} else {
+								fg = new Color(0, 0, 150);
+							} else {
 				     			countAsString = String.format("%,1.0f", (double) count);
 				     		}
 				     		
 							cl = new JLabel(" " + countAsString + "  ");
-							cl.setForeground(lightCounters? new Color(160, 130, 100) : new Color(0, 130, 0));
+							cl.setForeground(lightCounters? new Color(160, 130, 100) : fg);
 							panel.add(cl, gbc);
 						}
 						panel.setOpaque(false);
