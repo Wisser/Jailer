@@ -22,6 +22,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -40,11 +41,15 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JDialog;
@@ -85,8 +90,7 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 	private static Boolean lastColored;
 	private static Boolean lastAligned;
 	private static Boolean lastFormatted;
-	
-	private final boolean columnNamesInFirstRow;
+	private static Object lastCellpadding;
 	
 	public static void openDialog(JTable jTable, boolean allColumnsSelected, String tableName, List<Integer> rowColumnTypes, boolean columnNamesInFirstRow, boolean silent) {
 		Window owner = SwingUtilities.getWindowAncestor(jTable);
@@ -109,13 +113,22 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 				null,
 				rowColumnTypes,
 				true, silent);
+		copyPanel.tabContentPanel.setRowAndColumnsLimit(500);
 		copyPanel.tabContentPanel.setColumnNamesInFirstRow(columnNamesInFirstRow);
 		copyPanel.plainPanel.add(copyPanel.tabContentPanel.textTabPanel, java.awt.BorderLayout.CENTER);
 		copyPanel.tabContentPanel.copyCBButton.setVisible(false);
-		copyPanel.controlsPanel.add(copyPanel.tabContentPanel.headerCheckBox, new java.awt.GridBagConstraints());
-		copyPanel.controlsPanel.add(copyPanel.tabContentPanel.rotateCheckBox, new java.awt.GridBagConstraints());
-		copyPanel.controlsPanel2.add(copyPanel.tabContentPanel.columnSeparatorLabel, new java.awt.GridBagConstraints());
-		copyPanel.controlsPanel2.add(copyPanel.tabContentPanel.columnSeparatorComboBox, new java.awt.GridBagConstraints());
+		GridBagConstraints g = new java.awt.GridBagConstraints();
+		g.insets = new Insets(0, 0, 0, 8);
+		copyPanel.controlsPanel.add(copyPanel.tabContentPanel.headerCheckBox, g);
+		g = new java.awt.GridBagConstraints();
+		g.insets = new Insets(0, 0, 0, 8);
+		copyPanel.controlsPanel.add(copyPanel.tabContentPanel.rotateCheckBox, g);
+		g = new java.awt.GridBagConstraints();
+		g.insets = new Insets(0, 0, 0, 8);
+		copyPanel.controlsPanel2.add(copyPanel.tabContentPanel.columnSeparatorLabel, g);
+		g = new java.awt.GridBagConstraints();
+		g.insets = new Insets(0, 0, 0, 8);
+		copyPanel.controlsPanel2.add(copyPanel.tabContentPanel.columnSeparatorComboBox, g);
 		if (!silent) {
 			if (lastAligned != null) {
 				copyPanel.alignedCheckBox.setSelected(lastAligned);
@@ -125,6 +138,9 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 			}
 			if (lastFormatted != null) {
 				copyPanel.formattedCheckBox.setSelected(lastFormatted);
+			}
+			if (lastCellpadding != null) {
+				copyPanel.cellpaddingComboBox.setSelectedItem(lastCellpadding);
 			}
 		} else {
 			if (columnNamesInFirstRow && jTable.getSelectedRowCount() <= 1) {
@@ -138,14 +154,15 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 			copyPanel.coloredCheckBox.setVisible(copyPanel.formattedCheckBox.isSelected());
 			copyPanel.alignedCheckBox.setVisible(copyPanel.formattedCheckBox.isSelected());
 			copyPanel.tabContentPanel.columnSeparatorComboBox.setVisible(!copyPanel.formattedCheckBox.isSelected());
+			copyPanel.cellpaddingLabel.setVisible(copyPanel.formattedCheckBox.isSelected());
+			copyPanel.cellpaddingComboBox.setVisible(copyPanel.formattedCheckBox.isSelected());
 		});
 		l.itemStateChanged(null);
 		copyPanel.tabContentPanel.textSortedStateLabel.setVisible(false);
 		copyPanel.tabContentPanel.headerCheckBox.addItemListener(e -> copyPanel.updatePreview());
 		copyPanel.tabContentPanel.rotateCheckBox.addItemListener(e -> copyPanel.updatePreview());
-		copyPanel.coloredCheckBox.setVisible(copyPanel.formattedCheckBox.isSelected());
-		copyPanel.alignedCheckBox.setVisible(copyPanel.formattedCheckBox.isSelected());
-				
+		copyPanel.cellpaddingComboBox.addItemListener(e -> copyPanel.updatePreview());
+
 		Point off = new Point();
 		off = SwingUtilities.convertPoint(copyPanel, off, copyPanel.contentTable.getParent());
 
@@ -181,6 +198,7 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 					lastAligned = copyPanel.alignedCheckBox.isSelected();
 					lastColored = copyPanel.coloredCheckBox.isSelected();
 					lastFormatted = copyPanel.formattedCheckBox.isSelected();
+					lastCellpadding = copyPanel.cellpaddingComboBox.getSelectedItem();
 				}
 			}
 		});
@@ -237,6 +255,8 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
     	contentTable.setModel(dtm);
     	contentTable.setIntercellSpacing(new Dimension(0, 0));
     	contentTable.setAutoCreateRowSorter(true);
+    	
+    	contentTable.setAutoCreateColumnsFromModel(false);
     	contentTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
     	
     	for (int i = 0; i < colNames.length; ++i) {
@@ -284,6 +304,11 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 				TableColumn col = jTable.getColumnModel().getColumn(i);
 				contentTable.getColumnModel().getColumn(i).setModelIndex(col.getModelIndex());
 			}
+			Map<Object, Integer> mIndex = new HashMap<>();
+			for (int i = 0; i < colNames.length; ++i) {
+				mIndex.put(colNames[i], contentTable.getColumnModel().getColumn(i).getModelIndex());	
+			}
+			Arrays.sort(colNames, (a, b) -> mIndex.get(a) - mIndex.get(b));
 			dtm.setColumnIdentifiers(colNames);
 			contentTable.getSelectionModel();
 			for (int r: jTable.getSelectedRows()) {
@@ -438,14 +463,23 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 				if (!formattedCheckBox.isSelected()) {
 					tabContentPanel.updateTextView(contentTable);
 				} else {
-					int cols = 1 + ((tabContentPanel.rotateCheckBox.isSelected()) ^ columnNamesInFirstRow? contentTable.getSelectedRows().length : contentTable.getSelectedColumnCount());
+					int cols = 1 + (tabContentPanel.rotateCheckBox.isSelected()? contentTable.getSelectedRows().length : contentTable.getSelectedColumnCount());
 					int maxColumns = 50;
 					int maxRows = 30;
 					if (maxColumns > cols) {
 						maxRows = (maxColumns * maxRows) / cols;
 						maxColumns = cols;
 					}
-					formattedContentLabel.setText(tabContentPanel.getHTMLContent(contentTable, alignedCheckBox.isSelected(), coloredCheckBox.isSelected(), maxColumns, maxRows));
+					Integer cellpadding = null;
+					Object si = cellpaddingComboBox.getSelectedItem();
+					if (si instanceof Number) {
+						cellpadding = ((Number) si).intValue();
+					}
+					boolean[] stopped = new boolean[2];
+					formattedContentLabel.setText(tabContentPanel.getHTMLContent(contentTable, alignedCheckBox.isSelected(), coloredCheckBox.isSelected(), cellpadding, maxColumns, maxRows, stopped).replaceFirst("<table", "<table cellspacing=\"0\""));
+			        stopRowLabel.setVisible(stopped[1]);
+			        stopColumnLabel.setVisible(stopped[0]);
+			        stopBothLabel.setVisible(stopped[0] || stopped[1]);
 				}
 				((CardLayout) previewPanel.getLayout()).show(previewPanel, formattedCheckBox.isSelected()? "formatted" : "plain");
 			});
@@ -457,13 +491,20 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
     private TabContentPanel tabContentPanel;
     
 	private ExtendetCopyPanel(boolean columnNamesInFirstRow) {
-		this.columnNamesInFirstRow = columnNamesInFirstRow;
         initComponents();
         maximizeButton.setIcon(maximizeIcon);
         selectAllButton.setIcon(selectIcon);
         copyButton.setIcon(copyIcon);
         closeCloseButton.setIcon(cancelIcon);
         copyCloseButton.setIcon(copyCloseIcon);
+        
+        stopRowLabel.setVisible(false);
+        stopColumnLabel.setVisible(false);
+        stopBothLabel.setVisible(false);
+        
+        DefaultComboBoxModel<Object> comboBoxModel = new DefaultComboBoxModel<Object>(new Object[] { "None", 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 });
+		cellpaddingComboBox.setModel(comboBoxModel);
+		cellpaddingComboBox.setSelectedItem(3);
 	}
 
     /**
@@ -490,6 +531,9 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         jPanel3 = new javax.swing.JPanel();
         formattedContentLabel = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
+        stopRowLabel = new javax.swing.JLabel();
+        stopColumnLabel = new javax.swing.JLabel();
+        stopBothLabel = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         panel = new javax.swing.JPanel();
         copyCloseButton = new javax.swing.JButton();
@@ -501,8 +545,8 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         controlsPanel2 = new javax.swing.JPanel();
         alignedCheckBox = new javax.swing.JCheckBox();
         coloredCheckBox = new javax.swing.JCheckBox();
-        jPanel6 = new javax.swing.JPanel();
-        jLabel3 = new javax.swing.JLabel();
+        cellpaddingLabel = new javax.swing.JLabel();
+        cellpaddingComboBox = new javax.swing.JComboBox<>();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -601,10 +645,36 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         jPanel4.setLayout(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         jPanel3.add(jPanel4, gridBagConstraints);
+
+        stopRowLabel.setFont(stopRowLabel.getFont().deriveFont((stopRowLabel.getFont().getStyle() | java.awt.Font.ITALIC)));
+        stopRowLabel.setForeground(java.awt.Color.blue);
+        stopRowLabel.setText("Preview ends here...");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        jPanel3.add(stopRowLabel, gridBagConstraints);
+
+        stopColumnLabel.setFont(stopColumnLabel.getFont().deriveFont((stopColumnLabel.getFont().getStyle() | java.awt.Font.ITALIC)));
+        stopColumnLabel.setForeground(java.awt.Color.blue);
+        stopColumnLabel.setText("Preview ends here...");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        jPanel3.add(stopColumnLabel, gridBagConstraints);
+
+        stopBothLabel.setFont(stopBothLabel.getFont().deriveFont((stopBothLabel.getFont().getStyle() | java.awt.Font.ITALIC)));
+        stopBothLabel.setForeground(java.awt.Color.blue);
+        stopBothLabel.setText("Preview ends here...");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        jPanel3.add(stopBothLabel, gridBagConstraints);
 
         formattedScrollPane.setViewportView(jPanel3);
 
@@ -619,6 +689,7 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         jPanel2.add(previewPanel, gridBagConstraints);
 
         jLabel2.setFont(jLabel2.getFont().deriveFont(jLabel2.getFont().getSize()+4f));
+        jLabel2.setForeground(java.awt.Color.blue);
         jLabel2.setText("Preview");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -647,7 +718,7 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 4);
         panel.add(copyCloseButton, gridBagConstraints);
@@ -660,7 +731,7 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 6;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 4);
         panel.add(closeCloseButton, gridBagConstraints);
@@ -673,8 +744,9 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 4);
         panel.add(copyButton, gridBagConstraints);
 
@@ -689,12 +761,15 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
                 formattedCheckBoxActionPerformed(evt);
             }
         });
-        controlsPanel.add(formattedCheckBox, new java.awt.GridBagConstraints());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
+        controlsPanel.add(formattedCheckBox, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel5.add(controlsPanel, gridBagConstraints);
 
         controlsPanel2.setLayout(new java.awt.GridBagLayout());
@@ -706,7 +781,9 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
                 alignedCheckBoxActionPerformed(evt);
             }
         });
-        controlsPanel2.add(alignedCheckBox, new java.awt.GridBagConstraints());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
+        controlsPanel2.add(alignedCheckBox, gridBagConstraints);
 
         coloredCheckBox.setSelected(true);
         coloredCheckBox.setText("Colored");
@@ -715,30 +792,31 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
                 coloredCheckBoxActionPerformed(evt);
             }
         });
-        controlsPanel2.add(coloredCheckBox, new java.awt.GridBagConstraints());
-
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        jPanel5.add(controlsPanel2, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
+        controlsPanel2.add(coloredCheckBox, gridBagConstraints);
 
-        jPanel6.setLayout(new java.awt.GridBagLayout());
+        cellpaddingLabel.setText("  Cellpadding ");
+        controlsPanel2.add(cellpaddingLabel, new java.awt.GridBagConstraints());
 
-        jLabel3.setText(" ");
+        cellpaddingComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
-        jPanel6.add(jLabel3, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
+        controlsPanel2.add(cellpaddingComboBox, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        jPanel5.add(jPanel6, gridBagConstraints);
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        jPanel5.add(controlsPanel2, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 8;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 16);
@@ -826,15 +904,21 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
     	try {
     		UIUtil.setWaitCursor(cursorSubject);
     		String html = null;
-    		if (formattedCheckBox.isSelected()) {
-	    		html = tabContentPanel.getHTMLContent(contentTable, alignedCheckBox.isSelected(), coloredCheckBox.isSelected(), Integer.MAX_VALUE, Integer.MAX_VALUE);
+			boolean[] stopped = new boolean[2];
+			if (formattedCheckBox.isSelected()) {
+				Integer cellpadding = null;
+				Object si = cellpaddingComboBox.getSelectedItem();
+				if (si instanceof Number) {
+					cellpadding = ((Number) si).intValue();
+				}
+				html = tabContentPanel.getHTMLContent(contentTable, alignedCheckBox.isSelected(), coloredCheckBox.isSelected(), cellpadding, Integer.MAX_VALUE, Integer.MAX_VALUE, stopped);
 				html = html.replaceFirst("<html>", "<!DOCTYPE html>\n"
 					+ "<html>\n"
 					+ "<head>\n"
 					+ "<meta charset=\"UTF-8\"/>\n"
 					+ "</head>\n");
     		}
-    		HtmlSelection htmlSelection = new HtmlSelection(html, tabContentPanel.getPlainContent(contentTable, alignedCheckBox.isSelected(), coloredCheckBox.isSelected(), Integer.MAX_VALUE, Integer.MAX_VALUE));
+    		HtmlSelection htmlSelection = new HtmlSelection(html, tabContentPanel.getPlainContent(contentTable, alignedCheckBox.isSelected(), coloredCheckBox.isSelected(), Integer.MAX_VALUE, Integer.MAX_VALUE, stopped));
 		    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 		    clipboard.setContents(htmlSelection, htmlSelection);
     	} finally {
@@ -892,6 +976,8 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox alignedCheckBox;
+    private javax.swing.JComboBox<Object> cellpaddingComboBox;
+    private javax.swing.JLabel cellpaddingLabel;
     private javax.swing.JButton closeCloseButton;
     private javax.swing.JCheckBox coloredCheckBox;
     private javax.swing.JTable contentTable;
@@ -904,13 +990,11 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane formattedScrollPane;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
-    private javax.swing.JPanel jPanel6;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JToolBar jToolBar1;
@@ -919,6 +1003,9 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
     private javax.swing.JPanel plainPanel;
     private javax.swing.JPanel previewPanel;
     private javax.swing.JButton selectAllButton;
+    private javax.swing.JLabel stopBothLabel;
+    private javax.swing.JLabel stopColumnLabel;
+    private javax.swing.JLabel stopRowLabel;
     // End of variables declaration//GEN-END:variables
     
 	private static ImageIcon maximizeIcon;
@@ -937,5 +1024,12 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         copyCloseIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/copyclose.png"));
         cancelIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/buttoncancel.png"));
 	}
+	
+	// TODO
+	// TODO check missing cellspacing: word, outlook
+	// TODO check rowcount colors on thinkpad
+	// TODO check: cellpadding default 3 ok?
+	
+	// TODO offer other flavors: JSON, XML, ...
 	
 }

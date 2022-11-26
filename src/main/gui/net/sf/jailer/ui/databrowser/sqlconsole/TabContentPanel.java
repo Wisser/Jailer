@@ -379,10 +379,16 @@ public class TabContentPanel extends javax.swing.JPanel {
 	private static Boolean lastRotated;
     private final boolean onlySelectedCells;
     
-    public void updateTextView(JTable rowsTable) {
+    private int rowAndColumnsLimit = Integer.MAX_VALUE;
+    
+    public void setRowAndColumnsLimit(int rowAndColumnsLimit) {
+		this.rowAndColumnsLimit = rowAndColumnsLimit;
+	}
+
+	public void updateTextView(JTable rowsTable) {
     	theRowsTable = rowsTable;
 		Object sep = getSeparatorFromCombobox();
-    	StringBuilder sb = createContent(rowsTable, sep, false, false, 500, 500);
+    	StringBuilder sb = createContent(rowsTable, sep, false, false, null, rowAndColumnsLimit, rowAndColumnsLimit, new boolean[2]);
 
 		Point vPos = textViewScrollPane.getViewport().getViewPosition();
 		textArea.setText(sb.toString());
@@ -413,7 +419,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 		return sep;
 	}
 
-	private StringBuilder createContent(JTable rowsTable, Object sep, boolean aligned, boolean colored, int maxColumns, int maxRows) {
+	private StringBuilder createContent(JTable rowsTable, Object sep, boolean aligned, boolean colored, Integer cellpadding, int maxColumns, int maxRows, boolean[] stopped) {
 		boolean html = false;
     	if ("HTML".equals(sep)) {
     		sep = "";
@@ -447,7 +453,8 @@ public class TabContentPanel extends javax.swing.JPanel {
     	int yCount = 0;
     	for (int y = 0; y < cell.length; ++y) {
     		if (yCount > maxRows) {
-    			cell[y][0] = html? "Preview\nstops here..." : "Preview stops here...";
+    			cell[y][0] = html? null : "Preview stops here...";
+    			stopped[1] = true;
     			if (pSHX > 0) {
     				for (int x = 1; x < pSHX; ++x) {
     					cell[y][x] = "";
@@ -539,7 +546,9 @@ public class TabContentPanel extends javax.swing.JPanel {
 				 ++xCount;
 				boolean stop = xCount > maxColumns;
 				if (stop) {
-					if (yCount == 1) {
+					cellContent = "";
+	    			stopped[0] = true;
+	    			if (yCount == 1 && !html) {
 						cellContent = "Preview stops here...";
 					} else {
 						cellContent = "";
@@ -560,7 +569,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 		int cellsRendered = 0;
 		synchronized (rowColumnTypes) {
 			if (html) {
-				sb.append("<html><body><table cellspacing=\"0\" cellpadding=\"3\">");
+				sb.append("<html><body><table" + (cellpadding != null? " cellpadding=\"" + cellpadding + "\"" : "") + ">");
 			}
 			int rowNum = 0;
 			if (!columnNamesInFirstRow) {
@@ -734,12 +743,12 @@ public class TabContentPanel extends javax.swing.JPanel {
 		return maxLength;
 	}
 
-	public String getHTMLContent(JTable rowsTable, boolean aligned, boolean colored, int maxColumns, int maxRows) {
-		return createContent(rowsTable, "HTML", aligned, colored, maxColumns, maxRows).toString();
+	public String getHTMLContent(JTable rowsTable, boolean aligned, boolean colored, Integer cellpadding, int maxColumns, int maxRows, boolean[] stopped) {
+		return createContent(rowsTable, "HTML", aligned, colored, cellpadding, maxColumns, maxRows, stopped).toString();
 	}
 	
-	public String getPlainContent(JTable rowsTable, boolean aligned, boolean colored, int maxColumns, int maxRows) {
-		return createContent(rowsTable, getSeparatorFromCombobox(), aligned, colored, maxColumns, maxRows).toString();
+	public String getPlainContent(JTable rowsTable, boolean aligned, boolean colored, int maxColumns, int maxRows, boolean[] stopped) {
+		return createContent(rowsTable, getSeparatorFromCombobox(), aligned, colored, null, maxColumns, maxRows, stopped).toString();
 	}
 
 	/**
@@ -936,7 +945,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         textTabPanel.add(columnSeparatorLabel, gridBagConstraints);
 
         headerCheckBox.setSelected(true);
-        headerCheckBox.setText("Column Names");
+        headerCheckBox.setText("With Columns");
         headerCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 headerCheckBoxActionPerformed(evt);

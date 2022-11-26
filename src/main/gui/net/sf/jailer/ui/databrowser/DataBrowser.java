@@ -5713,14 +5713,18 @@ public class DataBrowser extends javax.swing.JFrame {
 			Long rc = mdTable.getEstimatedRowCount();
 			if (rc != null) {
 				String value;
+				Color fg = new Color(0, 80, 200);
+				
 				if (rc == 0) {
 					value = " ";
+				} else if (rc >= 1000000000) {
+					value = String.format("%,1.1f G", (double) rc / 1000000000.0);
+					fg = new Color(150, 0, 100);
 				} else if (rc >= 1000000) {
 					value = String.format("%,1.1f M", (double) rc / 1000000.0);
-	     		} else if (rc >= 1000) {
-	     			value = String.format("%,1.1f K", (double) rc / 1000.0);
+					fg = new Color(0, 0, 150);
 	     		} else {
-	     			value = rc.toString();
+	     			value = String.format("%,1.0f", (double) rc);
 	     		}
 	     		FontMetrics fontMetrics = getFontMetrics(getFont());
 				int x = visibleRect.width - fontMetrics.stringWidth(value) - 8;
@@ -5728,7 +5732,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				g.setFont(getFont());
 				g.setColor(new Color(255, 255, 255));
 				g.fillRect(x - 8, y - fontMetrics.getHeight() + 2, visibleRect.width - x + 9 + ow, fontMetrics.getHeight() + 2 + oh);
-				g.setColor(new Color(0, 0, 255));
+				g.setColor(fg);
 				g.drawString(value, x, y);
 			}
 		});

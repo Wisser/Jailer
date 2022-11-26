@@ -295,6 +295,9 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 		    			sortColumnsPanel.setVisible(false);
 		                statusPanel.setVisible(false);
 		    		}
+		    		protected double getAnimationFactor() {
+		    			return 0f;
+		    		}
 		    		@Override
 		    		protected int getReloadLimit() {
 		    			return Integer.MAX_VALUE;
