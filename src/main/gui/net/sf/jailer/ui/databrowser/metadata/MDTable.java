@@ -617,7 +617,7 @@ public class MDTable extends MDObject {
 				cc = columnComments.get(i);
 			}
 			if (cc != null) {
-	        	sb.append(" /* " + (comment.replace("*/", "* /").replaceAll("\n|\r", " ")) + " */");
+	        	sb.append(" /* " + (cc.replace("*/", "* /").replaceAll("\n|\r", " ")) + " */");
 	        }
 			++i;
         }
