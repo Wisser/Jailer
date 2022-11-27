@@ -4302,6 +4302,10 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 
+	// TODO
+	// TODO render links betw. TabBrowsers less significant if a target TabBrowser is not in "horiz.alig." tree (s.t. from "aligned" table to root + subtree of "aligned")
+	// TODO think about situation before "align horiz.".
+	
 	// TODO display names for associations? (using unique fk-column list?)
 	
 }
