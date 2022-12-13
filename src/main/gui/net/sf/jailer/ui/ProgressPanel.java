@@ -466,9 +466,17 @@ public class ProgressPanel extends javax.swing.JPanel {
 		}
 		Window owner = SwingUtilities.getWindowAncestor(this);
 		if (JailerConsole.openResultActions.get(owner) != null) {
-			if (JOptionPane.showOptionDialog(this, message, "Finished", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,
-					null, new Object[] { "OK", "Open Result" }, null) == 1) {
+			int option = JOptionPane.showOptionDialog(this, message, "Finished", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,
+					null, new Object[] { "OK", "Open Result", "Open Result and close this" }, null);
+			if (option == 1) {
 				JailerConsole.openResultActions.get(owner).accept(owner);
+			}
+			if (option == 2) {
+				JailerConsole.openResultActions.get(owner).accept(owner);
+				Window window = SwingUtilities.getWindowAncestor(this);
+				window.setVisible(false);
+				window.dispose();
+				
 			}
 		} else {
 			JOptionPane.showMessageDialog(this, message, "Finished", JOptionPane.INFORMATION_MESSAGE);
@@ -482,10 +490,6 @@ public class ProgressPanel extends javax.swing.JPanel {
     }
 
 	public boolean inCancellingStep = false;
-
-	//
-	// obsolete
-	// new StatisticDialog(this, message);
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JLabel collectedRowsLabel;

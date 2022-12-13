@@ -278,29 +278,35 @@ public class MetaDataSource {
     		MDSchema schemaExact = null;
     		MDSchema schemaIC = null;
     		for (MDSchema schema: getSchemas()) {
-    			if (schema.getName().equals(schemaName)) {
+    			String name = Quoting.staticUnquote(schema.getName());
+				if (name.equals(schemaName)) {
     				schemaExact = schema;
     				break;
     			}
-    			if (schema.getName().toUpperCase(Locale.ENGLISH).equals(schemaNameUC)) {
+    			if (name.toUpperCase(Locale.ENGLISH).equals(schemaNameUC)) {
     				schemaIC = schema;
     			}
     		}
     		List<MDTable> tables = null;
     		if (schemaExact != null) {
-    			tables = schemaExact.getTables();
+    			if (schemaExact.isLoaded()) {
+    				tables = schemaExact.getTables();
+    			}
     		} else if (schemaIC != null) {
-    			tables = schemaIC.getTables();
+    			if (schemaIC.isLoaded()) {
+    				tables = schemaIC.getTables();
+    			}
     		}
     		if (tables != null) {
     			MDTable mdTableExact = null;
     			MDTable mdTableIC = null;
     			for (MDTable mdT: tables) {
-        			if (mdT.getName().equals(tableName)) {
+        			String name = Quoting.staticUnquote(mdT.getName());
+					if (name.equals(tableName)) {
         				mdTableExact = mdT;
         				break;
         			}
-        			if (mdT.getName().toUpperCase(Locale.ENGLISH).equals(tableNameUC)) {
+        			if (name.toUpperCase(Locale.ENGLISH).equals(tableNameUC)) {
         				mdTableIC = mdT;
         			}
     			}

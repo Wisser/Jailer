@@ -2068,16 +2068,13 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     }
 
     public void refresh() {
-    	if (SwingUtilities.isEventDispatchThread()) {
-    		metaDataTree.repaint();
-    	} else {
-    		UIUtil.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					metaDataTree.repaint();
-				}
-			});
-    	}
+    	UIUtil.invokeLater(12, new Runnable() {
+    		@Override
+    		public void run() {
+    			metaDataTree.repaint();
+    			metaDataTree.setSize(metaDataTree.getWidth(), metaDataTree.getHeight() - 1);
+    		}
+    	});
     }
     
     private NavigableMap<Integer, MDTable> rowCounters = new TreeMap<Integer, MDTable>();

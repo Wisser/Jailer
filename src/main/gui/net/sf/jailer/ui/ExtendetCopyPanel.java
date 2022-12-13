@@ -1025,11 +1025,6 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         cancelIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/buttoncancel.png"));
 	}
 	
-	// TODO
-	// TODO check missing cellspacing: word, outlook
-	// TODO check rowcount colors on thinkpad
-	// TODO check: cellpadding default 3 ok?
-	
 	// TODO offer other flavors: JSON, XML, ...
 	
 }

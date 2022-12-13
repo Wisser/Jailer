@@ -4909,6 +4909,7 @@ public class DataBrowser extends javax.swing.JFrame {
 								datamodel.get(), executionContext) {
 							@Override
 							public void refresh() {
+								super.refresh();
 								UIUtil.invokeLater(() -> updateNavigationTree());
 							}
 							
@@ -5828,7 +5829,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		rowCounters = new TreeMap<Integer, MDTable>();
 		if (session != null) {
 			MetaDataSource metaDataSource = getMetaDataSource(session);
-			if (metaDataSource != null) {
+			if (metaDataSource != null && metaDataSource.isInitialized()) {
 				trav(m, root2, new TreePath(root2), metaDataSource, rowCounters);
 			}
 		}
