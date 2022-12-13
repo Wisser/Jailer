@@ -729,6 +729,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 									
 							String countAsString;
 							Color fg = new Color(0, 80, 200);
+							count = Math.abs(count);
 							if (count == 0) {
 								countAsString = " ";
 							} else if (count >= 1000000000) {

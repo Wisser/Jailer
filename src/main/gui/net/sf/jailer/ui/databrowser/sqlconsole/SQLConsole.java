@@ -193,7 +193,7 @@ import net.sf.jailer.util.SqlUtil;
  */
 @SuppressWarnings("serial")
 public abstract class SQLConsole extends javax.swing.JPanel {
-	
+
 	/**
 	 * The logger.
 	 */
@@ -3103,7 +3103,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
      * @param execute execute the statement?
      */
     public void appendStatement(String sql, boolean execute) {
-    	appendStatement(sql, execute, null, false);
+    	UIUtil.invokeLater(8, () -> appendStatement(sql, execute, null, false));
     }
 
     /**
