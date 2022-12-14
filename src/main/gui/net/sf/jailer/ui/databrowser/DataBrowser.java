@@ -349,6 +349,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		initMenu();
 		initNavTree();
 		initTabSelectionAnimationManager();
+		
 		TextIcon ti = new TextIcon(modelNavigationButton, " Connections ");
 		ImageIcon ii = connectionIcon;
 		Icon ri1 = new RotatedIcon(new CompoundIcon(Axis.X_AXIS, 2, ti, new RotatedIcon(ii, RotatedIcon.Rotate.DOWN)), RotatedIcon.Rotate.UP);
@@ -367,6 +368,9 @@ public class DataBrowser extends javax.swing.JFrame {
 			al.actionPerformed(null);
 			modelNavigationPanel.setVisible(true);
 		});
+		
+		// TODO
+		modelNavigationPanel.setVisible(false);
 		
 		boolean zoom = Boolean.TRUE.equals(UISettings.restore(UISettings.ZOOM_WITH_MOUSE_WHEEL));
 		zoomWithMouseWheelMenuItem.setSelected(Boolean.TRUE.equals(UISettings.restore(UISettings.ZOOM_WITH_MOUSE_WHEEL)));
