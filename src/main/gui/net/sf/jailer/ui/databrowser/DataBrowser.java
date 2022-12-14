@@ -364,13 +364,12 @@ public class DataBrowser extends javax.swing.JFrame {
 		modelNavigationPanel.setVisible(false);
 		modelNavigationGapPanel.setMinimumSize(new Dimension(80, 1));
 		modelNavigationGapPanel.setPreferredSize(modelNavigationGapPanel.getMinimumSize());
-		UIUtil.invokeLater(14, () -> {
-			al.actionPerformed(null);
-			modelNavigationPanel.setVisible(true);
-		});
 		
 		// TODO
-		modelNavigationPanel.setVisible(false);
+//		UIUtil.invokeLater(14, () -> {
+//			al.actionPerformed(null);
+//			modelNavigationPanel.setVisible(true);
+//		});
 		
 		boolean zoom = Boolean.TRUE.equals(UISettings.restore(UISettings.ZOOM_WITH_MOUSE_WHEEL));
 		zoomWithMouseWheelMenuItem.setSelected(Boolean.TRUE.equals(UISettings.restore(UISettings.ZOOM_WITH_MOUSE_WHEEL)));
