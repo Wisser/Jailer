@@ -1,3 +1,6 @@
+12.8.4
+  - A bug in metadata acquisition could cause the GUI to freeze for a short time.
+
 12.8.3
   - The new "Extended Copy" feature allows table data to be copied in a variety of ways,
     both as plain text and as formatted text.
