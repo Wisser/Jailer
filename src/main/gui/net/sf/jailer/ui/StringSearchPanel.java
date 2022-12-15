@@ -1323,6 +1323,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	private String extSTText = null;
 	
 	private String extendedSearchText(String text, String item) {
+		text = text.replaceAll("\\s|\\h", " ");
 		String searchText = text.toUpperCase(Locale.ENGLISH);
 		if (!searchText.contains("*") && !searchText.contains("?")) {
 			return searchText.trim();
