@@ -513,7 +513,7 @@ public class QueryTypeAnalyser {
 							++i;
 						}
 					}
-					if (ok && !selectClause.stream().anyMatch(pair -> tableAlias.equals(pair.a))) {
+					if (ok && !selectClause.stream().filter(pair -> pair != null).anyMatch(pair -> tableAlias.equals(pair.a))) {
 						ok = false;
 					}
 					if (!ok) {
