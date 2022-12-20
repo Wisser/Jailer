@@ -1328,6 +1328,10 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
         </typeReplacement>
         <sqlExpressionRule>
        	    <entry>
+                <key>daterange</key>
+                <value>'$1'::$2</value>
+            </entry>
+       	    <entry>
                 <key>point</key>
                 <value>'$1'::$2</value>
             </entry>
