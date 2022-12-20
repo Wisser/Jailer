@@ -73,7 +73,7 @@ public class PrivilegedSessionProviderDialog extends javax.swing.JDialog {
 								);
 						final PrivilegedSessionProviderDialog dialog = new PrivilegedSessionProviderDialog(theParent);
 						ConnectionInfo ci = new ConnectionInfo();
-						final DbConnectionDialog connectionDialog = new DbConnectionDialog(theParent, JailerVersion.APPLICATION_NAME, infoBar, executionContext, true, false) {
+						final DbConnectionDialog connectionDialog = new DbConnectionDialog(theParent, JailerVersion.APPLICATION_NAME, infoBar, null, executionContext, true, false) {
 							@Override
 							protected boolean isAssignedToDataModel(String dataModelFolder) {
 								return true;

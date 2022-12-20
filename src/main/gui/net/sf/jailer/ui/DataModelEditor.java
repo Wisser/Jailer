@@ -1316,7 +1316,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 		protected void checkPK(Table table) {
 			try {
 				if (!dbConnectionDialog.isConnected) {
-					dbConnectionDialog = new DbConnectionDialog(this, dbConnectionDialog, JailerVersion.APPLICATION_NAME, executionContext);
+					dbConnectionDialog = new DbConnectionDialog(this, dbConnectionDialog, JailerVersion.APPLICATION_NAME, null, executionContext);
 				}
 	    		if (dbConnectionDialog.isConnected || dbConnectionDialog.connect("Check Primary Keys")) {
 	    			BasicDataSource dataSource = UIUtil.createBasicDataSource(this, dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword(), 0, dbConnectionDialog.currentJarURLs());

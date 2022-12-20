@@ -150,6 +150,7 @@ import net.sf.jailer.ui.DataModelManager;
 import net.sf.jailer.ui.DataModelManagerDialog;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
+import net.sf.jailer.ui.DbConnectionDialog.DataModelChanger;
 import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.ExtractionModelFrame;
 import net.sf.jailer.ui.ImportDialog;
@@ -182,13 +183,14 @@ import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.util.AnimationController;
 import net.sf.jailer.ui.util.CompoundIcon;
+import net.sf.jailer.ui.util.CompoundIcon.Axis;
 import net.sf.jailer.ui.util.RotatedIcon;
 import net.sf.jailer.ui.util.SmallButton;
 import net.sf.jailer.ui.util.TextIcon;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.ui.util.UpdateInfoManager;
-import net.sf.jailer.ui.util.CompoundIcon.Axis;
 import net.sf.jailer.util.CancellationHandler;
+import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
@@ -326,12 +328,12 @@ public class DataBrowser extends javax.swing.JFrame {
 	 * @param dbConnectionDialog DB-connection dialog
 	 */
 	public DataBrowser(final DataModel datamodel, final Table root, String condition,
-			DbConnectionDialog dbConnectionDialog, Map<String, String> schemaMapping, boolean embedded,
+			DbConnectionDialog dbConnectionDialog, Map<String, String> schemaMapping,
 			final ExecutionContext executionContext) throws Exception {
 		this.executionContext = executionContext;
 		this.datamodel = new Reference<DataModel>(datamodel);
 		this.dbConnectionDialog = dbConnectionDialog != null
-				? new DbConnectionDialog(this, dbConnectionDialog, DataBrowserContext.getAppName(), executionContext)
+				? new DbConnectionDialog(this, dbConnectionDialog, DataBrowserContext.getAppName(), createDataModelChanger(), executionContext)
 				: null;
 		this.borderBrowser = new AssociationListUI("Resolve", "Resolve selected Associations", true) {
 			private static final long serialVersionUID = 183805595423236039L;
@@ -342,9 +344,6 @@ public class DataBrowser extends javax.swing.JFrame {
 			}
 		};
 		executionContext.setUseRowIdsOnlyForTablesWithoutPK(true);
-		if (embedded) {
-			DataBrowserContext.setSupportsDataModelUpdates(false);
-		}
 		initComponents();
 		initMenu();
 		initNavTree();
@@ -836,11 +835,6 @@ public class DataBrowser extends javax.swing.JFrame {
 		mediumLayoutRadioButtonMenuItem.setSelected(true);
 
 		setTitle(DataBrowserContext.getAppName(false));
-		if (embedded) {
-			analyseMenuItem.setEnabled(false);
-			dataModelEditorjMenuItem.setEnabled(false);
-			analyseSQLMenuItem1.setEnabled(false);
-		}
 
 		// L&F can no longer be changed
 		jSeparator6.setVisible(false);
@@ -1321,6 +1315,69 @@ public class DataBrowser extends javax.swing.JFrame {
 		initDnD(this);
 	}
 
+	private String cDTmpFilePrefix = Environment.newFile(".tmpdmc-" + System.currentTimeMillis()).getPath();
+	
+	private DataModelChanger createDataModelChanger() {
+		// TODO Auto-generated method stub
+		
+		return new DataModelChanger() {
+			private Runnable afterReconnectAction = null;
+			
+			@Override
+			public void onConnectionListChanged() {
+				
+			}
+			
+			Map<String, Map<String, String>> schemamappings = new HashMap<String, Map<String,String>>();
+			
+			@Override
+			public void change(String dataModelSubfolder) {
+				// TODO Auto-generated method stub
+				afterReconnectAction = null;
+				
+				String sFile = cDTmpFilePrefix + DataModelManager.getCurrentModelSubfolder(executionContext);
+				new File(sFile).deleteOnExit();
+				
+				try {
+					desktop.storeSession(sFile);
+				} catch (IOException e1) {
+					LogUtil.warn(e1);
+				}
+				
+				schemamappings.put(dataModelSubfolder, desktop.schemaMapping);
+				DataModelManager.setCurrentModelSubfolder(dataModelSubfolder, executionContext);
+				Map<String, String> schemamapping = schemamappings.get(dataModelSubfolder);
+				if (schemamapping == null) {
+					schemamapping = new HashMap<String, String>();
+				}
+				try {
+					String sessionFile = cDTmpFilePrefix + dataModelSubfolder;
+					desktop.reloadDataModel(schemamapping, new File(sessionFile).exists(), false);
+					if (new File(sessionFile).exists()) {
+						afterReconnectAction = () -> {
+							try {
+								desktop.restoreSession(null, DataBrowser.this, sessionFile, true);
+							} catch (Exception e) {
+								LogUtil.warn(e);
+							}
+						};
+					}
+					desktop.updateBookmarksMenu();
+				} catch (Exception e) {
+					UIUtil.showException(DataBrowser.this, "Error", e);
+				}
+			}
+
+			@Override
+			public void afterConnect() {
+				if (afterReconnectAction != null) {
+					afterReconnectAction.run();
+					afterReconnectAction = null;
+				}
+			}
+		};
+	}
+
 	private static Timer tabSelectionAnimationTimer = null;
 	
 	private static synchronized void initTabSelectionAnimationManager() {
@@ -1475,7 +1532,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	protected void setConnection(DbConnectionDialog dbConnectionDialog) throws Exception {
 		if (dbConnectionDialog != null) {
 			dbConnectionDialog = new DbConnectionDialog(this, dbConnectionDialog, DataBrowserContext.getAppName(),
-					executionContext);
+					createDataModelChanger(), executionContext);
 		}
 		this.dbConnectionDialog = dbConnectionDialog;
 		desktop.dbConnectionDialog = dbConnectionDialog;
@@ -3124,7 +3181,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			String sqlFile = UIUtil.choseFile(null, ".", "Data Import", ".sql", this, false, true);
 			if (sqlFile != null) {
 				DbConnectionDialog dcd = new DbConnectionDialog(this, dbConnectionDialog,
-						DataBrowserContext.getAppName(), executionContext);
+						DataBrowserContext.getAppName(), createDataModelChanger(), executionContext);
 				if (dcd.connect("Data Import")) {
 					List<String> args = new ArrayList<String>();
 					args.add("import");
@@ -3550,7 +3607,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			boolean maximize, ExecutionContext executionContext, DataBrowser theDataBrowser) throws Exception {
 		final DataBrowser dataBrowser = theDataBrowser != null ? theDataBrowser
 				: new DataBrowser(datamodel, null, "", null,
-						ExecutionContext.getSchemaMapping(CommandLineInstance.getInstance().rawschemamapping), false,
+						ExecutionContext.getSchemaMapping(CommandLineInstance.getInstance().rawschemamapping),
 						executionContext);
 		dataBrowser.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		dataBrowser.setVisible(true);
@@ -3558,10 +3615,10 @@ public class DataBrowser extends javax.swing.JFrame {
 
 		if (dbConnectionDialog == null) {
 			dbConnectionDialog = new DbConnectionDialog(dataBrowser, DataBrowserContext.getAppName(), null,
-					executionContext);
+					dataBrowser.createDataModelChanger(), executionContext);
 		} else {
 			dbConnectionDialog = new DbConnectionDialog(dataBrowser, dbConnectionDialog,
-					DataBrowserContext.getAppName(), executionContext);
+					DataBrowserContext.getAppName(), dataBrowser.createDataModelChanger(), executionContext);
 		}
 		dbConnectionDialog.autoConnect();
 		if (dbConnectionDialog.isConnected || dbConnectionDialog.connect(DataBrowserContext.getAppName(true))) {
@@ -3642,7 +3699,7 @@ public class DataBrowser extends javax.swing.JFrame {
 							.getSchemaMapping(CommandLineInstance.getInstance().rawschemamapping);
 					datamodel = new DataModel(null, null, schemaMapping, null, new PrimaryKeyFactory(executionContext),
 							executionContext, true, null);
-					final DataBrowser databrowser = new DataBrowser(datamodel, null, "", null, schemaMapping, false,
+					final DataBrowser databrowser = new DataBrowser(datamodel, null, "", null, schemaMapping,
 							executionContext);
 					UIUtil.invokeLater(new Runnable() {
 						@Override
@@ -5916,5 +5973,15 @@ public class DataBrowser extends javax.swing.JFrame {
 		tbZoomOutIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/tb_zoomout.png"));
 		connectionIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/connection.png"));
 	}
-
+	
+	// TODO
+	// TODO reconnect: instead of caching sesions: waitDialog.setOpaque(0.2?); ...1sec...waitDialog.setOpaque(1);
+	// TODO wait cursor initially
+	
+	// TODO
+	// TODO test: state after connection failed?
+	
+	// TODO
+	// TODO postgres "daterange": what about arrays ("_.*")? Patterns in key of <sqlExpressionRule>?
+	
 }

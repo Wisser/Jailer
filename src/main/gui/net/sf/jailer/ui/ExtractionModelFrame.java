@@ -204,9 +204,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		pack();
 		updateTitle(extractionModelEditor.needsSave);
 		if (initDbConnectionDialog != null) {
-			dbConnectionDialog = new DbConnectionDialog(this, initDbConnectionDialog, JailerVersion.APPLICATION_NAME, executionContext);
+			dbConnectionDialog = new DbConnectionDialog(this, initDbConnectionDialog, JailerVersion.APPLICATION_NAME, null, executionContext);
 		} else {
-			dbConnectionDialog = new DbConnectionDialog(this, JailerVersion.APPLICATION_NAME, null, executionContext);
+			dbConnectionDialog = new DbConnectionDialog(this, JailerVersion.APPLICATION_NAME, null, null, executionContext);
 		}
         dbConnectionDialog.autoConnect();
 
@@ -1164,7 +1164,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			DataBrowser dataBrowser;
 			try {
 				UIUtil.setWaitCursor(this);
-				dataBrowser = new DataBrowser(extractionModelEditor.dataModel, root, condition, dbConnectionDialog, null, true, executionContext);
+				dataBrowser = new DataBrowser(extractionModelEditor.dataModel, root, condition, dbConnectionDialog, null, executionContext);
 				if (dataBrowser.isReady()) {
 					dataBrowser.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 					dataBrowser.setExtendedState(Frame.MAXIMIZED_BOTH);
@@ -1695,7 +1695,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 */
 	public void setDbConnectionDialogClone(DbConnectionDialog dbConnectionDialog) {
 		try {
-			this.dbConnectionDialog = new DbConnectionDialog(this, dbConnectionDialog, JailerVersion.APPLICATION_NAME, executionContext);
+			this.dbConnectionDialog = new DbConnectionDialog(this, dbConnectionDialog, JailerVersion.APPLICATION_NAME, null, executionContext);
 		} finally {
 			updateMenuItems();
 		}

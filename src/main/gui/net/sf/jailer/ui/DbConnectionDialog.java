@@ -202,8 +202,6 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		return connect(reason, false);
 	}
 
-	private boolean located = false;
-	
 	private Font font =  new JLabel("normal").getFont();
 	private Font normal = font.deriveFont(font.getStyle() & ~Font.BOLD, font.getSize());
     private Font bold = font.deriveFont(font.getStyle() | Font.BOLD, font.getSize());
@@ -265,13 +263,19 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	}
 
 	private final InfoBar infoBar;
-	private final String currentModelSubfolder;
 	private final boolean dataModelAware;
+	private final DataModelChanger dataModelChanger;
 	private final boolean showOnlyRecentyUsedConnections;
 	
+	public interface DataModelChanger {
+		void change(String dataModelSubfolder);
+		void onConnectionListChanged();
+		void afterConnect();
+	}
+	
 	/** Creates new form DbConnectionDialog */
-	public DbConnectionDialog(Window parent, DbConnectionDialog other, String applicationName, ExecutionContext executionContext) {
-		this(parent, applicationName, other.infoBar == null? null : new InfoBar(other.infoBar), executionContext);
+	public DbConnectionDialog(Window parent, DbConnectionDialog other, String applicationName, DataModelChanger dataModelChanger, ExecutionContext executionContext) {
+		this(parent, applicationName, other.infoBar == null? null : new InfoBar(other.infoBar), dataModelChanger, executionContext);
 		this.isConnected = other.isConnected;
 		this.connectionList = other.connectionList;
 		if (other.currentConnection != null) {
@@ -288,8 +292,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	 * 
 	 * @param applicationName application name. Used to create the name of the demo database alias. 
 	 */
-	public DbConnectionDialog(Window parent, String applicationName, InfoBar infoBar, ExecutionContext executionContext) {
-		this(parent, applicationName, infoBar, executionContext, true, false);
+	public DbConnectionDialog(Window parent, String applicationName, InfoBar infoBar, DataModelChanger dataModelChanger, ExecutionContext executionContext) {
+		this(parent, applicationName, infoBar, dataModelChanger, executionContext, true, false);
 	}
 	
 	/** 
@@ -298,13 +302,13 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	 * @param applicationName application name. Used to create the name of the demo database alias. 
 	 * @param showOnlyRecentyUsedConnections 
 	 */
-	public DbConnectionDialog(Window parent, String applicationName, InfoBar infoBar, ExecutionContext executionContext, boolean dataModelAware, boolean showOnlyRecentyUsedConnections) {
+	public DbConnectionDialog(Window parent, String applicationName, InfoBar infoBar, DataModelChanger dataModelChanger, ExecutionContext executionContext, boolean dataModelAware, boolean showOnlyRecentyUsedConnections) {
 		super(parent);
 		setModal(true);
+		this.dataModelChanger = dataModelChanger;
 		this.executionContext = executionContext;
 		this.parent = parent;
 		this.infoBar = infoBar;
-		this.currentModelSubfolder = DataModelManager.getCurrentModelSubfolder(executionContext);
 		this.dataModelAware = dataModelAware;
 		this.showOnlyRecentyUsedConnections = showOnlyRecentyUsedConnections;
 		loadConnectionList(showOnlyRecentyUsedConnections);
@@ -563,7 +567,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			copy.setEnabled(currentConnection != null);
 			jButton1.setEnabled(currentConnection != null && selectedRowIndex >= 0 && selectedRowIndex < connectionList.size());
 			warnOnConnect = !(selectedRowIndex < 0 || isAssignedToDataModel(selectedRowIndex));
-			if (currentModelSubfolder == null && warnOnConnect) {
+			if (DataModelManager.getCurrentModelSubfolder(executionContext) == null && warnOnConnect) {
 				warnOnConnect = false;
 				jButton1.setEnabled(false);
 			}
@@ -752,9 +756,9 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			@Override
 			public int compare(ConnectionInfo o1, ConnectionInfo o2) {
 				if (dataModelAware) {
-					if (currentModelSubfolder != null) {
-						boolean c1 = currentModelSubfolder.equals(o1.dataModelFolder);
-						boolean c2 = currentModelSubfolder.equals(o2.dataModelFolder);
+					if (DataModelManager.getCurrentModelSubfolder(executionContext) != null) {
+						boolean c1 = DataModelManager.getCurrentModelSubfolder(executionContext).equals(o1.dataModelFolder);
+						boolean c2 = DataModelManager.getCurrentModelSubfolder(executionContext).equals(o2.dataModelFolder);
 						
 						if (c1 && !c2) return -1;
 						if (!c1 && c2) return 1;
@@ -1128,7 +1132,9 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		}
 		
 		if (warnOnConnect) {
-			if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(mainPanel, "Connection is not associated with " + (currentModelSubfolder == null? "any data model." : ("data model \"" + currentModelSubfolder + "\".")) + "\nDo you still want to connect?", "Connect", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE)) {
+			boolean noDM = DataModelManager.getCurrentModelSubfolder(executionContext) == null;
+			if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(mainPanel, "Connection is not associated with " + (noDM? "any data model." : ("data model \"" + DataModelManager.getCurrentModelSubfolder(executionContext) + "\".")) + "\n"
+					+ (noDM || dataModelChanger == null? "Do you still want to connect?" : "Do you want to change data model and connect?"), "Connect", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE)) {
 				return;
 			}
 		}
@@ -1145,7 +1151,13 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 				isConnected = true;
 				ok = true;
 				executionContext.setCurrentConnectionAlias(currentConnection.alias);
+				if (dataModelChanger != null && DataModelManager.getCurrentModelSubfolder(executionContext) != null && warnOnConnect) {
+					dataModelChanger.change(currentConnection.dataModelFolder);
+				}
 				onConnect(currentConnection);
+				if (dataModelChanger != null) {
+					dataModelChanger.afterConnect();
+				}
 				if (currentConnection.alias != null && !"".equals(currentConnection.alias)) {
 					UISettings.addRecentConnectionAliases(currentConnection.alias);
 				}
@@ -1329,7 +1341,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	}
 
 	protected boolean isAssignedToDataModel(String dataModelFolder) {
-		String fn = currentModelSubfolder;
+		String fn = DataModelManager.getCurrentModelSubfolder(executionContext);
 		return fn == null && dataModelFolder == null || (fn != null && fn.equals(dataModelFolder));
 	}
 

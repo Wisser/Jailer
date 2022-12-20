@@ -24,17 +24,6 @@ import net.sf.jailer.JailerVersion;
  */
 public class DataBrowserContext {
 
-	private static boolean supportsDataModelUpdates = true;
-
-	public static synchronized boolean isSupportsDataModelUpdates() {
-		return supportsDataModelUpdates;
-	}
-
-	public static synchronized void setSupportsDataModelUpdates(
-			boolean supportsDataModelUpdates) {
-		DataBrowserContext.supportsDataModelUpdates = supportsDataModelUpdates;
-	}
-
 	public static String getAppName(boolean shortName) {
 		return JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + (shortName? "" : " - Relational Data Browser");
 	}

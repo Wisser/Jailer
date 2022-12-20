@@ -1338,7 +1338,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	}
 
 	private void initConnectionDialog(boolean all) {
-		DbConnectionDialog dialog = new DbConnectionDialog(this, JailerVersion.APPLICATION_NAME, all? infoBarConnection : infoBarRecUsedConnection, executionContext, false, !all) {
+		DbConnectionDialog dialog = new DbConnectionDialog(this, JailerVersion.APPLICATION_NAME, all? infoBarConnection : infoBarRecUsedConnection, null, executionContext, false, !all) {
 			@Override
 			protected boolean isAssignedToDataModel(String dataModelFolder) {
 				return modelList.contains(dataModelFolder);
@@ -2548,7 +2548,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			DbConnectionDialog dbConnectionDialog = new DbConnectionDialog(this, applicationName,
 					new DMMDInfoBar("Connect with Database",
 							"Select a connection to the database to be analyzed, or create a new connection.\n" +
-							"New connections will be assigned to the datamodel \"" + modelDetails.get(currentModel).a + "\".", null), executionContext);
+							"New connections will be assigned to the datamodel \"" + modelDetails.get(currentModel).a + "\".", null), null, executionContext);
 			if (dbConnectionDialog.connect("Analyze Database")) {
 				List<String> args = new ArrayList<String>();
 				args.add("build-model-wo-merge");

@@ -3162,17 +3162,18 @@ public abstract class Desktop extends JDesktopPane {
 	 * Reloads the data model and replaces the tables in all browser windows.
 	 */
 	public void reloadDataModel(Map<String, String> schemamapping) throws Exception {
-		reloadDataModel(schemamapping, true);
+		reloadDataModel(schemamapping, true, true);
 	}
 
 	/**
 	 * Reloads the data model and replaces the tables in all browser windows.
+	 * @param restoreSess 
 	 */
-	public void reloadDataModel(Map<String, String> schemamapping, boolean forAll) throws Exception {
+	public void reloadDataModel(Map<String, String> schemamapping, boolean restoreSess, boolean forAll) throws Exception {
 		if (forAll) {
 			for (Desktop desktop : desktops) {
 				if (desktop != this) {
-					desktop.reloadDataModel(desktop.schemaMapping, false);
+					desktop.reloadDataModel(desktop.schemaMapping, restoreSess, false);
 				}
 			}
 		}
@@ -3184,7 +3185,9 @@ public abstract class Desktop extends JDesktopPane {
 				pFrame = this;
 			}
 			String filename = Environment.newFile(".tempsession-" + System.currentTimeMillis()).getPath();
-			storeSession(filename);
+			if (restoreSess) {
+				storeSession(filename);
+			}
 			
 			DataModel newModel = new DataModel(schemamapping, executionContext, false);
 			datamodel.set(newModel);
@@ -3192,9 +3195,11 @@ public abstract class Desktop extends JDesktopPane {
 			
 			onNewDataModel();
 
-			restoreSession(null, pFrame, filename);
-			File file = new File(filename);
-			file.delete();
+			if (restoreSess) {
+				restoreSession(null, pFrame, filename);
+				File file = new File(filename);
+				file.delete();
+			}
 		} catch (Throwable e) {
 			UIUtil.showException(this, "Error", e, session);
 		}
@@ -3240,7 +3245,7 @@ public abstract class Desktop extends JDesktopPane {
 				schemaMapping.clear();
 				schemaMapping.putAll(mapping);
 				parentFrame.updateStatusBar();
-				reloadDataModel(mapping, !silent);
+				reloadDataModel(mapping, true, !silent);
 				reloadRoots();
 			}
 		} catch (Exception e) {
