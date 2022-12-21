@@ -229,7 +229,7 @@ public class DesktopOutline extends JPanel {
 			g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 			double r = 6;
 			scale = Math.min(((double) sameWidthFriend.getWidth() - r * 2.0) / (double) desktop.getWidth(), ((double) (getHeight() - r * 2.0) / (double) desktop.getHeight()));
-			offX = r;
+			offX = r - 3;
 			offY = r - 1; // Math.max(0, (outLinePanel.getHeight() - outlineSize.getHeight()) / 2);
 			BasicStroke stroke = new BasicStroke();
 			double border = 4 / scale;

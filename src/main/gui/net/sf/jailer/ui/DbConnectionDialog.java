@@ -41,6 +41,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -270,7 +271,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	public interface DataModelChanger {
 		void change(String dataModelSubfolder);
 		void onConnectionListChanged();
-		void afterConnect();
+		void afterConnect(ConnectionInfo ci);
 	}
 	
 	/** Creates new form DbConnectionDialog */
@@ -311,6 +312,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		this.infoBar = infoBar;
 		this.dataModelAware = dataModelAware;
 		this.showOnlyRecentyUsedConnections = showOnlyRecentyUsedConnections;
+		allDialogs.put(this, this);
 		loadConnectionList(showOnlyRecentyUsedConnections);
 		initComponents();
 		jButton1.setIcon(UIUtil.scaleIcon(jButton1, okIcon));
@@ -608,6 +610,15 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			}
 			out.writeObject(dataModels);
 			out.close();
+			
+			if (!onConnectionListChangedPending) {
+				onConnectionListChangedPending = true;
+				UIUtil.invokeLater(() -> {
+					onConnectionListChangedPending = false;
+					onConnectionListChangedAll();
+				});
+			}
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -617,6 +628,22 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		}
 	}
 	
+	private boolean onConnectionListChangedPending = false;
+	
+	private void onConnectionListChanged() {
+		loadConnectionList(false);
+		refresh();
+		if (dataModelChanger != null) {
+			dataModelChanger.onConnectionListChanged();
+		}
+	}
+	
+	private static void onConnectionListChangedAll() {
+		allDialogs.forEach((a, b) -> a.onConnectionListChanged());
+	}
+
+	private static Map<DbConnectionDialog, DbConnectionDialog> allDialogs = new WeakHashMap<DbConnectionDialog, DbConnectionDialog>();
+
 	/**
 	 * Loads connection list.
 	 * @param showOnlyRecentyUsedConnections 
@@ -624,6 +651,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	@SuppressWarnings("unchecked")
 	private void loadConnectionList(boolean showOnlyRecentyUsedConnections) {
 		connectionList = new ArrayList<ConnectionInfo>();
+		String currentAlias = currentConnection != null? currentConnection.alias : null;
 		currentConnection = null;
 		boolean ok = false;
 		boolean preV4 = true;
@@ -746,8 +774,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			connectionList = recUsedConnectionList;
 		}
 
-		if (connectionList.size() == 1) {
-			currentConnection = connectionList.get(0);
+		if (currentAlias != null) {
+			connectionList.stream().filter(ci -> currentAlias.equals(ci.alias)).findAny().ifPresent(ci -> currentConnection = ci);
 		}
 	}
 
@@ -1156,7 +1184,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 				}
 				onConnect(currentConnection);
 				if (dataModelChanger != null) {
-					dataModelChanger.afterConnect();
+					dataModelChanger.afterConnect(currentConnection);
 				}
 				if (currentConnection.alias != null && !"".equals(currentConnection.alias)) {
 					UISettings.addRecentConnectionAliases(currentConnection.alias);
