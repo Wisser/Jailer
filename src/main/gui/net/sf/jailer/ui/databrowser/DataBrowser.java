@@ -412,10 +412,10 @@ public class DataBrowser extends javax.swing.JFrame {
 		updateModelNavigation();
 		
 		// TODO
-		UIUtil.invokeLater(14, () -> {
-			al.actionPerformed(null);
-			modelNavigationPanel.setVisible(true);
-		});
+//		UIUtil.invokeLater(14, () -> {
+//			al.actionPerformed(null);
+//			modelNavigationPanel.setVisible(true);
+//		});
 		
 		boolean zoom = Boolean.TRUE.equals(UISettings.restore(UISettings.ZOOM_WITH_MOUSE_WHEEL));
 		zoomWithMouseWheelMenuItem.setSelected(Boolean.TRUE.equals(UISettings.restore(UISettings.ZOOM_WITH_MOUSE_WHEEL)));
@@ -3428,7 +3428,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	private void newBrowserjMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_newBrowserjMenuItemActionPerformed
 		try {
 		    UIUtil.setWaitCursor(this);
-		    createFrame("B", executionContext);
+		    createFrame("B", new ExecutionContext(executionContext));
 		} catch (Throwable t) {
 			UIUtil.showException(this, "Error", t);
 		} finally {
@@ -6212,4 +6212,6 @@ public class DataBrowser extends javax.swing.JFrame {
 	// TODO
 	// TODO postgres "daterange": what about arrays ("_.*")? Patterns in key of <sqlExpressionRule>?
 	
+	// TODO
+	// TODO datamodelanalyse in one databrowser -> changes model in other browser too
 }

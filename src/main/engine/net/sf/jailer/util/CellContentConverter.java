@@ -527,6 +527,30 @@ public class CellContentConverter {
 			if (expr != null) {
 				return new SQLExpressionWrapper(object, columnTypeName, expr);
 			}
+			if (DBMS.POSTGRESQL.equals(configuration) && DBMS.POSTGRESQL.equals(targetConfiguration)) {
+				expr = "'$1'::$2";
+				if ((type == TYPE_POBJECT || type == Types.ARRAY || object instanceof String)) {
+					if (type == Types.VARCHAR) {
+						if (!"text".equals(columnTypeName)) {
+							int columnDisplaySize = resultSetMetaData.getColumnDisplaySize(i);
+							if (columnDisplaySize == Integer.MAX_VALUE) {
+								return new SQLExpressionWrapper(object, "\"" + columnTypeName + "\"", expr);
+							}
+						}
+					} else {
+						return new SQLExpressionWrapper(object, "\"" + columnTypeName + "\"", expr);
+					} 
+				} else {
+					Boolean isPGObject = isPGObjectClass.get(object.getClass());
+					if (isPGObject == null) {
+						isPGObject = object.getClass().getSimpleName().equals("PGobject");
+						isPGObjectClass.put(object.getClass(), isPGObject);
+					}
+					if (isPGObject) {
+						return new SQLExpressionWrapper(object, "\"" + columnTypeName + "\"", expr);
+					}
+				}
+			}
 		}
 
 		return object;
