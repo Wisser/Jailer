@@ -695,6 +695,9 @@ public class TabContentPanel extends javax.swing.JPanel {
 				}
 				if (y == 0 && sep == null && incHeader && !(rotate ^ columnNamesInFirstRow)) {
 					int o = 2;
+					if (cell[y].length == 1) {
+						sb.append(" ");
+					}
 					for (int x = 0; x < cell[y].length; ++x) {
 						if (maxLength[x] > 0) {
 							for (int i = o; i < 2 + maxLength[x]; ++i) {
