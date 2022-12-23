@@ -697,8 +697,8 @@ public class TabContentPanel extends javax.swing.JPanel {
 					int o = 2;
 					for (int x = 0; x < cell[y].length; ++x) {
 						if (maxLength[x] > 0) {
-							for (int i = 2 + maxLength[x]; i > o; --i) {
-								sb.append("-");
+							for (int i = o; i < 2 + maxLength[x]; ++i) {
+								sb.append(i < 2? " " : "-");
 							}
 							o = 0;
 						}
