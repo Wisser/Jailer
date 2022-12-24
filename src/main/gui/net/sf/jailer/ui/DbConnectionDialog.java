@@ -263,6 +263,51 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		}
 	}
 
+	public boolean connectSilent(ConnectionInfo ci) {
+		if (connectionsTable.getModel().getRowCount() > 0) {
+			int cRI = -1;
+			for (int i = 0; i < connectionList.size(); ++i) {
+				if (connectionList.get(i).alias != null && connectionList.get(i).alias.equals(ci.alias)) {
+					cRI = i;
+					break;
+				}
+			}
+			if (cRI >= 0) {
+				connectionsTable.getSelectionModel().setSelectionInterval(cRI, cRI);
+				refresh();
+			} else {
+				return false;
+			}
+		}
+
+		isConnected = false;
+		Component root = SwingUtilities.getWindowAncestor(mainPanel);
+		if (root == null) {
+			root = mainPanel;
+		}
+		try {
+			UIUtil.setWaitCursor(root);
+			if (testConnection(dataModelChanger != null? dataModelChanger.ownerWindow() : mainPanel, currentConnection, null)) {
+				isConnected = true;
+				ok = true;
+				executionContext.setCurrentConnectionAlias(currentConnection.alias);
+				if (dataModelChanger != null && DataModelManager.getCurrentModelSubfolder(executionContext) != null && warnOnConnect) {
+					dataModelChanger.change(currentConnection.dataModelFolder);
+				}
+				onConnect(currentConnection);
+				if (dataModelChanger != null) {
+					dataModelChanger.afterConnect(currentConnection);
+				}
+				if (currentConnection.alias != null && !"".equals(currentConnection.alias)) {
+					UISettings.addRecentConnectionAliases(currentConnection.alias);
+				}
+			}
+		} finally {
+			UIUtil.resetWaitCursor(root);
+		}
+		return isConnected;
+	}
+
 	private final InfoBar infoBar;
 	private final boolean dataModelAware;
 	private final DataModelChanger dataModelChanger;
@@ -272,6 +317,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		void change(String dataModelSubfolder);
 		void onConnectionListChanged();
 		void afterConnect(ConnectionInfo ci);
+		Window ownerWindow();
 	}
 	
 	/** Creates new form DbConnectionDialog */

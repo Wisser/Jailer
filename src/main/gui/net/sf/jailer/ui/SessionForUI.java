@@ -72,6 +72,7 @@ public class SessionForUI extends Session {
 				CancellationHandler.reset(null);
 				try {
 					Connection newCon = session.connectionFactory.getConnection();
+					
 					if (testOnly) {
 						newCon.close();
 					} else {

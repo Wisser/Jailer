@@ -412,10 +412,10 @@ public class DataBrowser extends javax.swing.JFrame {
 		updateModelNavigation();
 		
 		// TODO
-//		UIUtil.invokeLater(14, () -> {
-//			al.actionPerformed(null);
-//			modelNavigationPanel.setVisible(true);
-//		});
+		UIUtil.invokeLater(14, () -> {
+			al.actionPerformed(null);
+			modelNavigationPanel.setVisible(true);
+		});
 		
 		boolean zoom = Boolean.TRUE.equals(UISettings.restore(UISettings.ZOOM_WITH_MOUSE_WHEEL));
 		zoomWithMouseWheelMenuItem.setSelected(Boolean.TRUE.equals(UISettings.restore(UISettings.ZOOM_WITH_MOUSE_WHEEL)));
@@ -1393,7 +1393,7 @@ public class DataBrowser extends javax.swing.JFrame {
 						}
 						
 						if (connectedAliases.contains(node.alias)) {
-							((JLabel) render).setText("<html><b>" + ((JLabel) render).getText() + "</b></html>");
+							((JLabel) render).setText("<html><nobr><b>" + ((JLabel) render).getText() + "</b></html>");
 						}
 					} else {
 						icon = modelIcon;
@@ -1430,6 +1430,30 @@ public class DataBrowser extends javax.swing.JFrame {
 			public void mouseDragged(MouseEvent e) {
 			}
 		});
+		modelNavigationTree.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() > 1 && dbConnectionDialog != null) {
+					TreePath path = modelNavigationTree.getClosestPathForLocation(e.getX(), e.getY());
+					if (path != null) {
+						Object p = path.getLastPathComponent();
+						Object o = null;
+						if (p instanceof DefaultMutableTreeNode) {
+							o = ((DefaultMutableTreeNode) p).getUserObject();
+						}
+						if (o instanceof ConnectionInfo) {
+							if (dbConnectionDialog.connectSilent((ConnectionInfo) o)) {
+								try {
+									setConnection(dbConnectionDialog);
+								} catch (Exception ex) {
+									UIUtil.showException(DataBrowser.this, "Error", ex, session);
+								}
+							}
+						}
+					}
+				}
+			}
+		});
 	}
 	
 	private String ciRender(ConnectionInfo ci) {
@@ -1457,6 +1481,8 @@ public class DataBrowser extends javax.swing.JFrame {
 				cis.add(ci);
 			}
 			
+System.out.println(models);
+			
 			models.forEach((mName, cis) -> {
 				DefaultMutableTreeNode node = new DefaultMutableTreeNode(mName);
 				root.add(node);
@@ -1470,9 +1496,38 @@ public class DataBrowser extends javax.swing.JFrame {
 			});
 		}
 		
+		Set<String> expandedModels = new HashSet<String>();
+		Object oldRoot = modelNavigationTree.getModel().getRoot();
+		if (oldRoot != null) {
+			for (int i = 0; i < modelNavigationTree.getModel().getChildCount(oldRoot); ++i) {
+				Object node = modelNavigationTree.getModel().getChild(oldRoot, i);
+				if (node instanceof DefaultMutableTreeNode) {
+					if (modelNavigationTree.isExpanded(new TreePath(((DefaultMutableTreeNode) node).getPath()))) {
+						Object uo = ((DefaultMutableTreeNode) node).getUserObject();
+						if (uo instanceof String) {
+							expandedModels.add((String) uo);
+						}
+					}
+				}
+			}
+		}
+		
 		modelNavigationTree.setModel(model);
+
+		for (int i = 0; i < modelNavigationTree.getModel().getChildCount(root); ++i) {
+			Object node = modelNavigationTree.getModel().getChild(root, i);
+			if (node instanceof DefaultMutableTreeNode) {
+				Object uo = ((DefaultMutableTreeNode) node).getUserObject();
+				if (uo instanceof String) {
+					if (expandedModels.contains((String) uo)) {
+						modelNavigationTree.expandPath(new TreePath(((DefaultMutableTreeNode) node).getPath()));
+					}
+				}
+			}
+		}
+		
 		if (!current.isEmpty()) {
-			modelNavigationTree.addSelectionPath(new TreePath(current.get(0).getPath()));
+			modelNavigationTree.setSelectionPath(new TreePath(current.get(0).getPath()));
 			UIUtil.invokeLater(() -> {
 				Rectangle b = modelNavigationTree.getPathBounds(new TreePath(current.get(0).getPath()));
 				if (b != null) {
@@ -1517,7 +1572,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				}
 				try {
 					String sessionFile = cDTmpFilePrefix + dataModelSubfolder;
-					desktop.reloadDataModel(schemamapping, new File(sessionFile).exists(), false);
+					desktop.reloadDataModel(schemamapping, !new File(sessionFile).exists(), false);
 					if (new File(sessionFile).exists()) {
 						afterReconnectAction = () -> {
 							try {
@@ -1540,6 +1595,11 @@ public class DataBrowser extends javax.swing.JFrame {
 					afterReconnectAction.run();
 					afterReconnectAction = null;
 				}
+			}
+			
+			@Override
+			public Window ownerWindow() {
+				return DataBrowser.this;
 			}
 		};
 	}
@@ -1673,6 +1733,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
 	private void createSession(DbConnectionDialog dbConnectionDialog) throws Exception {
 		ConnectionInfo connection = dbConnectionDialog.currentConnection;
+		connectedAliases.clear(); // TODO
 		connectedAliases.add(connection.alias);
 		BasicDataSource dataSource = UIUtil.createBasicDataSource(this, connection.driverClass, connection.url,
 				connection.user, connection.password, 0, dbConnectionDialog.currentJarURLs());
@@ -3383,7 +3444,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			String sqlFile = UIUtil.choseFile(null, ".", "Data Import", ".sql", this, false, true);
 			if (sqlFile != null) {
 				DbConnectionDialog dcd = new DbConnectionDialog(this, dbConnectionDialog,
-						DataBrowserContext.getAppName(), createDataModelChanger(), executionContext);
+						DataBrowserContext.getAppName(), null, executionContext);
 				if (dcd.connect("Data Import")) {
 					List<String> args = new ArrayList<String>();
 					args.add("import");
@@ -3817,10 +3878,10 @@ public class DataBrowser extends javax.swing.JFrame {
 
 		if (dbConnectionDialog == null) {
 			dbConnectionDialog = new DbConnectionDialog(dataBrowser, DataBrowserContext.getAppName(), null,
-					dataBrowser.createDataModelChanger(), executionContext);
+					null, executionContext);
 		} else {
 			dbConnectionDialog = new DbConnectionDialog(dataBrowser, dbConnectionDialog,
-					DataBrowserContext.getAppName(), dataBrowser.createDataModelChanger(), executionContext);
+					DataBrowserContext.getAppName(), null, executionContext);
 		}
 		dbConnectionDialog.autoConnect();
 		if (dbConnectionDialog.isConnected || dbConnectionDialog.connect(DataBrowserContext.getAppName(true))) {
@@ -6213,5 +6274,8 @@ public class DataBrowser extends javax.swing.JFrame {
 	// TODO postgres "daterange": what about arrays ("_.*")? Patterns in key of <sqlExpressionRule>?
 	
 	// TODO
-	// TODO datamodelanalyse in one databrowser -> changes model in other browser too
+	// TODO test: connecting failed after testconnection was ok
+	
+	// TODO test: password in session, "export from here" after reconnect via navigTree with different passwords
+	
 }

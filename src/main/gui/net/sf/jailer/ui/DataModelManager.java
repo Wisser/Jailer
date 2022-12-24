@@ -95,7 +95,7 @@ public class DataModelManager {
 	 */
 	public static Pair<String, Long> getModelDetails(String modelFolder, ExecutionContext executionContext) {
 		File nameFile = new File(
-				getBaseFolder(executionContext) + File.separator + (modelFolder != null ? modelFolder + File.separator : "") + DataModel.MODELNAME_CSV_FILE);
+				(modelFolder != null? executionContext.getDatamodelFolder() : getBaseFolder(executionContext)) + File.separator + (modelFolder != null ? modelFolder + File.separator : "") + DataModel.MODELNAME_CSV_FILE);
 		String name = null;
 		Long lastModified = null;
 		try {
