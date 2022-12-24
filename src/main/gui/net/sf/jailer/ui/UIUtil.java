@@ -1991,7 +1991,7 @@ public class UIUtil {
 		return null;
 	}
 
-	private static void setOpacity(Window w, float opacity) {
+	public static void setOpacity(Window w, float opacity) {
     	try {
     		if (!opacityfailed) {
     			w.setOpacity(opacity);
