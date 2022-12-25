@@ -374,7 +374,6 @@ public class DataBrowser extends javax.swing.JFrame {
 	    	modelNavigationGapPanel.setVisible(modelNavigationScrollPane.isVisible());
 	    	jPanel9.setVisible(modelNavigationScrollPane.isVisible());
 	    	
-	    	// TODO
 	    	if (modelNavigationScrollPane.isVisible()) {
 		    	jToolBar3.setVisible(false);
 		    	modelNavigationButtonV.setVisible(true);
@@ -384,8 +383,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		modelNavigationButton.addActionListener(al);
 		modelNavigationButtonV.addActionListener(al);
 		modelNavigationPanel.setVisible(false);
-		modelNavigationGapPanel.setMinimumSize(new Dimension(232, 1)); // TODO
-//		modelNavigationGapPanel.setMinimumSize(new Dimension(132, 1));
+		modelNavigationGapPanel.setMinimumSize(new Dimension(232, 1));
 		modelNavigationGapPanel.setPreferredSize(modelNavigationGapPanel.getMinimumSize());
 		
 		if (UIUtil.plaf == PLAF.FLAT) {
@@ -411,7 +409,6 @@ public class DataBrowser extends javax.swing.JFrame {
 		initModelNavigation();
 		updateModelNavigation();
 		
-		// TODO
 		UIUtil.invokeLater(14, () -> {
 			al.actionPerformed(null);
 			modelNavigationPanel.setVisible(true);
@@ -1433,7 +1430,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		modelNavigationTree.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() > 1 && dbConnectionDialog != null) {
+				if (SwingUtilities.isLeftMouseButton(e) && dbConnectionDialog != null) {
 					TreePath path = modelNavigationTree.getClosestPathForLocation(e.getX(), e.getY());
 					if (path != null) {
 						Object p = path.getLastPathComponent();
@@ -1442,12 +1439,16 @@ public class DataBrowser extends javax.swing.JFrame {
 							o = ((DefaultMutableTreeNode) p).getUserObject();
 						}
 						if (o instanceof ConnectionInfo) {
-							if (dbConnectionDialog.connectSilent((ConnectionInfo) o)) {
-								try {
-									setConnection(dbConnectionDialog);
-								} catch (Exception ex) {
-									UIUtil.showException(DataBrowser.this, "Error", ex, session);
+							if (e.getClickCount() > 1) {
+								if (dbConnectionDialog.connectSilent((ConnectionInfo) o)) {
+									try {
+										setConnection(dbConnectionDialog);
+									} catch (Exception ex) {
+										UIUtil.showException(DataBrowser.this, "Error", ex, session);
+									}
 								}
+							} else {
+								dbConnectionDialog.select((ConnectionInfo) o);
 							}
 						}
 					}
@@ -1481,10 +1482,8 @@ public class DataBrowser extends javax.swing.JFrame {
 				cis.add(ci);
 			}
 			
-System.out.println(models);
-			
 			models.forEach((mName, cis) -> {
-				DefaultMutableTreeNode node = new DefaultMutableTreeNode(mName);
+				DefaultMutableTreeNode node = new DefaultMutableTreeNode(mName.length() == 0? "Default" : mName);
 				root.add(node);
 				for (ConnectionInfo ci: cis) {
 					DefaultMutableTreeNode child = new DefaultMutableTreeNode(ci);
@@ -1733,7 +1732,7 @@ System.out.println(models);
 
 	private void createSession(DbConnectionDialog dbConnectionDialog) throws Exception {
 		ConnectionInfo connection = dbConnectionDialog.currentConnection;
-		connectedAliases.clear(); // TODO
+		connectedAliases.clear();
 		connectedAliases.add(connection.alias);
 		BasicDataSource dataSource = UIUtil.createBasicDataSource(this, connection.driverClass, connection.url,
 				connection.user, connection.password, 0, dbConnectionDialog.currentJarURLs());
@@ -3450,8 +3449,8 @@ System.out.println(models);
 					args.add("import");
 					args.add(sqlFile);
 					dcd.addDbArgs(args);
-					ImportDialog importDialog = new ImportDialog(this, sqlFile, args, dbConnectionDialog.getUser(),
-							dbConnectionDialog.getPassword(), true);
+					ImportDialog importDialog = new ImportDialog(this, sqlFile, args, dcd.getUser(),
+							dcd.getPassword(), true);
 					if (importDialog.isOk) {
 						importDialog.fillCLIArgs(args);
 						ResultConsumer consumer = new ResultConsumer() {
@@ -6250,32 +6249,7 @@ System.out.println(models);
 		menuIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/menu.png"));
 		onePxIcon = UIUtil.readImage("/1px.png");
 	}
-	
-	// TODO
-	// TODO reconnect: instead of caching sesions: waitDialog.setOpaque(0.2?); ...1sec...waitDialog.setOpaque(1);
-	// TODO wait cursor initially
-	
-	// TODO
-		// TODO test: state after connection failed?
-		
-	// TODO
-	// TODO "Connections V" button, no toggle button but render "expanded" state differently
-	
-	// TODO
-	// TODO treemodelupdate stable (keep expanded state of models)
-		
-		// TODO
-		// TODO DbConDialog: dont create test connection if session is cached
-		
-	// TODO
-	// TODO "Connections" button: vertical -> xwidth = 1.0
 
-	// TODO
-	// TODO postgres "daterange": what about arrays ("_.*")? Patterns in key of <sqlExpressionRule>?
-	
-	// TODO
-	// TODO test: connecting failed after testconnection was ok
-	
 	// TODO test: password in session, "export from here" after reconnect via navigTree with different passwords
 	
 }
