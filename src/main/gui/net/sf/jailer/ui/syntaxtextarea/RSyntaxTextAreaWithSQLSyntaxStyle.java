@@ -18,7 +18,6 @@ package net.sf.jailer.ui.syntaxtextarea;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dialog;
-import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Window;
