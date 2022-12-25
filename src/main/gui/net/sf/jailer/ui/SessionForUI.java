@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.ui;
 
+import java.awt.Color;
 import java.awt.Point;
 import java.awt.Window;
 import java.sql.Connection;
@@ -23,11 +24,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.sql.DataSource;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.Timer;
 
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
@@ -58,12 +61,13 @@ public class SessionForUI extends Session {
 	 * @param dataSource the data source
 	 * @param dbms the DBMS
 	 */
-	public static SessionForUI createSession(DataSource dataSource, DBMS dbms, Integer isolationLevel, boolean shutDownImmediatelly, boolean initInlineViewStyle, boolean testOnly, final Window w) throws SQLException {
+	public static SessionForUI createSession(DataSource dataSource, DBMS dbms, Integer isolationLevel, boolean shutDownImmediatelly, boolean initInlineViewStyle, boolean testOnly, Window w) throws SQLException {
 		Session.setThreadSharesConnection();
 		final SessionForUI session = new SessionForUI(dataSource, dbms, isolationLevel, shutDownImmediatelly, testOnly);
 		final AtomicReference<Connection> con = new AtomicReference<Connection>();
 		final AtomicReference<Throwable> exception = new AtomicReference<Throwable>();
 		session.connectionDialog = new JDialog(w, "Connecting");
+		session.connectionDialog.setUndecorated(true);
 		session.connectionDialog.setModal(true);
 		Thread thread = new Thread(new Runnable() {
 			@Override
@@ -72,7 +76,6 @@ public class SessionForUI extends Session {
 				CancellationHandler.reset(null);
 				try {
 					Connection newCon = session.connectionFactory.getConnection();
-					
 					if (testOnly) {
 						newCon.close();
 					} else {
@@ -116,6 +119,28 @@ public class SessionForUI extends Session {
 			p = new Point(0, 0);
 		}
 		final Point los = p;
+		
+		if (fadeStart != null) {
+			int fadeTime = 800;
+			if (fadeTimer != null) {
+				fadeTimer.stop();
+			}
+			fadeTimer = new Timer(50, e -> {
+				if (fadeStart != null) {
+					long dif = System.currentTimeMillis() - fadeStart;
+					float h = Math.max(0f, Math.min(1f, -0.5f + dif / (float) fadeTime));
+					UIUtil.setOpacity(session.connectionDialog, h);
+					if (h < 1) {
+						return;
+					}
+					fadeTimer.stop();
+				}
+			});
+			fadeTimer.setInitialDelay(1);
+			fadeTimer.setRepeats(true);
+			fadeTimer.start();
+		}
+		
 		session.connectionDialog.getContentPane().add(session.connectingPanel);
 		session.connectionDialog.pack();
 		session.connectionDialog.setLocation(los.x + w.getWidth() / 2 - session.connectionDialog.getWidth() / 2, los.y + w.getHeight() / 2 - session.connectionDialog.getHeight() / 2);
@@ -145,6 +170,13 @@ public class SessionForUI extends Session {
 	private AtomicBoolean cancelled = new AtomicBoolean(false);
 	private JDialog connectionDialog;
 
+	private static Long fadeStart;
+	private static Timer fadeTimer;
+	
+	public static void startFadeIn() {
+		fadeStart = System.currentTimeMillis();
+	}
+	
 	/**
 	 * Constructor.
 	 * @param shutDownImmediatelly 
@@ -154,7 +186,8 @@ public class SessionForUI extends Session {
 		this.shutDownImmediatelly = shutDownImmediatelly;
 		this.testOnly = testOnly;
 		connectingPanel.setBackground(java.awt.Color.white);
-
+		connectingPanel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
+		
         jLabel1.setForeground(java.awt.Color.red);
         jLabel1.setText("connecting...");
         connectingPanel.add(jLabel1);
@@ -176,7 +209,7 @@ public class SessionForUI extends Session {
 	}
 	
 	private final boolean shutDownImmediatelly;
-	
+
 	/**
 	 * Closes all connections asynchronously.
 	 */
@@ -219,4 +252,5 @@ public class SessionForUI extends Session {
         // load images
         cancelIcon = UIUtil.readImage("/buttoncancel.png");
 	}
+
 }

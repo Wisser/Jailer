@@ -263,6 +263,22 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		}
 	}
 
+	public void select(ConnectionInfo ci) {
+		if (connectionsTable.getModel().getRowCount() > 0) {
+			int cRI = -1;
+			for (int i = 0; i < connectionList.size(); ++i) {
+				if (connectionList.get(i).alias != null && connectionList.get(i).alias.equals(ci.alias)) {
+					cRI = i;
+					break;
+				}
+			}
+			if (cRI >= 0) {
+				connectionsTable.getSelectionModel().setSelectionInterval(cRI, cRI);
+				refresh();
+			}
+		}
+	}
+	
 	public boolean connectSilent(ConnectionInfo ci) {
 		if (connectionsTable.getModel().getRowCount() > 0) {
 			int cRI = -1;
@@ -287,6 +303,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		}
 		try {
 			UIUtil.setWaitCursor(root);
+			SessionForUI.startFadeIn();
 			if (testConnection(dataModelChanger != null? dataModelChanger.ownerWindow() : mainPanel, currentConnection, null)) {
 				isConnected = true;
 				ok = true;
