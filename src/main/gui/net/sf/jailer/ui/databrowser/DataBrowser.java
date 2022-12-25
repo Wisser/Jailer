@@ -1551,7 +1551,6 @@ public class DataBrowser extends javax.swing.JFrame {
 			
 			@Override
 			public void change(String dataModelSubfolder) {
-				// TODO Auto-generated method stub
 				afterReconnectAction = null;
 				
 				String sFile = cDTmpFilePrefix + DataModelManager.getCurrentModelSubfolder(executionContext);
@@ -1757,6 +1756,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	}
 
 	protected void setConnection(DbConnectionDialog dbConnectionDialog) throws Exception {
+		String prevDatabaseName = currentDatabaseName;
 		if (dbConnectionDialog != null) {
 			dbConnectionDialog = new DbConnectionDialog(this, dbConnectionDialog, DataBrowserContext.getAppName(),
 					createDataModelChanger(), executionContext);
@@ -1774,6 +1774,9 @@ public class DataBrowser extends javax.swing.JFrame {
 					desktop.openSchemaMappingDialog(true);
 					updateStatusBar();
 					desktop.updateMenu();
+					if (prevDatabaseName != null && !prevDatabaseName.equals(currentDatabaseName)) {
+						sqlConsoles.forEach(sqlConsole -> sqlConsole.onReconnect(prevDatabaseName, currentDatabaseName));
+					}
 					for (RowBrowser rb : desktop.getBrowsers()) {
 						rb.browserContentPane.session = session;
 						rb.browserContentPane.rows.clear();
@@ -1786,6 +1789,8 @@ public class DataBrowser extends javax.swing.JFrame {
 		}
 	}
 
+	private String currentDatabaseName;
+	
 	public void updateStatusBar() {
 		final int MAX_LENGTH = 40;
 		ConnectionInfo connection = dbConnectionDialog != null ? dbConnectionDialog.currentConnection : null;
@@ -1805,6 +1810,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		if (dburl.length() > MAX_LENGTH) {
 			dburl = dburl.substring(0, MAX_LENGTH - 3) + "...";
 		}
+		currentDatabaseName = dburl;
 		connectivityState.setText(dburl);
 		setTitle((dburl.trim().length() > 0 ? dburl + " - " : "") + DataBrowserContext.getAppName(false));
 

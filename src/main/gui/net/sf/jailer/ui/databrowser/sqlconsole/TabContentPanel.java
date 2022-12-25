@@ -146,15 +146,13 @@ public class TabContentPanel extends javax.swing.JPanel {
 						public void componentHidden(ComponentEvent e) {
 						}
 					});
+	        		statementLabel.setName("statementLabel");
 		        	add(statementLabel);
-	        	}
+		    	}
 	        	
 				private void resize() {
 					Rectangle visibleRect = getBounds();
-					String value = statementLabel.getText();
-					FontMetrics fontMetrics = getFontMetrics(getFont());
-					int x = Math.max(32, visibleRect.width - fontMetrics.stringWidth(value));
-					int y = (visibleRect.height - fontMetrics.getHeight() / 2) + fontMetrics.getAscent();
+					int x = Math.max(32, visibleRect.width - statementLabel.getPreferredSize().width);
 					statementLabel.setBounds(x, 0, visibleRect.width - x, visibleRect.height);
 				}
         	}
@@ -1104,7 +1102,7 @@ public class TabContentPanel extends javax.swing.JPanel {
     public javax.swing.JScrollPane textViewScrollPane;
     private javax.swing.JPanel typePanel;
     // End of variables declaration//GEN-END:variables
-    public javax.swing.JLabel statementLabel;
+    public final javax.swing.JLabel statementLabel;
 	public final javax.swing.JPanel shimPanel;
 	javax.swing.JButton loadButton;
 	protected boolean doSync;
