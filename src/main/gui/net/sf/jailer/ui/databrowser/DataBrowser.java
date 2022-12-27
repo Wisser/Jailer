@@ -79,6 +79,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Vector;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 
 import javax.swing.AbstractButton;
@@ -1465,6 +1467,11 @@ public class DataBrowser extends javax.swing.JFrame {
 		final DefaultMutableTreeNode root = new DefaultMutableTreeNode("");
 		DefaultTreeModel model = new DefaultTreeModel(root);
 		
+		String sf = DataModelManager.getCurrentModelSubfolder(executionContext);
+		DataModelManager.setCurrentModelSubfolder(null, executionContext);
+		List<String> existingModels = DataModelManager.getModelFolderNames(executionContext);
+		DataModelManager.setCurrentModelSubfolder(sf, executionContext);
+		
 		List<DefaultMutableTreeNode> current = new ArrayList<DefaultMutableTreeNode>();
 		if (dbConnectionDialog != null) {
 			if (currentConnectionInfo == null) {
@@ -1472,14 +1479,16 @@ public class DataBrowser extends javax.swing.JFrame {
 			}
 			Map<String, Set<ConnectionInfo>> models = new TreeMap<String, Set<ConnectionInfo>>();
 			for (ConnectionInfo ci: dbConnectionDialog.getConnectionList()) {
-				Pair<String, Long> modelDetails = DataModelManager.getModelDetails(ci.dataModelFolder, executionContext);
-				String mName = modelDetails == null? ci.dataModelFolder : modelDetails.a;
-				Set<ConnectionInfo> cis = models.get(mName);
-				if (cis == null) {
-					cis = new TreeSet<DbConnectionDialog.ConnectionInfo>((a, b) -> ciRender(a).compareToIgnoreCase(ciRender(b)));
-					models.put(mName, cis);
+				if (existingModels.contains(ci.dataModelFolder)) {
+					Pair<String, Long> modelDetails = DataModelManager.getModelDetails(ci.dataModelFolder, executionContext);
+					String mName = modelDetails == null? ci.dataModelFolder : modelDetails.a;
+					Set<ConnectionInfo> cis = models.get(mName);
+					if (cis == null) {
+						cis = new TreeSet<DbConnectionDialog.ConnectionInfo>((a, b) -> ciRender(a).compareToIgnoreCase(ciRender(b)));
+						models.put(mName, cis);
+					}
+					cis.add(ci);
 				}
-				cis.add(ci);
 			}
 			
 			models.forEach((mName, cis) -> {
@@ -3873,7 +3882,10 @@ public class DataBrowser extends javax.swing.JFrame {
 
 	private static DataBrowser openNewDataBrowser(DataModel datamodel, DbConnectionDialog dbConnectionDialog,
 			boolean maximize, ExecutionContext executionContext, DataBrowser theDataBrowser) throws Exception {
-		final DataBrowser dataBrowser = theDataBrowser != null ? theDataBrowser
+		if (executionContext != null) {
+			executionContext = new ExecutionContext(executionContext);
+		}
+		DataBrowser dataBrowser = theDataBrowser != null ? theDataBrowser
 				: new DataBrowser(datamodel, null, "", null,
 						ExecutionContext.getSchemaMapping(CommandLineInstance.getInstance().rawschemamapping),
 						executionContext);
@@ -5123,7 +5135,25 @@ public class DataBrowser extends javax.swing.JFrame {
 
 	private MetaDataPanel metaDataPanel;
 	private Runnable createMetaDataPanel;
-
+	
+	private static BlockingQueue<Runnable> onsQueue = new LinkedBlockingQueue<Runnable>();
+	static {
+		Thread thread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				for (;;) {
+					try {
+						onsQueue.take().run();
+					} catch (Throwable t) {
+						LogUtil.warn(t);
+					}
+				}
+			}
+		});
+		thread.setDaemon(true);
+		thread.start();
+	}
+	
 	private void onNewSession(Session newSession) {
 		if (newSession == null) {
 			return;
@@ -5155,7 +5185,7 @@ public class DataBrowser extends javax.swing.JFrame {
 						|| Boolean.TRUE.equals(session.getSessionProperty(DataBrowser.class, "removeMetaDataSource"))) {
 					metaDataSource = new MetaDataSource(newSession, datamodel.get(), alias, executionContext);
 					final MetaDataSource finalMetaDataSource = metaDataSource;
-					Thread thread = new Thread(new Runnable() {
+					onsQueue.add(new Runnable() {
 						@Override
 						public void run() {
 							Session.setThreadSharesConnection();
@@ -5203,8 +5233,6 @@ public class DataBrowser extends javax.swing.JFrame {
 							}
 						}
 					});
-					thread.setDaemon(true);
-					thread.start();
 					metaDataPanel = null;
 				}
 				session.setSessionProperty(DataBrowser.class, "removeMetaDataSource", null);

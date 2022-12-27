@@ -391,7 +391,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 		} else {
 			setSize(Math.min(screenSize.width - 2 * 100, 1400), Math.min(screenSize.height - 2 * 32, 800));
 		}
-		UIUtil.fit(this);
+		UIUtil.fit(this, true);
 		
 		File modelFinderColumnFile = new File(ModelBuilder.getModelBuilderColumnsFilename(executionContext));
 		if (merge && modelFinderColumnFile.exists()) {

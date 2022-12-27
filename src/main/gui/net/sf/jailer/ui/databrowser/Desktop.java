@@ -3193,8 +3193,6 @@ public abstract class Desktop extends JDesktopPane {
 			datamodel.set(newModel);
 			UISettings.dmStats(newModel);
 			
-			onNewDataModel();
-
 			if (restoreSess) {
 				restoreSession(null, pFrame, filename);
 				File file = new File(filename);

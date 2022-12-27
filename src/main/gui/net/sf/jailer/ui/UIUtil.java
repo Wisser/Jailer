@@ -950,13 +950,23 @@ public class UIUtil {
     }
 
     public static void fit(Window d) {
-        try {
+    	fit(d, false);
+    }
+    
+    public static void fit(Window d, boolean full) {
+    	try {
             // Get the size of the screen
             Rectangle2D dim = getScreenBounds();
             
             int hd = (int) (d.getY() + d.getHeight() - (dim.getHeight() - 60));
             if (hd > 0) {
                 d.setSize(d.getWidth(), Math.max(d.getHeight() - hd, 150));
+            }
+            if (full) {
+	            int wd = (int) (d.getX() + d.getWidth() - (dim.getWidth() - 4));
+	            if (wd > 0) {
+	                d.setSize(Math.max(d.getWidth() - wd, 150), d.getHeight());
+	            }
             }
             d.setLocation((int) Math.min(d.getX(), dim.getX() + dim.getWidth() - 100), (int) Math.min(d.getY(), dim.getY() + dim.getHeight() - 150));
             d.setLocation((int) Math.max(dim.getX(), d.getX()), (int) Math.max(dim.getY(), d.getY()));

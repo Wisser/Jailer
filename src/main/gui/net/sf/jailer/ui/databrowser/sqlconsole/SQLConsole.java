@@ -2116,7 +2116,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			if ("statementLabel".equals(c.getName())) {
 				JLabel label = (JLabel) c;
 				String statement = label.getText();
-				Function<String, String> prefix = dbName -> "<html><nobr><font color=\"#ff0000\">rows from " + UIUtil.toHTMLFragment(dbName, 0) + ": </font>";
+				Function<String, String> prefix = dbName -> "<html><nobr><font color=\"#ff0000\">loaded from " + UIUtil.toHTMLFragment(dbName, 0) + ": </font>";
 				if (!statement.startsWith("<html>")) {
 					label.setIcon(UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/wanr.png")));
 					label.setText(prefix.apply(prevDatabaseName) + UIUtil.toHTMLFragment(statement, 0) + "</html>");
