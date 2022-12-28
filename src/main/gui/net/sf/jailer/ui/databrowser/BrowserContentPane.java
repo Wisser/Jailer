@@ -841,11 +841,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		Set<String> currentClosureRootID = new HashSet<String>();
 		BrowserContentPane currentClosureRootPane;
 		Set<BrowserContentPane> parentPath = new HashSet<BrowserContentPane>();
+		Set<BrowserContentPane> hAlignedPath = new HashSet<BrowserContentPane>();
 
 		Set<Row> tempClosure = new HashSet<Row>();
 	}
 
-	private final RowsClosure rowsClosure;
+	final RowsClosure rowsClosure;
 
 	private boolean suppressReload;
 

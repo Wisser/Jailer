@@ -2033,10 +2033,11 @@ public abstract class Desktop extends JDesktopPane {
 		public final boolean dotted, intersect;
 		public final boolean inClosure;
 		public final boolean inTempClosure;
+		public final boolean notHAligned;
 		public final boolean restricted;
 		
 		public Link(RowBrowser from, RowBrowser to, String sourceRowID, String destRowID, int x1, int y1, int x2, int y2, Color color1, Color color2, boolean dotted,
-				boolean intersect, boolean inClosure, boolean inTempClosure, boolean restricted) {
+				boolean intersect, boolean inClosure, boolean inTempClosure, boolean notHAligned, boolean restricted) {
 			this.from = from;
 			this.to = to;
 			this.sourceRowID = sourceRowID;
@@ -2051,6 +2052,7 @@ public abstract class Desktop extends JDesktopPane {
 			this.intersect = intersect;
 			this.inClosure = inClosure;
 			this.inTempClosure = inTempClosure;
+			this.notHAligned = notHAligned;
 			this.restricted = restricted;
 		}
 	}
@@ -2082,6 +2084,18 @@ public abstract class Desktop extends JDesktopPane {
 						Color color2 = tableBrowser.color2;
 						boolean linkAdded = false;
 						boolean restricted = tableBrowser.parent != null && tableBrowser.browserContentPane.loadedRowsAreRestricted;
+						boolean notHAligned = false;
+						if (tableBrowser.parent != null) {
+							if (!rowsClosure.hAlignedPath.isEmpty()) {
+								if (!rowsClosure.hAlignedPath.contains(tableBrowser.browserContentPane)) {
+									if (rowsClosure.hAlignedPath.contains(tableBrowser.parent.browserContentPane)) {
+										if (getChildBrowsers(tableBrowser.parent, true).stream().filter(c -> rowsClosure.hAlignedPath.contains(c.browserContentPane)).findAny().isPresent()) {
+											notHAligned = true;
+										}
+									}
+								}
+							}
+						}
 						for (RowToRowLink rowToRowLink : tableBrowser.rowToRowLinks) {
 							if (rowToRowLink.x1 >= 0) {
 								linkAdded = true;
@@ -2105,7 +2119,7 @@ public abstract class Desktop extends JDesktopPane {
 									}
 	
 									Link link = new Link(tableBrowser, tableBrowser.parent, sourceRowID, destRowID, rowToRowLink.x1, rowToRowLink.y1,
-											rowToRowLink.x2, rowToRowLink.y2, color1, color2, false, false, inClosure, inTempClosure, restricted);
+											rowToRowLink.x2, rowToRowLink.y2, color1, color2, false, false, inClosure, inTempClosure, notHAligned, restricted);
 									List<Link> l = links.get(sourceRowID);
 									if (l == null) {
 										l = new ArrayList<Link>();
@@ -2122,7 +2136,7 @@ public abstract class Desktop extends JDesktopPane {
 							boolean inTempClosure = false;
 
 							Link link = new Link(tableBrowser, tableBrowser.parent, sourceRowID, destRowID, tableBrowser.x1, tableBrowser.y1,
-									tableBrowser.x2, tableBrowser.y2, color1, color2, true, true, inClosure, inTempClosure, restricted);
+									tableBrowser.x2, tableBrowser.y2, color1, color2, true, true, inClosure, inTempClosure, notHAligned, restricted);
 							List<Link> l = links.get(sourceRowID);
 							if (l == null) {
 								l = new ArrayList<Link>();
@@ -2170,7 +2184,7 @@ public abstract class Desktop extends JDesktopPane {
 										newLinks.add(new Link(link.from, toJoin.to, link.sourceRowID, toJoin.destRowID, link.x1, link.y1, toJoin.x2, toJoin.y2,
 												UIUtil.plaf == PLAF.FLAT? new Color(180, 200, 0) : Color.yellow.darker().darker(), 
 												UIUtil.plaf == PLAF.FLAT? new Color(180, 200, 0) : Color.yellow.darker(), 
-												dotted, intersect, link.inClosure && toJoin.inClosure, link.inTempClosure && toJoin.inTempClosure, link.restricted || toJoin.restricted));
+												dotted, intersect, link.inClosure && toJoin.inClosure, link.inTempClosure && toJoin.inTempClosure, link.notHAligned, link.restricted || toJoin.restricted));
 									}
 								}
 							}
@@ -2179,6 +2193,7 @@ public abstract class Desktop extends JDesktopPane {
 							}
 						}
 					}
+					int i = 0;
 				}
 
 				Set<RowBrowser> pathToSelectedRowBrowser = new HashSet<RowBrowser>();
@@ -2244,8 +2259,8 @@ public abstract class Desktop extends JDesktopPane {
 					}
 				}
 
-				final int MAX_PRIO = 3;
-				for (int prio = 0; prio <= MAX_PRIO; ++prio) {
+				final int MAX_PRIO = 5;
+				for (int prio = rowsClosure.hAlignedPath.isEmpty()? 2 : 0; prio <= MAX_PRIO; ++prio) {
 					for (final boolean pbg : new Boolean[] { true, false }) {
 						for (final RowBrowser tableBrowser : rbSourceToLinks.keySet()) {
 							if (!tableBrowser.isHidden()) {
@@ -2311,11 +2326,18 @@ public abstract class Desktop extends JDesktopPane {
 									final int ir = dir > 0? i : linksToRender.size() - 1 - i;
 									final boolean finalLight = light;
 									int linkPrio = 0;
-									if (pathToSelectedRowBrowser.contains(tableBrowser)) {
-										linkPrio += 2;
-									}
-									if (link.inClosure) {
-										linkPrio += 1;
+									if (link.notHAligned) {
+										if (link.inClosure) {
+											linkPrio += 1;
+										}
+									} else {
+										linkPrio = 2;
+										if (pathToSelectedRowBrowser.contains(tableBrowser)) {
+											linkPrio += 2;
+										}
+										if (link.inClosure) {
+											linkPrio += 1;
+										}
 									}
 									final boolean doPaint = linkPrio == prio;
 									Runnable task = new Runnable() {
@@ -2325,7 +2347,7 @@ public abstract class Desktop extends JDesktopPane {
 													link.dotted, link.restricted,
 												linksToRender.size() == 1 ? 0.5 : (ir + 1) * 1.0 / linksToRender.size(),
 												finalLight, followMe,
-												link.sourceRowID, link.inClosure, link.inTempClosure, inClosureRootPath,
+												link.sourceRowID, link.inClosure, link.inTempClosure, link.notHAligned, inClosureRootPath,
 												isToParentLink,
 												doPaint);
 										}
@@ -2372,7 +2394,7 @@ public abstract class Desktop extends JDesktopPane {
 
 	private void paintLink(Point2D start, Point2D end, Color color, Color fgColor, Graphics2D g2d, RowBrowser tableBrowser,
 			boolean pbg, boolean intersect, boolean dotted, boolean restricted, double midPos, boolean light,
-			Map<String, Point2D.Double> followMe, String sourceRowID, boolean inClosure, boolean inTempClosure, boolean inClosureRootPath,
+			Map<String, Point2D.Double> followMe, String sourceRowID, boolean inClosure, boolean inTempClosure, boolean notHAligned, boolean inClosureRootPath,
 			boolean isToParentLink, boolean doPaint) {
 		int so = 0;
 		float sop = 0;
@@ -2411,6 +2433,14 @@ public abstract class Desktop extends JDesktopPane {
 			}
 		}
 
+		if (notHAligned) {
+			Color fg = g2d.getColor();
+			if (!pbg) {
+				g2d.setColor(fg.brighter().brighter());
+			}
+			// g2d.setColor(new Color(fg.getRed(), fg.getGreen(), fg.getBlue(), 100)); // TODO
+		}
+		
 		// compute the intersection with the target bounding box
 		if (intersect) {
 			Point2D[] sect = new Point2D[10];
@@ -3703,11 +3733,13 @@ public abstract class Desktop extends JDesktopPane {
 				JOptionPane.showMessageDialog(pFrame,
 						"Layout doesn't contain table \"" + datamodel.get().getDisplayName(toBeAppended.browserContentPane.table) + "\" as root.");
 			} else if (!unknownTables.isEmpty()) {
-				String pList = "";
-				for (String ut : unknownTables) {
-					pList += ut + "\n";
-				}
-				JOptionPane.showMessageDialog(pFrame, "Unknown tables:\n\n" + pList + "\n");
+				// TODO
+				
+//				String pList = "";
+//				for (String ut : unknownTables) {
+//					pList += ut + "\n";
+//				}
+//				JOptionPane.showMessageDialog(pFrame, "Unknown tables:\n\n" + pList + "\n");
 			}
 		} finally {
 			if (desktopUndoManager != null) {
@@ -4308,6 +4340,16 @@ public abstract class Desktop extends JDesktopPane {
 	// TODO
 	// TODO render links betw. TabBrowsers less significant if a target TabBrowser is not in "horiz.alig." tree (s.t. from "aligned" table to root + subtree of "aligned")
 	// TODO think about situation before "align horiz.".
+	
+	// TODO 
+	// TODO reset "notHAliged" if: -relayout, -iframe moved, -iframe add/remove, -selection of iframe outside "notHAliged"(?), -not: maximize/unmaximize
+	
+	// TODO
+	// TODO "notHAliged" row to singleDetails is white
+	// TODO joined links are not correctly considered "notHAliged"
+	
+	// TODO
+	// TODO connections/model-NavigationTree in DataBrowser: own "resize"-Panel (like "gripPanel"/"movePanel")
 	
 	// TODO display names for associations? (using unique fk-column list?)
 	

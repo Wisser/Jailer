@@ -696,6 +696,12 @@ public class DataBrowser extends javax.swing.JFrame {
 				} catch (PropertyVetoException e) {
 					// ignore
 				}
+				anchor.browserContentPane.rowsClosure.hAlignedPath.clear();
+				for (RowBrowser rb = anchor; rb != null; rb = rb.parent) {
+					if (!rb.isHidden()) {
+						anchor.browserContentPane.rowsClosure.hAlignedPath.add(rb.browserContentPane);
+					}
+				}
 				arrangeLayout(true, anchor, true);
 			}
 
@@ -5198,6 +5204,9 @@ public class DataBrowser extends javax.swing.JFrame {
 										UIUtil.invokeLater(new Runnable() {
 											@Override
 											public void run() {
+												if (finalMetaDataSource.getSession().isDown()) {
+													return;
+												}
 												if (createMetaDataPanel != null) {
 													createMetaDataPanel.run();
 												}
@@ -5210,6 +5219,9 @@ public class DataBrowser extends javax.swing.JFrame {
 													// ignore
 												}
 												UIUtil.invokeLater(8, () -> {
+													if (finalMetaDataSource.getSession().isDown()) {
+														return;
+													}
 													updateNavigationTree();
 												});
 											}
@@ -6284,6 +6296,4 @@ public class DataBrowser extends javax.swing.JFrame {
 		onePxIcon = UIUtil.readImage("/1px.png");
 	}
 
-	// TODO test: password in session, "export from here" after reconnect via navigTree with different passwords
-	
 }
