@@ -2086,10 +2086,14 @@ public abstract class Desktop extends JDesktopPane {
 						boolean restricted = tableBrowser.parent != null && tableBrowser.browserContentPane.loadedRowsAreRestricted;
 						boolean notHAligned = false;
 						if (tableBrowser.parent != null) {
-							if (!rowsClosure.hAlignedPath.isEmpty()) {
+							if (!rowsClosure.hAlignedPath.isEmpty() && !tableBrowser.isHidden()) {
 								if (!rowsClosure.hAlignedPath.contains(tableBrowser.browserContentPane)) {
-									if (rowsClosure.hAlignedPath.contains(tableBrowser.parent.browserContentPane)) {
-										if (getChildBrowsers(tableBrowser.parent, true).stream().filter(c -> rowsClosure.hAlignedPath.contains(c.browserContentPane)).findAny().isPresent()) {
+									RowBrowser visParent = tableBrowser.parent;
+									while (visParent.isHidden() && visParent.parent != null) {
+										visParent = visParent.parent;
+									}
+									if (rowsClosure.hAlignedPath.contains(visParent.browserContentPane)) {
+										if (getChildBrowsers(visParent, true).stream().filter(c -> rowsClosure.hAlignedPath.contains(c.browserContentPane)).findAny().isPresent()) {
 											notHAligned = true;
 										}
 									}
@@ -4350,6 +4354,7 @@ public abstract class Desktop extends JDesktopPane {
 	
 	// TODO
 	// TODO connections/model-NavigationTree in DataBrowser: own "resize"-Panel (like "gripPanel"/"movePanel")
+	// TODO if width is minimal -> deselect vertical "connections"-button
 	
 	// TODO display names for associations? (using unique fk-column list?)
 	
