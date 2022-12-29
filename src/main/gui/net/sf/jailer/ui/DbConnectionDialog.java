@@ -192,7 +192,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	 */
 	private Window parent;
 	
-	private final ExecutionContext executionContext;
+	final ExecutionContext executionContext;
 	
 	/**
 	 * Gets connection to DB.
@@ -201,6 +201,10 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	 */
 	public boolean connect(String reason) {
 		return connect(reason, false);
+	}
+
+	public ExecutionContext getExecutionContext() {
+		return executionContext;
 	}
 
 	private Font font =  new JLabel("normal").getFont();

@@ -3915,6 +3915,8 @@ public class DataBrowser extends javax.swing.JFrame {
 
 	private static DataBrowser openNewDataBrowser(DataModel datamodel, DbConnectionDialog dbConnectionDialog,
 			boolean maximize, ExecutionContext executionContext, DataBrowser theDataBrowser) throws Exception {
+		// TODO IMPORTANT: do not copy here
+		ExecutionContext origExecContext = executionContext;
 		if (executionContext != null) {
 			executionContext = new ExecutionContext(executionContext);
 		}
@@ -3934,6 +3936,9 @@ public class DataBrowser extends javax.swing.JFrame {
 					DataBrowserContext.getAppName(), null, executionContext);
 		}
 		dbConnectionDialog.autoConnect();
+		if (origExecContext != null) {
+			origExecContext.setCurrentConnectionAlias(dbConnectionDialog.getExecutionContext().getCurrentConnectionAlias());
+		}
 		if (dbConnectionDialog.isConnected || dbConnectionDialog.connect(DataBrowserContext.getAppName(true))) {
 			try {
 				dataBrowser.setConnection(dbConnectionDialog);
