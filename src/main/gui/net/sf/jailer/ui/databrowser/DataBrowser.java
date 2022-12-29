@@ -168,6 +168,7 @@ import net.sf.jailer.ui.associationproposer.AssociationProposerView;
 import net.sf.jailer.ui.commandline.CommandLineInstance;
 import net.sf.jailer.ui.constraintcheck.ConstraintChecker;
 import net.sf.jailer.ui.databrowser.BookmarksPanel.BookmarkId;
+import net.sf.jailer.ui.databrowser.BrowserContentPane.RowsClosure;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.SqlStatementTable;
 import net.sf.jailer.ui.databrowser.Desktop.LayoutMode;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
@@ -729,6 +730,32 @@ public class DataBrowser extends javax.swing.JFrame {
 						return true;
 					}
 					ancestor = ancestor.parent;
+				}
+				RowsClosure closure = tableBrowser.browserContentPane.rowsClosure;
+				for (RowBrowser tb = tableBrowser; tb != null; tb = tb.parent) {
+					if (!tb.isHidden()) {
+						RowBrowser parent = tb.parent;
+						if (parent != null && !parent.isHidden()) {
+							if (closure.hAlignedPath.isEmpty()) {
+								if (desktop.getChildBrowsers(parent, true).size() > 1) {
+									return true;
+								}
+							} else {
+								RowBrowser ftb = tb;
+								if (desktop.getChildBrowsers(parent, true).stream().filter(
+									c -> {
+										return
+											c != ftb &&
+											!
+											(!closure.hAlignedPath.contains(c.browserContentPane) &&
+											closure.hAlignedPath.contains(parent.browserContentPane));
+									}
+									).findAny().isPresent()) {
+									return true;
+								}
+							}
+						}
+					}
 				}
 				return false;
 			}

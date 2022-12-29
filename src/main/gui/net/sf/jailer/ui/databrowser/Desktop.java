@@ -2440,9 +2440,18 @@ public abstract class Desktop extends JDesktopPane {
 		if (notHAligned) {
 			Color fg = g2d.getColor();
 			if (!pbg) {
-				g2d.setColor(fg.brighter().brighter());
+//				for (int i = 0; i < 2; ++i) {
+					int s = fg.getRed() + fg.getGreen() + fg.getBlue();
+					int h = (int)((256 * 3) * 0.8);
+					h -= s;
+					if (h > 0) {
+						fg = new Color(Math.min(255, fg.getRed() + h / 3), Math.min(255, fg.getGreen() + h / 3), Math.min(255, fg.getBlue() + h / 3));
+//					} else {
+//						break;
+					}
+//				}
+				g2d.setColor(fg);
 			}
-			// g2d.setColor(new Color(fg.getRed(), fg.getGreen(), fg.getBlue(), 100)); // TODO
 		}
 		
 		// compute the intersection with the target bounding box
@@ -4349,12 +4358,15 @@ public abstract class Desktop extends JDesktopPane {
 	// TODO reset "notHAliged" if: -relayout, -iframe moved, -iframe add/remove, -selection of iframe outside "notHAliged"(?), -not: maximize/unmaximize
 	
 	// TODO
-	// TODO "notHAliged" row to singleDetails is white
-	// TODO joined links are not correctly considered "notHAliged"
-	
-	// TODO
 	// TODO connections/model-NavigationTree in DataBrowser: own "resize"-Panel (like "gripPanel"/"movePanel")
 	// TODO if width is minimal -> deselect vertical "connections"-button
+	
+	// TODO
+	// TODO farbcheck
+	// TODO anchorbutton isApplicable testing
+	
+	// TODO
+	// TODO history items (bookmarks) now without sessions!
 	
 	// TODO display names for associations? (using unique fk-column list?)
 	
