@@ -561,6 +561,8 @@ public abstract class Desktop extends JDesktopPane {
 		}
 		demaximize();
 
+		checkHAlignedPath();
+		
 		if (title == null) {
 			if (table != null) {
 				title = datamodel.get().getDisplayName(table);
@@ -737,6 +739,7 @@ public abstract class Desktop extends JDesktopPane {
 		jInternalFrame.addPropertyChangeListener(JInternalFrame.IS_MAXIMUM_PROPERTY, new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
+				checkStopTS = System.currentTimeMillis();
 				manager.resizeDesktop();
 			}
 		});
@@ -768,6 +771,10 @@ public abstract class Desktop extends JDesktopPane {
 					});
 					updateMenuPendingTimer.setRepeats(false);
 					updateMenuPendingTimer.start();
+					
+					if (anchorManager.isApplicable(tableBrowser)) {
+						checkHAlignedPath();
+					}
 				}
 			}
 		});
@@ -1587,11 +1594,13 @@ public abstract class Desktop extends JDesktopPane {
 			@Override
 			public void componentMoved(ComponentEvent e) {
 //				onLayoutChanged(false);
+				checkHAlignedPath();
 			}
 
 			@Override
 			public void componentResized(ComponentEvent e) {
 //				onLayoutChanged(jInternalFrame.isMaximum());
+				checkHAlignedPath();
 				initIFrameContent(jInternalFrame, browserContentPane, browserContentPane.thumbnail);
 			}
 
@@ -3157,6 +3166,7 @@ public abstract class Desktop extends JDesktopPane {
 			rb.internalFrame.dispose();
 		}
 		updateMenu();
+		checkHAlignedPath();
 		JInternalFrame first = null;
 		for (RowBrowser tb : tableBrowsers) {
 			if (first == null) {
@@ -3180,6 +3190,7 @@ public abstract class Desktop extends JDesktopPane {
 		if (desktopUndoManager != null && tableBrowsers.contains(tableBrowser)) {
 			desktopUndoManager.beforeModification("Add \"" + tableBrowser.internalFrame.getTitle().replaceFirst("\\s*\\(\\d+\\)$", "") + "\"", "Remove \"" + tableBrowser.internalFrame.getTitle().replaceFirst("\\s*\\(\\d+\\)$", "") + "\"");
 		}
+		checkHAlignedPath();
 		List<RowBrowser> children = new ArrayList<RowBrowser>();
 		for (RowBrowser tb : tableBrowsers) {
 			if (tb.parent == tableBrowser) {
@@ -3199,6 +3210,15 @@ public abstract class Desktop extends JDesktopPane {
 		}
 		repaintDesktop();
 		updateMenu();
+	}
+
+	private long checkStopTS;
+	void checkHAlignedPath() {
+		if (checkStopTS == 0 || checkStopTS + 500 < System.currentTimeMillis()) {
+			if (!desktopAnimation.isActive() && desktopAnimation.getInactiveTime() > 500) {
+				rowsClosure.hAlignedPath.clear();
+			}
+		}
 	}
 
 	/**
@@ -3745,14 +3765,12 @@ public abstract class Desktop extends JDesktopPane {
 			if (toBeAppended != null && toBeLoaded.isEmpty()) {
 				JOptionPane.showMessageDialog(pFrame,
 						"Layout doesn't contain table \"" + datamodel.get().getDisplayName(toBeAppended.browserContentPane.table) + "\" as root.");
-			} else if (!unknownTables.isEmpty()) {
-				// TODO
-				
-//				String pList = "";
-//				for (String ut : unknownTables) {
-//					pList += ut + "\n";
-//				}
-//				JOptionPane.showMessageDialog(pFrame, "Unknown tables:\n\n" + pList + "\n");
+			} else if (!unknownTables.isEmpty() && showMissingTablesOnRestoreSession) {
+				String pList = "";
+				for (String ut : unknownTables) {
+					pList += ut + "\n";
+				}
+				JOptionPane.showMessageDialog(pFrame, "Unknown tables:\n\n" + pList + "\n");
 			}
 		} finally {
 			if (desktopUndoManager != null) {
@@ -3766,6 +3784,8 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 
+	boolean showMissingTablesOnRestoreSession = true;
+	
 	private void makePrimaryRootVisible() {
 		RowBrowser root = null;
 		for (RowBrowser rb : getRootBrowsers(true)) {
@@ -4351,22 +4371,7 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	// TODO
-	// TODO render links betw. TabBrowsers less significant if a target TabBrowser is not in "horiz.alig." tree (s.t. from "aligned" table to root + subtree of "aligned")
-	// TODO think about situation before "align horiz.".
-	
-	// TODO 
-	// TODO reset "notHAliged" if: -relayout, -iframe moved, -iframe add/remove, -selection of iframe outside "notHAliged"(?), -not: maximize/unmaximize
-	
-	// TODO
-	// TODO connections/model-NavigationTree in DataBrowser: own "resize"-Panel (like "gripPanel"/"movePanel")
-	// TODO if width is minimal -> deselect vertical "connections"-button
-	
-	// TODO
 	// TODO farbcheck
-	// TODO anchorbutton isApplicable testing
-	
-	// TODO
-	// TODO history items (bookmarks) now without sessions!
 	
 	// TODO display names for associations? (using unique fk-column list?)
 	

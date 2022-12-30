@@ -198,6 +198,9 @@ public class DesktopAnimation {
 				count = 0;
 			}
 		}
+		if (result) {
+			lastActionTS = System.currentTimeMillis();
+		}
 		return result;
 	}
 
@@ -311,6 +314,15 @@ public class DesktopAnimation {
 	
 	public boolean isActive() {
 		return !animations.isEmpty();
+	}
+
+	private long lastActionTS = 0;
+	
+	public long getInactiveTime() {
+		if (lastActionTS == 0) {
+			return 0;
+		}
+		return System.currentTimeMillis() - lastActionTS;
 	}
 
 }
