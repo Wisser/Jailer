@@ -4372,7 +4372,6 @@ public abstract class Desktop extends JDesktopPane {
 
 	// TODO
 	// TODO farbcheck, see util.HSP
-	// TODO connections button asap visible
 	
 	// TODO display names for associations? (using unique fk-column list?)
 	

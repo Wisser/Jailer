@@ -416,6 +416,8 @@ public class DataBrowser extends javax.swing.JFrame {
 		initModelNavigation();
 		updateModelNavigation();
 		
+		modelNavigationPanel.setVisible(true);
+		
 		UIUtil.invokeLater(14, () -> {
 			al.actionPerformed(null);
 			modelNavigationPanel.setVisible(true);
