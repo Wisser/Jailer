@@ -704,6 +704,7 @@ public class DataBrowser extends javax.swing.JFrame {
 					// ignore
 				}
 				anchor.browserContentPane.rowsClosure.hAlignedPath.clear();
+				anchor.browserContentPane.rowsClosure.hAlignedPathOnSelection = false;
 				for (RowBrowser rb = anchor; rb != null; rb = rb.parent) {
 					if (!rb.isHidden()) {
 						anchor.browserContentPane.rowsClosure.hAlignedPath.add(rb.browserContentPane);

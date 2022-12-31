@@ -776,6 +776,16 @@ public abstract class Desktop extends JDesktopPane {
 					if (anchorManager.isApplicable(tableBrowser)) {
 						checkHAlignedPath();
 					}
+					if (rowsClosure.hAlignedPath.isEmpty() || rowsClosure.hAlignedPathOnSelection) {
+						if (tableBrowser.parent != null) {
+							// TODO
+							// TODO ?
+							rowsClosure.hAlignedPath.clear();
+							rowsClosure.hAlignedPath.add(tableBrowser.parent.browserContentPane);
+							rowsClosure.hAlignedPath.add(tableBrowser.browserContentPane);
+							rowsClosure.hAlignedPathOnSelection = true;
+						}
+					}
 				}
 			}
 		});
@@ -2453,6 +2463,8 @@ public abstract class Desktop extends JDesktopPane {
 			if (!pbg) {
 				Color mc = fgColorMap.get(fg);
 				if (mc == null) {
+					// TODO
+					// TODO joined links to bright
 					mc = new HSLColor(fg).adjustLuminance(fg.getGreen() > fg.getRed() && fg.getGreen() > fg.getBlue()? 52 : 86);
 					fgColorMap.put(fg, mc);
 				}
@@ -3210,6 +3222,7 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	private long checkStopTS;
+	
 	void checkHAlignedPath() {
 		if (checkStopTS == 0 || checkStopTS + 500 < System.currentTimeMillis()) {
 			if (!desktopAnimation.isActive() && desktopAnimation.getInactiveTime() > 500) {
@@ -4367,6 +4380,9 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 
+	// TODO
+	// TODO should selecting a iframe create a "small" hAlignPath?
+	
 	// TODO display names for associations? (using unique fk-column list?)
 	
 }

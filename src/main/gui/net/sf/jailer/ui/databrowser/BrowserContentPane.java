@@ -842,6 +842,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		BrowserContentPane currentClosureRootPane;
 		Set<BrowserContentPane> parentPath = new HashSet<BrowserContentPane>();
 		Set<BrowserContentPane> hAlignedPath = new HashSet<BrowserContentPane>();
+		boolean hAlignedPathOnSelection = false;
 
 		Set<Row> tempClosure = new HashSet<Row>();
 	}
