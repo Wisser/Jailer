@@ -129,6 +129,7 @@ import net.sf.jailer.ui.databrowser.TreeLayoutOptimizer.Node;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
+import net.sf.jailer.ui.util.HSLColor;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CsvFile;
@@ -2404,6 +2405,7 @@ public abstract class Desktop extends JDesktopPane {
 	private double animationStep = 0;
 	long lastAnimationStepTime = 0;
 	final long STEP_DELAY = 50;
+	private Map<Color, Color> fgColorMap = new HashMap<Color, Color>();
 
 	private void paintLink(Point2D start, Point2D end, Color color, Color fgColor, Graphics2D g2d, RowBrowser tableBrowser,
 			boolean pbg, boolean intersect, boolean dotted, boolean restricted, double midPos, boolean light,
@@ -2449,17 +2451,12 @@ public abstract class Desktop extends JDesktopPane {
 		if (notHAligned) {
 			Color fg = g2d.getColor();
 			if (!pbg) {
-//				for (int i = 0; i < 2; ++i) {
-					int s = fg.getRed() + fg.getGreen() + fg.getBlue();
-					int h = (int)((256 * 3) * 0.8);
-					h -= s;
-					if (h > 0) {
-						fg = new Color(Math.min(255, fg.getRed() + h / 3), Math.min(255, fg.getGreen() + h / 3), Math.min(255, fg.getBlue() + h / 3));
-//					} else {
-//						break;
-					}
-//				}
-				g2d.setColor(fg);
+				Color mc = fgColorMap.get(fg);
+				if (mc == null) {
+					mc = new HSLColor(fg).adjustLuminance(fg.getGreen() > fg.getRed() && fg.getGreen() > fg.getBlue()? 52 : 86);
+					fgColorMap.put(fg, mc);
+				}
+				g2d.setColor(mc);
 			}
 		}
 		
@@ -4370,9 +4367,6 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 
-	// TODO
-	// TODO farbcheck, see util.HSP
-	
 	// TODO display names for associations? (using unique fk-column list?)
 	
 }
