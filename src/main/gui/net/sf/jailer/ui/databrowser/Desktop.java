@@ -782,6 +782,16 @@ public abstract class Desktop extends JDesktopPane {
 							// TODO ?
 							rowsClosure.hAlignedPath.clear();
 							rowsClosure.hAlignedPath.add(tableBrowser.parent.browserContentPane);
+							// TODO
+							// TODO and all predecs who are hAligned
+							for (RowBrowser ancBr = tableBrowser.parent.parent; ancBr != null; ancBr = ancBr.parent) {
+								if (ancBr.internalFrame.getY() == tableBrowser.parent.internalFrame.getY()) {
+									rowsClosure.hAlignedPath.add(ancBr.browserContentPane);
+								} else {
+									break;
+								}
+							}
+							
 							rowsClosure.hAlignedPath.add(tableBrowser.browserContentPane);
 							rowsClosure.hAlignedPathOnSelection = true;
 						}
@@ -4382,6 +4392,10 @@ public abstract class Desktop extends JDesktopPane {
 
 	// TODO
 	// TODO should selecting a iframe create a "small" hAlignPath?
+	
+	// TODO
+	// TODO - nimbus
+	// TODO native laf: connectionsV too wide
 	
 	// TODO display names for associations? (using unique fk-column list?)
 	
