@@ -4395,7 +4395,6 @@ public abstract class Desktop extends JDesktopPane {
 	
 	// TODO
 	// TODO - nimbus
-	// TODO native laf: connectionsV too wide
 	
 	// TODO display names for associations? (using unique fk-column list?)
 	
