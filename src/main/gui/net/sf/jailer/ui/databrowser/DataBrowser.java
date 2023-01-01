@@ -412,7 +412,13 @@ public class DataBrowser extends javax.swing.JFrame {
 				}
 			});
 		}
-
+		if (UIUtil.plaf == PLAF.NATIVE) {
+			modelNavigationButtonV.setMinimumSize(new Dimension(24, modelNavigationButtonV.getPreferredSize().height));
+			modelNavigationButtonV.setPreferredSize(modelNavigationButtonV.getMinimumSize());
+			modelNavigationConnectButtonV.setMinimumSize(new Dimension(24, modelNavigationConnectButtonV.getPreferredSize().height));
+			modelNavigationConnectButtonV.setPreferredSize(modelNavigationConnectButtonV.getMinimumSize());
+		}
+		
 		initModelNavigation();
 		updateModelNavigation();
 		
