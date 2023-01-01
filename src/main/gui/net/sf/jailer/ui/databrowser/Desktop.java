@@ -764,37 +764,22 @@ public abstract class Desktop extends JDesktopPane {
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
 				if (Boolean.TRUE.equals(evt.getNewValue())) {
-					Timer updateMenuPendingTimer = new Timer(120, null);
-					updateMenuPendingTimer.addActionListener(e -> {
-						updateMenu();
-						iFrameStateChangeRenderer.onIFrameSelected(jInternalFrame, 0.6);
-						updateMenuPendingTimer.stop();
-					});
-					updateMenuPendingTimer.setRepeats(false);
-					updateMenuPendingTimer.start();
-					
-					if (anchorManager.isApplicable(tableBrowser)) {
-						checkHAlignedPath();
-					}
-					if (rowsClosure.hAlignedPath.isEmpty() || rowsClosure.hAlignedPathOnSelection) {
-						if (tableBrowser.parent != null) {
-							rowsClosure.hAlignedPath.clear();
-							rowsClosure.hAlignedPath.add(tableBrowser.parent.browserContentPane);
-							for (RowBrowser ancBr = tableBrowser.parent.parent; ancBr != null; ancBr = ancBr.parent) {
-								if (ancBr.isHidden() || ancBr.internalFrame.getY() == tableBrowser.parent.internalFrame.getY()) {
-									rowsClosure.hAlignedPath.add(ancBr.browserContentPane);
-								} else {
-									break;
-								}
-							}
-							
-							rowsClosure.hAlignedPath.add(tableBrowser.browserContentPane);
-							rowsClosure.hAlignedPathOnSelection = true;
-						}
-					}
+					onBecomeSelected(tableBrowser, jInternalFrame);
 				}
 			}
 		});
+		
+		if (!becomeSelectedPending) {
+			becomeSelectedPending = true;
+			UIUtil.invokeLater(4, () -> {
+				becomeSelectedPending = false;
+				tableBrowsers.forEach(tb -> {
+					if (tb.internalFrame.isSelected()) {
+						onBecomeSelected(tb, tb.internalFrame);
+					}
+				});
+			});
+		}
 		
 		jInternalFrame.addComponentListener(new ComponentListener() {
 
@@ -4352,8 +4337,43 @@ public abstract class Desktop extends JDesktopPane {
 		++iFrameBufferGeneration;
 	}
 	
+	private void onBecomeSelected(final RowBrowser tableBrowser, final JInternalFrame jInternalFrame) {
+		Timer updateMenuPendingTimer = new Timer(120, null);
+		updateMenuPendingTimer.addActionListener(e -> {
+			updateMenu();
+			iFrameStateChangeRenderer.onIFrameSelected(jInternalFrame, 0.6);
+			updateMenuPendingTimer.stop();
+		});
+		updateMenuPendingTimer.setRepeats(false);
+		updateMenuPendingTimer.start();
+		
+		if (anchorManager.isApplicable(tableBrowser)) {
+			checkHAlignedPath();
+		}
+		if (rowsClosure.hAlignedPath.isEmpty() || rowsClosure.hAlignedPathOnSelection) {
+			if (tableBrowser.parent != null) {
+				rowsClosure.hAlignedPath.clear();
+				rowsClosure.hAlignedPath.add(tableBrowser.parent.browserContentPane);
+				for (RowBrowser ancBr = tableBrowser.parent.parent; ancBr != null; ancBr = ancBr.parent) {
+					// TODO
+					// TODO local (or full)?
+					if (ancBr.isHidden() || ancBr.internalFrame.getY() == tableBrowser.parent.internalFrame.getY()) {
+						rowsClosure.hAlignedPath.add(ancBr.browserContentPane);
+					} else {
+						break;
+					}
+				}
+				
+				rowsClosure.hAlignedPath.add(tableBrowser.browserContentPane);
+				rowsClosure.hAlignedPathOnSelection = true;
+			}
+		}
+	}
+
 	private List<net.sf.jailer.ui.databrowser.DBConditionEditor.RSyntaxTextArea> editorPanesCache = new LinkedList<DBConditionEditor.RSyntaxTextArea>();
 
+	private boolean becomeSelectedPending = false;
+	
 	/**
 	 * Maximum number of concurrent DB connections.
 	 */
