@@ -368,7 +368,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		modelNavigationConnectButtonV.addActionListener(this::reconnectMenuItemActionPerformed);
 		modelNavigationButtonV.setText(null);
 		modelNavigationButtonV.setVerticalAlignment(SwingConstants.TOP);
-		TextIcon ti = new TextIcon(modelNavigationButtonV, " Connections ");
+		CompoundIcon ti = new CompoundIcon(Axis.Y_AXIS, 2, new TextIcon(modelNavigationButtonV, " Connections "), onePxIcon);
 		Icon ii = new CompoundIcon(Axis.Y_AXIS, 4, onePxIcon, menuIcon, onePxIcon);
 		Icon ri1 = new RotatedIcon(new CompoundIcon(Axis.X_AXIS, 2, ti, new RotatedIcon(ii, RotatedIcon.Rotate.DOWN)), RotatedIcon.Rotate.UP);
 		modelNavigationButtonV.setIcon(ri1);

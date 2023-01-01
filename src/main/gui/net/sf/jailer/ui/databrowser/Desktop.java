@@ -778,14 +778,10 @@ public abstract class Desktop extends JDesktopPane {
 					}
 					if (rowsClosure.hAlignedPath.isEmpty() || rowsClosure.hAlignedPathOnSelection) {
 						if (tableBrowser.parent != null) {
-							// TODO
-							// TODO ?
 							rowsClosure.hAlignedPath.clear();
 							rowsClosure.hAlignedPath.add(tableBrowser.parent.browserContentPane);
-							// TODO
-							// TODO and all predecs who are hAligned
 							for (RowBrowser ancBr = tableBrowser.parent.parent; ancBr != null; ancBr = ancBr.parent) {
-								if (ancBr.internalFrame.getY() == tableBrowser.parent.internalFrame.getY()) {
+								if (ancBr.isHidden() || ancBr.internalFrame.getY() == tableBrowser.parent.internalFrame.getY()) {
 									rowsClosure.hAlignedPath.add(ancBr.browserContentPane);
 								} else {
 									break;
@@ -2473,9 +2469,7 @@ public abstract class Desktop extends JDesktopPane {
 			if (!pbg) {
 				Color mc = fgColorMap.get(fg);
 				if (mc == null) {
-					// TODO
-					// TODO joined links to bright
-					mc = new HSLColor(fg).adjustLuminance(fg.getGreen() > fg.getRed() && fg.getGreen() > fg.getBlue()? 52 : 86);
+					mc = new HSLColor(fg).adjustLuminance(fg.getGreen() > fg.getRed() && fg.getGreen() > fg.getBlue() || fg.getGreen() > 130 && fg.getRed() > 130 && fg.getBlue() < 8? 52 : fg.getGreen() > 130 && fg.getBlue() > 130 && fg.getRed() < 30? 70 : 86);
 					fgColorMap.put(fg, mc);
 				}
 				g2d.setColor(mc);
@@ -4390,12 +4384,6 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 
-	// TODO
-	// TODO should selecting a iframe create a "small" hAlignPath?
-	
-	// TODO
-	// TODO - nimbus
-	
 	// TODO display names for associations? (using unique fk-column list?)
 	
 }
