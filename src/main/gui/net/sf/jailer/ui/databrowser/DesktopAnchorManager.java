@@ -62,6 +62,9 @@ public abstract class DesktopAnchorManager {
 	private Long disabledUntil;
 	private Long showedAt;
 	private boolean fadeDown;
+	private float lastAlpha;
+	private long fadeDelay;
+	private Long initFadeStartedAt = null;
 	private RowBrowser currentBrowser;
 	private RowBrowser newestBrowser;
 	private int height = 5 * 18;
@@ -70,35 +73,42 @@ public abstract class DesktopAnchorManager {
 	@SuppressWarnings("serial")
 	public DesktopAnchorManager(JPanel topLayerPanel) {
 		this.anchorPanel = new JPanel(null) {
-			Long initFadeStartedAt = null;
 			RowBrowser initFadeBrowser = null;
 			@Override
 			public void paint(Graphics g) {
 				Graphics2D g2 = (Graphics2D) g.create();
+				if (ft) {
+					g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, lastAlpha = 0));
+					super.paint(g2);
+					return;
+				}
+				lastAlpha = 0;
 				try {
 					if (initFadeStartedAt != null) {
 						double r1 = 0.65f;
 						double t1 = System.currentTimeMillis() - initFadeStartedAt - MAX_RETENDION * (1 - r1);
 						if (t1 < 0 && initFadeBrowser == currentBrowser) {
-							g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) (t1 / (-MAX_RETENDION * (1 - r1))) / 2f + 0.5f));
+							g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, lastAlpha = (float) Math.min(1f, (t1 / (-MAX_RETENDION * (1 - r1))) / 2f + 0.5f)));
 							super.paint(g2);
 							return;
 						} else {
 							initFadeStartedAt = null;
 							initFadeBrowser = null;
 							fadeDown = false;
+							fadeDelay = 0;
+							showedAt = System.currentTimeMillis();
 						}
 					}
 					if (showedAt != null) {
 						if (fadeDown && initFadeStartedAt == null) {
-							initFadeStartedAt = System.currentTimeMillis();
+							initFadeStartedAt = System.currentTimeMillis() + fadeDelay;
 							initFadeBrowser = currentBrowser;
 							super.paint(g2);
 							return;
 						} else {
 							double r = 0.75f;
 							double t = System.currentTimeMillis() - showedAt - MAX_RETENDION * r;
-							g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) ((1 - Math.max(0f, Math.min(1f, ((t / (MAX_RETENDION * (1 - r))))))) * 0.5f)));
+							g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, lastAlpha = (float) ((1 - Math.max(0f, Math.min(1f, ((t / (MAX_RETENDION * (1 - r))))))) * 0.5f)));
 						}
 						super.paint(g2);
 						return;
@@ -156,6 +166,7 @@ public abstract class DesktopAnchorManager {
 			public void mouseEntered(MouseEvent e) {
 				showedAt = null;
 				fadeDown = false;
+				initFadeStartedAt = null;
 				anchorPanel.repaint();
 			}
 			@Override
@@ -212,6 +223,7 @@ public abstract class DesktopAnchorManager {
 			public void mouseEntered(MouseEvent e) {
 				showedAt = null;
 				fadeDown = false;
+				initFadeStartedAt = null;
 				anchorPanel.repaint();
 			}
 			@Override
@@ -237,8 +249,9 @@ public abstract class DesktopAnchorManager {
 	public void onTableBrowserNeared(RowBrowser tableBrowser) {
 		if (isAvailable()) {
 			anchorButton.setEnabled(isApplicable(tableBrowser));
+			boolean wasVisible = anchorPanel.isVisible();
 			reset();
-			showButton(tableBrowser);
+			showButton(tableBrowser, wasVisible);
 		}
 	}
 
@@ -284,8 +297,9 @@ public abstract class DesktopAnchorManager {
 					double dx = SwingUtilities.convertPoint(e.getComponent(), e.getX(), e.getY(), tableBrowser.internalFrame).getX();
 					if (dx <= 180) {
 						anchorButton.setEnabled(isApplicable(tableBrowser));
+						boolean wasVisible = anchorPanel.isVisible();
 						reset();
-						showButton(tableBrowser);
+						showButton(tableBrowser, wasVisible);
 					}
 				}
 			}
@@ -349,15 +363,27 @@ public abstract class DesktopAnchorManager {
 		});
 		reset();
 	}
+	
+	private boolean ft = true;
+	private void showButton(RowBrowser tableBrowser, boolean wasVisible) {
+		showButton0(tableBrowser, wasVisible);
+		if (ft) {
+			UIUtil.invokeLater(2, () -> {
+				ft = false;
+				showButton0(tableBrowser, wasVisible);
+			});
+		}
+	}
 
-	protected void showButton(RowBrowser tableBrowser) {
+	private void showButton0(RowBrowser tableBrowser, boolean wasVisible) {
 		if (disabledUntil != null && disabledUntil > System.currentTimeMillis()) {
 			return;
 		}
 		anchorPanel.removeAll();
 		anchorPanel.add(anchorButton);
 		
-		boolean fadeDown = this.fadeDown && currentBrowser == tableBrowser;
+		boolean nBrChg = currentBrowser == tableBrowser;
+		boolean fadeDown = this.fadeDown && nBrChg;
 		currentBrowser = tableBrowser;
 		anchorButton.setSize(anchorButton.getPreferredSize());
 		anchorPanel.setSize(anchorButton.getPreferredSize());
@@ -371,6 +397,7 @@ public abstract class DesktopAnchorManager {
 		Point locO = new Point();
 		locO = SwingUtilities.convertPoint(tableBrowser.internalFrame.getParent().getParent(), locO, anchorPanel);
 		loc = new Point(Math.max(locO.x - anchorPanel.getWidth(), loc.x) - 1, Math.max(locO.y, loc.y + 1));
+
 		if (anchorPanel.getComponentCount() > 1 && !anchorPanel.getComponents()[0].isEnabled() && !anchorPanel.getComponents()[1].isEnabled()) {
 			loc = new Point(loc.x, loc.y + anchorPanel.getComponents()[0].getHeight());
 			anchorPanel.setSize(anchorPanel.getWidth(), anchorPanel.getHeight() - anchorPanel.getComponents()[0].getHeight());
@@ -385,12 +412,18 @@ public abstract class DesktopAnchorManager {
 		anchorPanel.setVisible(true);
 		topLayerPanel.setVisible(true);
 		height = anchorPanel.getHeight();
-		initShowedAt(fadeDown);
+		if (!wasVisible || !nBrChg || lastAlpha >= 0.8f) {
+			initFadeStartedAt = null;
+			fadeDelay = 350;
+			initShowedAt(true);
+		} else {
+			initShowedAt(fadeDown);
+		}
 	}
 
 	private void initShowedAt(boolean fadeDownP) {
 		this.fadeDown = fadeDownP;
-		showedAt = System.currentTimeMillis();
+		showedAt = System.currentTimeMillis() + fadeDelay;
 		int delay = 30;
 		Timer timer = new Timer(delay, null);
 		timer.addActionListener(e -> {
@@ -432,7 +465,7 @@ public abstract class DesktopAnchorManager {
 
 	public void checkRetention() {
 		long now = System.currentTimeMillis();
-		if (showedAt != null && showedAt + MAX_RETENDION < now) {
+		if (anchorPanel.isVisible() && showedAt != null && showedAt + MAX_RETENDION < now) {
 			reset();
 		}
 	}

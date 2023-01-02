@@ -125,7 +125,6 @@ import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.RowsClosure;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.SqlStatementTable;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.UserAction;
-import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.ui.databrowser.TreeLayoutOptimizer.Node;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
@@ -4413,14 +4412,7 @@ public abstract class Desktop extends JDesktopPane {
 	// TODO display names for associations? (using unique fk-column list?)
 	
 	// TODO
-	// TODO anchor dialog initially less transparent?
-	// TODO 1st sec full, than as it is now?
-	// TODO wie bei < 12.1? (nur "hAlign", ohne Transparenz)?
-
-	// TODO
-	// TODO transparency is not ergonomic?
+	// TODO transp. col.search, panel nach auswah wert sofort weg
 	// TODO column filter UI component: do user understand, that underlying transparent comp. is editable?
-	
-	
 	
 }

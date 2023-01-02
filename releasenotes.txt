@@ -1,3 +1,11 @@
+14.1
+  - Database connection navigation has been introduced in the Data Bowser
+    to allow easy and fast switching between data models and/or database connections.
+  - The links between related rows between the selected table browsers are now rendered highlighted.
+    This increases clarity in complex table networks.
+  - Fixed "Postgres SQL Export File Not Casting to Enum Type On Enum Column Export",
+    https://sourceforge.net/p/jailer/discussion/700499/thread/92389c5a0f
+
 12.8.4
   - A bug in metadata acquisition could cause the GUI to freeze for a short time.
 

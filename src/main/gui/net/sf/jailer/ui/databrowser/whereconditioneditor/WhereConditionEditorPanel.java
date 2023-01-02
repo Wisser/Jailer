@@ -124,8 +124,8 @@ import net.sf.jailer.util.SqlUtil;
 public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	
 	private static final float REDUCED_OPACITY = 0.5f;
-	private static final float REDUCED_OPACITY_FADE_START = REDUCED_OPACITY + 0.15f;
-	private static final float REDUCED_OPACITY_RETENTION_TIME = 1.5f;
+	private static final float REDUCED_OPACITY_FADE_START = 0; // REDUCED_OPACITY + 0.15f;
+	private static final float REDUCED_OPACITY_RETENTION_TIME = 0; //  1.5f;
 
 	private final int MAX_NUM_DISTINCTEXISTINGVALUES = 100_000;
 	private final int MAX_SIZE_DISTINCTEXISTINGVALUES = 500_000;
@@ -1679,6 +1679,9 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				if (theSearchPanel.get(0).isExplictlyClosed()) {
 					accept(comparison, theSearchPanel.get(0).getPlainValue(), comparison.operator);
 					if (initialColumn >= 0 && popupOnTop) {
+						if (REDUCED_OPACITY_FADE_START == 0) {
+							setVisible(false);
+						}
 						fadeStep = 0;
 						setOpacity(REDUCED_OPACITY_FADE_START);
 						startOpacityTimer();
