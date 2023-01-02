@@ -746,6 +746,9 @@ public class DataBrowser extends javax.swing.JFrame {
 				for (RowBrowser tb = tableBrowser; tb != null; tb = tb.parent) {
 					if (!tb.isHidden()) {
 						RowBrowser parent = tb.parent;
+						while (parent != null && parent.parent != null && parent.isHidden()) {
+							parent = parent.parent;
+						}
 						if (parent != null && !parent.isHidden()) {
 							if (closure.hAlignedPath.isEmpty()) {
 								if (desktop.getChildBrowsers(parent, true).size() > 1) {
@@ -753,13 +756,14 @@ public class DataBrowser extends javax.swing.JFrame {
 								}
 							} else {
 								RowBrowser ftb = tb;
+								RowBrowser fParent = parent;
 								if (desktop.getChildBrowsers(parent, true).stream().filter(
 									c -> {
 										return
 											c != ftb &&
 											!
 											(!closure.hAlignedPath.contains(c.browserContentPane) &&
-											closure.hAlignedPath.contains(parent.browserContentPane));
+											closure.hAlignedPath.contains(fParent.browserContentPane));
 									}
 									).findAny().isPresent()) {
 									return true;

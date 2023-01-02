@@ -414,7 +414,7 @@ public abstract class DesktopAnchorManager {
 		height = anchorPanel.getHeight();
 		if (!wasVisible || !nBrChg || lastAlpha >= 0.8f) {
 			initFadeStartedAt = null;
-			fadeDelay = 350;
+			fadeDelay = 150;
 			initShowedAt(true);
 		} else {
 			initShowedAt(fadeDown);
