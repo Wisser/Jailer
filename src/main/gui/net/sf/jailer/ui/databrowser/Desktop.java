@@ -125,6 +125,7 @@ import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.RowsClosure;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.SqlStatementTable;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.UserAction;
+import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.ui.databrowser.TreeLayoutOptimizer.Node;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
@@ -4354,7 +4355,12 @@ public abstract class Desktop extends JDesktopPane {
 			if (tableBrowser.parent != null) {
 				rowsClosure.hAlignedPath.clear();
 				rowsClosure.hAlignedPath.add(tableBrowser.parent.browserContentPane);
-				for (RowBrowser ancBr = tableBrowser.parent.parent; ancBr != null; ancBr = ancBr.parent) {
+				RowBrowser parent = tableBrowser.parent;
+				while (parent != null && parent.parent != null && parent.isHidden()) {
+					parent = parent.parent;
+					rowsClosure.hAlignedPath.add(parent.browserContentPane);
+				}
+				for (RowBrowser ancBr = parent; ancBr != null; ancBr = ancBr.parent) {
 					// TODO
 					// TODO local (or full)?
 					if (ancBr.isHidden() || ancBr.internalFrame.getY() == tableBrowser.parent.internalFrame.getY()) {
@@ -4405,5 +4411,16 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	// TODO display names for associations? (using unique fk-column list?)
+	
+	// TODO
+	// TODO anchor dialog initially less transparent?
+	// TODO 1st sec full, than as it is now?
+	// TODO wie bei < 12.1? (nur "hAlign", ohne Transparenz)?
+
+	// TODO
+	// TODO transparency is not ergonomic?
+	// TODO column filter UI component: do user understand, that underlying transparent comp. is editable?
+	
+	
 	
 }
