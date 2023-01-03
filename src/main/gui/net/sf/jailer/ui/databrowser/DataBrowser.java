@@ -15,7 +15,6 @@
  */
 package net.sf.jailer.ui.databrowser;
 
-import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -32,12 +31,10 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
-import java.awt.LayoutManager;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
-import java.awt.Stroke;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.datatransfer.DataFlavor;
@@ -62,7 +59,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.awt.event.WindowListener;
-import java.awt.geom.Path2D;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.BufferedReader;
 import java.io.File;
@@ -87,9 +85,11 @@ import java.util.TreeSet;
 import java.util.Vector;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import javax.swing.AbstractButton;
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -192,7 +192,6 @@ import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.util.AnimationController;
 import net.sf.jailer.ui.util.CompoundIcon;
-import net.sf.jailer.ui.util.MovePanel;
 import net.sf.jailer.ui.util.CompoundIcon.Axis;
 import net.sf.jailer.ui.util.RotatedIcon;
 import net.sf.jailer.ui.util.SmallButton;
@@ -246,6 +245,11 @@ public class DataBrowser extends javax.swing.JFrame {
 	 * The execution context.
 	 */
 	private final ExecutionContext executionContext;
+	
+	/**
+	 * Initial width of search panel.
+	 */
+	private static final int INITIAL_SEARCH_PANEL_WIDTH = 228;
 
 	private final JComboBox2<String> tablesComboBox;
 
@@ -359,6 +363,9 @@ public class DataBrowser extends javax.swing.JFrame {
 		initMenu();
 		initNavTree();
 		initTabSelectionAnimationManager();
+		searchPanelSplitSizerPanel.setCursor(Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR));
+		searchPanelSplitSizerPanel.add(createSearchPanelSplitSizer());
+		searchPanelSplitSizerPanel.setVisible(searchPanelContainer.isVisible());
 		
 		modelNavigationSplitSizerPanel.setCursor(Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR));
 		modelNavigationSplitSizerPanel.setVisible(false);
@@ -468,45 +475,11 @@ public class DataBrowser extends javax.swing.JFrame {
 		linkToolbarButton(tbZoom3Button, mediumLayoutRadioButtonMenuItem);
 		linkToolbarButton(tbZoom4Button, largeLayoutRadioButtonMenuItem);
 
-		searchPanelContainer.getParent().remove(searchPanelContainer);
-		searchPanelContainer = new JPanel() {
-			final int WIDTH = 260;
-
-			@Override
-			public Dimension getPreferredSize() {
-				return new Dimension(WIDTH, super.getPreferredSize().height);
-			}
-
-			@Override
-			public Dimension getMinimumSize() {
-				return new Dimension(WIDTH, super.getMinimumSize().height);
-			}
-
-			@Override
-			public Dimension getMaximumSize() {
-				return new Dimension(WIDTH, super.getMaximumSize().height);
-			}
-		};
-		searchPanelContainer.setLayout(new java.awt.BorderLayout());
-		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-		switch (UIUtil.plaf) {
-			case NATIVE:
-				// nothing to do
-				break;
-			case FLAT:
-				// nothing to do
-				break;
-			case NIMBUS:
-				gridBagConstraints.insets = new Insets(3, 0, 0, 0);
-				break;
-		}
-		jPanel4.add(searchPanelContainer, gridBagConstraints);
+		setSearchPanelWidth(INITIAL_SEARCH_PANEL_WIDTH);
 
 		searchBarToggleButton.setSelected(!Boolean.FALSE.equals(UISettings.restore("searchBarToggleButton")));
 		searchPanelContainer.setVisible(searchBarToggleButton.isSelected());
+		searchPanelSplitSizerPanel.setVisible(searchPanelContainer.isVisible());
 		whereConditionEditorCloseButton = new SmallButton(closeIcon, closeOverIcon, false) {
 			@Override
 			protected void onClick(MouseEvent e) {
@@ -537,7 +510,8 @@ public class DataBrowser extends javax.swing.JFrame {
 		searchBarEditor.whereConditionEditorPanel = whereConditionEditorPanel;
 		whereConditionEditorSubject = null;
 		searchPanelContainer.setVisible(false);
-
+		searchPanelSplitSizerPanel.setVisible(searchPanelContainer.isVisible());
+		
 		UpdateInfoManager.checkUpdateAvailability(updateInfoPanel, updateInfoLabel, downloadMenuItem, "B");
 		UIUtil.initPLAFMenuItem(plafMenu, this);
 		if (datamodel != null) {
@@ -581,7 +555,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
 		tablesComboBox.grabFocus();
 
-		gridBagConstraints = new GridBagConstraints();
+		GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.gridx = 2;
 		gridBagConstraints.gridy = 1;
 		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -1409,9 +1383,42 @@ public class DataBrowser extends javax.swing.JFrame {
 		initDnD(this);
 	}
 
+	private void setSearchPanelWidth(int width) {
+		searchPanelContainer.setMinimumSize(new Dimension(width, searchPanelContainer.getMinimumSize().height));
+		searchPanelContainer.setPreferredSize(new Dimension(width, searchPanelContainer.getPreferredSize().height));
+		searchPanelContainer.setMaximumSize(new Dimension(width, searchPanelContainer.getMaximumSize().height));
+	}
+
+	private static final int SPLIT_SIZER_MIN_WIDTH = 20;
+
 	private Component createModelNavSplitSizer() {
+		return createSplitSizer((xDelta, yDelta) -> {
+			modelNavigationGapPanel.setMinimumSize(new Dimension((int) (modelNavigationGapPanel.getMinimumSize().getWidth() + xDelta), 1));
+			modelNavigationGapPanel.setPreferredSize(modelNavigationGapPanel.getMinimumSize());
+			modelNavigationGapPanel.revalidate();
+			modelNavigationScrollPane.setVisible(modelNavigationGapPanel.getMinimumSize().getWidth() >= SPLIT_SIZER_MIN_WIDTH);
+		}, () -> {
+			modelNavigationScrollPane.setVisible(true);
+			if (modelNavigationGapPanel.getMinimumSize().getWidth() < SPLIT_SIZER_MIN_WIDTH) {
+				modelNavigationButtonV.doClick();
+			}
+		}, 22, 1);
+	}
+
+	private Component createSearchPanelSplitSizer() {
+		return createSplitSizer((xDelta, yDelta) -> {
+			setSearchPanelWidth(searchPanelContainer.getMinimumSize().width + xDelta);
+			searchPanelContainer.revalidate();			
+		}, () -> {
+			if (searchPanelContainer.getMinimumSize().width < SPLIT_SIZER_MIN_WIDTH) {
+				searchBarToggleButton.doClick();
+				setSearchPanelWidth(INITIAL_SEARCH_PANEL_WIDTH);
+			}
+		}, 0, 1);
+	}
+
+	private Component createSplitSizer(BiConsumer<Integer, Integer> deltaConsumer, Runnable onRelease, int vOffset, int hOffset) {
 		return new JPanel() {
-			int MIN_WIDTH = 20;
 			{
 		        MouseInputAdapter ml = new MouseInputAdapter() {
 		    		private Point origPos;
@@ -1423,10 +1430,8 @@ public class DataBrowser extends javax.swing.JFrame {
 		    			Point newPos = e.getPoint();
 		    			SwingUtilities.convertPointToScreen(newPos, DataBrowser.this);
 		    			int xDelta = newPos.x - origPos.x;
-		    			modelNavigationGapPanel.setMinimumSize(new Dimension((int) (modelNavigationGapPanel.getMinimumSize().getWidth() + xDelta), 1));
-		    			modelNavigationGapPanel.setPreferredSize(modelNavigationGapPanel.getMinimumSize());
-		    			modelNavigationGapPanel.revalidate();
-		    			modelNavigationScrollPane.setVisible(modelNavigationGapPanel.getMinimumSize().getWidth() >= MIN_WIDTH);
+		    			int yDelta = newPos.y - origPos.y;
+		    			deltaConsumer.accept(xDelta, yDelta);
 		    		}
 
 		    		@Override
@@ -1438,10 +1443,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		    		@Override
 		    		public void mouseReleased(MouseEvent e) {
 		    			origPos = null;
-		    			modelNavigationScrollPane.setVisible(true);
-		    			if (modelNavigationGapPanel.getMinimumSize().getWidth() < MIN_WIDTH) {
-		    				modelNavigationButtonV.doClick();
-		    			}
+		    			onRelease.run();
 		    		}
 		    	};
 		    	addMouseListener(ml);
@@ -1457,7 +1459,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				g2d.clipRect(0, 0, dim.width, dim.height);
 
 				Image image = splitIcon.getImage();
-				g2d.drawImage(image, (dim.width - image.getWidth(null)) / 2 - 1, ((dim.height - 22) - image.getHeight(null)) / 2, null);
+				g2d.drawImage(image, (dim.width - image.getWidth(null)) / 2 - hOffset, ((dim.height - vOffset) - image.getHeight(null)) / 2, null);
 
 				g2d.setClip(clip);
 			}
@@ -1825,12 +1827,13 @@ public class DataBrowser extends javax.swing.JFrame {
 				updateDataModel(schemaName, withViews, withSynonyms);
 			}
 		};
-		panel.tabbedPane.addTab("Closure Border", borderBrowserTabPane);
+		JPanel borderBrowserTabPaneContainer = new JPanel(new BorderLayout());
+		panel.tabbedPane.addTab("Closure Border", borderBrowserTabPaneContainer);
 		panel.tabbedPane.addTab("Data Model", dataModelPanel);
 		panel.tabbedPane.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
-				updateBorderBrowser();
+				updateBorderBrowser(borderBrowserTabPaneContainer);
 				updateDataModelView(null);
 				showDataModelMenuItem
 						.setSelected(metaDataDetailsPanel.tabbedPane.getSelectedComponent() == dataModelPanel);
@@ -4454,7 +4457,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
 	private void updateIFramesBar() {
 		updateNavigationTree();
-		updateBorderBrowser();
+		updateBorderBrowser(null);
 		updateHiddenPanel();
 
 		// iFramesPanel is obsolete
@@ -4590,14 +4593,16 @@ public class DataBrowser extends javax.swing.JFrame {
 
 	private boolean disableBorderBrowserUpdates = false;
 
-	private void updateBorderBrowser() {
+	private void updateBorderBrowser(JPanel borderBrowserTabPaneContainer) {
 		if (disableBorderBrowserUpdates
-				|| metaDataDetailsPanel.tabbedPane.getSelectedComponent() != borderBrowserTabPane) {
+				|| metaDataDetailsPanel.tabbedPane.getSelectedComponent() != borderBrowserTabPaneContainer) {
 			return;
 		}
 		try {
 			UIUtil.setWaitCursor(this);
-
+			if (borderBrowserTabPaneContainer != null) {
+				borderBrowserTabPaneContainer.add(borderBrowserTabPane);
+			}
 			Collection<AssociationModel> model = new ArrayList<AssociationModel>();
 			if (desktop != null) {
 				titleLabel.setText(" Related Rows");
@@ -4722,7 +4727,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		} finally {
 			UIUtil.resetWaitCursor(this);
 			disableBorderBrowserUpdates = false;
-			updateBorderBrowser();
+			updateBorderBrowser(null);
 		}
 	}
 
@@ -4854,6 +4859,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				: null;
 		searchPanelContainer.removeAll();
 		searchPanelContainer.setVisible(table != null && searchBarToggleButton.isSelected());
+		searchPanelSplitSizerPanel.setVisible(searchPanelContainer.isVisible());
 		searchBarToggleButton.setEnabled(rowBrowser != null && SessionForUI.isWCEditorSupported(session));
 		if (table != null) {
 			BrowserContentCellEditor cellEditor = rowBrowser.browserContentPane.browserContentCellEditor;
@@ -5973,6 +5979,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	private void searchBarToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_searchBarToggleButtonActionPerformed
 		UISettings.store("searchBarToggleButton", searchBarToggleButton.isSelected());
 		searchPanelContainer.setVisible(searchBarToggleButton.isSelected());
+		searchPanelSplitSizerPanel.setVisible(searchPanelContainer.isVisible());
 	}// GEN-LAST:event_searchBarToggleButtonActionPerformed
 
 	private void tbZoomOutButtonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_tbZoomOutButtonActionPerformed

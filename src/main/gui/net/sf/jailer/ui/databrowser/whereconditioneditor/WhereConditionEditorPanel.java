@@ -227,6 +227,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new Insets(0, 0, 0, 2);
         clearButton = new JButton("Clear", UIUtil.scaleIcon(this, clearIcon));
         clearButton.addActionListener(e -> {
 			if (allDisabled) {

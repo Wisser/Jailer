@@ -160,7 +160,7 @@ public abstract class Desktop extends JDesktopPane {
 	 * Default width of a row-browser frame.
 	 */
 	private final int BROWSERTABLE_DEFAULT_MIN_X = 0;
-	private final int BROWSERTABLE_DEFAULT_MIN_Y = 1;
+	private final int BROWSERTABLE_DEFAULT_MIN_Y = 0;
 
 	public static final int BROWSERTABLE_DEFAULT_HEIGHT = 460;
 	public static final int BROWSERTABLE_DEFAULT_WIDTH = 476;
@@ -4360,8 +4360,6 @@ public abstract class Desktop extends JDesktopPane {
 					rowsClosure.hAlignedPath.add(parent.browserContentPane);
 				}
 				for (RowBrowser ancBr = parent; ancBr != null; ancBr = ancBr.parent) {
-					// TODO
-					// TODO local (or full)?
 					if (ancBr.isHidden() || ancBr.internalFrame.getY() == tableBrowser.parent.internalFrame.getY()) {
 						rowsClosure.hAlignedPath.add(ancBr.browserContentPane);
 					} else {
@@ -4410,9 +4408,5 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	// TODO display names for associations? (using unique fk-column list?)
-	
-	// TODO
-	// TODO transp. col.search, panel nach auswah wert sofort weg
-	// TODO column filter UI component: do user understand, that underlying transparent comp. is editable?
 	
 }
