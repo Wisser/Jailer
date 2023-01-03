@@ -2038,6 +2038,7 @@ public class DataBrowser extends javax.swing.JFrame {
         tbZoom4Button = new javax.swing.JToggleButton();
         jSeparator21 = new javax.swing.JToolBar.Separator();
         tbreloadButton = new javax.swing.JButton();
+        searchPanelSplitSizerPanel = new javax.swing.JPanel();
         closurePanel = new javax.swing.JPanel();
         consoleDummyPanel = new javax.swing.JPanel();
         addSQLConsoleTab = new javax.swing.JPanel();
@@ -2472,7 +2473,7 @@ public class DataBrowser extends javax.swing.JFrame {
         layeredPaneContent.setBounds(0, 0, 24, 36);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
@@ -2603,9 +2604,19 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel4.add(jToolBar1, gridBagConstraints);
+
+        searchPanelSplitSizerPanel.setMaximumSize(new java.awt.Dimension(8, 2));
+        searchPanelSplitSizerPanel.setMinimumSize(new java.awt.Dimension(8, 0));
+        searchPanelSplitSizerPanel.setPreferredSize(new java.awt.Dimension(8, 2));
+        searchPanelSplitSizerPanel.setLayout(new javax.swing.BoxLayout(searchPanelSplitSizerPanel, javax.swing.BoxLayout.LINE_AXIS));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        jPanel4.add(searchPanelSplitSizerPanel, gridBagConstraints);
 
         desktopSplitPane.setTopComponent(jPanel4);
 
@@ -4338,6 +4349,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPanel schemaNamePanel;
     private javax.swing.JToggleButton searchBarToggleButton;
     private javax.swing.JPanel searchPanelContainer;
+    private javax.swing.JPanel searchPanelSplitSizerPanel;
     private javax.swing.JCheckBoxMenuItem showDataModelMenuItem;
     private javax.swing.JRadioButtonMenuItem smallLayoutRadioButtonMenuItem;
     private javax.swing.JRadioButtonMenuItem steptime10;
