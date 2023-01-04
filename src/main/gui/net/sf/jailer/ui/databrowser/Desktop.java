@@ -1622,25 +1622,25 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	protected Color getAssociationColor1(Association association) {
-		Color color = UIUtil.plaf == PLAF.NIMBUS? new java.awt.Color(140, 150, 255) : UIUtil.plaf == PLAF.FLAT? new java.awt.Color(0, 140, 255) : new java.awt.Color(0, 120, 255);
+		Color color = new java.awt.Color(0, 40, 255);
 		if (association.isIgnored()) {
-			color = UIUtil.plaf == PLAF.FLAT? new java.awt.Color(130, 130, 130) : new java.awt.Color(153, 153, 153);
+			color = new java.awt.Color(130, 130, 130);
 		} else if (association.isInsertDestinationBeforeSource()) {
-			color = UIUtil.plaf == PLAF.FLAT? new java.awt.Color(230, 80, 50) : new java.awt.Color(190, 30, 0);
+			color = new java.awt.Color(230, 80, 50);
 		} else if (association.isInsertSourceBeforeDestination()) {
-			color = UIUtil.plaf == PLAF.FLAT? new java.awt.Color(0, 230, 0) : new java.awt.Color(60, 132, 0);
+			color = new java.awt.Color(0, 230, 0);
 		}
 		return color;
 	}
 
 	private Color getAssociationColor2(Association association) {
-		Color color = UIUtil.plaf == PLAF.NIMBUS? new java.awt.Color(100, 160, 255) : UIUtil.plaf == PLAF.FLAT? new java.awt.Color(0, 130, 255) : new java.awt.Color(0, 60, 235);
+		Color color = new java.awt.Color(0, 30, 255);
 		if (association.isIgnored()) {
-			color = UIUtil.plaf == PLAF.FLAT? new java.awt.Color(150, 150, 150) : new java.awt.Color(133, 133, 153);
+			color = new java.awt.Color(150, 150, 150);
 		} else if (association.isInsertSourceBeforeDestination()) {
-			color = UIUtil.plaf == PLAF.FLAT? new java.awt.Color(70, 255, 70) : new java.awt.Color(0, 180, 80);
+			color = new java.awt.Color(70, 255, 70);
 		} else if (association.isInsertDestinationBeforeSource()) {
-			color = UIUtil.plaf == PLAF.FLAT? new java.awt.Color(245, 90, 60) : new java.awt.Color(230, 0, 60);
+			color = new java.awt.Color(245, 90, 60);
 		}
 		return color;
 	}
@@ -2105,7 +2105,9 @@ public abstract class Desktop extends JDesktopPane {
 									}
 									if (rowsClosure.hAlignedPath.contains(visParent.browserContentPane)) {
 										if (getChildBrowsers(visParent, true).stream().filter(c -> rowsClosure.hAlignedPath.contains(c.browserContentPane)).findAny().isPresent()) {
-											notHAligned = true;
+											if (visParent.browserContentPane.rows.size() > 1 || getChildBrowsers(visParent, false).stream().filter(c -> c.isHidden() || c.browserContentPane.rows.size() > 1).findAny().isPresent()) {
+												notHAligned = true;
+											}
 										}
 									}
 								}
@@ -2197,8 +2199,8 @@ public abstract class Desktop extends JDesktopPane {
 										boolean intersect = link.intersect;
 										boolean dotted = link.dotted || toJoin.dotted;
 										newLinks.add(new Link(link.from, toJoin.to, link.sourceRowID, toJoin.destRowID, link.x1, link.y1, toJoin.x2, toJoin.y2,
-												UIUtil.plaf == PLAF.FLAT? new Color(180, 200, 0) : Color.yellow.darker().darker(), 
-												UIUtil.plaf == PLAF.FLAT? new Color(180, 200, 0) : Color.yellow.darker(), 
+												UIUtil.plaf == PLAF.FLAT? new Color(170, 200, 0) : Color.yellow.darker().darker(), 
+												UIUtil.plaf == PLAF.FLAT? new Color(170, 200, 0) : Color.yellow.darker(), 
 												dotted, intersect, link.inClosure && toJoin.inClosure, link.inTempClosure && toJoin.inTempClosure, link.notHAligned, link.restricted || toJoin.restricted));
 									}
 								}
@@ -2453,8 +2455,12 @@ public abstract class Desktop extends JDesktopPane {
 			Color fg = g2d.getColor();
 			if (!pbg) {
 				Color mc = fgColorMap.get(fg);
+				
+				// TODO
+				mc=null;
+				
 				if (mc == null) {
-					mc = new HSLColor(fg).adjustLuminance(fg.getGreen() > fg.getRed() && fg.getGreen() > fg.getBlue() || fg.getGreen() > 130 && fg.getRed() > 130 && fg.getBlue() < 8? 52 : fg.getGreen() > 130 && fg.getBlue() > 130 && fg.getRed() < 30? 70 : 86);
+					mc = new HSLColor(fg).adjustLuminance(fg.getBlue() > fg.getRed() && fg.getBlue() > fg.getGreen()? 80 : fg.getGreen() > 130 && fg.getRed() > 130 && fg.getBlue() < 8? 60 : fg.getGreen() > fg.getRed() && fg.getGreen() > fg.getBlue()? 50 : fg.getGreen() > 130 && fg.getBlue() > 130 && fg.getRed() < 30? 70 : 86);
 					fgColorMap.put(fg, mc);
 				}
 				g2d.setColor(mc);
@@ -4347,7 +4353,7 @@ public abstract class Desktop extends JDesktopPane {
 		updateMenuPendingTimer.setRepeats(false);
 		updateMenuPendingTimer.start();
 		
-		if (anchorManager.isApplicable(tableBrowser)) {
+		if (anchorManager.isApplicable(tableBrowser) || rowsClosure.hAlignedPathOnSelection) {
 			checkHAlignedPath();
 		}
 		if (rowsClosure.hAlignedPath.isEmpty() || rowsClosure.hAlignedPathOnSelection) {
@@ -4406,7 +4412,7 @@ public abstract class Desktop extends JDesktopPane {
 			t.start();
 		}
 	}
-
+	
 	// TODO display names for associations? (using unique fk-column list?)
 	
 }

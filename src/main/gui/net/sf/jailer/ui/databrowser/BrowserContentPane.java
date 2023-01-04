@@ -2641,6 +2641,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								}
 								todoList.get(i).actionPerformed(e);
 							}
+							if (todoList.size() > 1) {
+								UIUtil.invokeLater(4, () -> {
+									rowsClosure.hAlignedPath.clear();
+								});
+							}
 						} finally {
 							Desktop.noArrangeLayoutOnNewTableBrowser = false;
 							Desktop.noArrangeLayoutOnNewTableBrowserWithAnchor = false;
