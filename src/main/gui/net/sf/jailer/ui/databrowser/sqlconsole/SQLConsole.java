@@ -344,7 +344,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                             return null;
                         }
                     } else {
-                        schema = SQLConsole.this.metaDataSource.getDefaultSchema();
+                        schema = SQLConsole.this.metaDataSource.isInitialized()? SQLConsole.this.metaDataSource.getDefaultSchema() : null;
                         if (schema == null) {
                             return null;
                         }
