@@ -59,8 +59,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.awt.event.WindowListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.BufferedReader;
 import java.io.File;
@@ -89,7 +87,6 @@ import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import javax.swing.AbstractButton;
-import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
