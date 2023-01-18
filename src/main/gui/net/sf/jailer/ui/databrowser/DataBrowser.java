@@ -1495,6 +1495,8 @@ public class DataBrowser extends javax.swing.JFrame {
 						
 						if (connectedAliases.contains(node.alias)) {
 							((JLabel) render).setText("<html><nobr><b>" + ((JLabel) render).getText() + "</b></html>");
+						} else {
+							((JLabel) render).setText(((JLabel) render).getText() + "    ");
 						}
 					} else {
 						icon = modelIcon;
