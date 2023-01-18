@@ -573,7 +573,9 @@ public class MDTable extends MDObject {
 	        	}
 	        }
 		} catch (Throwable e) {
-			e.printStackTrace();
+			if (!session.isDown()) {
+				e.printStackTrace();
+			}
 			if (rs != null) {
 				try {
 					rs.close();
