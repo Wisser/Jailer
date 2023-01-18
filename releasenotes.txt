@@ -1,3 +1,7 @@
+14.1.1
+  - A potential connection leak has been fixed.
+  - Some UI improvements.
+
 14.1
   - Database connection navigation has been introduced in the Data Bowser
     to allow easy and fast switching between data models and/or database connections.
