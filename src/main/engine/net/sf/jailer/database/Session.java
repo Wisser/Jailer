@@ -319,6 +319,9 @@ public class Session {
 			}
 			private Connection getConnection0() throws SQLException {
 				Connection con = getConnectionIfExist();
+				if (isDown()) {
+					return defaultConnection;
+				}
 				if (con == null) {
 					try {
 						con = dataSource.getConnection();
@@ -1219,7 +1222,16 @@ public class Session {
 	public void shutDown() {
 		down.set(true);
 		_log.info(logPrefix + "closing connections... (" + connections.size() + ")");
-		for (Connection con: connections) {
+		for (;;) {
+			Connection con = null;
+			synchronized (connections) {
+				if (!connections.isEmpty()) {
+					con = connections.remove(0);
+				}
+			}
+			if (con == null) {
+				break;
+			}
 			try {
 				con.close();
 			} catch (Exception e) {
