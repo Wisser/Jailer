@@ -403,7 +403,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 					@Override
 					protected boolean renderRowAsPK(Row theRow) {
 						if (tableNameColumnIndex >= 0 && tableNameColumnIndex < theRow.values.length) { // lgtm [java/constant-comparison]
-							return pkNames.contains(theRow.values[tableNameColumnIndex]);
+							return pkNames.contains(String.valueOf(theRow.values[tableNameColumnIndex]));
 						}
 						return false;
 					}
