@@ -391,6 +391,12 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		for (String type: types) {
 			resultSet = getTables(session, introspectionSchema, tableNamePattern, new String[] { type });
 			while (resultSet.next()) {
+//				1.TABLE_CAT String => table catalog (may be null) 
+//				2.TABLE_SCHEM String => table schema (may be null) 
+//				3.TABLE_NAME String => table name 
+				if (!Quoting.equalsWROSearchPattern(introspectionSchema, resultSet.getString(1), resultSet.getString(2))) {
+					continue;
+				}
 				String tableName = resultSet.getString(3);
 				if (resultSet.getString(4) != null) {
 					if (isValidName(tableName, session)) {
@@ -481,9 +487,20 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			Table tmp = new Table(tableName, null, false, false);
 			_log.info("getting columns for " + quoting.unquote(tmp.getOriginalSchema(quoting.quote(introspectionSchema))) + "." + quoting.unquote(tmp.getUnqualifiedName()));
 			resultSet = getColumns(session, quoting.unquote(tmp.getOriginalSchema(quoting.quote(introspectionSchema))), quoting.unquote(tmp.getUnqualifiedName()), tableNamePattern, true, false, tableTypes.get(tableName));
+			// TODO
+			// TODO tableNamePattern hier wohl falsch?
 			_log.info("done");
 			Map<Integer, Column> pk = pkColumns.get(tableName);
 			while (resultSet.next()) {
+//				1.TABLE_CAT String => table catalog (may be null) 
+//				2.TABLE_SCHEM String => table schema (may be null) 
+//				3.TABLE_NAME String => table name 
+				if (!Quoting.equalsWROSearchPattern(quoting.unquote(tmp.getOriginalSchema(quoting.quote(introspectionSchema))), resultSet.getString(1), resultSet.getString(2))) {
+					continue;
+				}
+				if (!Quoting.equalsWROSearchPattern(quoting.unquote(tmp.getUnqualifiedName()), resultSet.getString(3))) {
+					continue;
+				}
 				String colName = quoting.quote(resultSet.getString(4));
 				int type = resultSet.getInt(5);
 				int length = 0;
@@ -852,6 +869,15 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 
 			List<String> nonNullColumns = new ArrayList<String>();
 			while (resultSet.next()) {
+//				1.TABLE_CAT String => table catalog (may be null) 
+//				2.TABLE_SCHEM String => table schema (may be null) 
+//				3.TABLE_NAME String => table name 
+				if (!Quoting.equalsWROSearchPattern(quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))), resultSet.getString(1), resultSet.getString(2))) {
+					continue;
+				}
+				if (!Quoting.equalsWROSearchPattern(quoting.unquote(tmp.getUnqualifiedName()), resultSet.getString(3))) {
+					continue;
+				}
 				int type = resultSet.getInt(5);
 				if (resultSet.getInt(11) == DatabaseMetaData.columnNoNulls) {
 					nonNullColumns.add(resultSet.getString(4));
@@ -1206,6 +1232,15 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		ResultSet resultSet = getColumns(session, schemaName, tableName, "%", true, false, tableTypes.get(table.getName()));
 		_log.info("done");
 		while (resultSet.next()) {
+//			1.TABLE_CAT String => table catalog (may be null) 
+//			2.TABLE_SCHEM String => table schema (may be null) 
+//			3.TABLE_NAME String => table name 
+			if (!Quoting.equalsWROSearchPattern(schemaName, resultSet.getString(1), resultSet.getString(2))) {
+				continue;
+			}
+			if (!Quoting.equalsWROSearchPattern(tableName, resultSet.getString(3))) {
+				continue;
+			}
 			String colName = quoting.quote(resultSet.getString(4));
 			int type = resultSet.getInt(5);
 			int length = 0;
@@ -1538,6 +1573,9 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	public String toString() {
 		return "JDBC based model element finder";
 	}
+	
+	// TODO
+//	analyse view testen (mit '_' im Namen der Tabelle)
 
 }
 

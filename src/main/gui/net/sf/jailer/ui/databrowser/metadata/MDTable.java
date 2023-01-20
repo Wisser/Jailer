@@ -218,7 +218,16 @@ public class MDTable extends MDObject {
                     		cached, false, isSynonym? "SYNONYM" : null);
                 	}
                 	while (resultSet.next()) {
-                        String colName = metaDataSource.getQuoting().quote(resultSet.getString(4));
+//            			1.TABLE_CAT String => table catalog (may be null) 
+//            			2.TABLE_SCHEM String => table schema (may be null) 
+//            			3.TABLE_NAME String => table name 
+            			if (!Quoting.equalsWROSearchPattern(Quoting.staticUnquote(getSchema().getName()), resultSet.getString(1), resultSet.getString(2))) {
+            				continue;
+            			}
+            			if (!Quoting.equalsWROSearchPattern(Quoting.staticUnquote(getName()), resultSet.getString(3))) {
+            				continue;
+            			}
+            			String colName = metaDataSource.getQuoting().quote(resultSet.getString(4));
                         columns.add(colName);
                         String comment = null;
                         try {

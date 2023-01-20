@@ -157,7 +157,13 @@ public class MDSchema extends MDObject {
 						ResultSet rs = metaDataSource.readTables(getName());
 						Map<String, Runnable> loadJobs = new TreeMap<String, Runnable>();
 						while (rs.next()) {
-							final String name = rs.getString(3);
+//	            			1.TABLE_CAT String => table catalog (may be null) 
+//	            			2.TABLE_SCHEM String => table schema (may be null) 
+//	            			3.TABLE_NAME String => table name 
+	            			if (!Quoting.equalsWROSearchPattern(getName(), rs.getString(1), rs.getString(2))) {
+	            				continue;
+	            			}
+	            			final String name = rs.getString(3);
 							String tableName = metaDataSource.getQuoting().quote(name);
 							final MDTable table = new MDTable(tableName, this, "VIEW".equalsIgnoreCase(rs.getString(4)),
 									"SYNONYM".equalsIgnoreCase(rs.getString(4))

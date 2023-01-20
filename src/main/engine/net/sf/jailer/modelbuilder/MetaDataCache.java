@@ -35,6 +35,7 @@ import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.modelbuilder.MemorizedResultSet.MemorizedResultSetMetaData;
 import net.sf.jailer.util.LogUtil;
+import net.sf.jailer.util.Quoting;
 
 /**
  * Reads database meta data directly from meta data views.
@@ -177,6 +178,14 @@ public class MetaDataCache {
 			}
 
 			while (rs.next()) {
+//				1.TABLE_CAT String => table catalog (may be null) 
+//				2.TABLE_SCHEM String => table schema (may be null) 
+//				3.TABLE_NAME String => table name 
+//				4.COLUMN_NAME String => column name 
+				if (!Quoting.equalsWROSearchPattern(schema, rs.getString(1), rs.getString(2))) {
+					continue;
+				}
+				
 				Object[] row = new Object[numCol];
 				for (int i = 1; i <= numCol; ++i) {
 					if (i >= 22 && DBMS.MSSQL.equals(session.dbms)) {
@@ -213,7 +222,7 @@ public class MetaDataCache {
 			return new MetaDataCache();
 		}
 	}
-
+	
 	public ResultSet forTable(String tableName) {
 		if (cache == null) {
 			return null;

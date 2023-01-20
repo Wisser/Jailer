@@ -347,6 +347,14 @@ public class Quoting {
 		return staticUnquote(a).equalsIgnoreCase(staticUnquote(b));
 	}
 
+	public static boolean equalsWROSearchPattern(String a, String cand1, String cand2) {
+		return equalsWROSearchPattern(a, cand1) || equalsWROSearchPattern(a, cand2);
+	}		
+
+	public static boolean equalsWROSearchPattern(String a, String b) {
+		return a == null || b == null || (a.indexOf('_') < 0 && a.indexOf('%') < 0) || equalsIgnoreQuotingAndCase(a, b);
+	}		
+
 	public static final HashSet<String> UCSQL2003KEYWORDS = new HashSet<String>(Arrays.asList(new String[] {
 			"ABSOLUTE",
 			"ACTION",
@@ -753,6 +761,6 @@ public class Quoting {
 			"XMLSERIALIZE",
 			"YEAR",
 			"ZONE",
-	}));		
+	}));
 
 }

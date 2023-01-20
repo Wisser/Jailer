@@ -4200,6 +4200,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			String tableName = quoting.unquote(table.getUnqualifiedName());
 			ResultSet resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(session, schema, tableName, "%", false, false, null);
 			while (resultSet.next()) {
+//						1.TABLE_CAT String => table catalog (may be null) 
+//						2.TABLE_SCHEM String => table schema (may be null) 
+//						3.TABLE_NAME String => table name 
+//						4.COLUMN_NAME String => column name 
+				if (!Quoting.equalsWROSearchPattern(schema, resultSet.getString(1), resultSet.getString(2))) {
+					continue;
+				}
+				if (!Quoting.equalsWROSearchPattern(tableName, resultSet.getString(3))) {
+					continue;
+				}
 				String colName = resultSet.getString(4).toLowerCase(Locale.ENGLISH);
 				columns.add(colName);
 			}
@@ -4214,6 +4224,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 				resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(session, schema, tableName, "%", false, false, null);
 				while (resultSet.next()) {
+					if (!Quoting.equalsWROSearchPattern(schema, resultSet.getString(1), resultSet.getString(2))) {
+						continue;
+					}
+					if (!Quoting.equalsWROSearchPattern(tableName, resultSet.getString(3))) {
+						continue;
+					}
 					String colName = resultSet.getString(4).toLowerCase(Locale.ENGLISH);
 					columns.add(colName);
 				}
