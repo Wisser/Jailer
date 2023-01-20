@@ -486,9 +486,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		for (String tableName: tableNames) {
 			Table tmp = new Table(tableName, null, false, false);
 			_log.info("getting columns for " + quoting.unquote(tmp.getOriginalSchema(quoting.quote(introspectionSchema))) + "." + quoting.unquote(tmp.getUnqualifiedName()));
-			resultSet = getColumns(session, quoting.unquote(tmp.getOriginalSchema(quoting.quote(introspectionSchema))), quoting.unquote(tmp.getUnqualifiedName()), tableNamePattern, true, false, tableTypes.get(tableName));
-			// TODO
-			// TODO tableNamePattern hier wohl falsch?
+			resultSet = getColumns(session, quoting.unquote(tmp.getOriginalSchema(quoting.quote(introspectionSchema))), quoting.unquote(tmp.getUnqualifiedName()), "%", true, false, tableTypes.get(tableName));
 			_log.info("done");
 			Map<Integer, Column> pk = pkColumns.get(tableName);
 			while (resultSet.next()) {

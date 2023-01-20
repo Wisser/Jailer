@@ -1683,7 +1683,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				try {
 					desktop.showMissingTablesOnRestoreSession = false;
 					String sessionFile = cDTmpFilePrefix + dataModelSubfolder;
-					desktop.reloadDataModel(schemamapping, !new File(sessionFile).exists(), false);
+					desktop.reloadDataModel(schemamapping, !new File(sessionFile).exists(), false, false);
 					if (new File(sessionFile).exists()) {
 						afterReconnectAction = () -> {
 							try {
