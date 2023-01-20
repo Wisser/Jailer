@@ -17,6 +17,8 @@ package net.sf.jailer.ui.databrowser.metadata;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
@@ -39,7 +41,26 @@ public enum MetaDataDetails {
 	COLUMNS("Columns", 0) {
 		@Override
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
-			return JDBCMetaDataBasedModelElementFinder.getColumns(session, Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()), "%", true, true, mdTable.isSynonym()? "SYNONYM" : null);
+			ResultSet rs = JDBCMetaDataBasedModelElementFinder.getColumns(session, Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()), "%", true, true, mdTable.isSynonym()? "SYNONYM" : null);
+			MemorizedResultSet mRs = new MemorizedResultSet(rs, null, session, "");
+			rs.close();
+			
+			List<Object[]> result = new ArrayList<Object[]>();
+			for (Object[] row: mRs.getRowList()) {
+//					1.TABLE_CAT String => table catalog (may be null) 
+//					2.TABLE_SCHEM String => table schema (may be null) 
+//					3.TABLE_NAME String => table name 
+				if (!Quoting.equalsWROSearchPattern(Quoting.staticUnquote(mdTable.getSchema().getName()), String.valueOf(row[1 - 1]), String.valueOf(row[2 - 1]))) {
+					continue;
+				}
+				if (!Quoting.equalsWROSearchPattern(Quoting.staticUnquote(mdTable.getName()), String.valueOf(row[3 - 1]))) {
+					continue;
+				}
+
+	        	result.add(row);
+	        }
+			mRs.close();
+			return new MemorizedResultSet(result, mRs.getMetaData());
 		}
 		@Override
 		public void adjustRowsTable(JTable rowsTable) {
