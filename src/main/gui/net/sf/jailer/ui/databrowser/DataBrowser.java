@@ -1523,7 +1523,12 @@ public class DataBrowser extends javax.swing.JFrame {
 						o = ((DefaultMutableTreeNode) p).getUserObject();
 					}
 					if (o instanceof ConnectionInfo) {
-						modelNavigationTree.setToolTipText(ciRender((ConnectionInfo) o));
+						ConnectionInfo ci = (ConnectionInfo) o;
+						modelNavigationTree.setToolTipText(
+								"<html><b>" + UIUtil.toHTMLFragment(ciRender(ci), 0) + "</b><br>" +
+								(ci.user != null && ci.user.length() > 0? UIUtil.toHTMLFragment(ci.user, 0) + "<br>" : "") +
+								UIUtil.toHTMLFragment(ci.url, 0)
+								);
 						return;
 					}
 				}
