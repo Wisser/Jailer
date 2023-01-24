@@ -69,6 +69,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -4358,25 +4359,42 @@ public abstract class Desktop extends JDesktopPane {
 			checkHAlignedPath();
 		}
 		if (rowsClosure.hAlignedPath.isEmpty() || rowsClosure.hAlignedPathOnSelection) {
-			if (tableBrowser.parent != null) {
 				rowsClosure.hAlignedPath.clear();
-				rowsClosure.hAlignedPath.add(tableBrowser.parent.browserContentPane);
-				RowBrowser parent = tableBrowser.parent;
-				while (parent != null && parent.parent != null && parent.isHidden()) {
-					parent = parent.parent;
-					rowsClosure.hAlignedPath.add(parent.browserContentPane);
-				}
-				for (RowBrowser ancBr = parent; ancBr != null; ancBr = ancBr.parent) {
-					if (ancBr.isHidden() || ancBr.internalFrame.getY() == tableBrowser.parent.internalFrame.getY()) {
-						rowsClosure.hAlignedPath.add(ancBr.browserContentPane);
+				
+				RowBrowser ct = tableBrowser;
+				while (ct != null) {
+					int y = ct.internalFrame.getY();
+					Optional<RowBrowser> optCB = getChildBrowsers(ct, false).stream().filter(cb -> cb.internalFrame.getY() == y || cb.isHidden()).findAny();
+					if (optCB.isPresent()) {
+						ct = optCB.get();
+						if (!ct.isHidden()) {
+							rowsClosure.hAlignedPath.add(ct.browserContentPane);	
+						}
 					} else {
 						break;
 					}
 				}
 				
+				// TODO explicit Button for "h-align"?
+				
+				if (tableBrowser.parent != null) {
+					rowsClosure.hAlignedPath.add(tableBrowser.parent.browserContentPane);
+					RowBrowser parent = tableBrowser.parent;
+					while (parent != null && parent.parent != null && parent.isHidden()) {
+						parent = parent.parent;
+						rowsClosure.hAlignedPath.add(parent.browserContentPane);
+					}
+					for (RowBrowser ancBr = parent; ancBr != null; ancBr = ancBr.parent) {
+						if (ancBr.isHidden() || ancBr.internalFrame.getY() == tableBrowser.parent.internalFrame.getY()) {
+							rowsClosure.hAlignedPath.add(ancBr.browserContentPane);
+						} else {
+							break;
+						}
+					}
+				}
+				
 				rowsClosure.hAlignedPath.add(tableBrowser.browserContentPane);
 				rowsClosure.hAlignedPathOnSelection = true;
-			}
 		}
 	}
 
