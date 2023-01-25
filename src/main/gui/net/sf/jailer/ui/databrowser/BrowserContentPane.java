@@ -196,6 +196,7 @@ import net.sf.jailer.ui.scrollmenu.JScrollC2Menu;
 import net.sf.jailer.ui.scrollmenu.JScrollMenu;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.util.AnimationController;
+import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CellContentConverter;
@@ -1007,6 +1008,75 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					findColumnsLabel.setBorder(new javax.swing.border.SoftBevelBorder(in || active? javax.swing.border.BevelBorder.LOWERED : javax.swing.border.BevelBorder.RAISED));
 				}
 				findColumnsLabel.setIcon(in || active? scaledFindColumnIcon2 : scaledFindColumnIcon1);
+			}
+		});
+
+		
+		ImageIcon scaledhAlignButtonIcon1 = UIUtil.scaleIcon(this, hAlignButtonIcon1);
+		ImageIcon scaledhAlignButtonIcon2 = UIUtil.scaleIcon(this, hAlignButtonIcon2);
+		
+		hAlignButtonLabel.setText(getQueryBuilderDialog() != null? null : "Find Column");
+		hAlignButtonLabel.setToolTipText("Align horizontally with predecessors");
+		hAlignButtonLabel.setIcon(scaledhAlignButtonIcon1);
+		if (UIUtil.plaf != PLAF.FLAT) {
+			hAlignButtonLabel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+		}
+		
+		hAlignButtonLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+			private boolean in = false;
+			private boolean active = false;
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				if (hAlignButtonLabel.isEnabled()) {
+					UIUtil.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							updateBorder();
+							if (hAlignButtonPanel.isShowing()) {
+								Point point = new Point(0, hAlignButtonPanel.getHeight());
+								SwingUtilities.convertPointToScreen(point, hAlignButtonPanel);
+								active = true;
+								updateBorder();
+								Timer timer = new Timer(600, e ->  { active = false; updateBorder(); });
+								timer.setRepeats(false);
+								timer.start();
+								++UISettings.s14;
+								
+								userActions.forEach(action -> {
+									if ("Align Horizontally".equals(action.description)) {
+										if (action.isApplicable.get()) {
+											action.action.run();
+										}
+									}
+								});
+							}
+						}
+					});
+				}
+			}
+
+			@Override
+			public void mouseEntered(java.awt.event.MouseEvent evt) {
+				if (hAlignButtonLabel.isEnabled()) {
+					in = true;
+					updateBorder();
+				}
+			}
+
+			@Override
+			public void mouseExited(java.awt.event.MouseEvent evt) {
+				in = false;
+				updateBorder();
+			}
+
+			private void updateBorder() {
+				if (UIUtil.plaf == PLAF.FLAT) {
+					hAlignButtonPanel.setBackground(active? UIUtil.BG_FLATSELECTED : in? UIUtil.BG_FLATMOUSEOVER : null);
+				} else {
+					hAlignButtonLabel.setBorder(new javax.swing.border.SoftBevelBorder(in || active? javax.swing.border.BevelBorder.LOWERED : javax.swing.border.BevelBorder.RAISED));
+				}
+				hAlignButtonLabel.setIcon(in || active? scaledhAlignButtonIcon2 : scaledhAlignButtonIcon1);
 			}
 		});
 
@@ -2308,6 +2378,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			return true;
 		}
 		return false;
+	}
+
+	public void setHAlignButtonEnabled(boolean enabled) {
+		hAlignButtonLabel.setEnabled(enabled);
 	}
 
 	private int currentSearchButtonColumnIndex = -1;
@@ -5947,6 +6021,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         findColumnsPanel = new javax.swing.JPanel();
         findColumnsLabel = new javax.swing.JLabel();
         statusStrutLabel = new javax.swing.JLabel();
+        hAlignButtonPanel = new javax.swing.JPanel();
+        hAlignButtonLabel = new javax.swing.JLabel();
         loadingPanel = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         cancelLoadButton = new javax.swing.JButton();
@@ -6099,6 +6175,21 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
         statusPanel.add(statusStrutLabel, gridBagConstraints);
+
+        hAlignButtonPanel.setLayout(new java.awt.GridBagLayout());
+
+        hAlignButtonLabel.setText("Find Columns");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 2);
+        hAlignButtonPanel.add(hAlignButtonLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
+        statusPanel.add(hAlignButtonPanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -6761,6 +6852,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     public javax.swing.JPanel findColumnsPanel;
     private javax.swing.JLabel from;
     private javax.swing.JPanel fullTextSearchContainerPanel;
+    public javax.swing.JLabel hAlignButtonLabel;
+    public javax.swing.JPanel hAlignButtonPanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
@@ -8021,6 +8114,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private static ImageIcon selectIcon;
 	private static ImageIcon menuIcon;
 	private static ImageIcon allDotIcon;
+	private static ImageIcon hAlignButtonIcon1;
+	private static ImageIcon hAlignButtonIcon2;
 	
 	static {
         // load images
@@ -8050,6 +8145,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
      	selectIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/select.png"));
      	menuIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/menu.png"));
      	allDotIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/alldot.gif"));
+     	hAlignButtonIcon1 = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/anchor1.png"));
+     	hAlignButtonIcon2 = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/anchor0.png"));
 	}
 
 }

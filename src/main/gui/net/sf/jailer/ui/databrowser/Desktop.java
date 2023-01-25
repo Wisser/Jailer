@@ -587,6 +587,8 @@ public abstract class Desktop extends JDesktopPane {
 			desktopUndoManager.beforeModification("Remove \"" + title.replaceFirst("\\s*\\(\\d+\\)$", "") + "\"", "Add \"" + title.replaceFirst("\\s*\\(\\d+\\)$", "") + "\"");
 		}
 
+		checkHAlignButtons();
+		
 		final RowBrowser tableBrowser = new RowBrowser();
 		final JInternalFrame jInternalFrame = new JInternalFrame(table == null ? "SQL" : title) {
 			private BufferedImage m_offscreen;
@@ -772,7 +774,7 @@ public abstract class Desktop extends JDesktopPane {
 		
 		if (!becomeSelectedPending) {
 			becomeSelectedPending = true;
-			UIUtil.invokeLater(4, () -> {
+			UIUtil.invokeLater(22, () -> {
 				becomeSelectedPending = false;
 				tableBrowsers.forEach(tb -> {
 					if (tb.internalFrame.isSelected()) {
@@ -1456,6 +1458,7 @@ public abstract class Desktop extends JDesktopPane {
 			@Override
 			public void internalFrameClosed(InternalFrameEvent e) {
 				close(tableBrowser, true);
+				checkHAlignButtons();
 			}
 
 			@Override
@@ -3221,6 +3224,25 @@ public abstract class Desktop extends JDesktopPane {
 				rowsClosure.hAlignedPath.clear();
 			}
 		}
+		checkHAlignButtons();
+	}
+
+	private boolean checkPending = false;
+	
+	private void checkHAlignButtons() {
+		if (desktopAnimation.isActive()) {
+			UIUtil.invokeLater(() -> {
+				checkHAlignButtons();
+			});
+		} else {
+			if (!checkPending) {
+				checkPending = true;
+				UIUtil.invokeLater(() -> {
+					checkPending = false;
+					this.tableBrowsers.forEach(tb -> tb.browserContentPane.setHAlignButtonEnabled(anchorManager.isApplicable(tb)));
+				});
+			}
+		}
 	}
 
 	/**
@@ -4355,46 +4377,47 @@ public abstract class Desktop extends JDesktopPane {
 		updateMenuPendingTimer.setRepeats(false);
 		updateMenuPendingTimer.start();
 		
-		if (anchorManager.isApplicable(tableBrowser) || rowsClosure.hAlignedPathOnSelection) {
-			checkHAlignedPath();
-		}
-		if (rowsClosure.hAlignedPath.isEmpty() || rowsClosure.hAlignedPathOnSelection) {
-				rowsClosure.hAlignedPath.clear();
-				
-				RowBrowser ct = tableBrowser;
-				while (ct != null) {
-					int y = ct.internalFrame.getY();
-					Optional<RowBrowser> optCB = getChildBrowsers(ct, false).stream().filter(cb -> cb.internalFrame.getY() == y || cb.isHidden()).findAny();
-					if (optCB.isPresent()) {
-						ct = optCB.get();
-						if (!ct.isHidden()) {
-							rowsClosure.hAlignedPath.add(ct.browserContentPane);	
-						}
-					} else {
-						break;
-					}
-				}
-				
-				// TODO explicit Button for "h-align"?
-				
-				if (tableBrowser.parent != null) {
-					rowsClosure.hAlignedPath.add(tableBrowser.parent.browserContentPane);
-					RowBrowser parent = tableBrowser.parent;
-					while (parent != null && parent.parent != null && parent.isHidden()) {
-						parent = parent.parent;
-						rowsClosure.hAlignedPath.add(parent.browserContentPane);
-					}
-					for (RowBrowser ancBr = parent; ancBr != null; ancBr = ancBr.parent) {
-						if (ancBr.isHidden() || ancBr.internalFrame.getY() == tableBrowser.parent.internalFrame.getY()) {
-							rowsClosure.hAlignedPath.add(ancBr.browserContentPane);
-						} else {
-							break;
+		if (!noArrangeLayoutOnNewTableBrowserWithAnchor) {
+			if (anchorManager.isApplicable(tableBrowser) || rowsClosure.hAlignedPathOnSelection) {
+				checkHAlignedPath();
+			}
+			if (rowsClosure.hAlignedPath.isEmpty() || rowsClosure.hAlignedPathOnSelection) {
+					rowsClosure.hAlignedPath.clear();
+					
+					if (!desktopAnimation.isActive()) {
+						RowBrowser ct = tableBrowser;
+						while (ct != null) {
+							int y = ct.internalFrame.getY();
+							Optional<RowBrowser> optCB = getChildBrowsers(ct, false).stream().filter(cb -> cb.internalFrame.getY() == y || cb.isHidden()).findAny();
+							if (optCB.isPresent()) {
+								ct = optCB.get();
+								if (!ct.isHidden()) {
+									rowsClosure.hAlignedPath.add(ct.browserContentPane);	
+								}
+							} else {
+								break;
+							}
 						}
 					}
-				}
-				
-				rowsClosure.hAlignedPath.add(tableBrowser.browserContentPane);
-				rowsClosure.hAlignedPathOnSelection = true;
+					if (tableBrowser.parent != null) {
+						rowsClosure.hAlignedPath.add(tableBrowser.parent.browserContentPane);
+						RowBrowser parent = tableBrowser.parent;
+						while (parent != null && parent.parent != null && parent.isHidden()) {
+							parent = parent.parent;
+							rowsClosure.hAlignedPath.add(parent.browserContentPane);
+						}
+						for (RowBrowser ancBr = parent; ancBr != null; ancBr = ancBr.parent) {
+//							if (ancBr.isHidden() || ancBr.internalFrame.getY() == tableBrowser.parent.internalFrame.getY()) {
+								rowsClosure.hAlignedPath.add(ancBr.browserContentPane);
+//							} else {
+//								break;
+//							}
+						}
+					}
+					
+					rowsClosure.hAlignedPath.add(tableBrowser.browserContentPane);
+					rowsClosure.hAlignedPathOnSelection = true;
+			}
 		}
 	}
 

@@ -1193,6 +1193,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		desktopOutline = new DesktopOutline(navigationPanel, controlPanel, jScrollPane1, desktop, tableBrowser -> {
 			if (anchorManager.isApplicable(tableBrowser)) {
 				anchorManager.layout(tableBrowser);
+				UISettings.s14 += 1000;
 			}
 		});
 		java.awt.GridBagConstraints constraints = new java.awt.GridBagConstraints();
