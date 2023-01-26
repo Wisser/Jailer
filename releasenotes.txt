@@ -1,4 +1,4 @@
-14.1.2
+14.2
   - Fix for "Ignore generated columns when export data". https://github.com/Wisser/Jailer/issues/101
   - Fix for "liquibase.exception.MigrationFailedException when importing generated XML files with dates". https://github.com/Wisser/Jailer/issues/100
 
