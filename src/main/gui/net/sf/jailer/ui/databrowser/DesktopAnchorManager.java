@@ -483,5 +483,8 @@ public abstract class DesktopAnchorManager {
         // load images
 		anchorIcon = UIUtil.scaleIcon(UIUtil.readImage("/anchor_32.png"), 0.75);
     }
+	
+	// TODO
+	// TODO ? replace this with toolbar in BrCoPane. Increase initial height of JInternalFrames.
 
 }
