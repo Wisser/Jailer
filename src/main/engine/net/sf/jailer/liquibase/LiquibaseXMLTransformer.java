@@ -84,9 +84,6 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 		private final EntityGraph entityGraph;
 		private final String scriptFile;
 		private final DatabaseMetaData metaData;
-		private final String datePattern;
-		private final String timePattern;
-		private final String timestampPattern;
 		private final Session session;
 		
 		/**
@@ -103,15 +100,12 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 		 *            database meta data
 		 */
 		public Factory(TransformerHandler transformerHandler, DatabaseMetaData metaData, 
-				EntityGraph entityGraph, String scriptFile, String datePattern, String timePattern, String timestampPattern, Session session, ExecutionContext executionContext) {
+				EntityGraph entityGraph, String scriptFile, Session session, ExecutionContext executionContext) {
 			this.executionContext = executionContext;
 			this.transformerHandler = transformerHandler;
 			this.entityGraph = entityGraph;
 			this.scriptFile = scriptFile;
 			this.metaData = metaData;
-			this.datePattern = datePattern;
-			this.timePattern = timePattern;
-			this.timestampPattern = timestampPattern;
 			this.session = session;
 		}
 		
@@ -124,20 +118,23 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 		 */
 		@Override
 		public ResultSetReader create(Table table) throws SQLException {
-			return new LiquibaseXMLTransformer(table, transformerHandler, metaData, entityGraph, scriptFile, datePattern, timePattern, timestampPattern, session, executionContext);
+			return new LiquibaseXMLTransformer(table, transformerHandler, metaData, entityGraph, scriptFile, session, executionContext);
 		}
 	}
 
 	private LiquibaseXMLTransformer(Table table, TransformerHandler transformerHandler, DatabaseMetaData metaData, 
-			EntityGraph entityGraph, String scriptFile, String datePattern, String timePattern, String timestampPattern, Session session, ExecutionContext executionContext) throws SQLException {
+			EntityGraph entityGraph, String scriptFile, Session session, ExecutionContext executionContext) throws SQLException {
 		this.executionContext = executionContext;
 		this.transformerHandler = transformerHandler;
 		this.entityGraph = entityGraph;
 		this.rowElementName = qualifiedTableName(table);
 		this.scriptFile = new File(scriptFile);
-		this.datePattern = new SimpleDateFormat(datePattern, Locale.ENGLISH);
-		this.timePattern = new SimpleDateFormat(timePattern, Locale.ENGLISH);
-		this.timestampPattern = new SimpleDateFormat(timestampPattern, Locale.ENGLISH);
+		
+		// https://docs.liquibase.com/change-types/nested-tags/column.html
+		// valueDate: The date and time value to set the column to. Accepts the following formats: YYYY-MM-DD, hh:mm:ss, or YYYY-MM-DDThh:mm:ss.
+		this.datePattern = new SimpleDateFormat("YYYY-MM-DD", Locale.ENGLISH);
+		this.timePattern = new SimpleDateFormat("hh:mm:ss", Locale.ENGLISH);
+		this.timestampPattern = new SimpleDateFormat("YYYY-MM-DD'T'hh:mm:ss", Locale.ENGLISH);
 		this.session = session;
 	}
 	

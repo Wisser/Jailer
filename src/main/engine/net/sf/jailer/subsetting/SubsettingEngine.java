@@ -631,10 +631,7 @@ public class SubsettingEngine {
 			} if (ScriptFormat.DBUNIT_FLAT_XML.equals(executionContext.getScriptFormat())) {
 				return new FlatXMLTransformer.Factory(transformerHandler, targetSession.getMetaData(), targetSession.dbms, executionContext);
 			} else if (ScriptFormat.LIQUIBASE_XML.equals(executionContext.getScriptFormat())) {
-				return new LiquibaseXMLTransformer.Factory(transformerHandler,targetSession.getMetaData(), entityGraph, filepath,
-						executionContext.getXmlDatePattern(),
-						executionContext.getXmlTimePattern(),
-						executionContext.getXmlTimeStampPattern(),
+				return new LiquibaseXMLTransformer.Factory(transformerHandler, targetSession.getMetaData(), entityGraph, filepath,
 						targetSession,
 						executionContext);
 			} else {
@@ -2094,7 +2091,7 @@ public class SubsettingEngine {
 	//      bei "Delete" keine "deferred collections"
 	//      aber: zutun weil auch bei delete optim.potential (z.b. single-table-export ohne jede assoc.)
 	//      cli argument "-minimize-collections-optimation on|off" (oder besseren namen)
-	//      API berücksichtigen
+	//      API berï¿½cksichtigen
 	//      export mit optimierung in stats (* 128? 256?) ((`s6`) % 1000) max 180, anderes sx?
 	//
 	//      defer working table creation too, maybe they are don't needed
