@@ -933,6 +933,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 
 		initComponents();
+		origCondBG = andCondition.getBackground();
 		
 		cancelLoadButton.setIcon(UIUtil.scaleIcon(cancelLoadButton, cancelIcon));
 		
@@ -5137,13 +5138,19 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 	private boolean dontPaintSortIcon = false;
+	private Color origCondBG;
 	
 	private void doUpdateTableModel(int limit, boolean limitExceeded, boolean closureLimitExceeded) {
 		lastLimit = limit;
 		lastLimitExceeded = limitExceeded;
 		lastClosureLimitExceeded = closureLimitExceeded;
 		pkColumns.clear();
-
+		
+		if (UIUtil.plaf == PLAF.FLAT) {
+			JTextField f = ((JTextField) andCondition.getEditor().getEditorComponent());
+			andCondition.setBackground(f.getText().trim().isEmpty()? origCondBG : new Color(220, 255, 210));
+		}
+		
 		Rectangle tablePosition;
 		if (singleRowDetailsView != null) {
 			tablePosition = singleRowDetailsView.getVisibleRect();

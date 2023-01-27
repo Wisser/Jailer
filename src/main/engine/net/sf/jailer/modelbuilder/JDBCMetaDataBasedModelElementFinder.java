@@ -1571,9 +1571,6 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	public String toString() {
 		return "JDBC based model element finder";
 	}
-	
-	// TODO
-//	analyse view testen (mit '_' im Namen der Tabelle)
 
 }
 

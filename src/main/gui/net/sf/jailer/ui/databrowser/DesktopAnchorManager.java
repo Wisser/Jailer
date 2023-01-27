@@ -486,5 +486,6 @@ public abstract class DesktopAnchorManager {
 	
 	// TODO
 	// TODO ? replace this with toolbar in BrCoPane. Increase initial height of JInternalFrames.
+	// TODO ? add full text seach bar into new toolbar
 
 }
