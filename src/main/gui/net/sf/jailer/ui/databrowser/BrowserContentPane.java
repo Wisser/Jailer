@@ -5148,7 +5148,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		
 		if (UIUtil.plaf == PLAF.FLAT) {
 			JTextField f = ((JTextField) andCondition.getEditor().getEditorComponent());
-			andCondition.setBackground(f.getText().trim().isEmpty()? origCondBG : new Color(255, 255, 225));
+			andCondition.setBackground(f.getText().trim().isEmpty()? origCondBG : new Color(255, 255, 205));
 		}
 		
 		Rectangle tablePosition;
