@@ -919,8 +919,7 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 					+ "</head>\n");
     		}
     		HtmlSelection htmlSelection = new HtmlSelection(html, tabContentPanel.getPlainContent(contentTable, alignedCheckBox.isSelected(), coloredCheckBox.isSelected(), Integer.MAX_VALUE, Integer.MAX_VALUE, stopped));
-		    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-		    clipboard.setContents(htmlSelection, htmlSelection);
+		    UIUtil.setClipboardContent(htmlSelection);
     	} finally {
     		UIUtil.resetWaitCursor(cursorSubject);
     	}

@@ -1030,8 +1030,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 
     private void copyCBButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_copyCBButtonActionPerformed
     	StringSelection selection = new StringSelection(textArea.getText());
-	    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-	    clipboard.setContents(selection, selection);
+	    UIUtil.setClipboardContent(selection);
     }//GEN-LAST:event_copyCBButtonActionPerformed
 
     private void headerCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_headerCheckBoxActionPerformed

@@ -35,6 +35,9 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -2273,5 +2276,21 @@ public class UIUtil {
 				(comment != null? "<br><hr><i>" + UIUtil.toHTMLFragment(comment, 250, true, true) + "</i>": "") + colComments +
 				"</html>";
 	}
-
+	
+	public static void setClipboardContent(Transferable text) {
+		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+		try {
+			clipboard.setContents(text, (ClipboardOwner) text);
+		} catch (Exception ex) {
+			// https://stackoverflow.com/questions/51797673/in-java-why-do-i-get-java-lang-illegalstateexception-cannot-open-system-clipboa
+			LogUtil.warn(ex);
+			try {
+				Thread.sleep(20);
+			} catch(Exception ie) {
+				// ignore
+			}
+			clipboard.setContents(text, (ClipboardOwner) text);
+		}
+	}
+	
 }

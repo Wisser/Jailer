@@ -1527,14 +1527,13 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 	
     private void exportCBButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportCBButtonActionPerformed
     	try {
-        	Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         	String content;
         	String rawContent = Arrays.stream(textFields).map(field -> field.getText()).collect(Collectors.joining());
         	String separator = Arrays.stream(SEPARATORS).filter(sep -> !rawContent.contains(sep)).findAny().orElseGet(() -> null);
         	if (separator != null) {
         		content = separator + Arrays.stream(textFields).map(field -> field.getText()).collect(Collectors.joining(separator)) + separator;
         		StringSelection contents = new StringSelection(content);
-        		clipboard.setContents(contents, contents);
+        		UIUtil.setClipboardContent(contents);
         		showFeedback("credentials copied to clipboard");
         		return;
         	}

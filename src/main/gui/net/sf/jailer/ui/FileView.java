@@ -139,9 +139,8 @@ public class FileView extends javax.swing.JFrame {
 		JButton copy = new JButton("Copy to Clipboard");
 		copy.setIcon(copyIcon);
 		copy.addActionListener(e -> {
-			StringSelection selection = new StringSelection(getJTextPane().getText());
-			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-			clipboard.setContents(selection, selection);
+			String text = getJTextPane().getText();
+			UIUtil.setClipboardContent(new StringSelection(text));
 			info.setText("Copied");
 		});
 		panel.add(copy, gridBagConstraints);
