@@ -30,6 +30,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -529,7 +530,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 					if (sep != null || (v == UIUtil.NULL || v == null)) {
 						value = v;
 					} else {
-						value = value.toString().replace((char) 182, '\n').trim();
+						value = rtrimRegExpr.matcher(value.toString().replace((char) 182, '\n')).replaceAll("");
 					}
 				}
 				String cellContent = value == UIUtil.NULL || value == null? "" : value.toString();
@@ -671,7 +672,9 @@ public class TabContentPanel extends javax.swing.JPanel {
 							}
 							sb.append(" ");
 						} else {
-							sb.append(" ");
+							if (cell[y].length != 1) {
+								sb.append(" ");
+							}
 							if (rightAlign) {
 								for (int i = maxLength[x] - lastLineLength(cell[y][x]); i > 0; --i) {
 									sb.append(" ");
@@ -690,9 +693,6 @@ public class TabContentPanel extends javax.swing.JPanel {
 				}
 				if (y == 0 && sep == null && incHeader && !(rotate ^ columnNamesInFirstRow)) {
 					int o = 2;
-					if (cell[y].length == 1) {
-						sb.append(" ");
-					}
 					for (int x = 0; x < cell[y].length; ++x) {
 						if (maxLength[x] > 0) {
 							for (int i = o; i < 2 + maxLength[x]; ++i) {
@@ -710,7 +710,6 @@ public class TabContentPanel extends javax.swing.JPanel {
 		} else if (cellsRendered == 1) {
 			sb = new StringBuilder(sb.toString().trim());
 		}
-		
 		return sb;
 	}
 
@@ -1102,6 +1101,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 	public final javax.swing.JPanel shimPanel;
 	javax.swing.JButton loadButton;
 	protected boolean doSync;
+	Pattern rtrimRegExpr = Pattern.compile("^^ |\\s+$");
 	
 	private static ImageIcon cancelIcon;
 	
