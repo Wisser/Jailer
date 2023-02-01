@@ -31,6 +31,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1333,14 +1334,21 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 							theSession.shutDown();
 							theSession = null;
 						}
-			    		Session session = SessionForUI.createSession(dataSource, dataSource.dbms, executionContext.getIsolationLevel(), true, false, this);
+			    		Session session = SessionForUI.createSession(dataSource, dataSource.dbms, executionContext.getIsolationLevel(), true, false, false, this,
+			    				s -> {
+			    					try {
+										s.setSessionProperty(ExportDialog.class, "TransactionIsolation", s.getConnection().getTransactionIsolation());
+									} catch (SQLException e) {
+										// ignore
+									}
+			    				});
 
 						final Set<Table> toCheck = new HashSet<Table>();
 						if (session != null) {
 							final ExportDialog exportDialog;
 							String jmFile;
 							try {
-								Session.setGlobalFallbackConnection(session.getConnection());
+								session.setGlobalFallbackConnection();
 								if (extractionModelEditor.dataModel != null) {
 									if (extractionModelEditor.extractionModel != null) {
 										if (extractionModelEditor.extractionModel.additionalSubjects != null) {
@@ -1392,7 +1400,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 									}
 								};
 							} finally {
-								Session.setGlobalFallbackConnection(null);
+								session.resetGlobalFallbackConnection();
 							}
 							session.shutDown();
 							if (exportDialog.isOk()) {

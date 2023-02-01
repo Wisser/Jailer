@@ -262,7 +262,6 @@ public class Session {
 		this.temporaryTableScope = scope;
 
 		connectionFactory = new ConnectionFactory() {
-			private Connection defaultConnection = null;
 			private Random random = new Random();
 			@Override
 			public Connection getConnection() throws SQLException {
@@ -1536,10 +1535,15 @@ public class Session {
 	}
 
 	private static volatile Connection globalFallbackConnection = null;
+	private Connection defaultConnection = null;
 	public static volatile long lastUpdateTS;
 	
-	public static void setGlobalFallbackConnection(Connection globalFallbackConnection) {
-		Session.globalFallbackConnection = globalFallbackConnection;
+	public void setGlobalFallbackConnection() {
+		Session.globalFallbackConnection = defaultConnection;
+	}
+
+	public void resetGlobalFallbackConnection() {
+		Session.globalFallbackConnection = null;
 	}
 
 }

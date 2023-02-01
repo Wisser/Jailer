@@ -246,7 +246,8 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			final List<String> schemaInfo = Collections.synchronizedList(new ArrayList<String>());
 			final List<String> schemaNames = Collections.synchronizedList(new ArrayList<String>());
 			final AtomicBoolean schemaInfoRead = new AtomicBoolean(false);
-
+			StringBuilder defaultSchemaSB = new StringBuilder();
+			
 			ConcurrentTaskControl.openInModalDialog(parent, concurrentTaskControl,
 					new ConcurrentTaskControl.Task() {
 						@Override
@@ -255,6 +256,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 							schemas.addAll(JDBCMetaDataBasedModelElementFinder.getSchemas(session, session.getSchema()));
 							synchronized (schemaNames) {
 								schemaNames.addAll(schemas);
+								defaultSchemaSB.append(JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema(), schemaNames.isEmpty()? null : schemaNames));
 							}
 							schemas.addAll(JDBCMetaDataBasedModelElementFinder.getCatalogsWithSchemas(session));
 							synchronized (schemaInfo) {
@@ -274,7 +276,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
 			String defaultSchema;
 			synchronized (schemaNames) {
-				defaultSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema(), schemaNames.isEmpty()? null : schemaNames);
+				defaultSchema = defaultSchemaSB.toString();
 			}
 			List<String> allSchemas;
 			synchronized (schemaInfo) {
@@ -699,7 +701,12 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		levels.put(String.valueOf(Connection.TRANSACTION_SERIALIZABLE), "Serializable");
 		int dLevel = Connection.TRANSACTION_NONE;
 		try {
-			dLevel = session.getConnection().getTransactionIsolation();
+			Object prop = session.getSessionProperty(ExportDialog.class, "TransactionIsolation");
+			if (prop != null) {
+				dLevel = ((Number) prop).intValue();
+			} else {
+				dLevel = session.getConnection().getTransactionIsolation();
+			}
 		} catch (SQLException e) {
 			// ignore
 		}

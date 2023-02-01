@@ -22,6 +22,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 import javax.sql.DataSource;
 import javax.swing.BorderFactory;
@@ -52,7 +53,7 @@ public class SessionForUI extends Session {
 	 * @param dbms the DBMS
 	 */
 	public static SessionForUI createSession(DataSource dataSource, DBMS dbms, Integer isolationLevel, boolean shutDownImmediatelly, boolean initInlineViewStyle, final Window w) throws SQLException {
-		return createSession(dataSource, dbms, isolationLevel, shutDownImmediatelly, initInlineViewStyle, false, w);
+		return createSession(dataSource, dbms, isolationLevel, shutDownImmediatelly, initInlineViewStyle, false, w, null);
 	}
 	
 	/**
@@ -61,7 +62,7 @@ public class SessionForUI extends Session {
 	 * @param dataSource the data source
 	 * @param dbms the DBMS
 	 */
-	public static SessionForUI createSession(DataSource dataSource, DBMS dbms, Integer isolationLevel, boolean shutDownImmediatelly, boolean initInlineViewStyle, boolean testOnly, Window w) throws SQLException {
+	public static SessionForUI createSession(DataSource dataSource, DBMS dbms, Integer isolationLevel, boolean shutDownImmediatelly, boolean initInlineViewStyle, boolean testOnly, Window w, Consumer<Session> sessionInitializer) throws SQLException {
 		Session.setThreadSharesConnection();
 		final SessionForUI session = new SessionForUI(dataSource, dbms, isolationLevel, shutDownImmediatelly, testOnly);
 		final AtomicReference<Connection> con = new AtomicReference<Connection>();
@@ -84,6 +85,9 @@ public class SessionForUI extends Session {
 							if (session.getInlineViewStyle() == null) {
 								session.setSessionProperty(SessionForUI.class, SUPPORT_WC_EDITOR, false);
 							}
+						}
+						if (sessionInitializer != null) {
+							sessionInitializer.accept(session);
 						}
 						if (!session.cancelled.get()) {
 							String defSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema());

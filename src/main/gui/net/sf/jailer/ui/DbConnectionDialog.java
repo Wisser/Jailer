@@ -63,7 +63,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
@@ -1303,37 +1302,14 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		try {
 			Window w = parent instanceof Window? (Window) parent : SwingUtilities.getWindowAncestor(parent);
 			BasicDataSource dataSource = UIUtil.createBasicDataSource(w, ci.driverClass, ci.url, ci.user, ci.password, 0, urls);
-			SessionForUI session = SessionForUI.createSession(dataSource, dataSource.dbms, null, true, false, true, w);
-			String databaseProductName = null;
+			SessionForUI session = SessionForUI.createSession(dataSource, dataSource.dbms, null, true, false, true, w, null);
 			if (session != null) {
-				try {
-					databaseProductName = session.getMetaData().getDatabaseProductName();
-				} catch (Throwable t) {
-					// ignore
-				}
 				session.shutDown();
 				try {
 					UISettings.s10 = ci.url.replaceAll("[^:]*:([^:]*):.*", "$1");
 					UISettings.s10 = UISettings.s10.substring(0, Math.min(UISettings.s10.length(), 100));
 				} catch (Throwable t) {
 					// ignore
-				}
-				try {
-					if (!warned) {
-						if (DBMS.forDBMS(null) == dataSource.dbms) {
-							warned = true;
-							final String title = "Unknown DBMS";
-							JOptionPane.showMessageDialog(parent,
-								"Jailer is not configured for DBMS \"" + databaseProductName + "\"\n" +
-								"The results may not be optimal.\nFor assistance please contact:\n" + 
-								"\n" + 
-								"Help desk: https://sourceforge.net/p/jailer/discussion\n" + 
-								"Mail: rwisser@users.sourceforge.net",
-								title, JOptionPane.WARNING_MESSAGE);
-						}
-					}
-				} catch (Throwable e) {
-					UIUtil.showException(null, "Error", e);
 				}
 				return true;
 			}
@@ -1349,8 +1325,6 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		}
 	}
 
-	private static boolean warned = false;
-	
 	/**
 	 * Gets all DB schemas.
 	 * 
