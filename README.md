@@ -45,6 +45,7 @@ Thanks to the JDBC technology used, any DMBS is in principle supported. For best
 
 ## News
 
+ - 2023-02-03    Thanks to deep analysis of statements, the SQL console can now relate the result of queries to the source tables and display them accordingly. In addition, this technique also allows filter conditions to be dynamically added to arbitrary SQL queries.
  - 2022-01-01    Comprehensive redesign and modernization of the entire user interface. New Look & Feel [FlatLaf](https://github.com/JFormDesigner/FlatLaf). 
  - 2021-02-04    Cycles in parent-child relationships will be detected and broken. Thus, such data can be exported by deferring the insertion of nullable foreign keys.
  - 2020-02-04    The Jailer engine is published in Maven repository. https://mvnrepository.com/artifact/io.github.wisser/jailer-engine
