@@ -489,10 +489,10 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		moduleDataBrowserPanel.setBackground(bgBrowser);
 		moduleSubsetterPanel.setBackground(bgSubsetter);
 		
-		Border emtypBorderD = new ToolSelectionBorder(1, 1, 0, 0, bgBrowser);
-		Border emtypBorderS = new ToolSelectionBorder(1, 0, 0, 1, bgSubsetter);
-		Border dataBrowsepBorder = new ToolSelectionBorder(1, 1, 0, 0, null);
-		Border subsetterBorder = new ToolSelectionBorder(1, 0, 0, 1, null);
+		Border emtypBorderD = new ToolSelectionBorder(1, 0, 0, 1, bgBrowser);
+		Border emtypBorderS = new ToolSelectionBorder(1, 1, 0, 0, bgSubsetter);
+		Border dataBrowsepBorder = new ToolSelectionBorder(1, 0, 0, 1, null);
+		Border subsetterBorder = new ToolSelectionBorder(1, 1, 0, 0, null);
 		
 		moduleDataBrowserPanel.setBorder(emtypBorderD);
 		moduleSubsetterPanel.setBorder(emtypBorderS);
@@ -1783,7 +1783,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         moduleSubsetterPanel.add(moduleSubsetterFramePanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         modulesPanel.add(moduleSubsetterPanel, gridBagConstraints);
@@ -1822,7 +1822,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         moduleDataBrowserPanel.add(moduleDataBrowserFramePanel1, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         modulesPanel.add(moduleDataBrowserPanel, gridBagConstraints);
@@ -1900,7 +1900,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 12;
+        gridBagConstraints.gridy = 14;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 32, 12, 0);
         jPanel16.add(jPanel17, gridBagConstraints);
@@ -1932,7 +1932,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 14;
+        gridBagConstraints.gridy = 12;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 32, 12, 0);
         jPanel16.add(jPanel18, gridBagConstraints);

@@ -173,6 +173,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	private final String tmpFileName;
 	private final ExecutionContext executionContext;
 	private final StringBuilder defaultExportFileName;
+	private final StringBuilder databaseProductName = new StringBuilder();
 
 	private static final Object NO_SCHEMA_INFO = new String("");
 	private static final String NO_SCHEMA_INFO_LABEL = "<html><i>no further schema information</i></html>";
@@ -263,6 +264,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 								schemaInfo.addAll(schemas);
 								schemaInfoRead.set(true);
 							}
+							databaseProductName.append(session.getMetaData().getDatabaseProductName());
 							UIUtil.invokeLater(new Runnable() {
 								@Override
 								public void run() {
@@ -274,6 +276,8 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 						}
 				}, "Retrieving schema info...");
 
+			unknownDBMSWarning(session);
+			
 			String defaultSchema;
 			synchronized (schemaNames) {
 				defaultSchema = defaultSchemaSB.toString();
@@ -689,6 +693,27 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		if (isOk) {
 			previousInitialSubjectCondition = subjectCondition;
 			previousSubjectCondition = where.getText();
+		}
+	}
+
+	private void unknownDBMSWarning(Session session) {
+		if (DBMS.forDBMS(null) == session.dbms) {
+			final String title = "Unknown DBMS";
+			unknownDBMSLabel.setIcon(warnIcon);
+			String message = "Jailer is not configured for DBMS \"" + databaseProductName + "\".";
+			unknownDBMSLabel.setText(message);
+			unknownDBMSButton.addActionListener(e -> {
+				JOptionPane.showMessageDialog(this,
+					message + "\n" +
+					"The results may not be optimal.\nFor assistance please contact:\n" + 
+					"\n" + 
+					"Help desk: https://github.com/Wisser/Jailer/issues\n" +
+					"(or https://sourceforge.net/p/jailer/discussion )\n" + 
+					"Mail: rwisser@users.sourceforge.net",
+					title, JOptionPane.WARNING_MESSAGE);
+			});
+		} else {
+			unknownDBMSPanel.setVisible(false);
 		}
 	}
 
@@ -1355,6 +1380,9 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         jButton1 = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
         cancelButton = new javax.swing.JButton();
+        unknownDBMSPanel = new javax.swing.JPanel();
+        unknownDBMSLabel = new javax.swing.JLabel();
+        unknownDBMSButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Data Export"); // NOI18N
@@ -2348,6 +2376,30 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         jPanel7.add(jPanel2, gridBagConstraints);
 
+        unknownDBMSPanel.setLayout(new java.awt.GridBagLayout());
+
+        unknownDBMSLabel.setText("jLabel5");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 8, 2, 8);
+        unknownDBMSPanel.add(unknownDBMSLabel, gridBagConstraints);
+
+        unknownDBMSButton.setText("Info");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 6);
+        unknownDBMSPanel.add(unknownDBMSButton, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        jPanel7.add(unknownDBMSPanel, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -3049,6 +3101,9 @@ public abstract class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JLabel toLabel;
     public javax.swing.JCheckBox transactional;
     public javax.swing.JCheckBox unicode;
+    private javax.swing.JButton unknownDBMSButton;
+    private javax.swing.JLabel unknownDBMSLabel;
+    private javax.swing.JPanel unknownDBMSPanel;
     private javax.swing.JCheckBox upsertCheckbox;
     private javax.swing.JTextField where;
     private javax.swing.JComboBox workingTableSchemaComboBox;
@@ -3063,6 +3118,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	private Icon resetIcon;
 	private ImageIcon cancelIcon;
 	private ImageIcon copyIcon;
+	private ImageIcon warnIcon;
 	
 	{
         // load images
@@ -3074,6 +3130,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         runIcon = UIUtil.readImage("/run.png");
         resetIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/reset.png"));
         copyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/copy.png"));
+        warnIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/wanr.png"));
 	}
 
 }
