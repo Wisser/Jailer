@@ -3143,7 +3143,7 @@ public class DataBrowser extends javax.swing.JFrame {
         bookmarkMenu.setText("Arrangement");
 
         addBookmarkMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_B, java.awt.event.InputEvent.CTRL_MASK));
-        addBookmarkMenuItem.setText("Add Desktop Arrangement");
+        addBookmarkMenuItem.setText("Store Desktop Arrangement");
         addBookmarkMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addBookmarkMenuItemActionPerformed(evt);
