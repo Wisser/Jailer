@@ -537,6 +537,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						}
 						if (e != null) {
 							updateMode("error", null);
+							propagateErrorState(BrowserContentPane.this);
 							unhide();
 							if (theSession == null || !theSession.isDown()) {
 								if (e instanceof SqlException && ((SqlException) e).sqlStatement != null && UIUtil.suspectQuery != null) {
@@ -626,6 +627,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					} finally {
 						Desktop.forceAdjustRows = oldForceAdjustRows;
 					}
+				}
+
+				private void propagateErrorState(BrowserContentPane browserContentPane) {
+					browserContentPane.getChildBrowsers().forEach(cb -> {
+						cb.browserContentPane.loadingLabel.setText("Error loading \"" + Quoting.staticUnquote(table.getName()) + "\"");
+						propagateErrorState(cb.browserContentPane);
+					});
 				}
 			});
 		}
@@ -8155,5 +8163,4 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
      	hAlignButtonIcon1 = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/anchor1.png"));
      	hAlignButtonIcon2 = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/anchor0.png"));
 	}
-
 }
