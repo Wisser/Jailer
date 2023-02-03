@@ -1,5 +1,6 @@
 14.2.1
   - Added a context menu to the database connection navigation tree.
+  - Using "New Window" menu item now restores table-arrangement of original browser.
   - Improved responsiveness of the user interface.
 
 14.2
