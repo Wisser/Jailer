@@ -1,4 +1,5 @@
 14.2.1
+  - Added a context menu to the database connection navigation tree.
   - Improved responsiveness of the user interface.
 
 14.2
