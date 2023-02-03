@@ -1553,13 +1553,7 @@ public class DataBrowser extends javax.swing.JFrame {
 						if (SwingUtilities.isLeftMouseButton(e)) {
 							if (o instanceof ConnectionInfo) {
 								if (e.getClickCount() > 1) {
-									if (dbConnectionDialog.connectSilent((ConnectionInfo) o)) {
-										try {
-											setConnection(dbConnectionDialog);
-										} catch (Exception ex) {
-											UIUtil.showException(DataBrowser.this, "Error", ex, session);
-										}
-									}
+									connect(o);
 								} else {
 									dbConnectionDialog.select((ConnectionInfo) o);
 								}
@@ -1569,7 +1563,18 @@ public class DataBrowser extends javax.swing.JFrame {
 							JPopupMenu popup = new JPopupMenu();
 							if (o instanceof ConnectionInfo) {
 								ConnectionInfo ci = (ConnectionInfo) o;
-								JMenuItem i = new JMenuItem("Edit");
+								JMenuItem i = new JMenuItem("Connect");
+								i.setIcon(noconnectionIcon);
+								i.setEnabled(!ci.equals(currentConnectionInfo));
+								popup.add(i);
+								popup.add(new JSeparator());
+								i.addActionListener(new ActionListener() {
+									@Override
+									public void actionPerformed(ActionEvent e) {
+										connect(ci);
+									}
+								});
+								i = new JMenuItem("Edit");
 								i.setIcon(editIcon);
 								popup.add(i);
 								i.addActionListener(new ActionListener() {
@@ -1612,6 +1617,16 @@ public class DataBrowser extends javax.swing.JFrame {
 							}
 							UIUtil.showPopup(e.getComponent(), e.getX(), e.getY(), popup);
 						}
+					}
+				}
+			}
+
+			private void connect(Object o) {
+				if (dbConnectionDialog.connectSilent((ConnectionInfo) o)) {
+					try {
+						setConnection(dbConnectionDialog);
+					} catch (Exception ex) {
+						UIUtil.showException(DataBrowser.this, "Error", ex, session);
 					}
 				}
 			}
