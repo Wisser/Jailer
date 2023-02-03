@@ -700,6 +700,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		if (DBMS.forDBMS(null) == session.dbms) {
 			final String title = "Unknown DBMS";
 			unknownDBMSLabel.setIcon(warnIcon);
+			unknownDBMSButton.setIcon(warnIcon);
 			String message = "Jailer is not configured for DBMS \"" + databaseProductName + "\".";
 			unknownDBMSLabel.setText(message);
 			unknownDBMSButton.addActionListener(e -> {

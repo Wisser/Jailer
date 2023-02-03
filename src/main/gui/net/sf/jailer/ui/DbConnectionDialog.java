@@ -379,8 +379,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		this.dataModelAware = dataModelAware;
 		this.showOnlyRecentyUsedConnections = showOnlyRecentyUsedConnections;
 		allDialogs.put(this, this);
-		loadConnectionList(showOnlyRecentyUsedConnections);
 		initComponents();
+		loadConnectionList(showOnlyRecentyUsedConnections);
 		jButton1.setIcon(UIUtil.scaleIcon(jButton1, okIcon));
 		closeButton.setIcon(UIUtil.scaleIcon(closeButton, cancelIcon));
 		restoreLastSessionButton.setVisible(false);
@@ -846,6 +846,14 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	}
 
 	private void sortConnectionList() {
+		ConnectionInfo sci = null;
+		if (connectionsTable != null) {
+			RowSorter<?> rowSorter = connectionsTable.getRowSorter();
+			int selectedRowIndex = connectionsTable.getSelectedRow();
+			if (selectedRowIndex >= 0) {
+				sci = connectionList.get(rowSorter.convertRowIndexToModel(selectedRowIndex));
+			}
+		}
 		Collections.sort(connectionList, new Comparator<ConnectionInfo>() {
 			@Override
 			public int compare(ConnectionInfo o1, ConnectionInfo o2) {
@@ -867,6 +875,19 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 				return o1.alias.compareToIgnoreCase(o2.alias);
 			}
 		});
+		if (connectionsTable != null) {
+			if (sci != null) {
+				int selectedRowIndex = connectionList.indexOf(sci);
+				if (selectedRowIndex >= 0) {
+					RowSorter<?> rowSorter = connectionsTable.getRowSorter();
+					selectedRowIndex = rowSorter.convertRowIndexToView(selectedRowIndex);
+					if (selectedRowIndex >= 0) {
+						connectionsTable.getSelectionModel().setSelectionInterval(selectedRowIndex, selectedRowIndex);
+						connectionsTable.scrollRectToVisible(connectionsTable.getCellRect(selectedRowIndex, 0, true));
+					}
+				}
+			}
+		}
 	}
 
 	/**
@@ -1484,6 +1505,22 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			}
 		}
 	}
+	
+	public void doEdit(ConnectionInfo ci) {
+		selectAlias(ci.alias);
+		editButton.doClick(1);
+	}
+
+	public void doClone(ConnectionInfo ci) {
+		selectAlias(ci.alias);
+		copy.doClick(1);
+	}
+
+	public void doDelete(ConnectionInfo ci) {
+		selectAlias(ci.alias);
+		deleteButton.doClick(1);
+	}
+
 
 	private static ImageIcon warnIcon;
     private static ImageIcon scaledWarnIcon;

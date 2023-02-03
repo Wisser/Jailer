@@ -1542,7 +1542,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		modelNavigationTree.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				if (SwingUtilities.isLeftMouseButton(e) && dbConnectionDialog != null) {
+				if (dbConnectionDialog != null) {
 					TreePath path = modelNavigationTree.getClosestPathForLocation(e.getX(), e.getY());
 					if (path != null) {
 						Object p = path.getLastPathComponent();
@@ -1550,18 +1550,67 @@ public class DataBrowser extends javax.swing.JFrame {
 						if (p instanceof DefaultMutableTreeNode) {
 							o = ((DefaultMutableTreeNode) p).getUserObject();
 						}
-						if (o instanceof ConnectionInfo) {
-							if (e.getClickCount() > 1) {
-								if (dbConnectionDialog.connectSilent((ConnectionInfo) o)) {
-									try {
-										setConnection(dbConnectionDialog);
-									} catch (Exception ex) {
-										UIUtil.showException(DataBrowser.this, "Error", ex, session);
+						if (SwingUtilities.isLeftMouseButton(e)) {
+							if (o instanceof ConnectionInfo) {
+								if (e.getClickCount() > 1) {
+									if (dbConnectionDialog.connectSilent((ConnectionInfo) o)) {
+										try {
+											setConnection(dbConnectionDialog);
+										} catch (Exception ex) {
+											UIUtil.showException(DataBrowser.this, "Error", ex, session);
+										}
 									}
+								} else {
+									dbConnectionDialog.select((ConnectionInfo) o);
 								}
-							} else {
-								dbConnectionDialog.select((ConnectionInfo) o);
 							}
+						} else if (SwingUtilities.isRightMouseButton(e)) {
+							modelNavigationTree.setSelectionPath(path);
+							JPopupMenu popup = new JPopupMenu();
+							if (o instanceof ConnectionInfo) {
+								ConnectionInfo ci = (ConnectionInfo) o;
+								JMenuItem i = new JMenuItem("Edit");
+								i.setIcon(editIcon);
+								popup.add(i);
+								i.addActionListener(new ActionListener() {
+									@Override
+									public void actionPerformed(ActionEvent e) {
+										UIUtil.invokeLater(4, () -> dbConnectionDialog.doEdit(ci));
+										reconnectMenuItemActionPerformed(e);
+									}
+								});
+								i = new JMenuItem("Clone");
+								i.setIcon(copyIcon);
+								popup.add(i);
+								i.addActionListener(new ActionListener() {
+									@Override
+									public void actionPerformed(ActionEvent e) {
+										UIUtil.invokeLater(4, () -> dbConnectionDialog.doClone(ci));
+										reconnectMenuItemActionPerformed(e);
+									}
+								});
+								i = new JMenuItem("Delete");
+								popup.add(i);
+								i.setIcon(deleteIcon);
+								i.addActionListener(new ActionListener() {
+									@Override
+									public void actionPerformed(ActionEvent e) {
+										UIUtil.invokeLater(4, () -> dbConnectionDialog.doDelete(ci));
+										reconnectMenuItemActionPerformed(e);
+									}
+								});
+							} else {
+								JMenuItem i = new JMenuItem("Open");
+								i.setEnabled(modelNavigationTree.isCollapsed(path));
+								popup.add(i);
+								i.addActionListener(new ActionListener() {
+									@Override
+									public void actionPerformed(ActionEvent e) {
+										modelNavigationTree.expandPath(path);
+									}
+								});
+							}
+							UIUtil.showPopup(e.getComponent(), e.getX(), e.getY(), popup);
 						}
 					}
 				}
@@ -1587,7 +1636,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			if (currentConnectionInfo == null) {
 				currentConnectionInfo = dbConnectionDialog.currentConnection;
 			}
-			Map<String, Set<ConnectionInfo>> models = new TreeMap<String, Set<ConnectionInfo>>();
+			Map<String, Set<ConnectionInfo>> models = new HashMap<String, Set<ConnectionInfo>>();
 			for (ConnectionInfo ci: dbConnectionDialog.getConnectionList()) {
 				if (existingModels.contains(ci.dataModelFolder)) {
 					Pair<String, Long> modelDetails = DataModelManager.getModelDetails(ci.dataModelFolder, executionContext);
@@ -1601,7 +1650,11 @@ public class DataBrowser extends javax.swing.JFrame {
 				}
 			}
 			
-			models.forEach((mName, cis) -> {
+			ArrayList<String> keys = new ArrayList<String>(models.keySet());
+			keys.sort(String::compareToIgnoreCase);
+			
+			for (String mName: keys) {
+				Set<ConnectionInfo> cis = models.get(mName);
 				DefaultMutableTreeNode node = new DefaultMutableTreeNode(mName.length() == 0? "Default" : mName);
 				root.add(node);
 				for (ConnectionInfo ci: cis) {
@@ -1611,7 +1664,7 @@ public class DataBrowser extends javax.swing.JFrame {
 					}
 					node.add(child);
 				}
-			});
+			};
 		}
 		
 		Set<String> expandedModels = new HashSet<String>();
@@ -6369,6 +6422,9 @@ public class DataBrowser extends javax.swing.JFrame {
 	private ImageIcon menuIcon;
 	private ImageIcon splitIcon;
 	private ImageIcon onePxIcon;
+	private ImageIcon editIcon;
+	private ImageIcon copyIcon;
+	private ImageIcon deleteIcon;
 	{
 		// load images
 		tableIcon = UIUtil.readImage("/table.png");
@@ -6401,6 +6457,9 @@ public class DataBrowser extends javax.swing.JFrame {
 		menuIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/menu.png"));
 		splitIcon = UIUtil.scaleIcon(UIUtil.readImage("/spliticon.png"), 1f / 1.75f);
 		onePxIcon = UIUtil.readImage("/1px.png");
+		editIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/editdetailsitem.png"));
+		copyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/copy.png"));
+		deleteIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/delete.png"));
 	}
 
 }
