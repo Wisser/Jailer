@@ -1729,16 +1729,21 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 int cStart = info.contextPosition;
                 int cEnd = sql.length();
                 int ttEnd = sql.length();
-                if (i < outlineInfos.size() - 1) {
-                    cEnd = Math.min(cEnd, outlineInfos.get(i + 1).position);
-                    ttEnd = Math.min(ttEnd, outlineInfos.get(i + 1).position);
+                for (int j = i; j < outlineInfos.size() - 1; ++j) {
+                	OutlineInfo outlineInfo = outlineInfos.get(j + 1);
+					cEnd = Math.min(sql.length(), outlineInfo.position);
+                    ttEnd = Math.min(sql.length(), outlineInfo.position);
+                    if (!(!outlineInfo.withContext && !outlineInfo.withSeparator && "(".equals(outlineInfo.scopeDescriptor))) {
+                    	break;
+                    }
                 }
                 if (info.contextEnd > 0) {
                     cEnd = Math.min(cEnd, info.contextEnd);
                     ttEnd = Math.min(ttEnd, info.contextEnd);
                 }
                 if (cStart < cEnd) {
-	                String context = UIUtil.removesuperfluousSpaces(sql.substring(cStart, cEnd).trim().replaceAll("\\s+", " "));
+                	int cEndB = Math.min(cEnd, cStart + MAX_CONTEXT_LENGTH * 32);
+	                String context = UIUtil.removesuperfluousSpaces(sql.substring(cStart, cEndB).trim().replaceAll("\\s+", " "));
 	                if (context.length() > MAX_CONTEXT_LENGTH) {
 	                    context = context.substring(0, MAX_CONTEXT_LENGTH) + "...";
 	                }
@@ -3837,4 +3842,44 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     // "Select distinct ... from ... left join ..." with a non-comparable column in select clause (for example BLOB) fails. Make the problem go away.
     // idea: give SQLConsole an "ErrorHandler" who will be consulted if query fails and will ask user to skip "distinct" and try again.
 
+	
+	// TODO
+	// TODO "(GerichtlMassnahme.rzMandant = 'ABIT') AND (GerichtlMassnahme.ObjectId in (" context/tooltip is cut at second '('
+//	SELECT
+//    GerichtlMassnahme.ObjectId
+//FROM
+//    GerichtlMassnahme
+//WHERE
+//    (GerichtlMassnahme.rzMandant = 'ABIT')
+//    AND (
+//         GerichtlMassnahme.ObjectId in (
+//              SELECT
+//                   GerichtlMassnahme.ObjectId
+//              FROM
+//                   GerichtlMassnahme,
+//                   GMAntragsgegner
+//              WHERE
+//                   GerichtlMassnahme.ObjectId = GMAntragsgegner.rlMassnahme
+//                   AND GMMahnverfahrenart = '1'
+//                   AND GMMassnahmenart = '01'
+//                   AND Datum IS NOT NULL
+//                   AND GerichtlMassnahme.Geschaeftszeichen = 'AZ'
+//                   AND GMZustellungsart = '05'
+//                   AND (GerichtlMassnahme.GerichtsAZ = 'xy')
+//              Union
+//              SELECT
+//                   GerichtlMassnahme.ObjectId
+//              FROM
+//                   GerichtlMassnahme,
+//                   GMAntragsgegner
+//              WHERE
+//                   GerichtlMassnahme.ObjectId = GMAntragsgegner.rlMassnahme
+//                   AND GMMahnverfahrenart = '1'
+//                   AND GMMassnahmenart = '01'
+//                   AND Datum IS NOT NULL
+//                   AND GerichtlMassnahme.Geschaeftszeichen = 'AZ'
+//                   AND GMZustellungsart = '05'
+//                   AND (GMAntragsgegner.GerichtsAZ = 'xy')
+//         )
+//    )
 }

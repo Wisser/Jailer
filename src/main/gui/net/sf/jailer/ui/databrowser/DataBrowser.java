@@ -1553,7 +1553,7 @@ public class DataBrowser extends javax.swing.JFrame {
 						if (SwingUtilities.isLeftMouseButton(e)) {
 							if (o instanceof ConnectionInfo) {
 								if (e.getClickCount() > 1) {
-									connect(o);
+									connect(DataBrowser.this, o);
 								} else {
 									dbConnectionDialog.select((ConnectionInfo) o);
 								}
@@ -1563,15 +1563,34 @@ public class DataBrowser extends javax.swing.JFrame {
 							JPopupMenu popup = new JPopupMenu();
 							if (o instanceof ConnectionInfo) {
 								ConnectionInfo ci = (ConnectionInfo) o;
-								JMenuItem i = new JMenuItem("Connect");
+								JMenuItem i = new JMenuItem("<html>Connect <i>(double click)</i></html>");
 								i.setIcon(noconnectionIcon);
+								i.setEnabled(!ci.equals(currentConnectionInfo));
+								popup.add(i);
+								i.addActionListener(new ActionListener() {
+									@Override
+									public void actionPerformed(ActionEvent e) {
+										connect(DataBrowser.this, ci);
+									}
+								});
+								i = new JMenuItem("Connect in New Window");
+								i.setIcon(noconnectionIconnw);
 								i.setEnabled(!ci.equals(currentConnectionInfo));
 								popup.add(i);
 								popup.add(new JSeparator());
 								i.addActionListener(new ActionListener() {
 									@Override
 									public void actionPerformed(ActionEvent e) {
-										connect(ci);
+										DataBrowser newDataBrowser;
+										if (executionContext.getCurrentModelSubfolder() != null && executionContext.getCurrentModelSubfolder().equals(ci.dataModelFolder)) {
+											newDataBrowser = openNewWindow();
+										} else {
+											newDataBrowser = openNewEmptyWindow();
+										}
+										if (newDataBrowser != null) {
+											newDataBrowser.modelNavigationButtonV.doClick();
+											connect(newDataBrowser, ci); // TODO
+										}
 									}
 								});
 								i = new JMenuItem("Edit");
@@ -1621,12 +1640,12 @@ public class DataBrowser extends javax.swing.JFrame {
 				}
 			}
 
-			private void connect(Object o) {
-				if (dbConnectionDialog.connectSilent((ConnectionInfo) o)) {
+			private void connect(DataBrowser dataBrowser, Object o) {
+				if (dataBrowser.dbConnectionDialog.connectSilent((ConnectionInfo) o)) {
 					try {
-						setConnection(dbConnectionDialog);
+						dataBrowser.setConnection(dataBrowser.dbConnectionDialog);
 					} catch (Exception ex) {
-						UIUtil.showException(DataBrowser.this, "Error", ex, session);
+						UIUtil.showException(dataBrowser, "Error", ex);
 					}
 				}
 			}
@@ -2216,6 +2235,7 @@ public class DataBrowser extends javax.swing.JFrame {
         largeLayoutRadioButtonMenuItem = new javax.swing.JRadioButtonMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         newWindowMenuItem = new javax.swing.JMenuItem();
+        newEmptyWindowMenuItem = new javax.swing.JMenuItem();
         jSeparator6 = new javax.swing.JPopupMenu.Separator();
         view = new javax.swing.JMenu();
         jMenu3 = new javax.swing.JMenu();
@@ -3368,6 +3388,14 @@ public class DataBrowser extends javax.swing.JFrame {
             }
         });
         menuWindow.add(newWindowMenuItem);
+
+        newEmptyWindowMenuItem.setText("New Empty Window");
+        newEmptyWindowMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newEmptyWindowMenuItemActionPerformed(evt);
+            }
+        });
+        menuWindow.add(newEmptyWindowMenuItem);
         menuWindow.add(jSeparator6);
 
         view.setText("Look&Feel");
@@ -3612,6 +3640,37 @@ public class DataBrowser extends javax.swing.JFrame {
         });
     }//GEN-LAST:event_tbreloadButtonActionPerformed
 
+    private void newEmptyWindowMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newEmptyWindowMenuItemActionPerformed
+    	openNewEmptyWindow();
+    }//GEN-LAST:event_newEmptyWindowMenuItemActionPerformed
+
+	private void newWindowMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_newWindowMenuItemActionPerformed
+		openNewWindow();
+	}// GEN-LAST:event_newWindowMenuItemActionPerformed
+
+	private DataBrowser openNewWindow() {
+		try {
+			File tmpFile = Configuration.getInstance().createTempFile();
+			desktop.storeSession(tmpFile.toString());
+			DataBrowser newBrowser = openNewDataBrowser(datamodel.get(), dbConnectionDialog, false, executionContext, null);
+			newBrowser.desktop.restoreSession(null, newBrowser, tmpFile.toString(), true);
+			tmpFile.delete();
+			return newBrowser;
+		} catch (Exception e) {
+			UIUtil.showException(this, "Error", e, session);
+		}
+		return null;
+	}
+
+	private DataBrowser openNewEmptyWindow() {
+		try {
+			return openNewDataBrowser(datamodel.get(), dbConnectionDialog, false, executionContext, null);
+		} catch (Exception e) {
+			UIUtil.showException(this, "Error", e, session);
+		}
+		return null;
+	}
+
 	private void exportDataMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_exportDataMenuItemActionPerformed
 		desktop.createExtractionModel(true);
 	}// GEN-LAST:event_exportDataMenuItemActionPerformed
@@ -3742,14 +3801,6 @@ public class DataBrowser extends javax.swing.JFrame {
 			}
 		};
 	}// GEN-LAST:event_consistencyCheckMenuItemActionPerformed
-
-	private void newWindowMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_newWindowMenuItemActionPerformed
-		try {
-			openNewDataBrowser(datamodel.get(), dbConnectionDialog, false, executionContext, null);
-		} catch (Exception e) {
-			UIUtil.showException(this, "Error", e, session);
-		}
-	}// GEN-LAST:event_newWindowMenuItemActionPerformed
 
 	private void reconnectMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_reconnectMenuItemActionPerformed
 		synchronized (this) {
@@ -4409,6 +4460,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JTree navigationTree;
     private javax.swing.JScrollPane navigationTreeScrollPane;
     private javax.swing.JMenuItem newBrowserjMenuItem;
+    private javax.swing.JMenuItem newEmptyWindowMenuItem;
     private javax.swing.JMenuItem newWindowMenuItem;
     private javax.swing.JButton openTableButton;
     private javax.swing.JPanel outLinePanel;
@@ -6432,6 +6484,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	private ImageIcon tbZoomOutIcon;
 	private ImageIcon connectionIcon;
 	private ImageIcon noconnectionIcon;
+	private ImageIcon noconnectionIconnw;
 	private ImageIcon modelIcon;
 	private ImageIcon ieditdetailsIcon;
 	private ImageIcon menuIcon;
@@ -6467,6 +6520,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		tbZoomOutIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/tb_zoomout.png"));
 		connectionIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/connection.png"));
 		noconnectionIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/nonconnection.png"));
+		noconnectionIconnw = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/nonconnectionnw.png"));
 		modelIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/model.png"));
 		ieditdetailsIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/ieditdetails_64.png"));
 		menuIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/menu.png"));

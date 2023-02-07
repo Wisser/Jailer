@@ -1021,8 +1021,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		});
 
 		
-		ImageIcon scaledhAlignButtonIcon1 = UIUtil.scaleIcon(this, hAlignButtonIcon1);
-		ImageIcon scaledhAlignButtonIcon2 = UIUtil.scaleIcon(this, hAlignButtonIcon2);
+		ImageIcon scaledhAlignButtonIcon1 = hAlignButtonIcon1;
+		ImageIcon scaledhAlignButtonIcon2 = hAlignButtonIcon2;
 		
 		hAlignButtonLabel.setText(getQueryBuilderDialog() != null? null : "Find Column");
 		hAlignButtonLabel.setToolTipText("Align horizontally with predecessors");
@@ -6150,6 +6150,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         statusPanel.add(selectDistinctCheckBox, gridBagConstraints);
 
         sortColumnsPanel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
@@ -6164,7 +6165,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 6;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
         statusPanel.add(sortColumnsPanel, gridBagConstraints);
@@ -6195,7 +6196,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         hAlignButtonLabel.setText("Find Columns");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 2);
+        gridBagConstraints.insets = new java.awt.Insets(1, 4, 1, 2);
         hAlignButtonPanel.add(hAlignButtonLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -6203,7 +6204,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
+        gridBagConstraints.insets = new java.awt.Insets(1, 0, 1, 2);
         statusPanel.add(hAlignButtonPanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -8160,7 +8161,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
      	selectIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/select.png"));
      	menuIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/menu.png"));
      	allDotIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/alldot.gif"));
-     	hAlignButtonIcon1 = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/anchor1.png"));
-     	hAlignButtonIcon2 = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/anchor0.png"));
+     	double sf = 1.2;
+     	hAlignButtonIcon1 = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/anchor1.png"), sf);
+     	hAlignButtonIcon2 = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/anchor0.png"), sf);
 	}
 }
