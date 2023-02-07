@@ -322,7 +322,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 				JComponent detailsView, List<FilterTemplate> model,
 				StringBuilder errorMessage) {
 			String name = templateDetailsNameField.getText().trim();
-			String expression = templateDetailsNewValueField.getText().trim();
+			String expression = templateDetailsNewValueField.getText().trim().replaceFirst("\\s*;$", "");
 			if (name.length() == 0) {
 				errorMessage.append("Name missing");
 				return;
@@ -1320,7 +1320,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 	 */
 	private void storeFilterExpressions() {
 		for (Column c: filterTextfieldsPerColumn.keySet()) {
-			String newFilter = (filterTextfieldsPerColumn.get(c).getText()).trim();
+			String newFilter = (filterTextfieldsPerColumn.get(c).getText()).trim().replaceFirst("\\s*;$", "");
 			boolean hasDerivedFilter = c.getFilter() != null && c.getFilter().isDerived();
 			if (hasDerivedFilter && newFilter.length() == 0) {
 				newFilter = Filter.OLD_VALUE_PROP;
