@@ -521,6 +521,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			selectedModule.set(1);
 			((CardLayout) modulsCardPanel.getLayout()).show(modulsCardPanel, "subsetter");
 			dmmdSubsetter.mainContentPanel.setBackground(bgSubsetter);
+			sepPanel.setBackground(bgSubsetter);
 			dmmdSubsetter.jPanel11.setBackground(bgSubsetter);
 			dmmdSubsetter.jPanel12.setBackground(bgSubsetter);
 			moduleSubsetterPanel.setBorder(subsetterBorder);
@@ -534,6 +535,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			selectedModule.set(2);
 			((CardLayout) modulsCardPanel.getLayout()).show(modulsCardPanel, "databrowser");
 			dmmdBrowser.mainContentPanel.setBackground(bgBrowser);
+			sepPanel.setBackground(bgBrowser);
 			dmmdBrowser.jPanel11.setBackground(bgBrowser);
 			dmmdBrowser.jPanel12.setBackground(bgBrowser);
 			moduleSubsetterPanel.setBorder(emtypBorderS);
@@ -543,6 +545,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			openWelcomeDialog(dmmdBrowser);
 		};
 		deselButton.addActionListener(e -> {
+			sepPanel.setBackground(jPanel14.getBackground());
 			helpLabel.setVisible(true);
 			switchToNone.run();
 		});
@@ -1645,6 +1648,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         moduleDataBrowserSubPanel = new javax.swing.JPanel();
         titelDataBrowserLabel = new javax.swing.JLabel();
         jPanel8 = new javax.swing.JPanel();
+        sepPanel = new javax.swing.JPanel();
         modulsCardPanel = new javax.swing.JPanel();
         jPanel14 = new javax.swing.JPanel();
         logoLabel = new javax.swing.JLabel();
@@ -1660,7 +1664,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         jLabel9 = new javax.swing.JLabel();
         jPanel20 = new javax.swing.JPanel();
         helpLabel = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
         subsetterPanel = new javax.swing.JPanel();
         dataBrowserPanel = new javax.swing.JPanel();
         mainPanel = new javax.swing.JPanel();
@@ -1740,7 +1743,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         modulesPanel.setLayout(new java.awt.GridBagLayout());
 
         jLabel5.setFont(jLabel5.getFont().deriveFont(jLabel5.getFont().getStyle() | java.awt.Font.BOLD, jLabel5.getFont().getSize()+4));
-        jLabel5.setText("Tools");
+        jLabel5.setText("Jailer Database Tools");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -1751,6 +1754,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
         moduleSubsetterPanel.setLayout(new java.awt.GridBagLayout());
 
+        moduleSubsetterFramePanel.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         moduleSubsetterFramePanel.setOpaque(false);
         moduleSubsetterFramePanel.setLayout(new java.awt.GridBagLayout());
 
@@ -1790,6 +1794,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
         moduleDataBrowserPanel.setLayout(new java.awt.GridBagLayout());
 
+        moduleDataBrowserFramePanel1.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         moduleDataBrowserFramePanel1.setOpaque(false);
         moduleDataBrowserFramePanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -1841,6 +1846,12 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         selectModulePanel.add(modulesPanel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        selectModulePanel.add(sepPanel, gridBagConstraints);
 
         modulsCardPanel.setLayout(new java.awt.CardLayout());
 
@@ -1953,16 +1964,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         jPanel14.add(jPanel16, gridBagConstraints);
 
-        jLabel4.setFont(jLabel4.getFont().deriveFont(jLabel4.getFont().getStyle() | java.awt.Font.BOLD, jLabel4.getFont().getSize()+8));
-        jLabel4.setText("Jailer Database Tools");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(2, 8, 8, 0);
-        jPanel14.add(jLabel4, gridBagConstraints);
-
         modulsCardPanel.add(jPanel14, "none");
 
         subsetterPanel.setLayout(new javax.swing.BoxLayout(subsetterPanel, javax.swing.BoxLayout.LINE_AXIS));
@@ -1973,7 +1974,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
@@ -2850,7 +2851,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel8;
@@ -2900,6 +2900,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JPanel recentlyUsedBookmarkPanel;
     private javax.swing.JButton restoreButton;
     private javax.swing.JPanel selectModulePanel;
+    private javax.swing.JPanel sepPanel;
     private javax.swing.JPanel subsetterPanel;
     private javax.swing.JLabel titelDataBrowserLabel;
     private javax.swing.JLabel titelLabel;
