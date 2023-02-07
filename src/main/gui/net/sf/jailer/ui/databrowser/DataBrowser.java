@@ -1589,7 +1589,7 @@ public class DataBrowser extends javax.swing.JFrame {
 										}
 										if (newDataBrowser != null) {
 											newDataBrowser.modelNavigationButtonV.doClick();
-											connect(newDataBrowser, ci); // TODO
+											connect(newDataBrowser, ci);
 										}
 									}
 								});

@@ -3842,44 +3842,4 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     // "Select distinct ... from ... left join ..." with a non-comparable column in select clause (for example BLOB) fails. Make the problem go away.
     // idea: give SQLConsole an "ErrorHandler" who will be consulted if query fails and will ask user to skip "distinct" and try again.
 
-	
-	// TODO
-	// TODO "(GerichtlMassnahme.rzMandant = 'ABIT') AND (GerichtlMassnahme.ObjectId in (" context/tooltip is cut at second '('
-//	SELECT
-//    GerichtlMassnahme.ObjectId
-//FROM
-//    GerichtlMassnahme
-//WHERE
-//    (GerichtlMassnahme.rzMandant = 'ABIT')
-//    AND (
-//         GerichtlMassnahme.ObjectId in (
-//              SELECT
-//                   GerichtlMassnahme.ObjectId
-//              FROM
-//                   GerichtlMassnahme,
-//                   GMAntragsgegner
-//              WHERE
-//                   GerichtlMassnahme.ObjectId = GMAntragsgegner.rlMassnahme
-//                   AND GMMahnverfahrenart = '1'
-//                   AND GMMassnahmenart = '01'
-//                   AND Datum IS NOT NULL
-//                   AND GerichtlMassnahme.Geschaeftszeichen = 'AZ'
-//                   AND GMZustellungsart = '05'
-//                   AND (GerichtlMassnahme.GerichtsAZ = 'xy')
-//              Union
-//              SELECT
-//                   GerichtlMassnahme.ObjectId
-//              FROM
-//                   GerichtlMassnahme,
-//                   GMAntragsgegner
-//              WHERE
-//                   GerichtlMassnahme.ObjectId = GMAntragsgegner.rlMassnahme
-//                   AND GMMahnverfahrenart = '1'
-//                   AND GMMassnahmenart = '01'
-//                   AND Datum IS NOT NULL
-//                   AND GerichtlMassnahme.Geschaeftszeichen = 'AZ'
-//                   AND GMZustellungsart = '05'
-//                   AND (GMAntragsgegner.GerichtsAZ = 'xy')
-//         )
-//    )
 }
