@@ -382,7 +382,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	    	modelNavigationConnectButtonV.setVisible(!modelNavigationScrollPane.isVisible());
 	    	modelNavigationSplitSizerPanel.setVisible(modelNavigationScrollPane.isVisible());
 	    	modelNavigationGapPanel.setVisible(modelNavigationScrollPane.isVisible());
-	    	jPanel9.setVisible(modelNavigationScrollPane.isVisible());
+	    	modelNavigationGapPanel.setVisible(modelNavigationScrollPane.isVisible());
 	    	
 	    	if (modelNavigationScrollPane.isVisible()) {
 		    	modelNavigationButtonV.setVisible(true);
@@ -1400,7 +1400,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			if (modelNavigationGapPanel.getMinimumSize().getWidth() < SPLIT_SIZER_MIN_WIDTH) {
 				modelNavigationButtonV.doClick();
 			}
-		}, 22, 1);
+		}, 22, 0);
 	}
 
 	private Component createSearchPanelSplitSizer() {
@@ -1412,11 +1412,11 @@ public class DataBrowser extends javax.swing.JFrame {
 				searchBarToggleButton.doClick();
 				setSearchPanelWidth(INITIAL_SEARCH_PANEL_WIDTH);
 			}
-		}, 0, 1);
+		}, 0, 0);
 	}
 
 	private Component createSplitSizer(BiConsumer<Integer, Integer> deltaConsumer, Runnable onRelease, int vOffset, int hOffset) {
-		return new JPanel() {
+		return new JPanel(null) {
 			{
 		        MouseInputAdapter ml = new MouseInputAdapter() {
 		    		private Point origPos;
@@ -2084,10 +2084,9 @@ public class DataBrowser extends javax.swing.JFrame {
         jLayeredPane2 = new javax.swing.JLayeredPane();
         modelNavigationSplitSizerPanel = new javax.swing.JPanel();
         modelNavigationPanel = new javax.swing.JPanel();
-        jPanel9 = new javax.swing.JPanel();
+        modelNavigationGapPanel = new javax.swing.JPanel();
         modelNavigationScrollPane = new javax.swing.JScrollPane();
         modelNavigationTree = new javax.swing.JTree();
-        modelNavigationGapPanel = new javax.swing.JPanel();
         modelNavigationButtonV = new javax.swing.JToggleButton();
         modelNavigationConnectButtonV = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
@@ -2302,6 +2301,7 @@ public class DataBrowser extends javax.swing.JFrame {
         jLayeredPane2.setLayout(new java.awt.GridBagLayout());
 
         modelNavigationSplitSizerPanel.setMinimumSize(new java.awt.Dimension(8, 0));
+        modelNavigationSplitSizerPanel.setPreferredSize(new java.awt.Dimension(8, 0));
         modelNavigationSplitSizerPanel.setLayout(new javax.swing.BoxLayout(modelNavigationSplitSizerPanel, javax.swing.BoxLayout.LINE_AXIS));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -2311,13 +2311,13 @@ public class DataBrowser extends javax.swing.JFrame {
 
         modelNavigationPanel.setLayout(new java.awt.GridBagLayout());
 
-        jPanel9.setLayout(new javax.swing.BoxLayout(jPanel9, javax.swing.BoxLayout.LINE_AXIS));
+        modelNavigationGapPanel.setLayout(new javax.swing.BoxLayout(modelNavigationGapPanel, javax.swing.BoxLayout.LINE_AXIS));
 
         javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode(".");
         modelNavigationTree.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
         modelNavigationScrollPane.setViewportView(modelNavigationTree);
 
-        jPanel9.add(modelNavigationScrollPane);
+        modelNavigationGapPanel.add(modelNavigationScrollPane);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -2328,12 +2328,6 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(61, 0, 0, 0);
-        modelNavigationPanel.add(jPanel9, gridBagConstraints);
-
-        modelNavigationGapPanel.setLayout(null);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
         modelNavigationPanel.add(modelNavigationGapPanel, gridBagConstraints);
 
         modelNavigationButtonV.setText(" Connections ");
@@ -4402,7 +4396,6 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
-    private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
