@@ -1237,6 +1237,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         rb.sortColumnsPanel.setVisible(false);
                         rb.findColumnsPanel.setVisible(false);
                         rb.statusStrutLabel.setVisible(false);
+                        rb.hAlignButtonPanel.setVisible(false);
                         rb.sortColumnsCheckBox.setText(rb.sortColumnsCheckBox.getText().trim());
                         JToggleButton findButton = new JToggleButton((String) null);
                         findButton.setToolTipText("Enter additional search criteria to further refine the result.");
