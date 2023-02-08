@@ -1,3 +1,8 @@
+14.3
+  - In rare cases, an error message could appear after exporting,
+    indicating an alleged discrepancy between the number of exported rows and the collected ones (false positive).
+    This error has been corrected.
+
 14.2.1
   - Added a context menu to the database connection navigation tree.
   - Using "New Window" menu item now restores table-arrangement of original browser.
