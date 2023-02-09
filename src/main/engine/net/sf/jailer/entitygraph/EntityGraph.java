@@ -611,19 +611,25 @@ public abstract class EntityGraph {
 		}
 	}
 
-	protected synchronized void addExportedCount(long count) {
-		Long cnt = (Long) getSession().getSessionProperty(EntityGraph.class, "ExportedCount");
-		if (cnt == null) {
-			cnt = count;
-		} else {
-			cnt += count;
+	private static Object EXPORT_COUNT_LOCK = new Object();
+	
+	protected void addExportedCount(long count) {
+		synchronized (EXPORT_COUNT_LOCK) {
+			Long cnt = (Long) getSession().getSessionProperty(EntityGraph.class, "ExportedCount");
+			if (cnt == null) {
+				cnt = count;
+			} else {
+				cnt += count;
+			}
+			getSession().setSessionProperty(EntityGraph.class, "ExportedCount", cnt);
 		}
-		getSession().setSessionProperty(EntityGraph.class, "ExportedCount", cnt);
 	}
 
-	public synchronized long getExportedCount() {
-		Long cnt = (Long) getSession().getSessionProperty(EntityGraph.class, "ExportedCount");
-		return cnt == null? 0 : cnt;
+	public long getExportedCount() {
+		synchronized (EXPORT_COUNT_LOCK) {
+			Long cnt = (Long) getSession().getSessionProperty(EntityGraph.class, "ExportedCount");
+			return cnt == null? 0 : cnt;
+		}
 	}
 	
 	/**
