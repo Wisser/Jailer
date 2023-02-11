@@ -614,7 +614,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        modulesPanel.add(deselButton, gridBagConstraints);
+        jPanel13.add(deselButton, gridBagConstraints);
         
 		moduleSubsetterToggleButton.setBorder(null);
 		moduleDataBrowserToggleButton.setBorder(null);
@@ -1638,6 +1638,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         selectModulePanel = new javax.swing.JPanel();
         modulesPanel = new javax.swing.JPanel();
+        jPanel13 = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
         moduleSubsetterPanel = new javax.swing.JPanel();
         moduleSubsetterFramePanel = new javax.swing.JPanel();
@@ -1647,7 +1648,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         moduleDataBrowserFramePanel1 = new javax.swing.JPanel();
         moduleDataBrowserSubPanel = new javax.swing.JPanel();
         titelDataBrowserLabel = new javax.swing.JLabel();
-        jPanel8 = new javax.swing.JPanel();
         sepPanel = new javax.swing.JPanel();
         modulsCardPanel = new javax.swing.JPanel();
         jPanel14 = new javax.swing.JPanel();
@@ -1742,19 +1742,31 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
         modulesPanel.setLayout(new java.awt.GridBagLayout());
 
+        jPanel13.setLayout(new java.awt.GridBagLayout());
+
         jLabel5.setFont(jLabel5.getFont().deriveFont(jLabel5.getFont().getStyle() | java.awt.Font.BOLD, jLabel5.getFont().getSize()+4));
         jLabel5.setText("Jailer Database Tools");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 8, 2, 4);
-        modulesPanel.add(jLabel5, gridBagConstraints);
+        jPanel13.add(jLabel5, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
+        modulesPanel.add(jPanel13, gridBagConstraints);
 
         moduleSubsetterPanel.setLayout(new java.awt.GridBagLayout());
 
-        moduleSubsetterFramePanel.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        moduleSubsetterFramePanel.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         moduleSubsetterFramePanel.setOpaque(false);
         moduleSubsetterFramePanel.setLayout(new java.awt.GridBagLayout());
 
@@ -1782,19 +1794,20 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weighty = 1.0;
         moduleSubsetterPanel.add(moduleSubsetterFramePanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         modulesPanel.add(moduleSubsetterPanel, gridBagConstraints);
 
         moduleDataBrowserPanel.setLayout(new java.awt.GridBagLayout());
 
-        moduleDataBrowserFramePanel1.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        moduleDataBrowserFramePanel1.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         moduleDataBrowserFramePanel1.setOpaque(false);
         moduleDataBrowserFramePanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -1822,7 +1835,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         moduleDataBrowserPanel.add(moduleDataBrowserFramePanel1, gridBagConstraints);
 
@@ -1831,13 +1843,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         modulesPanel.add(moduleDataBrowserPanel, gridBagConstraints);
-
-        jPanel8.setLayout(null);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.weightx = 1.0;
-        modulesPanel.add(jPanel8, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -2859,6 +2864,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel11;
     private javax.swing.JPanel jPanel12;
+    private javax.swing.JPanel jPanel13;
     private javax.swing.JPanel jPanel14;
     private javax.swing.JPanel jPanel15;
     private javax.swing.JPanel jPanel16;
@@ -2873,7 +2879,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
-    private javax.swing.JPanel jPanel8;
     private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
