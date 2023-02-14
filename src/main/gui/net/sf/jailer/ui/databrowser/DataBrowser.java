@@ -135,6 +135,7 @@ import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
+import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.Table;
@@ -293,6 +294,12 @@ public class DataBrowser extends javax.swing.JFrame {
 		@Override
 		protected void onEscape() {
 			// do nothing
+		}
+
+		@Override
+		protected boolean isColumnNullable(Table table, Column column) {
+			MetaDataSource metaDataSource = session != null? getMetaDataSource(session) : null;
+			return isColumnNullable(table, column, metaDataSource);
 		}
 	};
 
@@ -502,6 +509,12 @@ public class DataBrowser extends javax.swing.JFrame {
 			@Override
 			protected void onEscape() {
 				// nothing to do
+			}
+
+			@Override
+			protected boolean isColumnNullable(Table table, Column column) {
+				MetaDataSource metaDataSource = session != null? getMetaDataSource(session) : null;
+				return isColumnNullable(table, column, metaDataSource);
 			}
 		};
 		searchBarEditor.whereConditionEditorPanel = whereConditionEditorPanel;

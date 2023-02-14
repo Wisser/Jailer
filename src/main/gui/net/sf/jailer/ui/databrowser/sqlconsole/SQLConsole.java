@@ -2988,6 +2988,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							protected Set<String> getAlternativeNames(String name) {
 								return wcBaseTable != null? wcBaseTable.getAlternativeNames(name) : null;
 							}
+
+							@Override
+							protected boolean isColumnNullable(Table table, Column column) {
+								return isColumnNullable(table, column, metaDataSource);
+							}
 						};
 						popUpWhereConditionEditorPanel.setTableAlias(null);
 					} catch (SQLException e1) {

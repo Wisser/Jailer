@@ -355,7 +355,9 @@ public class DataModelEditor extends javax.swing.JDialog {
 
 		String modelpath = executionContext.getQualifiedDatamodelFolder();
 		try {
-			modelpath = new File(modelpath).getAbsolutePath();
+			File mFile = new File(modelpath);
+			modelpath = mFile.getAbsolutePath();
+			modelnameSuggestion = mFile.getName();
 		} catch (Throwable t) {
 			// use default modelpath
 		}

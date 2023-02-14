@@ -1151,6 +1151,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 						protected void consume(String condition, Set<Integer> involvedColumns) {
 							consumer.accept(condition);
 						}
+
+						@Override
+						protected boolean isColumnNullable(Table table, Column column) {
+							return isColumnNullable(table, column, null);
+						}
 					};
 					
 					whereConditionEditorPanel = wcep;

@@ -98,6 +98,8 @@ import net.sf.jailer.ui.databrowser.BrowserContentCellEditor;
 import net.sf.jailer.ui.databrowser.DBConditionEditor;
 import net.sf.jailer.ui.databrowser.Desktop;
 import net.sf.jailer.ui.databrowser.Desktop.RunnableWithPriority;
+import net.sf.jailer.ui.databrowser.metadata.MDTable;
+import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.syntaxtextarea.SQLAutoCompletion;
@@ -454,6 +456,34 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 
 	protected abstract void consume(String condition, Set<Integer> involvedColumns);
     protected abstract void onEscape();
+    
+    protected abstract boolean isColumnNullable(Table table, Column column);
+
+    protected boolean isColumnNullable(Table table, Column column, MetaDataSource metaDataSource) {
+    	if (column.isNullable) {
+			return true;
+		}
+		if (metaDataSource != null && metaDataSource.isInitialized()) {
+			MDTable mdTable = metaDataSource.toMDTable(table);
+			if (mdTable != null) {
+				String columnName = column.name;
+				try {
+					if (mdTable.isLoaded()) {
+						List<String> mdColumns = mdTable.getColumns();
+						for (int i = 0; i < mdColumns.size(); ++i) {
+							if (Quoting.equalsIgnoreQuotingAndCase(mdColumns.get(i), columnName) && i < mdTable.getColumnTypes().size()) {
+								return mdTable.getColumnTypes().get(i).isNullable;
+							}
+						}
+						return false;
+					}
+				} catch (SQLException e) {
+					return false;
+				}
+			}
+		}
+		return false;
+    }
 
 	/**
 	 * Parses a condition and updates the UI accordingly.
@@ -1650,7 +1680,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		}
 		Color color = new Color(0, 100, 200);
 		String item;
-		if (comparison.column.isNullable) {
+		if (isColumnNullable(table, comparison.column)) {
 			item = "is null";
 			ImageIcon sNullIcon = UIUtil.scaleIcon(this, nullIcon);
 			defaultComboBoxModel.addElement(item);
@@ -2532,5 +2562,5 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	}
 	// TODO support properties
 	// TODO multi-value-select? (in clause?)
-	
+
 }

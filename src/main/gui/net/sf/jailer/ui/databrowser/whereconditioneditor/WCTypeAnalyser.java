@@ -491,6 +491,10 @@ public class WCTypeAnalyser {
 														if (col != null) {
 															isNullable = col.isNullable;
 														}
+														if (column[0].getTable() != null) {
+															MDTable mdTable = fromClause.get(alias);
+															isNullable = checkNullable(mdTable, col.name, isNullable);
+														}
 													} catch (SQLException e) {
 														// ignore
 													}
@@ -536,6 +540,7 @@ public class WCTypeAnalyser {
 											for (String c: columns) {
 												net.sf.jailer.datamodel.Column col = findColumn(tableAlias, c, fromClause, metaDataSource);
 												boolean isNullable = col == null || col.isNullable;
+												isNullable = checkNullable(mdTable, c, isNullable);
 												col = new net.sf.jailer.datamodel.Column((unknownTableCounter[0] != 0 || fromClause.size() != 1? tableAlias + "." : "") + c, null, -1, -1);
 												col.isNullable = isNullable;
 												selectClause.add(col);
@@ -574,6 +579,7 @@ public class WCTypeAnalyser {
 												for (String c: columns) {
 													net.sf.jailer.datamodel.Column col = findColumn(e.getKey(), c, fromClause, metaDataSource);
 													boolean isNullable = col == null || col.isNullable;
+													isNullable = checkNullable(mdTable, c, isNullable);
 													col = new net.sf.jailer.datamodel.Column((unknownTableCounter[0] != 0 || fromClause.size() != 1? e.getKey() + "." : "") + c, null, -1, -1);
 													col.isNullable = isNullable;
 													selectClause.add(col);
@@ -596,6 +602,21 @@ public class WCTypeAnalyser {
 												throw new QueryTooComplexException();
 											}
 										}
+									}
+
+									private boolean checkNullable(MDTable mdTable, String c, boolean isNullable)
+											throws SQLException {
+										if (mdTable != null && mdTable.isLoaded()) {
+											List<String> mdColumns = mdTable.getColumns();
+											for (int i = 0; i < mdColumns.size(); ++i) {
+												if (Quoting.equalsIgnoreQuotingAndCase(mdColumns.get(i), c) && i < mdTable.getColumnTypes().size()) {
+													if (mdTable.getColumnTypes().get(i).isNullable) {
+														isNullable = true;
+													}
+												}
+											}
+										}
+										return isNullable;
 									}
 								});
 							}
@@ -630,7 +651,7 @@ public class WCTypeAnalyser {
 			}
 			
 			PrimaryKey pk = new PrimaryKey(new ArrayList<net.sf.jailer.datamodel.Column>(), false);
-			Table table = new Table(woComments.toString(), pk, false, false);
+			Table table = new Table(woComments.toString().trim(), pk, false, false);
 			table.setColumns(selectClause);
 			result.table = table;
 			result.cte = cte.toString();
