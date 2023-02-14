@@ -30,6 +30,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -2151,7 +2152,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			
 			extractionModelEditor.graphView.exportDisplayToImage(overviewImg, overviewHtml);
 			
-			renderer.setOverviewHtml(Files.readAllLines(overviewHtml.toPath()).stream().collect(Collectors.joining(UIUtil.LINE_SEPARATOR)));
+			renderer.setOverviewHtml(Files.readAllLines(overviewHtml.toPath(), Charset.defaultCharset()).stream().collect(Collectors.joining(UIUtil.LINE_SEPARATOR)));
 			openHTMLRender(null);
 			overviewHtml.delete();
 		} catch (Throwable e) {

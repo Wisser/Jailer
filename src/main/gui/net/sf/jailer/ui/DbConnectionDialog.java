@@ -876,16 +876,20 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			}
 		});
 		if (connectionsTable != null) {
-			if (sci != null) {
-				int selectedRowIndex = connectionList.indexOf(sci);
-				if (selectedRowIndex >= 0) {
-					RowSorter<?> rowSorter = connectionsTable.getRowSorter();
-					selectedRowIndex = rowSorter.convertRowIndexToView(selectedRowIndex);
+			try {
+				if (sci != null) {
+					int selectedRowIndex = connectionList.indexOf(sci);
 					if (selectedRowIndex >= 0) {
-						connectionsTable.getSelectionModel().setSelectionInterval(selectedRowIndex, selectedRowIndex);
-						connectionsTable.scrollRectToVisible(connectionsTable.getCellRect(selectedRowIndex, 0, true));
+						RowSorter<?> rowSorter = connectionsTable.getRowSorter();
+						selectedRowIndex = rowSorter.convertRowIndexToView(selectedRowIndex);
+						if (selectedRowIndex >= 0) {
+							connectionsTable.getSelectionModel().setSelectionInterval(selectedRowIndex, selectedRowIndex);
+							connectionsTable.scrollRectToVisible(connectionsTable.getCellRect(selectedRowIndex, 0, true));
+						}
 					}
 				}
+			} catch (Exception e) {
+				// ignore
 			}
 		}
 	}
