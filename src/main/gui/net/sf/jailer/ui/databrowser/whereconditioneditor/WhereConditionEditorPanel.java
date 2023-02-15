@@ -2013,7 +2013,9 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				} else {
 					searchPanel.setStatus(null, null);
 				}
-				searchPanel.setStringCount(finalDistinctExisting);
+				if (!table.isDistinct()) {
+					searchPanel.setStringCount(finalDistinctExisting);
+				}
 			}
 		});
     }

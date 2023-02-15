@@ -611,5 +611,24 @@ public class Table extends ModelElement implements Comparable<Table> {
 		return isArtifical;
 	}
 
+
+	private boolean isDistinct = false;
+	
+	/**
+	 * Sets whether this table is a distinct join over several tables (needed for counting of column values).
+	 * 
+	 * @param isDistinct value to set
+	 */
+	public void setIsDistinct(boolean isDistinct) {
+		this.isDistinct = isDistinct;
+	}
+
+	/**
+	 * Gets whether this table is a distinct join over several tables (needed for counting of column values).
+	 */
+	public boolean isDistinct() {
+		return isDistinct;
+	}
+
 }
 

@@ -1255,6 +1255,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 									Table oTable = wcBaseTable.table;
                         			wcBaseTable.table = new Table(oTable.getName(), primaryKey, false, false);
                         			wcBaseTable.table.setColumns(oTable.getColumns());
+                        			wcBaseTable.table.setIsDistinct(oTable.isDistinct());
                         		}
                         		Point p = new Point(-32, findButton.getHeight());
                         		SwingUtilities.convertPointToScreen(p, findButton);

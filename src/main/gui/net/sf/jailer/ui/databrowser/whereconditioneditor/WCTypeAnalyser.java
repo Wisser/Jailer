@@ -174,6 +174,7 @@ public class WCTypeAnalyser {
 		public int conditionStart;
 		public int conditionEnd;
 		public String originalQuery;
+		private boolean isDistinct;
 		
 		public Set<String> getAlternativeNames(String name) {
 			Set<String> names = alternativeNames.get(name);
@@ -458,6 +459,8 @@ public class WCTypeAnalyser {
 								throw new QueryTooComplexException();
 							}
 							
+							result.isDistinct = plainSelect.getDistinct() != null;
+							
 							for (SelectItem si: plainSelect.getSelectItems()) {
 								si.accept(new SelectItemVisitor() {
 									@Override
@@ -654,6 +657,7 @@ public class WCTypeAnalyser {
 			Table table = new Table(woComments.toString(), pk, false, false);
 			table.setColumns(selectClause);
 			result.table = table;
+			result.table.setIsDistinct(result.isDistinct);
 			result.cte = cte.toString();
 			
 			if (result.table.getColumns().isEmpty()) {
