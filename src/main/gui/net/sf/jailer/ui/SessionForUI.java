@@ -124,6 +124,10 @@ public class SessionForUI extends Session {
 		}
 		final Point los = p;
 		
+		if (fadeStart == null || (System.currentTimeMillis() - fadeStart) > 2000) {
+			startFadeIn();
+		}
+		
 		if (fadeStart != null) {
 			int fadeTime = 800;
 			if (fadeTimer != null) {
@@ -143,6 +147,7 @@ public class SessionForUI extends Session {
 			fadeTimer.setInitialDelay(1);
 			fadeTimer.setRepeats(true);
 			fadeTimer.start();
+			UIUtil.setOpacity(session.connectionDialog, 0f);
 		}
 		
 		session.connectionDialog.getContentPane().add(session.connectingPanel);

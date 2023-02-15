@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.util.CancellationException;
@@ -184,8 +185,12 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
 
     public ConcurrentTaskControl master;
   
+    private static Long fadeStart;
+	private static Timer fadeTimer;
+	
 	public static void openInModalDialog(Window windowAncestor, final ConcurrentTaskControl concurrentTaskControl, final Task task, String title) {
 		final JDialog dialog = new JDialog(windowAncestor);
+		dialog.setUndecorated(true);
 		dialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 		dialog.setModal(true);
 		dialog.setTitle(title);
@@ -214,6 +219,27 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
 			}
  		});
  		
+ 		fadeStart = System.currentTimeMillis();
+		int fadeTime = 800;
+		if (fadeTimer != null) {
+			fadeTimer.stop();
+		}
+		fadeTimer = new Timer(50, e -> {
+			if (fadeStart != null) {
+				long dif = System.currentTimeMillis() - fadeStart;
+				float h = Math.max(0f, Math.min(1f, -0.5f + dif / (float) fadeTime));
+				UIUtil.setOpacity(dialog, h);
+				if (h < 1) {
+					return;
+				}
+				fadeTimer.stop();
+			}
+		});
+		fadeTimer.setInitialDelay(1);
+		fadeTimer.setRepeats(true);
+		fadeTimer.start();
+		
+		UIUtil.setOpacity(dialog, 0f);
 		dialog.setVisible(true);
 	}
 

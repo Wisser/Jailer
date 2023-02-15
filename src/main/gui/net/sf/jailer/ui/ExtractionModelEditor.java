@@ -45,6 +45,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.SQLException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,6 +59,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -111,6 +113,7 @@ import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.BasicDataSource;
+import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
@@ -138,6 +141,7 @@ import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.syntaxtextarea.SQLCompletionProvider;
 import net.sf.jailer.ui.undo.CompensationAction;
 import net.sf.jailer.ui.undo.UndoManager;
+import net.sf.jailer.ui.util.ConcurrentTaskControl;
 import net.sf.jailer.ui.util.LightBorderSmallButton;
 import net.sf.jailer.ui.util.SmallButton;
 import net.sf.jailer.ui.util.UISettings;
@@ -1127,15 +1131,21 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					};
 					if (extractionModelFrame.theSession == null) {
 						BasicDataSource dataSource = new BasicDataSource(extractionModelFrame.dbConnectionDialog.currentConnection.driverClass, extractionModelFrame.dbConnectionDialog.currentConnection.url, extractionModelFrame.dbConnectionDialog.currentConnection.user, extractionModelFrame.dbConnectionDialog.getPassword(), 0, extractionModelFrame.dbConnectionDialog.currentJarURLs());
-						extractionModelFrame.theSession = SessionForUI.createSession(dataSource, dataSource.dbms, executionContext.getIsolationLevel(), true, false, windowAncestor);
+						extractionModelFrame.theSession = SessionForUI.createSession(dataSource, dataSource.dbms, executionContext.getIsolationLevel(), true, true, windowAncestor);
 						if (extractionModelFrame.theSession == null) {
 							return;
 						}
 					}
 					
+					BrowserContentCellEditor cellEditor = createCellEditor(extractionModelFrame.theSession, getSubject.get());
+					if (cellEditor == null) {
+						return;
+					}
+					
 					String initialCondition = initialText.get();
+					
 					WhereConditionEditorPanel wcep = new WhereConditionEditorPanel(windowAncestor,
-						dataModel, getSubject.get(), BrowserContentCellEditor.forTable(getSubject.get(), extractionModelFrame.theSession),
+						dataModel, getSubject.get(), cellEditor,
 						false,
 						whereConditionEditorPanel, whereConditionEditorEditor,
 						null, true, -1, locateUnderButton,
@@ -1228,6 +1238,64 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			}	
 		});
 		return button;
+	}
+
+	private BrowserContentCellEditor createCellEditor(Session theSession, Table table) throws SQLException {
+		BrowserContentCellEditor cellEditor = (BrowserContentCellEditor) extractionModelFrame.theSession.getSessionProperty(getClass(), "cellEditor" + table.getName());
+		if (cellEditor != null) {
+			return cellEditor;
+		}
+		
+		AtomicBoolean ok = new AtomicBoolean(true);
+		
+		@SuppressWarnings("serial")
+		final ConcurrentTaskControl concurrentTaskControl = new ConcurrentTaskControl(
+				extractionModelFrame, "Read table data") {
+
+			@Override
+			protected void onError(Throwable error) {
+				UIUtil.showException(this, "Error", error);
+				ok.set(false);
+				closeWindow();
+			}
+
+			@Override
+			protected void onCancellation() {
+				ok.set(false);
+				closeWindow();
+			}
+		};
+		
+		List<Object> result = new ArrayList<>();
+		ConcurrentTaskControl.openInModalDialog(extractionModelFrame, concurrentTaskControl, new ConcurrentTaskControl.Task() {
+			@Override
+			public void run() throws Throwable {
+				Object obj;
+				try {
+					obj = BrowserContentCellEditor.forTable(table, extractionModelFrame.theSession);
+				} catch (SQLException e) {
+					obj = e;
+				}
+				Object fObj = obj;
+				UIUtil.invokeLater(() -> {
+					result.add(fObj);
+					concurrentTaskControl.closeWindow();
+				});
+			}
+		}, "Read table data");
+		
+		if (!ok.get() || result.isEmpty()) {
+			return null;
+		}
+		
+		Object obj = result.get(0);
+		if (obj instanceof SQLException) {
+			throw (SQLException) obj;
+		} else {
+			cellEditor = (BrowserContentCellEditor) obj;
+		}
+		extractionModelFrame.theSession.setSessionProperty(getClass(), "cellEditor" + table.getName(), cellEditor);
+		return cellEditor;
 	}
 
 	public void undoChange() {
