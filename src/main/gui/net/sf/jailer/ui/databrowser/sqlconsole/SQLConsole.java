@@ -621,15 +621,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 loc = editorPane.getCurrentStatementLocation(true, true, null, true);
                 sql = editorPane.getText(loc.a, loc.b, true);
             }
-            if (sql.trim().isEmpty()) {
-            	hightlight(0, 0);
-            } else {
-            	try {
-					hightlight(editorPane.getLineStartOffset(loc.a), editorPane.getLineEndOffset(loc.b));
-				} catch (BadLocationException e) {
-					hightlight(0, 0);
-				}
-            }
+            hightlight(editorPane, 0, 0);
             if (checkPrevSql && sql.equals(prevSql) && editorPane.getCaretPosition() == prevCaretPos) {
                 return;
             }
@@ -2400,7 +2392,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	private void hightlight(RSyntaxTextAreaWithSQLSyntaxStyle editor, int a, int b) {
 		try {
 			if (currentHighlightTag != null) {
-				editor.getHighlighter().removeHighlight(currentHighlightTag);
+				int delay = 2000;
+				Object hl = currentHighlightTag;
+				Timer timer = new Timer(delay, e -> {
+					editor.getHighlighter().removeHighlight(hl);
+				});
+				timer.setInitialDelay(delay);
+				timer.setRepeats(false);
+				timer.start();
 				currentHighlightTag = null;
 			}
 			if (a != b) {
@@ -2704,10 +2703,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				Runnable close = () -> {
 					dialog.setVisible(false);
 					dialog.dispose();
-					if (currentHighlightTag != null) {
-						editorPane.getHighlighter().removeHighlight(currentHighlightTag);
-						currentHighlightTag = null;
-					}
+					hightlight(editorPane, 0, 0);
 				};
 				dialog.addWindowListener(new WindowAdapter() {
 					@Override
@@ -3735,10 +3731,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		return editorPane;
 	}
 
-	private void hightlight(int a, int b) {
-		hightlight(editorPane, 0, 0);
-	}
-	
 	protected abstract void onContentStateChange(File file, boolean dirty);
     protected abstract void setReloadLimit(int limit);
 

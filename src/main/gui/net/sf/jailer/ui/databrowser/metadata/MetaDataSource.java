@@ -33,6 +33,7 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.util.Quoting;
+import net.sf.jailer.util.SqlUtil;
 
 /**
  * Meta Data Source.
@@ -272,7 +273,12 @@ public class MetaDataSource {
     	if (defaultSchema != null) {
     		String schemaName = Quoting.staticUnquote(table.getSchema(defaultSchema.getName()));
     		String schemaNameUC = schemaName.toUpperCase(Locale.ENGLISH);
-    		String tableName = Quoting.staticUnquote(table.getUnqualifiedName());
+    		String tableName = table.getName().trim();
+    		int i = SqlUtil.indexOfDot(tableName);
+    		if (i >= 0) {
+    				tableName = tableName.substring(i + 1);
+    			}
+    		Quoting.staticUnquote(tableName);
     		String tableNameUC = tableName.toUpperCase(Locale.ENGLISH);
 
     		MDSchema schemaExact = null;

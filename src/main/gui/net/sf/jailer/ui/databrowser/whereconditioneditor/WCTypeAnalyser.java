@@ -651,7 +651,7 @@ public class WCTypeAnalyser {
 			}
 			
 			PrimaryKey pk = new PrimaryKey(new ArrayList<net.sf.jailer.datamodel.Column>(), false);
-			Table table = new Table(woComments.toString().trim(), pk, false, false);
+			Table table = new Table(woComments.toString(), pk, false, false);
 			table.setColumns(selectClause);
 			result.table = table;
 			result.cte = cte.toString();
