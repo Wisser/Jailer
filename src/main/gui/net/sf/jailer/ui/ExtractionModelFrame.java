@@ -17,6 +17,7 @@ package net.sf.jailer.ui;
 
 import java.awt.CardLayout;
 import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Toolkit;

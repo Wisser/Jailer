@@ -2469,6 +2469,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         schemaName.setFont(schemaName.getFont().deriveFont(schemaName.getFont().getSize()+1f));
         schemaName.setText("Schema");
+        schemaName.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         schemaName.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 schemaNameMouseClicked(evt);
@@ -2494,6 +2495,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         connectivityState.setFont(connectivityState.getFont().deriveFont(connectivityState.getFont().getSize()+1f));
         connectivityState.setText("offline");
+        connectivityState.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         connectivityState.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 connectivityStateMouseClicked(evt);
