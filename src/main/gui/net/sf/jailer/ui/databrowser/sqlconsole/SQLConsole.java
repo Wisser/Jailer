@@ -2816,18 +2816,21 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 												if (matcher != null) {
 													boolean found = matcher.find();
 													if (!found && wherePos > 0) {
-														matcher = createComparisionMatcher(true, column, statement.substring(wherePos));
+														off = wherePos;
+														matcher = createComparisionMatcher(true, column, statement.substring(off));
 														if (matcher != null) {
 															found = matcher.find();
 														}
 													}
-													String g = matcher.group();
-													String pref = g.replaceFirst("(?is)^((?:\\s*\\bAnd\\b)?\\s*).*$", "$1");
-													start = matcher.start() + off;
-													if (!g.equals(pref)) {
-														start += pref.length();
+													if (found) {
+														String g = matcher.group();
+														String pref = g.replaceFirst("(?is)^((?:\\s*\\bAnd\\b)?\\s*).*$", "$1");
+														start = matcher.start() + off;
+														if (!g.equals(pref)) {
+															start += pref.length();
+														}
+														end = matcher.end() + off;
 													}
-													end = matcher.end() + off;
 												}
 											}
 										}
