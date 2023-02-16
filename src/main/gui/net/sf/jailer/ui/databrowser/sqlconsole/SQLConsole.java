@@ -75,6 +75,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -121,6 +122,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.TableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.Highlighter.HighlightPainter;
 import javax.swing.text.Segment;
 
 import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
@@ -2382,7 +2384,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private javax.swing.JButton runnAllButton;
     private javax.swing.JLabel statusLabel;
     // End of variables declaration//GEN-END:variables
-	private Object currentHighlightTag = null;
+    private Object currentHighlightTag = null;
+	private Supplier<Object> currentHighlightTagSupplier;
 	
 	private SmartHighlightPainter highlightPainter = new SmartHighlightPainter(WhereConditionEditorPanel.HIGHLIGHT_COLOR);
 	private SmartHighlightPainter highlightPainterWOBorder = new SmartHighlightPainter(WhereConditionEditorPanel.HIGHLIGHT_COLOR);
@@ -2393,19 +2396,20 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	private void hightlight(RSyntaxTextAreaWithSQLSyntaxStyle editor, int a, int b) {
 		try {
 			if (currentHighlightTag != null) {
-				int delay = 2000;
-				Object hl = currentHighlightTag;
-				Timer timer = new Timer(delay, e -> {
-					editor.getHighlighter().removeHighlight(hl);
-				});
-				timer.setInitialDelay(delay);
-				timer.setRepeats(false);
-				timer.start();
-				currentHighlightTag = null;
+					editor.getHighlighter().removeHighlight(currentHighlightTag);
 			}
 			if (a != b) {
 				boolean multiLine = editor.getDocument().getText(a, b - a).contains("\n");
-				currentHighlightTag = editor.getHighlighter().addHighlight(a, b, multiLine? highlightPainterWOBorder : highlightPainter);
+				HighlightPainter hlPainter = multiLine? highlightPainterWOBorder : highlightPainter;
+				currentHighlightTagSupplier = () -> {
+					try {
+						return editor.getHighlighter().addHighlight(a, b, hlPainter);
+					} catch (BadLocationException e) {
+						LogUtil.warn(e);
+						return null;
+					}
+				};
+				currentHighlightTag = currentHighlightTagSupplier.get();
 			}
 		} catch (/*BadLocation*/ Exception e) {
 			return;
@@ -2704,7 +2708,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				Runnable close = () -> {
 					dialog.setVisible(false);
 					dialog.dispose();
-					hightlight(editorPane, 0, 0);
+//					hightlight(editorPane, 0, 0);
 				};
 				dialog.addWindowListener(new WindowAdapter() {
 					@Override
@@ -2773,7 +2777,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							@Override
 							protected void hightlight(Column column) {
 								if (column == null) {
-									SQLConsole.this.hightlight(editorPane, 0, 0);
+//									SQLConsole.this.hightlight(editorPane, 0, 0);
 								} else {
 									Pair<Integer, Integer> pos = getCurrentStatementPos();
 									if (pos != null) {
