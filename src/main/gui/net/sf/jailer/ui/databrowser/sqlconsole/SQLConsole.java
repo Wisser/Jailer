@@ -2807,15 +2807,28 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 											} else {
 												off = wcBaseTable.table.getName().length();
 											}
-											Matcher matcher = createComparisionMatcher(true, column, statement.substring(off));
-											if (matcher != null && matcher.find()) {
-												String g = matcher.group();
-												String pref = g.replaceFirst("(?is)^((?:\\s*\\bAnd\\b)?\\s*).*$", "$1");
-												start = matcher.start() + off;
-												if (!g.equals(pref)) {
-													start += pref.length();
+											int wherePos = statement.toLowerCase().lastIndexOf("where");
+											if (off >= statement.length()) {
+												off = wherePos;
+											}
+											if (off > 0) {
+												Matcher matcher = createComparisionMatcher(true, column, statement.substring(off));
+												if (matcher != null) {
+													boolean found = matcher.find();
+													if (!found && wherePos > 0) {
+														matcher = createComparisionMatcher(true, column, statement.substring(wherePos));
+														if (matcher != null) {
+															found = matcher.find();
+														}
+													}
+													String g = matcher.group();
+													String pref = g.replaceFirst("(?is)^((?:\\s*\\bAnd\\b)?\\s*).*$", "$1");
+													start = matcher.start() + off;
+													if (!g.equals(pref)) {
+														start += pref.length();
+													}
+													end = matcher.end() + off;
 												}
-												end = matcher.end() + off;
 											}
 										}
 										if (start >= 0) {
