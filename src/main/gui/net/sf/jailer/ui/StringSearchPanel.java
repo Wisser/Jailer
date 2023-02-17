@@ -730,7 +730,10 @@ public class StringSearchPanel extends javax.swing.JPanel {
 							String countAsString;
 							Color fg = new Color(0, 80, 200);
 							count = Math.abs(count);
-							if (count == 0) {
+							if (count == Integer.MIN_VALUE) {
+								countAsString = "0";
+								count = 0;
+							} else if (count == 0) {
 								countAsString = " ";
 							} else if (count >= 1000000000) {
 								countAsString = String.format("%,1.1f G", (double) count / 1000000000.0);
@@ -1295,7 +1298,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	public void setStringCount(Map<String, Integer> stringCount) {
 		this.stringCount = stringCount;
 		this.stringCountLeftPad = null;
-		stringCount.values().stream().map(Math::abs).max(Integer::compare).ifPresent(max -> {
+		stringCount.values().stream().filter(n -> n != Integer.MIN_VALUE).map(Math::abs).max(Integer::compare).ifPresent(max -> {
 			if (max > 1) {
 				stringCountLeftPad = " ";
 				for (int i = String.valueOf(max).length(); i > 0; --i) {
@@ -1303,6 +1306,11 @@ public class StringSearchPanel extends javax.swing.JPanel {
 				}
 			}
 		});
+		if (stringCountLeftPad == null) {
+			if (stringCount.values().contains(Integer.MIN_VALUE)) {
+				stringCountLeftPad = " ";
+			}
+		}
 	}
 
 	private boolean closeOwner;

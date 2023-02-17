@@ -641,6 +641,9 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		allDisabled = false;
 	}
 
+	private static final String IS_NULL = "is null";
+	private static final String IS_NOT_NULL = "is not null";
+	
 	/**
 	 * Parses current condition concurrently.
 	 */
@@ -692,13 +695,13 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 							String value = null;
 							if (matcher.group(3) != null && !"".equals(matcher.group(3))) {
 								operator = Operator.Equal;
-								value = sqlValue = "is null";
+								value = sqlValue = IS_NULL;
 								Pair<Integer, Integer> pos = new Pair<Integer, Integer>(matcher.start(3), matcher.end(3));
 								valuePositions.put(column, pos);
 								fullPositions.put(column, new Pair<Integer, Integer>(start, pos.b));
 							} else if (matcher.group(4) != null && !"".equals(matcher.group(4))) {
 								operator = Operator.Equal;
-								value = sqlValue = "is not null";
+								value = sqlValue = IS_NOT_NULL;
 								Pair<Integer, Integer> pos = new Pair<Integer, Integer>(matcher.start(4), matcher.end(4));
 								valuePositions.put(column, pos);
 								fullPositions.put(column, new Pair<Integer, Integer>(start, pos.b));
@@ -1681,7 +1684,9 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		Color color = new Color(0, 100, 200);
 		String item;
 		if (isColumnNullable(table, comparison.column)) {
-			item = "is null";
+			// TODO
+			// TODO show "0" count in StringSearchPanel
+			item = IS_NULL;
 			ImageIcon sNullIcon = UIUtil.scaleIcon(this, nullIcon);
 			defaultComboBoxModel.addElement(item);
 			Consumer<JLabel> lableConsumer = label -> {
@@ -1689,7 +1694,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				label.setForeground(color);
 			};
 			renderConsumer.put(item, lableConsumer);
-			item = "is not null";
+			item = IS_NOT_NULL;
 			defaultComboBoxModel.addElement(item);
 			renderConsumer.put(item, lableConsumer);
 		}
@@ -1964,7 +1969,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 								}
 							});
 							if (distinctExistingFullModel.isEmpty() && withNullFull[0]) {
-								String text = "is null";
+								String text = IS_NULL;
 								distinctExistingFullModel.add(text);
 								ImageIcon sNullIcon = UIUtil.scaleIcon(WhereConditionEditorPanel.this, nullIcon);
 								searchPanel.renderConsumer.put(text, label -> {
@@ -2014,6 +2019,13 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 					searchPanel.setStatus(null, null);
 				}
 				if (!table.isDistinct()) {
+					boolean containsIsNull = finalDistinctExisting.containsKey(IS_NULL);
+					boolean containsIsNotNull = finalDistinctExisting.containsKey(IS_NOT_NULL);
+					if (containsIsNotNull && !containsIsNull) {
+						finalDistinctExisting.put(IS_NULL, Integer.MIN_VALUE);
+					} else if (!containsIsNotNull && containsIsNull) {
+						finalDistinctExisting.put(IS_NOT_NULL, Integer.MIN_VALUE);
+					}
 					searchPanel.setStringCount(finalDistinctExisting);
 				}
 			}
@@ -2202,18 +2214,18 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				int rc = resultSet.getInt(2);
 				if (obj == null) {
 					withNull[0] = true;
-					Integer count = result.get("is null");
+					Integer count = result.get(IS_NULL);
 					if (count == null) {
-						result.put("is null", -rc);
+						result.put(IS_NULL, -rc);
 					} else {
-						result.put("is null", count - rc);
+						result.put(IS_NULL, count - rc);
 					}
 				} else {
-					Integer count = result.get("is not null");
+					Integer count = result.get(IS_NOT_NULL);
 					if (count == null) {
-						result.put("is not null", -rc);
+						result.put(IS_NOT_NULL, -rc);
 					} else {
-						result.put("is not null", count - rc);
+						result.put(IS_NOT_NULL, count - rc);
 					}
 					if (cellEditor.isEditable(table, columnIndex, obj)) {
 						String text = cellEditor.cellContentToText(columnIndex, obj);
@@ -2309,13 +2321,13 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 					String sqlValue;
 					String op;
 					if (comparison.value.toLowerCase().matches("\\s*(is\\s+)?null\\s*")) {
-						sqlValue = "is null";
+						sqlValue = IS_NULL;
 						op = "";
 						if (comparison.operatorField != null) {
 							comparison.operatorField.setVisible(false);
 						}
 					} else if (comparison.value.toLowerCase().matches("\\s*(is\\s)?+not\\s+null\\s*")) {
-						sqlValue = "is not null";
+						sqlValue = IS_NOT_NULL;
 						op = "";
 						if (comparison.operatorField != null) {
 							comparison.operatorField.setVisible(false);
