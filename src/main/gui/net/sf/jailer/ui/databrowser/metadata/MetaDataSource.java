@@ -323,7 +323,7 @@ public class MetaDataSource {
     			}
     		}
     	}
-    	if (mdTable != null) {
+    	if (mdTable != null && !table.getName().startsWith(" ")) {
     		mDTableToTable.put(mdTable, table);
     		tableToMDTable.put(table, mdTable);
     	}
