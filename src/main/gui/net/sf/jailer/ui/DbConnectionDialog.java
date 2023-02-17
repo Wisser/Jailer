@@ -1540,7 +1540,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
 }
 
-// TODO
+// TODO 1
 // TODO use "catalog" info in some way...?
 
 

@@ -1684,8 +1684,6 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		Color color = new Color(0, 100, 200);
 		String item;
 		if (isColumnNullable(table, comparison.column)) {
-			// TODO
-			// TODO show "0" count in StringSearchPanel
 			item = IS_NULL;
 			ImageIcon sNullIcon = UIUtil.scaleIcon(this, nullIcon);
 			defaultComboBoxModel.addElement(item);
