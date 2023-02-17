@@ -241,6 +241,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 		    		}
 		    		PrimaryKey pks = new PrimaryKey(pkColumns, false);
 					Table tTable = new Table(mdTable.getName(), pks, false, false);
+					tTable.setIsArtifical(true);
 		    		tTable.setColumns(columns);
 					panel.add(new TableDetailsView(tTable, mdTable, this, null, dataModel, null), gridBagConstraints);
 	    		}

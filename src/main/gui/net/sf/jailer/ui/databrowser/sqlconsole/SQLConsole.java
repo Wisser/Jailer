@@ -1256,6 +1256,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 									PrimaryKey primaryKey = new PrimaryKey(pkList, false);
 									Table oTable = wcBaseTable.table;
                         			wcBaseTable.table = new Table(oTable.getName(), primaryKey, false, false);
+                        			wcBaseTable.table.setIsArtifical(true);
                         			wcBaseTable.table.setColumns(oTable.getColumns());
                         			wcBaseTable.table.setIsDistinct(oTable.isDistinct());
                         		}

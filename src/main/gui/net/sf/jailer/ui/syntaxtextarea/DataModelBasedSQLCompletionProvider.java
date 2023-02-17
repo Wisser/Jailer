@@ -101,6 +101,7 @@ public class DataModelBasedSQLCompletionProvider extends SQLCompletionProvider<D
 	@Override
 	protected Table createDummyTable(String schema, String name, List<String> columns) {
 		Table table = new Table(name, new PrimaryKey(new ArrayList<Column>(), false), false, false);
+		table.setIsArtifical(true);
 		table.setColumns(columns.stream().map(c -> new Column(c, "?", 0, -1)).collect(Collectors.toList()));
 		return table;
 	}
