@@ -490,7 +490,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	private Runnable onClose;
 	private final JToggleButton button;
 	public final Map<String, Consumer<JLabel>> renderConsumer;
-	
+	private RowCountRenderingHelper rowCountRenderingHelper = new RowCountRenderingHelper();
     /**
      * Creates new form StringSearchPanel
      * @param button 
@@ -508,7 +508,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
     	this.onSuccess = onSuccess;
     	this.renderConsumer = renderConsumer;
         initComponents();
-            
+        
         MovePanel comp = new MovePanel();
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -730,22 +730,23 @@ public class StringSearchPanel extends javax.swing.JPanel {
 							String countAsString;
 							Color fg = new Color(0, 80, 200);
 							count = Math.abs(count);
+							
 							if (count == Integer.MIN_VALUE) {
 								countAsString = "0";
 								count = 0;
 							} else if (count == 0) {
 								countAsString = " ";
 							} else if (count >= 1000000000) {
-								countAsString = String.format("%,1.1f G", (double) count / 1000000000.0);
-								fg = new Color(150, 0, 100);
+								countAsString = String.format("%,1.1f<font color=\"#960064\">" + rowCountRenderingHelper.nonMGSuffixG + "g", (double) count / 1000000000.0);
+//								fg = new Color(150, 0, 100);
 							} else if (count >= 1000000) {
-								countAsString = String.format("%,1.1f M", (double) count / 1000000.0);
-								fg = new Color(0, 0, 150);
+								countAsString = String.format("%,1.1f<font color=\"#604000\">" + rowCountRenderingHelper.nonMGSuffixM + "m", (double) count / 1000000.0);
+//								fg = new Color(0, 0, 150);
 							} else {
-				     			countAsString = String.format("%,1.0f", (double) count);
+				     			countAsString = String.format("%,1.0f" + rowCountRenderingHelper.nonMGSuffix, (double) count);
 				     		}
 				     		
-							cl = new JLabel(" " + countAsString + "  ");
+							cl = new JLabel("<html><nobr> " + countAsString + "</html>");
 							cl.setForeground(lightCounters? new Color(160, 130, 100) : fg);
 							panel.add(cl, gbc);
 						}

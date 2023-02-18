@@ -126,6 +126,7 @@ import net.sf.jailer.modelbuilder.MemorizedResultSet;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.ui.AutoCompletion;
 import net.sf.jailer.ui.JComboBox2;
+import net.sf.jailer.ui.RowCountRenderingHelper;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.UIUtil.IconWithText;
@@ -2088,6 +2089,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     }
     
     private NavigableMap<Integer, MDTable> rowCounters = new TreeMap<Integer, MDTable>();
+    private RowCountRenderingHelper rowCountRenderingHelper = new RowCountRenderingHelper();
 	
     private void paintRowCounters(Graphics2D g, Rectangle bounds) {
 		Rectangle visibleRect = metaDataTree.getVisibleRect();
@@ -2096,7 +2098,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 RenderingHints.VALUE_ANTIALIAS_ON);
 		g.setRenderingHint(RenderingHints.KEY_RENDERING,
                 RenderingHints.VALUE_RENDER_QUALITY);
-		int oh = UIUtil.plaf == PLAF.NIMBUS? 3 : 0;
+		int oh = UIUtil.plaf == PLAF.NIMBUS? 3 : 2;
 		int ow = UIUtil.plaf == PLAF.NIMBUS? 1 : 0;
 		rowCounters.subMap(visibleRect.y - 16, visibleRect.y + visibleRect.height + 16).forEach((ry, mdTable) -> {
 			Long rc = mdTable.getEstimatedRowCount();
@@ -2107,26 +2109,33 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 				if (rc == 0) {
 					value = " ";
 				} else if (rc >= 1000000000) {
-					value = String.format("%,1.1f G", (double) rc / 1000000000.0);
-					fg = new Color(150, 0, 100);
+					value = String.format("%,1.1f<font color=\"#960064\">" + rowCountRenderingHelper.nonMGSuffixG + "g", (double) rc / 1000000000.0);
+//					fg = new Color(150, 0, 100);
 				} else if (rc >= 1000000) {
-					value = String.format("%,1.1f M", (double) rc / 1000000.0);
-					fg = new Color(0, 0, 150);
+					value = String.format("%,1.1f<font color=\"#604000\">" + rowCountRenderingHelper.nonMGSuffixM + "m", (double) rc / 1000000.0);
+//					fg = new Color(0, 0, 150);
 	     		} else {
-	     			value = String.format("%,1.0f", (double) rc);
+	     			value = String.format("%,1.0f" + rowCountRenderingHelper.nonMGSuffix, (double) rc);
 	     		}
-	     		FontMetrics fontMetrics = getFontMetrics(getFont());
-				int x = visibleRect.width - fontMetrics.stringWidth(value) - 8;
-				int y = ry - visibleRect.y + fontMetrics.getHeight() - 1;
-				g.setFont(getFont());
+	     		htmlRender.setText("<html><nobr> " + value + "</html>");
+				htmlRender.setSize(htmlRender.getPreferredSize());
+				int x = visibleRect.width - htmlRender.getWidth() - 1;
+				int y = ry - visibleRect.y + htmlRender.getHeight() - 1;
 				g.setColor(new Color(255, 255, 255));
-				g.fillRect(x - 8, y - fontMetrics.getHeight() + 2, visibleRect.width - x + 16 + ow, fontMetrics.getHeight() + 2 + oh);
-				g.setColor(fg);
-				g.drawString(value, x, y);
+				g.fillRect(x - 8, y - htmlRender.getHeight() + 2, visibleRect.width - x + 9 + ow, htmlRender.getHeight() + oh);
+				htmlRender.setForeground(fg);
+				y -= htmlRender.getHeight() - oh - 1;
+				g.translate(x, y);
+				//the fontMetrics stringWidth and height can be replaced by
+				//getLabel().getPreferredSize() if needed
+				htmlRender.paint((Graphics) g);
+				(g).translate(-x, -y);
 			}
 		});
 	}
 
+    private JLabel htmlRender = new JLabel();
+    
     private void updateRowCounters() {
 		DefaultTreeModel m = (DefaultTreeModel) metaDataTree.getModel();
 		TreeNode root2 = (TreeNode) m.getRoot();

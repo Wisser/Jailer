@@ -23,7 +23,7 @@ import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.FontMetrics;
+import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -162,6 +162,7 @@ import net.sf.jailer.ui.ExtractionModelFrame;
 import net.sf.jailer.ui.ImportDialog;
 import net.sf.jailer.ui.JComboBox2;
 import net.sf.jailer.ui.PrivilegedSessionProviderDialog;
+import net.sf.jailer.ui.RowCountRenderingHelper;
 import net.sf.jailer.ui.SessionForUI;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.StringSearchPanel.StringSearchDialog;
@@ -6388,6 +6389,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	}
 	
     private NavigableMap<Integer, MDTable> rowCounters = new TreeMap<Integer, MDTable>();
+    private RowCountRenderingHelper rowCountRenderingHelper = new RowCountRenderingHelper();
 	
     private void paintRowCounters(Graphics2D g, Rectangle bounds) {
 		Rectangle visibleRect = navigationTree.getVisibleRect();
@@ -6396,8 +6398,9 @@ public class DataBrowser extends javax.swing.JFrame {
                 RenderingHints.VALUE_ANTIALIAS_ON);
 		g.setRenderingHint(RenderingHints.KEY_RENDERING,
                 RenderingHints.VALUE_RENDER_QUALITY);
-		int oh = UIUtil.plaf == PLAF.NIMBUS? 3 : 0;
+		int oh = UIUtil.plaf == PLAF.NIMBUS? 3 : 2;
 		int ow = UIUtil.plaf == PLAF.NIMBUS? 1 : 0;
+		htmlRender.setFont(getFont().deriveFont(htmlRender.getFont().getStyle() & ~Font.BOLD));
 		
 		rowCounters.subMap(visibleRect.y - 16, visibleRect.y + visibleRect.height + 16).forEach((ry, mdTable) -> {
 			Long rc = mdTable.getEstimatedRowCount();
@@ -6408,25 +6411,46 @@ public class DataBrowser extends javax.swing.JFrame {
 				if (rc == 0) {
 					value = " ";
 				} else if (rc >= 1000000000) {
-					value = String.format("%,1.1f G", (double) rc / 1000000000.0);
-					fg = new Color(150, 0, 100);
+					value = String.format("%,1.1f<font color=\"#960064\">" + rowCountRenderingHelper.nonMGSuffixG + "g", (double) rc / 1000000000.0);
+//					fg = new Color(150, 0, 100);
 				} else if (rc >= 1000000) {
-					value = String.format("%,1.1f M", (double) rc / 1000000.0);
-					fg = new Color(0, 0, 150);
+					value = String.format("%,1.1f<font color=\"#604000\">" + rowCountRenderingHelper.nonMGSuffixM + "m", (double) rc / 1000000.0);
+//					fg = new Color(0, 0, 150);
 	     		} else {
-	     			value = String.format("%,1.0f", (double) rc);
+	     			value = String.format("%,1.0f" + rowCountRenderingHelper.nonMGSuffix, (double) rc);
 	     		}
-	     		FontMetrics fontMetrics = getFontMetrics(getFont());
-				int x = visibleRect.width - fontMetrics.stringWidth(value) - 8;
-				int y = ry - visibleRect.y + fontMetrics.getHeight() - 1;
-				g.setFont(getFont());
+	     		htmlRender.setText("<html><nobr> " + value + "</html>");
+				htmlRender.setSize(htmlRender.getPreferredSize());
+				int x = visibleRect.width - htmlRender.getWidth() - 1;
+				int y = ry - visibleRect.y + htmlRender.getHeight() - 1;
 				g.setColor(new Color(255, 255, 255));
-				g.fillRect(x - 8, y - fontMetrics.getHeight() + 2, visibleRect.width - x + 9 + ow, fontMetrics.getHeight() + 2 + oh);
-				g.setColor(fg);
-				g.drawString(value, x, y);
+				g.fillRect(x - 8, y - htmlRender.getHeight() + 2, visibleRect.width - x + 9 + ow, htmlRender.getHeight() + oh);
+				htmlRender.setForeground(fg);
+				y -= htmlRender.getHeight() - oh;
+				g.translate(x, y);
+				//the fontMetrics stringWidth and height can be replaced by
+				//getLabel().getPreferredSize() if needed
+				htmlRender.paint((Graphics) g);
+				(g).translate(-x, -y);
 			}
 		});
 	}
+
+    private JLabel htmlRender = new JLabel();
+    
+    /**
+     * x and y stand for the upper left corner of the label
+     * and not for the baseline coordinates ...
+     */
+    private void paintHtmlString(Graphics g, String html, int x, int y) {
+        g.translate(x, y);
+        htmlRender.setText(html);
+        htmlRender.setSize(htmlRender.getPreferredSize());
+        //the fontMetrics stringWidth and height can be replaced by
+        //getLabel().getPreferredSize() if needed
+        htmlRender.paint(g);
+        g.translate(-x, -y);
+    }
 
     private void updateRowCounters() {
 		DefaultTreeModel m = (DefaultTreeModel) navigationTree.getModel();
