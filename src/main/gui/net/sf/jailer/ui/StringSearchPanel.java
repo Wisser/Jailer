@@ -731,22 +731,27 @@ public class StringSearchPanel extends javax.swing.JPanel {
 							Color fg = new Color(0, 80, 200);
 							count = Math.abs(count);
 							
+							count *= count * 1000; // TODO
+							
 							if (count == Integer.MIN_VALUE) {
 								countAsString = "0";
 								count = 0;
 							} else if (count == 0) {
 								countAsString = " ";
 							} else if (count >= 1000000000) {
-								countAsString = String.format("%,1.1f<font color=\"#960064\">" + rowCountRenderingHelper.nonMGSuffixG + "g", (double) count / 1000000000.0);
+								countAsString = String.format("%,1.1f<font color=\"#960064\">" + rowCountRenderingHelper.nonMGSuffixG + "g</font>", (double) count / 1000000000.0);
 //								fg = new Color(150, 0, 100);
 							} else if (count >= 1000000) {
-								countAsString = String.format("%,1.1f<font color=\"#604000\">" + rowCountRenderingHelper.nonMGSuffixM + "m", (double) count / 1000000.0);
+								countAsString = String.format("%,1.1f<font color=\"#604000\">" + rowCountRenderingHelper.nonMGSuffixM + "m</font>", (double) count / 1000000.0);
+//								fg = new Color(0, 0, 150);
+							} else if (count >= 1000) {
+								countAsString = String.format("%,1.1f<font color=\"#000000\">" + rowCountRenderingHelper.nonMGSuffixK + "k</font>", (double) count / 1000.0);
 //								fg = new Color(0, 0, 150);
 							} else {
 				     			countAsString = String.format("%,1.0f" + rowCountRenderingHelper.nonMGSuffix, (double) count);
 				     		}
 				     		
-							cl = new JLabel("<html><nobr> " + countAsString + "</html>");
+							cl = new JLabel("<html><nobr> " + countAsString + "&thinsp;</html>");
 							cl.setForeground(lightCounters? new Color(160, 130, 100) : fg);
 							panel.add(cl, gbc);
 						}

@@ -6411,10 +6411,13 @@ public class DataBrowser extends javax.swing.JFrame {
 				if (rc == 0) {
 					value = " ";
 				} else if (rc >= 1000000000) {
-					value = String.format("%,1.1f<font color=\"#960064\">" + rowCountRenderingHelper.nonMGSuffixG + "g", (double) rc / 1000000000.0);
+					value = String.format("%,1.1f<font color=\"#960064\">" + rowCountRenderingHelper.nonMGSuffixG + "g</font>", (double) rc / 1000000000.0);
 //					fg = new Color(150, 0, 100);
 				} else if (rc >= 1000000) {
-					value = String.format("%,1.1f<font color=\"#604000\">" + rowCountRenderingHelper.nonMGSuffixM + "m", (double) rc / 1000000.0);
+					value = String.format("%,1.1f<font color=\"#604000\">" + rowCountRenderingHelper.nonMGSuffixM + "m</font>", (double) rc / 1000000.0);
+//					fg = new Color(0, 0, 150);
+				} else if (rc >= 1000) {
+					value = String.format("%,1.1f<font color=\"#000000\">" + rowCountRenderingHelper.nonMGSuffixK + "k</font>", (double) rc / 1000.0);
 //					fg = new Color(0, 0, 150);
 	     		} else {
 	     			value = String.format("%,1.0f" + rowCountRenderingHelper.nonMGSuffix, (double) rc);

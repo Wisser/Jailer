@@ -27,13 +27,13 @@ public class RowCountRenderingHelper {
 	public String nonMGSuffix;
 	public String nonMGSuffixG;
 	public String nonMGSuffixM;
+	public String nonMGSuffixK;
 
 	public RowCountRenderingHelper() {
-		nonMGSuffixG = createThinspSuffix("m", "G");
-		nonMGSuffixM = createThinspSuffix("g", "M");
-		String suffix1 = createThinspSuffix(nonMGSuffixM + "m", "");
-		String suffix2 = createThinspSuffix(nonMGSuffixG + "g", "");
-		nonMGSuffix = suffix1.length() > suffix2.length() ? suffix1 : suffix2;
+		nonMGSuffixG = createThinspSuffix("m", "g");
+		nonMGSuffixM = createThinspSuffix("g", "m");
+		nonMGSuffixK = createThinspSuffix("m", "k");
+		nonMGSuffix = createThinspSuffix(nonMGSuffixK + "k", "");
 	}
 
 	private String createThinspSuffix(String target, String subject) {
@@ -58,5 +58,6 @@ public class RowCountRenderingHelper {
 	// TODO
 	// TODO test with jdk8
 	// TODO test with linux, both LAF
+	// TODO "k"
 
 }
