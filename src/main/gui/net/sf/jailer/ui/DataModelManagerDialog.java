@@ -657,7 +657,15 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		}
 
 		setLocation(70, 20);
+		
+		boolean brIsVisible = dmmdBrowser.recentSessionsComboBox.isVisible();
+		boolean ssIsVisible = dmmdSubsetter.recentSessionsComboBox.isVisible();
+		dmmdBrowser.recentSessionsComboBox.setVisible(false);
+		dmmdSubsetter.recentSessionsComboBox.setVisible(false);
 		pack();
+		dmmdBrowser.recentSessionsComboBox.setVisible(brIsVisible);
+		dmmdSubsetter.recentSessionsComboBox.setVisible(ssIsVisible);
+		
 		setSize(Math.max(840, getWidth()), modulesPanel.isVisible()? TOTAL_HEIGHT : 500);
 		UIUtil.fit(this);
 
