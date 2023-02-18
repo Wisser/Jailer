@@ -730,9 +730,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 							String countAsString;
 							Color fg = new Color(0, 80, 200);
 							count = Math.abs(count);
-							
-							count *= count * 1000; // TODO
-							
+
 							if (count == Integer.MIN_VALUE) {
 								countAsString = "0";
 								count = 0;
