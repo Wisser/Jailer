@@ -24,17 +24,32 @@ import javax.swing.JLabel;
  */
 public class RowCountRenderingHelper {
 
+	private static final String THINSP = "&thinsp;";
 	public String nonMGSuffix;
 	public String nonMGSuffixG;
 	public String nonMGSuffixM;
 	public String nonMGSuffixK;
+	public String nonMGPrefixG;
+	public String nonMGPrefixM;
+	public String nonMGPrefixK;
 
 	public RowCountRenderingHelper() {
 		nonMGSuffixG = createThinspSuffix("m", "g");
 		nonMGSuffixM = createThinspSuffix("g", "m");
 		nonMGSuffixK = createThinspSuffix("m", "k");
 		nonMGSuffix = createThinspSuffix(nonMGSuffixK + "k", "");
+		nonMGPrefixG = THINSP;
+		nonMGSuffixG = nonMGSuffixG.replaceFirst(THINSP, "");
+		nonMGPrefixM = THINSP;
+		nonMGSuffixM = nonMGSuffixM.replaceFirst(THINSP, "");
+		nonMGPrefixK = THINSP;
+		nonMGSuffixK = nonMGSuffixK.replaceFirst(THINSP, "");
 	}
+	
+	// TODO
+	// TODO make component for this (panel with 2 labels?)
+	// TODO re-read rowcount heuristically after DML? (ins/upd/del)?
+	// TODO re-read rowcount of 0 or < 1000(?) after reading stats-info-query-result?
 
 	private String createThinspSuffix(String target, String subject) {
 		int gWidth = new JLabel("<html>0" + target + "</html>").getPreferredSize().width;
@@ -43,7 +58,7 @@ public class RowCountRenderingHelper {
         for (suffix = ""; suffix.length() < 160;) {
         	int pw = w;
         	String psuffix = suffix;
-        	suffix += "&thinsp;";
+        	suffix += THINSP;
         	w = new JLabel("<html>0" + suffix + subject + "</html>").getPreferredSize().width;
         	if (w != 0 && w > gWidth) {
         		if (w - gWidth > gWidth - pw) {
@@ -54,10 +69,5 @@ public class RowCountRenderingHelper {
         }
 		return suffix;
 	}
-
-	// TODO
-	// TODO test with jdk8
-	// TODO test with linux, both LAF
-	// TODO "k"
 
 }
