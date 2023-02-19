@@ -737,13 +737,13 @@ public class StringSearchPanel extends javax.swing.JPanel {
 							} else if (count == 0) {
 								countAsString = " ";
 							} else if (count >= 1000000000) {
-								countAsString = String.format("%,1.1f<font color=\"#960064\">" + rowCountRenderingHelper.nonMGSuffixG + "g</font>", (double) count / 1000000000.0);
+								countAsString = String.format("%,1.1f<font color=\"#960064\">" + rowCountRenderingHelper.nonMGPrefixG + "g" + rowCountRenderingHelper.nonMGSuffixG + "</font>", (double) count / 1000000000.0);
 //								fg = new Color(150, 0, 100);
 							} else if (count >= 1000000) {
-								countAsString = String.format("%,1.1f<font color=\"#604000\">" + rowCountRenderingHelper.nonMGSuffixM + "m</font>", (double) count / 1000000.0);
+								countAsString = String.format("%,1.1f<font color=\"#604000\">" + rowCountRenderingHelper.nonMGPrefixM + "m" + rowCountRenderingHelper.nonMGSuffixM + "</font>", (double) count / 1000000.0);
 //								fg = new Color(0, 0, 150);
 							} else if (count >= 1000) {
-								countAsString = String.format("%,1.1f<font color=\"#000000\">" + rowCountRenderingHelper.nonMGSuffixK + "k</font>", (double) count / 1000.0);
+								countAsString = String.format("%,1.1f<font color=\"#000000\">" + rowCountRenderingHelper.nonMGPrefixK + "k" + rowCountRenderingHelper.nonMGSuffixK + "</font>", (double) count / 1000.0);
 //								fg = new Color(0, 0, 150);
 							} else {
 				     			countAsString = String.format("%,1.0f" + rowCountRenderingHelper.nonMGSuffix, (double) count);

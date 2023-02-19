@@ -6400,24 +6400,24 @@ public class DataBrowser extends javax.swing.JFrame {
                 RenderingHints.VALUE_RENDER_QUALITY);
 		int oh = UIUtil.plaf == PLAF.NIMBUS? 3 : 2;
 		int ow = UIUtil.plaf == PLAF.NIMBUS? 1 : 0;
-		htmlRender.setFont(getFont().deriveFont(htmlRender.getFont().getStyle() & ~Font.BOLD));
+		htmlRender.setFont(htmlRender.getFont().deriveFont(htmlRender.getFont().getStyle() & ~Font.BOLD));
 		
 		rowCounters.subMap(visibleRect.y - 16, visibleRect.y + visibleRect.height + 16).forEach((ry, mdTable) -> {
 			Long rc = mdTable.getEstimatedRowCount();
 			if (rc != null) {
 				String value;
 				Color fg = new Color(0, 80, 200);
-				
+
 				if (rc == 0) {
 					value = " ";
 				} else if (rc >= 1000000000) {
-					value = String.format("%,1.1f<font color=\"#960064\">" + rowCountRenderingHelper.nonMGSuffixG + "g</font>", (double) rc / 1000000000.0);
+					value = String.format("%,1.1f<font color=\"#960064\">" + rowCountRenderingHelper.nonMGPrefixG + "g" + rowCountRenderingHelper.nonMGSuffixG + "</font>", (double) rc / 1000000000.0);
 //					fg = new Color(150, 0, 100);
 				} else if (rc >= 1000000) {
-					value = String.format("%,1.1f<font color=\"#604000\">" + rowCountRenderingHelper.nonMGSuffixM + "m</font>", (double) rc / 1000000.0);
+					value = String.format("%,1.1f<font color=\"#604000\">" + rowCountRenderingHelper.nonMGPrefixM + "m" + rowCountRenderingHelper.nonMGSuffixM + "</font>", (double) rc / 1000000.0);
 //					fg = new Color(0, 0, 150);
 				} else if (rc >= 1000) {
-					value = String.format("%,1.1f<font color=\"#000000\">" + rowCountRenderingHelper.nonMGSuffixK + "k</font>", (double) rc / 1000.0);
+					value = String.format("%,1.1f<font color=\"#000000\">" + rowCountRenderingHelper.nonMGPrefixK + "k" + rowCountRenderingHelper.nonMGSuffixK + "</font>", (double) rc / 1000.0);
 //					fg = new Color(0, 0, 150);
 	     		} else {
 	     			value = String.format("%,1.0f" + rowCountRenderingHelper.nonMGSuffix, (double) rc);
@@ -6440,20 +6440,6 @@ public class DataBrowser extends javax.swing.JFrame {
 	}
 
     private JLabel htmlRender = new JLabel();
-    
-    /**
-     * x and y stand for the upper left corner of the label
-     * and not for the baseline coordinates ...
-     */
-    private void paintHtmlString(Graphics g, String html, int x, int y) {
-        g.translate(x, y);
-        htmlRender.setText(html);
-        htmlRender.setSize(htmlRender.getPreferredSize());
-        //the fontMetrics stringWidth and height can be replaced by
-        //getLabel().getPreferredSize() if needed
-        htmlRender.paint(g);
-        g.translate(-x, -y);
-    }
 
     private void updateRowCounters() {
 		DefaultTreeModel m = (DefaultTreeModel) navigationTree.getModel();
