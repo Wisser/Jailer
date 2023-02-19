@@ -150,7 +150,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	
 	private static final String SETTING_LAST_USED_MODULE = "lastUsedModule";
     
-	private static final int TOTAL_HEIGHT = 825;
+	private static final int TOTAL_HEIGHT = 600;
 	private static float MODULE_IMAGE_SCALE_FACTOR = 0.5f;
 	
 	/**
@@ -162,6 +162,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		this.tabPropertyName = "DMMDPropTab" + module;
 		this.module = module;
 		initComponents();
+		dummyContent.setVisible(false);
 		DbConnectionDetailsEditor.addNewDatamodelListener(() -> {
 			loadModelList();
 			refresh();
@@ -172,8 +173,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		histLabel.setIcon(UIUtil.scaleIcon(histLabel, histIcon));
 		
 		InfoBar infoBar = new DMMDInfoBar("Data Model Configuration",
-				"A data model is a set of interrelated tables. Acquire information about tables by analyzing\n" +
-				"database schemas, or use the data model editor to manually define tables and associations.\n \n",
+				"A data model is a set of interrelated tables. Acquire information about tables by analyzing " +
+				"database schemas, \nor use the data model editor to manually define tables and associations.\n \n",
 				"Select a data model to work with.");
 		UIUtil.replace(infoBarLabel, infoBar);
 
@@ -662,11 +663,15 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		boolean ssIsVisible = dmmdSubsetter.recentSessionsComboBox.isVisible();
 		dmmdBrowser.recentSessionsComboBox.setVisible(false);
 		dmmdSubsetter.recentSessionsComboBox.setVisible(false);
+		dummyContent.setVisible(true);
 		pack();
+		dummyContent.setVisible(false);
 		dmmdBrowser.recentSessionsComboBox.setVisible(brIsVisible);
 		dmmdSubsetter.recentSessionsComboBox.setVisible(ssIsVisible);
 		
-		setSize(Math.max(840, getWidth()), modulesPanel.isVisible()? TOTAL_HEIGHT : 500);
+		int h = dummyContent.getPreferredSize().height + (modulesPanel.isVisible()? modulesPanel.getPreferredSize().height : 0);
+
+		setSize(Math.max(840, getWidth()), Math.max(modulesPanel.isVisible()? TOTAL_HEIGHT : 400, h));
 		UIUtil.fit(this);
 
 		addWindowListener(new WindowListener() {
@@ -1674,6 +1679,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         helpLabel = new javax.swing.JLabel();
         subsetterPanel = new javax.swing.JPanel();
         dataBrowserPanel = new javax.swing.JPanel();
+        dummyContent = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
         mainPanel = new javax.swing.JPanel();
         mainContentPanel = new javax.swing.JPanel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
@@ -1993,6 +2000,16 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         selectModulePanel.add(modulsCardPanel, gridBagConstraints);
+
+        dummyContent.setLayout(new java.awt.GridLayout(34, 0));
+
+        jLabel3.setText("jLabel3");
+        dummyContent.add(jLabel3);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        selectModulePanel.add(dummyContent, gridBagConstraints);
 
         cardPanel.add(selectModulePanel, "modulSelection");
 
@@ -2853,6 +2870,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JPanel dataBrowserPanel;
     private javax.swing.JTable dataModelsTable;
     private javax.swing.JButton deleteButton;
+    private javax.swing.JPanel dummyContent;
     private javax.swing.JLabel dummyLabel;
     private javax.swing.JButton editButton;
     private javax.swing.JLabel helpLabel;
@@ -2864,6 +2882,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel8;
