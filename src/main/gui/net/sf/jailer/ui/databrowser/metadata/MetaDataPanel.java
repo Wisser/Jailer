@@ -2116,7 +2116,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 					value = String.format("%,1.1f<font color=\"#604000\">" + rowCountRenderingHelper.nonMGPrefixM + "m" + rowCountRenderingHelper.nonMGSuffixM + "</font>", (double) rc / 1000000.0);
 //					fg = new Color(0, 0, 150);
 				} else if (rc >= 1000) {
-					value = String.format("%,1.1f<font color=\"#000000\">" + rowCountRenderingHelper.nonMGPrefixK + "k" + rowCountRenderingHelper.nonMGSuffixK + "</font>", (double) rc / 1000.0);
+					value = String.format("%,1.1f<font color=\"#009900\">" + rowCountRenderingHelper.nonMGPrefixK + "k" + rowCountRenderingHelper.nonMGSuffixK + "</font>", (double) rc / 1000.0);
 //					fg = new Color(0, 0, 150);
 	     		} else {
 	     			value = String.format("%,1.0f" + rowCountRenderingHelper.nonMGSuffix, (double) rc);
