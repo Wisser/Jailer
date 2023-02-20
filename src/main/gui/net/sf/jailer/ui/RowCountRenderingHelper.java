@@ -32,7 +32,6 @@ public class RowCountRenderingHelper {
 	public String nonMGPrefixG;
 	public String nonMGPrefixM;
 	public String nonMGPrefixK;
-	public int kOff, mOff, gOff;
 
 	public RowCountRenderingHelper() {
 		nonMGSuffixG = createThinspSuffix("m", "g");
@@ -45,11 +44,6 @@ public class RowCountRenderingHelper {
 		nonMGSuffixM = nonMGSuffixM.replaceFirst(THINSP, "");
 		nonMGPrefixK = THINSP;
 		nonMGSuffixK = nonMGSuffixK.replaceFirst(THINSP, "");
-		
-		int w = new JLabel("<html><nobr>0" + nonMGSuffix + "</html>").getPreferredSize().width;
-		kOff = new JLabel("<html><nobr>0" + "<font color=\"#960064\">" + THINSP + "k" + nonMGSuffixK + "</font></html>").getPreferredSize().width - w;
-		mOff = new JLabel("<html><nobr>0" + "<font color=\"#960064\">" + THINSP + "m" + nonMGSuffixM + "</font></html>").getPreferredSize().width - w;
-		gOff = new JLabel("<html><nobr>0" + "<font color=\"#960064\">" + THINSP +" g" + nonMGSuffixG + "</font></html>").getPreferredSize().width - w;
 	}
 	
 	// TODO
