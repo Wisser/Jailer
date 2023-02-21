@@ -716,9 +716,6 @@ public class StringSearchPanel extends javax.swing.JPanel {
 						gbc.weightx = 0;
 						gbc.fill = GridBagConstraints.NONE;
 						gbc.anchor = GridBagConstraints.EAST;
-						JLabel cl = new JLabel(stringCountLeftPad + " ");
-						cl.setForeground(new Color(255, 255, 255, 0));
-						panel.add(cl, gbc);
 						if (count > 1 || count < 0) {
 							gbc = new GridBagConstraints();
 							gbc.gridx = 2;
@@ -727,31 +724,29 @@ public class StringSearchPanel extends javax.swing.JPanel {
 							gbc.fill = GridBagConstraints.NONE;
 							gbc.anchor = GridBagConstraints.EAST;
 									
-							String countAsString;
-							Color fg = new Color(0, 80, 200);
+							JComponent countRender;
 							count = Math.abs(count);
 
 							if (count == Integer.MIN_VALUE) {
-								countAsString = "0";
+								countRender = rowCountRenderingHelper.createRowCountRender(" 0", null);
 								count = 0;
 							} else if (count == 0) {
-								countAsString = " ";
+								countRender = null;
 							} else if (count >= 1000000000) {
-								countAsString = String.format("%,1.1f<font color=\"#960064\">" + rowCountRenderingHelper.nonMGPrefixG + "g" + rowCountRenderingHelper.nonMGSuffixG + "</font>", (double) count / 1000000000.0);
-//								fg = new Color(150, 0, 100);
+								countRender = rowCountRenderingHelper.createRowCountRender(String.format(" %,1.1f", (double) count / 1000000000.0), rowCountRenderingHelper.g);
 							} else if (count >= 1000000) {
-								countAsString = String.format("%,1.1f<font color=\"#604000\">" + rowCountRenderingHelper.nonMGPrefixM + "m" + rowCountRenderingHelper.nonMGSuffixM + "</font>", (double) count / 1000000.0);
-//								fg = new Color(0, 0, 150);
+								countRender = rowCountRenderingHelper.createRowCountRender(String.format(" %,1.1f", (double) count / 1000000.0), rowCountRenderingHelper.m);
 							} else if (count >= 1000) {
-								countAsString = String.format("%,1.1f<font color=\"#009900\">" + rowCountRenderingHelper.nonMGPrefixK + "k" + rowCountRenderingHelper.nonMGSuffixK + "</font>", (double) count / 1000.0);
-//								fg = new Color(0, 0, 150);
-							} else {
-				     			countAsString = String.format("%,1.0f" + rowCountRenderingHelper.nonMGSuffix, (double) count);
+								countRender = rowCountRenderingHelper.createRowCountRender(String.format(" %,1.1f", (double) count / 1000.0), rowCountRenderingHelper.k);
+				     		} else {
+				     			countRender = rowCountRenderingHelper.createRowCountRender(String.format(" %,1.0f", (double) count), null);
 				     		}
-				     		
-							cl = new JLabel("<html><nobr> " + countAsString + "&thinsp;</html>");
-							cl.setForeground(lightCounters? new Color(160, 130, 100) : fg);
-							panel.add(cl, gbc);
+
+							if (countRender != null) {
+								Color fg = new Color(0, 80, 200);
+								countRender.setForeground(lightCounters? new Color(160, 130, 100) : fg);
+								panel.add(countRender, gbc);
+							}
 						}
 						panel.setOpaque(false);
 						render.setMinimumSize(new Dimension(1, render.getMinimumSize().height));
@@ -1152,7 +1147,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridheight = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.weightx = 0.65;
         gridBagConstraints.weighty = 1.0;
         add(schemaPanel, gridBagConstraints);
 

@@ -6400,46 +6400,36 @@ public class DataBrowser extends javax.swing.JFrame {
                 RenderingHints.VALUE_RENDER_QUALITY);
 		int oh = UIUtil.plaf == PLAF.NIMBUS? 3 : 2;
 		int ow = UIUtil.plaf == PLAF.NIMBUS? 1 : 0;
-		htmlRender.setFont(htmlRender.getFont().deriveFont(htmlRender.getFont().getStyle() & ~Font.BOLD));
 		
 		rowCounters.subMap(visibleRect.y - 16, visibleRect.y + visibleRect.height + 16).forEach((ry, mdTable) -> {
 			Long rc = mdTable.getEstimatedRowCount();
 			if (rc != null) {
-				String value;
-				Color fg = new Color(0, 80, 200);
-
+				JComponent value;
+				
 				if (rc == 0) {
-					value = " ";
+					return;
 				} else if (rc >= 1000000000) {
-					value = String.format("%,1.1f<font color=\"#960064\">" + rowCountRenderingHelper.nonMGPrefixG + "g" + rowCountRenderingHelper.nonMGSuffixG + "</font>", (double) rc / 1000000000.0);
-//					fg = new Color(150, 0, 100);
+					value = rowCountRenderingHelper.createRowCountRender(String.format("%,1.1f", (double) rc / 1000000000.0), rowCountRenderingHelper.g);
 				} else if (rc >= 1000000) {
-					value = String.format("%,1.1f<font color=\"#604000\">" + rowCountRenderingHelper.nonMGPrefixM + "m" + rowCountRenderingHelper.nonMGSuffixM + "</font>", (double) rc / 1000000.0);
-//					fg = new Color(0, 0, 150);
+					value = rowCountRenderingHelper.createRowCountRender(String.format("%,1.1f", (double) rc / 1000000.0), rowCountRenderingHelper.m);
 				} else if (rc >= 1000) {
-					value = String.format("%,1.1f<font color=\"#009900\">" + rowCountRenderingHelper.nonMGPrefixK + "k" + rowCountRenderingHelper.nonMGSuffixK + "</font>", (double) rc / 1000.0);
-//					fg = new Color(0, 0, 150);
+					value = rowCountRenderingHelper.createRowCountRender(String.format("%,1.1f", (double) rc / 1000.0), rowCountRenderingHelper.k);
 	     		} else {
-	     			value = String.format("%,1.0f" + rowCountRenderingHelper.nonMGSuffix, (double) rc);
+	     			value = rowCountRenderingHelper.createRowCountRender(String.format("%,1.0f", (double) rc), null);
 	     		}
-	     		htmlRender.setText("<html><nobr> " + value + "</html>");
-				htmlRender.setSize(htmlRender.getPreferredSize());
-				int x = visibleRect.width - htmlRender.getWidth() - 1;
-				int y = ry - visibleRect.y + htmlRender.getHeight() - 1;
+	     		int x = visibleRect.width - value.getWidth() - 1;
+				int y = ry - visibleRect.y + value.getHeight() - 1;
 				g.setColor(new Color(255, 255, 255));
-				g.fillRect(x - 8, y - htmlRender.getHeight() + 2, visibleRect.width - x + 9 + ow, htmlRender.getHeight() + oh);
-				htmlRender.setForeground(fg);
-				y -= htmlRender.getHeight() - oh;
+				g.fillRect(x - 8, y - value.getHeight() + 2, visibleRect.width - x + 9 + ow, value.getHeight() + oh);
+				y -= value.getHeight() - oh;
 				g.translate(x, y);
 				//the fontMetrics stringWidth and height can be replaced by
 				//getLabel().getPreferredSize() if needed
-				htmlRender.paint((Graphics) g);
+				value.paint((Graphics) g);
 				(g).translate(-x, -y);
 			}
 		});
 	}
-
-    private JLabel htmlRender = new JLabel();
 
     private void updateRowCounters() {
 		DefaultTreeModel m = (DefaultTreeModel) navigationTree.getModel();
