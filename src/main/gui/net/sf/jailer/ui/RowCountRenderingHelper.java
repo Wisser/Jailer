@@ -15,7 +15,18 @@
  */
 package net.sf.jailer.ui;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.Toolkit;
+import java.util.Map;
+
+import javax.swing.JComponent;
 import javax.swing.JLabel;
+
+import net.sf.jailer.ui.UIUtil.PLAF;
 
 /**
  * Some utility methods.
@@ -24,51 +35,73 @@ import javax.swing.JLabel;
  */
 public class RowCountRenderingHelper {
 
-	private static final String THINSP = "&thinsp;";
-	public String nonMGSuffix;
-	public String nonMGSuffixG;
-	public String nonMGSuffixM;
-	public String nonMGSuffixK;
-	public String nonMGPrefixG;
-	public String nonMGPrefixM;
-	public String nonMGPrefixK;
+	public final JLabel k = new JLabel("k");
+	public final JLabel m = new JLabel("m");
+	public final JLabel g = new JLabel("g");
+	
+	private int w;
 
+	private final Font font = k.getFont().deriveFont(k.getFont().getStyle() & ~Font.BOLD);
+	
 	public RowCountRenderingHelper() {
-		nonMGSuffixG = createThinspSuffix("m", "g");
-		nonMGSuffixM = createThinspSuffix("g", "m");
-		nonMGSuffixK = createThinspSuffix("m", "k");
-		nonMGSuffix = createThinspSuffix(nonMGSuffixK + "k", "");
-		nonMGPrefixG = THINSP;
-		nonMGSuffixG = nonMGSuffixG.replaceFirst(THINSP, "");
-		nonMGPrefixM = THINSP;
-		nonMGSuffixM = nonMGSuffixM.replaceFirst(THINSP, "");
-		nonMGPrefixK = THINSP;
-		nonMGSuffixK = nonMGSuffixK.replaceFirst(THINSP, "");
+		k.setSize(k.getPreferredSize());
+		m.setSize(m.getPreferredSize());
+		g.setSize(g.getPreferredSize());
+		w = Math.max(Math.max(k.getPreferredSize().width, m.getPreferredSize().width), g.getPreferredSize().width);
+		
+		k.setForeground(new Color(0, 9 * 16 + 9, 0));
+		m.setForeground(new Color(6 * 16 + 0, 4 * 16, 0));
+		g.setForeground(new Color(9 * 16 + 6, 0, 6 * 16 + 4));
+		
+		k.setFont(font);
+		m.setFont(font);
+		g.setFont(font);
+	}
+	
+	public JComponent createRowCountRender(String count, JLabel suffix) {
+		JLabel cl = new JLabel(count);
+		int clw = cl.getPreferredSize().width;
+		int h = cl.getPreferredSize().height;
+		int sep = 2;
+		JComponent render = new JComponent() {
+			@Override
+			public void paint(Graphics g) {
+				super.paint(g);
+				
+				int oy = PLAF.FLAT == UIUtil.plaf? 2 : 3;
+				if (g instanceof Graphics2D) {
+					Toolkit toolkit = Toolkit.getDefaultToolkit();
+					Map map = (Map)(toolkit.getDesktopProperty("awt.font.desktophints"));
+
+					if (map != null)
+					{
+						((Graphics2D) g).addRenderingHints(map);
+					}
+					else
+						((Graphics2D) g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+							RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
+				}
+				g.setFont(font);
+				g.setColor(this.getForeground());
+				g.drawString(count, 0, h - oy);
+					
+				if (suffix != null) {
+					g.setColor(suffix.getForeground());
+					g.drawString(suffix.getText(), clw + sep, h - oy);
+				}
+			}
+		};
+		render.setSize(clw + sep + w, h);
+		render.setPreferredSize(render.getSize());
+		render.setMaximumSize(render.getSize());
+		render.setMinimumSize(render.getSize());
+		render.setForeground(new Color(0, 80, 200));
+		
+		return render;
 	}
 	
 	// TODO
-	// TODO make component for this (panel with 2 labels?)
 	// TODO re-read rowcount heuristically after DML? (ins/upd/del)?
 	// TODO re-read rowcount of 0 or < 1000(?) after reading stats-info-query-result?
-	// TODO use updatecount for incremental erc update?
-
-	private String createThinspSuffix(String target, String subject) {
-		int gWidth = new JLabel("<html>0" + target + "</html>").getPreferredSize().width;
-        int w = 0;
-        String suffix = "";
-        for (suffix = ""; suffix.length() < 160;) {
-        	int pw = w;
-        	String psuffix = suffix;
-        	suffix += THINSP;
-        	w = new JLabel("<html>0" + suffix + subject + "</html>").getPreferredSize().width;
-        	if (w != 0 && w > gWidth) {
-        		if (w - gWidth > gWidth - pw) {
-        			suffix = psuffix;
-        		}
-        		break;
-        	}
-        }
-		return suffix;
-	}
 
 }
