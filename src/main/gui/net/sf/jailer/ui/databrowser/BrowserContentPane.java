@@ -619,7 +619,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							onContentChange(rows, true); // rows.isEmpty() || currentHash != prevHash || rows.size() != prevSize || !prevIDs.equals(currentIDs) || rows.size() != currentIDs.size());
 							updateMode("table", null);
 							updateWhereField();
-							if (parentBrowser == null && (andCond == null || andCond.trim().isEmpty())) {
+							if (BrowserContentPane.this.association == null && (andCond == null || andCond.trim().isEmpty())) {
 								updateERCounts(table, limitExceeded, rows.size());
 							}
 							
