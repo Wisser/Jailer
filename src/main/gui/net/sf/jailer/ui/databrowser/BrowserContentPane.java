@@ -393,12 +393,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		private final boolean selectDistinct;
 		private boolean finished;
 		private final ResultSet inputResultSet;
-		private final RowBrowser parentBrowser;
 		private Session theSession;
 		private final Boolean forceAdjustRows;
 		public boolean closureLimitExceeded = false;
 
-		public LoadJob(int limit, String andCond, RowBrowser parentBrowser, boolean selectDistinct) {
+		public LoadJob(int limit, String andCond, boolean selectDistinct) {
 			this.andCond = andCond;
 			this.selectDistinct = selectDistinct;
 			this.inputResultSet = null;
@@ -406,7 +405,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				this.limit = limit;
 				finished = false;
 				isCanceled = false;
-				this.parentBrowser = parentBrowser;
 				this.forceAdjustRows = Desktop.forceAdjustRows;
 			}
 		}
@@ -419,7 +417,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				this.limit = limit;
 				finished = false;
 				isCanceled = false;
-				parentBrowser = null;
 				this.forceAdjustRows = Desktop.forceAdjustRows;
 			}
 		}
@@ -4252,10 +4249,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			LoadJob reloadJob;
 			loadedRowsAreRestricted = false;
 			if (statementForReloading != null) {
-				reloadJob = new LoadJob(limit, statementForReloading, getParentBrowser(), false);
+				reloadJob = new LoadJob(limit, statementForReloading, false);
 			} else {
 				loadedRowsAreRestricted = !(table instanceof SqlStatementTable) && !getAndConditionText().trim().isEmpty();
-				reloadJob = new LoadJob(limit, (table instanceof SqlStatementTable)? "" : getAndConditionText(), getParentBrowser(), selectDistinctCheckBox.isSelected());
+				reloadJob = new LoadJob(limit, (table instanceof SqlStatementTable)? "" : getAndConditionText(), selectDistinctCheckBox.isSelected());
 				currentSelectedRowCondition = getAndConditionText();
 			}
 			synchronized (this) {
