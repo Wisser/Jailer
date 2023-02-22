@@ -131,8 +131,4 @@ public class RowCountRenderer extends JComponent {
 		}
 	}
 	
-	// TODO
-	// TODO re-read rowcount heuristically after DML? (ins/upd/del)?
-	// TODO re-read rowcount of 0 or < 1000(?) after reading stats-info-query-result?
-
 }

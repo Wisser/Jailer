@@ -277,6 +277,9 @@ public class ResultSetRenderer extends javax.swing.JPanel {
 		@Override
 		protected void deselectChildrenIfNeededWithoutReload() {
 		}
+		@Override
+		protected void forceRepaint() {
+		}
     }
 
 }

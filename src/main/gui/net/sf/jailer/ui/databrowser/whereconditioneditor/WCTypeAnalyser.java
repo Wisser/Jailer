@@ -174,6 +174,7 @@ public class WCTypeAnalyser {
 		public int conditionStart;
 		public int conditionEnd;
 		public String originalQuery;
+		public boolean isSimpleSelect = true;
 		private boolean isDistinct;
 		
 		public Set<String> getAlternativeNames(String name) {
@@ -325,6 +326,10 @@ public class WCTypeAnalyser {
 			final LinkedHashMap<String, MDTable> fromClause = analyseFromClause(st, unknownTableCounter, metaDataSource);
 			final List<net.sf.jailer.datamodel.Column> selectClause = new ArrayList<net.sf.jailer.datamodel.Column>();
 
+			if (fromClause.size() != 1) {
+				result.isSimpleSelect = false;
+			}
+			
 			st.accept(new StatementVisitorAdapter() {
 
 				private void clearInStatement(Object o) {
@@ -345,6 +350,7 @@ public class WCTypeAnalyser {
 							}
 						}
 						if (pos != null) {
+							result.isSimpleSelect = false;
 							for (int i = pos.a; i < pos.b; ++i) {
 								woComments.setCharAt(i, ' ');
 							}
@@ -358,6 +364,7 @@ public class WCTypeAnalyser {
 
 						@Override
 						public void visit(WithItem withItem) {
+							result.isSimpleSelect = false;
 						}
 
 						@Override
@@ -392,6 +399,7 @@ public class WCTypeAnalyser {
 							Expression cond = null;
 							if (plainSelect.getGroupBy() != null) {
 								result.isHaving = true;
+								result.isSimpleSelect = false;
 								cond = plainSelect.getHaving();
 							} else {
 								result.isHaving = false;
@@ -399,6 +407,7 @@ public class WCTypeAnalyser {
 							}
 							if (cond != null) {
 								result.hasCondition = true;
+								result.isSimpleSelect = false;
 								Pair<Integer, Integer> pos = null;
 								if (!(cond instanceof LikeExpression) && (cond instanceof ASTNodeAccess && ((ASTNodeAccess) cond).getASTNode() != null)) { // lgtm [java/useless-type-test]
 									SimpleNode node = ((ASTNodeAccess) cond).getASTNode();
@@ -469,6 +478,9 @@ public class WCTypeAnalyser {
 											int a = selectExpressionItem.getASTNode().jjtGetFirstToken().absoluteBegin - 1;
 											int b = selectExpressionItem.getASTNode().jjtGetLastToken().absoluteEnd - 1;
 											String sql = sqlSelect.substring(a, b);
+											if (sql.contains("(")) {
+												result.isSimpleSelect = false; // pot. aggregate function												
+											}
 											if (selectExpressionItem.getAlias() != null) {
 												sql = sql.replaceAll("\\s*" + (selectExpressionItem.getAlias().isUseAs()? "(?i:as)\\s+" : "") + Pattern.quote(selectExpressionItem.getAlias().getName()) + "\\s*$", "");
 											}

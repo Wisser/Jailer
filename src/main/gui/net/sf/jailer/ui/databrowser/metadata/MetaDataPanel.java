@@ -2077,14 +2077,24 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         }
     }
 
+    private boolean repaintPending = false;
+    
+    public void doRepaint() {
+    	if (!repaintPending) {
+    		repaintPending = true;
+	    	UIUtil.invokeLater(12, new Runnable() {
+	    		@Override
+	    		public void run() {
+	    			repaintPending = false;
+	    			metaDataTree.repaint();
+	    			metaDataTree.setSize(metaDataTree.getWidth(), metaDataTree.getHeight() - 1);
+	    		}
+	    	});
+    	}
+    }
+    
     public void refresh() {
-    	UIUtil.invokeLater(12, new Runnable() {
-    		@Override
-    		public void run() {
-    			metaDataTree.repaint();
-    			metaDataTree.setSize(metaDataTree.getWidth(), metaDataTree.getHeight() - 1);
-    		}
-    	});
+    	repaint();
     }
     
     private NavigableMap<Integer, MDTable> rowCounters = new TreeMap<Integer, MDTable>();

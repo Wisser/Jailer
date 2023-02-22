@@ -1928,6 +1928,7 @@ union all
         <avoidLeftJoin>false</avoidLeftJoin>
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
         <identifierQuoteString>"</identifierQuoteString>
+        <estimatedRowCountQuery>select tbl, cast(substr(stat, 0, instr(stat, ' ')) as integer) from sqlite_stat1</estimatedRowCountQuery>
     </dbms>
 
     <!-- for HSQLDB -->

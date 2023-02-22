@@ -419,6 +419,9 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 					@Override
 					protected void deselectChildrenIfNeededWithoutReload() {
 					}
+					@Override
+					protected void forceRepaint() {
+					}
 				};
 		    	
 				final MemorizedResultSet[] metaDataDetails = new MemorizedResultSet[1];

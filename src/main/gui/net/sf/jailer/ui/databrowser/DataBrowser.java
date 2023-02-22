@@ -1123,6 +1123,11 @@ public class DataBrowser extends javax.swing.JFrame {
 			protected boolean isZoomWithMouseWheel() {
 				return DataBrowser.this.isZoomWithMouseWheel();
 			}
+
+			@Override
+			protected void forceRepaint() {
+				DataBrowser.this.forceRepaint();
+			}
 		};
 
 		desktop.setMinXProvider(() -> searchPanelContainer.isVisible() ? 1 : 0);
@@ -5730,6 +5735,13 @@ public class DataBrowser extends javax.swing.JFrame {
 		protected void refreshMetaData() {
 			if (metaDataPanel != null) {
 				metaDataPanel.reset();
+			}
+		}
+
+		@Override
+		protected void repaintMetaData() {
+			if (metaDataPanel != null) {
+				metaDataPanel.doRepaint();
 			}
 		}
 

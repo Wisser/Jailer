@@ -189,6 +189,7 @@ import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.ui.databrowser.Desktop.RowToRowLink;
 import net.sf.jailer.ui.databrowser.Desktop.RunnableWithPriority;
 import net.sf.jailer.ui.databrowser.RowCounter.RowCount;
+import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.ColumnsTable;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
@@ -618,6 +619,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							onContentChange(rows, true); // rows.isEmpty() || currentHash != prevHash || rows.size() != prevSize || !prevIDs.equals(currentIDs) || rows.size() != currentIDs.size());
 							updateMode("table", null);
 							updateWhereField();
+							if (parentBrowser == null && (andCond == null || andCond.trim().isEmpty())) {
+								updateERCounts(table, limitExceeded, rows.size());
+							}
+							
 							if (reloadAction != null) {
 								reloadAction.run();
 							}
@@ -723,6 +728,25 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					runnable.run();
 				}
 			};
+		}
+	}
+
+	private void updateERCounts(Table table, boolean limitExceeded, int numRowsRead) {
+		MetaDataSource metaDataSource = getMetaDataSource();
+		if (metaDataSource != null) {
+			MDTable mdTable = metaDataSource.toMDTable(table);
+			if (mdTable != null) {
+				if (limitExceeded) {
+					if (mdTable.getEstimatedRowCount() != null && mdTable.getEstimatedRowCount() >= numRowsRead) {
+						return;
+					}
+				}
+				if (mdTable.getSchema() != null) {
+					if (mdTable.getSchema().setEST(mdTable, numRowsRead)) {
+						forceRepaint();
+					}
+				}
+			}
 		}
 	}
 
@@ -7056,6 +7080,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	protected abstract void onRedraw();
 	protected abstract void onHide();
+	protected abstract void forceRepaint();
 
 	protected abstract void beforeReload();
 	protected void afterReload() {}

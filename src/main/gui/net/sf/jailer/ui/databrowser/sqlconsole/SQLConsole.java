@@ -1138,6 +1138,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 }
                 status.updateView(false);
             	status.statement = sqlStatement;
+            	
+            	if (wcBaseTable != null) {
+            		updateERCounts(resultType, wcBaseTable.isSimpleSelect, status.numRowsRead, status.limitExceeded);
+            	}
+            	
                 final String finalSqlStatement = sqlStatement;
                 final Table finalResultType = resultType;
                 final boolean finalLoadButtonIsVisible = loadButtonIsVisible;
@@ -1183,6 +1188,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		                            stmt = stmt.substring(0, 300) + "...";
 		                        }
 		                        tabContentPanel.statementLabel.setText(stmt);
+							}
+							@Override
+							protected void forceRepaint() {
 							}
                         };
                         rb.initSecondaryCondition();
@@ -1548,6 +1556,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 status.hasUpdated = true;
                 if (updateCount != 0) {
                     setDataHasChanged(true);
+                    updateERCounts(sqlStatement, updateCount);
                 }
                 if (isDDLStatement(sql)) {
                     status.withDDL = true;
@@ -1659,6 +1668,62 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             }
         }
     }
+
+	/**
+     * Update estimated row count after simple select.
+     */
+    private void updateERCounts(Table table, boolean isSimpleSelect, int numRowsRead,  boolean limitExceeded) {
+    	if (table != null && isSimpleSelect) {
+    		MDTable mdTable = metaDataSource.toMDTable(table);
+    		if (mdTable != null) {
+    			if (limitExceeded) {
+    				--numRowsRead;
+    				if (mdTable.getEstimatedRowCount() != null && mdTable.getEstimatedRowCount() >= numRowsRead) {
+    					return;
+    				}
+    			}
+    			if (mdTable.getSchema() != null) {
+    				if (mdTable.getSchema().setEST(mdTable, numRowsRead)) {
+    					repaintMetaData();
+    				}
+    			}
+    		}
+    	}
+    }
+
+	/**
+     * Update estimated row count after insert or delete.
+     * 
+     * @param sqlStatement the SQL statement
+     * @param updateCount update count
+     */
+	private void updateERCounts(String sqlStatement, int updateCount) {
+		if (metaDataSource.isInitialized()) {
+			String reIdentifier = "(?:[\"][^\"]+[\"])|(?:[`][^`]+[`])|(?:['][^']+['])|(?:[\\w]+)";
+			Pattern pattern = Pattern.compile(
+					"^\\s*(?:(insert\\s+into)|(delete\\s+from))\\s+"
+					+ "(?:(" + reIdentifier + ")\\s*\\.\\s*)?(" + reIdentifier + ")", 
+					Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+			Matcher matcher = pattern.matcher(SQLCompletionProvider.removeCommentsAndLiterals(sqlStatement));
+			if (matcher.find()) {
+				MDSchema schema;
+				if (matcher.group(3) != null) {
+					schema = metaDataSource.find(matcher.group(3));
+				} else {
+					schema = metaDataSource.getDefaultSchema();
+				}
+				if (schema == null) {
+					return;
+				}
+				MDTable table = schema.find(matcher.group(4));
+				if (table != null) {
+					if (schema.addEST(table, matcher.group(1) != null? updateCount : -updateCount)) {
+						repaintMetaData();
+					}
+				}
+			}
+		}
+	}
 
 	private boolean executeStatementWithLimit(Statement statement, String sqlStatement, Session session) throws SQLException {
 		if (!DBMS.MSSQL.equals(session.dbms) && !DBMS.SYBASE.equals(session.dbms)) {
@@ -1846,7 +1911,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         return sql.trim().matches("^(?is)\\b(drop|create|alter|rename)\\b.*");
     }
 
-    protected abstract void refreshMetaData();
+	protected abstract void refreshMetaData();
+	protected abstract void repaintMetaData();
     protected abstract void selectTable(MDTable mdTable);
     protected abstract void setOutlineTables(List<OutlineInfo> outlineTables, int indexOfInfoAtCaret);
     protected abstract JFrame getOwner();

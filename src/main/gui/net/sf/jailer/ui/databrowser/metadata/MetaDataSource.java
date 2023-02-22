@@ -267,6 +267,9 @@ public class MetaDataSource {
     	if (tableToMDTable.containsKey(table)) {
     		return tableToMDTable.get(table);
     	}
+    	if (table.getName() == null) {
+    		return null;
+    	}
 
     	MDSchema defaultSchema = getDefaultSchema();
     	MDTable mdTable = null;

@@ -1385,6 +1385,11 @@ public abstract class Desktop extends JDesktopPane {
 				}
 				return Desktop.this.getAnimationFactor();
 			}
+
+			@Override
+			protected void forceRepaint() {
+				Desktop.this.forceRepaint();
+			}
 		};
 		browserContentPane.addUserAction(new UserAction(
 				"Align Horizontally",
@@ -1494,7 +1499,8 @@ public abstract class Desktop extends JDesktopPane {
 
 	protected abstract int getRowLimit();
 	protected abstract void setRowLimit(int limit);
-
+	protected abstract void forceRepaint();
+	
 	/**
 	 * Demaximizes all internal frames.
 	 */

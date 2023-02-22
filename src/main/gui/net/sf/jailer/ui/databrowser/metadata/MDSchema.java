@@ -246,6 +246,37 @@ public class MDSchema extends MDObject {
 		}
 	}
 
+	public boolean addEST(MDTable table, long delta) {
+		synchronized (estimatedRowCountsLock) {
+			if (estimatedRowCounts != null) {
+				String key = getMetaDataSource().getQuoting().unquote(table.getName());
+				Long rc = estimatedRowCounts.get(key);
+				if (rc != null) {
+					return setEST(table, rc + delta);
+				}
+			}
+		}
+		return false;
+	}
+	
+	public boolean setEST(MDTable table, long rc) {
+		synchronized (estimatedRowCountsLock) {
+			if (estimatedRowCounts != null) {
+				String key = getMetaDataSource().getQuoting().unquote(table.getName());
+				if (rc < 0) {
+					rc = 0;
+				}
+				Long old = estimatedRowCounts.get(key);
+				if (old == null || old.longValue() != rc) {
+					estimatedRowCounts.put(key, rc);
+					table.setEstimatedRowCount(rc);
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
 	private Map<String, Long> readEstimatedRowCounts() {
 		final Map<String, Long> result = new HashMap<String, Long>();
 		
