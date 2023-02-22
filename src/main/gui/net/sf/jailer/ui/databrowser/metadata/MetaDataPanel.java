@@ -20,7 +20,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Frame;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
@@ -126,7 +125,7 @@ import net.sf.jailer.modelbuilder.MemorizedResultSet;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.ui.AutoCompletion;
 import net.sf.jailer.ui.JComboBox2;
-import net.sf.jailer.ui.RowCountRenderingHelper;
+import net.sf.jailer.ui.RowCountRenderer;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.UIUtil.IconWithText;
@@ -2089,7 +2088,6 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     }
     
     private NavigableMap<Integer, MDTable> rowCounters = new TreeMap<Integer, MDTable>();
-    private RowCountRenderingHelper rowCountRenderingHelper = new RowCountRenderingHelper();
 	
     private void paintRowCounters(Graphics2D g, Rectangle bounds) {
 		Rectangle visibleRect = metaDataTree.getVisibleRect();
@@ -2103,18 +2101,18 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		rowCounters.subMap(visibleRect.y - 16, visibleRect.y + visibleRect.height + 16).forEach((ry, mdTable) -> {
 			Long rc = mdTable.getEstimatedRowCount();
 			if (rc != null) {
-				JComponent value;
+				RowCountRenderer value;
 
 				if (rc == 0) {
 					value = null;
 				} else if (rc >= 1000000000) {
-					value = rowCountRenderingHelper.createRowCountRender(String.format("%,1.1f", (double) rc / 1000000000.0), rowCountRenderingHelper.g);
+					value = new RowCountRenderer(String.format("%,1.1f", (double) rc / 1000000000.0), RowCountRenderer.g);
 				} else if (rc >= 1000000) {
-					value = rowCountRenderingHelper.createRowCountRender(String.format("%,1.1f", (double) rc / 1000000.0), rowCountRenderingHelper.m);
+					value = new RowCountRenderer(String.format("%,1.1f", (double) rc / 1000000.0), RowCountRenderer.m);
 				} else if (rc >= 1000) {
-					value = rowCountRenderingHelper.createRowCountRender(String.format("%,1.1f", (double) rc / 1000.0), rowCountRenderingHelper.k);
+					value = new RowCountRenderer(String.format("%,1.1f", (double) rc / 1000.0), RowCountRenderer.k);
 	     		} else {
-	     			value = rowCountRenderingHelper.createRowCountRender(String.format("%,1.0f", (double) rc), null);
+	     			value = new RowCountRenderer(String.format("%,1.0f", (double) rc), null);
 	     		}
 				if (value != null) {
 		     		int x = visibleRect.width - value.getWidth() - 1;
@@ -2127,9 +2125,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 					g.fillRect(x - 8, y - value.getHeight() + 2, visibleRect.width - x + 9 + ow, value.getHeight() + oh);
 					y -= value.getHeight() - oh;
 					g.translate(x, y);
-					//the fontMetrics stringWidth and height can be replaced by
-					//getLabel().getPreferredSize() if needed
-					value.paint((Graphics) g);
+					value.doPaint((Graphics) g);
 					(g).translate(-x, -y);
 				}
 			}

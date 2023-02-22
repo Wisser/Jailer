@@ -490,7 +490,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	private Runnable onClose;
 	private final JToggleButton button;
 	public final Map<String, Consumer<JLabel>> renderConsumer;
-	private RowCountRenderingHelper rowCountRenderingHelper = new RowCountRenderingHelper();
+
     /**
      * Creates new form StringSearchPanel
      * @param button 
@@ -728,18 +728,18 @@ public class StringSearchPanel extends javax.swing.JPanel {
 							count = Math.abs(count);
 
 							if (count == Integer.MIN_VALUE) {
-								countRender = rowCountRenderingHelper.createRowCountRender(" 0", null);
+								countRender = new RowCountRenderer(" 0", null);
 								count = 0;
 							} else if (count == 0) {
 								countRender = null;
 							} else if (count >= 1000000000) {
-								countRender = rowCountRenderingHelper.createRowCountRender(String.format(" %,1.1f", (double) count / 1000000000.0), rowCountRenderingHelper.g);
+								countRender = new RowCountRenderer(String.format(" %,1.1f", (double) count / 1000000000.0), RowCountRenderer.g);
 							} else if (count >= 1000000) {
-								countRender = rowCountRenderingHelper.createRowCountRender(String.format(" %,1.1f", (double) count / 1000000.0), rowCountRenderingHelper.m);
+								countRender = new RowCountRenderer(String.format(" %,1.1f", (double) count / 1000000.0), RowCountRenderer.m);
 							} else if (count >= 1000) {
-								countRender = rowCountRenderingHelper.createRowCountRender(String.format(" %,1.1f", (double) count / 1000.0), rowCountRenderingHelper.k);
+								countRender = new RowCountRenderer(String.format(" %,1.1f", (double) count / 1000.0), RowCountRenderer.k);
 				     		} else {
-				     			countRender = rowCountRenderingHelper.createRowCountRender(String.format(" %,1.0f", (double) count), null);
+				     			countRender = new RowCountRenderer(String.format(" %,1.0f", (double) count), null);
 				     		}
 
 							if (countRender != null) {

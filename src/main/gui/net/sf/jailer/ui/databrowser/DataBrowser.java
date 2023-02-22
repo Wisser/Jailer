@@ -23,7 +23,6 @@ import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -162,7 +161,7 @@ import net.sf.jailer.ui.ExtractionModelFrame;
 import net.sf.jailer.ui.ImportDialog;
 import net.sf.jailer.ui.JComboBox2;
 import net.sf.jailer.ui.PrivilegedSessionProviderDialog;
-import net.sf.jailer.ui.RowCountRenderingHelper;
+import net.sf.jailer.ui.RowCountRenderer;
 import net.sf.jailer.ui.SessionForUI;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.StringSearchPanel.StringSearchDialog;
@@ -6389,7 +6388,6 @@ public class DataBrowser extends javax.swing.JFrame {
 	}
 	
     private NavigableMap<Integer, MDTable> rowCounters = new TreeMap<Integer, MDTable>();
-    private RowCountRenderingHelper rowCountRenderingHelper = new RowCountRenderingHelper();
 	
     private void paintRowCounters(Graphics2D g, Rectangle bounds) {
 		Rectangle visibleRect = navigationTree.getVisibleRect();
@@ -6404,18 +6402,18 @@ public class DataBrowser extends javax.swing.JFrame {
 		rowCounters.subMap(visibleRect.y - 16, visibleRect.y + visibleRect.height + 16).forEach((ry, mdTable) -> {
 			Long rc = mdTable.getEstimatedRowCount();
 			if (rc != null) {
-				JComponent value;
+				RowCountRenderer value;
 				
 				if (rc == 0) {
 					return;
 				} else if (rc >= 1000000000) {
-					value = rowCountRenderingHelper.createRowCountRender(String.format("%,1.1f", (double) rc / 1000000000.0), rowCountRenderingHelper.g);
+					value = new RowCountRenderer(String.format("%,1.1f", (double) rc / 1000000000.0), RowCountRenderer.g);
 				} else if (rc >= 1000000) {
-					value = rowCountRenderingHelper.createRowCountRender(String.format("%,1.1f", (double) rc / 1000000.0), rowCountRenderingHelper.m);
+					value = new RowCountRenderer(String.format("%,1.1f", (double) rc / 1000000.0), RowCountRenderer.m);
 				} else if (rc >= 1000) {
-					value = rowCountRenderingHelper.createRowCountRender(String.format("%,1.1f", (double) rc / 1000.0), rowCountRenderingHelper.k);
+					value = new RowCountRenderer(String.format("%,1.1f", (double) rc / 1000.0), RowCountRenderer.k);
 	     		} else {
-	     			value = rowCountRenderingHelper.createRowCountRender(String.format("%,1.0f", (double) rc), null);
+	     			value = new RowCountRenderer(String.format("%,1.0f", (double) rc), null);
 	     		}
 	     		int x = visibleRect.width - value.getWidth() - 1;
 				int y = ry - visibleRect.y + value.getHeight() - 1;
@@ -6423,9 +6421,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				g.fillRect(x - 8, y - value.getHeight() + 2, visibleRect.width - x + 9 + ow, value.getHeight() + oh);
 				y -= value.getHeight() - oh;
 				g.translate(x, y);
-				//the fontMetrics stringWidth and height can be replaced by
-				//getLabel().getPreferredSize() if needed
-				value.paint((Graphics) g);
+				value.doPaint((Graphics) g);
 				(g).translate(-x, -y);
 			}
 		});
