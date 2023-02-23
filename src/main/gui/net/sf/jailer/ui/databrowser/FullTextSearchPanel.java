@@ -219,6 +219,7 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 			setVisible(true);
 			searchField.setText("");
 			update(searchField.getText(), false);
+			searchField.grabFocus();
 			return true;
 		} else {
 			return false;
