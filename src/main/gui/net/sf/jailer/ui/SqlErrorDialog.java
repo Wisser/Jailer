@@ -387,3 +387,5 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 
     private final RSyntaxTextArea sqlEditorPane;
 }
+
+// TODO mark user defined SQL fragments in a way that it is possible to visualize their type/reason/... here (mark with SQL comments?)

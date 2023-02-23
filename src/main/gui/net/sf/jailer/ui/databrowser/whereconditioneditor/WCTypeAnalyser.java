@@ -506,9 +506,12 @@ public class WCTypeAnalyser {
 														if (col != null) {
 															isNullable = col.isNullable;
 														}
-														if (column[0].getTable() != null) {
+														if (column[0].getColumnName() != null) {
+															if (alias == null) {
+																alias = findUniqueAliasOfTableColumn(column[0].getColumnName(), fromClause);
+															}
 															MDTable mdTable = fromClause.get(alias);
-															isNullable = checkNullable(mdTable, col.name, isNullable);
+															isNullable = checkNullable(mdTable, column[0].getColumnName(), isNullable);
 														}
 													} catch (SQLException e) {
 														// ignore
