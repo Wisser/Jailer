@@ -7121,6 +7121,18 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		return 1f;
 	}
 	
+	private boolean fullTextSearchPanelWasOpened = false;
+	
+	void onMaximumPropertyChange(boolean maximum) {
+		if (maximum) {
+			fullTextSearchPanelWasOpened = fullTextSearchPanel.openSilently();
+		} else {
+			if (fullTextSearchPanelWasOpened && fullTextSearchPanel.isSilent()) {
+				fullTextSearchPanel.close();
+			}
+		}
+	}
+	
 	protected Integer ownLimit = null;
 	
 	public int getOwnReloadLimit() {
@@ -8187,8 +8199,5 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
      	hAlignButtonIcon1 = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/anchor1.png"), sf);
      	hAlignButtonIcon2 = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/anchor0.png"), sf);
 	}
-	
-	// TODO
-	// TODO full text search panel visible if internalframe is maximized
 	
 }

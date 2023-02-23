@@ -1397,6 +1397,12 @@ public abstract class Desktop extends JDesktopPane {
 				() -> anchorManager.isApplicable(tableBrowser),
 				() -> anchorManager.layout(tableBrowser)
 				));
+		jInternalFrame.addPropertyChangeListener(JInternalFrame.IS_MAXIMUM_PROPERTY, new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				browserContentPane.onMaximumPropertyChange(jInternalFrame.isMaximum());
+			}
+		});
 
 		Rectangle r = layout(parent, association, browserContentPane, new ArrayList<RowBrowser>(), 0, -1);
 		java.awt.event.MouseWheelListener mouseWheelListener = new java.awt.event.MouseWheelListener() {

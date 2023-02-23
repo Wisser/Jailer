@@ -214,6 +214,21 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 
     private boolean updatePending = false;
 
+	public boolean openSilently() {
+		if (!isVisible()) {
+			setVisible(true);
+			searchField.setText("");
+			update(searchField.getText(), false);
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public boolean isSilent() {
+		return searchField.getText().isEmpty();
+	}
+		
 	public void open() {
 		if (!isVisible()) {
 			setVisible(true);
@@ -232,7 +247,7 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 		closeButton.setVisible(false);
 	}
 
-	private void close() {
+	public void close() {
 		if (closeButton.isVisible()) {
 			setVisible(false);
 			update();

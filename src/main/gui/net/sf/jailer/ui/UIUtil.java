@@ -1489,6 +1489,7 @@ public class UIUtil {
 				};
 				new RSyntaxTextArea();
 				getSQLEditorFont();
+				new RowCountRenderer("", null);
 			} catch (Throwable t) {
 				// ignore
 			}
