@@ -1,3 +1,7 @@
+14.3.2
+  - The estimation of table sizes could be significantly improved by using row counts from statements and queries.
+  - The table sizes are now displayed in a better quality.
+
 14.3.1
   - When a column filter is defined in the SQL query results window,
     the query in the console is augmented with the corresponding "where" condition.
