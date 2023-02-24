@@ -1750,7 +1750,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					}
 				}
 				if (render instanceof JLabel) {
-					fullTextSearchPanel.markOccurrence((JLabel) render, column, row);
 					if (cellSelected) {
 						if (bgRow % 2 == 0) {
 							render.setBackground(UIUtil.TABLE_BG1SELECTED);
@@ -1758,6 +1757,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							render.setBackground(UIUtil.TABLE_BG2SELECTED);
 						}
 					}
+					render = fullTextSearchPanel.markOccurrence((JLabel) render, column, row);
 				}
 				return render;
 			}

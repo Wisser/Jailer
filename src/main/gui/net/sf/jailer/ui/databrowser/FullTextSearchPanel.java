@@ -18,6 +18,8 @@ package net.sf.jailer.ui.databrowser;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
@@ -33,11 +35,14 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -465,9 +470,9 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 		table.repaint();
 	}
 	
-	public void markOccurrence(JLabel render, int x, int y) {
+	public Component markOccurrence(JLabel render, int x, int y) {
 		if (inUpdate || !isVisible()) {
-			return;
+			return render;
 		}
 		
 		String marked = markedValues.get(render.getText());
@@ -477,9 +482,22 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 			render.setBackground(new Color(190, 255, 180));
 			
 			if (currentPosition != null && currentPosition == x + y * table.getColumnCount()) {
-				render.setBorder(BorderFactory.createLineBorder(new Color(0, 11 * 16, 0)));
+				JPanel panel = new JPanel(null) {
+					Border border = new LineBorder(new Color(0, 11 * 16, 0), 1, true);
+					
+					@Override
+					public void paint(Graphics graphics) {
+						super.paint(graphics);
+						border.paintBorder(this, graphics, 0, 0, getWidth(), getHeight());
+					}
+				};
+				panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+				panel.add(render);
+				return panel;
 			}
 		}
+		
+		return render;
 	}
 	
 	private void prev() {
