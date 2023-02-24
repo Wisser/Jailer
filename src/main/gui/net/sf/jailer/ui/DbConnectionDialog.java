@@ -848,10 +848,14 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	private void sortConnectionList() {
 		ConnectionInfo sci = null;
 		if (connectionsTable != null) {
-			RowSorter<?> rowSorter = connectionsTable.getRowSorter();
-			int selectedRowIndex = connectionsTable.getSelectedRow();
-			if (selectedRowIndex >= 0) {
-				sci = connectionList.get(rowSorter.convertRowIndexToModel(selectedRowIndex));
+			try {
+				RowSorter<?> rowSorter = connectionsTable.getRowSorter();
+				int selectedRowIndex = connectionsTable.getSelectedRow();
+				if (selectedRowIndex >= 0) {
+					sci = connectionList.get(rowSorter.convertRowIndexToModel(selectedRowIndex));
+				}
+			} catch (Exception e) {
+				// ignore
 			}
 		}
 		Collections.sort(connectionList, new Comparator<ConnectionInfo>() {
@@ -859,18 +863,24 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			public int compare(ConnectionInfo o1, ConnectionInfo o2) {
 				if (dataModelAware) {
 					if (DataModelManager.getCurrentModelSubfolder(executionContext) != null) {
-						boolean c1 = DataModelManager.getCurrentModelSubfolder(executionContext).equals(o1.dataModelFolder);
-						boolean c2 = DataModelManager.getCurrentModelSubfolder(executionContext).equals(o2.dataModelFolder);
-						
-						if (c1 && !c2) return -1;
-						if (!c1 && c2) return 1;
+						boolean c1 = DataModelManager.getCurrentModelSubfolder(executionContext)
+								.equals(o1.dataModelFolder);
+						boolean c2 = DataModelManager.getCurrentModelSubfolder(executionContext)
+								.equals(o2.dataModelFolder);
+
+						if (c1 && !c2)
+							return -1;
+						if (!c1 && c2)
+							return 1;
 					}
 				} else {
 					boolean c1 = isAssignedToDataModel(o1.dataModelFolder);
 					boolean c2 = isAssignedToDataModel(o2.dataModelFolder);
-					
-					if (c1 && !c2) return -1;
-					if (!c1 && c2) return 1;
+
+					if (c1 && !c2)
+						return -1;
+					if (!c1 && c2)
+						return 1;
 				}
 				return o1.alias.compareToIgnoreCase(o2.alias);
 			}
@@ -883,8 +893,10 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 						RowSorter<?> rowSorter = connectionsTable.getRowSorter();
 						selectedRowIndex = rowSorter.convertRowIndexToView(selectedRowIndex);
 						if (selectedRowIndex >= 0) {
-							connectionsTable.getSelectionModel().setSelectionInterval(selectedRowIndex, selectedRowIndex);
-							connectionsTable.scrollRectToVisible(connectionsTable.getCellRect(selectedRowIndex, 0, true));
+							connectionsTable.getSelectionModel().setSelectionInterval(selectedRowIndex,
+									selectedRowIndex);
+							connectionsTable
+									.scrollRectToVisible(connectionsTable.getCellRect(selectedRowIndex, 0, true));
 						}
 					}
 				}
