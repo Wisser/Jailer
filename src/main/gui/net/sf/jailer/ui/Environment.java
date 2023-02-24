@@ -17,6 +17,7 @@ package net.sf.jailer.ui;
 
 import java.awt.AWTEvent;
 import java.awt.EventQueue;
+import java.awt.IllegalComponentStateException;
 import java.awt.Toolkit;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -279,7 +280,11 @@ public class Environment {
 	        	if (activeCD > 0) {
 		        	--activeCD;
 		        	try {
-		        		UIUtil.showException(null, "Error", t, "AWT");
+		        		if (t instanceof IllegalComponentStateException) {
+		        			LogUtil.warn(t);
+		        		} else {
+		        			UIUtil.showException(null, "Error", t, "AWT");
+		        		}
 				    } catch (Throwable t2) {
 				    	UIUtil.showException(null, "Error", t2, "AWT2");
 				    }
