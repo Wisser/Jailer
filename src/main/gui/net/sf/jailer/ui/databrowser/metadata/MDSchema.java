@@ -220,13 +220,15 @@ public class MDSchema extends MDObject {
 		}
 	}
 
-	private Map<String, Long> estimatedRowCounts;
+	private Map<String, Long> estimatedRowCounts = Collections.synchronizedMap(new HashMap<String, Long>());
+	private AtomicBoolean estimatedRowCountsLoaded = new AtomicBoolean(false);
 	private Object estimatedRowCountsLock = new String("estimatedRowCounts");
 
 	private void loadEstimatedRowCounts(final Runnable afterLoadAction) {
 		synchronized (estimatedRowCountsLock) {
-			if (estimatedRowCounts == null) {
-				estimatedRowCounts = readEstimatedRowCounts();
+			if (!estimatedRowCountsLoaded.get()) {
+				readEstimatedRowCounts();
+				estimatedRowCountsLoaded.set(!estimatedRowCounts.isEmpty());
 			}
 			UIUtil.invokeLater(new Runnable() {
 				@Override
@@ -247,39 +249,33 @@ public class MDSchema extends MDObject {
 	}
 
 	public boolean addEST(MDTable table, long delta) {
-		synchronized (estimatedRowCountsLock) {
-			if (estimatedRowCounts != null) {
-				String key = getMetaDataSource().getQuoting().unquote(table.getName());
-				Long rc = estimatedRowCounts.get(key);
-				if (rc != null) {
-					return setEST(table, rc + delta);
-				}
+		if (estimatedRowCountsLoaded.get()) {
+			String key = getMetaDataSource().getQuoting().unquote(table.getName());
+			Long rc = estimatedRowCounts.get(key);
+			if (rc != null) {
+				return setEST(table, rc + delta);
 			}
 		}
 		return false;
 	}
 	
 	public boolean setEST(MDTable table, long rc) {
-		synchronized (estimatedRowCountsLock) {
-			if (estimatedRowCounts != null) {
-				String key = getMetaDataSource().getQuoting().unquote(table.getName());
-				if (rc < 0) {
-					rc = 0;
-				}
-				Long old = estimatedRowCounts.get(key);
-				if (old == null || old.longValue() != rc) {
-					estimatedRowCounts.put(key, rc);
-					table.setEstimatedRowCount(rc);
-					return true;
-				}
+		if (estimatedRowCountsLoaded.get()) {
+			String key = getMetaDataSource().getQuoting().unquote(table.getName());
+			if (rc < 0) {
+				rc = 0;
+			}
+			Long old = estimatedRowCounts.get(key);
+			if (old == null || old.longValue() != rc) {
+				estimatedRowCounts.put(key, rc);
+				table.setEstimatedRowCount(rc);
+				return true;
 			}
 		}
 		return false;
 	}
 	
-	private Map<String, Long> readEstimatedRowCounts() {
-		final Map<String, Long> result = new HashMap<String, Long>();
-		
+	private void readEstimatedRowCounts() {
 		String query = getMetaDataSource().getSession().dbms.getEstimatedRowCountQuery();
 		if (query != null) {
 			try {
@@ -289,7 +285,7 @@ public class MDSchema extends MDObject {
 						String tableName = resultSet.getString(1);
 						long rowCount = resultSet.getLong(2);
 						if (!resultSet.wasNull() && rowCount >= 0) {
-							result.put(tableName, rowCount);
+							estimatedRowCounts.put(tableName, rowCount);
 						}
 					}
 				});
@@ -297,8 +293,6 @@ public class MDSchema extends MDObject {
 				// ignore
 			}
 		}
-		
-		return result;
 	}
 
 	/**
