@@ -107,12 +107,37 @@ public class BasicFormatterImpl {
 			}
 		}
 		
-		Pattern pattern = Pattern.compile("\\$\\{([^\\}]+)\\}", Pattern.DOTALL);
+		Pattern pattern = Pattern.compile(
+						Pattern.quote("@>") + "|" +
+						Pattern.quote("<@") + "|" +
+						Pattern.quote("&&") + "|" +
+						Pattern.quote(">>") + "|" +
+						Pattern.quote("<<") + "|" +
+						Pattern.quote("&<") + "|" +
+						Pattern.quote("&>") + "|" +
+						Pattern.quote("-|-"), Pattern.DOTALL);
 		Matcher matcher = pattern.matcher(sql);
 		int i = 0;
-		Map<Integer, String> prop = new HashMap<Integer, String>();
+		Map<Integer, String> op = new HashMap<Integer, String>();
 		boolean result = matcher.find();
 		StringBuffer sb = new StringBuffer();
+		if (result) {
+			do {
+				++i;
+				op.put(i, matcher.group(0));
+				matcher.appendReplacement(sb, marker + i + "o");
+				result = matcher.find();
+			} while (result);
+		}
+		matcher.appendTail(sb);
+		sql = sb.toString();
+		
+		pattern = Pattern.compile("\\$\\{([^\\}]+)\\}", Pattern.DOTALL);
+		matcher = pattern.matcher(sql);
+		i = 0;
+		Map<Integer, String> prop = new HashMap<Integer, String>();
+		result = matcher.find();
+		sb = new StringBuffer();
 		if (result) {
 			do {
 				++i;
@@ -131,6 +156,9 @@ public class BasicFormatterImpl {
 		
 		for (Entry<Integer, String> e: prop.entrySet()) {
 			sql = sql.replace(marker + e.getKey() + "z", "${" + e.getValue() + "}");
+		}
+		for (Entry<Integer, String> e: op.entrySet()) {
+			sql = sql.replace(marker + e.getKey() + "o", e.getValue());
 		}
 		return sql.replace(marker + "r", "&");
 	}
