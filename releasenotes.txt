@@ -1,3 +1,6 @@
+14.3.3
+  - Added support for PostgreSQL Range/Multirange Operators.
+
 14.3.2
   - The estimation of table sizes could be significantly improved by using row counts from statements and queries.
   - The table sizes are now displayed in a better quality.
