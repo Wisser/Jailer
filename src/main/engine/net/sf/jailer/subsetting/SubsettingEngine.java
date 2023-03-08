@@ -1348,9 +1348,8 @@ public class SubsettingEngine {
 	private void appendSync(OutputStreamWriter result) throws IOException {
 		if (executionContext.getScriptFormat() != ScriptFormat.INTRA_DATABASE) {
 			result.append("-- sync" + PrintUtil.LINE_SEPARATOR);
-			if (!syncWritten.get()) {
+			if (!syncWritten.getAndSet(true)) {
 				result.append(PrintUtil.LINE_SEPARATOR);
-				syncWritten.set(true);
 			}
 		}
 	}
