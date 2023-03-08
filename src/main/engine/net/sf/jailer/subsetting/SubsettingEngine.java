@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -1342,15 +1343,15 @@ public class SubsettingEngine {
 		return tables;
 	}
 
-	private boolean syncWritten = false;
+	private AtomicBoolean syncWritten = new AtomicBoolean(false);
 
 	private void appendSync(OutputStreamWriter result) throws IOException {
 		if (executionContext.getScriptFormat() != ScriptFormat.INTRA_DATABASE) {
 			result.append("-- sync" + PrintUtil.LINE_SEPARATOR);
-			if (!syncWritten) {
+			if (!syncWritten.get()) {
 				result.append(PrintUtil.LINE_SEPARATOR);
+				syncWritten.set(true);
 			}
-			syncWritten = true;
 		}
 	}
 
