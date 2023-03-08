@@ -633,7 +633,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 	                                }
 	                            }
                             }
-                            if (clause == Clause.WHERE && aliases.size() == 1) {
+                            if (clause == Clause.WHERE && aliasesTopLevel.isEmpty() && aliases.size() == 1) {
                                 for (Entry<String, TABLE> entry: aliases.entrySet()) {
                                 	for (String c: getAndWaitForColumns(entry.getValue())) {
                                 		String info = getColumnInfo(entry.getValue(), c);
