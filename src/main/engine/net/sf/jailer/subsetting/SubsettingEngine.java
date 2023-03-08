@@ -1342,9 +1342,15 @@ public class SubsettingEngine {
 		return tables;
 	}
 
+	private boolean syncWritten = false;
+
 	private void appendSync(OutputStreamWriter result) throws IOException {
 		if (executionContext.getScriptFormat() != ScriptFormat.INTRA_DATABASE) {
-			result.append("-- sync" + PrintUtil.LINE_SEPARATOR + PrintUtil.LINE_SEPARATOR);
+			result.append("-- sync" + PrintUtil.LINE_SEPARATOR);
+			if (!syncWritten) {
+				result.append(PrintUtil.LINE_SEPARATOR);
+			}
+			syncWritten = true;
 		}
 	}
 
