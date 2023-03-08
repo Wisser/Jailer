@@ -37,7 +37,7 @@ ${create-table}${schema}JAILER_ENTITY${table-suffix}
 ) ${create-table-suffix};
 
 ${create-index}${index-schema}jlr_enty_brthdy${table-suffix} ON ${index-table-prefix}${schema}JAILER_ENTITY${table-suffix} (r_entitygraph, type, birthday) ${create-index-suffix};
-${for-each:column-list}${create-index}${index-schema}jlr_enty_upk${table-suffix}$i ON ${index-table-prefix}${schema}JAILER_ENTITY${table-suffix} (r_entitygraph $, type, birthday) ${create-index-suffix};
+${for-each:column-list}${create-unique-index}${index-schema}jlr_enty_upk${table-suffix}$i ON ${index-table-prefix}${schema}JAILER_ENTITY${table-suffix} (r_entitygraph $, type, birthday) ${create-index-suffix};
 ${end}
 
 ${create-table}${schema}JAILER_SET${table-suffix}

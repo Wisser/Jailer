@@ -633,6 +633,18 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 	                                }
 	                            }
                             }
+                            if (clause == Clause.WHERE && aliases.size() == 1) {
+                                for (Entry<String, TABLE> entry: aliases.entrySet()) {
+                                	for (String c: getAndWaitForColumns(entry.getValue())) {
+                                		String info = getColumnInfo(entry.getValue(), c);
+    	                				String context = aliasesTopLevel.size() == 1?
+    	                						(info != null? info : "")
+    	                						:
+    	                						((info != null? info + "  -  " : "") + entry.getKey());
+    									result.add(new SQLCompletion(SQLCompletionProvider.this, Quoting.staticUnquote(c), c, context, SQLCompletion.COLOR_COLUMN));
+                                	}
+                                }
+                            }
                         }
                         if (result2.size() > 1) {
                         	result.addAll(result2);

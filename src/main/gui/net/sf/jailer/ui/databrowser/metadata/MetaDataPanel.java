@@ -1473,12 +1473,12 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		            for (MDTable table: schema.getTables(true, new Runnable() {
 						@Override
 						public void run() {
-							refresh();
+							repaint();
 						}
 					}, new Runnable() {
 						@Override
 						public void run() {
-							refresh();
+							repaint();
 						}
 					})) {
 						if (!table.isView() && !table.isSynonym()) {
