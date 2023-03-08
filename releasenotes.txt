@@ -1,3 +1,7 @@
+14.3.4
+  - Auto-completion in the "where" condition section has been improved.
+  - Check for uniqueness now already takes place when collecting the rows to be exported.
+
 14.3.3
   - Added support for PostgreSQL Range/Multirange Operators.
 
