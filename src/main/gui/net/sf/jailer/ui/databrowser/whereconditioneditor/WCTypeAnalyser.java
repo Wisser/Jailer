@@ -511,6 +511,9 @@ public class WCTypeAnalyser {
 																alias = findUniqueAliasOfTableColumn(column[0].getColumnName(), fromClause);
 															}
 															MDTable mdTable = fromClause.get(alias);
+															if (mdTable == null) {
+																mdTable = fromClause.get(findTable(alias, fromClause));
+															}
 															isNullable = checkNullable(mdTable, column[0].getColumnName(), isNullable);
 														}
 													} catch (SQLException e) {
