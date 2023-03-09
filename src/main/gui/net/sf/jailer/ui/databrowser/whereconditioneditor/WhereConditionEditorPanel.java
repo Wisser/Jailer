@@ -1862,9 +1862,9 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			public void run() {
 				boolean[] fromCache = new boolean[1];
 				boolean[] fromCacheFull = new boolean[1];
-				boolean[] incomplete = new boolean[1];
+				int[] incomplete = new int[1];
 				boolean[] withNull = new boolean[1];
-				incomplete[0] = false;
+				incomplete[0] = 0;
 				LinkedHashMap<String, Integer> distinctExisting = null;
 				List<String> distinctExistingModel = new ArrayList<String>();
 				if (!condition.isEmpty()) {
@@ -1912,8 +1912,8 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 					searchPanel.resetHeight();
 				});
 
-				boolean[] incompleteFull = new boolean[1];
-				incompleteFull[0] = false;
+				int[] incompleteFull = new int[1];
+				incompleteFull[0] = 0;
 				boolean[] withNullFull = new boolean[1];
 				withNullFull[0] = false;
 				LinkedHashMap<String, Integer> distinctExistingFull = null;
@@ -2008,10 +2008,10 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				}});
 			}
 
-			protected void setStatus(boolean[] incomplete, LinkedHashMap<String, Integer> finalDistinctExisting) {
-				if (incomplete[0] || finalDistinctExisting.size() > MAX_NUM_DISTINCTEXISTINGVALUES) {
+			protected void setStatus(int[] incomplete, LinkedHashMap<String, Integer> finalDistinctExisting) {
+				if (incomplete[0] > 0 || finalDistinctExisting.size() > MAX_NUM_DISTINCTEXISTINGVALUES) {
 					searchPanel.setStatus("incomplete"
-								+ (incomplete[0] ? "" : ("(>" + MAX_NUM_DISTINCTEXISTINGVALUES + " values)")),
+								+ (incomplete[0] > 0? (" (" + incomplete[0] + " missing)") : ("(>" + MAX_NUM_DISTINCTEXISTINGVALUES + " values)")),
 								UIUtil.scaleIcon(searchPanel, warnIcon));
 				} else {
 					searchPanel.setStatus(null, null);
@@ -2062,10 +2062,10 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	}
 
 	@SuppressWarnings("unchecked")
-	private LinkedHashMap<String, Integer> loadDistinctExistingValues(Comparison comparison, Object cancellationContext, boolean incomplete[], boolean[] withNull, boolean[] fromCache, String condition) throws SQLException {
+	private LinkedHashMap<String, Integer> loadDistinctExistingValues(Comparison comparison, Object cancellationContext, int[] incomplete, boolean[] withNull, boolean[] fromCache, String condition) throws SQLException {
 		final int MAX_TEXT_LENGTH = 1024 * 4;
 		LinkedHashMap<String, Integer> result;
-		Map<Pair<String, String>, Boolean> icCache;
+		Map<Pair<String, String>, Integer> icCache;
 		Map<Pair<String, String>, Boolean> wnCache;
 		Map<Pair<String, String>, LinkedHashMap<String, Integer>> cache;
 		String tabName = table.getName();
@@ -2078,14 +2078,15 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				session.setSessionProperty(getClass(), DISTINCTEXISTINGVALUESCACHEKEY, cache);
 				session.setSessionProperty(getClass(), DISTINCTEXISTINGVALUESTSKEY, System.currentTimeMillis());
 			}
-			icCache = (Map<Pair<String, String>, Boolean>) session.getSessionProperty(getClass(), DISTINCTEXISTINGVALUESICCACHEKEY);
+			icCache = (Map<Pair<String, String>, Integer>) session.getSessionProperty(getClass(), DISTINCTEXISTINGVALUESICCACHEKEY);
 			if (icCache == null) {
-				icCache = new LRUCache<Pair<String,String>, Boolean>(SIZE_DISTINCTEXISTINGVALUESCACHE);
+				icCache = new LRUCache<Pair<String,String>, Integer>(SIZE_DISTINCTEXISTINGVALUESCACHE);
 				session.setSessionProperty(getClass(), DISTINCTEXISTINGVALUESICCACHEKEY, icCache);
 			}
 			result = cache.get(key);
-			if (Boolean.TRUE.equals(icCache.get(key))) {
-				incomplete[0] = true;
+			Integer obj = icCache.get(key);
+			if (obj instanceof Integer) {
+				incomplete[0] = (Integer) obj;
 			}
 			wnCache = (Map<Pair<String, String>, Boolean>) session.getSessionProperty(getClass(), DISTINCTEXISTINGVALUESWNCACHEKEY);
 			if (wnCache == null) {
@@ -2133,7 +2134,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 							}
 						} catch (SQLException e) {
 							LogUtil.warn(e);
-							incomplete[0] = false;
+							incomplete[0] = 0;
 							withNull[0] = false;
 							result.clear();
 							loadValues(comparison, cancellationContext, incomplete, withNull, condition, MAX_TEXT_LENGTH, result,
@@ -2186,7 +2187,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		return false;
 	}
 
-	private void loadValues(Comparison comparison, Object cancellationContext, boolean[] incomplete, boolean[] withNull, String condition,
+	private void loadValues(Comparison comparison, Object cancellationContext, int[] incomplete, boolean[] withNull, String condition,
 			final int MAX_TEXT_LENGTH, LinkedHashMap<String, Integer> result, String tabName, int columnIndex,
 			String extJoin, boolean orderBy) throws SQLException {
 		String columnName = comparison.column.name;
@@ -2235,10 +2236,10 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 								result.put(text, count + rc);
 							}
 						} else {
-							incomplete[0] = true;
+							incomplete[0]++;
 						}
 					} else {
-						incomplete[0] = true;
+						incomplete[0]++;
 					}
 				}
 			}
