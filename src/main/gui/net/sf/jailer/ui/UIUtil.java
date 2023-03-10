@@ -2303,6 +2303,12 @@ public class UIUtil {
 		return item;
 	}
 
+	private static Pattern rTrimPattern = Pattern.compile("\\s+$");
+	
+	public static String rtrim(String value ) {
+		return rTrimPattern.matcher(value).replaceAll("");
+	}
+
 	public static void setClipboardContent(Transferable text) {
 		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 		try {

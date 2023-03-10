@@ -3928,4 +3928,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     // "Select distinct ... from ... left join ..." with a non-comparable column in select clause (for example BLOB) fails. Make the problem go away.
     // idea: give SQLConsole an "ErrorHandler" who will be consulted if query fails and will ask user to skip "distinct" and try again.
 
+	// TODO
+	// TODO "run script" without trailing ';' dosn't separate statements correctly
+	// TODO (test with! oracle) on oracle, mssql seems to work ok. NO! mssql executes a list of stmnts on it's own!
+	// TODO :
+//create table test3(id int primary key, text char(20))
+//
+//Insert into TEST3 Values (1, 'x')
+
 }

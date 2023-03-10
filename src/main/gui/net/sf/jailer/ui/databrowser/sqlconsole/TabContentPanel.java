@@ -1104,7 +1104,10 @@ public class TabContentPanel extends javax.swing.JPanel {
 	public final javax.swing.JPanel shimPanel;
 	javax.swing.JButton loadButton;
 	protected boolean doSync;
-	Pattern rtrimRegExpr = Pattern.compile("^^ |\\s+$");
+	
+	// TODO
+	// TODO RE seems to be incorrect.
+	private Pattern rtrimRegExpr = Pattern.compile("^^ |\\s+$");
 	
 	private static ImageIcon cancelIcon;
 	

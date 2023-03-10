@@ -5388,10 +5388,28 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			}
 
+			int[] columnTypes = null;
+			if (browserContentCellEditor != null) {
+				columnTypes = browserContentCellEditor.getColumnTypes();
+			}
 			for (Row row : rows) {
 				Object[] rowData = new Object[columns.size()];
 				for (int i = 0; i < columns.size(); ++i) {
 					rowData[i] = row.values[i];
+					if (columnTypes != null) {
+						// TODO
+						// TODO rtrim CHAR|NCHAR values
+						// TODO
+						// TODO rtrim in WhereCondEditor as well
+						if (columnTypes.length > i) {
+							int colType = columnTypes[i];
+							if (colType == Types.CHAR || colType == Types.NCHAR) {
+								if (rowData[i] instanceof String) {
+									rowData[i] = UIUtil.rtrim((String) rowData[i]);
+								}
+							}
+						}
+					}
 					if (rowData[i] instanceof PObjectWrapper) {
 						rowData[i] = ((PObjectWrapper) rowData[i]).getValue();
 					}
