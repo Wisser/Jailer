@@ -75,7 +75,7 @@ public class BrowserContentCellEditor {
 			}
 
 			@Override
-			boolean isEditable(int columnType, Object content, BrowserContentCellEditor browserContentCellEditor) {
+			boolean isEditable(int columnType, Object content, boolean relaxed, BrowserContentCellEditor browserContentCellEditor) {
 				return true;
 			}
 
@@ -96,8 +96,8 @@ public class BrowserContentCellEditor {
 			}
 
 			@Override
-			boolean isEditable(int columnType, Object content, BrowserContentCellEditor browserContentCellEditor) {
-				return content == null || ((content instanceof String || content instanceof CellContentConverter.NCharWrapper) && (browserContentCellEditor.isInDetailsView() || !(content.toString().indexOf('\n') >= 0 || content.toString().indexOf('\t') >= 0)));
+			boolean isEditable(int columnType, Object content, boolean relaxed, BrowserContentCellEditor browserContentCellEditor) {
+				return content == null || ((content instanceof String || content instanceof CellContentConverter.NCharWrapper) && (browserContentCellEditor.isInDetailsView() || !(content.toString().indexOf('\n') >= 0 || !relaxed && content.toString().indexOf('\t') >= 0)));
 			}
 
 			@Override
@@ -117,8 +117,8 @@ public class BrowserContentCellEditor {
 			}
 
 			@Override
-			boolean isEditable(int columnType, Object content, BrowserContentCellEditor browserContentCellEditor) {
-				return content == null || (content instanceof CellContentConverter.NCharWrapper && (browserContentCellEditor.isInDetailsView() || !(content.toString().indexOf('\n') >= 0 || content.toString().indexOf('\t') >= 0)));
+			boolean isEditable(int columnType, Object content, boolean relaxed, BrowserContentCellEditor browserContentCellEditor) {
+				return content == null || (content instanceof CellContentConverter.NCharWrapper && (browserContentCellEditor.isInDetailsView() || !(content.toString().indexOf('\n') >= 0 || !relaxed && content.toString().indexOf('\t') >= 0)));
 			}
 
 			@Override
@@ -151,7 +151,7 @@ public class BrowserContentCellEditor {
 			}
 
 			@Override
-			boolean isEditable(int columnType, Object content, BrowserContentCellEditor browserContentCellEditor) {
+			boolean isEditable(int columnType, Object content, boolean relaxed, BrowserContentCellEditor browserContentCellEditor) {
 				return true;
 			}
 
@@ -242,7 +242,7 @@ public class BrowserContentCellEditor {
 			}
 
 			@Override
-			boolean isEditable(int columnType, Object content, BrowserContentCellEditor browserContentCellEditor) {
+			boolean isEditable(int columnType, Object content, boolean relaxed, BrowserContentCellEditor browserContentCellEditor) {
 				return true;
 			}
 
@@ -304,7 +304,7 @@ public class BrowserContentCellEditor {
 			}
 
 			@Override
-			boolean isEditable(int columnType, Object content, BrowserContentCellEditor browserContentCellEditor) {
+			boolean isEditable(int columnType, Object content, boolean relaxed, BrowserContentCellEditor browserContentCellEditor) {
 				return true;
 			}
 
@@ -314,7 +314,7 @@ public class BrowserContentCellEditor {
 			}
 		};
 
-		abstract boolean isEditable(int columnType, Object content, BrowserContentCellEditor browserContentCellEditor);
+		abstract boolean isEditable(int columnType, Object content, boolean relaxed, BrowserContentCellEditor browserContentCellEditor);
 		abstract String cellContentToText(int columnType, Object content);
 		abstract Object textToContent(int columnType, String text, Object oldContent);
 		abstract boolean useCaseIntensitiveOrderingInGUI();
@@ -394,7 +394,7 @@ public class BrowserContentCellEditor {
 			}
 		}
 	}
-
+	
 	/**
 	 * Is given cell editable?
 	 * 
@@ -403,6 +403,18 @@ public class BrowserContentCellEditor {
 	 * @param content cell content
 	 */
 	public boolean isEditable(Table table, int column, Object content) {
+		return isEditable(table, column, content, false);
+	}
+	
+	/**
+	 * Is given cell editable?
+	 * 
+	 * @param table the table 
+	 * @param column column number
+	 * @param content cell content
+	 * @param relaxed if <code>true</code>, content is editable iff it is uniquely convertable into SQL literal. No Need to edit it in a JTextField.
+	 */
+	public boolean isEditable(Table table, int column, Object content, boolean relaxed) {
 		if (column < 0 || column >= columnTypes.length) {
 			return false;
 		}
@@ -418,7 +430,7 @@ public class BrowserContentCellEditor {
 			if (content instanceof PObjectWrapper) {
 				content = ((PObjectWrapper) content).getValue();
 			}
-			return converter.isEditable(columnTypes[column], content, this);
+			return converter.isEditable(columnTypes[column], content, relaxed, this);
 		}
 		return false;
 	}

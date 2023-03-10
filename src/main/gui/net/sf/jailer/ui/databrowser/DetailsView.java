@@ -561,7 +561,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 									if (finalV instanceof UIUtil.IconWithText) {
 										f.setText(((UIUtil.IconWithText) finalV).text);
 									} else {
-										f.setText(finalV == null ? "null" : finalV.toString());
+										f.setText(finalV== null? "null" : isEditable? finalV.toString() : UIUtil.indicateLeadingAndTrailingSpaces(finalV.toString()));
 									}
 								}
 								origText = null;
@@ -598,7 +598,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 						f.setText(((UIUtil.IconWithText) v).text);
 						textRows.add(new Object[] { textTable, textColumn, ((UIUtil.IconWithText) v).text });
 					} else {
-						f.setText(v == null? "null" : v.toString());
+						f.setText(v == null? "null" : isEditable? v.toString() : UIUtil.indicateLeadingAndTrailingSpaces(v.toString()));
 						textRows.add(new Object[] { textTable, textColumn, v == null? "" : v.toString() });
 					}
 	//				f.setEnabled(v != null);

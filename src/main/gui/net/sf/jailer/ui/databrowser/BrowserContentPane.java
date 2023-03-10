@@ -26,6 +26,7 @@ import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -5126,13 +5127,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							suffix = "";
 						}
 					} else {
-						valueAsString = String.valueOf(value);
+						valueAsString = UIUtil.indicateLeadingAndTrailingSpaces(String.valueOf(value));
 						suffix = "";
 					}
-					valueAsString = " " + valueAsString + suffix;
+					valueAsString = " " + (valueAsString.replace('\n', (char) 182)) + suffix;
 				}
 			}
-			return valueAsString.replace('\n', (char) 182);
+			return valueAsString;
 		}
 	}
 
@@ -5421,7 +5422,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 
 			//set the editor as default on every column
-			inplaceEditorTextField.setBorder(new LineBorder(Color.black));
+			inplaceEditorTextField.setBorder(new LineBorder(Color.black) {
+				int spWidth = inplaceEditorTextField.getFontMetrics(inplaceEditorTextField.getFont()).stringWidth(" ");
+				public Insets getBorderInsets(Component c, Insets insets) {
+					Insets myInsets = super.getBorderInsets(c, insets);
+					return new Insets(myInsets.top, myInsets.left + spWidth + (PLAF.FLAT == UIUtil.plaf? 2 : 0), myInsets.bottom, myInsets.right);
+				}
+			});
 		    DefaultCellEditor anEditor = new DefaultCellEditor(inplaceEditorTextField) {
 				@Override
 				public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {

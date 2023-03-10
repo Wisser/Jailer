@@ -662,7 +662,9 @@ public class StringSearchPanel extends javax.swing.JPanel {
 					fgColor = Color.WHITE;
 					hlColor = "#ff9999";
 				}
-				String item = value.toString().trim();
+				String item = value.toString();
+				item = UIUtil.indicateLeadingAndTrailingSpaces(item);
+				
 				String search = extendedSearchText(searchTextField.getText(), item).toUpperCase(Locale.ENGLISH);
 				int i = searchTextField.getText().endsWith(" ")? item.toUpperCase(Locale.ENGLISH).lastIndexOf(search) : item.toUpperCase(Locale.ENGLISH).indexOf(search);
 				if (i >= 0) {
@@ -813,6 +815,10 @@ public class StringSearchPanel extends javax.swing.JPanel {
     
     public String getPlainValue() {
 	    return plainIsValid? searchTextField.getText() : combobox.getSelectedItem() instanceof String? (String) combobox.getSelectedItem() : searchTextField.getText();
+    }
+    
+    public boolean isPlainValueFromCombobox() {
+	    return plainIsValid? false : combobox.getSelectedItem() instanceof String? true : false;
     }
     
 	private void createSchemaSelectionList(JPanel container, final List<MDSchema> vis) {

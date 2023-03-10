@@ -530,7 +530,10 @@ public class TabContentPanel extends javax.swing.JPanel {
 					if (sep != null || (v == UIUtil.NULL || v == null)) {
 						value = v;
 					} else {
-						value = rtrimRegExpr.matcher(value.toString().replace((char) 182, '\n')).replaceAll("");
+						value = value.toString().replace((char) 182, '\n');
+						value = value.toString().replace(UIUtil.spaceIndicator, ' ');
+						value = value.toString().replace(UIUtil.tabIndicator, '\t');
+						value = rtrimRegExpr.matcher(value.toString()).replaceAll("");
 					}
 				}
 				String cellContent = value == UIUtil.NULL || value == null? "" : value.toString();

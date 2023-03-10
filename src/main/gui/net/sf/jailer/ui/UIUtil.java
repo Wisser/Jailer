@@ -2278,6 +2278,31 @@ public class UIUtil {
 				"</html>";
 	}
 	
+	private static Pattern leadingTrailingWSPattern = Pattern.compile("^(\\s*)(.*?)(\\s*)$");
+	public static char spaceIndicator = '\u23B5';
+	public static char tabIndicator = '\u21E5';
+	
+	public static String indicateLeadingAndTrailingSpaces(String item) {
+		item = item.replace('\t', tabIndicator);
+		Matcher m = leadingTrailingWSPattern.matcher(item);
+		if (m.matches()) {
+			String leading = m.group(1);
+			String trainling = m.group(3);
+			if (leading.length() > 0 || trainling.length() > 0) {
+				StringBuilder sb = new StringBuilder();
+				for (int i = leading.length(); i > 0; --i) {
+					sb.append(spaceIndicator);
+				}
+				sb.append(m.group(2));
+				for (int i = trainling.length(); i > 0; --i) {
+					sb.append(spaceIndicator);
+				}
+				item = sb.toString();
+			}
+		}
+		return item;
+	}
+
 	public static void setClipboardContent(Transferable text) {
 		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 		try {

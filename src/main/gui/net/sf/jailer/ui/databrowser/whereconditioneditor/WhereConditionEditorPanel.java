@@ -1711,7 +1711,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			public void run() {
 				setValueFieldText(valueTextField, theSearchPanel.get(0).getPlainValue());
 				if (theSearchPanel.get(0).isExplictlyClosed()) {
-					accept(comparison, theSearchPanel.get(0).getPlainValue(), comparison.operator);
+					accept(comparison, theSearchPanel.get(0).getPlainValue(), theSearchPanel.get(0).isPlainValueFromCombobox(), comparison.operator);
 					if (initialColumn >= 0 && popupOnTop) {
 						if (REDUCED_OPACITY_FADE_START == 0) {
 							setVisible(false);
@@ -1862,7 +1862,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			public void run() {
 				boolean[] fromCache = new boolean[1];
 				boolean[] fromCacheFull = new boolean[1];
-				int[] incomplete = new int[1];
+				int[] incomplete = new int[2];
 				boolean[] withNull = new boolean[1];
 				incomplete[0] = 0;
 				LinkedHashMap<String, Integer> distinctExisting = null;
@@ -2011,7 +2011,11 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			protected void setStatus(int[] incomplete, LinkedHashMap<String, Integer> finalDistinctExisting) {
 				if (incomplete[0] > 0 || finalDistinctExisting.size() > MAX_NUM_DISTINCTEXISTINGVALUES) {
 					searchPanel.setStatus("incomplete"
-								+ (incomplete[0] > 0? (" (" + incomplete[0] + " missing)") : ("(>" + MAX_NUM_DISTINCTEXISTINGVALUES + " values)")),
+								+ (finalDistinctExisting.size() > MAX_NUM_DISTINCTEXISTINGVALUES? ("(>" + MAX_NUM_DISTINCTEXISTINGVALUES + " values)")
+										: 
+								(" (" + (incomplete[0] % MAX_NUM_DISTINCTEXISTINGVALUES) 
+								+ " missing"
+								+ (incomplete[0] > MAX_NUM_DISTINCTEXISTINGVALUES? ", multi-line text" : "") + ")")),
 								UIUtil.scaleIcon(searchPanel, warnIcon));
 				} else {
 					searchPanel.setStatus(null, null);
@@ -2226,7 +2230,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 					} else {
 						result.put(IS_NOT_NULL, count - rc);
 					}
-					if (cellEditor.isEditable(table, columnIndex, obj)) {
+					if (cellEditor.isEditable(table, columnIndex, obj, true)) {
 						String text = cellEditor.cellContentToText(columnIndex, obj);
 						if (text.length() <= MAX_TEXT_LENGTH) {
 							count = result.get(text);
@@ -2239,6 +2243,11 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 							incomplete[0]++;
 						}
 					} else {
+						if (incomplete[0] < MAX_NUM_DISTINCTEXISTINGVALUES) {
+							if (String.valueOf(obj).indexOf('\n') >= 0) {
+								incomplete[0] += MAX_NUM_DISTINCTEXISTINGVALUES;
+							}
+						}
 						incomplete[0]++;
 					}
 				}
@@ -2281,10 +2290,16 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		}
 		return 12;
     }
+    
+	private void accept(Comparison comparison, String value, Operator operator) {
+		accept(comparison, value, false, operator);
+	}
 
-	protected void accept(Comparison comparison, String value, Operator operator) {
+	private void accept(Comparison comparison, String value, boolean dontTrim, Operator operator) {
 		if (value != null) {
-			value = value.trim();
+			if (!dontTrim) {
+				value = value.trim();
+			}
 			if ("true".equals(value) || "false".equals(value)) {
 				session.setSessionProperty(getClass(), "TFDebugInfo", "(" + comparison.column + ", " + comparison.operator + ")");
 			}
