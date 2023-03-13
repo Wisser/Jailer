@@ -125,6 +125,7 @@ import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.database.PrimaryKeyValidator;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.SqlException;
+import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ddl.DDLCreator;
@@ -2278,13 +2279,15 @@ public class UIUtil {
 				"</html>";
 	}
 	
+	private static Pattern trailingWSPattern = Pattern.compile("^(\\s*)(.*?)()$");
 	private static Pattern leadingTrailingWSPattern = Pattern.compile("^(\\s*)(.*?)(\\s*)$");
+	private static Pattern charTypePattern = Pattern.compile("^(char|character|nchar|ncharacter)(\\s*)(\\(?)(.*)$", Pattern.CASE_INSENSITIVE);
 	public static char spaceIndicator = '\u23B5';
 	public static char tabIndicator = '\u21E5';
 	
-	public static String indicateLeadingAndTrailingSpaces(String item) {
+	public static String indicateLeadingAndTrailingSpaces(String item, boolean valueIsCHAR) {
 		item = item.replace('\t', tabIndicator);
-		Matcher m = leadingTrailingWSPattern.matcher(item);
+		Matcher m = valueIsCHAR ? trailingWSPattern.matcher(item) : leadingTrailingWSPattern.matcher(item);
 		if (m.matches()) {
 			String leading = m.group(1);
 			String trainling = m.group(3);
@@ -2303,6 +2306,14 @@ public class UIUtil {
 		return item;
 	}
 
+	public static String indicateLeadingAndTrailingSpaces(String item, Column c) {		
+		return indicateLeadingAndTrailingSpaces(item, isCHARType(c));
+	}
+
+	public static boolean isCHARType(Column c) {
+		return c != null && c.type != null? charTypePattern.matcher(c.type).matches() : false;
+	}
+	
 	private static Pattern rTrimPattern = Pattern.compile("\\s+$");
 	
 	public static String rtrim(String value ) {
@@ -2324,5 +2335,5 @@ public class UIUtil {
 			clipboard.setContents(text, (ClipboardOwner) text);
 		}
 	}
-	
+
 }

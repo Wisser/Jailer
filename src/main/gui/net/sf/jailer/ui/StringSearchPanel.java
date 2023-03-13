@@ -241,7 +241,12 @@ public class StringSearchPanel extends javax.swing.JPanel {
 
 	private Integer estimatedItemsCount = null;
 	private Integer cellHeight;
-	
+	private boolean indicateLeadingAndTrailingSpaces;
+
+	public void setIndicateLeadingAndTrailingSpaces(boolean indicateLeadingAndTrailingSpaces) {
+		this.indicateLeadingAndTrailingSpaces = indicateLeadingAndTrailingSpaces;
+	}
+
 	public void setEstimatedItemsCount(Integer estimatedItemsCount) {
 		this.estimatedItemsCount = estimatedItemsCount;
 	}
@@ -663,7 +668,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 					hlColor = "#ff9999";
 				}
 				String item = value.toString();
-				item = UIUtil.indicateLeadingAndTrailingSpaces(item);
+				item = UIUtil.indicateLeadingAndTrailingSpaces(item, !indicateLeadingAndTrailingSpaces);
 				
 				String search = extendedSearchText(searchTextField.getText(), item).toUpperCase(Locale.ENGLISH);
 				int i = searchTextField.getText().endsWith(" ")? item.toUpperCase(Locale.ENGLISH).lastIndexOf(search) : item.toUpperCase(Locale.ENGLISH).indexOf(search);

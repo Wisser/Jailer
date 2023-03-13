@@ -1808,6 +1808,8 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		int estDVCount = estimateDistinctExistingValues(comparison, condition);
 		Integer estimatedItemsCount = defaultComboBoxModel.getSize() + estDVCount ;
 		searchPanel.setEstimatedItemsCount(estimatedItemsCount);
+		searchPanel.setIndicateLeadingAndTrailingSpaces(!UIUtil.isCHARType(comparison.column));
+		
 		UIUtil.invokeLater(2, () -> {
 			if (opacityPending) {
 				if (initialColumn >= 0) {

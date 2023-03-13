@@ -5086,12 +5086,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		public final int blockNr;
 		public final double inheritedBlockNumber;
 		public final Object value;
+		private final int sqlType;
 		private String valueAsString = null;
 
-		public TableModelItem(int blockNr, double inheritedBlockNumber, Object value) {
+		public TableModelItem(int blockNr, double inheritedBlockNumber, Object value, int sqlType) {
 			this.blockNr = blockNr;
 			this.inheritedBlockNumber = inheritedBlockNumber;
 			this.value = value;
+			this.sqlType = sqlType;
 		}
 
 		@Override
@@ -5127,7 +5129,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							suffix = "";
 						}
 					} else {
-						valueAsString = UIUtil.indicateLeadingAndTrailingSpaces(String.valueOf(value));
+						valueAsString = String.valueOf(value);
+						valueAsString = UIUtil.indicateLeadingAndTrailingSpaces(valueAsString, sqlType == Types.CHAR || sqlType == Types.NCHAR);
 						suffix = "";
 					}
 					valueAsString = " " + (valueAsString.replace('\n', (char) 182)) + suffix;
@@ -5396,20 +5399,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				Object[] rowData = new Object[columns.size()];
 				for (int i = 0; i < columns.size(); ++i) {
 					rowData[i] = row.values[i];
-					if (columnTypes != null) {
-						// TODO
-						// TODO rtrim CHAR|NCHAR values
-						// TODO
-						// TODO rtrim in WhereCondEditor as well
-						if (columnTypes.length > i) {
-							int colType = columnTypes[i];
-							if (colType == Types.CHAR || colType == Types.NCHAR) {
-								if (rowData[i] instanceof String) {
-									rowData[i] = UIUtil.rtrim((String) rowData[i]);
-								}
-							}
-						}
-					}
 					if (rowData[i] instanceof PObjectWrapper) {
 						rowData[i] = ((PObjectWrapper) rowData[i]).getValue();
 					}
@@ -5430,7 +5419,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					tableContentViewFilter.filter(rowData, columnNameMap);
 				}
 				for (int i = 0; i < columns.size(); ++i) {
-					TableModelItem item = new TableModelItem(row.getParentModelIndex(), row.getInheritedParentModelIndex(), rowData[i]);
+					TableModelItem item = new TableModelItem(row.getParentModelIndex(), row.getInheritedParentModelIndex(), rowData[i], columnTypes == null? 0: columnTypes[i]);
 					rowData[i] = item;
 				}
 				dtm.addRow(rowData);
