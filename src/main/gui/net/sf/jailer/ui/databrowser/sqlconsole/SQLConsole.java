@@ -1001,7 +1001,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 final Color hBG[] = new Color[] {
                    		new Color(0, 0, 255, a + 0),
                    		new Color(255, 60, 0, a + 8),
-                		new Color(255, 255, 0, a * 4),
+                		new Color(255, 255, 0, (int)(a * 2.8f)),
                 		new Color(0, 255, 0, a),
                 };
                 Map<String, Integer> labelCount = new HashMap<String, Integer>();
