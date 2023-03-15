@@ -1439,7 +1439,6 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 	}
 
 	private void addColumn(List<String> columns, String ident, boolean identIsTable) {
-		// TODO resp. aliases
 		if (identIsTable) {
 			SCHEMA defaultSchema = getDefaultSchema(metaDataSource);
 			Pair<SCHEMA, String> key = new Pair<SCHEMA, String>(defaultSchema, ident);
