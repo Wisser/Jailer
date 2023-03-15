@@ -241,7 +241,15 @@ public class TableDetailsView extends javax.swing.JPanel {
 						} else if (v instanceof PObjectWrapper) {
 							v = ((PObjectWrapper) v).getValue();
 						}
-						columnValue.put(columns.get(i), v == null? null : UIUtil.indicateLeadingAndTrailingSpaces(v.toString(), columns.get(i)));
+						if (v == null) {
+							columnValue.put(columns.get(i), null);
+						} else {
+							String iltv = UIUtil.indicateLeadingAndTrailingSpaces(v.toString(), columns.get(i));
+							if (UIUtil.isCHARType(columns.get(i))) {
+								iltv = iltv.trim();
+							}
+							columnValue.put(columns.get(i), iltv);
+						}
 					}
 				}
 				if (sortColumnsCheckBox.isSelected()) {
