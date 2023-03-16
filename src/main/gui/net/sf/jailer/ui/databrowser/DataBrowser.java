@@ -2316,6 +2316,8 @@ public class DataBrowser extends javax.swing.JFrame {
         jLabel26.setText("  Loading...");
         dataModelPanel.add(jLabel26, java.awt.BorderLayout.CENTER);
 
+        getContentPane().setLayout(new java.awt.BorderLayout());
+
         jLayeredPane2.setLayout(new java.awt.GridBagLayout());
 
         modelNavigationSplitSizerPanel.setMinimumSize(new java.awt.Dimension(8, 0));
@@ -2474,7 +2476,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         schemaName.setFont(schemaName.getFont().deriveFont(schemaName.getFont().getSize()+1f));
         schemaName.setText("Schema");
-        schemaName.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        schemaName.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         schemaName.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 schemaNameMouseClicked(evt);
@@ -2500,7 +2502,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         connectivityState.setFont(connectivityState.getFont().deriveFont(connectivityState.getFont().getSize()+1f));
         connectivityState.setText("offline");
-        connectivityState.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        connectivityState.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         connectivityState.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 connectivityStateMouseClicked(evt);
@@ -2531,7 +2533,6 @@ public class DataBrowser extends javax.swing.JFrame {
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
         jSplitPane1.setDividerLocation(340);
-        jSplitPane1.setContinuousLayout(true);
         jSplitPane1.setOneTouchExpandable(true);
 
         jPanel5.setLayout(new java.awt.GridBagLayout());
@@ -2544,7 +2545,6 @@ public class DataBrowser extends javax.swing.JFrame {
 
         desktopSplitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         desktopSplitPane.setResizeWeight(0.95);
-        desktopSplitPane.setContinuousLayout(true);
         desktopSplitPane.setOneTouchExpandable(true);
 
         jPanel4.setLayout(new java.awt.GridBagLayout());
@@ -2560,6 +2560,7 @@ public class DataBrowser extends javax.swing.JFrame {
         });
 
         jInternalFrame1.setVisible(true);
+        jInternalFrame1.getContentPane().setLayout(new java.awt.BorderLayout());
         jScrollPane1.setViewportView(jInternalFrame1);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -2580,7 +2581,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jLayeredPane1.setLayer(layeredPaneContent, javax.swing.JLayeredPane.PALETTE_LAYER);
         jLayeredPane1.add(layeredPaneContent);
-        layeredPaneContent.setBounds(0, 0, 24, 36);
+        layeredPaneContent.setBounds(0, 0, 30, 38);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
@@ -2597,7 +2598,6 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         jPanel4.add(searchPanelContainer, gridBagConstraints);
 
-        jToolBar1.setFloatable(false);
         jToolBar1.setRollover(true);
 
         searchBarToggleButton.setText("search");
@@ -2751,7 +2751,6 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jSplitPane4.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane4.setResizeWeight(1.0);
-        jSplitPane4.setContinuousLayout(true);
         jSplitPane4.setOneTouchExpandable(true);
 
         navigationPanel.setLayout(new java.awt.GridBagLayout());
@@ -2765,7 +2764,6 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         navigationPanel.add(outLinePanel, gridBagConstraints);
 
-        jToolBar2.setFloatable(false);
         jToolBar2.setRollover(true);
 
         openTableButton.setText("Open");
@@ -3062,7 +3060,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jMenu1.setText("File");
 
-        jMenuItem3.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem3.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         jMenuItem3.setText("Open Table");
         jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -3071,7 +3069,7 @@ public class DataBrowser extends javax.swing.JFrame {
         });
         jMenu1.add(jMenuItem3);
 
-        closeAllMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+        closeAllMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.SHIFT_DOWN_MASK | java.awt.event.InputEvent.CTRL_DOWN_MASK));
         closeAllMenuItem.setText("Close all Tables");
         closeAllMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -3098,7 +3096,7 @@ public class DataBrowser extends javax.swing.JFrame {
         jMenu1.add(newBrowserjMenuItem);
         jMenu1.add(jSeparator4);
 
-        loadScriptMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
+        loadScriptMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         loadScriptMenuItem.setText("Load SQL Script...");
         loadScriptMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -3107,7 +3105,7 @@ public class DataBrowser extends javax.swing.JFrame {
         });
         jMenu1.add(loadScriptMenuItem);
 
-        saveScriptMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+        saveScriptMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         saveScriptMenuItem.setText("Save");
         saveScriptMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -3125,8 +3123,8 @@ public class DataBrowser extends javax.swing.JFrame {
         jMenu1.add(saveScriptAsMenuItem);
         jMenu1.add(jSeparator9);
 
-        storeSessionItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_P, java.awt.event.InputEvent.CTRL_MASK));
-        storeSessionItem.setText("Store Layout");
+        storeSessionItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_P, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        storeSessionItem.setText("Store Arrangement");
         storeSessionItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 storeSessionItemActionPerformed(evt);
@@ -3134,8 +3132,8 @@ public class DataBrowser extends javax.swing.JFrame {
         });
         jMenu1.add(storeSessionItem);
 
-        restoreSessionItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
-        restoreSessionItem.setText("Restore Layout");
+        restoreSessionItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        restoreSessionItem.setText("Restore Arrangement");
         restoreSessionItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 restoreSessionItemActionPerformed(evt);
@@ -3232,11 +3230,11 @@ public class DataBrowser extends javax.swing.JFrame {
         jviewMenu.add(rowLimitMenu);
         jviewMenu.add(jSeparator3);
 
-        goBackItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_LEFT, java.awt.event.InputEvent.ALT_MASK));
+        goBackItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_LEFT, java.awt.event.InputEvent.ALT_DOWN_MASK));
         goBackItem.setText("Go Back");
         jviewMenu.add(goBackItem);
 
-        goForwardItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_RIGHT, java.awt.event.InputEvent.ALT_MASK));
+        goForwardItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_RIGHT, java.awt.event.InputEvent.ALT_DOWN_MASK));
         goForwardItem.setText("Go Forward");
         jviewMenu.add(goForwardItem);
 
@@ -3244,7 +3242,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         bookmarkMenu.setText("Arrangement");
 
-        addBookmarkMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_B, java.awt.event.InputEvent.CTRL_MASK));
+        addBookmarkMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_B, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         addBookmarkMenuItem.setText("Store Desktop Arrangement");
         addBookmarkMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -3319,7 +3317,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         menuWindow.setText("Window");
 
-        layoutMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
+        layoutMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         layoutMenuItem.setText("Arrange Layout");
         layoutMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -3329,7 +3327,7 @@ public class DataBrowser extends javax.swing.JFrame {
         menuWindow.add(layoutMenuItem);
         menuWindow.add(jSeparator5);
 
-        zoomInMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_PLUS, java.awt.event.InputEvent.CTRL_MASK));
+        zoomInMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_PLUS, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         zoomInMenuItem.setText("Zoom In (%Mouse Wheel Up)");
         zoomInMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -3338,7 +3336,7 @@ public class DataBrowser extends javax.swing.JFrame {
         });
         menuWindow.add(zoomInMenuItem);
 
-        zoomOutMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_MINUS, java.awt.event.InputEvent.CTRL_MASK));
+        zoomOutMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_MINUS, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         zoomOutMenuItem.setText("Zoom Out (%Mouse Wheel Down)");
         zoomOutMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -3348,7 +3346,7 @@ public class DataBrowser extends javax.swing.JFrame {
         menuWindow.add(zoomOutMenuItem);
         menuWindow.add(jSeparator15);
 
-        thumbnailLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_0, java.awt.event.InputEvent.CTRL_MASK));
+        thumbnailLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_0, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         thumbnailLayoutRadioButtonMenuItem.setText("Thumbnail Layout");
         thumbnailLayoutRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -3357,7 +3355,7 @@ public class DataBrowser extends javax.swing.JFrame {
         });
         menuWindow.add(thumbnailLayoutRadioButtonMenuItem);
 
-        tinyLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_1, java.awt.event.InputEvent.CTRL_MASK));
+        tinyLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_1, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         tinyLayoutRadioButtonMenuItem.setText("Tiny Layout");
         tinyLayoutRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -3366,7 +3364,7 @@ public class DataBrowser extends javax.swing.JFrame {
         });
         menuWindow.add(tinyLayoutRadioButtonMenuItem);
 
-        smallLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_2, java.awt.event.InputEvent.CTRL_MASK));
+        smallLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_2, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         smallLayoutRadioButtonMenuItem.setText("Small Layout");
         smallLayoutRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -3375,7 +3373,7 @@ public class DataBrowser extends javax.swing.JFrame {
         });
         menuWindow.add(smallLayoutRadioButtonMenuItem);
 
-        mediumLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_3, java.awt.event.InputEvent.CTRL_MASK));
+        mediumLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_3, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         mediumLayoutRadioButtonMenuItem.setText("Medium Layout");
         mediumLayoutRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -3384,7 +3382,7 @@ public class DataBrowser extends javax.swing.JFrame {
         });
         menuWindow.add(mediumLayoutRadioButtonMenuItem);
 
-        largeLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_4, java.awt.event.InputEvent.CTRL_MASK));
+        largeLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_4, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         largeLayoutRadioButtonMenuItem.setText("Large Layout");
         largeLayoutRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -3394,7 +3392,7 @@ public class DataBrowser extends javax.swing.JFrame {
         menuWindow.add(largeLayoutRadioButtonMenuItem);
         menuWindow.add(jSeparator1);
 
-        newWindowMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
+        newWindowMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         newWindowMenuItem.setText("New Window");
         newWindowMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

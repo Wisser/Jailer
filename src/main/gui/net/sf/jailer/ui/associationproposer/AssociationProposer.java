@@ -105,6 +105,7 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.TableFunction;
 import net.sf.jsqlparser.statement.select.ValuesList;
 import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.show.ShowIndexStatement;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
@@ -708,6 +709,10 @@ public class AssociationProposer {
 
 		@Override
 		public void visit(UnsupportedStatement arg0) {
+		}
+
+		@Override
+		public void visit(ShowIndexStatement arg0) {
 		}
 	}
 

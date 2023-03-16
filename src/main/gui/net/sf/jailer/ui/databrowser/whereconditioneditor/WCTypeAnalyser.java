@@ -76,9 +76,11 @@ import net.sf.jsqlparser.expression.NumericBind;
 import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.OracleNamedFunctionParameter;
+import net.sf.jsqlparser.expression.OverlapsCondition;
 import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.RowConstructor;
 import net.sf.jsqlparser.expression.RowGetExpression;
+import net.sf.jsqlparser.expression.SafeCastExpression;
 import net.sf.jsqlparser.expression.SignedExpression;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.TimeKeyExpression;
@@ -1316,6 +1318,14 @@ public class WCTypeAnalyser {
 			@Override
 			public void visit(GeometryDistance arg0) {
 			}
+
+			@Override
+			public void visit(OverlapsCondition arg0) {
+			}
+
+			@Override
+			public void visit(SafeCastExpression arg0) {
+			}
 		};
 	}
 	
@@ -1817,6 +1827,14 @@ public class WCTypeAnalyser {
 
 		@Override
 		public void visit(GeometryDistance arg0) {
+		}
+
+		@Override
+		public void visit(OverlapsCondition arg0) {
+		}
+
+		@Override
+		public void visit(SafeCastExpression arg0) {
 		}
 	};
 
