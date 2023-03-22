@@ -1659,9 +1659,15 @@ public class DataBrowser extends javax.swing.JFrame {
 			}
 
 			private void connect(DataBrowser dataBrowser, Object o) {
+				ConnectionInfo oldCurrentConnectionInfo = currentConnectionInfo;
 				if (dataBrowser.dbConnectionDialog.connectSilent((ConnectionInfo) o)) {
 					try {
-						dataBrowser.setConnection(dataBrowser.dbConnectionDialog);
+						if (!dataBrowser.setConnection(dataBrowser.dbConnectionDialog)) {
+							if (oldCurrentConnectionInfo != null) {
+								dataBrowser.dbConnectionDialog.connectSilent(oldCurrentConnectionInfo);
+								updateModelNavigation();
+							}
+						}
 					} catch (Exception ex) {
 						UIUtil.showException(dataBrowser, "Error", ex);
 					}
@@ -1955,7 +1961,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		return panel;
 	}
 
-	private void createSession(DbConnectionDialog dbConnectionDialog) throws Exception {
+	private boolean createSession(DbConnectionDialog dbConnectionDialog) throws Exception {
 		ConnectionInfo connection = dbConnectionDialog.currentConnection;
 		connectedAliases.clear();
 		connectedAliases.add(connection.alias);
@@ -1978,10 +1984,12 @@ public class DataBrowser extends javax.swing.JFrame {
 			session.setCliArguments(args);
 			session.setPassword(dbConnectionDialog.getPassword());
 			onNewSession(session);
+			return true;
 		}
+		return false;
 	}
 
-	protected void setConnection(DbConnectionDialog dbConnectionDialog) throws Exception {
+	protected boolean setConnection(DbConnectionDialog dbConnectionDialog) throws Exception {
 		String prevDatabaseName = currentDatabaseName;
 		if (dbConnectionDialog != null) {
 			dbConnectionDialog = new DbConnectionDialog(this, dbConnectionDialog, DataBrowserContext.getAppName(),
@@ -1993,7 +2001,9 @@ public class DataBrowser extends javax.swing.JFrame {
 		if (dbConnectionDialog != null) {
 			ConnectionInfo connection = dbConnectionDialog.currentConnection;
 			if (connection != null) {
-				createSession(dbConnectionDialog);
+				if (!createSession(dbConnectionDialog)) {
+					return false;
+				}
 				if (session != null) {
 					desktop.session = session;
 					onNewSession(session);
@@ -2013,6 +2023,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				}
 			}
 		}
+		return true;
 	}
 
 	private String currentDatabaseName;
@@ -2316,8 +2327,6 @@ public class DataBrowser extends javax.swing.JFrame {
         jLabel26.setText("  Loading...");
         dataModelPanel.add(jLabel26, java.awt.BorderLayout.CENTER);
 
-        getContentPane().setLayout(new java.awt.BorderLayout());
-
         jLayeredPane2.setLayout(new java.awt.GridBagLayout());
 
         modelNavigationSplitSizerPanel.setMinimumSize(new java.awt.Dimension(8, 0));
@@ -2560,7 +2569,6 @@ public class DataBrowser extends javax.swing.JFrame {
         });
 
         jInternalFrame1.setVisible(true);
-        jInternalFrame1.getContentPane().setLayout(new java.awt.BorderLayout());
         jScrollPane1.setViewportView(jInternalFrame1);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -3124,7 +3132,7 @@ public class DataBrowser extends javax.swing.JFrame {
         jMenu1.add(jSeparator9);
 
         storeSessionItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_P, java.awt.event.InputEvent.CTRL_DOWN_MASK));
-        storeSessionItem.setText("Store Arrangement");
+        storeSessionItem.setText("Store Layout");
         storeSessionItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 storeSessionItemActionPerformed(evt);
@@ -3133,7 +3141,7 @@ public class DataBrowser extends javax.swing.JFrame {
         jMenu1.add(storeSessionItem);
 
         restoreSessionItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_DOWN_MASK));
-        restoreSessionItem.setText("Restore Arrangement");
+        restoreSessionItem.setText("Restore Layout");
         restoreSessionItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 restoreSessionItemActionPerformed(evt);
@@ -3240,10 +3248,10 @@ public class DataBrowser extends javax.swing.JFrame {
 
         menuBar.add(jviewMenu);
 
-        bookmarkMenu.setText("Arrangement");
+        bookmarkMenu.setText("Layout");
 
         addBookmarkMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_B, java.awt.event.InputEvent.CTRL_DOWN_MASK));
-        addBookmarkMenuItem.setText("Store Desktop Arrangement");
+        addBookmarkMenuItem.setText("Add Desktop Layout");
         addBookmarkMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addBookmarkMenuItemActionPerformed(evt);
@@ -3251,7 +3259,7 @@ public class DataBrowser extends javax.swing.JFrame {
         });
         bookmarkMenu.add(addBookmarkMenuItem);
 
-        editBookmarkMenuItem.setText("Edit Desktop Arrangements");
+        editBookmarkMenuItem.setText("Edit Desktop Layouts");
         editBookmarkMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editBookmarkMenuItemActionPerformed(evt);
@@ -3418,7 +3426,7 @@ public class DataBrowser extends javax.swing.JFrame {
         jMenu3.setText("Settings");
 
         autoLayoutMenuItem.setSelected(true);
-        autoLayoutMenuItem.setText("Automatic Layout Arrangement");
+        autoLayoutMenuItem.setText("Automatic layout adjustment");
         jMenu3.add(autoLayoutMenuItem);
 
         zoomWithMouseWheelMenuItem.setSelected(true);

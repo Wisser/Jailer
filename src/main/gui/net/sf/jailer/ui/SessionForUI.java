@@ -20,6 +20,7 @@ import java.awt.Point;
 import java.awt.Window;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -91,7 +92,9 @@ public class SessionForUI extends Session {
 						}
 						if (!session.cancelled.get()) {
 							String defSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema());
-							session.setSessionProperty(SessionForUI.class, "defSchema", defSchema);						
+							session.setSessionProperty(SessionForUI.class, "defSchema", defSchema);
+							List<String> schemas = JDBCMetaDataBasedModelElementFinder.getSchemas(session, session.getSchema());
+							session.setSessionProperty(SessionForUI.class, "schemas", schemas);
 						}
 					}
 					if (session.cancelled.get()) {

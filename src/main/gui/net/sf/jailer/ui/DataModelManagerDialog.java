@@ -192,16 +192,16 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				"\n \n \n",
 				"Select a database to work with.");
 
-		infoBarBookmark = new DMMDInfoBar("Desktop Arrangement",
-				"Select an arrangement to open.\n" +
+		infoBarBookmark = new DMMDInfoBar("Desktop Layout",
+				"Select a layout to open.\n" +
 				"\n \n \n",
-				"Select an arrangement.");
+				"Select a layout.");
 		UIUtil.replace(infoBarLabelBookmark, infoBarBookmark);
 
-		infoBarRecUsedBookmark = new DMMDInfoBar("Recently used Desktop Arrangement",
-				"Select a recently used arrangement to open.\n" +
+		infoBarRecUsedBookmark = new DMMDInfoBar("Recently used Layouts",
+				"Select a recently used layout to open.\n" +
 				"\n \n \n",
-				"Select an arrangement.");
+				"Select a layout.");
 		UIUtil.replace(infoBarLabeRecUsedlBookmark, infoBarRecUsedBookmark);
 
 		restoreButton.setIcon(UIUtil.scaleIcon(restoreButton, histIcon));
@@ -1151,8 +1151,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
 		DefaultTableModel tableModel = new DefaultTableModel(data,
 				onlyRecentlyUsed?
-						new String[] {"Desktop Arrangement", "Data Model", "Connection", "User", "URL", "Time"}
-							: new String[] { "Desktop Arrangement", "Data Model", "Connection", "User", "URL" }) {
+						new String[] {"Layout", "Data Model", "Connection", "User", "URL", "Time"}
+							: new String[] { "Layout", "Data Model", "Connection", "User", "URL" }) {
 			@Override
 			public boolean isCellEditable(int row, int column) {
 				return false;
@@ -2341,7 +2341,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 2);
         bookmarkPanel.add(bmOkButton, gridBagConstraints);
 
-        jTabbedPane1.addTab("Desktop Arrangement", bookmarkPanel);
+        jTabbedPane1.addTab("Layout", bookmarkPanel);
 
         recentlyUsedBookmarkPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -2401,7 +2401,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 2);
         recentlyUsedBookmarkPanel.add(bmRecUsedOkButton, gridBagConstraints);
 
-        jTabbedPane1.addTab("Recently used Desktop Arrangement", recentlyUsedBookmarkPanel);
+        jTabbedPane1.addTab("Recently used Layout", recentlyUsedBookmarkPanel);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;

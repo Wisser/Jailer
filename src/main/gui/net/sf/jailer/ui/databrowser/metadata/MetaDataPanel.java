@@ -126,6 +126,7 @@ import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.ui.AutoCompletion;
 import net.sf.jailer.ui.JComboBox2;
 import net.sf.jailer.ui.RowCountRenderer;
+import net.sf.jailer.ui.SessionForUI;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.UIUtil.IconWithText;
@@ -1279,6 +1280,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		timer.start();
 
     	JDBCMetaDataBasedModelElementFinder.resetCaches(metaDataSource.getSession());
+    	metaDataSource.getSession().removeSessionProperties(SessionForUI.class);
         setOutline(new ArrayList<OutlineInfo>(), -1);
         // proceduresPerSchema.clear();
         proceduresPerSchema = Collections.synchronizedMap(new HashMap<String, MemorizedResultSet>()); // dont wait
@@ -1445,19 +1447,6 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 				public Iterator<Object> iterator() {
 		        	List<Object> leafs = new ArrayList<Object>();
 		            for (MDTable table: schema.getTables()) {
-						if (table.isView()) {
-							leafs.add(table);
-						}
-		            }
-		            return leafs.iterator();
-				}
-			};
-            createCategoryNode(schemaChild, leafs, CATEGORY_VIEWS, true, 0);
-            leafs = new Iterable<Object>() {
-				@Override
-				public Iterator<Object> iterator() {
-		        	List<Object> leafs = new ArrayList<Object>();
-		            for (MDTable table: schema.getTables()) {
 						if (table.isSynonym()) {
 							leafs.add(table);
 						}
@@ -1466,6 +1455,19 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 				}
 			};
             createCategoryNode(schemaChild, leafs, CATEGORY_SYNONYMS, true, 0);
+            leafs = new Iterable<Object>() {
+				@Override
+				public Iterator<Object> iterator() {
+		        	List<Object> leafs = new ArrayList<Object>();
+		            for (MDTable table: schema.getTables()) {
+						if (table.isView()) {
+							leafs.add(table);
+						}
+		            }
+		            return leafs.iterator();
+				}
+			};
+            createCategoryNode(schemaChild, leafs, CATEGORY_VIEWS, true, 0);
             leafs = new Iterable<Object>() {
 				@Override
 				public Iterator<Object> iterator() {

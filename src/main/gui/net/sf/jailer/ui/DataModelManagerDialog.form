@@ -111,7 +111,7 @@
                     <Container class="javax.swing.JPanel" name="moduleSubsetterFramePanel">
                       <Properties>
                         <Property name="cursor" type="java.awt.Cursor" editor="org.netbeans.modules.form.editors2.CursorEditor">
-                          <Color id="Standardcursor"/>
+                          <Color id="Default Cursor"/>
                         </Property>
                         <Property name="opaque" type="boolean" value="false"/>
                       </Properties>
@@ -166,7 +166,7 @@
                     <Container class="javax.swing.JPanel" name="moduleDataBrowserFramePanel1">
                       <Properties>
                         <Property name="cursor" type="java.awt.Cursor" editor="org.netbeans.modules.form.editors2.CursorEditor">
-                          <Color id="Standardcursor"/>
+                          <Color id="Default Cursor"/>
                         </Property>
                         <Property name="opaque" type="boolean" value="false"/>
                       </Properties>
@@ -781,8 +781,8 @@
                     <Container class="javax.swing.JPanel" name="bookmarkPanel">
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-                          <JTabbedPaneConstraints tabName="Desktop Arrangement">
-                            <Property name="tabTitle" type="java.lang.String" value="Desktop Arrangement"/>
+                          <JTabbedPaneConstraints tabName="Layout">
+                            <Property name="tabTitle" type="java.lang.String" value="Layout"/>
                           </JTabbedPaneConstraints>
                         </Constraint>
                       </Constraints>
@@ -851,8 +851,8 @@
                     <Container class="javax.swing.JPanel" name="recentlyUsedBookmarkPanel">
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-                          <JTabbedPaneConstraints tabName="Recently used Desktop Arrangement">
-                            <Property name="tabTitle" type="java.lang.String" value="Recently used Desktop Arrangement"/>
+                          <JTabbedPaneConstraints tabName="Recently used Layout">
+                            <Property name="tabTitle" type="java.lang.String" value="Recently used Layout"/>
                           </JTabbedPaneConstraints>
                         </Constraint>
                       </Constraints>

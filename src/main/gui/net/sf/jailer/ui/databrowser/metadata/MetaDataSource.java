@@ -32,6 +32,7 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
+import net.sf.jailer.ui.SessionForUI;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
@@ -115,7 +116,7 @@ public class MetaDataSource {
 		if (initialized.get()) {
 			return;
 		}
-
+		
 		Object md = new Object();
 		try {
 			md = session.getMetaData();
@@ -124,10 +125,18 @@ public class MetaDataSource {
 		}
 		synchronized (md) {
 			List<String> sList = new ArrayList<String>();
-			for (String schema: JDBCMetaDataBasedModelElementFinder.getSchemas(session, session.getSchema())) {
+			List<String> schemaList = (List<String>) session.getSessionProperty(SessionForUI.class, "schemas");
+			if (schemaList == null) {
+				schemaList = JDBCMetaDataBasedModelElementFinder.getSchemas(session, session.getSchema());
+			}
+			for (String schema: schemaList) {
 				sList.add(quoting.quote(schema));
 			}
-			String defaultSchema = quoting.quote(JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema()));
+			String defaultSchemaName = (String) session.getSessionProperty(SessionForUI.class, "defSchema");
+			if (defaultSchemaName == null) {
+				defaultSchemaName = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema());
+			}
+			String defaultSchema = quoting.quote(defaultSchemaName);
 			if (sList.isEmpty()) {
 				schemas.add(new MDSchema(defaultSchema, true, this));
 			} else {

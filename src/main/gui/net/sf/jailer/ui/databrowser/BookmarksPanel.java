@@ -88,7 +88,7 @@ public class BookmarksPanel extends javax.swing.JPanel {public static final Stri
 	}
 
 	public String newBookmark(String defaultName) {
-    	dialog = new EscapableDialog(owner, "New Desktop Arrangement") {
+    	dialog = new EscapableDialog(owner, "New Layout") {
         };
         dialog.addWindowListener(new WindowAdapter() {
 			@Override
@@ -129,7 +129,7 @@ public class BookmarksPanel extends javax.swing.JPanel {public static final Stri
     }
 
 	public void editBookmarks() {
-		dialog = new EscapableDialog(owner, "Edit Desktop Arrangements") {
+		dialog = new EscapableDialog(owner, "Edit Layouts") {
         };
         dialog.setModal(true);
  		dialog.getContentPane().add(this);
@@ -164,7 +164,7 @@ public class BookmarksPanel extends javax.swing.JPanel {public static final Stri
 	}
 
 	private ListEditor<StringBuilder> createListEditor(final boolean forRenaming) {
-		return new ListEditor<StringBuilder>(new String[] { "Arrangement" }, "", false, false, true) {
+		return new ListEditor<StringBuilder>(new String[] { "Layout" }, "", false, false, true) {
 
 			@Override
 			protected String getDisplayName(StringBuilder element) {
@@ -408,7 +408,7 @@ public class BookmarksPanel extends javax.swing.JPanel {public static final Stri
 		}
 		bookmarksMenu.getItem(1).setEnabled(!bookmarks.isEmpty());
 		if (bookmarks.isEmpty()) {
-			JMenuItem nb = new JMenuItem("No Bookmarks");
+			JMenuItem nb = new JMenuItem("No Layout");
 			nb.setEnabled(false);
 			bookmarksMenu.add(nb);
 		} else {
