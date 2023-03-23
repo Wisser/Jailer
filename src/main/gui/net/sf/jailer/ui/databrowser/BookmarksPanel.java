@@ -40,6 +40,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.undo.UndoManager;
 
 import org.fife.rsta.ui.EscapableDialog;
 
@@ -422,7 +423,17 @@ public class BookmarksPanel extends javax.swing.JPanel {public static final Stri
 					public void actionPerformed(ActionEvent e) {
 						UISettings.s6 += 1000;
 						File bookMarkFile = new File(getBookmarksFolder(executionContext), UIUtil.toValidFileName(nb));
-						desktop.restoreSession(null, bookMarkFile);
+						DesktopUndoManager undoManager = desktop.getUndoManager();
+						if (undoManager != null) {
+							undoManager.beforeModification("Undo Layout \"" + bmName + "\"", "Restore Layout \"" + bmName + "\"");
+							undoManager.updateUI();
+							desktop.setUndoManager(null);
+						}
+						try {
+							desktop.restoreSession(null, bookMarkFile);
+						} finally {
+							desktop.setUndoManager(undoManager);
+						}
 						if (bookMarkFile.exists()) {
 							bookMarkFile.setLastModified(System.currentTimeMillis());
 						}

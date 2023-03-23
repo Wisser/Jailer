@@ -222,6 +222,10 @@ public abstract class Desktop extends JDesktopPane {
 		this.desktopUndoManager = desktopUndoManager;
 	}
 
+	public DesktopUndoManager getUndoManager() {
+		return desktopUndoManager;
+	}
+
 	
 	/**
 	 * Constructor.
@@ -3650,7 +3654,7 @@ public abstract class Desktop extends JDesktopPane {
 			iFrameStateChangeRenderer.startAtomic();
 			noArrangeLayoutOnNewTableBrowser = true;
 			if (desktopUndoManager != null) {
-				desktopUndoManager.beforeRestore();;
+				desktopUndoManager.beforeRestore();
 			}
 			
 			String tbaPeerID = null;
