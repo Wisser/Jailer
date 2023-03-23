@@ -997,7 +997,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			for (int j = 0; j < v.length; ++j) {
 				int pWidth = new JLabel("<html><nobr>" + v[j] + "&nbsp;&nbsp;</nobr></html>").getPreferredSize().width;
 				prefWidth[j] = Math.max(prefWidth[j], pWidth);
-				prefWidth[j] = Math.min(prefWidth[j], module.equals("S")? j == 1? 200 : 140 : 160);
+				prefWidth[j] = Math.min(prefWidth[j], module.equals("S")? j == 1? 200 : 140 : 180);
 				sum += 16 + (j < v.length - 1? prefWidth[j] : pWidth);
 			}
 			maxSum = Math.max(maxSum, sum);
@@ -1038,9 +1038,9 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 						gbc.gridy = 1;
 						gbc.insets = new Insets(0, 0, 0, 8);
 						JLabel label = new JLabel(i >= 0? "<html><nobr>" + val[i] + "</nobr></html>" : " ");
-						if (i == 2 && !module.equals("S")) {
-							label.setHorizontalAlignment(SwingConstants.RIGHT);
-						}
+//						if (i == 2 && !module.equals("S")) {
+//							label.setHorizontalAlignment(SwingConstants.RIGHT);
+//						}
 						if (i < val.length - 1) {
 							label.setPreferredSize(new Dimension(i >= 0? prefWidth[i] : 24, label.getPreferredSize().height));
 							label.setMinimumSize(label.getPreferredSize());

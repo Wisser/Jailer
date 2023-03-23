@@ -6337,8 +6337,16 @@ public class DataBrowser extends javax.swing.JFrame {
 			bookmark = new BookmarkId(null, executionContext.getCurrentModelSubfolder(),
 					executionContext.getCurrentConnectionAlias(), desktop.getRawSchemaMapping());
 			bookmark.setContent(sb.toString());
-			bookmark.setContentInfo(
-					desktop.tableBrowsers.size() + " Tables");
+			
+			RowBrowser root = null;
+			for (RowBrowser tb: desktop.tableBrowsers) {
+				if (tb.browserContentPane != null && tb.browserContentPane.getParentBrowser() == null && tb.internalFrame != null) {
+					if (root == null || root.internalFrame.getY() > tb.internalFrame.getY()) {
+						root = tb;
+					}
+				}
+			}
+			bookmark.setContentInfo(root == null? "" : (Quoting.staticUnquote(root.browserContentPane.table.getName()) + (desktop.tableBrowsers.size() > 1? " (+" + (desktop.tableBrowsers.size() - 1) + ")" : "")));
 		} catch (IOException e) {
 			bookmark = null;
 		}
