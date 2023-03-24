@@ -905,6 +905,10 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				i.remove();
 				continue;
 			}
+			if (connectionInfo != null && connectionInfo.dataModelFolder != null && !connectionInfo.dataModelFolder.equals(lastSession.datamodelFolder)) {
+				i.remove();
+				continue;
+			}
 			Pair<String, Long> details = modelDetails.get(lastSession.datamodelFolder);
 			String userName = connectionInfo != null && connectionInfo.user != null && connectionInfo.user.length() > 0? connectionInfo.user : " ";
 			String dbmsLogoURL = connectionInfo != null? UIUtil.getDBMSLogoURL(connectionInfo.url) : null;
