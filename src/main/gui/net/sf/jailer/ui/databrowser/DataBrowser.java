@@ -1485,7 +1485,6 @@ public class DataBrowser extends javax.swing.JFrame {
 		};
 	}
 
-	private String cDTmpFilePrefix = Environment.newFile(".tmpdmc-" + System.currentTimeMillis()).getPath();
 	private Set<String> connectedAliases = new HashSet<String>();
 	private ConnectionInfo currentConnectionInfo = null;
 	
@@ -1784,8 +1783,12 @@ public class DataBrowser extends javax.swing.JFrame {
 			public void change(String dataModelSubfolder) {
 				afterReconnectAction = null;
 				
-				String sFile = cDTmpFilePrefix + DataModelManager.getCurrentModelSubfolder(executionContext);
-				new File(sFile).deleteOnExit();
+//				String sFile = cDTmpFilePrefix + DataModelManager.getCurrentModelSubfolder(executionContext);
+//				new File(sFile).deleteOnExit();
+				
+				File bookmarksFolder = BookmarksPanel.getBookmarksFolder(executionContext);
+				bookmarksFolder.mkdirs();
+				String sFile = new File(bookmarksFolder, "default").getPath();
 				
 				try {
 					desktop.storeSession(sFile);
@@ -1802,7 +1805,9 @@ public class DataBrowser extends javax.swing.JFrame {
 				boolean oldSMT = desktop.showMissingTablesOnRestoreSession;
 				try {
 					desktop.showMissingTablesOnRestoreSession = false;
-					String sessionFile = cDTmpFilePrefix + dataModelSubfolder;
+					bookmarksFolder = BookmarksPanel.getBookmarksFolder(executionContext);
+					bookmarksFolder.mkdirs();
+					String sessionFile = new File(bookmarksFolder, "default").getPath(); // cDTmpFilePrefix + dataModelSubfolder;
 					desktop.reloadDataModel(schemamapping, !new File(sessionFile).exists(), false, false);
 					if (new File(sessionFile).exists()) {
 						afterReconnectAction = () -> {
@@ -6349,6 +6354,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
 	private void storeLastSession() {
 		BookmarkId bookmark;
+		
 		try {
 			desktop.storeSession(Environment.newFile(LAST_SESSION_FILE).getPath());
 			BufferedReader in = new BufferedReader(new FileReader(Environment.newFile(LAST_SESSION_FILE)));
@@ -6371,7 +6377,13 @@ public class DataBrowser extends javax.swing.JFrame {
 				}
 			}
 			bookmark.setContentInfo(root == null? "" : (Quoting.staticUnquote(root.browserContentPane.table.getName()) + (desktop.tableBrowsers.size() > 1? " (+" + (desktop.tableBrowsers.size() - 1) + ")" : "")));
-		} catch (IOException e) {
+
+			// default data model layout
+			File bookmarksFolder = BookmarksPanel.getBookmarksFolder(executionContext);
+			bookmarksFolder.mkdirs();
+			String sFile = new File(bookmarksFolder, "default").getPath();
+			desktop.storeSession(sFile);
+		} catch (Throwable t) {
 			bookmark = null;
 		}
 		UISettings.storeLastSession(bookmark, "B");
