@@ -448,7 +448,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		
 		tbBackButton.setText(null);
 		tbForewardButton.setText(null);
-		tbClearButton.setText(null);
+		tbClearButton.setText("Clear");
 		tbZoom0Button.setText(null);
 		tbZoom1Button.setText(null);
 		tbZoom2Button.setText(null);
@@ -467,8 +467,9 @@ public class DataBrowser extends javax.swing.JFrame {
 		tbZoomInButton.setIcon(tbZoomInIcon);
 		tbZoomOutButton.setIcon(tbZoomOutIcon);
 		tbreloadButton.setIcon(runIcon);
-		tbClearButton.setIcon(clearIcon);
 		tbreloadButton.setHorizontalTextPosition(SwingConstants.RIGHT);
+		tbClearButton.setIcon(clearIcon);
+		tbClearButton.setHorizontalTextPosition(SwingConstants.RIGHT);
 
 		desktopUndoManager = new DesktopUndoManager(tbBackButton, tbForewardButton, goBackItem, goForwardItem, this,
 				jScrollPane1);
