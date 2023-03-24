@@ -1216,6 +1216,20 @@
                                         </Component>
                                         <Component class="javax.swing.JToolBar$Separator" name="jSeparator18">
                                         </Component>
+                                        <Component class="javax.swing.JButton" name="tbClearButton">
+                                          <Properties>
+                                            <Property name="text" type="java.lang.String" value="clear"/>
+                                            <Property name="toolTipText" type="java.lang.String" value="Close all Tables"/>
+                                            <Property name="focusable" type="boolean" value="false"/>
+                                            <Property name="horizontalTextPosition" type="int" value="0"/>
+                                            <Property name="verticalTextPosition" type="int" value="3"/>
+                                          </Properties>
+                                          <Events>
+                                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="tbClearButtonActionPerformed"/>
+                                          </Events>
+                                        </Component>
+                                        <Component class="javax.swing.JToolBar$Separator" name="jSeparator22">
+                                        </Component>
                                         <Component class="javax.swing.JButton" name="tbZoomInButton">
                                           <Properties>
                                             <Property name="text" type="java.lang.String" value="zoomin"/>

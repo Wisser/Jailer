@@ -40,7 +40,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.undo.UndoManager;
 
 import org.fife.rsta.ui.EscapableDialog;
 
@@ -461,7 +460,7 @@ public class BookmarksPanel extends javax.swing.JPanel {public static final Stri
 			String[] fileList = bookmarksFolder.list(new FilenameFilter() {
 				@Override
 				public boolean accept(File dir, String name) {
-					return name.endsWith(BOOKMARKFILE_EXTENSION);
+					return name.endsWith(BOOKMARKFILE_EXTENSION) && !name.equals(BOOKMARKFILE_EXTENSION);
 				}
 			});
 			ArrayList<String> result = new ArrayList<String>();

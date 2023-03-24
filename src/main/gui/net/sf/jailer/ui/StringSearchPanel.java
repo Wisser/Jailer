@@ -1162,6 +1162,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         add(schemaPanel, gridBagConstraints);
 
+        plugInPanel.setBorder(javax.swing.BorderFactory.createLineBorder(java.awt.Color.lightGray));
         plugInPanel.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 10;
