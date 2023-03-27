@@ -5134,6 +5134,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						suffix = "";
 					}
 					valueAsString = " " + (valueAsString.replace('\n', (char) 182)) + suffix;
+					// TODO
+					// TODO get rid of suffix " ". Set valueAsString = value if valueAsString.equals(value)
 				}
 			}
 			return valueAsString;
