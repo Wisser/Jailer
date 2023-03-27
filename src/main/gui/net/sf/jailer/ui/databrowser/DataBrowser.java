@@ -448,7 +448,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		
 		tbBackButton.setText(null);
 		tbForewardButton.setText(null);
-		tbClearButton.setText("Clear");
+		tbClearButton.setText(null);
 		tbZoom0Button.setText(null);
 		tbZoom1Button.setText(null);
 		tbZoom2Button.setText(null);
