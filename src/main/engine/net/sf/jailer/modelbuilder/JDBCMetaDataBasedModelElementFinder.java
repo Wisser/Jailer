@@ -1160,8 +1160,9 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 					return database[0];
 				}
 			} catch (SQLException e) {
-				e.printStackTrace();
-				// ignore
+				if (!session.isDown()) {
+					e.printStackTrace();
+				}
 			}
 		}
 		List<String> schemas = new ArrayList<String>();
@@ -1197,7 +1198,9 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			}
 			return userName;
 		} catch (SQLException e) {
-			e.printStackTrace();
+			if (!session.isDown()) {
+				e.printStackTrace();
+			}
 			return userName;
 		}
 	}

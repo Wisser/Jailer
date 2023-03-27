@@ -422,7 +422,17 @@ public class BookmarksPanel extends javax.swing.JPanel {public static final Stri
 					public void actionPerformed(ActionEvent e) {
 						UISettings.s6 += 1000;
 						File bookMarkFile = new File(getBookmarksFolder(executionContext), UIUtil.toValidFileName(nb));
-						desktop.restoreSession(null, bookMarkFile);
+						DesktopUndoManager undoManager = desktop.getUndoManager();
+						if (undoManager != null) {
+							undoManager.beforeModification("Undo Layout \"" + bmName + "\"", "Restore Layout \"" + bmName + "\"");
+							undoManager.updateUI();
+							desktop.setUndoManager(null);
+						}
+						try {
+							desktop.restoreSession(null, bookMarkFile);
+						} finally {
+							desktop.setUndoManager(undoManager);
+						}
 						if (bookMarkFile.exists()) {
 							bookMarkFile.setLastModified(System.currentTimeMillis());
 						}
@@ -450,7 +460,7 @@ public class BookmarksPanel extends javax.swing.JPanel {public static final Stri
 			String[] fileList = bookmarksFolder.list(new FilenameFilter() {
 				@Override
 				public boolean accept(File dir, String name) {
-					return name.endsWith(BOOKMARKFILE_EXTENSION);
+					return name.endsWith(BOOKMARKFILE_EXTENSION) && !name.equals(BOOKMARKFILE_EXTENSION);
 				}
 			});
 			ArrayList<String> result = new ArrayList<String>();

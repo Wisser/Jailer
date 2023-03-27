@@ -448,6 +448,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		
 		tbBackButton.setText(null);
 		tbForewardButton.setText(null);
+		tbClearButton.setText(null);
 		tbZoom0Button.setText(null);
 		tbZoom1Button.setText(null);
 		tbZoom2Button.setText(null);
@@ -467,6 +468,8 @@ public class DataBrowser extends javax.swing.JFrame {
 		tbZoomOutButton.setIcon(tbZoomOutIcon);
 		tbreloadButton.setIcon(runIcon);
 		tbreloadButton.setHorizontalTextPosition(SwingConstants.RIGHT);
+		tbClearButton.setIcon(clearIcon);
+		tbClearButton.setHorizontalTextPosition(SwingConstants.RIGHT);
 
 		desktopUndoManager = new DesktopUndoManager(tbBackButton, tbForewardButton, goBackItem, goForwardItem, this,
 				jScrollPane1);
@@ -965,6 +968,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				storeSessionItem.setEnabled(hasIFrame);
 				closeAllMenuItem.setEnabled(hasIFrame);
 				tbreloadButton.setEnabled(hasIFrame);
+				tbClearButton.setEnabled(hasIFrame);
 				addBookmarkMenuItem.setEnabled(hasTableBrowser);
 				exportDataMenuItem.setEnabled(hasTableBrowser);
 				createExtractionModelMenuItem.setEnabled(hasTableBrowser);
@@ -1482,7 +1486,6 @@ public class DataBrowser extends javax.swing.JFrame {
 		};
 	}
 
-	private String cDTmpFilePrefix = Environment.newFile(".tmpdmc-" + System.currentTimeMillis()).getPath();
 	private Set<String> connectedAliases = new HashSet<String>();
 	private ConnectionInfo currentConnectionInfo = null;
 	
@@ -1781,8 +1784,12 @@ public class DataBrowser extends javax.swing.JFrame {
 			public void change(String dataModelSubfolder) {
 				afterReconnectAction = null;
 				
-				String sFile = cDTmpFilePrefix + DataModelManager.getCurrentModelSubfolder(executionContext);
-				new File(sFile).deleteOnExit();
+//				String sFile = cDTmpFilePrefix + DataModelManager.getCurrentModelSubfolder(executionContext);
+//				new File(sFile).deleteOnExit();
+				
+				File bookmarksFolder = BookmarksPanel.getBookmarksFolder(executionContext);
+				bookmarksFolder.mkdirs();
+				String sFile = new File(bookmarksFolder, "default").getPath();
 				
 				try {
 					desktop.storeSession(sFile);
@@ -1799,7 +1806,9 @@ public class DataBrowser extends javax.swing.JFrame {
 				boolean oldSMT = desktop.showMissingTablesOnRestoreSession;
 				try {
 					desktop.showMissingTablesOnRestoreSession = false;
-					String sessionFile = cDTmpFilePrefix + dataModelSubfolder;
+					bookmarksFolder = BookmarksPanel.getBookmarksFolder(executionContext);
+					bookmarksFolder.mkdirs();
+					String sessionFile = new File(bookmarksFolder, "default").getPath(); // cDTmpFilePrefix + dataModelSubfolder;
 					desktop.reloadDataModel(schemamapping, !new File(sessionFile).exists(), false, false);
 					if (new File(sessionFile).exists()) {
 						afterReconnectAction = () -> {
@@ -2152,6 +2161,8 @@ public class DataBrowser extends javax.swing.JFrame {
         tbBackButton = new javax.swing.JButton();
         tbForewardButton = new javax.swing.JButton();
         jSeparator18 = new javax.swing.JToolBar.Separator();
+        tbClearButton = new javax.swing.JButton();
+        jSeparator22 = new javax.swing.JToolBar.Separator();
         tbZoomInButton = new javax.swing.JButton();
         tbZoomOutButton = new javax.swing.JButton();
         tbZoom0Button = new javax.swing.JToggleButton();
@@ -2633,6 +2644,19 @@ public class DataBrowser extends javax.swing.JFrame {
         tbForewardButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         jToolBar1.add(tbForewardButton);
         jToolBar1.add(jSeparator18);
+
+        tbClearButton.setText("clear");
+        tbClearButton.setToolTipText("Close all Tables");
+        tbClearButton.setFocusable(false);
+        tbClearButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        tbClearButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        tbClearButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tbClearButtonActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(tbClearButton);
+        jToolBar1.add(jSeparator22);
 
         tbZoomInButton.setText("zoomin");
         tbZoomInButton.setFocusable(false);
@@ -3664,6 +3688,10 @@ public class DataBrowser extends javax.swing.JFrame {
     	openNewEmptyWindow();
     }//GEN-LAST:event_newEmptyWindowMenuItemActionPerformed
 
+    private void tbClearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbClearButtonActionPerformed
+    	desktop.closeAll();
+    }//GEN-LAST:event_tbClearButtonActionPerformed
+
 	private void newWindowMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_newWindowMenuItemActionPerformed
 		openNewWindow();
 	}// GEN-LAST:event_newWindowMenuItemActionPerformed
@@ -4439,6 +4467,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator20;
     private javax.swing.JToolBar.Separator jSeparator21;
+    private javax.swing.JToolBar.Separator jSeparator22;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JPopupMenu.Separator jSeparator5;
@@ -4512,6 +4541,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPanel tablesCardPanel;
     private javax.swing.JPanel tablesPanel;
     private javax.swing.JButton tbBackButton;
+    private javax.swing.JButton tbClearButton;
     private javax.swing.JButton tbForewardButton;
     private javax.swing.JToggleButton tbZoom0Button;
     private javax.swing.JToggleButton tbZoom1Button;
@@ -6325,6 +6355,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
 	private void storeLastSession() {
 		BookmarkId bookmark;
+		
 		try {
 			desktop.storeSession(Environment.newFile(LAST_SESSION_FILE).getPath());
 			BufferedReader in = new BufferedReader(new FileReader(Environment.newFile(LAST_SESSION_FILE)));
@@ -6347,7 +6378,13 @@ public class DataBrowser extends javax.swing.JFrame {
 				}
 			}
 			bookmark.setContentInfo(root == null? "" : (Quoting.staticUnquote(root.browserContentPane.table.getName()) + (desktop.tableBrowsers.size() > 1? " (+" + (desktop.tableBrowsers.size() - 1) + ")" : "")));
-		} catch (IOException e) {
+
+			// default data model layout
+			File bookmarksFolder = BookmarksPanel.getBookmarksFolder(executionContext);
+			bookmarksFolder.mkdirs();
+			String sFile = new File(bookmarksFolder, "default").getPath();
+			desktop.storeSession(sFile);
+		} catch (Throwable t) {
 			bookmark = null;
 		}
 		UISettings.storeLastSession(bookmark, "B");
@@ -6526,6 +6563,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	private ImageIcon editIcon;
 	private ImageIcon copyIcon;
 	private ImageIcon deleteIcon;
+	private ImageIcon clearIcon;
 	{
 		// load images
 		tableIcon = UIUtil.readImage("/table.png");
@@ -6562,6 +6600,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		editIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/editdetailsitem.png"));
 		copyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/copy.png"));
 		deleteIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/delete.png"));
+		clearIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/clear.png"));
 	}
 
 }
