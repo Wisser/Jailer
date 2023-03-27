@@ -5803,6 +5803,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 		boolean bold = false;
 		if (limitExceeded || theParentWithExceededLimit != null) {
+			if (getWidth() > 300) {
+				rowsCount.setText(rowsCount.getText() + " (limited)");
+			}
 			if (cle || !cleRelevant) {
 				rowsCount.setForeground(Color.RED);
 				bold = true;
