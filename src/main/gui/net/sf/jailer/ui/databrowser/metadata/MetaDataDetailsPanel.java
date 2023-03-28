@@ -432,7 +432,9 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 						try {
 							pkNames.addAll(mdTable.getPrimaryKeyColumns(false));
 						} catch (SQLException e1) {
-							logger.info("error", e1);
+							if (!session.isDown()) {
+								logger.info("error", e1);
+							}
 						}
 				    	try {
 				    		synchronized (session.getMetaData()) {

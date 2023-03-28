@@ -494,7 +494,9 @@ public class MDTable extends MDObject {
 	            	}
 	            } catch (Exception e) {
 	            	ddl = "-- DDL not available";
-	            	logger.info("error", e);
+	            	if (!session.isDown()) {
+	            		logger.info("error", e);
+	            	}
 	            }
 	            if (ddl != null) {
 	            	ddl = ddl.trim();
