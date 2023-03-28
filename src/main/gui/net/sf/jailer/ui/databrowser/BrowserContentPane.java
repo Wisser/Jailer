@@ -880,8 +880,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	final RowsClosure rowsClosure;
 
-	private boolean suppressReload;
-
+	private boolean suppressReload = false;
+	static boolean suppressReloadStatic = false;
+	
 	/**
 	 * Alias for row number column.
 	 */
@@ -4239,7 +4240,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * Reloads rows.
 	 */
 	public void reloadRows(String cause) {
-		if (!suppressReload) {
+		if (!suppressReload && !suppressReloadStatic) {
 			lastReloadTS = System.currentTimeMillis();
 			cancelLoadJob(true);
 			setPendingState(true, true);

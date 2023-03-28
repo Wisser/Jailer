@@ -1813,9 +1813,12 @@ public class DataBrowser extends javax.swing.JFrame {
 					if (new File(sessionFile).exists()) {
 						afterReconnectAction = () -> {
 							try {
+								BrowserContentPane.suppressReloadStatic = true;
 								desktop.restoreSession(null, DataBrowser.this, sessionFile, true);
 							} catch (Exception e) {
 								LogUtil.warn(e);
+							} finally {
+								BrowserContentPane.suppressReloadStatic = false;
 							}
 						};
 					}
