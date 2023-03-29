@@ -1,3 +1,7 @@
+14.4.2
+  - The maximum memory usage has been increased.
+  - Minor UI improvements.
+
 14.4.1
   - In rare cases, the user interface was blocked for a short time when establishing a connection. This has been corrected.
 
