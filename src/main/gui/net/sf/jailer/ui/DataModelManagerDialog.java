@@ -2199,6 +2199,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel5.add(connectionDialogPanel, gridBagConstraints);
 
         jTabbedPane1.addTab("Connection", jPanel5);
