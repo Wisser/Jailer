@@ -3002,7 +3002,3 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		helpImg = UIUtil.readImage("/explain.png");
 	}
 }
-
-//TODO
-//TODO allow creating data models outside of this dialog
-
