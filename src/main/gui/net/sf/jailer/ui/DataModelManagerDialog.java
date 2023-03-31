@@ -2238,7 +2238,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 2);
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         loadJMPanel.add(loadExtractionModelButton, gridBagConstraints);
 
         jmOkButton.setText(" OK ");
@@ -2251,7 +2251,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 2);
+        gridBagConstraints.insets = new java.awt.Insets(4, 2, 4, 4);
         loadJMPanel.add(jmOkButton, gridBagConstraints);
 
         jPanel7.setBorder(javax.swing.BorderFactory.createTitledBorder("Recent Files"));
@@ -2320,7 +2320,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         bookmarkPanel.add(infoBarLabelBookmark, gridBagConstraints);
 
-        bmCancelButton.setText(" Cancel ");
+        bmCancelButton.setText("Cancel");
         bmCancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bmCancelButtonActionPerformed(evt);
@@ -2330,10 +2330,10 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 20;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 4);
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 4);
         bookmarkPanel.add(bmCancelButton, gridBagConstraints);
 
-        bmOkButton.setText(" OK ");
+        bmOkButton.setText("OK");
         bmOkButton.setEnabled(false);
         bmOkButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2345,7 +2345,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.gridy = 20;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 2);
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 2);
         bookmarkPanel.add(bmOkButton, gridBagConstraints);
 
         jTabbedPane1.addTab("Layout", bookmarkPanel);
