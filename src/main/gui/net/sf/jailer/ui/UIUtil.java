@@ -61,6 +61,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -80,7 +81,10 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -2334,6 +2338,56 @@ public class UIUtil {
 			}
 			clipboard.setContents(text, (ClipboardOwner) text);
 		}
+	}
+	
+	public static <T> void traverse(Component component, T parentValue, Function<Component, T> componentValue, BiFunction<T, T, T> composedValue, BiConsumer<T, Component> consumer) {
+		T value = composedValue.apply(parentValue, componentValue.apply(component));
+		consumer.accept(value, component);
+		if (component instanceof Container) {
+			for (Component child: ((Container) component).getComponents()) {
+				traverse(child, value, componentValue, composedValue, consumer);
+			}
+		}
+	}
+	
+	public static void createComponentNameTooltips(Component component) {
+		Map<Object, String> names = new HashMap<>();
+		Class<?> clazz = component.getClass();
+		while (clazz != null) {
+			for (Field field: clazz.getDeclaredFields()) {
+				field.setAccessible(true);
+				Object value;
+				try {
+					value = field.get(component);
+				} catch (IllegalArgumentException | IllegalAccessException e) {
+					throw new RuntimeException(e);
+				}
+				if (value != null) {
+					names.put(value, field.getName());
+				}
+			}
+			clazz = clazz.getSuperclass();
+		}
+		traverse(component, new ArrayList<String>(),
+			c -> {
+				List<String> result = names.containsKey(c)? Collections.singletonList(names.get(c)) : Collections.emptyList();
+				return result;
+			},
+			(pv, v) -> {
+				List<String> result = new ArrayList<String>(pv);
+				result.addAll(v);
+				return result;
+			},
+			(value, c) -> {
+				if (c instanceof JComponent) {
+					((JComponent) c).setToolTipText(value.toString() + ": " + c.getClass().getSimpleName());
+					try {
+						((JComponent) c).setBorder(BorderFactory.createLineBorder(Color.gray));
+					} catch (Exception e) {
+						// ignore
+					}
+				}
+			});
 	}
 
 }

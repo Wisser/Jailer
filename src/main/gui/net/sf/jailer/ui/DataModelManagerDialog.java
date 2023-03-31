@@ -172,10 +172,10 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		
 		histLabel.setIcon(UIUtil.scaleIcon(histLabel, histIcon));
 		
-		InfoBar infoBar = new DMMDInfoBar("Data Model Configuration",
+		InfoBar infoBar = new DMMDInfoBar("Data Model",
 				"A data model is a set of interrelated tables. Acquire information about tables by analyzing " +
 				"database schemas, \nor use the data model editor to manually define tables and associations.\n \n",
-				"Select a data model to work with.");
+				"Select a data model you want to work with or create a new one.");
 		UIUtil.replace(infoBarLabel, infoBar);
 
 		InfoBar infoBarJM = new DMMDInfoBar("Load Extraction Model",
@@ -643,6 +643,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			if (module != null) {
 				modulesPanel.setVisible(false);
 				dmmdSubsetter.titelLabel.setVisible(false);
+				sepPanel.setVisible(false);
 				dmmdSubsetter.mainContentPanel.setBackground(null);
 				setTitle(dmmdSubsetter.applicationName);
 			}
@@ -652,6 +653,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			if (module != null) {
 				modulesPanel.setVisible(false);
 				dmmdBrowser.titelLabel.setVisible(false);
+				sepPanel.setVisible(false);
 				dmmdBrowser.mainContentPanel.setBackground(null);
 				setTitle(dmmdBrowser.applicationName);
 			}
@@ -2471,7 +2473,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 8, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
         jPanel11.add(jPanel21, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -3000,3 +3002,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		helpImg = UIUtil.readImage("/explain.png");
 	}
 }
+
+//TODO
+//TODO allow creating data models outside of this dialog
+
