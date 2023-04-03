@@ -334,9 +334,9 @@ public class DataBrowser extends javax.swing.JFrame {
 	/**
 	 * Allowed row limits.
 	 */
-	public static final Integer[] ROW_LIMITS = new Integer[] { 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000,
+	public static final Integer[] ROW_LIMITS = new Integer[] { 1000, 2000, 5000, 10000, 20000, 50000,
 			70000, 100000 };
-	public static final int ROW_LIMIT_DEFAULT = 500;
+	public static final int ROW_LIMIT_DEFAULT = 1000;
 
 	/**
 	 * Constructor.
