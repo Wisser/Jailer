@@ -37,6 +37,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.ModelElement;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ddl.DDLCreator;
 import net.sf.jailer.progress.ProgressListener;
 import net.sf.jailer.ui.ProgressPanel;
 import net.sf.jailer.ui.ProgressTable;
@@ -420,7 +421,9 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 									"Warning: The number of rows collected (" + finalCollectedRows + ") differs from that of the exported ones (" + exportedRows.get() + ").\n \n" +
 									"This may have been caused by an invalid primary key definition.\nPlease note that each primary key must be unique.\n \n" +
 									"It is recommended to check the integrity of the primary keys.\n" +
-									"To do this, use the button below \nor the menu item \"Check primary keys\" in the menu called \"DataModel\".";
+									"To do this, use the button below \nor the menu item \"Check primary keys\" in the menu called \"DataModel\"." +
+									"\n \n" +
+									"UPK: " + DDLCreator.uPK;
 							final JButton button = new JButton("Check Primary Keys");
 							button.addActionListener(new ActionListener() {
 								@Override

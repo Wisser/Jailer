@@ -178,7 +178,8 @@ public class DDLCreator {
 		return createDDL(datamodel, session, temporaryTableScope, 2, false, rowIdSupport, workingTableSchema, withTableProperties);
 	}
 
-	public static boolean uPKWasTooLong = false;
+	public static volatile boolean uPKWasTooLong = false;
+	public static volatile String uPK;
 
 	/**
 	 * Creates the DDL for the working-tables.
@@ -199,6 +200,7 @@ public class DDLCreator {
 			throw new DataModel.NoPrimaryKeyException(table);
 		}
 		String universalPrimaryKey = upk.toSQL(null, contraint, typeReplacement);
+		uPK = universalPrimaryKey;
 		Map<String, String> arguments = new HashMap<String, String>();
 		arguments.put("upk", universalPrimaryKey);
 		String tableProperties = targetDBMS(session).getTableProperties();
@@ -385,6 +387,7 @@ public class DDLCreator {
 					public void readCurrentRow(ResultSet resultSet) throws SQLException {
 						String contraint = pkColumnConstraint(session);
 						String universalPrimaryKey = rowIdSupport.getUniversalPrimaryKey().toSQL(null, contraint, typeReplacement);
+						uPK = universalPrimaryKey;
 						String h = "" + (universalPrimaryKey + targetDBMS(session).getTableProperties()).hashCode();
 						uptodate[0] = resultSet.getString(1).equals(h);
 					}
