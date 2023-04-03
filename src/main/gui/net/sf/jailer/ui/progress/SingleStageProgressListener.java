@@ -28,14 +28,20 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.ModelElement;
+import net.sf.jailer.datamodel.PrimaryKey;
+import net.sf.jailer.datamodel.PrimaryKeyFactory;
+import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ddl.DDLCreator;
 import net.sf.jailer.progress.ProgressListener;
@@ -417,13 +423,21 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 					if (checkPK && forExportStage && isFinalStage && !isErrorStage) {
 						if (!warned && exportedRows.get() != finalCollectedRows) {
 							warned = true;
-							String message =
-									"Warning: The number of rows collected (" + finalCollectedRows + ") differs from that of the exported ones (" + exportedRows.get() + ").\n \n" +
-									"This may have been caused by an invalid primary key definition.\nPlease note that each primary key must be unique.\n \n" +
-									"It is recommended to check the integrity of the primary keys.\n" +
-									"To do this, use the button below \nor the menu item \"Check primary keys\" in the menu called \"DataModel\"." +
-									"\n \n" +
-									"UPK: " + DDLCreator.uPK;
+							String universalPrimaryKey = "";
+							try {
+								universalPrimaryKey = new RowIdSupport(dataModel, DBMS.H2, false, false).getUniversalPrimaryKey().toString();
+							} catch (Throwable t) {
+								// ignore
+							}
+							String message = Stream.of(("<b><font color=\"ff0000\">Warning:</font></b> The number of rows collected ("
+									+ finalCollectedRows + ") differs from that of the exported ones ("
+									+ exportedRows.get() + ").<br> <br>"
+									+ "This may have been caused by an invalid primary key definition.<br>Please note that each primary key must be unique.<br> <br>"
+									+ "It is recommended to check the integrity of the primary keys.<br>"
+									+ "To do this, use the button here below <br>or the menu item \"<b><u><font color=\"ff0000\">Check primary keys</font></u></b>\" in the menu called \"Model\"."
+									+ "<br> <br>" + "<small>UPK: " + DDLCreator.uPK + "; " + universalPrimaryKey
+									+ "</small>")).map(l -> "<html>" + l + "<br></html>")
+									.collect(Collectors.joining(""));
 							final JButton button = new JButton("Check Primary Keys");
 							button.addActionListener(new ActionListener() {
 								@Override

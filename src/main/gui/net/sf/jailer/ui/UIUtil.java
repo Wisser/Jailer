@@ -943,6 +943,9 @@ public class UIUtil {
     }
 
     public static StringBuilder lineWrap(String message, int maxwidth) {
+    	if (message.startsWith("<html>")) {
+    		return new StringBuilder(message);
+    	}
         StringBuilder msg = new StringBuilder();
         Pattern wrapRE = Pattern.compile("(\\S\\S{" + maxwidth + ",}|.{1," + maxwidth + "})(\\s+|$)");
         Matcher m = wrapRE.matcher(message == null ? "" : message);
