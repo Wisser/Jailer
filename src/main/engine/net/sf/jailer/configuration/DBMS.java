@@ -312,6 +312,7 @@ public class DBMS {
 	private Boolean supportsSchemasInIndexDefinitions = null;
 	private boolean useInlineViewsInDataBrowser = true;
 	private String virtualColumnsQuery = null;
+	private String identityColumnsQuery = null;
 	private String synonymTableQuery;
 	private String viewTextOrDDLQuery = "SELECT VIEW_DEFINITION FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA = '%1$s' and TABLE_NAME = '%2$s'";
 	private String estimatedRowCountQuery = null;
@@ -988,6 +989,24 @@ public class DBMS {
 
 	public void setUserDefinedColumnsQuery(String userDefinedColumnsQuery) {
 		this.userDefinedColumnsQuery = userDefinedColumnsQuery;
+	}
+
+	public String getIdentityColumnsQuery() {
+		return identityColumnsQuery;
+	}
+
+	public void setIdentityColumnsQuery(String identityColumnsQuery) {
+		this.identityColumnsQuery = identityColumnsQuery;
+	}
+	
+	private String identityColumnInsertClause;
+
+	public String getIdentityColumnInsertClause() {
+		return identityColumnInsertClause;
+	}
+
+	public void setIdentityColumnInsertClause(String identityColumnInsertClause) {
+		this.identityColumnInsertClause = identityColumnInsertClause;
 	}
 
 	private String nullableContraint = null;

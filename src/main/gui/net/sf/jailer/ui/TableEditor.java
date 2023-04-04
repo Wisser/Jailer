@@ -465,7 +465,7 @@ public abstract class TableEditor extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(1, 0, 1, 0);
         columnDetailsPanel.add(columnPrec, gridBagConstraints);
 
-        columnIsIdentity.setText(" identity column (MS SQL)");
+        columnIsIdentity.setText(" identity column");
         columnIsIdentity.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;

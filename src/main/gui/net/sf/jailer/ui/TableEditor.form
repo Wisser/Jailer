@@ -121,7 +121,7 @@
         </Component>
         <Component class="javax.swing.JCheckBox" name="columnIsIdentity">
           <Properties>
-            <Property name="text" type="java.lang.String" value=" identity column (MS SQL)"/>
+            <Property name="text" type="java.lang.String" value=" identity column"/>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
               <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                 <EmptyBorder bottom="0" left="0" right="0" top="0"/>

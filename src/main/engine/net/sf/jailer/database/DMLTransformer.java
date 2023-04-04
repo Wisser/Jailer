@@ -149,7 +149,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 	protected final Quoting quoting;
 
 	/**
-	 * If table has identity column (MSSQL/Sybase)
+	 * If table has identity column (MSSQL/Sybase/Postgres)
 	 */
 	private boolean tableHasIdentityColumn;
 
@@ -270,12 +270,10 @@ public class DMLTransformer extends AbstractResultSetReader {
 		this.session = session;
 		this.selectionClause = table.getSelectionClause();
 		tableHasIdentityColumn = false;
-		if (targetDBMSConfiguration.isIdentityInserts()) {
-			for (Column c: table.getColumns()) {
-				if (c.isIdentityColumn) {
-					tableHasIdentityColumn = true;
-					break;
-				}
+		for (Column c: table.getColumns()) {
+			if (c.isIdentityColumn) {
+				tableHasIdentityColumn = true;
+				break;
 			}
 		}
 		this.primaryKeyColumnNames = new HashSet<String>();
@@ -375,6 +373,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 				valueList.append(cVal);
 				namedValues.append(cVal + " " + columnLabel[i]);
 			}
+			String identityColumnInsertClause = tableHasIdentityColumn && session.dbms != null && session.dbms.getIdentityColumnInsertClause() != null? session.dbms.getIdentityColumnInsertClause() + " ": "";
 			if (table.getUpsert() || upsertOnly) {
 				if (table.getNonVirtualPKColumns(session).isEmpty()) {
 					throw new DataModel.NoPrimaryKeyException(table, "has no " +
@@ -447,7 +446,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 					}
 				}
 
-				String insertHead = "Insert into " + qualifiedTableName(table) + "(" + columnsWONull + ") ";
+				String insertHead = "Insert into " + qualifiedTableName(table) + "(" + columnsWONull + ") " + identityColumnInsertClause;
 				f = true;
 				StringBuffer whereForTerminator = new StringBuffer("");
 				StringBuffer whereForTerminatorWONull = new StringBuffer("");
@@ -730,14 +729,14 @@ public class DMLTransformer extends AbstractResultSetReader {
 				}
 			} else {
 				if (DBMS.DB2_ZOS.equals(targetDBMSConfiguration) && maxBodySize > 1) {
-					String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") ";
+					String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") " + identityColumnInsertClause;
 					String item = PrintUtil.LINE_SEPARATOR + " Select " + valueList + " From sysibm.sysdummy1";
 					if (!insertStatementBuilder.isAppendable(insertSchema)) {
 						writeToScriptFile(insertStatementBuilder.build(), true);
 					}
 					insertStatementBuilder.append(insertSchema, item, " Union all ", ";" + PrintUtil.LINE_SEPARATOR);
 				} else if (DBMS.ORACLE.equals(targetDBMSConfiguration) && maxBodySize > 1) {
-					String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") ";
+					String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") " + identityColumnInsertClause;
 					if (!insertStatementBuilder.isAppendable(insertSchema)) {
 						writeToScriptFile(insertStatementBuilder.build(), true);
 					}
@@ -749,14 +748,14 @@ public class DMLTransformer extends AbstractResultSetReader {
 					}
 					insertStatementBuilder.append(insertSchema, item, " Union all ", ";" + PrintUtil.LINE_SEPARATOR);
 				} else if (DBMS.SQLITE.equals(targetDBMSConfiguration) && maxBodySize > 1) {
-					String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") ";
+					String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") " + identityColumnInsertClause;
 					String item = PrintUtil.LINE_SEPARATOR + " Select " + valueList + " ";
 					if (!insertStatementBuilder.isAppendable(insertSchema)) {
 						writeToScriptFile(insertStatementBuilder.build(), true);
 					}
 					insertStatementBuilder.append(insertSchema, item, " Union all ", ";" + PrintUtil.LINE_SEPARATOR);
 				} else {
-					String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") values ";
+					String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") " + identityColumnInsertClause + "values ";
 					String item = (maxBodySize > 1? PrintUtil.LINE_SEPARATOR + " " : "") + "(" + valueList + ")";
 					if (!insertStatementBuilder.isAppendable(insertSchema)) {
 						writeToScriptFile(insertStatementBuilder.build(), true);
@@ -1016,7 +1015,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 	 */
 	private void writeToScriptFile(String content, boolean wrap) throws IOException {
 		synchronized (scriptFileWriter) {
-			if (tableHasIdentityColumn) {
+			if (targetDBMSConfiguration.isIdentityInserts() && tableHasIdentityColumn) {
 				if (identityInsertTable.get() != table) {
 					if (identityInsertTable.get() != null) {
 						scriptFileWriter.write("SET IDENTITY_INSERT " + qualifiedTableName(identityInsertTable.get()) + " OFF;" + PrintUtil.LINE_SEPARATOR);

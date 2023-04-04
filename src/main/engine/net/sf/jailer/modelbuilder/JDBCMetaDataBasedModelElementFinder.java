@@ -55,6 +55,7 @@ import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
 import net.sf.jailer.util.JSqlParserUtil;
+import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
@@ -1345,6 +1346,38 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			if (isVirtual != null) {
 				column.isVirtual = isVirtual;
 			}
+			
+			try {
+				String identityColumnsQuery = session.dbms.getIdentityColumnsQuery();
+				if (identityColumnsQuery != null) {
+					@SuppressWarnings("unchecked")
+					Set<Pair<String, String>> identityColumns = (Set<Pair<String, String>>) session.getSessionProperty(getClass(), "identityColumns" + schemaName);
+					if (identityColumns == null) {
+						identityColumns = new HashSet<Pair<String,String>>();
+							try {
+								session.setSilent(true);
+								final Set<Pair<String, String>> finalidentityColumns = identityColumns;
+								session.executeQuery(identityColumnsQuery.replace("${SCHEMA}", schemaName), new Session.AbstractResultSetReader() {
+									@Override
+									public void readCurrentRow(ResultSet resultSet) throws SQLException {
+										finalidentityColumns.add(new Pair<String, String>(resultSet.getString(1), resultSet.getString(2)));
+									}
+								});
+							} catch (Exception e) {
+								// ignore
+							} finally {
+								session.setSilent(false);
+							}
+							session.setSessionProperty(getClass(), "identityColumns" + schemaName, identityColumns);
+						}
+					if (identityColumns.contains(new Pair<String, String>(tableName, resultSet.getString(4)))) {
+						column.isIdentityColumn = true;
+					}
+				}
+			} catch (Exception e) {
+				LogUtil.warn(e);
+			}
+		
 			columns.add(column);
 		}
 		resultSet.close();

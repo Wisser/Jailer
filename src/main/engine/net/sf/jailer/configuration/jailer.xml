@@ -888,7 +888,9 @@ union all
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
         <estimatedRowCountQuery>SELECT TABNAME, CARD FROM SYSSTAT.TABLES WHERE TABSCHEMA = '%s'</estimatedRowCountQuery>
         <viewTextOrDDLQuery>SELECT TEXT FROM SYSCAT.VIEWS WHERE VIEWSCHEMA = '%1$s' and VIEWNAME = '%2$s'</viewTextOrDDLQuery>
-        <virtualColumnsQuery>SELECT TABNAME, COLNAME from syscat.columns WHERE TABSCHEMA='${SCHEMA}' AND GENERATED='A'</virtualColumnsQuery>
+        <virtualColumnsQuery>SELECT TABNAME, COLNAME from syscat.columns WHERE TABSCHEMA='${SCHEMA}' AND GENERATED='A' AND NOT "IDENTITY"='Y'</virtualColumnsQuery>
+        <identityColumnsQuery>SELECT TABNAME, COLNAME from syscat.columns WHERE TABSCHEMA='${SCHEMA}' AND GENERATED='A' AND "IDENTITY"='Y'</identityColumnsQuery>
+        <identityColumnInsertClause>overriding system value</identityColumnInsertClause>
         <importedKeysQuery> SELECT null, REF.REFTABSCHEMA, REF.REFTABNAME, PKCOL.COLNAME,        null, REF.TABSCHEMA, REF.TABNAME, FKCOL.COLNAME, FKCOL.COLSEQ,        null, null, REF.CONSTNAME, REF.REFKEYNAME, null FROM syscat.references REF, syscat.keycoluse PKCOL, syscat.keycoluse FKCOL WHERE REF.CONSTNAME = FKCOL.CONSTNAME   AND REF.TABSCHEMA = FKCOL.TABSCHEMA   AND REF.TABNAME = FKCOL.TABNAME   AND REF.REFKEYNAME = PKCOL.CONSTNAME   AND REF.REFTABSCHEMA = PKCOL.TABSCHEMA   AND REF.REFTABNAME = PKCOL.TABNAME   AND FKCOL.COLSEQ = PKCOL.COLSEQ   AND REF.REFTABSCHEMA = '${SCHEMA}'   ORDER BY FKCOL.COLSEQ</importedKeysQuery>
         <primaryKeysQuery>   SELECT null, CONST.TABSCHEMA, CONST.TABNAME, PKCOL.COLNAME, PKCOL.COLSEQ, CONST.CONSTNAME FROM syscat.tabconst CONST, syscat.keycoluse PKCOL WHERE CONST.CONSTNAME = PKCOL.CONSTNAME   AND CONST.TABSCHEMA = PKCOL.TABSCHEMA   AND CONST.TABNAME = PKCOL.TABNAME   AND CONST.TYPE = 'P'   AND CONST.TABSCHEMA = '${SCHEMA}'   ORDER BY PKCOL.COLSEQ</primaryKeysQuery>
         <identifierQuoteString>"</identifierQuoteString>
@@ -1442,6 +1444,8 @@ WHERE  n.nspname = '%s'
         <explainPrepare></explainPrepare>
         <explainQuery>explain %1$s</explainQuery>
         <explainCleanup></explainCleanup>
+        <identityColumnsQuery>Select table_name, column_name From information_schema.columns Where table_schema='net' and is_identity='YES' and identity_generation='ALWAYS'</identityColumnsQuery>
+        <identityColumnInsertClause>overriding system value</identityColumnInsertClause>
         <functionSourceQuery>
 SELECT 'Function', p.proname || '(' || pg_catalog.pg_get_function_arguments(p.oid) || ') RETURNS ' ||  pg_catalog.pg_get_function_result(p.oid)
 FROM pg_catalog.pg_proc p
