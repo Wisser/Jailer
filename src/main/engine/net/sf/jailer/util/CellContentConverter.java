@@ -220,7 +220,7 @@ public class CellContentConverter {
 		POSTGRES_EXTENSIONS.addAll(Arrays.asList("hstore", "ghstore", "json", "jsonb", "_hstore", "_json", "_jsonb", "_ghstore"));
 	}
 
-	private class SQLExpressionWrapper implements Comparable<SQLExpressionWrapper> {
+	public class SQLExpressionWrapper implements Comparable<SQLExpressionWrapper> {
 		private final Object value;
 		private final String type;
 		private final String pattern;
