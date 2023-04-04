@@ -37,6 +37,7 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.CellContentConverter.PObjectWrapper;
+import net.sf.jailer.util.CellContentConverter.SQLExpressionWrapper;
 import net.sf.jailer.util.CellContentConverter.TimestampWithNano;
 import net.sf.jailer.util.SqlUtil;
 
@@ -430,6 +431,9 @@ public class BrowserContentCellEditor {
 			if (content instanceof PObjectWrapper) {
 				content = ((PObjectWrapper) content).getValue();
 			}
+			if (content instanceof SQLExpressionWrapper) {
+				content = ((SQLExpressionWrapper) content).toString();
+			}
 			return converter.isEditable(columnTypes[column], content, relaxed, this);
 		}
 		return false;
@@ -446,6 +450,9 @@ public class BrowserContentCellEditor {
 	public String cellContentToText(int column, Object content) {
 		if (content instanceof PObjectWrapper) {
 			content = ((PObjectWrapper) content).getValue();
+		}
+		if (content instanceof SQLExpressionWrapper) {
+			content = ((SQLExpressionWrapper) content).toString();
 		}
 		if (content == null) {
 			return "";

@@ -44,6 +44,12 @@ public enum MetaDataDetails {
 			ResultSet rs = JDBCMetaDataBasedModelElementFinder.getColumns(session, Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()), "%", true, true, mdTable.isSynonym()? "SYNONYM" : null);
 			MemorizedResultSet mRs = new MemorizedResultSet(rs, null, session, "");
 			rs.close();
+			if (mRs.getRowList().isEmpty()) {
+				mRs.close();
+				rs = JDBCMetaDataBasedModelElementFinder.getColumns(session, Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()), "%", false, false, mdTable.isSynonym()? "SYNONYM" : null);
+				mRs = new MemorizedResultSet(rs, null, session, "");
+				rs.close();
+			}
 			
 			List<Object[]> result = new ArrayList<Object[]>();
 			for (Object[] row: mRs.getRowList()) {
