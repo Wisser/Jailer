@@ -3187,7 +3187,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         menuBar.add(jMenu1);
 
-        menuTools.setText("Model");
+        menuTools.setText("Data Model");
 
         analyseMenuItem.setText("Analyse Database");
         analyseMenuItem.addActionListener(new java.awt.event.ActionListener() {

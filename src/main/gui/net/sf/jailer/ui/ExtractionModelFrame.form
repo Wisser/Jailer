@@ -121,7 +121,7 @@
         </Menu>
         <Menu class="javax.swing.JMenu" name="jMenu1">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Model"/>
+            <Property name="text" type="java.lang.String" value="Data Model"/>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="updateDataModel">

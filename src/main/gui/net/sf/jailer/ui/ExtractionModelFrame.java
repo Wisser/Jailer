@@ -525,7 +525,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             }
         });
 
-        newModel.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
+        newModel.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         newModel.setText("New");
         newModel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -534,7 +534,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         });
         fileMenu.add(newModel);
 
-        load.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
+        load.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         load.setText("Load");
         load.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -552,7 +552,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         fileMenu.add(reload);
         fileMenu.add(jSeparator1);
 
-        save.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+        save.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         save.setText("Save");
         save.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -561,7 +561,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         });
         fileMenu.add(save);
 
-        saveAs.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_MASK));
+        saveAs.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         saveAs.setText("Save as...");
         saveAs.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -615,7 +615,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         jMenuBar2.add(fileMenu);
 
-        jMenu1.setText("Model");
+        jMenu1.setText("Data Model");
 
         updateDataModel.setText("Analyze Database");
         updateDataModel.addActionListener(new java.awt.event.ActionListener() {
@@ -680,7 +680,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         editMenu.setText("Edit");
 
-        undoMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Z, java.awt.event.InputEvent.CTRL_MASK));
+        undoMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Z, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         undoMenuItem.setText("Undo");
         undoMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -689,7 +689,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         });
         editMenu.add(undoMenuItem);
 
-        redoMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Y, java.awt.event.InputEvent.CTRL_MASK));
+        redoMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Y, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         redoMenuItem.setText("Redo");
         redoMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -717,7 +717,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         editMenu.add(removeAllRestrictions);
         editMenu.add(jSeparator12);
 
-        jMenuItem2.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem2.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         jMenuItem2.setText("Filter editor...");
         jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -730,7 +730,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         viewMenu.setText("View");
 
-        collapseAll.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
+        collapseAll.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         collapseAll.setText("Collapse all");
         collapseAll.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -739,7 +739,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         });
         viewMenu.add(collapseAll);
 
-        expandAll.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.CTRL_MASK));
+        expandAll.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         expandAll.setLabel("Expand all");
         expandAll.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -748,7 +748,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         });
         viewMenu.add(expandAll);
 
-        expandAllVisible.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_W, java.awt.event.InputEvent.CTRL_MASK));
+        expandAllVisible.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_W, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         expandAllVisible.setText("Expand visible tables");
         expandAllVisible.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -757,7 +757,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         });
         viewMenu.add(expandAllVisible);
 
-        jMenuItem3.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem3.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         jMenuItem3.setText("Fix all");
         jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -766,7 +766,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         });
         viewMenu.add(jMenuItem3);
 
-        jMenuItem4.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_U, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem4.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_U, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         jMenuItem4.setText("Unfix all");
         jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -775,7 +775,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         });
         viewMenu.add(jMenuItem4);
 
-        refresh.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
+        refresh.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         refresh.setText("Reset");
         refresh.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -784,7 +784,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         });
         viewMenu.add(refresh);
 
-        zoomToFit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_M, java.awt.event.InputEvent.CTRL_MASK));
+        zoomToFit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_M, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         zoomToFit.setText("Zoom to fit");
         zoomToFit.setVerifyInputWhenFocusTarget(false);
         zoomToFit.addActionListener(new java.awt.event.ActionListener() {
@@ -795,7 +795,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         viewMenu.add(zoomToFit);
         viewMenu.add(jSeparator4);
 
-        showIgnored.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_H, java.awt.event.InputEvent.CTRL_MASK));
+        showIgnored.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_H, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         showIgnored.setText("Show disabled associations");
         showIgnored.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -804,7 +804,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         });
         viewMenu.add(showIgnored);
 
-        showTableDetails.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_D, java.awt.event.InputEvent.CTRL_MASK));
+        showTableDetails.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_D, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         showTableDetails.setText("Show table details");
         showTableDetails.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -886,7 +886,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         jMenu5.setText("Settings");
 
-        horizontalLayoutMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_I, java.awt.event.InputEvent.CTRL_MASK));
+        horizontalLayoutMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_I, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         horizontalLayoutMenuItem.setSelected(true);
         horizontalLayoutMenuItem.setText("Horizontal layout");
         horizontalLayoutMenuItem.addActionListener(new java.awt.event.ActionListener() {
