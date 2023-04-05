@@ -665,7 +665,7 @@ public abstract class TableEditor extends javax.swing.JDialog {
 
         warnPKChangedLabel.setFont(warnPKChangedLabel.getFont().deriveFont(warnPKChangedLabel.getFont().getSize()+1f));
         warnPKChangedLabel.setForeground(new java.awt.Color(205, 0, 0));
-        warnPKChangedLabel.setText("<html>Primary key has been changed.<br>Keep in mind that the primary key must be unique.<br>It is recommended to check the integrity of the primary key.<br>To do that, please select the option \"check primary keys\" in the export dialog or use the button below. </html>");
+        warnPKChangedLabel.setText("<html>Primary key has been changed.<br>Keep in mind that the primary key must be unique.<br>It is recommended to check the integrity of the primary key.<br>To do that, please select the option \"check primary keys\" in the \"Data Model\" menu item or use the button below. </html>");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
