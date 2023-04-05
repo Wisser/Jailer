@@ -1,4 +1,5 @@
 14.5
+  - Both the in-place editor and the search condition dialog now support columns of type "enum".
   - Support of "identity" columns was added. (PostgreSQL, Microsoft SQL Server and DB/2)
 
 14.4.2
