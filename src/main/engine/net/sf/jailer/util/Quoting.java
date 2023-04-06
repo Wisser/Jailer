@@ -146,39 +146,46 @@ public class Quoting {
 		identifier = unquote(identifier);
 		if (quote != null && identifier != null && identifier.length() > 0) {
 			if (!keyWords.contains(identifier.toUpperCase(Locale.ENGLISH))) {
-				String lower = "abcdefghijklmnopqrstuvwxyz_0123456789";
-				String upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789";
-				String digits = "0123456789";
-				boolean allUpperCase = true;
-				boolean allLowerCase = true;
-				boolean allLetters = true;
-				for (int i = identifier.length() - 1; i >= 0; --i) {
-					char c = identifier.charAt(i);
-					if (lower.indexOf(c) < 0) {
-						allLowerCase = false;
-					}
-					if (upper.indexOf(c) < 0) {
-						allUpperCase = false;
-					}
-					if (lower.indexOf(c) < 0 && upper.indexOf(c) < 0 && digits.indexOf(c) < 0) {
-						allLetters = false;
-					}
-				}
-				if (digits.indexOf(identifier.charAt(0)) < 0) {
-					if (unquotedIdentifierInMixedCase && allLetters) {
-						return identifier;
-					}
-					if (unquotedIdentifierInUpperCase && allUpperCase) {
-						return identifier;
-					}
-					if ((!unquotedIdentifierInUpperCase) && allLowerCase) {
-						return identifier;
-					}
+				if (hasCorrectCase(identifier)) {
+					return identifier;
 				}
 			}
 			return quote + identifier + quote;
 		}
 		return identifier;
+	}
+
+	public boolean hasCorrectCase(String identifier) {
+		String lower = "abcdefghijklmnopqrstuvwxyz_0123456789";
+		String upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789";
+		String digits = "0123456789";
+		boolean allUpperCase = true;
+		boolean allLowerCase = true;
+		boolean allLetters = true;
+		for (int i = identifier.length() - 1; i >= 0; --i) {
+			char c = identifier.charAt(i);
+			if (lower.indexOf(c) < 0) {
+				allLowerCase = false;
+			}
+			if (upper.indexOf(c) < 0) {
+				allUpperCase = false;
+			}
+			if (lower.indexOf(c) < 0 && upper.indexOf(c) < 0 && digits.indexOf(c) < 0) {
+				allLetters = false;
+			}
+		}
+		if (digits.indexOf(identifier.charAt(0)) < 0) {
+			if (unquotedIdentifierInMixedCase && allLetters) {
+				return true;
+			}
+			if (unquotedIdentifierInUpperCase && allUpperCase) {
+				return true;
+			}
+			if ((!unquotedIdentifierInUpperCase) && allLowerCase) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
