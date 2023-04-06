@@ -401,7 +401,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		};
 		modelNavigationButtonV.addActionListener(al);
 		modelNavigationPanel.setVisible(false);
-		modelNavigationGapPanel.setMinimumSize(new Dimension(232, 1));
+		modelNavigationGapPanel.setMinimumSize(new Dimension(300, 1));
 		modelNavigationGapPanel.setPreferredSize(modelNavigationGapPanel.getMinimumSize());
 		
 		if (UIUtil.plaf == PLAF.FLAT) {
