@@ -275,26 +275,30 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
 					boolean hasFocus, int row, int column) {
 				int dmColumn = column;
-				Component render = jTable.getCellRenderer(row, dmColumn).getTableCellRendererComponent(contentTable, value, false, hasFocus, row, dmColumn);
-				if (render instanceof JLabel) {
-					if (isSelected) {
-						if (UIUtil.TABLE_BACKGROUND_COLOR_1.equals(render.getBackground())) {
-							render.setBackground(UIUtil.TABLE_BG1SELECTED);
-						} else {
-							render.setBackground(UIUtil.TABLE_BG2SELECTED);
+				try {
+					Component render = jTable.getCellRenderer(row, dmColumn).getTableCellRendererComponent(contentTable,
+							value, false, hasFocus, row, dmColumn);
+					if (render instanceof JLabel) {
+						if (isSelected) {
+							if (UIUtil.TABLE_BACKGROUND_COLOR_1.equals(render.getBackground())) {
+								render.setBackground(UIUtil.TABLE_BG1SELECTED);
+							} else {
+								render.setBackground(UIUtil.TABLE_BG2SELECTED);
+							}
+						}
+						if ("found".equals(render.getName())) {
+							Color background = render.getBackground();
+							render.setBackground(new Color(Math.max((int) (background.getRed()), 0),
+									Math.max((int) (background.getGreen() * 0.90), 0),
+									Math.max((int) (background.getBlue() * 0.91), 0), background.getAlpha()));
 						}
 					}
-					if ("found".equals(render.getName())) {
-						Color background = render.getBackground();
-						render.setBackground(
-								new Color(
-										Math.max((int)(background.getRed()), 0),
-										Math.max((int)(background.getGreen() * 0.90), 0),
-										Math.max((int)(background.getBlue() * 0.91), 0),
-										background.getAlpha()));
-					}
+					return render;
+				} catch (Exception e) {
+					LogUtil.warn(e);
+					return new JLabel();
 				}
-				return render;
+
 			}
 		});
 		try {
