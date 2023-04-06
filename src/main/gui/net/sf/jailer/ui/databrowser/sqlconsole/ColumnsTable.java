@@ -26,6 +26,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -45,6 +46,7 @@ import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
@@ -77,6 +79,7 @@ public class ColumnsTable extends JTable {
 	private final int MAX_ROWS = 498;
 	private static final KeyStroke KS_COPY_TO_CLIPBOARD = KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK);
 	private static final KeyStroke KS_ECOPY_TO_CLIPBOARD = KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK);
+	private static final KeyStroke KS_EDIT = KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK);
 	final BrowserContentPane rb;
 	private Map<Integer, String> tableName = new HashMap<Integer, String>();
 	private boolean useTableName = true;
@@ -85,6 +88,7 @@ public class ColumnsTable extends JTable {
 	private int currentRow = -1;
 	private Action copyAction;
 	private Action ecopyAction;
+	private Action editModeAction;
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public ColumnsTable(final BrowserContentPane rb, boolean inDesktop) {
@@ -226,6 +230,25 @@ public class ColumnsTable extends JTable {
 		};
 		am.put(key, a);
 		ecopyAction = a;
+		key = "editMode";
+		im.put(KS_EDIT, key);
+		am = getActionMap();
+		a = new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				UIUtil.traverse(createPopupMenu(null), null, c-> null, (c, o) -> null, (t, c) -> {
+					if (c instanceof JMenuItem) {
+						if (KS_EDIT.equals(((JMenuItem) c).getAccelerator())) {
+							for (ActionListener al: ((JMenuItem) c).getActionListeners()) {
+								al.actionPerformed(e);
+							}
+						}
+					}
+				});
+			}
+		};
+		am.put(key, a);
+		editModeAction = a;
 		
 		addMouseListener(new MouseListener() {
 			@Override
@@ -391,18 +414,21 @@ public class ColumnsTable extends JTable {
 	 */
 	private JPopupMenu createPopupMenu(MouseEvent e) {
 		int i = -1;
+		Point p = new Point();
 		Row row = null;
-		int ri = columnAtPoint(e.getPoint()) - 1;
-		if (ri >= 0 && !rb.rows.isEmpty() && rb.rowsTable.getRowSorter().getViewRowCount() > 0) {
-			i = rb.rowsTable.getRowSorter().convertRowIndexToModel(ri);
-			row = rb.rows.get(i);
-			rb.setCurrentRowSelection(ri);
-			repaint();
-		} else {
-			return null;
+		if (e != null) {
+			int ri = columnAtPoint(e.getPoint()) - 1;
+			if (ri >= 0 && !rb.rows.isEmpty() && rb.rowsTable.getRowSorter().getViewRowCount() > 0) {
+				i = rb.rowsTable.getRowSorter().convertRowIndexToModel(ri);
+				row = rb.rows.get(i);
+				rb.setCurrentRowSelection(ri);
+				repaint();
+			} else {
+				return null;
+			}
+			p = new Point(e.getX(), e.getY());
+			SwingUtilities.convertPointToScreen(p, this);
 		}
-		Point p = new Point(e.getX(), e.getY());
-		SwingUtilities.convertPointToScreen(p, this);
 		return rb.createPopupMenu(this, row, i, (int) p.getX(), (int) p.getY(), false, copyAction, ecopyAction, new Runnable() {
 			@Override
 			public void run() {
@@ -413,7 +439,7 @@ public class ColumnsTable extends JTable {
 					}
 				}
 			}
-		}, false, true, true);
+		}, true, true, true);
 	}
 
 	private void adjustTableColumnsWidth() {
@@ -523,6 +549,10 @@ public class ColumnsTable extends JTable {
 		im.put(KS_ECOPY_TO_CLIPBOARD, key);
 		am = fixed.getActionMap();
 		am.put(key, ecopyAction);
+		key = "editMode";
+		im.put(KS_EDIT, key);
+		am = fixed.getActionMap();
+		am.put(key, editModeAction);
 	}
 	
 	public void clear() {

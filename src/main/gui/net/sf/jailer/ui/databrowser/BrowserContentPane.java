@@ -4284,7 +4284,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		} finally {
 			session.setSilent(false);
 		}
-		Set<String> existingColumnsLowerCase = null;
+		Map<String, Boolean> existingColumnsLowerCase = null;
 		if (!(table instanceof SqlStatementTable) && statementForReloading == null) {
 			existingColumnsLowerCase = findColumnsLowerCase(table, session);
 		}
@@ -4297,9 +4297,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @param table the table
 	 * @param session the statement executor for executing SQL-statements
 	 */
-	private Set<String> findColumnsLowerCase(Table table, Session session) {
+	private Map<String, Boolean> findColumnsLowerCase(Table table, Session session) {
 		try {
-			Set<String> columns = new HashSet<String>();
+			Map<String, Boolean> columns = new HashMap<String, Boolean>();
 			Quoting quoting = Quoting.getQuoting(session);
 			String defaultSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema());
 			String schema = quoting.unquote(table.getOriginalSchema(defaultSchema));
@@ -4316,8 +4316,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				if (!Quoting.equalsWROSearchPattern(tableName, resultSet.getString(3))) {
 					continue;
 				}
-				String colName = resultSet.getString(4).toLowerCase(Locale.ENGLISH);
-				columns.add(colName);
+				String colName = resultSet.getString(4);
+				if (quoting.hasCorrectCase(colName)) {
+					columns.put(colName.toLowerCase(Locale.ENGLISH), true);
+				} else {
+					columns.put(colName, false);
+				}
 			}
 			resultSet.close();
 			if (columns.isEmpty()) {
@@ -4336,8 +4340,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					if (!Quoting.equalsWROSearchPattern(tableName, resultSet.getString(3))) {
 						continue;
 					}
-					String colName = resultSet.getString(4).toLowerCase(Locale.ENGLISH);
-					columns.add(colName);
+					String colName = resultSet.getString(4);
+					if (quoting.hasCorrectCase(colName)) {
+						columns.put(colName.toLowerCase(Locale.ENGLISH), true);
+					} else {
+						columns.put(colName, false);
+					}
 				}
 			}
 			if (columns.isEmpty()) {
@@ -4359,7 +4367,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @param limit
 	 *            row number limit
 	 */
-	private void reloadRows(ResultSet inputResultSet, String andCond, final List<Row> rows, LoadJob loadJob, int limit, boolean selectDistinct, Set<String> existingColumnsLowerCase) throws SQLException {
+	private void reloadRows(ResultSet inputResultSet, String andCond, final List<Row> rows, LoadJob loadJob, int limit, boolean selectDistinct, Map<String, Boolean> existingColumnsLowerCase) throws SQLException {
 		if (table instanceof SqlStatementTable || statementForReloading != null) {
 			try {
 				session.setSilent(true);
@@ -4436,7 +4444,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 	private void loadRowBlocks(ResultSet inputResultSet, InlineViewStyle inlineViewStyle, String andCond, final List<Row> rows, LoadJob loadJob, int limit, boolean selectDistinct, List<Row> pRows,
-			Map<String, Row> rowSet, int NUM_PARENTS, Set<String> existingColumnsLowerCase) throws SQLException {
+			Map<String, Row> rowSet, int NUM_PARENTS, Map<String, Boolean> existingColumnsLowerCase) throws SQLException {
 		List<List<Row>> parentBlocks = new ArrayList<List<Row>>();
 		List<Row> currentBlock = new ArrayList<Row>();
 		Set<String> regPRows = new HashSet<String>();
@@ -4643,7 +4651,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 *            to put the rows into
 	 */
 	private void reloadRows(ResultSet inputResultSet, InlineViewStyle inlineViewStyle, String andCond, final List<Row> parentRows, final Map<String, List<Row>> rows, LoadJob loadJob, int limit, boolean useOLAPLimitation,
-			String sqlLimitSuffix, Set<String> existingColumnsLowerCase) throws SQLException {
+			String sqlLimitSuffix, Map<String, Boolean> existingColumnsLowerCase) throws SQLException {
 		reloadRows0(inputResultSet, inlineViewStyle, andCond, parentRows, rows, loadJob, parentRows == null? limit : Math.max(5000, limit), useOLAPLimitation, sqlLimitSuffix, existingColumnsLowerCase);
 	}
 
@@ -4670,7 +4678,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 *            cancellation context
 	 */
 	private void reloadRows0(ResultSet inputResultSet, InlineViewStyle inlineViewStyle, String andCond, final List<Row> parentRows, final Map<String, List<Row>> rows, LoadJob loadJob, int limit, boolean useOLAPLimitation,
-			String sqlLimitSuffix, Set<String> existingColumnsLowerCase) throws SQLException {
+			String sqlLimitSuffix, Map<String, Boolean> existingColumnsLowerCase) throws SQLException {
 		String sql = "Select ";
 		final Quoting quoting = Quoting.getQuoting(session);
 		final Set<String> pkColumnNames = new HashSet<String>();
@@ -4714,7 +4722,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 			for (Column column : rowIdSupport.getColumns(table, session)) {
 				String name = quoting.requote(column.name);
-				if (existingColumnsLowerCase != null && !rowIdSupport.isRowIdColumn(column) && !existingColumnsLowerCase.contains(quoting.unquote(name).toLowerCase(Locale.ENGLISH))) {
+				if (existingColumnsLowerCase != null && !rowIdSupport.isRowIdColumn(column) 
+						&& !
+						(
+						 (existingColumnsLowerCase.containsKey(quoting.unquote(name)) && (quoting.hasCorrectCase(quoting.unquote(name)) || quoting.isQuoted(name)))
+								||
+						 (existingColumnsLowerCase.containsKey(quoting.unquote(name).toLowerCase(Locale.ENGLISH)) 
+								 && Boolean.TRUE.equals(existingColumnsLowerCase.get(quoting.unquote(name).toLowerCase(Locale.ENGLISH)))))) {
 					sql += (!f ? ", " : "") + "'?' as A" + i;
 					unknownColumnIndexes.add(colI);
 				} else {
