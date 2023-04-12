@@ -649,7 +649,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 	        	Object e = searchComboBox.getModel().getElementAt(i);
 	        	if (e instanceof String) {
 	        		Table table = getDataModel().getTableByDisplayName((String) e);
-	        		if (table != null) {
+	        		if (table != null && metaDataSource.isInitialized()) {
 	        			MDTable mdTable = metaDataSource.toMDTable(table);
 	        			if (mdTable != null) {
 	        				Long count = mdTable.getEstimatedRowCount();

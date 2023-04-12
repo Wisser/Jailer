@@ -594,7 +594,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		        	Object e = tablesComboBox.getModel().getElementAt(i);
 		        	if (e instanceof String) {
 		        		Table table = this.datamodel.get().getTableByDisplayName((String) e);
-		        		if (table != null) {
+		        		if (table != null && metaDataSource.isInitialized()) {
 		        			MDTable mdTable = metaDataSource.toMDTable(table);
 		        			if (mdTable != null) {
 		        				Long count = mdTable.getEstimatedRowCount();
@@ -5571,7 +5571,8 @@ public class DataBrowser extends javax.swing.JFrame {
 								try {
 									String sql;
 									Quoting quoting = Quoting.getQuoting(session);
-									MDTable mdTable = getMetaDataSource(session).toMDTable(table);
+									MetaDataSource metaDataSource = getMetaDataSource(session);
+									MDTable mdTable = metaDataSource.isInitialized()? metaDataSource.toMDTable(table) : null;
 									String tableName;
 									String schemaName;
 									if (mdTable != null) {
