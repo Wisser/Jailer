@@ -983,7 +983,7 @@
                         </Property>
                         <Property name="text" type="java.lang.String" value="Schema"/>
                         <Property name="cursor" type="java.awt.Cursor" editor="org.netbeans.modules.form.editors2.CursorEditor">
-                          <Color id="Default Cursor"/>
+                          <Color id="Standardcursor"/>
                         </Property>
                       </Properties>
                       <Events>
@@ -1015,7 +1015,7 @@
                         </Property>
                         <Property name="text" type="java.lang.String" value="offline"/>
                         <Property name="cursor" type="java.awt.Cursor" editor="org.netbeans.modules.form.editors2.CursorEditor">
-                          <Color id="Default Cursor"/>
+                          <Color id="Standardcursor"/>
                         </Property>
                       </Properties>
                       <Events>
@@ -1174,6 +1174,7 @@
                                     </Container>
                                     <Container class="javax.swing.JToolBar" name="jToolBar1">
                                       <Properties>
+                                        <Property name="floatable" type="boolean" value="false"/>
                                         <Property name="rollover" type="boolean" value="true"/>
                                       </Properties>
                                       <Constraints>
@@ -1436,6 +1437,7 @@
                                     </Container>
                                     <Container class="javax.swing.JToolBar" name="jToolBar2">
                                       <Properties>
+                                        <Property name="floatable" type="boolean" value="false"/>
                                         <Property name="rollover" type="boolean" value="true"/>
                                       </Properties>
                                       <Constraints>
