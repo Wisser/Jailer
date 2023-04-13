@@ -822,6 +822,10 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	    return plainIsValid? searchTextField.getText() : combobox.getSelectedItem() instanceof String? (String) combobox.getSelectedItem() : searchTextField.getText();
     }
     
+    public JTextField getSearchTextField() {
+	    return searchTextField;
+    }
+    
     public boolean isPlainValueFromCombobox() {
 	    return plainIsValid? false : combobox.getSelectedItem() instanceof String? true : false;
     }
@@ -1369,6 +1373,10 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		}
 	}
 	
+    public javax.swing.JList<String> getSearchList() {
+		return searchList;
+	}
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel bottomComponentsPanel;
     private javax.swing.JPanel bottomPanel;
@@ -1390,7 +1398,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
     private javax.swing.JPanel plugInPanel;
     private javax.swing.JPanel schemaPanel;
     private javax.swing.JList<String> searchList;
-    private javax.swing.JTextField searchTextField;
+	private javax.swing.JTextField searchTextField;
     private javax.swing.JButton selectAllButton;
     private javax.swing.JPanel sizeGripPanel;
     private javax.swing.JLabel statusLabel;
