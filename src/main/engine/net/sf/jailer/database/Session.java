@@ -635,7 +635,7 @@ public class Session {
 					try {
 						statement.setFetchSize(dbms.getLimitedFetchSize(limit));
 					} catch (Throwable t) {
-						// ignore
+						LogUtil.warn(t);
 					}
 				}
 			}
