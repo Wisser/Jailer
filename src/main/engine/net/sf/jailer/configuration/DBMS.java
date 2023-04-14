@@ -1382,7 +1382,7 @@ public class DBMS {
 	}
 
 	public int getLimitedFetchSize(long limit) {
-		final int DEFAULT_FETCH_SIZE = 30000;
+		final int DEFAULT_FETCH_SIZE = 20000;
 		Integer fSize = getFetchSize();
 		if (fSize != null) {
 			if (limit > 0 && limit <= DEFAULT_FETCH_SIZE) {
