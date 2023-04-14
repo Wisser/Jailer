@@ -731,7 +731,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	private void updateERCounts(Table table, boolean limitExceeded, int numRowsRead) {
 		MetaDataSource metaDataSource = getMetaDataSource();
-		if (metaDataSource != null) {
+		if (metaDataSource != null && metaDataSource.isInitialized()) {
 			MDTable mdTable = metaDataSource.toMDTable(table);
 			if (mdTable != null) {
 				if (limitExceeded) {

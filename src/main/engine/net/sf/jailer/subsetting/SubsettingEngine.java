@@ -26,6 +26,7 @@ import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -701,7 +702,7 @@ public class SubsettingEngine {
 			transformerHandler.startElement("http://www.liquibase.org/xml/ns/dbchangelog", "", "databaseChangeLog",attrdatabaseChangeLog);
 
 			AttributesImpl attrchangeset = new AttributesImpl();
-			attrchangeset.addAttribute("", "", "id", "","JailerExport" );
+			attrchangeset.addAttribute("", "", "id", "","JailerExport_" + new SimpleDateFormat("yyyyMMddhhmmss", Locale.ENGLISH).format(new Date()));
 			attrchangeset.addAttribute("", "", "author", "",System.getProperty("user.name") );
 
 			transformerHandler.startElement("", "", "changeSet", attrchangeset);

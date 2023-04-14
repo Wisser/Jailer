@@ -62,6 +62,7 @@ import java.util.stream.Stream;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -74,6 +75,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
+import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.border.LineBorder;
@@ -1709,8 +1711,8 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		StringSearchPanel searchPanel = new StringSearchPanel(null, combobox, null, null, null, new Runnable() {
 			@Override
 			public void run() {
-				setValueFieldText(valueTextField, theSearchPanel.get(0).getPlainValue());
 				if (theSearchPanel.get(0).isExplictlyClosed()) {
+					setValueFieldText(valueTextField, theSearchPanel.get(0).getPlainValue());
 					accept(comparison, theSearchPanel.get(0).getPlainValue(), theSearchPanel.get(0).isPlainValueFromCombobox(), comparison.operator);
 					if (initialColumn >= 0 && popupOnTop) {
 						if (REDUCED_OPACITY_FADE_START == 0) {
@@ -1821,7 +1823,8 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			UIUtil.startDW();
 			searchPanel.find(owner, "Condition", point.x, point.y, true);
 		});
-		searchPanel.setInitialValue(valueTextField.getText());
+		String initialSearchText = valueTextField.getText();
+		searchPanel.setInitialValue(initialSearchText);
 		searchPanel.setStatus("loading existing values...", null);
 		JPanel bottom = new JPanel(new GridBagLayout());
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -2005,6 +2008,41 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						};
 						fullSearchCheckbox.addActionListener(action);
 						action.actionPerformed(null);
+						try {
+							if (comparison.column.name != null) {
+								String st = searchPanel.getSearchTextField().getText();
+								if (initialSearchText.equals(st)) {
+									ListModel<String> m = searchPanel.getSearchList().getModel();
+									if (m instanceof DefaultListModel) {
+										int i;
+										@SuppressWarnings("rawtypes")
+										DefaultListModel model = (DefaultListModel) m;
+										if (model.indexOf(st) >= 0) {
+											if (getHistory(comparison.column).contains(st)) {
+												i = model.indexOf(st);
+											} else {
+												renderConsumer.put(st, label -> {
+													label.setIcon(sHistIcon);
+												});
+												i = 0;
+												model.insertElementAt(st, i);
+											}
+											if (i >= 0) {
+												boolean hadFocus = searchPanel.getSearchTextField().hasFocus();
+												searchPanel.getSearchList().setSelectedIndex(i);
+												if (hadFocus) {
+													searchPanel.getSearchTextField().grabFocus();
+												}
+											}
+										}
+									}
+								} else {
+									searchPanel.updateList(true, true);
+								}
+							}
+						} catch (Throwable t) {
+							LogUtil.warn(t);
+						}
 						UIUtil.invokeLater(2, () -> UIUtil.stopDW());
 					}
 				}});
@@ -2594,3 +2632,8 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	// TODO multi-value-select? (in clause?)
 
 }
+
+// TODO
+// TODO Abteilung1.ObjektId wird auf 62 nicht gecached?!
+
+

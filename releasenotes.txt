@@ -1,3 +1,14 @@
+14.5.1
+  - The "row fetch size" related to database communication has been increased for more performance.
+  - Fix for "#50 Export liquibase is not usable when null elements are untyped."
+    https://sourceforge.net/p/jailer/bugs/50/
+  - Fix for "#51 Liquibase export a wrong Timestamp format"
+    https://sourceforge.net/p/jailer/bugs/51/
+  - Fix for "#72 Make liquibase changeSet id dynamic."
+    https://sourceforge.net/p/jailer/feature-requests/72/
+  - UI blocking occurred in rare cases when database metadata acquisition took a long time. This has been corrected.
+  - Other minor improvements to the UI.
+
 14.5
   - Both the in-place editor and the search condition dialog now support columns of type "enum".
   - Support of "identity" columns was added. (PostgreSQL, Microsoft SQL Server and DB/2)

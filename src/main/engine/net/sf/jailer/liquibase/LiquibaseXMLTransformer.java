@@ -132,9 +132,9 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 		
 		// https://docs.liquibase.com/change-types/nested-tags/column.html
 		// valueDate: The date and time value to set the column to. Accepts the following formats: YYYY-MM-DD, hh:mm:ss, or YYYY-MM-DDThh:mm:ss.
-		this.datePattern = new SimpleDateFormat("YYYY-MM-DD", Locale.ENGLISH);
+		this.datePattern = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
 		this.timePattern = new SimpleDateFormat("hh:mm:ss", Locale.ENGLISH);
-		this.timestampPattern = new SimpleDateFormat("YYYY-MM-DD'T'hh:mm:ss", Locale.ENGLISH);
+		this.timestampPattern = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss", Locale.ENGLISH);
 		this.session = session;
 	}
 	
@@ -353,7 +353,7 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 			
 		} else{
 			
-			attrcolumn=createAttribute(columnname,null,null);
+			attrcolumn=createAttribute(columnname,typeName,null);
 		}
 		
 		return attrcolumn;
@@ -386,7 +386,29 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 		if((valuetype!=null) && (value!=null)){		
 			attrcolumn.addAttribute("", "", valuetype, "", value);
 		}
-		
+		else if (valuetype != null)
+		{
+			// Liquibase's LOAD_DATA_TYPE BOOLEAN, NUMERIC, DATE, STRING, COMPUTED, SEQUENCE, BLOB, CLOB, SKIP, UUID, OTHER, UNKNOWN
+			switch (valuetype)
+			{
+				case "DATE":
+				case "TIMESTAMP":
+					attrcolumn.addAttribute("", "", "type", "", "DATE");
+					break;
+				case "SMALLINT":
+				case "INTEGER":
+				case "BIGINT":
+					attrcolumn.addAttribute("", "", "type", "", "NUMERIC");
+					break;
+				case "VARCHAR":
+					attrcolumn.addAttribute("", "", "type", "", "VARCHAR");
+					break;
+				case "CLOB" :
+					attrcolumn.addAttribute("", "", "type", "", "CLOB");
+					break;
+			}
+		}
+
 		return attrcolumn;
 	}
 	

@@ -718,7 +718,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         		        	MDTable mdTable = null;
         		        	if (item != null) {
         		                Table table = dataModel.getTableByDisplayName(item.toString());
-        		                if (table != null) {
+        		                if (table != null && metaDataSource.isInitialized()) {
         		                    mdTable = metaDataSource.toMDTable(table);
         		                } else {
         		                	mdTable = tablesComboboxMDTablePerName.get(item);

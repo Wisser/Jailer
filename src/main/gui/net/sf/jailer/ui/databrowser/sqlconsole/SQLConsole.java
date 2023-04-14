@@ -858,8 +858,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             status.updateView(false);
             statement = connection.createStatement();
 			if (session.dbms != null) {
-				if (session.dbms.getFetchSize() != null) {
-					statement.setFetchSize(session.dbms.getFetchSize());
+				Object limit = limitComboBox.getSelectedItem();
+				try {
+					statement.setFetchSize(
+						session.dbms.getLimitedFetchSize(limit instanceof Integer ? (Integer) limit : -1));
+				} catch (Throwable t) {
+					LogUtil.warn(t);
 				}
 			}
 			CancellationHandler.reset(SQLConsole.this);
