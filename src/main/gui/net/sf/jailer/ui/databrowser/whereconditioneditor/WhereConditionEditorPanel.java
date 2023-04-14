@@ -2632,3 +2632,8 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	// TODO multi-value-select? (in clause?)
 
 }
+
+// TODO
+// TODO Abteilung1.ObjektId wird auf 62 nicht gecached?!
+
+
