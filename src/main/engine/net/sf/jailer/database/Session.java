@@ -631,13 +631,11 @@ public class Session {
 			}
 			statement = theConnection.createStatement();
 			if (dbms != null) {
-				if (dbms.getFetchSize() != null) {
-					if (!wo || !DBMS.MySQL.equals(dbms)) {
-						try {
-							statement.setFetchSize(dbms.getFetchSize());
-						} catch (Throwable t) {
-							// ignore
-						}
+				if (!wo || !DBMS.MySQL.equals(dbms)) {
+					try {
+						statement.setFetchSize(dbms.getLimitedFetchSize(limit));
+					} catch (Throwable t) {
+						// ignore
 					}
 				}
 			}
