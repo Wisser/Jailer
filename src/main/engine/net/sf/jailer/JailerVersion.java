@@ -25,7 +25,7 @@ public class JailerVersion {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "14.5.0.2";
+	public static final String VERSION = "14.6";
 
 	/**
 	 * The Jailer working tables version.
@@ -45,7 +45,3 @@ public class JailerVersion {
 	}
 
 }
-
-
-// TODO
-// TODO engine release pending (14.6). See DBMS#getLimitedFetchSize()

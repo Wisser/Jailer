@@ -87,6 +87,7 @@ import javax.swing.text.BadLocationException;
 import org.fife.ui.rtextarea.SmartHighlightPainter;
 
 import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.InlineViewStyle;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
@@ -2293,19 +2294,24 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				}
 			}
 		};
-		if (orderBy) {
-			Map<String, Integer> prev = new HashMap<String, Integer>(result);
-			try {
-				session.executeQuery(sqlQuery + " order by " + (inSQLConsole()? "val" : columnName), reader, null, cancellationContext, MAX_NUM_DISTINCTEXISTINGVALUES + 2);
-			} catch (SQLException e) {
-				result.clear();
-				result.putAll(prev);
-				// try without ordering
+		DBMS.setTmpFetchSize(25100);
+		try {
+			if (orderBy) {
+				Map<String, Integer> prev = new HashMap<String, Integer>(result);
+				try {
+					session.executeQuery(sqlQuery + " order by " + (inSQLConsole()? "val" : columnName), reader, null, cancellationContext, MAX_NUM_DISTINCTEXISTINGVALUES + 2);
+				} catch (SQLException e) {
+					result.clear();
+					result.putAll(prev);
+					// try without ordering
+					session.executeQuery(sqlQuery, reader, null, cancellationContext, MAX_NUM_DISTINCTEXISTINGVALUES + 2);
+					sortValues(result, columnIndex);
+				}
+			} else {
 				session.executeQuery(sqlQuery, reader, null, cancellationContext, MAX_NUM_DISTINCTEXISTINGVALUES + 2);
-				sortValues(result, columnIndex);
 			}
-		} else {
-			session.executeQuery(sqlQuery, reader, null, cancellationContext, MAX_NUM_DISTINCTEXISTINGVALUES + 2);
+		} finally {
+			DBMS.setTmpFetchSize(null);
 		}
 	}
 
@@ -2632,8 +2638,4 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	// TODO multi-value-select? (in clause?)
 
 }
-
-// TODO
-// TODO Abteilung1.ObjektId wird auf 62 nicht gecached?!
-
 

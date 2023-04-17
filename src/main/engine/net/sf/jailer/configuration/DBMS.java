@@ -1381,17 +1381,33 @@ public class DBMS {
 		return true;
 	}
 
+	private static final ThreadLocal<Integer> tmpFetchSize = new ThreadLocal<>();
+	
+	public static void setTmpFetchSize(Integer tmpFetchSize) {
+		DBMS.tmpFetchSize.set(tmpFetchSize);
+	}
+	
 	public int getLimitedFetchSize(long limit) {
-		final int DEFAULT_FETCH_SIZE = 20010;
 		Integer fSize = getFetchSize();
 		if (fSize != null) {
-			if (limit > 0 && limit <= DEFAULT_FETCH_SIZE) {
-				return (int) (limit + 1 + 1);
-			} else {
+			if (fSize < 0) {
 				return fSize;
 			}
+		}
+
+		final int DEFAULT_FETCH_SIZE = 5010;
+		if (fSize == null) {
+			fSize = DEFAULT_FETCH_SIZE;
+		}
+		
+		Integer dfs = tmpFetchSize.get();
+		if (dfs == null) {
+			dfs = fSize;
+		}
+		if (limit > 0 && limit <= dfs) {
+			return (int) (limit + 1 + 1);
 		} else {
-			return DEFAULT_FETCH_SIZE;
+			return dfs;
 		}
 	}
 
