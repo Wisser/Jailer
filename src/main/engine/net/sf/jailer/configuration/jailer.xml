@@ -237,6 +237,12 @@ union all
         <statisticRenovator>
             <scriptFileName>script/mssql/update_statistics.sql</scriptFileName>
         </statisticRenovator>
+        <jdbcProperties>
+            <entry>
+                <key>trustServerCertificate</key>
+                <value>true</value>
+            </entry>
+        </jdbcProperties>
         <stringLiteralEscapeSequences>
             <entry>
                 <key>'</key>
