@@ -6107,6 +6107,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         noRowsFoundPanel = new javax.swing.JPanel();
         jLabel9 = new javax.swing.JLabel();
         removeConditionButton = new javax.swing.JButton();
+        rowsCountTabPanel = new javax.swing.JPanel();
         fullTextSearchContainerPanel = new javax.swing.JPanel();
         singleRowViewScrollPaneContainer = new javax.swing.JPanel();
         singleRowViewScrollPane = new javax.swing.JScrollPane();
@@ -6409,14 +6410,24 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         jLayeredPane2.add(noRowsFoundPanel, gridBagConstraints);
 
+        rowsCountTabPanel.setLayout(new java.awt.GridBagLayout());
+
         fullTextSearchContainerPanel.setLayout(new javax.swing.BoxLayout(fullTextSearchContainerPanel, javax.swing.BoxLayout.LINE_AXIS));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        rowsCountTabPanel.add(fullTextSearchContainerPanel, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        jLayeredPane2.add(fullTextSearchContainerPanel, gridBagConstraints);
+        jLayeredPane2.add(rowsCountTabPanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -6613,7 +6624,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         menuPanel.setLayout(new java.awt.GridBagLayout());
 
-        jToolBar1.setFloatable(false);
         jToolBar1.setRollover(true);
 
         conditionEditorButton.setText("jToggleButton1");
@@ -6636,7 +6646,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         jPanel7.setLayout(new java.awt.GridBagLayout());
 
-        jToolBar2.setFloatable(false);
         jToolBar2.setRollover(true);
 
         loadButton.setText("Reload ");
@@ -6968,6 +6977,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     javax.swing.JPanel relatedRowsPanel;
     private javax.swing.JButton removeConditionButton;
     public javax.swing.JLabel rowsCount;
+    public javax.swing.JPanel rowsCountTabPanel;
     public javax.swing.JTable rowsTable;
     protected javax.swing.JPanel rowsTableContainerPanel;
     public javax.swing.JScrollPane rowsTableScrollPane;
