@@ -55,6 +55,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.sqlconsole.ColumnsTable;
 import net.sf.jailer.util.LogUtil;
 
@@ -214,6 +215,10 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 				}
 			}
 		});
+		
+		if (UIUtil.plaf == PLAF.FLAT) {
+			searchField.putClientProperty("JTextField.placeholderText", "Full Text Search");
+		}
     }
 
     private boolean updatePending = false;

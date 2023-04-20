@@ -376,7 +376,7 @@
                     <Component class="javax.swing.JCheckBox" name="headerCheckBox">
                       <Properties>
                         <Property name="selected" type="boolean" value="true"/>
-                        <Property name="text" type="java.lang.String" value="With Columns"/>
+                        <Property name="text" type="java.lang.String" value="With Headings"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="headerCheckBoxActionPerformed"/>

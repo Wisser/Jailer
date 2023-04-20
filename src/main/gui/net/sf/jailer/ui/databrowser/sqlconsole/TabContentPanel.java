@@ -967,7 +967,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         textTabPanel.add(columnSeparatorLabel, gridBagConstraints);
 
         headerCheckBox.setSelected(true);
-        headerCheckBox.setText("With Columns");
+        headerCheckBox.setText("With Headings");
         headerCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 headerCheckBoxActionPerformed(evt);

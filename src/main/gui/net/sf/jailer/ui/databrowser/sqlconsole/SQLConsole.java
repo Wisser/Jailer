@@ -443,6 +443,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         jScrollPane.setViewportView(editorPane);
         if (jScrollPane.getGutter() != null) {
         	jScrollPane.getGutter().setIconRowHeaderInheritsGutterBackground(true);
+        	jScrollPane.getGutter().setCurrentLineNumberColor(Color.black);
         }
         editorPane.setGutter(jScrollPane.getGutter());
         consoleContainerPanel.add(jScrollPane);
