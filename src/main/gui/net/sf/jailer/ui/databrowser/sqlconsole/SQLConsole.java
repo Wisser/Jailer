@@ -1437,7 +1437,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 		GridBagConstraints gbc = new GridBagConstraints();
 						gbc.gridx = 0;
 						gbc.gridy = 1;
-						gbc.insets = new Insets(0, 0, 0, 22);
+						gbc.insets = new Insets(0, 0, 0, 36);
 						rb.rowsCountTabPanel.add(rb.rowsCount, gbc);
 						tabContentPanel.tabbedPane.addChangeListener(new ChangeListener() {
                 			Container fullTextSearchPanelParent;
