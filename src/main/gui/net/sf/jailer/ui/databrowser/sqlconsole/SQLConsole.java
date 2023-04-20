@@ -23,6 +23,7 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Window;
@@ -1432,7 +1433,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 		} catch (Exception e) {
                 			// ignore
                 		}
-                		tabContentPanel.tabbedPane.addChangeListener(new ChangeListener() {
+                		GridBagConstraints gbc = new GridBagConstraints();
+						gbc.gridx = 0;
+						gbc.gridy = 1;
+						gbc.insets = new Insets(0, 0, 0, 22);
+						rb.rowsCountTabPanel.add(rb.rowsCount, gbc);
+						tabContentPanel.tabbedPane.addChangeListener(new ChangeListener() {
                 			Container fullTextSearchPanelParent;
                 			@Override
 							public void stateChanged(ChangeEvent e) {
@@ -1455,7 +1461,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 										am.put(fa, fa);
 									}
 									tabContentPanel.fullTSearchPanel.add(rb.fullTextSearchPanel);
+									tabContentPanel.columnsTabRowCountPanel.add(rb.rowsCount, gbc);
+								} else if (tabContentPanel.tabbedPane.getSelectedComponent() == tabContentPanel.textTabPanel) {
+									tabContentPanel.textTabRowCountPanel.add(rb.rowsCount, gbc);
 								} else if (fullTextSearchPanelParent != null) {
+							        rb.rowsCountTabPanel.add(rb.rowsCount, gbc);
 									fullTextSearchPanelParent.add(rb.fullTextSearchPanel);
 								}
 							}
@@ -3932,4 +3942,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     // "Select distinct ... from ... left join ..." with a non-comparable column in select clause (for example BLOB) fails. Make the problem go away.
     // idea: give SQLConsole an "ErrorHandler" who will be consulted if query fails and will ask user to skip "distinct" and try again.
 
+	// TODO
+	// TODO "<n> rows" + limit combobox bottom left instead of top right
+	
 }
