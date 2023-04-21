@@ -1,3 +1,7 @@
+14.6.1
+  - The menu items "Create SQL ... (for all rows)" in the SQL console popup menu now refers to all selected rows, if available.
+  - The external library for displaying and editing the SQL console has been updated.
+
 14.6
   - The "row fetch size" related to database communication has been increased for more performance.
   - Fix for "#50 Export liquibase is not usable when null elements are untyped."
