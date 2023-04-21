@@ -3943,7 +3943,4 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     // "Select distinct ... from ... left join ..." with a non-comparable column in select clause (for example BLOB) fails. Make the problem go away.
     // idea: give SQLConsole an "ErrorHandler" who will be consulted if query fails and will ask user to skip "distinct" and try again.
 
-	// TODO
-	// TODO popup console: "create DDL (all rows)" -> iff more than 1 row is selected: "create DDL (for the <n> selected rows)"
-	
 }
