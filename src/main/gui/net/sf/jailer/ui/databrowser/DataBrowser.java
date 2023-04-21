@@ -5051,6 +5051,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			searchBarEditor.whereConditionEditorPanel = whereConditionEditorPanel;
 			whereConditionEditorSubject = rowBrowser.browserContentPane;
 			whereConditionEditorPanel.parseCondition(rowBrowser.browserContentPane.getAndConditionText());
+			whereConditionEditorPanel.setExtJoinsUpdater(() -> addWCEditorExtRows(whereConditionEditorPanel, rowBrowser));
 		}
 
 		if (rowBrowser != null && rowBrowser.browserContentPane != null) {
@@ -5296,37 +5297,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				/* if (rowBrowser != null && rowBrowser.browserContentPane != null) */ {
 					popUpSearchBarEditor.whereConditionEditorPanel = popUpWhereConditionEditorPanel;
 					popUpWhereConditionEditorPanel.parseCondition(rowBrowser.browserContentPane.getAndConditionText());
-					List<Row> parentRows = rowBrowser.browserContentPane.parentRows;
-					if (rowBrowser.browserContentPane.association != null && parentRows != null
-							&& !parentRows.isEmpty()) {
-						String cond;
-						String unrestrictedJoinCondition = rowBrowser.browserContentPane.association
-								.getUnrestrictedJoinCondition();
-						if (!rowBrowser.browserContentPane.association.reversed) {
-							cond = SqlUtil.reversRestrictionCondition(unrestrictedJoinCondition);
-						} else {
-							cond = unrestrictedJoinCondition;
-						}
-						ArrayList<Row> parentRowsBatch = new ArrayList<Row>();
-						Runnable addExtRow = () -> {
-							String bRows = parentRowsBatch.stream().map(r -> "(" + r.rowId + ")")
-									.collect(Collectors.joining(" or "));
-							String extJoin = "join " + rowBrowser.browserContentPane.association.source.getName()
-									+ " B on (" + cond + ") and (" + bRows + ")";
-							popUpWhereConditionEditorPanel.addExtJoin(extJoin);
-						};
-						parentRows.forEach(row -> {
-							parentRowsBatch.add(row);
-							if (parentRowsBatch.size() >= 50) {
-								addExtRow.run();
-								parentRowsBatch.clear();
-							}
-						});
-						if (parentRowsBatch.size() > 0) {
-							addExtRow.run();
-							parentRowsBatch.clear();
-						}
-					}
+					addWCEditorExtRows(popUpWhereConditionEditorPanel, rowBrowser);
 				}
 				dialog.setModal(false);
 				dialog.setUndecorated(true);
@@ -5394,6 +5365,40 @@ public class DataBrowser extends javax.swing.JFrame {
 				timer.setRepeats(false);
 				timer.start();
 			});
+		}
+	}
+
+	void addWCEditorExtRows(WhereConditionEditorPanel wcEditor, RowBrowser rowBrowser) {
+		List<Row> parentRows = rowBrowser.browserContentPane.parentRows;
+		if (rowBrowser.browserContentPane.association != null && parentRows != null
+				&& !parentRows.isEmpty()) {
+			String cond;
+			String unrestrictedJoinCondition = rowBrowser.browserContentPane.association
+					.getUnrestrictedJoinCondition();
+			if (!rowBrowser.browserContentPane.association.reversed) {
+				cond = SqlUtil.reversRestrictionCondition(unrestrictedJoinCondition);
+			} else {
+				cond = unrestrictedJoinCondition;
+			}
+			ArrayList<Row> parentRowsBatch = new ArrayList<Row>();
+			Runnable addExtRow = () -> {
+				String bRows = parentRowsBatch.stream().map(r -> "(" + r.rowId + ")")
+						.collect(Collectors.joining(" or "));
+				String extJoin = "join " + rowBrowser.browserContentPane.association.source.getName()
+						+ " B on (" + cond + ") and (" + bRows + ")";
+				wcEditor.addExtJoin(extJoin);
+			};
+			parentRows.forEach(row -> {
+				parentRowsBatch.add(row);
+				if (parentRowsBatch.size() >= 50) {
+					addExtRow.run();
+					parentRowsBatch.clear();
+				}
+			});
+			if (parentRowsBatch.size() > 0) {
+				addExtRow.run();
+				parentRowsBatch.clear();
+			}
 		}
 	}
 

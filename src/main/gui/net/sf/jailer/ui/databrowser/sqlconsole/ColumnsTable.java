@@ -39,6 +39,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.swing.AbstractAction;
@@ -66,6 +68,7 @@ import net.sf.jailer.ui.ExtendetCopyPanel;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
 import net.sf.jailer.ui.databrowser.Row;
+import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Pair;
 
 /**
@@ -429,7 +432,19 @@ public class ColumnsTable extends JTable {
 			p = new Point(e.getX(), e.getY());
 			SwingUtilities.convertPointToScreen(p, this);
 		}
-		return rb.createPopupMenu(this, row, i, (int) p.getX(), (int) p.getY(), false, copyAction, ecopyAction, new Runnable() {
+		Set<Integer> selectedRowsIndexes = new TreeSet<>();
+		try {
+			for (int si: getSelectedColumns()) {
+				int ri = getColumnModel().getColumn(si).getModelIndex() - 1;
+				if (ri >= 0 && !rb.rows.isEmpty() && rb.rowsTable.getRowSorter().getViewRowCount() > 0) {
+					i = rb.rowsTable.getRowSorter().convertRowIndexToModel(ri);
+					selectedRowsIndexes.add(i);
+				}
+			}
+		} catch (Exception ex) {
+			LogUtil.warn(ex);
+		}
+		return rb.createPopupMenu(this, row, i, selectedRowsIndexes, (int) p.getX(), (int) p.getY(), false, copyAction, ecopyAction, new Runnable() {
 			@Override
 			public void run() {
 				for (int i = 0; i < getColumnCount(); i++) {

@@ -3944,6 +3944,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     // idea: give SQLConsole an "ErrorHandler" who will be consulted if query fails and will ask user to skip "distinct" and try again.
 
 	// TODO
-	// TODO "<n> rows" + limit combobox bottom left instead of top right
+	// TODO popup console: "create DDL (all rows)" -> iff more than 1 row is selected: "create DDL (for the <n> selected rows)"
 	
 }

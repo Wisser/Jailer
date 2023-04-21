@@ -1848,8 +1848,18 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								UIUtil.fit(popup);
 								UIUtil.showPopup(e.getComponent(), e.getX(), e.getY(), popup);
 							} else {
+								Set<Integer> selectedRowsIndexes = new TreeSet<>();
+								try {
+									for (int si: rowsTable.getSelectedRows()) {
+										selectedRowsIndexes.add(rowsTable.getRowSorter().convertRowIndexToModel(si));
+									}
+								} catch (Exception ex) {
+									LogUtil.warn(ex);
+								}
 								JPopupMenu popup;
-								popup = createPopupMenu(row, i, p.x + getOwner().getX(), p.y + getOwner().getY(), rows.size() == 1, true, source != rowsTable && source != rowsTableScrollPane);
+								final Row row1 = row;
+								final int rowIndex = i;
+								popup = createPopupMenu(rowsTable, row1, rowIndex, selectedRowsIndexes, p.x + getOwner().getX(), p.y + getOwner().getY(), rows.size() == 1, null, null, null, true, true, source != rowsTable && source != rowsTableScrollPane);
 
 								if (popup != null) {
 									if (row != null && !row.nonEmptyRowId.isEmpty()) {
@@ -2792,13 +2802,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * Creates popup menu for navigation.
 	 */
 	public JPopupMenu createPopupMenu(final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows, boolean withSingleRow, boolean forColumnsTable) {
-		return createPopupMenu(rowsTable, row, rowIndex, x, y, navigateFromAllRows, null, null, null, true, withSingleRow, forColumnsTable);
+		return createPopupMenu(rowsTable, row, rowIndex, null, x, y, navigateFromAllRows, null, null, null, true, withSingleRow, forColumnsTable);
 	}
 
 	/**
 	 * Creates popup menu for navigation.
+	 * @param selectedRowsIndexes 
 	 */
-	public JPopupMenu createPopupMenu(final JTable contextJTable, final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows, Action altCopyTCB, Action ealtCopyTCB, final Runnable repaint, final boolean withKeyStroke, boolean withSingleRow, boolean forColumnsTable) {
+	public JPopupMenu createPopupMenu(final JTable contextJTable, final Row row, final int rowIndex, Set<Integer> selectedRowsIndexes, final int x, final int y, boolean navigateFromAllRows, Action altCopyTCB, Action ealtCopyTCB, final Runnable repaint, final boolean withKeyStroke, boolean withSingleRow, boolean forColumnsTable) {
 		JMenuItem tableFilter = new JCheckBoxMenuItem("Table Filter");
 		tableFilter.setIcon(UIUtil.scaleIcon(tableFilter, UIUtil.readImage("/filter.png")));
 		if (withKeyStroke) {
@@ -3020,31 +3031,41 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							script.add(delete);
 							script.add(new JSeparator());
 						}
-						JMenuItem updates = new JMenuItem("Updates (all rows)");
+						String suffix = " (all rows)";
+						Set<Row> sRows = new HashSet<>(rows);
+						if (selectedRowsIndexes != null && selectedRowsIndexes.size() > 1) {
+							suffix = " (" + selectedRowsIndexes.size() + " selected rows)";
+							sRows = new HashSet<>();
+							for (Integer i: selectedRowsIndexes) {
+								sRows.add(rows.get(i));
+							}
+						}
+						Set<Row> fsRows = sRows;
+						JMenuItem updates = new JMenuItem("Updates" + suffix);
 						script.add(updates);
 						updates.addActionListener(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
 								openSQLDialog("Update " + tableName, x, y,  new Object() { @Override
-								public String toString() { return SQLDMLBuilder.buildUpdate(table, sortedAndFiltered(rows), false, session); }});
+								public String toString() { return SQLDMLBuilder.buildUpdate(table, sortedAndFiltered(fsRows, rows), false, session); }});
 							}
 						});
-						JMenuItem inserts = new JMenuItem("Inserts (all rows)");
+						JMenuItem inserts = new JMenuItem("Inserts" + suffix);
 						script.add(inserts);
 						inserts.addActionListener(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
 								openSQLDialog("Insert Into " + tableName, x, y, new Object() { @Override
-								public String toString() { return SQLDMLBuilder.buildInsert(table, sortedAndFiltered(rows), false, session); }});
+								public String toString() { return SQLDMLBuilder.buildInsert(table, sortedAndFiltered(fsRows, rows), false, session); }});
 							}
 						});
-						JMenuItem deletes = new JMenuItem("Deletes (all rows)");
+						JMenuItem deletes = new JMenuItem("Deletes" + suffix);
 						script.add(deletes);
 						deletes.addActionListener(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
 								openSQLDialog("Delete from " + tableName, x, y,  new Object() { @Override
-								public String toString() { return SQLDMLBuilder.buildDelete(table, sortedAndFiltered(rows), false, session); }
+								public String toString() { return SQLDMLBuilder.buildDelete(table, sortedAndFiltered(fsRows, rows), false, session); }
 								});
 							}
 						});
@@ -7729,6 +7750,27 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			return result;
 		}
 		return rows;
+	}
+
+	private List<Row> sortedAndFiltered(Set<Row> fsRows, List<Row> allRows) {
+		RowSorter<? extends TableModel> sorter = rowsTable.getRowSorter();
+		List<Row> result = new ArrayList<Row>();
+		if (sorter != null && !fsRows.isEmpty()) {
+			for (int i = 0; i < sorter.getViewRowCount(); ++i) {
+				Row row = allRows.get(sorter.convertRowIndexToModel(i));
+				if (fsRows.contains(row)) {
+					result.add(row);
+				}
+			}
+		} else {
+			for (int i = 0; i < allRows.size(); ++i) {
+				Row row = allRows.get(i);
+				if (fsRows.contains(row)) {
+					result.add(row);
+				}
+			}
+		}
+		return result;
 	}
 
 	private void sortChildren() {

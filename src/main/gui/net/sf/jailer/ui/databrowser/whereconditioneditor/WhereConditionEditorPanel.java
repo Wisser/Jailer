@@ -1650,6 +1650,14 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     	if (getParent() == null) {
     		return; // too late
     	}
+    	if (extJoinsUpdater != null) {
+    		extJoins.clear();
+    		try {
+    			extJoinsUpdater.run();
+    		} catch (Exception e) {
+    			LogUtil.warn(e);
+    		}
+    	}
     	Pair<Integer, Integer> pos = fullPositions.get(comparison.column);
 		if (pos != null) {
 			int offset = 0;
@@ -1873,10 +1881,10 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				incomplete[0] = 0;
 				LinkedHashMap<String, Integer> distinctExisting = null;
 				List<String> distinctExistingModel = new ArrayList<String>();
-				if (!condition.isEmpty()) {
+				if (!condition.isEmpty() || !extJoins.isEmpty()) {
 					try {
 						distinctExisting = loadDistinctExistingValues(comparison, cancellationContext, incomplete, withNull, fromCache,
-								condition);
+								condition, true);
 					} catch (CancellationException e) {
 						return;
 					} catch (Throwable e) {
@@ -1925,7 +1933,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				LinkedHashMap<String, Integer> distinctExistingFull = null;
 				List<String> distinctExistingFullModel = new ArrayList<String>();
 				try {
-					distinctExistingFull = loadDistinctExistingValues(comparison, cancellationContext, incompleteFull, withNullFull, fromCacheFull, "");
+					distinctExistingFull = loadDistinctExistingValues(comparison, cancellationContext, incompleteFull, withNullFull, fromCacheFull, "", false);
 					// dedup
 //					if (distinctExisting != null) {
 //						Map<String, String> fullSet = new HashMap<String, String>();
@@ -2107,7 +2115,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	}
 
 	@SuppressWarnings("unchecked")
-	private LinkedHashMap<String, Integer> loadDistinctExistingValues(Comparison comparison, Object cancellationContext, int[] incomplete, boolean[] withNull, boolean[] fromCache, String condition) throws SQLException {
+	private LinkedHashMap<String, Integer> loadDistinctExistingValues(Comparison comparison, Object cancellationContext, int[] incomplete, boolean[] withNull, boolean[] fromCache, String condition, boolean withExtJoins) throws SQLException {
 		final int MAX_TEXT_LENGTH = 1024 * 4;
 		LinkedHashMap<String, Integer> result;
 		Map<Pair<String, String>, Integer> icCache;
@@ -2159,7 +2167,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						}
 					}
 					boolean needsSort = false;
-					if (extJoins.isEmpty()) {
+					if (extJoins.isEmpty() || !withExtJoins) {
 						loadValues(comparison, cancellationContext, incomplete, withNull, condition, MAX_TEXT_LENGTH, result, tabName,
 							columnIndex, "", true);
 					} else {
@@ -2595,7 +2603,12 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	}
 	
 	private List<String> extJoins = new ArrayList<String>();
+	private Runnable extJoinsUpdater;
 	
+	public void setExtJoinsUpdater(Runnable extJoinsUpdater) {
+		this.extJoinsUpdater = extJoinsUpdater;
+	}
+
 	public void addExtJoin(String extJoin) {
 		extJoins.add(extJoin);
 	}
