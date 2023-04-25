@@ -1134,47 +1134,8 @@ public class DataBrowser extends javax.swing.JFrame {
 			}
 		};
 
-		desktop.setMinXProvider(() -> searchPanelContainer.isVisible() ? 1 : 0);
 		desktop.setUndoManager(desktopUndoManager);
-		searchPanelContainer.addComponentListener(new ComponentListener() {
-			boolean inQueue = false;
-			Boolean wasVisible = null;
-
-			private void update() {
-				if (!inQueue) {
-					UIUtil.invokeLater(() -> {
-						inQueue = false;
-						boolean vis = searchPanelContainer.isVisible();
-						if (wasVisible == null || wasVisible.booleanValue() != vis) {
-							if (UIUtil.plaf != PLAF.FLAT) {
-								desktop.updateMinX();
-							}
-						}
-						wasVisible = vis;
-					});
-					inQueue = true;
-				}
-			}
-
-			@Override
-			public void componentShown(ComponentEvent e) {
-				update();
-			}
-
-			@Override
-			public void componentHidden(ComponentEvent e) {
-				update();
-			}
-
-			@Override
-			public void componentResized(ComponentEvent e) {
-			}
-
-			@Override
-			public void componentMoved(ComponentEvent e) {
-			}
-		});
-
+		
 		desktop.addMouseMotionListener(new MouseMotionListener() {
 			@Override
 			public void mouseMoved(MouseEvent e) {
