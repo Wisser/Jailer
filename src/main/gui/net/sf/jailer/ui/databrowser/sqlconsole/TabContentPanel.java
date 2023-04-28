@@ -688,7 +688,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 						++cellsRendered;
 					}
 				}
-				if (y < cell.length - 1 && sb.length() > sbLength) {
+				if (sb.length() > sbLength) {
 					if (html) {
 						sb.append("</td></tr>");
 					}
