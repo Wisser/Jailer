@@ -594,6 +594,7 @@ public abstract class Desktop extends JDesktopPane {
 		
 		final RowBrowser tableBrowser = new RowBrowser();
 		final JInternalFrame jInternalFrame = new JInternalFrame(table == null ? "SQL" : title) {
+//			private SoftReference<BufferedImage> refOffscreen;
 			private BufferedImage m_offscreen;
 			private Dimension bufferSize = null;
 		    private AffineTransform originalTransform;
@@ -621,7 +622,17 @@ public abstract class Desktop extends JDesktopPane {
 		        return img;
 		    }
 
-			@Override
+		    // TODO
+		    // TODO soft-reference offscreenbuffer in order to prevent OOM. But: seems that main problem is that there are memory leaks. ("rebase" seems to be a good usecase to provoke this)
+//		    @Override
+//			public void paint(Graphics g) {
+//		    	m_offscreen = refOffscreen != null? refOffscreen.get() : null;
+//		    	paint0(g);
+//		    	refOffscreen = m_offscreen == null? null : new SoftReference<BufferedImage>(m_offscreen);
+//		    	m_offscreen = null;
+//		    }
+		    
+		    @Override
 			public void paint(Graphics g) {
 				boolean useBuffer = (desktopAnimation != null && desktopAnimation.isActive()) || desktopOutlineDraggingInProgress();
 				boolean updateBuffer = false;
