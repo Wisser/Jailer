@@ -2335,7 +2335,7 @@ public class UIUtil {
 			// https://stackoverflow.com/questions/51797673/in-java-why-do-i-get-java-lang-illegalstateexception-cannot-open-system-clipboa
 			LogUtil.warn(ex);
 			try {
-				Thread.sleep(20);
+				Thread.sleep(500);
 			} catch(Exception ie) {
 				// ignore
 			}
