@@ -78,7 +78,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -595,6 +594,7 @@ public abstract class Desktop extends JDesktopPane {
 		
 		final RowBrowser tableBrowser = new RowBrowser();
 		final JInternalFrame jInternalFrame = new JInternalFrame(table == null ? "SQL" : title) {
+//			private SoftReference<BufferedImage> refOffscreen;
 			private BufferedImage m_offscreen;
 			private Dimension bufferSize = null;
 		    private AffineTransform originalTransform;
@@ -622,7 +622,17 @@ public abstract class Desktop extends JDesktopPane {
 		        return img;
 		    }
 
-			@Override
+		    // TODO
+		    // TODO soft-reference offscreenbuffer in order to prevent OOM. But: seems that main problem is that there are memory leaks. ("rebase" seems to be a good usecase to provoke this)
+//		    @Override
+//			public void paint(Graphics g) {
+//		    	m_offscreen = refOffscreen != null? refOffscreen.get() : null;
+//		    	paint0(g);
+//		    	refOffscreen = m_offscreen == null? null : new SoftReference<BufferedImage>(m_offscreen);
+//		    	m_offscreen = null;
+//		    }
+		    
+		    @Override
 			public void paint(Graphics g) {
 				boolean useBuffer = (desktopAnimation != null && desktopAnimation.isActive()) || desktopOutlineDraggingInProgress();
 				boolean updateBuffer = false;
@@ -1667,7 +1677,7 @@ public abstract class Desktop extends JDesktopPane {
 
 	private Rectangle layout(RowBrowser parent, Association association, BrowserContentPane browserContentPane,
 			Collection<RowBrowser> ignore, int maxH, int xPosition) {
-		int x = (int) (BROWSERTABLE_DEFAULT_MIN_X * layoutMode.factor + minX * layoutMode.factor); // lgtm [java/evaluation-to-constant]
+		int x = (int) (BROWSERTABLE_DEFAULT_MIN_X * layoutMode.factor); // lgtm [java/evaluation-to-constant]
 		int y = (int) (BROWSERTABLE_DEFAULT_MIN_Y * layoutMode.factor);
 
 		while (parent != null && parent.isHidden()) {
@@ -2900,61 +2910,6 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 	
-	private int minX = 0;
-	private Supplier<Integer> minXProvider;
-	
-	public Supplier<Integer> getMinXProvider() {
-		return minXProvider;
-	}
-
-	public void setMinXProvider(Supplier<Integer> minXProvider) {
-		this.minXProvider = minXProvider;
-	}
-
-	private Timer updateMinXLater; {
-		updateMinXLater = new Timer(10, e -> updateMinX());
-		updateMinXLater.setRepeats(false);
-	}
-	
-	public void updateMinX() {
-		if (desktopAnimation.isActive()) {
-			updateMinXLater.restart();
-			return;
-		}
-		int minX = minXProvider != null? minXProvider.get() : 0;
-		int aktMinX = Integer.MAX_VALUE;
-		Set<RowBrowser> maximized = new HashSet<Desktop.RowBrowser>();
-		for (RowBrowser rb : new ArrayList<RowBrowser>(tableBrowsers)) {
-			if (rb.internalFrame.isMaximum()) {
-				maximized.add(rb);
-			}
-			if (maximized.contains(rb)) {
-				try {
-					rb.internalFrame.setMaximum(false);
-				} catch (PropertyVetoException e) {
-					// ignore
-				}
-			}
-			int x = rb.internalFrame.getX();
-			if (x < aktMinX) {
-				aktMinX = Math.max(0, x);
-			}
-		}
-		int fX = (int) (0.05 * BROWSERTABLE_DEFAULT_DISTANCE * minX);
-		this.minX = fX;
-		int dX = (int) (fX * layoutMode.factor) - aktMinX;
-		for (RowBrowser rb : new ArrayList<RowBrowser>(tableBrowsers)) {
-			rb.internalFrame.setLocation(Math.max(0, rb.internalFrame.getX() + dX), rb.internalFrame.getY());
-			if (maximized.contains(rb)) {
-				try {
-					rb.internalFrame.setMaximum(true);
-				} catch (PropertyVetoException e) {
-					// ignore
-				}
-			}
-		}
-	}
-
 	private void layout(List<RowBrowser> toLayout, int maxH) {
 		List<RowBrowser> roots = new ArrayList<RowBrowser>();
 		for (RowBrowser rb : toLayout) {
@@ -3027,7 +2982,7 @@ public abstract class Desktop extends JDesktopPane {
 			JInternalFrame iFrame = root.getUserObject().internalFrame;
 			int x = (int) (BROWSERTABLE_DEFAULT_MIN_X * layoutMode.factor); // lgtm [java/evaluation-to-constant]
 			int y = (int) (BROWSERTABLE_DEFAULT_MIN_Y * layoutMode.factor);
-			x += (int) ((root.getLevel() - 1) * (int) ((BROWSERTABLE_DEFAULT_WIDTH + BROWSERTABLE_DEFAULT_DISTANCE) * layoutMode.factor) + minX * layoutMode.factor);
+			x += (int) ((root.getLevel() - 1) * (int) ((BROWSERTABLE_DEFAULT_WIDTH + BROWSERTABLE_DEFAULT_DISTANCE) * layoutMode.factor));
 			y += (int) (root.getPosition() * (BROWSERTABLE_DEFAULT_HEIGHT + 8) * layoutMode.factor);
 			int h = (int) (BROWSERTABLE_DEFAULT_HEIGHT * layoutMode.factor);
 			Rectangle r = new Rectangle(x, y, (int) (BROWSERTABLE_DEFAULT_WIDTH * layoutMode.factor), h);
@@ -3823,7 +3778,6 @@ public abstract class Desktop extends JDesktopPane {
 			}
 			noArrangeLayoutOnNewTableBrowser = false;
 			iFrameStateChangeRenderer.rollbackAtomic();
-			updateMinX();
 			UIUtil.invokeLater(() -> { layouting = false; });
 	        UIUtil.resetWaitCursor(pFrame);
 		}
