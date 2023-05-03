@@ -592,10 +592,9 @@ public abstract class Desktop extends JDesktopPane {
 
 		checkHAlignButtons();
 		
+		BufferedImage[] m_offscreen = new BufferedImage[1];
 		final RowBrowser tableBrowser = new RowBrowser();
 		final JInternalFrame jInternalFrame = new JInternalFrame(table == null ? "SQL" : title) {
-//			private SoftReference<BufferedImage> refOffscreen;
-			private BufferedImage m_offscreen;
 			private Dimension bufferSize = null;
 		    private AffineTransform originalTransform;
 		    private int currentIFrameBufferGeneration;
@@ -622,23 +621,13 @@ public abstract class Desktop extends JDesktopPane {
 		        return img;
 		    }
 
-		    // TODO
-		    // TODO soft-reference offscreenbuffer in order to prevent OOM. But: seems that main problem is that there are memory leaks. ("rebase" seems to be a good usecase to provoke this)
-//		    @Override
-//			public void paint(Graphics g) {
-//		    	m_offscreen = refOffscreen != null? refOffscreen.get() : null;
-//		    	paint0(g);
-//		    	refOffscreen = m_offscreen == null? null : new SoftReference<BufferedImage>(m_offscreen);
-//		    	m_offscreen = null;
-//		    }
-		    
 		    @Override
 			public void paint(Graphics g) {
 				boolean useBuffer = (desktopAnimation != null && desktopAnimation.isActive()) || desktopOutlineDraggingInProgress();
 				boolean updateBuffer = false;
 				if (currentIFrameBufferGeneration != iFrameBufferGeneration || !useBuffer) {
 					currentIFrameBufferGeneration = iFrameBufferGeneration;
-					m_offscreen = null;
+					m_offscreen[0] = null;
 					bufferSize = null;
 				}
 
@@ -663,13 +652,13 @@ public abstract class Desktop extends JDesktopPane {
 			        }
 		    	}
 		    	if (bufferSize == null) {
-		    		m_offscreen = null;
+		    		m_offscreen[0] = null;
 		    	} else if (Math.abs(bufferSize.getWidth() - getSize().width) > 2 || Math.abs(bufferSize.getHeight() - getSize().height) > 2) {
-		    		m_offscreen = null;
+		    		m_offscreen[0] = null;
 		    		super.paint(g);
 		    		return;
 		    	}
-	    		if (m_offscreen == null || newBuffer) {
+	    		if (m_offscreen[0] == null || newBuffer) {
 	    			if (useBuffer) {
 	    				updateBuffer = true;
 	    			}
@@ -677,7 +666,7 @@ public abstract class Desktop extends JDesktopPane {
 
 		    	if (!updateBuffer) {
 					if (useBuffer) {
-						Graphics2D buf_g2D = (Graphics2D) m_offscreen.getGraphics(); // lgtm [java/dereferenced-value-may-be-null]
+						Graphics2D buf_g2D = (Graphics2D) m_offscreen[0].getGraphics(); // lgtm [java/dereferenced-value-may-be-null]
 				        
 				        if (originalTransform != null) {
 				        	g2D.scale(1.0 / at.getScaleX(), 1.0 / at.getScaleY()); // lgtm [java/dereferenced-value-may-be-null]
@@ -693,20 +682,20 @@ public abstract class Desktop extends JDesktopPane {
 				        if (originalTransform != null) {
 				        	buf_g2D.setTransform(originalTransform);
 				        }
-				        g.drawImage(m_offscreen, 0, 0, null);
+				        g.drawImage(m_offscreen[0], 0, 0, null);
 				        buf_g2D.dispose();
 					} else {
-						m_offscreen = null;
+						m_offscreen[0] = null;
 						super.paint(g);
 					}
 					return;
 				}
 		    	
-		        if (m_offscreen == null || newBuffer) {
-		            m_offscreen = getNewOffscreenBuffer(getWidth(), getHeight());
+		        if (m_offscreen[0] == null || newBuffer) {
+		            m_offscreen[0] = getNewOffscreenBuffer(getWidth(), getHeight());
 		            bufferSize = getSize();
 		        }
-		        Graphics2D buf_g2D = (Graphics2D) m_offscreen.getGraphics();
+		        Graphics2D buf_g2D = (Graphics2D) m_offscreen[0].getGraphics();
 		        
 		        if (originalTransform != null) {
 		        	g2D.scale(1.0 / at.getScaleX(), 1.0 / at.getScaleY()); // lgtm [java/dereferenced-value-may-be-null]
@@ -723,7 +712,7 @@ public abstract class Desktop extends JDesktopPane {
 		        	buf_g2D.setTransform(originalTransform);
 		        }
 		        super.paint(buf_g2D);
-		        g.drawImage(m_offscreen, 0, 0, null);
+		        g.drawImage(m_offscreen[0], 0, 0, null);
 		        buf_g2D.dispose();
 		    }
 		};
@@ -1482,6 +1471,7 @@ public abstract class Desktop extends JDesktopPane {
 
 			@Override
 			public void internalFrameClosed(InternalFrameEvent e) {
+				m_offscreen[0] = null;
 				close(tableBrowser, true);
 				checkHAlignButtons();
 			}

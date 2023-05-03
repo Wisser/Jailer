@@ -2538,7 +2538,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			return false;
 		}
 	};
-	private final SearchBarRSyntaxTextArea popUpSearchBarEditor = new SearchBarRSyntaxTextArea();
 	
     abstract class ResultContentPane extends BrowserContentPane {
     	protected boolean doSync;
@@ -2803,6 +2802,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				if (getWhereClauseEditorBaseTable() != null) {
 		    		BrowserContentCellEditor cellEditor = browserContentCellEditor;
 					try {
+						SearchBarRSyntaxTextArea popUpSearchBarEditor = new SearchBarRSyntaxTextArea();
 						popUpWhereConditionEditorPanel = new WhereConditionEditorPanelConsole(dialog, datamodel.get(), getWhereClauseEditorBaseTable(), cellEditor, null,
 								popUpWhereConditionEditorPanel, popUpSearchBarEditor, null, true, column, session, executionContext, ResultContentPane.this) {
 							@Override
@@ -3098,6 +3098,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						UIUtil.showException(SQLConsole.this, "Error", e1);
 						return;
 					}
+					SearchBarRSyntaxTextArea popUpSearchBarEditor = new SearchBarRSyntaxTextArea();
 					popUpSearchBarEditor.whereConditionEditorPanel = popUpWhereConditionEditorPanel;
 					
 					if (location == null && secodaryCond == null) {

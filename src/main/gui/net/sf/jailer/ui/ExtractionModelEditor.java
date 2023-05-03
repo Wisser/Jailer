@@ -1098,9 +1098,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	}
 
 	private WhereConditionEditorPanel whereConditionEditorPanel;
-	RSyntaxTextAreaWithSQLSyntaxStyle whereConditionEditorEditor;
 	
 	JButton createWhereConEditorButton(Supplier<Table> getSubject, Supplier<String> initialText, Consumer<String> consumer, boolean locateUnderButton, String tableAlias, Consumer<SQLCompletionProvider> providerConsumer) {
+		RSyntaxTextAreaWithSQLSyntaxStyle whereConditionEditorEditor;
 		whereConditionEditorEditor = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false) {
 			@Override
 			protected void runBlock() {

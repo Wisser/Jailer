@@ -72,7 +72,7 @@ public class StatementBuilder {
 	 * 
 	 * @deprecated use {@link #isAppendable(String)} instead
 	 */
-	public boolean isAppendable(String head, String item) {
+	private boolean isAppendable(String head, String item) {
 		return body.size() < maxBodySize && (this.head == null || this.head.equals(head));
 	}
 	

@@ -324,9 +324,6 @@ public class DataBrowser extends javax.swing.JFrame {
 		}
 	};
 
-	private final SearchBarRSyntaxTextArea searchBarEditor = new SearchBarRSyntaxTextArea();
-	private final SearchBarRSyntaxTextArea popUpSearchBarEditor = new SearchBarRSyntaxTextArea();
-
 	private boolean initialized = false;
 
 	private final DesktopUndoManager desktopUndoManager;
@@ -493,6 +490,9 @@ public class DataBrowser extends javax.swing.JFrame {
 				searchBarToggleButton.doClick();
 			}
 		};
+
+		SearchBarRSyntaxTextArea searchBarEditor = new SearchBarRSyntaxTextArea();
+		SearchBarRSyntaxTextArea popUpSearchBarEditor = new SearchBarRSyntaxTextArea();
 
 		searchBarEditor.setEnabled(true);
 		searchBarEditor.setMarkOccurrences(false);
@@ -5002,6 +5002,9 @@ public class DataBrowser extends javax.swing.JFrame {
 		searchPanelSplitSizerPanel.setVisible(searchPanelContainer.isVisible());
 		searchBarToggleButton.setEnabled(rowBrowser != null && SessionForUI.isWCEditorSupported(session));
 		if (table != null) {
+			SearchBarRSyntaxTextArea searchBarEditor = new SearchBarRSyntaxTextArea();
+			SearchBarRSyntaxTextArea popUpSearchBarEditor = new SearchBarRSyntaxTextArea();
+
 			BrowserContentCellEditor cellEditor = rowBrowser.browserContentPane.browserContentCellEditor;
 			whereConditionEditorPanel = new WhereConditionEditorPanelForDataBrowser(this, datamodel.get(), table,
 					cellEditor,
@@ -5244,6 +5247,9 @@ public class DataBrowser extends javax.swing.JFrame {
 					? rowBrowser.browserContentPane.table
 					: null;
 			if (table != null) {
+				SearchBarRSyntaxTextArea searchBarEditor = new SearchBarRSyntaxTextArea();
+				SearchBarRSyntaxTextArea popUpSearchBarEditor = new SearchBarRSyntaxTextArea();
+
 				BrowserContentCellEditor cellEditor = rowBrowser.browserContentPane.browserContentCellEditor;
 				popUpWhereConditionEditorPanel = new WhereConditionEditorPanelForDataBrowser(dialog, datamodel.get(),
 						table, cellEditor,
