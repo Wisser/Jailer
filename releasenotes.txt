@@ -1,3 +1,6 @@
+14.6.2
+  - A memory leak has been fixed.
+
 14.6.1
   - The menu items "Create SQL ... (for all rows)" in the SQL console popup menu now refers to all selected rows, if available.
   - The external library for displaying and editing the SQL console has been updated.
