@@ -692,7 +692,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
      * @param explain
      * @param tabContentPanel the panel to show result (option)
      */
-    protected void executeSQLBlock(final String sqlBlock, final Pair<Integer, Integer> location, final boolean emptyLineSeparatesStatements, final Pair<Integer, Integer> locFragmentOffset, final boolean explain, final TabContentPanel tabContentPanel) {
+    private void executeSQLBlock(final String sqlBlock, final Pair<Integer, Integer> location, final boolean emptyLineSeparatesStatements, final Pair<Integer, Integer> locFragmentOffset, final boolean explain, final TabContentPanel tabContentPanel) {
         if (!running.get()) {
             int lineStartOffset = -1;
             try {
@@ -749,7 +749,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                                 }
                                 status.linesExecuting += countLines(pureSql);
                                 if (sql.trim().length() > 0) {
-                                    executeSQL(pureSql, status, lineStartOffset, explain, tabContentPanel, caretDotMark);
+                                    executeSQL(pureSql, status, lineStartOffset, explain, tabContentPanel, caretDotMark, locFragmentOffset);
                                     if (status.failed) {
                                         if (locFragmentOffset != null) {
                                             if (status.errorPositionIsKnown) {
@@ -790,7 +790,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                             String sql = sbToString;
                             if (sql.trim().length() > 0) {
                                 status.linesExecuting += countLines(sql);
-                                executeSQL(sql, status, lineStartOffset, explain, tabContentPanel, caretDotMark);
+                                executeSQL(sql, status, lineStartOffset, explain, tabContentPanel, caretDotMark, locFragmentOffset);
                                 if (!status.failed) {
                                     status.linesExecuted = status.linesExecuting;
                                 }
@@ -835,8 +835,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
      * @param statementStartOffset
      * @param explain
      * @param origTabContentPanel the panel to show result (option)
+     * @param locFragmentOffset 
      */
-    private void executeSQL(final String sql, final Status status, int statementStartOffset, final boolean explain, final TabContentPanel origTabContentPanel, final Pair<Integer, Integer> caretDotMark) {
+    private void executeSQL(final String sql, final Status status, int statementStartOffset, final boolean explain, final TabContentPanel origTabContentPanel, final Pair<Integer, Integer> caretDotMark, Pair<Integer, Integer> locFragmentOffset) {
         Statement statement = null;
         ResultSet resultSet = null;
         final Status localStatus = new Status();
@@ -1283,11 +1284,17 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         });
 						tabContentPanel.controlsContainer.add(findButton);
 						JButton syncButton = new JButton((String) null);
-                        syncButton.setEnabled(rb.wcBaseTable != null);
-                        if (doSync == null) {
-        					doSync = file == null;
-                        }
-                        tabContentPanel.doSync = rb.doSync = doSync;
+						if (locFragmentOffset != null) {
+							syncButton.setEnabled(false);
+							syncButton.setSelected(false);
+							tabContentPanel.doSync = false;
+						} else {
+	                        syncButton.setEnabled(rb.wcBaseTable != null);
+	                        if (doSync == null) {
+	        					doSync = file == null;
+	                        }
+	                        tabContentPanel.doSync = rb.doSync = doSync;
+						}
                         
                         syncButton.setToolTipText("Synchronize the additional search criteria with the query in the SQL console.");
                         
@@ -3937,8 +3944,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			tabContentPanel.repaintShowingAnimatedTables();
 		}
 	}
-	
-    // TODO StringSearch component for historie (and than inc hist size a lot)
+
+	// TODO StringSearch component for historie (and than inc hist size a lot)
     
     // TODO automatically generated SQL statements from Desktop like:
     // "Select distinct ... from ... left join ..." with a non-comparable column in select clause (for example BLOB) fails. Make the problem go away.
