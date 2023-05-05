@@ -2728,6 +2728,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		
 		private void syncStatement(String statement) {
 			if (doSync) {
+				statement = UIUtil.rtrim(statement);
 				Pair<Integer, Integer> pos = getCurrentStatementPos();
 				if (pos != null) {
 					editorPane.replaceRange(statement, pos.a, pos.b);
