@@ -642,7 +642,7 @@ public class UIUtil {
                                     progressListener.newStage(outputView.hasCancelled ? "cancelled"
                                             : exp[0] == null ? "finished" : "failed", exp[0] != null, true);
                                 }
-                                if ((exp[0] instanceof CancellationException) || closeOutputWindowOnError
+                                if ((exp[0] instanceof CancellationException) || (exp[0] != null && closeOutputWindowOnError)
                                         || (closeOutputWindow && result[0] && exp[0] == null
                                                 && warnings.length() == 0)) {
                                     if (!outputView.hasCancelled) {
@@ -673,6 +673,7 @@ public class UIUtil {
 
 						private void closeDialog() {
 							outputView.dialog.setVisible(false);
+							outputView.dialog.dispose();
 						}
                     });
                 }
@@ -694,8 +695,9 @@ public class UIUtil {
 			            if (e != null && !result[0] && continueOnErrorQuestion != null) {
 			                result[0] = JOptionPane.showConfirmDialog(outputView.dialog, continueOnErrorQuestion, "Error",
 			                        JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
+			            } else if (e != null) {
+			            	resultConsumer.consume(result[0], e);
 			            }
-			            resultConsumer.consume(result[0], e);
                     }
                 });
             }

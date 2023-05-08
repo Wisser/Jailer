@@ -101,6 +101,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
@@ -3684,6 +3685,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	 * @param file the file
 	 */
 	public void loadFromFile(File file) throws IOException {
+		if (file.exists() && file.length() > 65L*1024L*1024L / (file.getName().toLowerCase().endsWith(".zip") || file.getName().toLowerCase().endsWith(".gz")? 5 : 1)) {
+			int o = JOptionPane.showOptionDialog(SwingUtilities.getWindowAncestor(this), "File " + file.getAbsolutePath() + "\nis large (" + (file.length() / 1024 / 1024) + " MB). Loading might fail.", "File is large", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, new Object[] { "Open", "Cancel" }, "Open");
+			if (o != 0) {
+				return;
+			}
+		}
 		this.file = file;
 		if (file.exists()) {
 			String path = file.getPath();

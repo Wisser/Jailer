@@ -556,6 +556,11 @@ public class ModelBuilder {
 			f.delete();
 			_log.info("File '" + f.getAbsolutePath() + "' removed");
 		}
+		f = new File(getModelBuilderCommentsFilename(executionContext));
+		if (f.exists()) {
+			f.delete();
+			_log.info("File '" + f.getAbsolutePath() + "' removed");
+		}
 	}
 
 	public static CsvFile.LineFilter assocFilter = null;

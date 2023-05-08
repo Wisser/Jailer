@@ -272,13 +272,21 @@ public class SqlScriptExecutor {
 		try {
 			final Pattern IDENTITY_INSERT = Pattern.compile(".*SET\\s+IDENTITY_INSERT.*", Pattern.CASE_INSENSITIVE);
 			boolean tryMode = false;
-			
+			int lineNumber = 0;
+			int currentStatementlineNumber = 1;
 			while ((line = lineReader.readLine()) != null) {
+				++lineNumber;
 				line = line.trim();
 				if (line.length() == 0) {
+					if (currentStatement.length() == 0) {
+						++currentStatementlineNumber;
+					}
 					continue;
 				}
 				if (line.startsWith("--")) {
+					if (currentStatement.length() == 0) {
+						++currentStatementlineNumber;
+					}
 					final String TRY = "try:";
 					String uncommentedLine = line.substring(2).trim();
 					if (uncommentedLine.startsWith(TRY)) {
@@ -317,6 +325,7 @@ public class SqlScriptExecutor {
 					}
 					final String stmt = currentStatement.toString();
 					final boolean finalTryMode = tryMode;
+					final int finalCurrentStatementlineNumber = currentStatementlineNumber;
 					execute(new Runnable() {
 						@Override
 						public void run() {
@@ -365,7 +374,11 @@ public class SqlScriptExecutor {
 										if (e instanceof SqlException) {
 											((SqlException) e).setInsufficientPrivileges(count.get() == 0);
 										}
-										throw new RuntimeException(e);
+										if (e instanceof SqlException) {
+											String message = (scriptFileName.matches("(tmp|temp).*")? "" : "Error in file: \"" + scriptFileName + "\" line: " + finalCurrentStatementlineNumber + "\n") + ((SqlException) e).getMessage();
+											e = new SqlException(message, ((SqlException) e).sqlStatement, e);
+										}
+										throw new RuntimeException("Error in file: \"" + scriptFileName + "\" line: " + finalCurrentStatementlineNumber, e);
 									}
 								}
 							} finally {
@@ -375,6 +388,7 @@ public class SqlScriptExecutor {
 						}
 					}, inSync);
 					currentStatement.setLength(0);
+					currentStatementlineNumber = lineNumber + 1;
 					logProgress.run();
 					tryMode = false;
 				} else {

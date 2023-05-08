@@ -1120,13 +1120,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 						ResultConsumer consumer = new ResultConsumer() {
 							@Override
 							public void consume(boolean result, Throwable t) {
+								UIUtil.showException(ExtractionModelFrame.this, "Error", t);
 							}
 							public void cleanUp() {
 							}
 						};
 						UIUtil.runJailer(this, args, false, true,
 						false, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, false,
-						true, false, false, false, consumer, null, false, executionContext);
+						false, true, false, true, consumer, null, false, executionContext);
 					}
 				}
 			}

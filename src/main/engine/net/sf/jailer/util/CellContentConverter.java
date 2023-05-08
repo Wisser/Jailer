@@ -518,41 +518,42 @@ public class CellContentConverter {
 			}
 		}
 
-		if (!configuration.getSqlExpressionRule().isEmpty() && columnTypeName != null && object != null) {
-			int id = columnTypeName.lastIndexOf('.');
-			if (id >= 0) {
-				columnTypeName = columnTypeName.substring(id + 1);
-			}
-			String expr = configuration.getSqlExpressionRule().get(columnTypeName.toLowerCase());
-			if (expr != null) {
-				return new SQLExpressionWrapper(object, columnTypeName, expr);
-			}
-			if (DBMS.POSTGRESQL.equals(configuration) && DBMS.POSTGRESQL.equals(targetConfiguration)) {
-				expr = "'$1'::$2";
-				if ((type == TYPE_POBJECT || type == Types.ARRAY || object instanceof String)) {
-					if (type == Types.VARCHAR) {
-						if (!"text".equals(columnTypeName)) {
-							int columnDisplaySize = resultSetMetaData.getColumnDisplaySize(i);
-							if (columnDisplaySize == Integer.MAX_VALUE) {
-								return new SQLExpressionWrapper(object, "\"" + columnTypeName + "\"", expr);
-							}
-						}
-					} else {
-						return new SQLExpressionWrapper(object, "\"" + columnTypeName + "\"", expr);
-					} 
-				} else {
-					Boolean isPGObject = isPGObjectClass.get(object.getClass());
-					if (isPGObject == null) {
-						isPGObject = object.getClass().getSimpleName().equals("PGobject");
-						isPGObjectClass.put(object.getClass(), isPGObject);
+		if (configuration != null && configuration.equals(targetConfiguration)) {
+			if (!configuration.getSqlExpressionRule().isEmpty() && columnTypeName != null && object != null) {
+				String expr = configuration.getSqlExpressionRule().get(columnTypeName.toLowerCase());
+				if (expr != null) {
+					return new SQLExpressionWrapper(object, columnTypeName, expr);
+				}
+				if (DBMS.POSTGRESQL.equals(configuration) && DBMS.POSTGRESQL.equals(targetConfiguration)) {
+					expr = "'$1'::$2";
+					if (!columnTypeName.startsWith("\"") && !columnTypeName.endsWith("\"")) {
+						columnTypeName = "\"" + columnTypeName + "\"";
 					}
-					if (isPGObject) {
-						return new SQLExpressionWrapper(object, "\"" + columnTypeName + "\"", expr);
+					if ((type == TYPE_POBJECT || type == Types.ARRAY || object instanceof String)) {
+						if (type == Types.VARCHAR) {
+							if (!"text".equals(columnTypeName)) {
+								int columnDisplaySize = resultSetMetaData.getColumnDisplaySize(i);
+								if (columnDisplaySize == Integer.MAX_VALUE) {
+									return new SQLExpressionWrapper(object, columnTypeName, expr);
+								}
+							}
+						} else {
+							return new SQLExpressionWrapper(object, columnTypeName, expr);
+						} 
+					} else {
+						Boolean isPGObject = isPGObjectClass.get(object.getClass());
+						if (isPGObject == null) {
+							isPGObject = object.getClass().getSimpleName().equals("PGobject");
+							isPGObjectClass.put(object.getClass(), isPGObject);
+						}
+						if (isPGObject) {
+							return new SQLExpressionWrapper(object, columnTypeName, expr);
+						}
 					}
 				}
 			}
 		}
-
+		
 		return object;
 	}
 

@@ -3710,6 +3710,7 @@ public class DataBrowser extends javax.swing.JFrame {
 						ResultConsumer consumer = new ResultConsumer() {
 							@Override
 							public void consume(boolean result, Throwable t) {
+								UIUtil.showException(DataBrowser.this, "Error", t, session);
 							}
 
 							public void cleanUp() {
@@ -3730,7 +3731,7 @@ public class DataBrowser extends javax.swing.JFrame {
 							}
 						};
 						UIUtil.runJailer(this, args, false, true, false, null, dcd.getUser(), dcd.getPassword(), null,
-								null, false, true, false, false, false, consumer, null, false, executionContext);
+								null, false, false, true, false, true, consumer, null, false, executionContext);
 					}
 				}
 			}
