@@ -929,7 +929,7 @@ public class UIUtil {
         	}
 
             String iMsg = (context != null && "AWT".equals(context)? context : "") +
-            		msg.toString() + "\n" + JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + "\n\n" + sw.toString();
+            		(msg.toString().startsWith("<html>")? msg.toString().replaceAll("\\</?[^>]+\\>",  "") : msg.toString()) + "\n" + JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + "\n\n" + sw.toString();
 
             boolean silent = "AWT".equals(context);
 
@@ -1116,6 +1116,7 @@ public class UIUtil {
 									.replaceAll("(?is)JAILER_ENTITY", "~e")
 									.replaceAll("(?is)r_entitygraph", "~g")
 									.replaceAll("(?is)Duplicate", "~dU")
+									.replaceAll("(?is)char", "c~har")
 									;
 							StringBuilder sb = new StringBuilder();
 							String lastLine = null;
@@ -1158,9 +1159,13 @@ public class UIUtil {
 							"https://jailer.sourceforge.net/issueReport.php",
 							"https://jailer.sourceforge.io/issueReport.php"
 					}) {
-						String result = HttpUtil.get(res + url);
-						if (result != null && !result.trim().isEmpty()) {
-							break;
+						try {
+							String result = HttpUtil.get(res + url);
+							if (result != null && !result.trim().isEmpty()) {
+								break;
+							}
+						} catch (Throwable t) {
+							// ignore
 						}
 					}
 				} catch (UnsupportedEncodingException e) {
