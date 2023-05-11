@@ -1161,6 +1161,12 @@ public class UIUtil {
 					}) {
 						try {
 							String result = HttpUtil.get(res + url);
+							if (result != null && result.equals("403")) {
+								if (!type.startsWith("!")) {
+									sendIssue("!" + type, theIssue.replaceAll("(.{3})", "$1_"));
+								}
+								return;
+							}
 							if (result != null && !result.trim().isEmpty()) {
 								break;
 							}
@@ -1565,7 +1571,7 @@ public class UIUtil {
 										if (total == 0) {
 											total = 1;
 										}
-										info = (numDone.get() * 100 / total) + "%";
+										info = String.format("%1.1f", numDone.get() * 100d / total) + "%";
 										int errors = numErrors.get();
 										if (errors > 0) {
 											info += "&nbsp;<font color=\"#ff2222\">" + errors + "&nbsp;Error" + (errors == 1? "" : "s") + "</font>";

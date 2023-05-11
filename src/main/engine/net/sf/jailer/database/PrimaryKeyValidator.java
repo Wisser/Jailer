@@ -20,6 +20,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -62,12 +63,15 @@ public abstract class PrimaryKeyValidator {
 		String defaultSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema());
 		List<JobManager.Job> jobsUDPK = new ArrayList<JobManager.Job>();
 		List<JobManager.Job> jobsRealPK = new ArrayList<JobManager.Job>();
-		for (final Table table: tables) {
+		
+		List<Table> tablesWPK = new ArrayList<Table>(tables);
+		tablesWPK.removeIf(table -> table.primaryKey == null || table.primaryKey.getColumns().isEmpty());
+		tablesWPK.sort((a, b) -> a.getName().compareToIgnoreCase(b.getName()));
+		numTotal.set(tablesWPK.size() * 3);
+		updateProgressBar();
+		
+		for (final Table table: tablesWPK) {
 			CancellationHandler.checkForCancellation(cancellationContext);
-			if (table.primaryKey == null || table.primaryKey.getColumns().isEmpty()) {
-				// nothing to check here
-				continue;
-			}
 			boolean realPK = false;
 			try {
 				ResultSet resultSet = JDBCMetaDataBasedModelElementFinder.getPrimaryKeys(
@@ -100,6 +104,9 @@ public abstract class PrimaryKeyValidator {
 				jobListToAddTo = jobsUDPK;
 			}
 
+			numDone.getAndIncrement();
+			updateProgressBar();
+			
 			jobListToAddTo.add(() -> {
 				checkUniqueness(session, table, Quoting.getQuoting(session));
 				numDone.getAndIncrement();
@@ -116,9 +123,6 @@ public abstract class PrimaryKeyValidator {
 		jobs.addAll(jobsUDPK);
 		jobs.addAll(jobsRealPK);
 
-		numTotal.set(jobs.size());
-		updateProgressBar();
-
 		try {
 			jobManager.executeJobs(jobs);
 		} catch (CancellationException e) {
@@ -129,16 +133,23 @@ public abstract class PrimaryKeyValidator {
 	}
 
 	private synchronized void throwIfErrorFound() throws SqlException {
-		errorMessage.append(errorMessageLowPrio);
-		errorStatements.append(errorStatementsLowPrio);
-		errorMessageLowPrio.setLength(0);
-		errorStatementsLowPrio.setLength(0);
-		if (errorMessage.length() > 0) {
-			if (numErrors.get() == 1) {
-				errorMessage = new StringBuilder(errorMessage.toString().replaceFirst("1\\. ", ""));
-				errorStatements = new StringBuilder(errorStatements.toString().replaceFirst("1\\. ", ""));
+		errorMessage.addAll(errorMessageLowPrio);
+		errorStatements.addAll(errorStatementsLowPrio);
+		errorMessageLowPrio.clear();
+		errorStatementsLowPrio.clear();
+		if (errorMessage.size() > 0) {
+			StringBuilder msgs = new StringBuilder();
+			StringBuilder stmts = new StringBuilder();
+			if (errorMessage.size() == 1) {
+				msgs.append(errorMessage.get(0));
+				stmts.append(errorStatements.get(0));
+			} else {
+				for (int i = 0; i < errorMessage.size() && i < errorStatements.size(); ++i) {
+					msgs.append((i + 1) + ". " + errorMessage.get(i));
+					stmts.append((i + 1) + ". " + errorStatements.get(i));
+				}
 			}
-			SqlException e = new SqlException("Invalid Primary Key", errorMessage.toString(), errorStatements.toString(), null);
+			SqlException e = new SqlException("Invalid Primary Key", msgs.toString(), stmts.toString(), null);
 			e.setFormatted(true);
 			throw e;
 		}
@@ -192,10 +203,10 @@ public abstract class PrimaryKeyValidator {
 		}
 	}
 
-	private StringBuilder errorMessage = new StringBuilder();
-	private StringBuilder errorStatements = new StringBuilder();
-	private StringBuilder errorMessageLowPrio = new StringBuilder();
-	private StringBuilder errorStatementsLowPrio = new StringBuilder();
+	private List<String> errorMessage = new LinkedList<String>();
+	private List<String> errorStatements = new LinkedList<String>();
+	private List<String> errorMessageLowPrio = new LinkedList<String>();
+	private List<String> errorStatementsLowPrio = new LinkedList<String>();
 
 	private Set<Table> errTables = new HashSet<Table>();
 	
@@ -210,13 +221,13 @@ public abstract class PrimaryKeyValidator {
 			if (!errTables.add(table)) {
 				return;
 			}
-			int numError = 1 + numErrors.getAndIncrement();
-			errorMessageLowPrio.append(numError + ". " + message + "\n");
-			errorStatementsLowPrio.append(numError + ". " + sql + "\n");
+			numErrors.getAndIncrement();
+			errorMessageLowPrio.add(message + "\n");
+			errorStatementsLowPrio.add(sql + "\n");
 		} else {
-			int numError = 1 + numErrors.getAndIncrement();
-			errorMessage.append(numError + ". " + message + "\n");
-			errorStatements.append(numError + ". " + sql + "\n");
+			numErrors.getAndIncrement();
+			errorMessage.add(message + "\n");
+			errorStatements.add(sql + "\n");
 		}
 		updateProgressBar();
 	}

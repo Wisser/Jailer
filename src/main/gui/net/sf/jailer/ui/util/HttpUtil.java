@@ -30,10 +30,15 @@ public class HttpUtil {
 	public static String get(final String url) {
 		final StringBuilder result = new StringBuilder();
 		try {
-			if (get(url, result) == 200) {
+			int rc = get(url, result);
+			if (rc == 200) {
 				return result.toString();
 			}
+			if (rc == 403) {
+				return "403";
+			}
 		} catch (Throwable e) {
+			e.printStackTrace();
 			// fall through
 		}
 	    try {
@@ -56,6 +61,10 @@ public class HttpUtil {
 		URL theUrl;
 		theUrl = new URL(url);
 		URLConnection con = theUrl.openConnection();
+		int rc = ((HttpURLConnection) con).getResponseCode();
+		if (rc == 403) {
+			return rc;
+		}
 		String redirect = con.getHeaderField("Location");
 		int MAX_REDIRECTS = 8;
 		for (int i = 0; i < MAX_REDIRECTS  ; i++) {
@@ -71,7 +80,6 @@ public class HttpUtil {
 		while ((c = in.read()) != -1) {
 			result.append((char) c);
 		}
-		int rc = ((HttpURLConnection) con).getResponseCode();
 		return rc;
 	}
 

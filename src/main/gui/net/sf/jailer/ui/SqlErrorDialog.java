@@ -142,10 +142,12 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 			gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
 			gridBagConstraints.weightx = 1.0;
 			gridBagConstraints.weighty = 0;
-			messagePanel.add(label, gridBagConstraints);
-			if (y > 50) {
+			final int limit = 1000;
+			if (y > limit) {
+				messagePanel.add(new JLabel((splitted.length - y + 1) + " lines more..."), gridBagConstraints);
 				break;
 			}
+			messagePanel.add(label, gridBagConstraints);
 		}
 		
 		sqlEditorPane.setText(sql.trim());
