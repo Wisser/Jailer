@@ -140,17 +140,6 @@ public class DDLCreator {
 	private boolean createDDL(DataModel datamodel, Session session, WorkingTableScope temporaryTableScope, RowIdSupport rowIdSupport, String workingTableSchema, boolean withTableProperties) throws FileNotFoundException, IOException, SQLException {
 		uPKWasTooLong = false;
 		try {
-			return createDDL(datamodel, session, temporaryTableScope, 0, true, rowIdSupport, workingTableSchema, withTableProperties);
-		} catch (SQLException e) {
-			try {
-				// [bugs:#37] PostreSQL: transactional execution
-				session.getConnection().commit();
-			} catch (SQLException e1) {
-				// ignore
-			}
-		}
-		// reconnect and retry with another index type
-		try {
 			return createDDL(datamodel, session, temporaryTableScope, 0, false, rowIdSupport, workingTableSchema, withTableProperties);
 		} catch (SQLException e) {
 			uPKWasTooLong = true;
