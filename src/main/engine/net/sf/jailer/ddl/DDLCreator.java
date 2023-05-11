@@ -426,40 +426,6 @@ public class DDLCreator {
 	}
 
 	/**
-	 * Checks whether working-tables schema is present.
-	 *
-	 * @return <code>true</code> if working-tables schema is present
-	 */
-	public boolean isPresent(Session session) {
-		try {
-			try {
-				final boolean[] uptodate = new boolean[] { false };
-				session.executeQuery("Select jvalue from " + SQLDialect.CONFIG_TABLE_ + " where jkey='upk'",
-					new Session.ResultSetReader() {
-						@Override
-						public void readCurrentRow(ResultSet resultSet) throws SQLException {
-							uptodate[0] = true;
-						}
-						@Override
-						public void close() {
-						}
-					});
-				return uptodate[0];
-			} catch (Exception e) {
-				try {
-					// [bugs:#37] PostreSQL: transactional execution
-					session.getConnection().commit();
-				} catch (SQLException e1) {
-					// ignore
-				}
-				return false;
-			}
-		} catch (Exception e) {
-			return false;
-		}
-	}
-
-	/**
 	 * Checks for conflicts of existing tables and working-tables.
 	 *
 	 * @return name of table in conflict or <code>null</code>
