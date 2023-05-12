@@ -1336,7 +1336,7 @@
  - Command line rendering in "Data Export" dialog eases the handling of the command line interface.
  - Added support for HSQL DBMS.
  - Improved error handling.
- - JDBC driver's jar files can now be specified via command line arguments.
+ - JDBC driver jar files can now be specified via command line arguments.
  - new XML-attributes "j:if-not-null" and "j:if-null" can now be used in XML templates for case differentiation.
 
 3.4.3
@@ -1463,7 +1463,7 @@
 
 2.9.1
  - fixed compatibility issue with Informix 10
- - fixed issue with '#' character in driver's file name
+ - fixed issue with '#' character in driver file name
 
 2.9.0
  - added data filtering feature for data anonymization and test data aging [2530625]
