@@ -835,7 +835,9 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				value = result.toString();
 			} catch (Throwable t) {
 				if (!(t instanceof CancellationException)) {
-					LogUtil.warn(t);
+					if (!session.isDown()) {
+						LogUtil.warn(t);
+					}
 				}
 				value = null;
 			}
