@@ -101,7 +101,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
@@ -457,6 +456,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
         explainButton.setToolTipText("Show Query Execution Plan ");
         
+        continueButton.setVisible(false);
+        continueButton.setIcon(UIUtil.scaleIcon(this, runIcon));
         runSQLButton.setIcon(UIUtil.scaleIcon(this, runIcon));
         runnAllButton.setIcon(UIUtil.scaleIcon(this, runAllIcon));
         runSQLButton.setToolTipText("Run - Ctrl-Enter ");
@@ -478,6 +479,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             @Override
             public void caretUpdate(CaretEvent e) {
                 updateOutline(false);
+                continueButton.setVisible(false);
             }
         });
 
@@ -682,7 +684,44 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         statusLabel.setVisible(false);
         cancelButton.setEnabled(false);
     }
+    
+    private enum Mode { COUNT, EXECUTE, CONTINUE, RETRY };
+    
+    private class SuccessState {
+    	Set<Integer> failed = new HashSet<>(); // statment numbers
+    	Set<Integer> succeeded = new HashSet<>();
+    	Map<Integer, Pair<Integer, Integer>> statementLocation = new HashMap<>();
+    	int numStatements;
+    	boolean hadProgress = false;
+    	Runnable nextStep;
+    	Mode mode = Mode.COUNT;
+    	String createContinueButtonText() {
+    		return mode == Mode.CONTINUE? "Run next Statements" : ("Retry failed Statement" + (failed.size() <= 1? "" : ("s (" + failed.size() + ")")));
+    	}
+    	
+    	boolean shouldRun(int statementNumber) {
+    		switch (mode) {
+				case COUNT: return false;
+				case EXECUTE: return true;
+				case CONTINUE: return !failed.contains(statementNumber) && !succeeded.contains(statementNumber);
+				case RETRY: return failed.contains(statementNumber);
+    		};
+    		return true;
+    	}
+		
+    	public void nextStep() {
+			if (hasNextStep()) {
+				nextStep.run();
+			}
+    	}
+		
+    	public boolean hasNextStep() {
+    		return nextStep != null && (hadProgress || failed.size() + succeeded.size() < numStatements);
+		}
+    }
 
+    private SuccessState currentSuccessState;
+    
     /**
      * Executes a block of SQL statements (each statement separated by a ';' at the end of the line).
      *
@@ -693,8 +732,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
      * @param explain
      * @param tabContentPanel the panel to show result (option)
      */
-    private void executeSQLBlock(final String sqlBlock, final Pair<Integer, Integer> location, final boolean emptyLineSeparatesStatements, final Pair<Integer, Integer> locFragmentOffset, final boolean explain, final TabContentPanel tabContentPanel) {
+    private void executeSQLBlock(final String sqlBlock, final Pair<Integer, Integer> location, final boolean emptyLineSeparatesStatements, final Pair<Integer, Integer> locFragmentOffset, final boolean explain, final TabContentPanel tabContentPanel, SuccessState successState) {
         if (!running.get()) {
+        	successState.nextStep = () -> {
+        		executeSQLBlock(sqlBlock, location, emptyLineSeparatesStatements, locFragmentOffset, explain, tabContentPanel, successState);
+        	};
             int lineStartOffset = -1;
             try {
                 if (location != null) {
@@ -717,101 +759,176 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                             editorPane.updateMenuItemState();
                         }
                     });
-                    Status status = new Status();
-                    status.location = location;
-                    status.linesExecuted = 0;
-                    status.linesExecuting = 0;
-                    status.setRunning(true);
-                    int lineStartOffset = finalLineStartOffset;
+                    Status status = null;
                     try {
-                        Pattern pattern;
-                        if (emptyLineSeparatesStatements) {
-                            pattern = Pattern.compile("(?:(;\\s*(\\n\\r?|$))|(\\n\\r?([ \\t\\r]*\\n\\r?)+))", Pattern.DOTALL);
-                        } else {
-                            pattern = Pattern.compile("(?:(;\\s*(\\n\\r?|$)))", Pattern.DOTALL);
-                        }
-
-                        Matcher matcher = pattern.matcher(sqlBlock);
-                        boolean result = matcher.find();
-                        StringBuffer sb = new StringBuffer();
-                        if (result || locFragmentOffset != null) {
-                            do {
-                                String sql;
-                                String pureSql;
-                                if (locFragmentOffset != null) {
-                                    sql = sqlBlock;
-                                    pureSql = sqlBlock;
-                                } else {
-                                    sb.setLength(0);
-                                    matcher.appendReplacement(sb, "");
-                                    pureSql = sb.toString();
-                                    sb.append(matcher.group());
-                                    sql = sb.toString();
-                                }
-                                status.linesExecuting += countLines(pureSql);
-                                if (sql.trim().length() > 0) {
-                                    executeSQL(pureSql, status, lineStartOffset, explain, tabContentPanel, caretDotMark, locFragmentOffset);
-                                    if (status.failed) {
-                                        if (locFragmentOffset != null) {
-                                            if (status.errorPositionIsKnown) {
-                                                try {
-                                                    status.errorPosition += locFragmentOffset.a - editorPane.getLineStartOffset(editorPane.getLineOfOffset(locFragmentOffset.a));
-                                                } catch (BadLocationException e) {
-                                                    logger.info("error", e);
-                                                }
-                                            }
-                                        }
-                                        break;
-                                    }
-                                }
-                                if (lineStartOffset >= 0) {
-                                    lineStartOffset += sql.length();
-                                }
-                                status.linesExecuted += countLines(sql) - 1;
-                                if (locFragmentOffset != null) {
-                                    pattern = Pattern.compile("(\\n\\s*)$", Pattern.DOTALL);
-                                    matcher = pattern.matcher(sql);
-                                    if (!matcher.find()) {
-                                        status.linesExecuted++;
-                                    }
-                                    break;
-                                }
-                                String terminator = matcher.group(1);
-                                if (terminator != null && !terminator.contains("\n")) { // ';' without nl
-                                    status.linesExecuted++;
-                                }
-                                status.linesExecuting = status.linesExecuted;
-                                result = matcher.find();
-                            } while (result);
-                        }
-                        if (!status.failed && locFragmentOffset == null) {
-                            sb.setLength(0);
-                            matcher.appendTail(sb);
-                            String sbToString = sb.toString();
-                            String sql = sbToString;
-                            if (sql.trim().length() > 0) {
-                                status.linesExecuting += countLines(sql);
-                                executeSQL(sql, status, lineStartOffset, explain, tabContentPanel, caretDotMark, locFragmentOffset);
-                                if (!status.failed) {
-                                    status.linesExecuted = status.linesExecuting;
-                                }
+                    	for (;;) {
+                    		if (successState.mode != Mode.COUNT) {
+	                    		status = new Status();
+	                    		status.successState = successState;
+	                            status.location = location;
+	                            status.linesExecuted = 0;
+	                            status.linesExecuting = 0;
+	                            status.setRunning(true);
+                    		}
+                            int lineStartOffset = finalLineStartOffset;
+                            Pattern pattern;
+	                        if (emptyLineSeparatesStatements) {
+	                            pattern = Pattern.compile("(?:(;\\s*(\\n\\r?|$))|(\\n\\r?([ \\t\\r]*\\n\\r?)+))", Pattern.DOTALL);
+	                        } else {
+	                            pattern = Pattern.compile("(?:(;\\s*(\\n\\r?|$)))", Pattern.DOTALL);
+	                        }
+	
+	                        Matcher matcher = pattern.matcher(sqlBlock);
+	                        boolean result = matcher.find();
+	                        StringBuffer sb = new StringBuffer();
+	                        successState.hadProgress = false;
+                        	int statementNumber = 0;
+                        	int lineNumber = location.a;
+	                        if (result || locFragmentOffset != null) {
+	                            do {
+	                                String sql;
+	                                String pureSql;
+	                                if (locFragmentOffset != null) {
+	                                	
+	                                	// TODO
+	                                	// TODO test fragment
+	                                	
+	                                	
+	                                    sql = sqlBlock;
+	                                    pureSql = sqlBlock;
+	                                } else {
+	                                    sb.setLength(0);
+	                                    matcher.appendReplacement(sb, "");
+	                                    pureSql = sb.toString();
+	                                    sb.append(matcher.group());
+	                                    sql = sb.toString();
+	                                }
+	                                if (status != null) {
+	                                	int countLines = countLines(pureSql);
+	                                	successState.statementLocation.put(statementNumber + 1, new Pair<>(lineNumber, lineNumber + countLines));
+	                                	lineNumber += countLines;
+	                                	status.linesExecuting += countLines;
+	                                }
+	                                if (sql.trim().length() > 0) {
+	                                	++statementNumber;
+	                                	if (successState.mode == Mode.COUNT) {
+	                                		++successState.numStatements;
+	                                	} else if (successState.shouldRun(statementNumber)) {
+		                                	executeSQL(pureSql, status, lineStartOffset, explain, tabContentPanel, caretDotMark, locFragmentOffset);
+		                                    if (status.failed) {
+		                                    	successState.failed.add(statementNumber);
+		                                        if (locFragmentOffset != null) {
+		                                            if (status.errorPositionIsKnown) {
+		                                                try {
+		                                                    status.errorPosition += locFragmentOffset.a - editorPane.getLineStartOffset(editorPane.getLineOfOffset(locFragmentOffset.a));
+		                                                } catch (BadLocationException e) {
+		                                                    logger.info("error", e);
+		                                                }
+		                                            }
+		                                        }
+		                                        if (successState.mode == Mode.EXECUTE) {
+		                                        	break;
+		                                        }
+		                                    } else {
+		                                    	successState.succeeded.add(statementNumber);
+		                                    	successState.failed.remove(statementNumber);
+		                                    	successState.hadProgress = true;
+		                                    }
+	                                	}
+	                                }
+	                                if (lineStartOffset >= 0) {
+	                                    lineStartOffset += sql.length();
+	                                }
+	                                if (status != null) {
+	                                	status.linesExecuted += countLines(sql) - 1;
+	                                }
+	                                if (locFragmentOffset != null) {
+	                                    pattern = Pattern.compile("(\\n\\s*)$", Pattern.DOTALL);
+	                                    matcher = pattern.matcher(sql);
+	                                    if (!matcher.find()) {
+	    	                                if (status != null) {
+	    	                                	status.linesExecuted++;
+	    	                                }
+	                                    }
+	                                    break;
+	                                }
+	                                if (status != null) {
+	                                	String terminator = matcher.group(1);
+	                                	if (terminator != null && !terminator.contains("\n")) { // ';' without nl
+	                                		status.linesExecuted++;
+	                                	}
+	                                	status.linesExecuting = status.linesExecuted;
+	                                }
+	                                result = matcher.find();
+	                            } while (result);
+	                        }
+	                        if ((status == null || !status.failed) && locFragmentOffset == null) {
+	                            sb.setLength(0);
+	                            matcher.appendTail(sb);
+	                            String sbToString = sb.toString();
+	                            String sql = sbToString;
+	                            if (sql.trim().length() > 0) {
+                                	++statementNumber;
+                                	if (status != null) {
+	                                	int countLines = countLines(sql);
+	                                	successState.statementLocation.put(statementNumber, new Pair<>(lineNumber, lineNumber + countLines));
+	                                	lineNumber += countLines;
+                                	}
+	                                if (successState.mode == Mode.COUNT) {
+                                		++successState.numStatements;
+                                	} else if (successState.shouldRun(statementNumber)) {
+		                                status.linesExecuting += countLines(sql);
+		                                executeSQL(sql, status, lineStartOffset, explain, tabContentPanel, caretDotMark, locFragmentOffset);
+		                                if (!status.failed) {
+		                                	successState.succeeded.add(statementNumber);
+		                                	successState.failed.remove(statementNumber);
+	                                    	successState.hadProgress = true;
+		                                	status.linesExecuted = status.linesExecuting;
+		                                } else {
+		                                	successState.failed.add(statementNumber);
+		                                }
+                                	}
+	                            }
+	                        }
+	                        if (successState.mode != Mode.COUNT) {
+		                        if (status.numStatements <= 7) {
+		                            storeHistory();
+		                        } else {
+		                            restoreHistory();
+		                        }
+		                        break;
+	                        } else {
+	                        	successState.mode = Mode.EXECUTE;
+	                        }
+                    	}
+                    	if (successState.mode == Mode.EXECUTE) {
+                    		successState.mode = Mode.CONTINUE;
+                    	} else if (successState.mode == Mode.CONTINUE) {
+                    		successState.mode = Mode.RETRY;
+                    	}
+                    	UIUtil.invokeLater(() -> {
+                            if (successState != null && successState.hasNextStep()) {
+                            	UIUtil.invokeLater(10, () -> {
+                            		currentSuccessState = successState;
+                            		continueButton.setText(successState.createContinueButtonText());
+//                            		continueButton.setVisible(true);   TODO
+                            	});
                             }
-                        }
-                        if (status.numStatements <= 7) {
-                            storeHistory();
-                        } else {
-                            restoreHistory();
-                        }
+                    	});
                     } finally {
-                        status.setRunning(false);
-                        running.set(false);
-                        status.updateView(true);
-                        UIUtil.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                editorPane.updateMenuItemState(true, false);
-                            }
-                        });
+                    	if (status != null) {
+                    		status.setRunning(false);
+                    	}
+                    	running.set(false);
+                    	if (status != null) {
+                        	status.updateView(true);
+                    	}
+                    	UIUtil.invokeLater(new Runnable() {
+                    		@Override
+                    		public void run() {
+                    			editorPane.updateMenuItemState(true, false);
+                    		}
+                    	});
                     }
                 }
 
@@ -1397,7 +1514,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                        explButton.setIcon(UIUtil.scaleIcon(explButton, explainIcon));
 	                        toolBar.add(explButton);
 	                        explButton.addActionListener(e -> {
-	            	            executeSQLBlock(toExplain, null, true, null, true, null);
+	            	            executeSQLBlock(toExplain, null, true, null, true, null, new SuccessState());
 	                        });
 	                        tabContentPanel.panel.add(toolBar, gridBagConstraints);
                         }
@@ -1967,7 +2084,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     }
 
     private class Status {
-        public int origErrorPosition;
+        protected SuccessState successState;
+		public int origErrorPosition;
 		public int errorPosition = -1;
         public boolean errorPositionIsKnown = false;
         protected int linesExecuting;
@@ -2044,20 +2162,33 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                                 editorPane.removeAllLineHighlights();
                                 editorPane.setHighlightCurrentLine(false);
                                 try {
+                                	Set<Integer> failedLines = new HashSet<>();
+                                	if (successState != null) {
+                                		successState.failed.stream().map(sn -> successState.statementLocation.get(sn)).filter(l -> l != null)
+                                			.forEach(l -> {
+                                				for (int i = l.a; i < l.b; ++i) {
+                                					failedLines.add(i);
+                                				}
+                                			});
+                                	}
                                     for (int i = location.a; i <= location.b; ++i) {
                                         Color hl;
-                                        if (i < linesExecuted + location.a) {
-                                            hl = okColor;
-                                        } else if (i >= linesExecuting + location.a) {
-                                            hl = pendingColor;
+                                        if (failedLines.contains(i)) {
+                                        	hl = failedColor;
                                         } else {
-                                            if (failed) {
-                                                hl = failedColor;
-                                            } else if (running) {
-                                                hl = runningColor;
-                                            } else {
-                                                hl = pendingColor;
-                                            }
+	                                        if (i < linesExecuted + location.a) {
+	                                            hl = okColor;
+	                                        } else if (i >= linesExecuting + location.a) {
+	                                            hl = pendingColor;
+	                                        } else {
+	                                            if (failed) {
+	                                                hl = failedColor;
+	                                            } else if (running) {
+	                                                hl = runningColor;
+	                                            } else {
+	                                                hl = pendingColor;
+	                                            }
+	                                        }
                                         }
                                         editorPane.addLineHighlight(i, hl);
                                     }
@@ -2256,6 +2387,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         jPanel6 = new javax.swing.JPanel();
         statusLabel = new javax.swing.JLabel();
         dummyLabel = new javax.swing.JLabel();
+        continueButton = new javax.swing.JButton();
+        jPanel4 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jLabel2 = new javax.swing.JLabel();
@@ -2266,7 +2399,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
         jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane2.setResizeWeight(0.5);
-        jSplitPane2.setContinuousLayout(true);
         jSplitPane2.setOneTouchExpandable(true);
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
@@ -2296,7 +2428,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         gridBagConstraints.gridy = 2;
         jPanel5.add(limitComboBox, gridBagConstraints);
 
-        jToolBar1.setFloatable(false);
         jToolBar1.setRollover(true);
 
         runSQLButton.setText("Run");
@@ -2371,25 +2502,39 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridheight = 20;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(2, 8, 2, 0);
         jPanel6.add(statusLabel, gridBagConstraints);
 
         dummyLabel.setForeground(java.awt.Color.gray);
         dummyLabel.setText(" ");
+        dummyLabel.setToolTipText("");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridheight = 20;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(8, 8, 8, 0);
+        gridBagConstraints.insets = new java.awt.Insets(8, 180, 8, 0);
         jPanel6.add(dummyLabel, gridBagConstraints);
+
+        continueButton.setText("jButton1");
+        continueButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                continueButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
+        jPanel6.add(continueButton, gridBagConstraints);
+
+        jPanel4.setLayout(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.weightx = 1.0;
+        jPanel6.add(jPanel4, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -2449,10 +2594,18 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         editorPane.grabFocus();
     }//GEN-LAST:event_clearButtonActionPerformed
 
+    private void continueButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_continueButtonActionPerformed
+    	continueButton.setVisible(false);
+    	if (currentSuccessState != null) {
+    		currentSuccessState.nextStep();
+    	}
+    }//GEN-LAST:event_continueButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
     private javax.swing.JButton clearButton;
     private javax.swing.JPanel consoleContainerPanel;
+    private javax.swing.JButton continueButton;
     private javax.swing.JLabel dummyLabel;
     private javax.swing.JButton explainButton;
     private javax.swing.JLabel jLabel1;
@@ -2461,6 +2614,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JToolBar.Separator jSeparator1;
@@ -3398,7 +3552,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	            sql = editorPane.getText(loc.a, loc.b, true);
 	        }
 	        if (loc != null && execute) {
-	            executeSQLBlock(sql, loc, editorPane.getCaret().getDot() == editorPane.getCaret().getMark(), locFragmentOffset, explain, tabContentPanel);
+	            executeSQLBlock(sql, loc, editorPane.getCaret().getDot() == editorPane.getCaret().getMark(), locFragmentOffset, explain, tabContentPanel, new SuccessState());
 	        }
 	        return sql;
         } catch (BadLocationException e) {
@@ -3426,7 +3580,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 // ignore
             }
             Pair<Integer, Integer> loc = new Pair<Integer, Integer>(start, editorPane.getLineCount() - 1);
-            executeSQLBlock(editorPane.getText(loc.a, loc.b, true), loc, true, null, false, null);
+            executeSQLBlock(editorPane.getText(loc.a, loc.b, true), loc, true, null, false, null, new SuccessState());
         }
     }
 
@@ -3948,8 +4102,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	}
 
 	// TODO
-	// TODO wenn datei zu gross, leere console 
+	// TODO exec set of stmts effect. in topol. order: "continue"? (+ "execute next"?) button on error if more statements are pending
 	
+	// TODO 1
+	// TODO ordering per column: break down to SQL?
+		
 	// TODO StringSearch component for historie (and than inc hist size a lot)
     
     // TODO automatically generated SQL statements from Desktop like:
