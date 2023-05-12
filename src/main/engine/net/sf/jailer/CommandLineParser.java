@@ -115,7 +115,7 @@ public class CommandLineParser {
 			cmd = "jailer.bat";
 		}
 		System.out.println("usage:");
-		System.out.println("  " + cmd + " export [options] <extraction-model> <jdbc-driver-class> <db-URL> <db-user> <db-password> -jdbcjar <JDBC driver's jar file>");
+		System.out.println("  " + cmd + " export [options] <extraction-model> <jdbc-driver-class> <db-URL> <db-user> <db-password> -jdbcjar <JDBC driver jar file>");
 		System.out.println("    extracts data (see option '-e') and optionally creates a delete-script (see option '-d')");
 		System.out.println("    -where subject condition. Optional, overrides condition in extraction-model");
 		System.out.println("    -format [SQL, XML, DBUNIT_FLAT_XML or LIQUIBASE_XML]");
@@ -124,21 +124,21 @@ public class CommandLineParser {
 		System.out.println("    -xml-time <pattern for times in XML  file>");
 		System.out.println("    -xml-timestamp <pattern for time-stamps in XML export file>");
 		System.out.println();
-		System.out.println("  " + cmd + " import <sql-script> <jdbc-driver-class> <db-URL> <db-user> <db-password> -jdbcjar <JDBC driver's jar file>");
+		System.out.println("  " + cmd + " import <sql-script> <jdbc-driver-class> <db-URL> <db-user> <db-password> -jdbcjar <JDBC driver jar file>");
 		System.out.println("    imports data (with CLOB/BLOB/XML support)");
 		System.out.println();
-		System.out.println("  " + cmd + " delete [options] <extraction-model> <jdbc-driver-class> <db-URL> <db-user> <db-password> -jdbcjar <JDBC driver's jar file>");
+		System.out.println("  " + cmd + " delete [options] <extraction-model> <jdbc-driver-class> <db-URL> <db-user> <db-password> -jdbcjar <JDBC driver jar file>");
 		System.out.println("    Like export, but skips the export and creates a delete-script (see option '-d')");
 		System.out.println("    -where <subject condition>: optional, overrides condition in extraction-model");
-		System.out.println("    -jdbcjar <JDBC driver's jar file>");
+		System.out.println("    -jdbcjar <JDBC driver jar file>");
 		System.out.println();
 		System.out.println("  " + cmd + " create-ddl [-datamodel VAL] [-target-dbms <DBMS>] [-working-table-schema VAL] [<extraction-model> -independent-working-tables] [-use-rowid] [-use-rowid-if-needed]");
 		System.out.println("    creates the DDL for the working-tables and prints it to stdout");
 		System.out.println();
-		System.out.println("  " + cmd + " create-ddl <jdbc-driver-class> <db-URL> <db-user> <db-password> -jdbcjar <JDBC driver's jar file> [<extraction-model> -independent-working-tables] [-use-rowid] [-use-rowid-if-needed]");
+		System.out.println("  " + cmd + " create-ddl <jdbc-driver-class> <db-URL> <db-user> <db-password> -jdbcjar <JDBC driver jar file> [<extraction-model> -independent-working-tables] [-use-rowid] [-use-rowid-if-needed]");
 		System.out.println("    creates the working-tables");
 		System.out.println();
-		System.out.println("  " + cmd + " build-model [-schema <schema>] <jdbc-driver-class> <db-URL> <db-user> <db-password> -jdbcjar <JDBC driver's jar file>");
+		System.out.println("  " + cmd + " build-model [-schema <schema>] <jdbc-driver-class> <db-URL> <db-user> <db-password> -jdbcjar <JDBC driver jar file>");
 		System.out.println("    determines table and relationship information through database analysis");
 		System.out.println("    -datamodel <folder>: folder holding the data model. Defaults to './datamodel'");
 		System.out.println("    -schema <schema>: limits analysis to the schema <schema>");

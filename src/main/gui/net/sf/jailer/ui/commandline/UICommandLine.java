@@ -34,16 +34,16 @@ public class UICommandLine {
 	@Option(name="-datamodel", usage="folder holding the data model.")
 	public String datamodelFolder = null;
 
-	@Option(name="-jdbcjar", usage="JDBC driver's jar file")
+	@Option(name="-jdbcjar", usage="JDBC driver jar file")
 	public String jdbcjar = null;
 
-	@Option(name="-jdbcjar2", usage="JDBC driver's additional jar file")
+	@Option(name="-jdbcjar2", usage="JDBC driver additional jar file")
 	public String jdbcjar2 = null;
 
-	@Option(name="-jdbcjar3", usage="JDBC driver's 2. additional jar file")
+	@Option(name="-jdbcjar3", usage="JDBC driver 2. additional jar file")
 	public String jdbcjar3 = null;
 
-	@Option(name="-jdbcjar4", usage="JDBC driver's 3. additional jar file")
+	@Option(name="-jdbcjar4", usage="JDBC driver 3. additional jar file")
 	public String jdbcjar4 = null;
 	
 	@Option(name="-driver", usage="JDBC driver class name.")

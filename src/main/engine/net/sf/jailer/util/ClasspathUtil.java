@@ -71,7 +71,7 @@ public class ClasspathUtil {
 				}
 			}
 			if (!file.exists()) {
-				throw new FileNotFoundException("Driver's jar file not found: '" + fn + "'");
+				throw new FileNotFoundException("Driver jar file not found: '" + fn + "'");
 			}
 			try {
 				urlList.add(file.toURI().toURL());
