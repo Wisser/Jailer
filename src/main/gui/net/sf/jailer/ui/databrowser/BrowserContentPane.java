@@ -8286,3 +8286,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 }
+
+// TODO
+// TODO while loading: don't render rowsTables header as invalid, so that you can immediately edit column filters
