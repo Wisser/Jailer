@@ -4101,9 +4101,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		}
 	}
 
-	// TODO
-	// TODO exec set of stmts effect. in topol. order: "continue"? (+ "execute next"?) button on error if more statements are pending
-	
 	// TODO 1
 	// TODO ordering per column: break down to SQL?
 		
