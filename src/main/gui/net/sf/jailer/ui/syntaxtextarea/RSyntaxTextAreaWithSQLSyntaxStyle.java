@@ -913,6 +913,10 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	}
 
 	public void updateMenuItemState(boolean allowRun, boolean setLineHighlights) {
+		updateMenuItemState(allowRun, setLineHighlights, false);
+	}
+	
+	public void updateMenuItemState(boolean allowRun, boolean setLineHighlights, boolean defrd) {
 		Set<Integer> eosLines = new HashSet<Integer>();
 		Pair<Integer, Integer> loc;
 		Pair<Integer, Integer> locFragmentOffset = null;
@@ -990,7 +994,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 					}
 				}
 				if (loc.b - loc.a > 1000) {
-					stopped.set(false);
+					stopped.set(true);
 					pending.set(true);
 					new Thread(new Runnable() {
 						@Override
@@ -1004,15 +1008,15 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 								UIUtil.invokeLater(new Runnable() {
 									@Override
 									public void run() {
-										updateMenuItemState(true, true);
+										updateMenuItemState(true, true, true);
 									}
 								});
 							}
 						}
 					}).start();
-				} else {
-					stopped.set(true);
 				}
+			} else {
+				stopped.set(false);
 			}
 		}
 	}

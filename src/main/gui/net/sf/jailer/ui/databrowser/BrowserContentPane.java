@@ -410,7 +410,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		}
 
-		public LoadJob(ResultSet inputResultSet, int limit) {
+		private LoadJob(ResultSet inputResultSet, int limit) {
 			this.andCond = "";
 			this.selectDistinct = false;
 			this.inputResultSet = inputResultSet;
@@ -459,7 +459,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			boolean reconnectAndRetry = false;
 
 			rowCountCache.clear();
-			rowColumnTypes.clear();
+//			rowColumnTypes.clear();
 			try {
 				reloadRows(inputResultSet, andCond, rows, this, l + 1, selectDistinct);
 				CancellationHandler.checkForCancellation(this);
@@ -6120,6 +6120,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jPanel13 = new javax.swing.JPanel();
         loadingCauseLabel = new javax.swing.JLabel();
         loadingLabel = new javax.swing.JLabel();
+        loadingTitelPanel = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         rowsTableContainerPanel = new javax.swing.JPanel();
         jLayeredPane2 = new javax.swing.JLayeredPane();
@@ -6356,8 +6357,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 2, 4);
+        gridBagConstraints.insets = new java.awt.Insets(0, 1, 2, 1);
         loadingPanel.add(jPanel1, gridBagConstraints);
+
+        loadingTitelPanel.setLayout(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        loadingPanel.add(loadingTitelPanel, gridBagConstraints);
 
         jLayeredPane1.setLayer(loadingPanel, javax.swing.JLayeredPane.MODAL_LAYER);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -6987,6 +6994,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JLabel loadingCauseLabel;
     private javax.swing.JLabel loadingLabel;
     private javax.swing.JPanel loadingPanel;
+    private javax.swing.JPanel loadingTitelPanel;
     javax.swing.JPanel menuPanel;
     private javax.swing.JPanel noRowsFoundPanel;
     private javax.swing.JLabel on;
@@ -7047,7 +7055,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 	}
 
-	private void updateMode(String mode, String cause) {
+	protected void updateMode(String mode, String cause) {
 		String suffix;
 		if (cause != null) {
 			suffix = cause;
@@ -7055,6 +7063,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			suffix = "";
 		}
 		loadingCauseLabel.setVisible(false);
+		loadingTitelPanel.setMinimumSize(new Dimension(0, 0));
+		loadingTitelPanel.setVisible(false);
 		if ("table".equals(mode)) {
 			loadingPanel.setVisible(false);
 			rowsTable.setEnabled(true);
@@ -7066,6 +7076,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			loadingCauseLabel.setVisible(true);
 			cancelLoadButton.setVisible(true);
 			rowsTable.setEnabled(false);
+			if (rowsTable.isShowing()) {
+				loadingTitelPanel.setMinimumSize(new Dimension(0, rowsTable.getTableHeader().getHeight()));
+				loadingTitelPanel.setVisible(true);
+			}
 		} else if ("pending".equals(mode)) {
 			mode = "table";
 			loadingPanel.setVisible(true);
@@ -7079,6 +7093,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			cancelLoadButton.setVisible(true);
 			rowsTable.setEnabled(false);
 		}
+		loadingTitelPanel.setPreferredSize(loadingTitelPanel.getMinimumSize());
 		errorDetailsButton.setVisible(false);
 		((CardLayout) cardPanel.getLayout()).show(cardPanel, mode);
 	}
@@ -8286,6 +8301,3 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 }
-
-// TODO
-// TODO while loading: don't render rowsTables header as invalid, so that you can immediately edit column filters

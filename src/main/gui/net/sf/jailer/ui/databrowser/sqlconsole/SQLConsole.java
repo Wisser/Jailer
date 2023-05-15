@@ -61,6 +61,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -275,6 +276,22 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         this.editorPane = new RSyntaxTextAreaWithSQLSyntaxStyle(true, true) {
         	{
         		setBracketMatchingEnabled(true);
+        	}
+        	
+        	AtomicBoolean wasRunning = new AtomicBoolean(false);
+        	
+        	@Override
+        	public void updateMenuItemState(boolean allowRun, boolean setLineHighlights, boolean defrd) {
+        		if (running != null && wasRunning != null) {
+	        		if (defrd) {
+	        			if (wasRunning.get()) {
+	        				setLineHighlights = false;
+	        			}
+	        		} else {
+	        			wasRunning.set(running.get());
+	        		}
+        		}
+        		super.updateMenuItemState(allowRun, setLineHighlights, defrd);
         	}
         	
         	@Override
@@ -688,15 +705,23 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private enum Mode { COUNT, EXECUTE, CONTINUE, RETRY };
     
     private class SuccessState {
-    	Set<Integer> failed = new HashSet<>(); // statment numbers
-    	Set<Integer> succeeded = new HashSet<>();
-    	Map<Integer, Pair<Integer, Integer>> statementLocation = new HashMap<>();
+    	Set<Integer> failed = Collections.synchronizedSet(new HashSet<>()); // statment numbers
+    	Set<Integer> failedButRetryable = Collections.synchronizedSet(new HashSet<>());
+    	Set<Integer> succeeded = Collections.synchronizedSet(new HashSet<>());
+    	Map<Integer, Pair<Integer, Integer>> statementLocation = Collections.synchronizedMap(new HashMap<>());
     	int numStatements;
     	boolean hadProgress = false;
     	Runnable nextStep;
     	Mode mode = Mode.COUNT;
+		protected int numRowsRead;
+		protected int numRowsUpdated;
+		protected int numStatementsExec;
+		protected boolean hasSelected;
+		protected boolean hasUpdated;
+		protected long timeInMS;
+		
     	String createContinueButtonText() {
-    		return mode == Mode.CONTINUE? "Run next Statements" : ("Retry failed Statement" + (failed.size() <= 1? "" : ("s (" + failed.size() + ")")));
+    		return mode == Mode.CONTINUE? "Run remaining statement" + (numStatements - succeeded.size() - failed.size() > 1? "s (" + (numStatements - succeeded.size() - failed.size()) + ")" : "") : ("Retry failed statement" + (failed.size() <= 1? "" : ("s")));
     	}
     	
     	boolean shouldRun(int statementNumber) {
@@ -716,10 +741,16 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     	}
 		
     	public boolean hasNextStep() {
-    		return nextStep != null && (hadProgress || failed.size() + succeeded.size() < numStatements);
+    		switch (mode) {
+				case COUNT: return false;
+				case EXECUTE: return nextStep != null;
+				case CONTINUE: return nextStep != null && failed.size() - failedButRetryable.size() + succeeded.size() < numStatements;
+				case RETRY: return nextStep != null && (hadProgress && failed.size() - failedButRetryable.size() + succeeded.size() < numStatements);
+			};
+			return false;
 		}
     }
-
+    
     private SuccessState currentSuccessState;
     
     /**
@@ -765,6 +796,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                     		if (successState.mode != Mode.COUNT) {
 	                    		status = new Status();
 	                    		status.successState = successState;
+	                    		status.numRowsRead = successState.numRowsRead;
+	                    		status.numRowsUpdated = successState.numRowsUpdated;
+	                    		status.numStatements = successState.numStatementsExec;
+	                    		status.hasSelected = successState.hasSelected;
+	                    		status.hasUpdated = successState.hasUpdated;
+	                    		status.timeInMS = successState.timeInMS;
+	                    		
 	                            status.location = location;
 	                            status.linesExecuted = 0;
 	                            status.linesExecuting = 0;
@@ -784,17 +822,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                        successState.hadProgress = false;
                         	int statementNumber = 0;
                         	int lineNumber = location.a;
+                        	boolean stop = false;
 	                        if (result || locFragmentOffset != null) {
 	                            do {
 	                                String sql;
 	                                String pureSql;
-	                                if (locFragmentOffset != null) {
-	                                	
-	                                	// TODO
-	                                	// TODO test fragment
-	                                	
-	                                	
-	                                    sql = sqlBlock;
+	                                if (locFragmentOffset != null) {sql = sqlBlock;
 	                                    pureSql = sqlBlock;
 	                                } else {
 	                                    sb.setLength(0);
@@ -804,9 +837,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                                    sql = sb.toString();
 	                                }
 	                                if (status != null) {
-	                                	int countLines = countLines(pureSql);
-	                                	successState.statementLocation.put(statementNumber + 1, new Pair<>(lineNumber, lineNumber + countLines));
-	                                	lineNumber += countLines;
+	                                	int countLines = countLines(sql);
+	                                	successState.statementLocation.put(statementNumber + 1, new Pair<>(lineNumber, lineNumber + countLines - 1));
+	                                	lineNumber += countLines - 1;
 	                                	status.linesExecuting += countLines;
 	                                }
 	                                if (sql.trim().length() > 0) {
@@ -814,7 +847,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                                	if (successState.mode == Mode.COUNT) {
 	                                		++successState.numStatements;
 	                                	} else if (successState.shouldRun(statementNumber)) {
-		                                	executeSQL(pureSql, status, lineStartOffset, explain, tabContentPanel, caretDotMark, locFragmentOffset);
+	                                		status.failed = false;
+	                                		executeSQL(pureSql, status, lineStartOffset, explain, tabContentPanel, caretDotMark, locFragmentOffset);
 		                                    if (status.failed) {
 		                                    	successState.failed.add(statementNumber);
 		                                        if (locFragmentOffset != null) {
@@ -827,11 +861,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		                                            }
 		                                        }
 		                                        if (successState.mode == Mode.EXECUTE) {
+		                                        	stop = true;
 		                                        	break;
 		                                        }
 		                                    } else {
 		                                    	successState.succeeded.add(statementNumber);
 		                                    	successState.failed.remove(statementNumber);
+		                                    	successState.failedButRetryable.clear();
+		                                    	successState.failedButRetryable.addAll(successState.failed);
 		                                    	successState.hadProgress = true;
 		                                    }
 	                                	}
@@ -862,7 +899,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                                result = matcher.find();
 	                            } while (result);
 	                        }
-	                        if ((status == null || !status.failed) && locFragmentOffset == null) {
+	                        if (!stop && locFragmentOffset == null) {
 	                            sb.setLength(0);
 	                            matcher.appendTail(sb);
 	                            String sbToString = sb.toString();
@@ -872,16 +909,19 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                                 	if (status != null) {
 	                                	int countLines = countLines(sql);
 	                                	successState.statementLocation.put(statementNumber, new Pair<>(lineNumber, lineNumber + countLines));
-	                                	lineNumber += countLines;
+	                                	lineNumber += countLines - 1;
                                 	}
 	                                if (successState.mode == Mode.COUNT) {
                                 		++successState.numStatements;
                                 	} else if (successState.shouldRun(statementNumber)) {
 		                                status.linesExecuting += countLines(sql);
-		                                executeSQL(sql, status, lineStartOffset, explain, tabContentPanel, caretDotMark, locFragmentOffset);
+                                		status.failed = false;
+                                		executeSQL(sql, status, lineStartOffset, explain, tabContentPanel, caretDotMark, locFragmentOffset);
 		                                if (!status.failed) {
 		                                	successState.succeeded.add(statementNumber);
 		                                	successState.failed.remove(statementNumber);
+	                                    	successState.failedButRetryable.clear();
+	                                    	successState.failedButRetryable.addAll(successState.failed);
 	                                    	successState.hadProgress = true;
 		                                	status.linesExecuted = status.linesExecuting;
 		                                } else {
@@ -908,18 +948,28 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                     	}
                     	UIUtil.invokeLater(() -> {
                             if (successState != null && successState.hasNextStep()) {
-                            	UIUtil.invokeLater(10, () -> {
+                            	UIUtil.invokeLater(() -> {
                             		currentSuccessState = successState;
                             		continueButton.setText(successState.createContinueButtonText());
-//                            		continueButton.setVisible(true);   TODO
+                            		continueButton.setVisible(true);
+                            		UIUtil.invokeLater(() -> {
+                            			Point pt = editorPane.getCaret().getMagicCaretPosition();
+                            			Rectangle rect = new Rectangle(pt.x - 32, pt.y - 32, 64, 64);
+                            			editorPane.scrollRectToVisible(rect);
+                            		});
                             	});
                             }
                     	});
                     } finally {
                     	if (status != null) {
                     		status.setRunning(false);
+                    		successState.numRowsRead = status.numRowsRead;
+                    		successState.numRowsUpdated = status.numRowsUpdated;
+                    		successState.numStatementsExec = status.numStatements;
+                    		successState.hasSelected = status.hasSelected;
+                    		successState.hasUpdated = status.hasUpdated;
+                    		successState.timeInMS = status.timeInMS;
                     	}
-                    	running.set(false);
                     	if (status != null) {
                         	status.updateView(true);
                     	}
@@ -927,7 +977,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                     		@Override
                     		public void run() {
                     			editorPane.updateMenuItemState(true, false);
-                    		}
+                    			running.set(false);
+                            }
                     	});
                     }
                 }
@@ -946,7 +997,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     }
 
     /**
-     * Executes a single SQL statment.
+     * Executes a single SQL statement.
      *
      * @param sql the statement
      * @param status the status to update
@@ -1459,6 +1510,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							@Override
 							public void actionPerformed(ActionEvent e) {
 								tabContentPanel.loadingPanel.setVisible(true);
+								rb.browserContentCellEditor = null;
 								tabContentPanel.repaint();
 								loadButton.setEnabled(false);
 								initialSortKeysSql = rb.getStatementForReloading();
@@ -1765,6 +1817,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 }
                 status.failed = true;
                 status.error = error;
+                status.numStatements--;
             }
             if (error instanceof CancellationException) {
                 CancellationHandler.reset(SQLConsole.this);
@@ -2120,6 +2173,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                             synchronized (Status.this) {
                                 Font font = new JLabel("X").getFont();
                                 statusLabel.setFont(font.deriveFont(font.getStyle(), (font.getSize() * 14) / 10));
+                                continueButton.setFont(statusLabel.getFont());
                                 statusLabel.setVisible(false);
                                 cancelButton.setEnabled(false);
                                 if (!failed) {
@@ -2142,7 +2196,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                                                 int col = errorPosition - editorPane.getLineStartOffset(errorLine) + 1;
                                                 pos = "Error at line " + (errorLine + 1) + ", column " + col + ": ";
                                             }
-                                            setCaretPosition(errorPosition);
+                                           setCaretPosition(errorPosition);
                                         } catch (BadLocationException e) {
                                         }
                                         if (errorLine >= 0) {
@@ -2157,6 +2211,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                                         showError(sStackTrace, statement, origErrorPosition);
                                     }
                                 }
+                                if (successState != null && (successState.mode == Mode.RETRY || numStatements > 0)) {
+                                	statusLabel.setVisible(true);
+                                    statusLabel.setForeground(running? runningStatusLabelColor : Color.BLACK);
+                                    statusLabel.setText(getText());
+                                }
                             }
                             if (location != null) {
                                 editorPane.removeAllLineHighlights();
@@ -2164,12 +2223,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                                 try {
                                 	Set<Integer> failedLines = new HashSet<>();
                                 	if (successState != null) {
+                                		synchronized (successState.failed) {
                                 		successState.failed.stream().map(sn -> successState.statementLocation.get(sn)).filter(l -> l != null)
                                 			.forEach(l -> {
                                 				for (int i = l.a; i < l.b; ++i) {
                                 					failedLines.add(i);
                                 				}
                                 			});
+                                		}
                                 	}
                                     for (int i = location.a; i <= location.b; ++i) {
                                         Color hl;
@@ -2181,7 +2242,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                                        } else if (i >= linesExecuting + location.a) {
 	                                            hl = pendingColor;
 	                                        } else {
-	                                            if (failed) {
+	                                            if (failed && failedLines.isEmpty()) {
 	                                                hl = failedColor;
 	                                            } else if (running) {
 	                                                hl = runningColor;
@@ -2250,15 +2311,25 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         }
 
 		private String getText() {
-            String text = "";
+            String text = "<html>";
             if (running) {
-                text = "Running... ";
+                text += "Running... ";
                 if (numStatements <= 1 && numRowsRead == 0 && numRowsUpdated == 0) {
-                    return text;
+                    return text + "</html>";
                 }
             }
-            if (numStatements > 1) {
-                text += numStatements + " Statements. ";
+            if (successState != null) {
+	            if (numStatements + successState.failed.size() > 1) {
+	                boolean f = !successState.failed.isEmpty();
+	                int left = successState.numStatements - successState.succeeded.size() - successState.failed.size();
+	                text += numStatements + " " + (f? "successful. " : ("statement" + (numStatements > 1? "s. " : ". ")));
+	                if (left > 0) {
+	                	text += "<font color=\"0000dd\">" + left + " remaining. </font>";
+	                }
+					if (f) {
+	                	text += "<font color=\"dd0000\">" + successState.failed.size() + " failed. </font>";
+	                }
+	            }
             }
             if (hasSelected) {
                 text += (limitExceeded? numRowsRead - 1 : numRowsRead) + " rows read";
@@ -2270,7 +2341,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             if (hasUpdated) {
                 text += numRowsUpdated + " rows updated. ";
             }
-            return text + "Elapsed time: " + (timeInMS / 1000.0) + " sec";
+            return text + "Elapsed time: " + (timeInMS / 1000.0) + " sec" + "</html>";
         }
     }
 
@@ -2524,9 +2595,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 2, 0);
         jPanel6.add(continueButton, gridBagConstraints);
 
         jPanel4.setLayout(null);

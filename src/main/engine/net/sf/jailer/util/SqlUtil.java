@@ -360,6 +360,7 @@ public class SqlUtil {
 		int lastBreak = -1;
 		int currentLength = 0;
 		boolean inLiteral = false;
+		boolean breakIsValid = false;
 		for (int i = 0; i < sql.length(); ++i) {
 			char c = sql.charAt(i);
 
@@ -369,16 +370,20 @@ public class SqlUtil {
 						sb.append("'||\n'");
 						currentLength = 3;
 						lastBreak = -1;
+						breakIsValid = false;
 					}
 				} else if (lastBreak > 0) {
 					sb.insert(lastBreak + 1, "\n");
 					currentLength = sb.length() - lastBreak - 2;
 					lastBreak = -1;
+					breakIsValid = false;
 				}
 			}
 
-			if ((!inLiteral) && (c == ' ' || c == ',')) {
-				lastBreak = sb.length();
+			if ((!inLiteral) && (c == ' ' || c == ',' || c == '(' || c == ')')) {
+				if (breakIsValid) {
+					lastBreak = sb.length();
+				}
 			} else if (c == '\n') {
 				currentLength = 0;
 				lastBreak = -1;
@@ -386,6 +391,9 @@ public class SqlUtil {
 
 			++currentLength;
 			sb.append(c);
+			if (!Character.isWhitespace(c)) {
+				breakIsValid = true;
+			}
 			if (c == '\'') {
 				inLiteral = !inLiteral;
 			}
