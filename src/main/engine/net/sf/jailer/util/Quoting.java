@@ -224,7 +224,10 @@ public class Quoting {
 			return createUnquotePattern("`").matcher(identifier.substring(1, identifier.length() - 1)).replaceAll("`");
 		}
 		if (isQuoted(identifier, "\"")) {
-			return createUnquotePattern("\"").matcher(identifier.substring(1, identifier.length() - 1)).replaceAll("\"");
+			if (identifier.startsWith("\"")) {
+				return createUnquotePattern("\"").matcher(identifier.substring(1, identifier.length() - 1)).replaceAll("\"");
+			}
+			return identifier.substring(1, identifier.length() - 1);
 		}
 		return identifier;
 	}
