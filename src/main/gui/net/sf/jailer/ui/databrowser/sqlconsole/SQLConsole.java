@@ -496,7 +496,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             @Override
             public void caretUpdate(CaretEvent e) {
                 updateOutline(false);
-                continueButton.setVisible(false);
+                if (!inSetCaretPosition) {
+                	continueButton.setVisible(false);
+                }
             }
         });
 
@@ -821,7 +823,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                        StringBuffer sb = new StringBuffer();
 	                        successState.hadProgress = false;
                         	int statementNumber = 0;
-                        	int lineNumber = location.a;
+                        	int lineNumber = location != null? location.a : 1;
                         	boolean stop = false;
 	                        if (result || locFragmentOffset != null) {
 	                            do {
@@ -936,6 +938,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		                        } else {
 		                            restoreHistory();
 		                        }
+		                        if (successState.mode == Mode.CONTINUE) {
+		                        	UISettings.s15++;
+		                        } else if (successState.mode == Mode.RETRY) {
+		                        	UISettings.s15 += 100;
+		                        }
 		                        break;
 	                        } else {
 	                        	successState.mode = Mode.EXECUTE;
@@ -952,12 +959,18 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                             		currentSuccessState = successState;
                             		continueButton.setText(successState.createContinueButtonText());
                             		continueButton.setVisible(true);
+                            		continueButton.setEnabled(true);
                             		UIUtil.invokeLater(() -> {
                             			Point pt = editorPane.getCaret().getMagicCaretPosition();
                             			Rectangle rect = new Rectangle(pt.x - 32, pt.y - 32, 64, 64);
                             			editorPane.scrollRectToVisible(rect);
                             		});
                             	});
+                            } else {
+                            	continueButton.setVisible(false);
+                            	if (successState.failed.isEmpty()) {
+                            		editorPane.setLineTrackingIcon(0, null);
+                            	}
                             }
                     	});
                     } finally {
@@ -1932,15 +1945,21 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		return statement.execute(sqlStatement);
 	}
 
+	private boolean inSetCaretPosition = false;
+	
 	public void setCaretPosition(int position) {
     	if (editorPane.getDocument().getLength() >= position) {
+    		boolean oldInSetCaretPosition = inSetCaretPosition;
     		try {
+    			inSetCaretPosition = true;
     			int l = editorPane.getLineOfOffset(position);
     			editorPane.setCaretPosition(position);
     			int lineHeight = editorPane.getLineHeight();
     			editorPane.scrollRectToVisible(new Rectangle(0, Math.max(0, l - 2) * lineHeight, 1, 4 * lineHeight));
     		} catch (Exception e) {
     			// ignore
+    		} finally {
+    			inSetCaretPosition = oldInSetCaretPosition;
     		}
     		editorPane.setCaretPosition(position);
     		grabFocus();
@@ -2165,6 +2184,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         private synchronized void updateView(boolean force) {
             if (force || !updatingStatus.get()) {
                 updatingStatus.set(true);
+                boolean isFailed = failed;
+                Throwable theError = error;
 
                 UIUtil.invokeLater(new Runnable() {
                     @Override
@@ -2176,25 +2197,25 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                                 continueButton.setFont(statusLabel.getFont());
                                 statusLabel.setVisible(false);
                                 cancelButton.setEnabled(false);
-                                if (!failed) {
+                                if (!isFailed) {
                                     cancelButton.setEnabled(running);
                                     statusLabel.setVisible(true);
                                     statusLabel.setForeground(running? runningStatusLabelColor : Color.BLACK);
                                     statusLabel.setText(getText());
                                 } else {
                                 	statusLabel.setVisible(true);
-                                    if (error instanceof CancellationException) {
+                                    if (theError instanceof CancellationException) {
                                         statusLabel.setForeground(Color.RED);
                                         statusLabel.setText("Cancelled");
                                         removeLastErrorTab();
-                                    } else if (error instanceof SQLException) {
+                                    } else if (theError instanceof SQLException) {
                                         String pos = "";
                                         int errorLine = -1;
                                         try {
                                             errorLine = editorPane.getLineOfOffset(errorPosition);
                                             if (errorPositionIsKnown) {
                                                 int col = errorPosition - editorPane.getLineStartOffset(errorLine) + 1;
-                                                pos = "Error at line " + (errorLine + 1) + ", column " + col + ": ";
+                                                pos = "theError at line " + (errorLine + 1) + ", column " + col + ": ";
                                             }
                                            setCaretPosition(errorPosition);
                                         } catch (BadLocationException e) {
@@ -2202,11 +2223,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                                         if (errorLine >= 0) {
                                             editorPane.setLineTrackingIcon(errorLine, scaledCancelIcon);
                                         }
-                                        showError(pos + error.getMessage(), statement, origErrorPosition);
+                                        showError(pos + theError.getMessage(), statement, origErrorPosition);
                                     } else {
                                         StringWriter sw = new StringWriter();
                                         PrintWriter pw = new PrintWriter(sw);
-                                        error.printStackTrace(pw);
+                                        theError.printStackTrace(pw);
                                         String sStackTrace = sw.toString(); // stack trace as a string
                                         showError(sStackTrace, statement, origErrorPosition);
                                     }
@@ -2242,7 +2263,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                                        } else if (i >= linesExecuting + location.a) {
 	                                            hl = pendingColor;
 	                                        } else {
-	                                            if (failed && failedLines.isEmpty()) {
+	                                            if (isFailed && failedLines.isEmpty()) {
 	                                                hl = failedColor;
 	                                            } else if (running) {
 	                                                hl = runningColor;
@@ -2667,7 +2688,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     }//GEN-LAST:event_clearButtonActionPerformed
 
     private void continueButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_continueButtonActionPerformed
-    	continueButton.setVisible(false);
+    	continueButton.setEnabled(false);
     	if (currentSuccessState != null) {
     		currentSuccessState.nextStep();
     	}

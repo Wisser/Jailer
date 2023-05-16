@@ -1142,7 +1142,9 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 		if (gutter != null) {
 			try {
 				gutter.removeAllTrackingIcons();
-				gutter.addLineTrackingIcon(line, theIcon);
+				if (theIcon != null) {
+					gutter.addLineTrackingIcon(line, theIcon);
+				}
 			} catch (BadLocationException e) {
 			}
 		}

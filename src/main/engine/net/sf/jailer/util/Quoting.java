@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.Configuration;
@@ -150,7 +151,7 @@ public class Quoting {
 					return identifier;
 				}
 			}
-			return quote + identifier + quote;
+			return quote + createQuotePattern(quote).matcher(identifier).replaceAll(quote + quote) + quote;
 		}
 		return identifier;
 	}
@@ -206,7 +207,7 @@ public class Quoting {
 	 */
 	public String unquote(String identifier) {
 		if (isQuoted(identifier)) {
-			return identifier.substring(1, identifier.length() - 1);
+			return createUnquotePattern(quote).matcher(identifier.substring(1, identifier.length() - 1)).replaceAll(quote);
 		}
 		return identifier;
 	}
@@ -219,8 +220,11 @@ public class Quoting {
 	 * @return identifier without quotes
 	 */
 	public static String staticUnquote(String identifier) {
+		if (identifier.startsWith("`") && isQuoted(identifier, "`")) {
+			return createUnquotePattern("`").matcher(identifier.substring(1, identifier.length() - 1)).replaceAll("`");
+		}
 		if (isQuoted(identifier, "\"")) {
-			return identifier.substring(1, identifier.length() - 1);
+			return createUnquotePattern("\"").matcher(identifier.substring(1, identifier.length() - 1)).replaceAll("\"");
 		}
 		return identifier;
 	}
@@ -247,7 +251,7 @@ public class Quoting {
 		if (identifier != null) {
 			identifier = identifier.trim();
 			if (force || isQuoted(identifier)) {
-				return quote + unquote(identifier) + quote;
+				return quote + createQuotePattern(quote).matcher(unquote(identifier)).replaceAll(quote + quote) + quote;
 			}
 		}
 		return identifier;
@@ -362,6 +366,27 @@ public class Quoting {
 		return a == null || b == null || (a.indexOf('_') < 0 && a.indexOf('%') < 0) || equalsIgnoreQuotingAndCase(a, b);
 	}		
 
+	private static Map<String, Pattern> quotePattern = new HashMap<>();
+	private static Map<String, Pattern> unquotePattern = new HashMap<>();
+	
+	private static synchronized Pattern createQuotePattern(String quote) {
+		Pattern pattern = quotePattern.get(quote);
+		if (pattern == null) {
+			pattern = Pattern.compile("(" + Pattern.quote(quote) + ")");
+			quotePattern.put(quote, pattern);
+		}
+		return pattern;
+	}
+	
+	private static synchronized Pattern createUnquotePattern(String quote) {
+		Pattern pattern = unquotePattern.get(quote);
+		if (pattern == null) {
+			pattern = Pattern.compile("(" + Pattern.quote(quote + quote) + ")");
+			unquotePattern.put(quote, pattern);
+		}
+		return pattern;
+	}
+	
 	public static final HashSet<String> UCSQL2003KEYWORDS = new HashSet<String>(Arrays.asList(new String[] {
 			"ABSOLUTE",
 			"ACTION",

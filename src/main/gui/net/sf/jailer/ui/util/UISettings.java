@@ -156,6 +156,7 @@ public class UISettings {
 	public static volatile int s12;
 	public static volatile int s13;
 	public static volatile int s14;
+	public static volatile long s15;
 
 	public synchronized static void storeStats() {
 		try {
@@ -166,7 +167,7 @@ public class UISettings {
 		}
 		int i = 1;
 		StringBuilder sb = new StringBuilder();
-		for (int s: new int[] { s1, s2.get(), s3, s4, s5.get(), s6, s7.get(), s8, s9, 0, s11, s12, s13, s14 }) {
+		for (long s: new long[] { s1, s2.get(), s3, s4, s5.get(), s6, s7.get(), s8, s9, 0, s11, s12, s13, s14, s15 }) {
 			if (s != 0) {
 				sb.append("&s" + i + "=" + s);
 			}

@@ -128,6 +128,10 @@ public class Column {
 	private static Pattern typeWithSize = Pattern.compile("([^ ]+) +([^ \\(]+) *\\( *([0-9]+|max) *\\)");
 	private static Pattern typeWithoutSize = Pattern.compile("([^ ]+) +([^ \\(]+)");
 
+	
+	// TODO
+	// TODO spaces in name
+	
 	/**
 	 * Parses a column declaration in SQL syntax.
 	 *
@@ -193,7 +197,7 @@ public class Column {
 						inScope = false;
 					}
 					if (inScope && c == ' ') {
-						c = '\n';
+						c = '\f';
 					}
 					sb.append(c);
 				}
@@ -227,7 +231,7 @@ public class Column {
 			}
 		}
 		if (quote != null) {
-			name = name.replace('\n', ' ');
+			name = name.replace('\f', ' ');
 		}
 		Column column = new Column(columnName == null? name : columnName, type, size, precision);
 		column.isNullable = isNullable;
