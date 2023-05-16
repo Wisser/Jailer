@@ -194,7 +194,7 @@ public class Column {
 				for (int i = 1; i < columnDeclaration.length(); ++i) {
 					char c = columnDeclaration.charAt(i);
 					if (c == quote) {
-						inScope = false;
+						inScope = !inScope;
 					}
 					if (inScope && c == ' ') {
 						c = '\f';
