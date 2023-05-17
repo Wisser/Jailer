@@ -738,6 +738,9 @@ public class StringSearchPanel extends javax.swing.JPanel {
 							if (count > Integer.MAX_VALUE / 2) {
 								count -= Integer.MAX_VALUE / 2;
 								prefix = ">";
+							} else if (count == Integer.MAX_VALUE / 2) {
+								count = 1;
+								prefix = "";
 							} else {
 								prefix = "";
 							}

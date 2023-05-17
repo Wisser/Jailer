@@ -599,7 +599,11 @@ public class DataBrowser extends javax.swing.JFrame {
 		        			if (mdTable != null) {
 		        				Long count = mdTable.getEstimatedRowCount();
 		        				if (count != null) {
-		        					stringCount.put((String) e, count.intValue() + (mdTable.isEstRCIsLowerBound()? Integer.MAX_VALUE / 2 : 0));
+		        					if (count == 1 && !mdTable.isEstRCIsLowerBound()) {
+        		        				stringCount.put((String) e, Integer.MAX_VALUE / 2);
+        		        			} else {
+        		        				stringCount.put((String) e, count.intValue() + (mdTable.isEstRCIsLowerBound()? Integer.MAX_VALUE / 2 : 0));
+        		        			}
 		        				}
 		        			}
 		        		}
