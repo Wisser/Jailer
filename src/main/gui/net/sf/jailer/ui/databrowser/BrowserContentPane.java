@@ -740,14 +740,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					}
 				}
 				if (mdTable.getSchema() != null) {
-					if (mdTable.getSchema().setEST(mdTable, numRowsRead)) {
+					if (mdTable.getSchema().setEST(mdTable, numRowsRead, limitExceeded)) {
 						forceRepaint();
 					}
 				}
 			}
 		}
 	}
-
+// TODO
+	// TODO keine Anzeige ERC für Views in Browser. In console nicht vollständig?
 	/**
 	 * Current LoadJob.
 	 */

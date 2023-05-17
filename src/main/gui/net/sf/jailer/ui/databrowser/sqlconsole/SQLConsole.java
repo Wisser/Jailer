@@ -1889,7 +1889,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     				}
     			}
     			if (mdTable.getSchema() != null) {
-    				if (mdTable.getSchema().setEST(mdTable, numRowsRead)) {
+    				if (mdTable.getSchema().setEST(mdTable, numRowsRead, limitExceeded)) {
     					repaintMetaData();
     				}
     			}
@@ -1923,7 +1923,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				}
 				MDTable table = schema.find(matcher.group(4));
 				if (table != null) {
-					if (schema.addEST(table, matcher.group(1) != null? updateCount : -updateCount)) {
+					if (schema.addEST(table, matcher.group(1) != null? updateCount : -updateCount, null)) {
 						repaintMetaData();
 					}
 				}

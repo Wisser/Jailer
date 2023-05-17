@@ -727,7 +727,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         		        	if (mdTable != null) {
         		        		Long count = mdTable.getEstimatedRowCount();
         		        		if (count != null) {
-        		        			stringCount.put((String) item, count.intValue());
+        		        			stringCount.put((String) item, count.intValue() + (mdTable.isEstRCIsLowerBound()? Integer.MAX_VALUE / 2 : 0));
         		        		}
          		        	}
         	        	}
@@ -2114,17 +2114,18 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 			Long rc = mdTable.getEstimatedRowCount();
 			if (rc != null) {
 				RowCountRenderer value;
-
+				String prefix = mdTable.isEstRCIsLowerBound()? ">" : "";
+				
 				if (rc == 0) {
 					value = null;
 				} else if (rc >= 1000000000) {
-					value = new RowCountRenderer(String.format("%,1.1f", (double) rc / 1000000000.0), RowCountRenderer.g);
+					value = new RowCountRenderer(prefix + String.format("%,1.1f", (double) rc / 1000000000.0), RowCountRenderer.g);
 				} else if (rc >= 1000000) {
-					value = new RowCountRenderer(String.format("%,1.1f", (double) rc / 1000000.0), RowCountRenderer.m);
+					value = new RowCountRenderer(prefix + String.format("%,1.1f", (double) rc / 1000000.0), RowCountRenderer.m);
 				} else if (rc >= 1000) {
-					value = new RowCountRenderer(String.format("%,1.1f", (double) rc / 1000.0), RowCountRenderer.k);
+					value = new RowCountRenderer(prefix + String.format("%,1.1f", (double) rc / 1000.0), RowCountRenderer.k);
 	     		} else {
-	     			value = new RowCountRenderer(String.format("%,1.0f", (double) rc), null);
+	     			value = new RowCountRenderer(prefix + String.format("%,1.0f", (double) rc), null);
 	     		}
 				if (value != null) {
 		     		int x = visibleRect.width - value.getWidth() - 1;
@@ -2158,11 +2159,8 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 			if (b != null) {
 				Object uo = ((DefaultMutableTreeNode) n).getUserObject();
 				if (uo instanceof MDTable) {
-					boolean isView = ((MDTable) uo).isView();
-                    if (!isView) {
-                    	rowCounters.put(b.y, (MDTable) uo);
-                    }
-        		}
+					rowCounters.put(b.y, (MDTable) uo);
+            	}
 			}
 		}
 		Enumeration<? extends TreeNode> e = n.children();

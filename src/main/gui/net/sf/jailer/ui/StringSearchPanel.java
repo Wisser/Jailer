@@ -734,19 +734,27 @@ public class StringSearchPanel extends javax.swing.JPanel {
 							JComponent countRender;
 							count = Math.abs(count);
 
+							String prefix;
+							if (count > Integer.MAX_VALUE / 2) {
+								count -= Integer.MAX_VALUE / 2;
+								prefix = ">";
+							} else {
+								prefix = "";
+							}
+							
 							if (count == Integer.MIN_VALUE) {
 								countRender = new RowCountRenderer(" 0", null);
 								count = 0;
 							} else if (count == 0) {
 								countRender = null;
 							} else if (count >= 1000000000) {
-								countRender = new RowCountRenderer(String.format(" %,1.1f", (double) count / 1000000000.0), RowCountRenderer.g);
+								countRender = new RowCountRenderer(prefix + String.format(" %,1.1f", (double) count / 1000000000.0), RowCountRenderer.g);
 							} else if (count >= 1000000) {
-								countRender = new RowCountRenderer(String.format(" %,1.1f", (double) count / 1000000.0), RowCountRenderer.m);
+								countRender = new RowCountRenderer(prefix + String.format(" %,1.1f", (double) count / 1000000.0), RowCountRenderer.m);
 							} else if (count >= 1000) {
-								countRender = new RowCountRenderer(String.format(" %,1.1f", (double) count / 1000.0), RowCountRenderer.k);
+								countRender = new RowCountRenderer(prefix + String.format(" %,1.1f", (double) count / 1000.0), RowCountRenderer.k);
 				     		} else {
-				     			countRender = new RowCountRenderer(String.format(" %,1.0f", (double) count), null);
+				     			countRender = new RowCountRenderer(prefix + String.format(" %,1.0f", (double) count), null);
 				     		}
 
 							if (countRender != null) {

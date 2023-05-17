@@ -238,7 +238,7 @@ public class MDSchema extends MDObject {
 						table.setEstimatedRowCount(
 								estimatedRowCounts.get(
 										metaDataSource.getQuoting().unquote(
-												table.getName())));
+												table.getName())), false);
 					}
 					if (afterLoadAction != null) {
 						afterLoadAction.run();
@@ -248,18 +248,18 @@ public class MDSchema extends MDObject {
 		}
 	}
 
-	public boolean addEST(MDTable table, long delta) {
+	public boolean addEST(MDTable table, long delta, Boolean isLowerBound) {
 		if (estimatedRowCountsLoaded.get()) {
 			String key = getMetaDataSource().getQuoting().unquote(table.getName());
 			Long rc = estimatedRowCounts.get(key);
 			if (rc != null) {
-				return setEST(table, rc + delta);
+				return setEST(table, rc + delta, isLowerBound);
 			}
 		}
 		return false;
 	}
 	
-	public boolean setEST(MDTable table, long rc) {
+	public boolean setEST(MDTable table, long rc, Boolean isLowerBound) {
 		if (estimatedRowCountsLoaded.get()) {
 			String key = getMetaDataSource().getQuoting().unquote(table.getName());
 			if (rc < 0) {
@@ -268,7 +268,7 @@ public class MDSchema extends MDObject {
 			Long old = estimatedRowCounts.get(key);
 			if (old == null || old.longValue() != rc) {
 				estimatedRowCounts.put(key, rc);
-				table.setEstimatedRowCount(rc);
+				table.setEstimatedRowCount(rc, isLowerBound);
 				return true;
 			}
 		}

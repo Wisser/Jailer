@@ -128,10 +128,6 @@ public class Column {
 	private static Pattern typeWithSize = Pattern.compile("([^ ]+) +([^ \\(]+) *\\( *([0-9]+|max) *\\)");
 	private static Pattern typeWithoutSize = Pattern.compile("([^ ]+) +([^ \\(]+)");
 
-	
-	// TODO
-	// TODO spaces in name
-	
 	/**
 	 * Parses a column declaration in SQL syntax.
 	 *

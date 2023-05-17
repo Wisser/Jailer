@@ -599,7 +599,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		        			if (mdTable != null) {
 		        				Long count = mdTable.getEstimatedRowCount();
 		        				if (count != null) {
-		        					stringCount.put((String) e, count.intValue());
+		        					stringCount.put((String) e, count.intValue() + (mdTable.isEstRCIsLowerBound()? Integer.MAX_VALUE / 2 : 0));
 		        				}
 		        			}
 		        		}
@@ -6451,17 +6451,18 @@ public class DataBrowser extends javax.swing.JFrame {
 			Long rc = mdTable.getEstimatedRowCount();
 			if (rc != null) {
 				RowCountRenderer value;
+				String prefix = mdTable.isEstRCIsLowerBound()? ">" : "";
 				
 				if (rc == 0) {
 					return;
 				} else if (rc >= 1000000000) {
-					value = new RowCountRenderer(String.format("%,1.1f", (double) rc / 1000000000.0), RowCountRenderer.g);
+					value = new RowCountRenderer(prefix + String.format("%,1.1f", (double) rc / 1000000000.0), RowCountRenderer.g);
 				} else if (rc >= 1000000) {
-					value = new RowCountRenderer(String.format("%,1.1f", (double) rc / 1000000.0), RowCountRenderer.m);
+					value = new RowCountRenderer(prefix + String.format("%,1.1f", (double) rc / 1000000.0), RowCountRenderer.m);
 				} else if (rc >= 1000) {
-					value = new RowCountRenderer(String.format("%,1.1f", (double) rc / 1000.0), RowCountRenderer.k);
+					value = new RowCountRenderer(prefix + String.format("%,1.1f", (double) rc / 1000.0), RowCountRenderer.k);
 	     		} else {
-	     			value = new RowCountRenderer(String.format("%,1.0f", (double) rc), null);
+	     			value = new RowCountRenderer(prefix + String.format("%,1.0f", (double) rc), null);
 	     		}
 	     		int x = visibleRect.width - value.getWidth() - 1;
 				int y = ry - visibleRect.y + value.getHeight() - 1;
@@ -6498,11 +6499,8 @@ public class DataBrowser extends javax.swing.JFrame {
 					if (table != null) {
 						MDTable mdTable = metaDataSource.toMDTable(table);
 						if (mdTable != null) {
-							boolean isView = mdTable.isView();
-		                    if (!isView) {
-		                    	rowCounters.put(b.y, mdTable);
-		                    }
-	                    }
+							rowCounters.put(b.y, mdTable);
+						}
 					}
         		}
 			}

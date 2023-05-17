@@ -675,12 +675,21 @@ public class MDTable extends MDObject {
     public boolean isDDLLoaded() {
         return ddlLoaded.get();
     }
+    
+    private boolean estRCIsLowerBound;
 
-    public Long getEstimatedRowCount() {
+    public boolean isEstRCIsLowerBound() {
+		return estRCIsLowerBound;
+	}
+
+	public Long getEstimatedRowCount() {
 		return estimatedRowCount;
 	}
 
-    public void setEstimatedRowCount(Long erc) {
+    public void setEstimatedRowCount(Long erc, Boolean isLowerBound) {
+    	if (isLowerBound != null) {
+    		this.estRCIsLowerBound = isLowerBound;
+    	}
 		estimatedRowCount = erc;
 	}
     

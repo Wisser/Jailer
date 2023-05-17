@@ -654,7 +654,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 	        			if (mdTable != null) {
 	        				Long count = mdTable.getEstimatedRowCount();
 	        				if (count != null) {
-	        					stringCount.put((String) e, count.intValue());
+	        					stringCount.put((String) e, count.intValue() + (mdTable.isEstRCIsLowerBound()? Integer.MAX_VALUE / 2 : 0));
 	        				}
 	        			}
 	        		}
