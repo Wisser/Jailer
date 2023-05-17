@@ -227,6 +227,11 @@ public class Quoting {
 			if (identifier.startsWith("\"")) {
 				return createUnquotePattern("\"").matcher(identifier.substring(1, identifier.length() - 1)).replaceAll("\"");
 			}
+			char c0 = identifier.charAt(0);
+			if (isPotentialIdentifierQuote(c0)) {
+				String cs0 = identifier.substring(0, 1);
+				return createUnquotePattern(cs0).matcher(identifier.substring(1, identifier.length() - 1)).replaceAll(cs0);
+			}
 			return identifier.substring(1, identifier.length() - 1);
 		}
 		return identifier;
@@ -303,7 +308,7 @@ public class Quoting {
 	}
 
 	public static boolean isPotentialIdentifierQuote(char c) {
-		return c == '"' || c == '\'' || c == '\u00B4' || c == '`';
+		return c == '"' || c == '\u00B4' || c == '`';
 	}
 
 	/**
