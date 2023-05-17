@@ -747,8 +747,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		}
 	}
-// TODO
-	// TODO keine Anzeige ERC für Views in Browser. In console nicht vollständig?
+
 	/**
 	 * Current LoadJob.
 	 */
