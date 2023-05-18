@@ -2029,7 +2029,7 @@ union all
         <avoidLeftJoin>false</avoidLeftJoin>
 		<defaultSchemaQuery>SELECT SCHEMA()</defaultSchemaQuery>
         <useInlineViewsInDataBrowser>false</useInlineViewsInDataBrowser>
-		<estimatedRowCountQuery>select TABLE_NAME, ROW_COUNT_ESTIMATE from INFORMATION_SCHEMA.TABLES where TABLE_SCHEMA = '%s'</estimatedRowCountQuery>
+		<estimatedRowCountQuery>select TABLE_NAME, ROW_COUNT_ESTIMATE from INFORMATION_SCHEMA.TABLES where TABLE_TYPE!='VIEW' and TABLE_SCHEMA = '%s'</estimatedRowCountQuery>
         <virtualColumnsQuery>SELECT TABLE_NAME, COLUMN_NAME from INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='${SCHEMA}' AND IS_COMPUTED</virtualColumnsQuery>
         <identifierQuoteString>"</identifierQuoteString>
         <explainPrepare></explainPrepare>

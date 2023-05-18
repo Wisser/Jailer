@@ -686,14 +686,9 @@ public class MDTable extends MDObject {
 		return estimatedRowCount;
 	}
 
-    public void setEstimatedRowCount(Long erc, Boolean isLowerBound) {
-    	if (isView) {
-    		// TODO
-    		// TODO H2 tells nonsense here for views
-    		this.estRCIsLowerBound = false;
-    		this.estimatedRowCount = null;
-    	}
-    	
+	// TODO
+	// TODO H2 tells nonsense here for views
+	public void setEstimatedRowCount(Long erc, Boolean isLowerBound) {
     	if (isLowerBound != null) {
     		this.estRCIsLowerBound = isLowerBound;
     	}
