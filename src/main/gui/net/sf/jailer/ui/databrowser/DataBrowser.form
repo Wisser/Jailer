@@ -983,7 +983,7 @@
                         </Property>
                         <Property name="text" type="java.lang.String" value="Schema"/>
                         <Property name="cursor" type="java.awt.Cursor" editor="org.netbeans.modules.form.editors2.CursorEditor">
-                          <Color id="Standardcursor"/>
+                          <Color id="Default Cursor"/>
                         </Property>
                       </Properties>
                       <Events>
@@ -1015,7 +1015,7 @@
                         </Property>
                         <Property name="text" type="java.lang.String" value="offline"/>
                         <Property name="cursor" type="java.awt.Cursor" editor="org.netbeans.modules.form.editors2.CursorEditor">
-                          <Color id="Standardcursor"/>
+                          <Color id="Default Cursor"/>
                         </Property>
                       </Properties>
                       <Events>
@@ -1081,6 +1081,7 @@
                               <Properties>
                                 <Property name="orientation" type="int" value="0"/>
                                 <Property name="resizeWeight" type="double" value="0.95"/>
+                                <Property name="name" type="java.lang.String" value="desktopSplitPane" noResource="true"/>
                                 <Property name="oneTouchExpandable" type="boolean" value="true"/>
                               </Properties>
                               <Constraints>
@@ -1174,7 +1175,6 @@
                                     </Container>
                                     <Container class="javax.swing.JToolBar" name="jToolBar1">
                                       <Properties>
-                                        <Property name="floatable" type="boolean" value="false"/>
                                         <Property name="rollover" type="boolean" value="true"/>
                                       </Properties>
                                       <Constraints>
@@ -1437,7 +1437,6 @@
                                     </Container>
                                     <Container class="javax.swing.JToolBar" name="jToolBar2">
                                       <Properties>
-                                        <Property name="floatable" type="boolean" value="false"/>
                                         <Property name="rollover" type="boolean" value="true"/>
                                       </Properties>
                                       <Constraints>

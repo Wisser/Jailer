@@ -979,6 +979,9 @@ public class AssociationProposerView extends javax.swing.JPanel {
         cancelIcon = UIUtil.readImage("/buttoncancel.png");
     }
 
+	// TODO
+	// TODO write docu for this
+	
 	// TODO warning if one of the two PKs is only partially covered.
 }
 

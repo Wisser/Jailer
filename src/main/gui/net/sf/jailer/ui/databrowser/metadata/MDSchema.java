@@ -228,7 +228,7 @@ public class MDSchema extends MDObject {
 		synchronized (estimatedRowCountsLock) {
 			if (!estimatedRowCountsLoaded.get()) {
 				readEstimatedRowCounts();
-				estimatedRowCountsLoaded.set(!estimatedRowCounts.isEmpty());
+				estimatedRowCountsLoaded.set(true);
 			}
 			UIUtil.invokeLater(new Runnable() {
 				@Override

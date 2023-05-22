@@ -15,6 +15,9 @@
  */
 package net.sf.jailer.ui.databrowser.metadata;
 
+import java.awt.Color;
+import java.awt.Toolkit;
+import java.awt.event.ActionListener;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -37,6 +40,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.JComponent;
+import javax.swing.JMenuItem;
+import javax.swing.JSplitPane;
+import javax.swing.SwingUtilities;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +53,7 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.databrowser.DataBrowser;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Pair;
@@ -686,15 +693,28 @@ public class MDTable extends MDObject {
 		return estimatedRowCount;
 	}
 
-	// TODO
-	// TODO H2 tells nonsense here for views
 	public void setEstimatedRowCount(Long erc, Boolean isLowerBound) {
     	if (isLowerBound != null) {
     		this.estRCIsLowerBound = isLowerBound;
     	}
 		this.estimatedRowCount = erc;
+		
+		if (!estUpdatePending) {
+			UIUtil.invokeLater(() -> {
+				estUpdatePending = false;
+				Object desktopSplitPane = getMetaDataSource().getSession().getSessionProperty(DataBrowser.class, "jSplitPane1");
+				if (desktopSplitPane instanceof JSplitPane) {
+					int l = ((JSplitPane) desktopSplitPane).getDividerLocation();
+					((JSplitPane) desktopSplitPane).setDividerLocation(l - 1);
+					UIUtil.invokeLater(2, () -> ((JSplitPane) desktopSplitPane).setDividerLocation(l));
+				}
+			});
+			
+		}
 	}
     
+	boolean estUpdatePending = false;
+	
     public void setComment(String comment) {
     	this.comment = comment;
     }
