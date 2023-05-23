@@ -164,7 +164,7 @@ public class BookmarksPanel extends javax.swing.JPanel {public static final Stri
 	}
 
 	private ListEditor<StringBuilder> createListEditor(final boolean forRenaming) {
-		return new ListEditor<StringBuilder>(new String[] { "Layout" }, "", false, false, true) {
+		return new ListEditor<StringBuilder>(new String[] { "Layout" }, "", false, false) {
 
 			@Override
 			protected String getDisplayName(StringBuilder element) {

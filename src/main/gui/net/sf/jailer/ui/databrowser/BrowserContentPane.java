@@ -965,6 +965,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 		initComponents();
 		origCondBG = andCondition.getBackground();
+		
+		if (UIUtil.plaf == PLAF.FLAT) {
+			removeConditionButton.setBackground(new Color(220, 220, 255));
+		}
 
 		cancelLoadButton.setIcon(UIUtil.scaleIcon(cancelLoadButton, cancelIcon));
 

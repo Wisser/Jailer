@@ -1948,7 +1948,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				executionContext.getIsolationLevel(), false, true, this);
 		
 		if (newSession != null) {
-			newSession.setSessionProperty(getClass(), "jSplitPane1", jSplitPane1);
+//			newSession.setSessionProperty(getClass(), "jSplitPane1", jSplitPane1);
 			if (session != null) {
 				try {
 					session.shutDown();
@@ -5096,15 +5096,84 @@ public class DataBrowser extends javax.swing.JFrame {
 
 			@Override
 			protected void expandTablePath(List<Table> path) {
+				RowBrowser rootRB = null;
+				for (RowBrowser rb : desktop.getBrowsers()) {
+					if (rb.internalFrame == desktop.getSelectedFrame() && !rb.isHidden()) {
+						rootRB = rb;
+					}
+				}
+				if (rootRB != null && (rootRB.browserContentPane.table == null || !rootRB.browserContentPane.table.equals(path.get(path.size() - 1)))) {
+					rootRB = null;
+				}
 				int i;
 				i = path.size() - 1;
-				while (i >= 0) {
-					if (!getVisibleTables().containsKey(path.get(i))) {
-						++i;
-						break;
+				Map<Table, RowBrowser> visTables = getVisibleTables();
+				
+				RowBrowser nextRb = null;
+				
+				if (rootRB != null) {
+					try {
+						while (i >= 0) {
+							RowBrowser rb = null;
+							Table tableAtI = path.get(i);
+							for (RowBrowser r: desktop.getBrowsers()) {
+								if (tableAtI.equals(r.browserContentPane.table)) {
+									boolean ok = true;
+									RowBrowser b = r;
+									for (int j = i; j < path.size(); ++j) {
+										if (b.parent == null && j < path.size() - 1) {
+											ok = false;
+											break;
+										}
+										Table tableAtJ = path.get(j);
+										if (!tableAtJ.equals(b.browserContentPane.table)) {
+											ok = false;
+											break;
+										}
+										if (j == path.size() - 1 && b != rootRB) {
+											ok = false;
+											break;
+										}
+										b = b.parent;
+									}
+									if (ok) {
+										rb = r;
+										break;
+									}
+								}
+							}
+							if (rb == null) {
+								++i;
+								break;
+							}
+							nextRb = rb;
+							--i;
+						}
+					} catch (Throwable t) {
+						rootRB = null;
+						LogUtil.warn(t);
 					}
-					--i;
 				}
+				
+				if (rootRB == null) {
+					nextRb = null;
+					Table predTable = null;
+					while (i >= 0) {
+						Table tableAtI = path.get(i);
+						RowBrowser rb = visTables.get(tableAtI);
+						if (rb == null) {
+							++i;
+							break;
+						}
+						if (predTable != null && !(rb.parent != null && predTable.equals(rb.parent.browserContentPane.table))) {
+		                	++i;
+							break;
+		                }
+						--i;
+						predTable = tableAtI;
+					}
+				}
+				
 				Association[] associations = openAssociationPathPanel(path.subList(0, i + 1));
 				if (associations != null) {
 					try {
@@ -5112,7 +5181,6 @@ public class DataBrowser extends javax.swing.JFrame {
 						desktop.getiFrameStateChangeRenderer().startAtomic();
 						disableBorderBrowserUpdates = true;
 						suppressUpdateClosureBrowser = true;
-						RowBrowser nextRb = null;
 						while (i > 0) {
 							Table table = path.get(i);
 							RowBrowser rb;

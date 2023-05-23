@@ -158,7 +158,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 	private class ClauseList extends ListEditor<Clause> {
 
 		public ClauseList() {
-			super(new String[] { "", "Subject", "Predicate", "Object"}, "Clause", true, false, true);
+			super(new String[] { "", "Subject", "Predicate", "Object"}, "Clause", true, false);
 		}
 
 		@Override
@@ -239,7 +239,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 	private class TemplateList extends ListEditor<FilterTemplate> {
 
 		public TemplateList() {
-			super(new String[] { "Priority", "Name", "Apply At", "Expression"}, "Template", true, false, false);
+			super(new String[] { "Priority", "Name", "Apply At", "Expression"}, "Template", true, false);
 		}
 
 		@Override
@@ -387,7 +387,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		private final Table rootTable;
 
 		public DerivedFilterList(Table rootTable) {
-			super(new String[] { "Apply at", "Column", "Type", "Expression", "Derived from"}, "Filter", false, true, true);
+			super(new String[] { "Apply at", "Column", "Type", "Expression", "Derived from"}, "Filter", false, true);
 			this.rootTable = rootTable;
 		}
 

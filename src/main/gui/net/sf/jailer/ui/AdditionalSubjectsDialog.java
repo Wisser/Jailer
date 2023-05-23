@@ -62,7 +62,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 	private class AdditionalSubjectListEditor extends ListEditor<AdditionalSubject> {
 
 		public AdditionalSubjectListEditor() {
-			super(new String[] { "Table", "Condition", "Limit" }, "Additional Subject", true, false, false);
+			super(new String[] { "Table", "Condition", "Limit" }, "Additional Subject", true, false);
 			hideUpAndDownButton();
 		}
 

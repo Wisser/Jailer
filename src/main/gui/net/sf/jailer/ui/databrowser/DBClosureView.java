@@ -352,7 +352,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
      */
     private Map<String, CellInfo> cellInfo = new HashMap<String, CellInfo>();
     private List<CellInfo> mainPath = new ArrayList<CellInfo>();
-    private HashSet<CellInfo> mainPathAsSet = new HashSet<CellInfo>();
+    private Set<CellInfo> mainPathAsSet = new HashSet<CellInfo>();
     private Set<Pair<String, String>> dependencies = new HashSet<Pair<String,String>>();
     private Map<Table, Integer> currentForcedDistance = null;
     private final JFrame parent;
@@ -386,7 +386,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 20;
-        gridBagConstraints.insets = new Insets(0, 0, 0, 2);
+        gridBagConstraints.insets = new Insets(2, 0, 2, 4);
         final JComboBox2 comboBox = searchComboBox;
         JToggleButton searchButton = StringSearchPanel.createSearchButton(this.parent, comboBox, "Find Table", new Runnable() {
 		    @Override
@@ -420,7 +420,8 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 20;
-		final JComboBox comboBox1 = findPathComboBox;
+        gridBagConstraints.insets = new Insets(2, 0, 2, 4);
+        final JComboBox comboBox1 = findPathComboBox;
 		JToggleButton stFindPathButton = StringSearchPanel.createSearchButton(this.parent, comboBox1, new Object() {
 					public String toString() {
 						Table rootTable = getRootTable();
@@ -460,7 +461,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 
         findPathComboBox.setVisible(false);
         findPathButton.setVisible(false);
-        stFindPathButton.setText("Find Path to...");
+        stFindPathButton.setText("Find Path to ...");
 
         columnsComboBox.setModel(new DefaultComboBoxModel<Integer>(new Integer[] {
                 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
@@ -1191,12 +1192,12 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 
         contentPanel = new javax.swing.JPanel();
         tablePanel = new javax.swing.JPanel();
+        searchComboBox = new JComboBox2();
+        findButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         closureTable = new javax.swing.JTable();
-        searchComboBox = new JComboBox2();
         jLabel7 = new javax.swing.JLabel();
         columnsComboBox = new JComboBox2();
-        findButton = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
@@ -1207,6 +1208,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         jLabel9 = new javax.swing.JLabel();
         findPathComboBox = new JComboBox2();
         findPathButton = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
 
         contentPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -1214,6 +1216,28 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
         tablePanel.setLayout(new java.awt.GridBagLayout());
+
+        searchComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        searchComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                searchComboBoxActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 20;
+        tablePanel.add(searchComboBox, gridBagConstraints);
+
+        findButton.setText("Find");
+        findButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                findButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 20;
+        tablePanel.add(findButton, gridBagConstraints);
 
         jScrollPane1.setMinimumSize(new java.awt.Dimension(23, 64));
 
@@ -1229,8 +1253,6 @@ public abstract class DBClosureView extends javax.swing.JDialog {
                 "Titel 1", "Titel 2", "Titel 3", "Titel 4"
             }
         ));
-        closureTable.setMinimumSize(new java.awt.Dimension(60, 80));
-        closureTable.setPreferredSize(new java.awt.Dimension(300, 80));
         closureTable.setSurrendersFocusOnKeystroke(true);
         jScrollPane1.setViewportView(closureTable);
 
@@ -1244,17 +1266,6 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         tablePanel.add(jScrollPane1, gridBagConstraints);
-
-        searchComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        searchComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                searchComboBoxActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 20;
-        tablePanel.add(searchComboBox, gridBagConstraints);
 
         jLabel7.setText("Columns ");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1274,19 +1285,6 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         gridBagConstraints.gridx = 8;
         gridBagConstraints.gridy = 20;
         tablePanel.add(columnsComboBox, gridBagConstraints);
-
-        findButton.setText("Find");
-        findButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                findButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 20;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        tablePanel.add(findButton, gridBagConstraints);
 
         jLabel1.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1339,7 +1337,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         gridBagConstraints.gridy = 20;
         tablePanel.add(findPathComboBox, gridBagConstraints);
 
-        findPathButton.setText("Find Path to...");
+        findPathButton.setText("Find Path to ...");
         findPathButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 findPathButtonActionPerformed(evt);
@@ -1349,8 +1347,14 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = 20;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         tablePanel.add(findPathButton, gridBagConstraints);
+
+        jPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 20;
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
+        tablePanel.add(jPanel1, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1420,6 +1424,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private JComboBox2 searchComboBox;
     public javax.swing.JPanel tablePanel;
@@ -1428,3 +1433,6 @@ public abstract class DBClosureView extends javax.swing.JDialog {
     private static final long serialVersionUID = 5485949274233292142L;
 
 }
+
+// TODO
+// TODO make "find" and "find path" buttons more present

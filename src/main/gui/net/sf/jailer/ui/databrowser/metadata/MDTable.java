@@ -699,21 +699,25 @@ public class MDTable extends MDObject {
     	}
 		this.estimatedRowCount = erc;
 		
-		if (!estUpdatePending) {
-			UIUtil.invokeLater(() -> {
-				estUpdatePending = false;
-				Object desktopSplitPane = getMetaDataSource().getSession().getSessionProperty(DataBrowser.class, "jSplitPane1");
-				if (desktopSplitPane instanceof JSplitPane) {
-					int l = ((JSplitPane) desktopSplitPane).getDividerLocation();
-					((JSplitPane) desktopSplitPane).setDividerLocation(l - 1);
-					UIUtil.invokeLater(2, () -> ((JSplitPane) desktopSplitPane).setDividerLocation(l));
-				}
-			});
-			
-		}
+//		if (!estUpdatePending.get()) {
+//			estUpdatePending.set(true);
+//			UIUtil.invokeLater(() -> {
+//				Object desktopSplitPane = getMetaDataSource().getSession().getSessionProperty(DataBrowser.class, "jSplitPane1");
+//				if (desktopSplitPane instanceof JSplitPane) {
+//					int l = ((JSplitPane) desktopSplitPane).getDividerLocation();
+//					((JSplitPane) desktopSplitPane).setDividerLocation(l - 1); 
+//					UIUtil.invokeLater(2, () -> {
+//						estUpdatePending.set(false);
+//						((JSplitPane) desktopSplitPane).setDividerLocation(l);
+//					});
+//				} else {
+//					estUpdatePending.set(false);
+//				}
+//			});
+//		}
 	}
     
-	boolean estUpdatePending = false;
+//	static AtomicBoolean estUpdatePending = new AtomicBoolean(false);
 	
     public void setComment(String comment) {
     	this.comment = comment;

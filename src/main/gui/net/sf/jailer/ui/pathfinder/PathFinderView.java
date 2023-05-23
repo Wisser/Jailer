@@ -1368,6 +1368,3 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     private static final long serialVersionUID = 1L;
 
 }
-
-// TODO
-// TODO fehler: pathfinder öffnet GeschPartner nicht, wenn schon sichtbar, aber anderer Pfad

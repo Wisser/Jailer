@@ -624,7 +624,6 @@ public class TableDetailsView extends javax.swing.JPanel {
         add(jPanel1, gridBagConstraints);
 
         sortColumnsCheckBox.setText("Sort Columns      ");
-        sortColumnsCheckBox.setOpaque(false);
         sortColumnsCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sortColumnsCheckBoxActionPerformed(evt);
@@ -634,6 +633,7 @@ public class TableDetailsView extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(1, 1, 3, 1);
         add(sortColumnsCheckBox, gridBagConstraints);
 
         findColumnsPanel.setOpaque(false);
@@ -649,7 +649,7 @@ public class TableDetailsView extends javax.swing.JPanel {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
+        gridBagConstraints.insets = new java.awt.Insets(1, 1, 3, 2);
         add(findColumnsPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 

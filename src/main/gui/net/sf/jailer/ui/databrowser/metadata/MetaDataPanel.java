@@ -1556,6 +1556,8 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 				            schemaViewsChild.remove(this);
 				            TreeModel model = metaDataTree.getModel();
 				            ((DefaultTreeModel) model).nodeStructureChanged(schemaViewsChild);
+				            
+				            updateRowCounters();
 				        }
 				        expanded = true;
 				    }

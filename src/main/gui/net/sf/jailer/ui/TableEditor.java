@@ -92,7 +92,7 @@ public abstract class TableEditor extends javax.swing.JDialog {
 	private class ColumnListEditor extends ListEditor<ColumnModel> {
 
 		public ColumnListEditor() {
-			super(new String[] { "Name", "Type"}, "Column", false, false, false);
+			super(new String[] { "Name", "Type"}, "Column", false, false);
 		}
 
 		@Override

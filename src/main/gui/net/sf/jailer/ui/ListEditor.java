@@ -87,8 +87,7 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 	 */
 	public ListEditor(String[] columnNames, String elementTypeDisplayName,
 			boolean withCopy,
-			boolean readonly,
-			final boolean simple) {
+			boolean readonly) {
 		this.columnNames = columnNames;
 		this.elementTypeDisplayName = elementTypeDisplayName;
 		
@@ -146,7 +145,7 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 					int row, int column) {
 				Component render = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 				if (!isSelected) {
-					render.setBackground(simple? BG1: row % 2 == 0? BG1 : BG2);
+					render.setBackground(row % 2 == 0? BG1 : BG2);
 				} else {
 					render.setBackground(BGSEL);
 				}
