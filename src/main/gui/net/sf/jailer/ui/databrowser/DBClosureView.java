@@ -86,6 +86,7 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.pathfinder.HistoryPanel;
 import net.sf.jailer.ui.pathfinder.PathFinder;
 import net.sf.jailer.ui.pathfinder.PathFinder.Result;
+import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.util.Pair;
 
 /**
@@ -214,14 +215,14 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 		            RowBrowser rb = getVisibleTables().get(table);
 		            if (rb == null) {
 		                if (!mainPath.isEmpty()) {
-		                    JPopupMenu menu = new JPopupMenu();
+		                    JPopupMenu menu = new JScrollPopupMenu(true);
 		                    menu.add(openPath);
 		                    menu.add(new JSeparator());
 		                    menu.add(pathFinder);
 		                    UIUtil.showPopup(e.getComponent(), e.getX(), e.getY(), menu);
 		                }
 		            } else {
-		                JPopupMenu menu = new JPopupMenu();
+		                JPopupMenu menu = new JScrollPopupMenu(true);
 		                JMenuItem select = new JMenuItem("Select " + getDataModel().getDisplayName(table));
 		                select.addActionListener(new ActionListener() {
 		                    @Override

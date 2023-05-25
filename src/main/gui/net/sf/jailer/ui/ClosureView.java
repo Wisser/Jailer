@@ -461,7 +461,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 						}
 						remove.setEnabled(enab);
 
-						final JPopupMenu popup = new JScrollPopupMenu();
+						final JPopupMenu popup = new JScrollPopupMenu(true);
 						popup.add(restrictAll);
 						popup.add(removeRestrictions);
 						popup.add(new JSeparator());

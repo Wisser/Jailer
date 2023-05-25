@@ -494,7 +494,7 @@ public class ConditionEditor extends EscapableDialog {
 	}
 
 	public static JPopupMenu createJoinPopupMenu(final String alias, Table table, final RSyntaxTextAreaWithSQLSyntaxStyle editor, Set<Association> neighbors) {
-		JPopupMenu popupMenu = new JPopupMenu();
+		JPopupMenu popupMenu = new JScrollPopupMenu(true);
 		ImageIcon redDotIconScaled = UIUtil.scaleIcon(editor, redDotIcon);
 		ImageIcon blueDotIconScaled = UIUtil.scaleIcon(editor, blueDotIcon);
 		ImageIcon greenDotIconScaled = UIUtil.scaleIcon(editor, greenDotIcon);

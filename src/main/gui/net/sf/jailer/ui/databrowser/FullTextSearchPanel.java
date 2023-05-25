@@ -356,7 +356,7 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 					for (int x = 0; x < cc; ++x) {
 						Object v = dm.getValueAt(y, x);
 						if (v != null) {
-							searchTextUC = extendedSearchText(searchText, v.toString().trim());
+							searchTextUC = extendedSearchText(searchText, v.toString().trim()).toUpperCase(Locale.ENGLISH);
 						}
 						if (v != null && !v.toString().toUpperCase(Locale.ENGLISH).contains(searchTextUC)) {
 							continue;

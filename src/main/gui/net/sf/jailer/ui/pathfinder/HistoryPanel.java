@@ -72,6 +72,7 @@ public abstract class HistoryPanel extends javax.swing.JPanel {
 		historyTable.setDefaultRenderer(Object.class, renderer);
 		historyTable.setAutoCreateRowSorter(true);
 		historyTable.setRowSelectionAllowed(true);
+		historyTable.setShowGrid(false);
 		historyTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		
 		historyTable.addMouseListener(new MouseAdapter() {

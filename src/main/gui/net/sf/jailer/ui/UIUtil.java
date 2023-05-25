@@ -1412,7 +1412,7 @@ public class UIUtil {
     	}
     	for (int i = 1; i < popup.getComponentCount();) {
     		if (popup.getComponent(i) instanceof JSeparator && popup.getComponent(i - 1) instanceof JSeparator) {
-    			popup.remove(i);
+    			popup.remove(i - 1);
     		} else {
     			++i;
     		}

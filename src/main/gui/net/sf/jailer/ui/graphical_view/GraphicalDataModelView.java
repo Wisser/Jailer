@@ -731,7 +731,7 @@ public class GraphicalDataModelView extends JPanel {
 	 * @return the popup menu
 	 */
 	public JPopupMenu createPopupMenu(final Table table, JMenuItem findPathMenuItem, boolean withNavigation) {
-		JPopupMenu popup = new JScrollPopupMenu();
+		JPopupMenu popup = new JScrollPopupMenu(true);
 		boolean withModifications = modelEditor.getAdditionalPopupMenuItems().isEmpty();
 
 		JMenu navigateTo = null;

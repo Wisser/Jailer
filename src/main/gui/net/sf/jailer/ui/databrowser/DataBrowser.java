@@ -185,6 +185,7 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel.OutlineInfo;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.ui.databrowser.whereconditioneditor.WhereConditionEditorPanel;
+import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
@@ -1546,7 +1547,7 @@ public class DataBrowser extends javax.swing.JFrame {
 							}
 						} else if (SwingUtilities.isRightMouseButton(e)) {
 							modelNavigationTree.setSelectionPath(path);
-							JPopupMenu popup = new JPopupMenu();
+							JPopupMenu popup = new JScrollPopupMenu(true);
 							if (o instanceof ConnectionInfo) {
 								ConnectionInfo ci = (ConnectionInfo) o;
 								JMenuItem i = new JMenuItem("<html>Connect <i>(double click)</i></html>");

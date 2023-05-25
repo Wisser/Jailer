@@ -7,26 +7,60 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.LayoutManager;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollBar;
+import javax.swing.JSeparator;
+import javax.swing.JTextField;
+import javax.swing.MenuElement;
+import javax.swing.MenuSelectionManager;
+import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
+import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.UIUtil.PLAF;
 
 /**
  * http://stackoverflow.com/questions/9288350/adding-vertical-scroll-to-a-jpopupmenu
  */
 public class JScrollPopupMenu extends JPopupMenu {
+	private static final long serialVersionUID = 8754906500805992108L;
+	
 	protected int maximumVisibleRows = 40;
-
+	private final boolean noSearchField;
+	private static final String PLACEHOLDERTEXT = "Type partial value to search";
+	
 	public JScrollPopupMenu() {
-		this(null);
+		this(null, false);
 	}
 
-	public JScrollPopupMenu(String label) {
+	public JScrollPopupMenu(boolean noSearchField) {
+		this(null, noSearchField);
+	}
+
+	public JScrollPopupMenu(String label, boolean noSearchField) {
 		super(label);
+		this.noSearchField = noSearchField;
 		setLayout(new ScrollPopupMenuLayout());
 
 		super.add(getScrollBar());
@@ -43,9 +77,207 @@ public class JScrollPopupMenu extends JPopupMenu {
 				event.consume();
 			}
 		});
+		
+		searchField = new JTextField();
+		searchField.setVisible(true);
+		searchField.setToolTipText("<html>Search criteria.<br><br>\nSearch for items that contain the search criteria as:<br>\n<table>\n<tr><td><b>Prefix</b></td><td>if it starts with a space</td></tr>\n<tr><td><b>Suffix</b></td><td>if it ends with a space</td></tr>\n<tr><td><b>Substring</b></td><td>else</td></tr>\n</table>\n<br>\n(<b>*</b> = any string, <b>?</b> = any character)\n</html>");
+        
+		searchField.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				update();
+			}
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				update();
+			}
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				update();
+			}
+			private void update() {
+				search(searchField.getText());
+			}
+		});
+		searchField.addKeyListener(new KeyListener() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				if (e.getKeyChar() == '\n') {
+					MenuSelectionManager msm = MenuSelectionManager.defaultManager();
+					msm.processKeyEvent(e);
+					MenuElement[] path = msm.getSelectedPath();
+					if (path != null && path.length > 0) {
+						for (Component comp : getComponents()) {
+							if (comp instanceof JMenuItem && comp == path[path.length - 1]) {
+								((JMenuItem) comp).doClick();
+								for (int i = path.length - 1; i >= 0; --i) {
+									path[i].getComponent().setVisible(false);
+								}
+								break;
+							}
+						}
+					}
+				}
+			}
+			@Override
+			public void keyReleased(KeyEvent e) {
+			}
+			@Override
+			public void keyPressed(KeyEvent e) {
+			}
+		});
+		
+		if (UIUtil.plaf == PLAF.FLAT) {
+			searchField.putClientProperty("JTextField.placeholderText", PLACEHOLDERTEXT);
+		}
+//		searchField.setVisible(false);
+		separator = new JSeparator();
+		if (!noSearchField) {
+			super.add(searchField);
+			super.add(separator);
+		}
 	}
 
+	private Map<JMenuItem, String> compText = null;
+	private JSeparator separator;
+	private final static String HL_COLOR = "#0000D0";
+
+	protected void search(String searchText) {
+		if (compText == null) {
+			compText = new HashMap<>();
+			for (Component comp : getComponents()) {
+				if (comp instanceof JMenuItem) {
+					compText.put((JMenuItem) comp, ((JMenuItem) comp).getText());
+				}
+			}
+		}
+		List<JMenuItem> mismatches = new ArrayList<>();
+		for (Component comp : getComponents()) {
+			if (comp instanceof JMenuItem) {
+				String v = compText.get(comp);
+				if (v == null) {
+					continue;
+				}
+				if (searchText.trim().isEmpty()) {
+					((JMenuItem) comp).setText(v);
+					((JMenuItem) comp).setVisible(true);
+					continue;
+				}
+				String searchTextUC = extendedSearchText(searchText, v.toString().trim()).toUpperCase(Locale.ENGLISH);
+				if (!v.toUpperCase(Locale.ENGLISH).contains(searchTextUC)) {
+					mismatches.add((JMenuItem) comp);
+					continue;
+				}
+			
+				String value = v;
+				if (value != null && value.toUpperCase(Locale.ENGLISH).contains(searchTextUC)) {
+					String markedValue = null;
+					int i;
+					int offset = 0;
+					while (offset < value.length() && value.charAt(offset) == ' ') {
+						offset += 1;
+					}
+					String core = value.trim();
+					if (searchText.startsWith(" ") && !core.toUpperCase(Locale.ENGLISH).startsWith(searchTextUC)) {
+						mismatches.add((JMenuItem) comp);
+						continue;
+					}
+					if (searchText.endsWith(" ") && !core.toUpperCase(Locale.ENGLISH).endsWith(searchTextUC)) {
+						mismatches.add((JMenuItem) comp);
+						continue;
+					}
+					if (searchText.startsWith(" ") && searchText.endsWith(" ") && !core.toUpperCase(Locale.ENGLISH).equals(searchTextUC)) {
+						mismatches.add((JMenuItem) comp);
+						continue;
+					}
+					i = searchText.endsWith(" ")? core.toUpperCase(Locale.ENGLISH).lastIndexOf(searchTextUC) : core.toUpperCase(Locale.ENGLISH).indexOf(searchTextUC);
+					if (i < 0) {
+						mismatches.add((JMenuItem) comp);
+						continue;
+					}
+					i += offset;
+					i = Math.min(i, value.length());
+					if (i + searchTextUC.length() <= value.length()) {
+						markedValue = UIUtil.toHTMLFragment(value.substring(0, i), 0, false) + "<b><u><font color=\"" + HL_COLOR + "\">" + UIUtil.toHTMLFragment(value.substring(i, i + searchTextUC.length()), 0, false) + "</font></u></b>" + UIUtil.toHTMLFragment(value.substring(i + searchTextUC.length()), 0, false);
+					}
+					if (markedValue == null) {
+						markedValue = "<b><u><font color=\"" + HL_COLOR + "\">" + UIUtil.toHTMLFragment(value, 0, false) + "</font></u></b>";
+					}
+					markedValue = "<html>" + markedValue + "</html>";
+					((JMenuItem) comp).setText(markedValue);
+					comp.setVisible(true);
+					getScrollBar().setValue(0);
+				}
+			}
+		}
+		boolean nothingFound = mismatches.size() == compText.size() && !searchText.trim().isEmpty();
+		if (nothingFound && !prevNothingFound) {
+			Toolkit.getDefaultToolkit().beep();
+		}
+		prevNothingFound = nothingFound;
+		mismatches.forEach(item -> {
+			item.setText(compText.get(item));
+			item.setVisible(false);
+		});
+		int extent = 0;
+		int max = 0;
+		int i = 0;
+		int unit = -1;
+		for (Component comp : getComponents()) {
+			if (!(comp instanceof JScrollBar) && comp.isVisible()) {
+				Dimension preferredSize = comp.getPreferredSize();
+				if (unit < 0 && comp instanceof JMenuItem) {
+					unit = preferredSize.height;
+				}
+				if (i++ < maximumVisibleRows) {
+					extent += preferredSize.height;
+				}
+				max += preferredSize.height;
+			}
+		}
+
+		JScrollBar scrollBar = getScrollBar();
+		Insets insets = getInsets();
+		int heightMargin = insets.top + insets.bottom;
+		scrollBar.setUnitIncrement(unit);
+		scrollBar.setBlockIncrement(extent);
+		scrollBar.setValues(0, heightMargin + extent, 0, heightMargin + max);
+	}
+	
+	private boolean prevNothingFound = false;
+	private Pattern extSTPattern = null;
+	private String extSTText = null;
+	
+	private String extendedSearchText(String text, String item) {
+		text = text.replaceAll("\\s|\\h", " ");
+		String searchText = text.toUpperCase(Locale.ENGLISH);
+		if (!searchText.contains("*") && !searchText.contains("?")) {
+			return searchText.trim();
+		}
+		
+		if (!text.equals(extSTText)) {
+			boolean withPrefix = !text.startsWith(" ");
+			boolean withSuffix = !text.endsWith(" ");
+			String reg = (withPrefix? ".*?" : "") + "(\\Q" +
+						text.trim().replace("?", "\\E.\\Q").replace("*", "\\E.*\\Q") +
+						"\\E)" +
+						(withSuffix? ".*?" : "");
+			
+			extSTText = reg;
+			extSTPattern = Pattern.compile(reg, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+		}
+		
+		Matcher matcher = extSTPattern.matcher(item);
+		
+		if (matcher.matches()) {
+			return matcher.group(1);
+		} else {
+			return searchText.trim();
+		}
+	}
+	
 	private JScrollBar popupScrollBar;
+	private JTextField searchField;
 
 	protected JScrollBar getScrollBar() {
 		if (popupScrollBar == null) {
@@ -91,11 +323,7 @@ public class JScrollPopupMenu extends JPopupMenu {
 
 	@Override
 	public void remove(int index) {
-		// can't remove the scrollbar
-		++index;
-
 		super.remove(index);
-
 		if (maximumVisibleRows >= getComponentCount() - 1) {
 			getScrollBar().setVisible(false);
 		}
@@ -103,18 +331,22 @@ public class JScrollPopupMenu extends JPopupMenu {
 
 	@Override
 	public void show(Component invoker, int x, int y) {
+		if (getComponentCount() < 14 + 2 || noSearchField) {
+			searchField.setVisible(false);
+			separator.setVisible(false);
+		}
 		JScrollBar scrollBar = getScrollBar();
-		if (scrollBar.isVisible()) {
+//		if (scrollBar.isVisible()) {
 			int extent = 0;
 			int max = 0;
 			int i = 0;
 			int unit = -1;
 			int width = 0;
 			for (Component comp : getComponents()) {
-				if (!(comp instanceof JScrollBar)) {
+				if (!(comp instanceof JScrollBar) && comp.isVisible()) {
 					Dimension preferredSize = comp.getPreferredSize();
 					width = Math.max(width, preferredSize.width);
-					if (unit < 0) {
+					if (unit < 0 && comp instanceof JMenuItem) {
 						unit = preferredSize.height;
 					}
 					if (i++ < maximumVisibleRows) {
@@ -129,15 +361,47 @@ public class JScrollPopupMenu extends JPopupMenu {
 			int heightMargin = insets.top + insets.bottom;
 			scrollBar.setUnitIncrement(unit);
 			scrollBar.setBlockIncrement(extent);
-			scrollBar
-					.setValues(0, heightMargin + extent, 0, heightMargin + max);
+			scrollBar.setValues(0, heightMargin + extent, 0, heightMargin + max);
 
 			width += scrollBar.getPreferredSize().width + widthMargin;
 			int height = heightMargin + extent;
 
+			Rectangle bounds = null;
+			Component tp = invoker;
+			while (tp != null) {
+				if (tp instanceof Window) {
+					if (bounds == null) {
+						bounds = tp.getBounds();
+					} else {
+						bounds.add(tp.getBounds());
+					}
+				}
+				tp = tp.getParent();
+			}
+			
+			if (bounds != null) {
+				Point p = new Point(x, y);
+				SwingUtilities.convertPointToScreen(p, invoker);
+				double d = p.y + height - (bounds.getY() + bounds.getHeight() - 8);
+				if (d > 0) {
+					p.y -= d;
+					d = p.y - bounds.getY();
+					if (d < 0) {
+						p.y -= d;
+						height += d;
+					}
+					SwingUtilities.convertPointFromScreen(p, invoker);
+					y = p.y;
+				}
+			}
 			setPopupSize(new Dimension(width, height));
-		}
+			
+//		}
 
+		UIUtil.invokeLater(() -> {
+			searchField.grabFocus();
+			searchField.setBorder(null);
+		});
 		super.show(invoker, x, y);
 	}
 
@@ -153,7 +417,8 @@ public class JScrollPopupMenu extends JPopupMenu {
 		@Override
 		public Dimension preferredLayoutSize(Container parent) {
 			int visibleAmount = Integer.MAX_VALUE;
-			Dimension dim = new Dimension();
+			Dimension dim = new Dimension(new JLabel(PLACEHOLDERTEXT).getPreferredSize());
+			dim.width += 32;
 			for (Component comp : parent.getComponents()) {
 				if (comp.isVisible()) {
 					if (comp instanceof JScrollBar) {
@@ -215,6 +480,7 @@ public class JScrollPopupMenu extends JPopupMenu {
 					Dimension dim = scrollBar.getPreferredSize();
 					scrollBar.setBounds(x + width - dim.width, y, dim.width,
 							height);
+					
 					width -= dim.width;
 					position = scrollBar.getValue();
 				}
@@ -224,7 +490,8 @@ public class JScrollPopupMenu extends JPopupMenu {
 			for (Component comp : parent.getComponents()) {
 				if (!(comp instanceof JScrollBar) && comp.isVisible()) {
 					Dimension pref = comp.getPreferredSize();
-					comp.setBounds(x, y, width, pref.height);
+					int o = (comp instanceof JTextField)? 4 : 0;
+					comp.setBounds(x + o, y, width - o, pref.height);
 					y += pref.height;
 				}
 			}
