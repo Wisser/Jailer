@@ -1137,6 +1137,11 @@ public class DataBrowser extends javax.swing.JFrame {
 			protected void forceRepaint() {
 				DataBrowser.this.forceRepaint();
 			}
+
+			@Override
+			protected void findPathTo(Table table) {
+				closureView.findPath(DataBrowser.this.datamodel.get().getDisplayName(table));
+			}
 		};
 
 		desktop.setUndoManager(desktopUndoManager);

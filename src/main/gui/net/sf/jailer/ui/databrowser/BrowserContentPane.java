@@ -47,6 +47,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
@@ -2877,7 +2878,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			assList.add(name);
 			assMap.put(name, a);
 		}
-		Collections.sort(assList);
+		Collections.sort(assList, String::compareToIgnoreCase);
 
 		final Object context = new Object();
 		AllNonEmptyItem allNonEmpty = new AllNonEmptyItem();
@@ -2927,9 +2928,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		});
 
 		if (getQueryBuilderDialog() != null && /* SQL Console */
-			!isPending && rows != null && !rows.isEmpty() && row == null) {
+				!isPending && rows != null && !rows.isEmpty() && row == null) {
 			popup.add(allNonEmpty);
 			allNonEmpty.setInitialText();
+		}
+		if (getQueryBuilderDialog() != null /* SQL Console */
+				) {
+			JScrollC2Menu findPath = new JScrollC2Menu("Find Path to ...");
+			findPath.setIcon(findPathIcon);
+			popup.add(findPath);
+			initFindPathPopupMenu(findPath);
 		}
 
 		if (withSingleRow) {
@@ -3185,6 +3193,26 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 
 		return popup;
+	}
+
+	private void initFindPathPopupMenu(JScrollC2Menu findPath) {
+		Set<Table> closure = new TreeSet<Table>((a, b) -> dataModel.getDisplayName(a).compareToIgnoreCase(dataModel.getDisplayName(b)));
+		closure.addAll(table.closure());
+		closure.remove(table);
+		if (closure.isEmpty()) {
+			findPath.setEnabled(false);
+		} if (getRowBrowser().internalFrame == null || !getRowBrowser().internalFrame.isSelected()) {
+			findPath.setVisible(false);
+		} else {
+			closure.forEach(table -> {
+				JMenuItem menuItem = new JMenuItem(dataModel.getDisplayName(table));
+				menuItem.addActionListener(e -> {
+					findPathTo(table);
+				});
+				findPath.add(menuItem);
+				findPath.add(new JLabel(""));
+			});
+		}
 	}
 
 	private JMenuItem createFindColumnMenuItem(final int x, final int y, final JTable contextJTable) {
@@ -3567,7 +3595,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			List<RestrictionDefinition> restrictionDefinitions = createRestrictions(root, stable, restrictedAssociations, restrictedDependencies, restrictedDependencyDefinitions);
 
 //			if (!restrictedDependencies.isEmpty()) {
-				Set<String> parents = new TreeSet<String>();
+				Set<String> parents = new TreeSet<String>(String::compareToIgnoreCase);
 				for (Association association: restrictedDependencies) {
 					parents.add(dataModel.getDisplayName(association.destination));
 				}
@@ -7158,6 +7186,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 	protected abstract RowBrowser navigateTo(Association association, List<Row> pRows);
+	protected void findPathTo(Table table) {}
 
 	protected abstract void onContentChange(List<Row> rows, boolean reloadChildren);
 	protected void onConditionChange(String cond) {
@@ -8279,6 +8308,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private static ImageIcon allDotIcon;
 	private static ImageIcon hAlignButtonIcon1;
 	private static ImageIcon hAlignButtonIcon2;
+	private static ImageIcon findPathIcon;
 
 	static {
         // load images
@@ -8311,6 +8341,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
      	double sf = 1.2;
      	hAlignButtonIcon1 = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/anchor1.png"), sf);
      	hAlignButtonIcon2 = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/anchor0.png"), sf);
+     	findPathIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/search2.png"));
 	}
 
 }

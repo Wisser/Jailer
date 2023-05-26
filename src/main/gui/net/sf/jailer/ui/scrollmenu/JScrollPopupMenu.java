@@ -34,6 +34,9 @@ import javax.swing.JTextField;
 import javax.swing.MenuElement;
 import javax.swing.MenuSelectionManager;
 import javax.swing.SwingUtilities;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -346,7 +349,7 @@ public class JScrollPopupMenu extends JPopupMenu {
 			int max = 0;
 			int i = 0;
 			int unit = -1;
-			int width = 0;
+			int width = Math.max(new JLabel(PLACEHOLDERTEXT).getPreferredSize().width + getScrollBar().getPreferredSize().width, titleWidth()) + 32;
 			for (Component comp : getComponents()) {
 				if (!(comp instanceof JScrollBar) && comp.isVisible()) {
 					Dimension preferredSize = comp == searchField? searchFieldPreferredSize : comp.getPreferredSize();
@@ -427,6 +430,17 @@ public class JScrollPopupMenu extends JPopupMenu {
 		super.show(invoker, x, y);
 	}
 
+	private int titleWidth() {
+		Border border = getBorder();
+		while (border instanceof CompoundBorder) {
+			border = ((CompoundBorder) border).getInsideBorder();
+		}
+		if (border instanceof TitledBorder) {
+			return (int) new JLabel(((TitledBorder) border).getTitle()).getPreferredSize().getWidth();
+		}
+		return 0;
+	}
+
 	protected class ScrollPopupMenuLayout implements LayoutManager {
 		@Override
 		public void addLayoutComponent(String name, Component comp) {
@@ -439,8 +453,7 @@ public class JScrollPopupMenu extends JPopupMenu {
 		@Override
 		public Dimension preferredLayoutSize(Container parent) {
 			int visibleAmount = Integer.MAX_VALUE;
-			Dimension dim = new Dimension(new JLabel(PLACEHOLDERTEXT).getPreferredSize().width, 0);
-			dim.width += 32;
+			Dimension dim = new Dimension(Math.max(new JLabel(PLACEHOLDERTEXT).getPreferredSize().width + getScrollBar().getPreferredSize().width, titleWidth()) + 32, 0);
 			for (Component comp : parent.getComponents()) {
 				if (comp.isVisible()) {
 					if (comp instanceof JScrollBar) {

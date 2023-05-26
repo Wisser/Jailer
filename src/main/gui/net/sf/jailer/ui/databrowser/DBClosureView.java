@@ -1394,6 +1394,15 @@ public abstract class DBClosureView extends javax.swing.JDialog {
             }
         }
     }
+    
+    public void findPath(String toFind) {
+        if (toFind != null) {
+            CellInfo cellInfo = this.cellInfo.get(toFind);
+            if (cellInfo != null) {
+            	new TableMouseListener().openPathFinder(cellInfo.table, false);
+            }
+        }
+    }
 
     private void scrollTableCellToVisible(String toFind) {
     	CellInfo cellInfo = this.cellInfo.get(toFind);

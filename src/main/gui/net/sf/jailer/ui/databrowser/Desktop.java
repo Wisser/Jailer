@@ -1393,6 +1393,11 @@ public abstract class Desktop extends JDesktopPane {
 			protected void forceRepaint() {
 				Desktop.this.forceRepaint();
 			}
+
+			@Override
+			protected void findPathTo(Table table) {
+				Desktop.this.findPathTo(table);
+			}
 		};
 		browserContentPane.addUserAction(new UserAction(
 				"Align Horizontally",
@@ -1506,6 +1511,8 @@ public abstract class Desktop extends JDesktopPane {
 
 		return tableBrowser;
 	}
+
+	protected abstract void findPathTo(Table table);
 
 	protected abstract int getRowLimit();
 	protected abstract void setRowLimit(int limit);

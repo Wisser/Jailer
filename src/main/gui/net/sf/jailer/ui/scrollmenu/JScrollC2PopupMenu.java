@@ -352,7 +352,7 @@ public class JScrollC2PopupMenu extends JPopupMenu {
 			int max = 0;
 			int i = 0;
 			int unit = -1;
-			int width = 0;
+			int width = new JLabel(PLACEHOLDERTEXT).getPreferredSize().width + getScrollBar().getPreferredSize().width;
 			int l = 0;
 			int sbw = 0;
 			for (Component comp : getComponents()) {
@@ -465,8 +465,7 @@ public class JScrollC2PopupMenu extends JPopupMenu {
 		@Override
 		public Dimension preferredLayoutSize(Container parent) {
 			int visibleAmount = Integer.MAX_VALUE;
-			Dimension dim = new Dimension(new JLabel(PLACEHOLDERTEXT).getPreferredSize().width, 0);
-			dim.width += 32;
+			Dimension dim = new Dimension(new JLabel(PLACEHOLDERTEXT).getPreferredSize().width + getScrollBar().getPreferredSize().width, 0);
 			int y = 0;
 			int sbw = 0;
 			for (Component comp : parent.getComponents()) {
@@ -568,7 +567,7 @@ public class JScrollC2PopupMenu extends JPopupMenu {
 				if ((comp instanceof JTextField || comp instanceof JSeparator) && comp.isVisible()) {
 					Dimension pref = comp == searchField? searchFieldPreferredSize : comp.getPreferredSize();
 					int o = (comp instanceof JTextField)? 4 : 0;
-					comp.setBounds(x + o, y, width - C2WIDTH - o, pref.height);
+					comp.setBounds(x + o, y, width - o, pref.height);
 					y += pref.height;
 				} else if (!(comp instanceof JScrollBar) && comp.isVisible()) {
 					++l;
