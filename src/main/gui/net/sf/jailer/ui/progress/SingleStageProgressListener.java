@@ -436,6 +436,8 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 									+ "<br> <br>" + "<small>UPK: " + DDLCreator.uPK + "; " + universalPrimaryKey
 									+ "</small>")).map(l -> "<html>" + l + "<br></html>")
 									.collect(Collectors.joining(""));
+							// TODO
+							// TODO add tip to use other working table scopes 
 							final JButton button = new JButton("Check Primary Keys");
 							button.addActionListener(new ActionListener() {
 								@Override

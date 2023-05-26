@@ -3210,7 +3210,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					findPathTo(table);
 				});
 				findPath.add(menuItem);
-				findPath.add(new JLabel(""));
+				findPath.add(new JLabel("")); // TODO
+				// TODO show distance in closure in a way, that doesn't interfere with the way row counts are shown
 			});
 		}
 	}

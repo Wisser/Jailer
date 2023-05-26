@@ -4194,7 +4194,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		}
 	}
 
-	// TODO 1
+	// TODO 2
 	// TODO ordering per column: break down to SQL?
 		
 	// TODO StringSearch component for historie (and than inc hist size a lot)
