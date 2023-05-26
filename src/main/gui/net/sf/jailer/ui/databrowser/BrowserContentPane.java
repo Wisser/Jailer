@@ -2777,6 +2777,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			});
 		}
 
+		@Override
+		public void print(Graphics g) {
+			if (done > 0) {
+				g.clipRect(getX() + 8, getY(), getWidth() - 8, getHeight());
+			}
+			super.print(g);
+		}
+
 		public void rowsCounted(long count, ActionListener itemAction) {
 			++done;
 			if (count != 0) {

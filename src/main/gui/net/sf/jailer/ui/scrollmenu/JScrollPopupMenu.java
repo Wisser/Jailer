@@ -46,8 +46,8 @@ import net.sf.jailer.ui.UIUtil.PLAF;
 public class JScrollPopupMenu extends JPopupMenu {
 	private static final long serialVersionUID = 8754906500805992108L;
 	
-	protected int maximumVisibleRows = 40;
-	private final boolean noSearchField;
+	private int maximumVisibleRows = 40;
+	private final boolean noSearchFieldNorScrollbar;
 	private static final String PLACEHOLDERTEXT = "Type partial value to search";
 	
 	public JScrollPopupMenu() {
@@ -60,10 +60,13 @@ public class JScrollPopupMenu extends JPopupMenu {
 
 	public JScrollPopupMenu(String label, boolean noSearchField) {
 		super(label);
-		this.noSearchField = noSearchField;
+		this.noSearchFieldNorScrollbar = noSearchField;
 		setLayout(new ScrollPopupMenuLayout());
 
-		super.add(getScrollBar());
+		if (!noSearchFieldNorScrollbar) {
+			super.add(getScrollBar());
+		}
+		
 		addMouseWheelListener(new MouseWheelListener() {
 			@Override
 			public void mouseWheelMoved(MouseWheelEvent event) {
@@ -81,7 +84,8 @@ public class JScrollPopupMenu extends JPopupMenu {
 		searchField = new JTextField();
 		searchField.setVisible(true);
 		searchField.setToolTipText("<html>Search criteria.<br><br>\nSearch for items that contain the search criteria as:<br>\n<table>\n<tr><td><b>Prefix</b></td><td>if it starts with a space</td></tr>\n<tr><td><b>Suffix</b></td><td>if it ends with a space</td></tr>\n<tr><td><b>Substring</b></td><td>else</td></tr>\n</table>\n<br>\n(<b>*</b> = any string, <b>?</b> = any character)\n</html>");
-        
+		searchFieldPreferredSize = searchField.getPreferredSize();
+		
 		searchField.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
 			public void removeUpdate(DocumentEvent e) {
@@ -278,6 +282,7 @@ public class JScrollPopupMenu extends JPopupMenu {
 	
 	private JScrollBar popupScrollBar;
 	private JTextField searchField;
+	private Dimension searchFieldPreferredSize;
 
 	protected JScrollBar getScrollBar() {
 		if (popupScrollBar == null) {
@@ -331,7 +336,7 @@ public class JScrollPopupMenu extends JPopupMenu {
 
 	@Override
 	public void show(Component invoker, int x, int y) {
-		if (getComponentCount() < 14 + 2 || noSearchField) {
+		if (getComponentCount() < 14 + 2 || noSearchFieldNorScrollbar) {
 			searchField.setVisible(false);
 			separator.setVisible(false);
 		}
@@ -344,7 +349,7 @@ public class JScrollPopupMenu extends JPopupMenu {
 			int width = 0;
 			for (Component comp : getComponents()) {
 				if (!(comp instanceof JScrollBar) && comp.isVisible()) {
-					Dimension preferredSize = comp.getPreferredSize();
+					Dimension preferredSize = comp == searchField? searchFieldPreferredSize : comp.getPreferredSize();
 					width = Math.max(width, preferredSize.width);
 					if (unit < 0 && comp instanceof JMenuItem) {
 						unit = preferredSize.height;
@@ -363,7 +368,6 @@ public class JScrollPopupMenu extends JPopupMenu {
 			scrollBar.setBlockIncrement(extent);
 			scrollBar.setValues(0, heightMargin + extent, 0, heightMargin + max);
 
-			width += scrollBar.getPreferredSize().width + widthMargin;
 			int height = heightMargin + extent;
 
 			Rectangle bounds = null;
@@ -381,7 +385,9 @@ public class JScrollPopupMenu extends JPopupMenu {
 			
 			if (bounds != null) {
 				Point p = new Point(x, y);
+				Point p2 = new Point(x, y);
 				SwingUtilities.convertPointToScreen(p, invoker);
+				// y
 				double d = p.y + height - (bounds.getY() + bounds.getHeight() - 8);
 				if (d > 0) {
 					p.y -= d;
@@ -393,7 +399,23 @@ public class JScrollPopupMenu extends JPopupMenu {
 					SwingUtilities.convertPointFromScreen(p, invoker);
 					y = p.y;
 				}
+				
+				// x
+				p = p2;
+				SwingUtilities.convertPointToScreen(p, invoker);
+				d = p.x + width - (bounds.getX() + bounds.getWidth() - 8);
+				if (d > 0) {
+					p.x -= d;
+					d = p.x - bounds.getX();
+					if (d < 0) {
+						p.x -= d;
+						width += d;
+					}
+					SwingUtilities.convertPointFromScreen(p, invoker);
+					x = p.x;
+				}
 			}
+			
 			setPopupSize(new Dimension(width, height));
 			
 //		}
@@ -405,7 +427,7 @@ public class JScrollPopupMenu extends JPopupMenu {
 		super.show(invoker, x, y);
 	}
 
-	protected static class ScrollPopupMenuLayout implements LayoutManager {
+	protected class ScrollPopupMenuLayout implements LayoutManager {
 		@Override
 		public void addLayoutComponent(String name, Component comp) {
 		}
@@ -417,7 +439,7 @@ public class JScrollPopupMenu extends JPopupMenu {
 		@Override
 		public Dimension preferredLayoutSize(Container parent) {
 			int visibleAmount = Integer.MAX_VALUE;
-			Dimension dim = new Dimension(new JLabel(PLACEHOLDERTEXT).getPreferredSize());
+			Dimension dim = new Dimension(new JLabel(PLACEHOLDERTEXT).getPreferredSize().width, 0);
 			dim.width += 32;
 			for (Component comp : parent.getComponents()) {
 				if (comp.isVisible()) {
@@ -425,7 +447,7 @@ public class JScrollPopupMenu extends JPopupMenu {
 						JScrollBar scrollBar = (JScrollBar) comp;
 						visibleAmount = scrollBar.getVisibleAmount();
 					} else {
-						Dimension pref = comp.getPreferredSize();
+						Dimension pref = comp == searchField? searchFieldPreferredSize : comp.getPreferredSize();
 						dim.width = Math.max(dim.width, pref.width);
 						dim.height += pref.height;
 					}
@@ -489,7 +511,7 @@ public class JScrollPopupMenu extends JPopupMenu {
 			y -= position;
 			for (Component comp : parent.getComponents()) {
 				if (!(comp instanceof JScrollBar) && comp.isVisible()) {
-					Dimension pref = comp.getPreferredSize();
+					Dimension pref = comp == searchField? searchFieldPreferredSize : comp.getPreferredSize();
 					int o = (comp instanceof JTextField)? 4 : 0;
 					comp.setBounds(x + o, y, width - o, pref.height);
 					y += pref.height;

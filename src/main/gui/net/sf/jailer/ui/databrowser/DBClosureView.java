@@ -1434,6 +1434,3 @@ public abstract class DBClosureView extends javax.swing.JDialog {
     private static final long serialVersionUID = 5485949274233292142L;
 
 }
-
-// TODO
-// TODO make "find" and "find path" buttons more present
