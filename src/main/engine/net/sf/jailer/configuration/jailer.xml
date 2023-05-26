@@ -1326,6 +1326,10 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
                 <value>int4</value>
             </entry>
             <entry>
+                <key>smallserial</key>
+                <value>int4</value>
+            </entry>
+            <entry>
                 <key>NVARCHAR</key>
                 <value>VARCHAR</value>
             </entry>
@@ -1566,6 +1570,10 @@ union all
             </entry>
             <entry>
                 <key>serial4</key>
+                <value>int4</value>
+            </entry>
+            <entry>
+                <key>smallserial</key>
                 <value>int4</value>
             </entry>
             <entry>

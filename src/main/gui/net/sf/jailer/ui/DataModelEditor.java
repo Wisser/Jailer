@@ -1368,3 +1368,6 @@ public class DataModelEditor extends javax.swing.JDialog {
 	
 	private static final long serialVersionUID = -1267039412732180237L;
 }
+
+// TODO
+// TODO icons for add/edit/delete
