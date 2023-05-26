@@ -1449,3 +1449,6 @@ public class RemoteEntityGraph extends EntityGraph {
 	}
 
 }
+
+// TODO 1
+// TODO insert into jailer_entity(pk0..n): insert null in all pk columns which are not relevant for current table
