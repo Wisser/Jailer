@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -37,6 +38,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import net.sf.jailer.database.Session;
+import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 import net.sf.jailer.xml.NodeVisitor;
@@ -280,6 +282,38 @@ public class Table extends ModelElement implements Comparable<Table> {
 					if (!checked.contains(association.destination)) {
 						if (association.getJoinCondition() != null) {
 							toCheck.add(association.destination);
+						}
+					}
+				}
+			}
+		}
+		
+		return closure;
+	}
+
+	/**
+	 * Gets the closure of the table.
+	 * 
+	 * @param tablesToIgnore ignore this tables
+	 * @param distances put distances into it
+	 * 
+	 * @return closure of the table (all tables associated (in-)direct with table)
+	 */
+	public Set<Table> closure(Set<Table> tablesToIgnore, Map<Table, Integer> distances) {
+		Set<Table> closure = new HashSet<Table>();
+		List<Pair<Table, Integer>> toCheck = new LinkedList<>();
+		Set<Table> checked = new HashSet<Table>(tablesToIgnore);
+		toCheck.add(new Pair<Table, Integer>(this, 0));
+		while (!toCheck.isEmpty()) {
+			Pair<Table, Integer> tableDist = toCheck.remove(0);
+			if (!checked.contains(tableDist.a)) {
+				closure.add(tableDist.a);
+				distances.put(tableDist.a, tableDist.b);
+				checked.add(tableDist.a);
+				for (Association association: tableDist.a.associations) {
+					if (!checked.contains(association.destination)) {
+						if (association.getJoinCondition() != null) {
+							toCheck.add(new Pair<Table, Integer>(association.destination, tableDist.b + 1));
 						}
 					}
 				}

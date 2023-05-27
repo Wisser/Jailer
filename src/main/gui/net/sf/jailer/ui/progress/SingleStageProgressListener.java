@@ -433,11 +433,10 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 									+ "This may have been caused by an invalid primary key definition.<br>Please note that each primary key must be unique.<br> <br>"
 									+ "It is recommended to check the integrity of the primary keys.<br>"
 									+ "To do this, use the button here below <br>or the menu item \"<b><u><font color=\"ff0000\">Check primary keys</font></u></b>\" in the menu called \"Data Model\"."
+									+ "<br><br>If that doesn't help, try using the \"local database\" working table scope."
 									+ "<br> <br>" + "<small>UPK: " + DDLCreator.uPK + "; " + universalPrimaryKey
 									+ "</small>")).map(l -> "<html>" + l + "<br></html>")
 									.collect(Collectors.joining(""));
-							// TODO
-							// TODO add tip to use other working table scopes 
 							final JButton button = new JButton("Check Primary Keys");
 							button.addActionListener(new ActionListener() {
 								@Override

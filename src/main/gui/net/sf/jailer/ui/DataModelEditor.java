@@ -317,6 +317,14 @@ public class DataModelEditor extends javax.swing.JDialog {
 		
 		sortLineList(associations, false);
 		initComponents();
+		
+		newTable.setIcon(UIUtil.scaleIcon(newTable, table_32Icon));
+		editTable.setIcon(UIUtil.scaleIcon(newTable, editdetailsitemIcon));
+		deleteTables.setIcon(UIUtil.scaleIcon(newTable, deleteIcon));
+		newAssociation.setIcon(UIUtil.scaleIcon(newTable, modelIcon));
+		editAssociation.setIcon(UIUtil.scaleIcon(newTable, editdetailsitemIcon));
+		deleteAssociations.setIcon(UIUtil.scaleIcon(newTable, deleteIcon));
+		
 		if (diffCount > 0) {
 			markDirty();
 			commentsDiffLabel.setBackground(BG_COLOR);
@@ -1359,15 +1367,20 @@ public class DataModelEditor extends javax.swing.JDialog {
 
 	private static ImageIcon okIcon;
 	private static ImageIcon cancelIcon;
+	private static ImageIcon table_32Icon;
+	private static ImageIcon editdetailsitemIcon;
+	private static ImageIcon deleteIcon;
+	private static ImageIcon modelIcon;
 	
 	static {
         // load images
         okIcon = UIUtil.readImage("/buttonok.png");
         cancelIcon = UIUtil.readImage("/buttoncancel.png");
+        table_32Icon= UIUtil.readImage("/table_32.png");
+        editdetailsitemIcon = UIUtil.readImage("/editdetailsitem.png");
+        deleteIcon = UIUtil.readImage("/delete.png");
+        modelIcon = UIUtil.readImage("/model.png");
 	}
 	
 	private static final long serialVersionUID = -1267039412732180237L;
 }
-
-// TODO
-// TODO icons for add/edit/delete

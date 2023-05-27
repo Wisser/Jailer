@@ -140,6 +140,8 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     	greenDotIconScaled = UIUtil.scaleIcon(this, greenDotIcon);
     	greyDotIconScaled = UIUtil.scaleIcon(this, greyDotIcon);
 
+    	okExpandButton.setIcon(UIUtil.scaleIcon(this, buttonokIcon));
+    	
         if (!withExpandButton) {
         	okExpandButton.setVisible(false);
         }
@@ -1357,12 +1359,14 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 	private static ImageIcon blueDotIcon;
 	private static ImageIcon greenDotIcon;
 	private static ImageIcon greyDotIcon;
+	private static ImageIcon buttonokIcon;
 	static {
 		// load images
 		redDotIcon = UIUtil.readImage("/reddot.gif");
 		blueDotIcon = UIUtil.readImage("/bluedot.gif");
 		greenDotIcon = UIUtil.readImage("/greendot.gif");
 		greyDotIcon = UIUtil.readImage("/greydot.gif");
+		buttonokIcon = UIUtil.readImage("/buttonok.png");
 	}
 
     private static final long serialVersionUID = 1L;

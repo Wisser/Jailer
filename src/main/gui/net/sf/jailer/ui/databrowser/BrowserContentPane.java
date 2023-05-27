@@ -3197,7 +3197,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	private void initFindPathPopupMenu(JScrollC2Menu findPath) {
 		Set<Table> closure = new TreeSet<Table>((a, b) -> dataModel.getDisplayName(a).compareToIgnoreCase(dataModel.getDisplayName(b)));
-		closure.addAll(table.closure());
+		Map<Table, Integer> distances = new HashMap<>();
+		closure.addAll(table.closure(new HashSet<>(), distances));
 		closure.remove(table);
 		if (closure.isEmpty()) {
 			findPath.setEnabled(false);
@@ -3210,8 +3211,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					findPathTo(table);
 				});
 				findPath.add(menuItem);
-				findPath.add(new JLabel("")); // TODO
-				// TODO show distance in closure in a way, that doesn't interfere with the way row counts are shown
+				JLabel distLabel = new JLabel("<html><font color=\"#9999ff\"><small>\u0394 </small></font><font color=\"#0000ff\">" + distances.get(table) + "</font></html>");
+				distLabel.setToolTipText("Distance to Table \"" + dataModel.getDisplayName(BrowserContentPane.this.table) + "\".");
+				findPath.add(distLabel);
 			});
 		}
 	}
@@ -8342,7 +8344,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
      	double sf = 1.2;
      	hAlignButtonIcon1 = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/anchor1.png"), sf);
      	hAlignButtonIcon2 = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/anchor0.png"), sf);
-     	findPathIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/search2.png"));
+     	findPathIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/search22.png"));
 	}
 
 }

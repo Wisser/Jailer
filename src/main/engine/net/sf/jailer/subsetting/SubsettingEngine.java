@@ -1699,9 +1699,8 @@ public class SubsettingEngine {
 								"The number of rows collected (" + exportStatistic.getTotal() + ") differs from that of the exported ones (" + exportedCount + ").\n" +
 								"This may have been caused by an invalid primary key definition.\nPlease note that each primary key must be unique.\n" +
 								"It is recommended to check the integrity of the primary keys.\n" +
-								"To do this, use the menu item \"Check primary keys\" in the menu called \"Data Model\".";
-					// TODO
-					// TODO add tip to use other working table scopes 
+								"To do this, use the menu item \"Check primary keys\" in the menu called \"Data Model\".\n" +
+								"If that doesn't help, try using the \"local database\" working table scope.";
 					if (executionContext.isAbortInCaseOfInconsistency()) {
 						throw new InconsistentSubsettingResultException(message);
 					} else {

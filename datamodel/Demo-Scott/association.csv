@@ -1,8 +1,10 @@
 # Table A; Table B; First-insert; Cardinality (opt); Join-condition; Name; Author
-EMPLOYEE; BONUS; ; 1:1; A.NAME=B.ENAME and A.JOB=B.JOB; BONUS; Demo; ; 
-EMPLOYEE; EMPLOYEE; B; n:1; A.BOSS=B.EMPNO; BOSS; Demo; ; 
-EMPLOYEE; DEPARTMENT; B; n:1; A.DEPTNO=B.DEPTNO; DEPARTMENT; Demo; ; 
-PROJECT_PARTICIPATION; EMPLOYEE; B; n:1; A.EMPNO=B.EMPNO; EMPLOYEE; Demo; ; 
-PROJECT_PARTICIPATION; PROJECT; B; n:1; A.PROJECTNO=B.PROJECTNO; PROJECT; Demo; ; 
-PROJECT_PARTICIPATION; ROLE; B; n:1; A.ROLE_ID=B.ROLE_ID; ROLE; Demo; ; 
-EMPLOYEE; SALARYGRADE; ; n:1; A.SALARY BETWEEN B.LOSAL and B.HISAL; SALARY; Demo; ; 
+employee; bonus; ; 1:1; A.NAME=B.ENAME and A.JOB=B.JOB; BONUS; Demo; ; 
+employee; employee; B; n:1; A.BOSS=B.EMPNO; BOSS; Demo; ; 
+employee; department; B; n:1; A.DEPTNO=B.DEPTNO; DEPARTMENT; Demo; ; 
+project_participation; employee; B; n:1; A.EMPNO=B.EMPNO; EMPLOYEE; Demo; ; 
+project_participation; project; B; n:1; A.PROJECTNO=B.PROJECTNO; PROJECT; Demo; ; 
+project_participation; role; B; n:1; A.ROLE_ID=B.ROLE_ID; ROLE; Demo; ; 
+employee; salarygrade; ; n:1; A.SALARY BETWEEN B.LOSAL and B.HISAL; SALARY; Demo; ; 
+employee; test; B; n:1; A.deptno=B.deptno; department.test; PostgreSQL JDBC Driver; ; 
+test; department; ; ; 1=1; s; Data Model Editor; ; 
