@@ -1,12 +1,8 @@
 # Name; Upsert; Primary Key; ; Author
-bonus; N; ename varchar(10); job varchar(9); ; PostgreSQL JDBC Driver; ; 
-department; N; deptno int4; ; PostgreSQL JDBC Driver; ; 
-employee; N; boss int4 null; ; Data Model Editor; ; 
-person; N; ; PostgreSQL JDBC Driver; ; 
-person2; N; name text; ; PostgreSQL JDBC Driver; ; 
-person3; N; name text; ; PostgreSQL JDBC Driver; ; 
-project; N; projectno int4; ; PostgreSQL JDBC Driver; ; 
-project_participation; N; projectno int4; empno int4; start_date varchar(12); ; PostgreSQL JDBC Driver; ; 
-role; N; role_id int4; ; PostgreSQL JDBC Driver; ; 
-salarygrade; N; grade int4; ; PostgreSQL JDBC Driver; ; 
-test; N; deptno int4; ; PostgreSQL JDBC Driver; ; 
+BONUS; N; ENAME VARCHAR(10); JOB VARCHAR(9); ; Demo; ; 
+DEPARTMENT; N; DEPTNO INTEGER; ; Demo; ; 
+EMPLOYEE; N; EMPNO INTEGER; ; Demo; ; 
+PROJECT; N; PROJECTNO INTEGER; ; Demo; ; 
+PROJECT_PARTICIPATION; N; PROJECTNO INTEGER; EMPNO INTEGER; START_DATE VARCHAR(12); ; Demo; ; 
+ROLE; N; ROLE_ID INTEGER; ; Demo; ; 
+SALARYGRADE; N; GRADE INTEGER; ; Demo; ; 

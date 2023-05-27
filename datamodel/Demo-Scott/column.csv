@@ -6,14 +6,3 @@ PROJECT; PROJECTNO INTEGER; DESCRIPTION VARCHAR(100) null; START_DATE VARCHAR(12
 PROJECT_PARTICIPATION; PROJECTNO INTEGER; EMPNO INTEGER; START_DATE VARCHAR(12); END_DATE VARCHAR(12) null; ROLE_ID INTEGER null; ; 
 ROLE; ROLE_ID INTEGER; DESCRIPTION VARCHAR(100) null; ; 
 SALARYGRADE; GRADE INTEGER; LOSAL INTEGER; HISAL INTEGER; ; 
-bonus; ename varchar(10); job varchar(9); sal numeric(7, 2) null; comm numeric(7, 2) null; ; 
-department; deptno int4; name varchar(14) null; "location" varchar(13) null; ; 
-employee; empno int4; name varchar(10) null; job varchar(9) null; boss int4 null; hiredate varchar(12) null; salary numeric(7, 2) null; comm numeric(7, 2) null; deptno int4 null; ; 
-person; name text null; current_mood "testsch"."mood" null; ; 
-person2; name text; current_mood "testsch"."m null; ; 
-person3; name text; current_mood m null; ; 
-project; projectno int4; description varchar(100) null; start_date varchar(12) null; end_date varchar(12) null; ; 
-project_participation; projectno int4; empno int4; start_date varchar(12); end_date varchar(12) null; role_id int4 null; ; 
-role; role_id int4; description varchar(100) null; ; 
-salarygrade; grade int4; losal int4; hisal int4; ; 
-test; "count" int8 virtual null; "?column?" int4 virtual null; random float8 virtual null; deptno int4 null; ; 
