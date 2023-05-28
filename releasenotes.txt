@@ -1,3 +1,8 @@
+15.0
+  - Added support of PostgreSQL data types (small|big)serial.
+  - Text search feature in pop-up menus.
+  - Feature for searching complex paths between tables in big data models.
+
 14.8
   - New feature "Retry failed statements".
     If a script or a block of multiple statements is executed in the SQL console and an error occurs in one of them,
