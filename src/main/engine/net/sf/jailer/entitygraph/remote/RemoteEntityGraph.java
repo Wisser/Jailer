@@ -43,7 +43,6 @@ import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.extractionmodel.SubjectLimitDefinition;
-import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
@@ -302,11 +301,8 @@ public class RemoteEntityGraph extends EntityGraph {
 		final Map<Column, Column> match = universalPrimaryKey.match(rowIdSupport.getPrimaryKey(table));
 		final int MAX_BATCH_SIZE = 200;
 
-		StringBuilder unusedUpkColumnList = new StringBuilder();
-		StringBuilder unusedUpkColumnValues = new StringBuilder();
-		String upkColumnList = upkColumnList(table, null, unusedUpkColumnList, unusedUpkColumnValues);
 		String insSQL =
-				"Insert into " + dmlTableReference(ENTITY, session) + " (r_entitygraph, birthday, type, " + upkColumnList + unusedUpkColumnList + ") " +
+				"Insert into " + dmlTableReference(ENTITY, session) + " (r_entitygraph, birthday, type, " + upkColumnList(table, null) + ") " +
 				"values (" + graphID + ", " + today + ", " + typeName(table);
 		for (Column column: universalPrimaryKey.getColumns()) {
 			Column tableColumn = match.get(column);
@@ -314,7 +310,6 @@ public class RemoteEntityGraph extends EntityGraph {
 				insSQL += " ,?";
 			}
 		}
-		insSQL += unusedUpkColumnValues;
 		insSQL += ")";
 
 		String delSQL = null;
@@ -516,11 +511,8 @@ public class RemoteEntityGraph extends EntityGraph {
 			Table source = association.source;
 			String select;
 			LimitTransactionSizeInfo limitTransactionSize = session.dbms.getLimitTransactionSize();
-			StringBuilder unusedUpkColumnList = new StringBuilder();
-			StringBuilder unusedUpkColumnValues = new StringBuilder();
-			String upkColumnList = upkColumnList(source, null, unusedUpkColumnList, unusedUpkColumnValues);
 			select =
-					"Select " + (table != null? "distinct " : "") + limitTransactionSize.afterSelectFragment(executionContext) + otherGraph.graphID + " as graph_id, " + pkList(source, sourceAlias) + unusedUpkColumnValues + ", " + 1 + " as birthday, " + typeName(source) + " as type" +
+					"Select " + (table != null? "distinct " : "") + limitTransactionSize.afterSelectFragment(executionContext) + otherGraph.graphID + " as graph_id, " + pkList(source, sourceAlias) + ", " + 1 + " as birthday, " + typeName(source) + " as type" +
 							" From " + quoting.requote(table1.getName()) + " " + destAlias +
 							" left join " + dmlTableReference(ENTITY, session) + " Duplicate on Duplicate.r_entitygraph=" + otherGraph.graphID + " and Duplicate.type=" + typeName(table1) + " and " +
 							pkEqualsEntityID(table1, destAlias, "Duplicate") +
@@ -534,7 +526,7 @@ public class RemoteEntityGraph extends EntityGraph {
 							limitTransactionSize.statementSuffixFragment(executionContext);
 
 			long incrementSize = limitTransactionSize.getSize(executionContext);
-			String insert = "Insert into " + dmlTableReference(ENTITY, session) + " (r_entitygraph, " + upkColumnList + unusedUpkColumnList + ", birthday, type) " + select;
+			String insert = "Insert into " + dmlTableReference(ENTITY, session) + " (r_entitygraph, " + upkColumnList(source, null) + ", birthday, type) " + select;
 			if (DBMS.SYBASE.equals(session.dbms)) session.execute("set forceplan on ");
 			long rc = 0;
 			for (;;) {
@@ -573,12 +565,9 @@ public class RemoteEntityGraph extends EntityGraph {
 		}
 		String select;
 		LimitTransactionSizeInfo limitTransactionSize = session.dbms.getLimitTransactionSize();
-		StringBuilder unusedUpkColumnList = new StringBuilder();
-		StringBuilder unusedUpkColumnValues = new StringBuilder();
-		String upkColumnList = upkColumnList(table, null, unusedUpkColumnList, unusedUpkColumnValues);
 		if (joinedTable == null && !joinWithEntity && !limitTransactionSize.isApplicable(executionContext)) {
 			select =
-					"Select " + graphID + " " + limitTransactionSize.afterSelectFragment(executionContext) + "as graph_id, " + pkList(table, alias) + unusedUpkColumnValues + ", " + today + " as birthday, " + typeName(table) + " as type" +
+					"Select " + graphID + " " + limitTransactionSize.afterSelectFragment(executionContext) + "as graph_id, " + pkList(table, alias) + ", " + today + " as birthday, " + typeName(table) + " as type" +
 					" From " + quoting.requote(table.getName()) + " " + alias +
 					(condition != null && !SqlUtil.SQL_TRUE.equals(condition) ? " Where (" + condition + ") " : " ") + 
 					limitTransactionSize.additionalWhereConditionFragment(executionContext) +
@@ -590,7 +579,7 @@ public class RemoteEntityGraph extends EntityGraph {
 
 				// TODO is this still necessary?
 				select =
-					"Select " + (joinedTable != null? "distinct " : "") + limitTransactionSize.afterSelectFragment(executionContext) + graphID + " as graph_id, " + pkList(table, alias) + unusedUpkColumnValues + ", " + today + " as birthday, " + typeName(table) + " as type" +
+					"Select " + (joinedTable != null? "distinct " : "") + limitTransactionSize.afterSelectFragment(executionContext) + graphID + " as graph_id, " + pkList(table, alias) + ", " + today + " as birthday, " + typeName(table) + " as type" +
 					" From " + quoting.requote(table.getName()) + " " + alias
 						+
 					(joinedTable != null? ", " + quoting.requote(joinedTable.getName()) + " " + joinedTableAlias + " ": "") +
@@ -607,7 +596,7 @@ public class RemoteEntityGraph extends EntityGraph {
 
 			} else {
 				select =
-					"Select " + (joinedTable != null? "distinct " : "") + limitTransactionSize.afterSelectFragment(executionContext) + graphID + " as graph_id, " + pkList(table, alias) + unusedUpkColumnValues + ", " + today + " as birthday, " + typeName(table) + " as type" +
+					"Select " + (joinedTable != null? "distinct " : "") + limitTransactionSize.afterSelectFragment(executionContext) + graphID + " as graph_id, " + pkList(table, alias) + ", " + today + " as birthday, " + typeName(table) + " as type" +
 					" From " + quoting.requote(table.getName()) + " " + alias +
 					" left join " + dmlTableReference(ENTITY, session) + " Duplicate on Duplicate.r_entitygraph=" + graphID + " and Duplicate.type=" + typeName(table) + " and " +
 					pkEqualsEntityID(table, alias, "Duplicate") +
@@ -620,7 +609,7 @@ public class RemoteEntityGraph extends EntityGraph {
 		}
 
 		long incrementSize = limitTransactionSize.getSize(executionContext);
-		String insert = "Insert into " + dmlTableReference(ENTITY, session) + " (r_entitygraph, " + upkColumnList + unusedUpkColumnList + ", birthday, type) " + select;
+		String insert = "Insert into " + dmlTableReference(ENTITY, session) + " (r_entitygraph, " + upkColumnList(table, null) + ", birthday, type) " + select;
 		if (DBMS.SYBASE.equals(session.dbms)) session.execute("set forceplan on ");
 		long rc = 0;
 		for (;;) {
@@ -652,14 +641,8 @@ public class RemoteEntityGraph extends EntityGraph {
 	@Override
 	public void addDependencies(Table from, String fromAlias, Table to, String toAlias, String condition, int aggregationId, int dependencyId, boolean isAssociationReversed) throws SQLException {
 		condition = SqlUtil.resolvePseudoColumns(condition, isAssociationReversed? "E1" : "E2", isAssociationReversed? "E2" : "E1", 0, birthdayOfSubject, inDeleteMode);
-		StringBuilder unusedUpkColumnListFrom = new StringBuilder();
-		StringBuilder unusedUpkColumnValuesFrom = new StringBuilder();
-		StringBuilder unusedUpkColumnListTo = new StringBuilder();
-		StringBuilder unusedUpkColumnValuesTo = new StringBuilder();
-		String upkColumnListFrom = upkColumnList(from, "FROM_", unusedUpkColumnListFrom, unusedUpkColumnValuesFrom);
-		String upkColumnListTo = upkColumnList(to, "TO_", unusedUpkColumnListTo, unusedUpkColumnValuesTo);
-		String insert = "Insert into " + dmlTableReference(DEPENDENCY, session) + "(r_entitygraph, assoc, depend_id, from_type, to_type, " + upkColumnListFrom + unusedUpkColumnListFrom + ", " + upkColumnListTo + unusedUpkColumnListTo + ") " +
-			"Select " + graphID + ", " + aggregationId  + ", " + dependencyId + ", " + typeName(from) + ", " + typeName(to) + ", " + pkList(from, fromAlias, "FROM") + unusedUpkColumnValuesFrom + ", " + pkList(to, toAlias, "TO") + unusedUpkColumnValuesTo +
+		String insert = "Insert into " + dmlTableReference(DEPENDENCY, session) + "(r_entitygraph, assoc, depend_id, from_type, to_type, " + upkColumnList(from, "FROM_") + ", " + upkColumnList(to, "TO_") + ") " +
+			"Select " + graphID + ", " + aggregationId  + ", " + dependencyId + ", " + typeName(from) + ", " + typeName(to) + ", " + pkList(from, fromAlias, "FROM") + ", " + pkList(to, toAlias, "TO") +
 			" From " + dmlTableReference(ENTITY, session) + " E1, " + dmlTableReference(ENTITY, session) + " E2, " + quoting.requote(from.getName()) + " " + fromAlias + " ," + quoting.requote(to.getName()) + " " + toAlias + " " +
 			" Where E1.r_entitygraph=" + graphID + " and E2.r_entitygraph=" + graphID + "" +
 			" and (" + condition + ")" +
@@ -1378,16 +1361,12 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * Gets PK-column list for a table. (for Insert clause)
 	 *
 	 * @param table the table
-	 * @param unusedUpkColumnList comma separated list of UPK column not used for table
-	 * @param unusedUpkColumnValues values (nulls) for UPK column not used for table
-	 * 
 	 * @param columnAliasPrefix optional prefix for column names
 	 */
-	private String upkColumnList(Table table, String columnAliasPrefix, StringBuilder unusedUpkColumnList, StringBuilder unusedUpkColumnValues) {
+	private String upkColumnList(Table table, String columnAliasPrefix) {
 		Map<Column, Column> match = universalPrimaryKey.match(rowIdSupport.getPrimaryKey(table));
 		StringBuffer sb = new StringBuffer();
-		List<Column> columns = universalPrimaryKey.getColumns();
-		for (Column column: columns) {
+		for (Column column: universalPrimaryKey.getColumns()) {
 			Column tableColumn = match.get(column);
 			if (tableColumn != null) {
 				if (sb.length() > 0) {
@@ -1397,25 +1376,6 @@ public class RemoteEntityGraph extends EntityGraph {
 					sb.append(columnAliasPrefix);
 				}
 				sb.append(column.name);
-			}
-		}
-		if (!DBMS.POSTGRESQL.equals(session.dbms)) { // TODO
-			for (Column column: columns) {
-				Column tableColumn = match.get(column);
-				if (tableColumn == null) {
-					if (sb.length() > 0 || unusedUpkColumnList.length() > 0) {
-						unusedUpkColumnList.append(", ");
-						unusedUpkColumnValues.append(", ");
-					}
-					if (columnAliasPrefix != null) {
-						unusedUpkColumnList.append(columnAliasPrefix);
-					}
-					unusedUpkColumnList.append(column.name);
-					unusedUpkColumnValues.append("null");
-	//				if (DBMS.POSTGRESQL.equals(session.dbms)) {
-	//					unusedUpkColumnValues.append("::" + column.type); // smallint is not accepted here
-	//				}
-				}
 			}
 		}
 		return sb.toString();
