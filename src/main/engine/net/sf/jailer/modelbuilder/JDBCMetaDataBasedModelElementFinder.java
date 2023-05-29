@@ -199,13 +199,16 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 
 				Table fkTable = table;
 
-				String fkColumn = quoting.quote(resultSet.getString(8));
+				String uqFK = resultSet.getString(8);
+				String fkColumn = quoting.quote(uqFK);
 				if (uti != null) {
-					fkColumn = uti.origColumnName.get(quoting.normalizeCase(Quoting.staticUnquote(fkColumn)));
+					fkColumn = uti.origColumnName.get(quoting.normalizeCase(uqFK));
 					if (fkColumn == null) {
-						fkColumn = uti.columnMapping.get(quoting.normalizeCase(Quoting.staticUnquote(fkColumn)));
+						fkColumn = uti.columnMapping.get(quoting.normalizeCase(uqFK));
 					}
-					fkColumn = quoting.quote(fkColumn);
+					if (fkColumn != null) {
+						fkColumn = quoting.quote(fkColumn);
+					}
 				}
 
 				// collect all PKTables

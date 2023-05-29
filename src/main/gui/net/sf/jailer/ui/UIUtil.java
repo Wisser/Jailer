@@ -945,7 +945,7 @@ public class UIUtil {
     }
 
     public static StringBuilder lineWrap(String message, int maxwidth) {
-    	if (message.startsWith("<html>")) {
+    	if (message != null && message.startsWith("<html>")) {
     		return new StringBuilder(message);
     	}
         StringBuilder msg = new StringBuilder();

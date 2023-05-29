@@ -459,7 +459,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 				if (schema != null) {
 	            	schema = Quoting.staticUnquote(schema);
 	            }
-				rs = new MemorizedResultSet(JDBCMetaDataBasedModelElementFinder.getProcedures(session, Quoting.staticUnquote(schema), context), null, session, "");
+				rs = new MemorizedResultSet(JDBCMetaDataBasedModelElementFinder.getProcedures(session, schema != null? Quoting.staticUnquote(schema) : null, context), null, session, "");
 				List<Object[]> result = new ArrayList<Object[]>();
 				for (Object[] row: rs.getRowList()) {
 //						1.TABLE_CAT String => table catalog (may be null) 

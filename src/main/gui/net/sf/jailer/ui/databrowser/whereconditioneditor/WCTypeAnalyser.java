@@ -692,7 +692,7 @@ public class WCTypeAnalyser {
 			// ignore
 		} catch (JSQLParserException e) {
 			if (!warned) {
-				LogUtil.warn(new RuntimeException(sqlSelect + ": " + e.getMessage()));
+				LogUtil.warn(new RuntimeException(sqlSelect + ": " + e.getMessage(), e));
 				warned = true;
 			}
 		} catch (StackOverflowError e) {

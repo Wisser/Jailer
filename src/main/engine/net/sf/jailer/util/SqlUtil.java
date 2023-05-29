@@ -606,6 +606,15 @@ public class SqlUtil {
 	 * @return statement the statement without comments
 	 */
 	public static String removeComments(String statement) {
+		
+
+		// TODO
+		// respect literals ('...')
+		// Select *,'12 --34' From CATEGORY
+		
+		
+		
+		
 		Pattern pattern = Pattern.compile("(/\\*.*?\\*/)|(\\-\\-.*?(?=\n|$))", Pattern.DOTALL);
 		Matcher matcher = pattern.matcher(statement);
 		boolean result = matcher.find();
