@@ -606,16 +606,7 @@ public class SqlUtil {
 	 * @return statement the statement without comments
 	 */
 	public static String removeComments(String statement) {
-		
-
-		// TODO
-		// respect literals ('...')
-		// Select *,'12 --34' From CATEGORY
-		
-		
-		
-		
-		Pattern pattern = Pattern.compile("(/\\*.*?\\*/)|(\\-\\-.*?(?=\n|$))", Pattern.DOTALL);
+		Pattern pattern = Pattern.compile("('([^']*'))|(/\\*.*?\\*/)|(\\-\\-.*?(?=\n|$))", Pattern.DOTALL);
 		Matcher matcher = pattern.matcher(statement);
 		boolean result = matcher.find();
 		StringBuffer sb = new StringBuffer();
@@ -623,9 +614,13 @@ public class SqlUtil {
 			do {
 				int l = matcher.group(0).length();
 				matcher.appendReplacement(sb, "");
-				while (l > 0) {
-					--l;
-					sb.append(' ');
+				if (matcher.group(1) != null) {
+					sb.append(matcher.group(0));
+				} else {
+					while (l > 0) {
+						--l;
+						sb.append(' ');
+					}
 				}
 				result = matcher.find();
 			} while (result);
