@@ -15,9 +15,6 @@
  */
 package net.sf.jailer.ui.databrowser.metadata;
 
-import java.awt.Color;
-import java.awt.Toolkit;
-import java.awt.event.ActionListener;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -40,9 +37,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.JComponent;
-import javax.swing.JMenuItem;
-import javax.swing.JSplitPane;
-import javax.swing.SwingUtilities;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +47,6 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.ui.UIUtil;
-import net.sf.jailer.ui.databrowser.DataBrowser;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Pair;
