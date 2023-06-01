@@ -941,7 +941,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		});
 		exportFormat.setSelectedItem(scriptFormat);
 
-		openXmlSettings.setVisible(ScriptFormat.XML.equals(scriptFormat));
+		openXmlSettings.setVisible(scriptFormat.isObjectNotation());
 		onExportModusChanged(null);
 		setOrientation(horizontalLayout);
 		connectivityState.setText(connectionState);
@@ -1345,7 +1345,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 //			editorPanel.add(inspectorHolder);
 			((GridLayout) editorPanel.getLayout()).setVgap(0);
 			((GridLayout) editorPanel.getLayout()).setRows(1);
-			if (ScriptFormat.XML.equals(scriptFormat)) {
+			if (scriptFormat.isObjectNotation()) {
 				editorPanel.add(xmlMappingPanel);
 				((GridLayout) editorPanel.getLayout()).setColumns(3);
 			} else {
@@ -1366,7 +1366,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			JPanel panel = new JPanel() {
 				@Override
 				public Dimension getMaximumSize() {
-					return new Dimension(scrollPanel.getWidth() - 20, Math.max((int) (650.0 * (scriptFormat.equals(ScriptFormat.XML)? 1.33 : 1.0)), scrollPanel.getHeight() - 10));
+					return new Dimension(scrollPanel.getWidth() - 20, Math.max((int) (650.0 * (scriptFormat.isObjectNotation()? 1.33 : 1.0)), scrollPanel.getHeight() - 10));
 				}
 				@Override
 				public Dimension getPreferredSize() {
@@ -1414,7 +1414,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			editorPanel.add(panel2);
 			((GridLayout) editorPanel.getLayout()).setVgap(1);
 			((GridLayout) editorPanel.getLayout()).setColumns(1);
-			if (ScriptFormat.XML.equals(scriptFormat)) {
+			if (scriptFormat.isObjectNotation()) {
 				gridBagConstraints = new java.awt.GridBagConstraints();
 				gridBagConstraints.gridx = 0;
 				gridBagConstraints.gridy = 3;
@@ -2601,7 +2601,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	}
 
 	private void initRestrictedDependencyWarningField() {
-		boolean restrictedDep = currentAssociation != null && !ScriptFormat.XML.equals(scriptFormat) && currentAssociation.isInsertDestinationBeforeSource() && currentAssociation.getRestrictionCondition() != null;
+		boolean restrictedDep = currentAssociation != null && !scriptFormat.isObjectNotation() && currentAssociation.isInsertDestinationBeforeSource() && currentAssociation.getRestrictionCondition() != null;
 
 		restrictionEditor.fkToNullCheckBox.setVisible(restrictedDep); //  && (RestrictionModel.IGNORE.equals(currentAssociation.getRestrictionCondition()) || "false".equals(currentAssociation.getRestrictionCondition())));
 		restrictionEditor.fkToNullCheckBox.setEnabled(restrictedDep && currentAssociation.hasNullableFK() && !currentAssociation.fkHasExcludeFilter());
@@ -2956,7 +2956,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			dataModel.setExportModus(scriptFormat.toString());
 		}
 		setOrientation(isHorizontalLayout);
-		openXmlSettings.setVisible(ScriptFormat.XML.equals(scriptFormat));
+		openXmlSettings.setVisible(scriptFormat.isObjectNotation());
 		validate();
 	}//GEN-LAST:event_onExportModusChanged
 

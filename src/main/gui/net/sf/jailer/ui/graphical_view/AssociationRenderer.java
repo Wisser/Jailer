@@ -31,6 +31,7 @@ import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Cardinality;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.ui.UIUtil;
 import prefuse.Constants;
 import prefuse.render.EdgeRenderer;
@@ -173,7 +174,7 @@ public class AssociationRenderer extends EdgeRenderer {
 			// update the endpoints for the edge shape
 			// need to bias this by arrow head size
 			if (type == Constants.EDGE_TYPE_CURVE) {
-				if (association == null || !"XML".equals(association.getDataModel().getExportModus()) || !isAggregation(association)) {
+				if (association == null || !isAggregation(association) || !isObjectNatationFormat(association)) {
 					m_curArrow = null;
 				}
 			}
@@ -318,7 +319,7 @@ public class AssociationRenderer extends EdgeRenderer {
 		}
 		item.setFillColor(color);
 		item.setStrokeColor(color);
-		if (association != null && "XML".equals(association.getDataModel().getExportModus())) {
+		if (association != null && isObjectNatationFormat(association)) {
 			m_arrowHead = updateArrowHead(m_arrowWidth, m_arrowHeight, association, isSelected);
 			arrowIsPotAggregation = true;
 		} else {
@@ -473,6 +474,14 @@ public class AssociationRenderer extends EdgeRenderer {
 		return association.reversalAssociation.getAggregationSchema() != AggregationSchema.NONE;
 	}
 
+	private boolean isObjectNatationFormat(Association association) {
+		try {
+			return ScriptFormat.valueOf(association.getDataModel().getExportModus()).isObjectNotation();
+		} catch (Exception e) {
+			return false;
+		}
+	}
+	
 	private Image starImage = null;
 	private double starWidth = 0;
 	private double starHeight = 0;
