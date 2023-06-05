@@ -482,7 +482,11 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 		String marked = markedValues.get(render.getText());
 		if (marked != null) {
 			render.setText(marked);
-			render.setToolTipText(render.getToolTipText());
+			String toolTipText = render.getToolTipText();
+			if (toolTipText == null || toolTipText.length() < 5000) {
+				toolTipText = marked.replace("" + (char) 182, "<br>");
+			}
+			render.setToolTipText(toolTipText);
 			render.setBackground(new Color(190, 255, 180));
 			
 			if (currentPosition != null && currentPosition == x + y * table.getColumnCount()) {
