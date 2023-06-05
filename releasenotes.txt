@@ -1,3 +1,7 @@
+15.0.1
+  - SQL statement analysis in the console had problems with single-line comments in literals.
+  - In the desktop, tool-tips were not shown for cell contents if they were full-text search hits.
+
 15.0
   - Added support of PostgreSQL data types (small|big)serial.
   - Text search feature in pop-up menus.
