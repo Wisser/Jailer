@@ -234,8 +234,29 @@
                                   </tr>
                                 </tbody>
                               </table><br />
-                              &nbsp;<br />
+                             
                             </td>
+                          </tr>
+							
+						  <tr>
+                            <td style=
+                            "background-color: rgb(242, 242, 242); font-weight: bold;">
+                            Q</td>
+
+                            <td style=
+                            "background-color: rgb(242, 242, 242); font-weight: bold;">
+                            What is the preferred way to update an existing data model and extraction model, when the database has new schema changes?</td>
+                          </tr>
+
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+
+                            <td>To update the data model, open the extraction model editor and select "Data Model" -> "Analyze Database". <br>If necessary, several times for each schema, if there are several. <br><br>
+When the data model is updated, each extraction model will be migrated on loading. <br>Tables and associations that no longer exist after the database changes are silently removed from the extraction models as well.<br><br>
+Associations that are newly added and are relevant to the extraction model (that is: directly or indirectly connected to a subject table) are listed in the "Model Migration Tool" dialog. (There is a button "Migration pending" at the top to open this dialog again after you have closed it).<br><br>
+In the "Model Migration Tool" each new association can be examined and either restricted or - with the "Checked" button - marked as checked. <br>When all associations have been checked or restricted, the migration is finished.<br><br>
+if you save an extraction model before migration is finished, you can continue the migration after loading it again.<br><br>
+  </td>
                           </tr>
 
                           <tr>
