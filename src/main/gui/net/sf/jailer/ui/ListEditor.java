@@ -434,8 +434,7 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
         gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 24, 0);
         jPanel2.add(deleteButton, gridBagConstraints);
 
         copyButton.setText("Copy");

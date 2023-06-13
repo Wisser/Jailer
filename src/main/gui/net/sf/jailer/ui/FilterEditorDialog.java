@@ -527,7 +527,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 						int n = 0;
 						int ng = 0;
 						for (Column c: table.getColumns()) {
-							if (c.getFilter() != null) {
+							if (c.getFilter() != null && !c.isVirtual()) {
 								++n;
 								if (!c.getFilter().isDerived()) {
 									++ng;
@@ -648,8 +648,10 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		for (Table tab: getDataModel().getTables()) {
 			tableNames.add(Quoting.unquotedTableName(tab, executionContext).toLowerCase(Locale.ENGLISH));
 			for (Column column: tab.getColumns()) {
-				columnNames.add(Quoting.staticUnquote(column.name).toLowerCase(Locale.ENGLISH));
-				typeNames.add(column.type.toLowerCase(Locale.ENGLISH));
+				if (!column.isVirtual()) {
+					columnNames.add(Quoting.staticUnquote(column.name).toLowerCase(Locale.ENGLISH));
+					typeNames.add(column.type.toLowerCase(Locale.ENGLISH));
+				}
 			}
 		}
 		objectsModel.put(Subject.COLUMN_NAME, columnNames.toArray(new String[0]));
@@ -820,6 +822,10 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 
 		for (final Table table: tables) {
 			for (final Column c: table.getColumns()) {
+				if (c.isVirtual()) {
+					continue; // TODO
+					// TODO excl. virt. cols in "derived filter list", template editor
+				}
 				String toolTip = c.getFilter() != null && c.getFilter().isDerived()? c.getFilter().getFilterSource().getDescription() : null;
 				if (toolTip != null) {
 					toolTip = "derived from " + toolTip;
@@ -1254,7 +1260,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		if (template != null) {
 			for (final Table table: getDataModel().getSortedTables()) {
 				for (Column c: table.getColumns()) {
-					if (c.getFilter() != null) {
+					if (c.getFilter() != null && !c.isVirtual) {
 						FilterSource filterSource = c.getFilter().getFilterSource();
 						if (filterSource instanceof PKColumnFilterSource) {
 							Filter source = ((PKColumnFilterSource) filterSource).column.getFilter();
