@@ -891,8 +891,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		
 		for (Iterator<BookmarkId> i = lastSessions.iterator(); i.hasNext(); ) {
 			BookmarkId lastSession = i.next();
-			Date date = lastSession.date;
-			if (date == null || !modelList.contains(lastSession.datamodelFolder)) {
+			if (lastSession == null || lastSession.date == null || !modelList.contains(lastSession.datamodelFolder)) {
 				i.remove();
 				continue;
 			}
@@ -922,7 +921,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			}
 			
 			model.add("<html><nobr>" + 
-					UIUtil.toHTMLFragment(UIUtil.toDateAsString(date.getTime()), 0) + "&nbsp;-&nbsp;" +
+					UIUtil.toHTMLFragment(UIUtil.toDateAsString(lastSession.date.getTime()), 0) + "&nbsp;-&nbsp;" +
 					(module.equals("S")?
 					"<font color=\"#0000ff\"><b>" +
 					(lastSession.bookmark != null? UIUtil.toHTMLFragment(new File(lastSession.bookmark).getName(), 0) : "</b><i><font color=\"#888888\">New&nbsp;Model</font></i><b>") + "</b>" + 
