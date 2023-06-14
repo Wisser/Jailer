@@ -487,6 +487,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		
 		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
 		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
+		helpButton.setIcon(UIUtil.scaleIcon(helpButton, helpIcon));
 		
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -823,8 +824,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		for (final Table table: tables) {
 			for (final Column c: table.getColumns()) {
 				if (c.isVirtual()) {
-					continue; // TODO
-					// TODO excl. virt. cols in "derived filter list", template editor
+					continue;
 				}
 				String toolTip = c.getFilter() != null && c.getFilter().isDerived()? c.getFilter().getFilterSource().getDescription() : null;
 				if (toolTip != null) {
@@ -2208,12 +2208,14 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 	private Icon conditionEditorSelectedIcon;
 	private static ImageIcon okIcon;
 	private static ImageIcon cancelIcon;
+	private static ImageIcon helpIcon;
 	{
 		// load images
 		conditionEditorIcon = UIUtil.readImage("/edit.png");
 		conditionEditorSelectedIcon = UIUtil.readImage("/edit_s.png");
 		okIcon = UIUtil.readImage("/buttonok.png");
         cancelIcon = UIUtil.readImage("/buttoncancel.png");
+        helpIcon = UIUtil.readImage("/explain.png");
 	}
 	private static final long serialVersionUID = 7869830170667759018L;
 }
