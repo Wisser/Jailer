@@ -6450,6 +6450,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			desktop.storeSession(sFile);
 		} catch (Throwable t) {
 			bookmark = null;
+			LogUtil.warn(t);
 		}
 		UISettings.storeLastSession(bookmark, "B");
 	}
