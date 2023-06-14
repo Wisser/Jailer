@@ -2116,7 +2116,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		if (UIUtil.plaf == PLAF.FLAT) {
 			relatedRowsPanel.setBorder(null);
 		}
-		if (createPopupMenu(null, -1, 0, 0, false, false, false).getComponentCount() == 0) {
+		if (!Arrays.stream(createPopupMenu(null, -1, 0, 0, false, false, false).getComponents()).anyMatch(c -> c.isEnabled())) {
 			relatedRowsLabel.setEnabled(false);
 		} else {
 			relatedRowsPanel.addMouseListener(new java.awt.event.MouseAdapter() {

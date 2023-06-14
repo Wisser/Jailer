@@ -101,6 +101,12 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 		
 		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
 		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
+		addButton.setIcon(UIUtil.scaleIcon(addButton, table_32Icon));
+		updateButton.setIcon(UIUtil.scaleIcon(updateButton, editdetailsitemIcon));
+		deleteButton.setIcon(UIUtil.scaleIcon(deleteButton, deleteIcon));
+		copyButton.setIcon(UIUtil.scaleIcon(copyButton, copyIcon));
+		upButton.setIcon(UIUtil.scaleIcon(upButton, upIcon));
+		downButton.setIcon(UIUtil.scaleIcon(downButton, downIcon));
 		
 		if (!withCopy) {
 			copyButton.setVisible(false);
@@ -434,8 +440,7 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
         gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 24, 0);
         jPanel2.add(deleteButton, gridBagConstraints);
 
         copyButton.setText("Copy");
@@ -647,10 +652,24 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 	
 	private static ImageIcon okIcon;
 	private static ImageIcon cancelIcon;
+	private static ImageIcon table_32Icon;
+	private static ImageIcon editdetailsitemIcon;
+	private static ImageIcon deleteIcon;
+	private static ImageIcon copyIcon;
+	private static ImageIcon upIcon;
+	private static ImageIcon downIcon;
 	
 	static {
         // load images
         okIcon = UIUtil.readImage("/buttonok.png");
         cancelIcon = UIUtil.readImage("/buttoncancel.png");
+        table_32Icon= UIUtil.readImage("/table_32.png");
+        editdetailsitemIcon = UIUtil.readImage("/editdetailsitem.png");
+        deleteIcon = UIUtil.readImage("/delete.png");
+        okIcon = UIUtil.readImage("/buttonok.png");
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
+        copyIcon = UIUtil.readImage("/copy.png");
+        upIcon = UIUtil.readImage("/tb_zoomin.png");
+        downIcon = UIUtil.readImage("/tb_zoomout.png");
 	}
 }

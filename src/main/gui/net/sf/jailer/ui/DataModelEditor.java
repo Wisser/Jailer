@@ -595,7 +595,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 		table.setRowSorter(sorter);
 	}
 
-	public void adjustTableColumnsWidth(JTable table) {
+	private void adjustTableColumnsWidth(JTable table) {
 		DefaultTableModel dtm = (DefaultTableModel) table.getModel();
 		DefaultTableCellRenderer defaultTableCellRenderer = new DefaultTableCellRenderer();
 		for (int i = 0; i < table.getColumnCount() - 1; i++) {
