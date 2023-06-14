@@ -1523,7 +1523,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							@Override
 							public void actionPerformed(ActionEvent e) {
 								tabContentPanel.loadingPanel.setVisible(true);
-								rb.browserContentCellEditor = null;
+								rb.browserContentCellEditor = new BrowserContentCellEditor(new int[0], new String[0], null);
 								tabContentPanel.repaint();
 								loadButton.setEnabled(false);
 								initialSortKeysSql = rb.getStatementForReloading();
