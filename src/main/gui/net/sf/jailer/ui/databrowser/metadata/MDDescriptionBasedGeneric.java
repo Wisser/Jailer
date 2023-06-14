@@ -188,9 +188,9 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 									StringBuilder sb = rows.get(row[0]);
 									if (sb == null) {
 										sb = new StringBuilder();
-										rows.put((String) row[0], sb);
+										rows.put(row[0] == null? null : row[0].toString(), sb);
 									}
-									String line = (String) row[textIndex];
+									String line = row[textIndex] == null? null : row[textIndex].toString();
 									if (line != null) {
 										sb.append(line);
 										if (!line.endsWith("\n")) {
