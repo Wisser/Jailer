@@ -6418,8 +6418,6 @@ public class DataBrowser extends javax.swing.JFrame {
 	public static final String LAST_SESSION_FILE = ".lastsession";
 
 	private void storeLastSession() {
-		BookmarkId bookmark;
-		
 		try {
 			desktop.storeSession(Environment.newFile(LAST_SESSION_FILE).getPath());
 			BufferedReader in = new BufferedReader(new FileReader(Environment.newFile(LAST_SESSION_FILE)));
@@ -6429,7 +6427,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				sb.append((char) c);
 			}
 			in.close();
-			bookmark = new BookmarkId(null, executionContext.getCurrentModelSubfolder(),
+			BookmarkId bookmark = new BookmarkId(null, executionContext.getCurrentModelSubfolder(),
 					executionContext.getCurrentConnectionAlias(), desktop.getRawSchemaMapping());
 			bookmark.setContent(sb.toString());
 			
@@ -6448,11 +6446,10 @@ public class DataBrowser extends javax.swing.JFrame {
 			bookmarksFolder.mkdirs();
 			String sFile = new File(bookmarksFolder, "default").getPath();
 			desktop.storeSession(sFile);
+			UISettings.storeLastSession(bookmark, "B");
 		} catch (Throwable t) {
-			bookmark = null;
 			LogUtil.warn(t);
 		}
-		UISettings.storeLastSession(bookmark, "B");
 	}
 
 	private DesktopAnchorManager anchorManager;
