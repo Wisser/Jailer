@@ -881,9 +881,9 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     		}
     		++i;
     	}
-    	if (sortCheckBox.isSelected()) {
+//    	if (sortCheckBox.isSelected()) {
     		colNames.sort(String::compareToIgnoreCase);
-    	}
+//    	}
     	if (searchButton != null) {
         	searchButton.setEnabled(!colNames.isEmpty());
     	}
