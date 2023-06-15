@@ -43,12 +43,12 @@ public enum ScriptFormat {
 	/**
 	 * Template based XML.
 	 */
-	XML("XML", "XML Export", ".xml", true),
+	XML("XML", "XML Export", ".xml", true);
 
 	/**
 	 * Template based XML.
 	 */
-	JSON("JSON", "JSON Export", ".json", true);
+//	JSON("JSON", "JSON Export", ".json", true);
 
 	/**
 	 * Constructor.
