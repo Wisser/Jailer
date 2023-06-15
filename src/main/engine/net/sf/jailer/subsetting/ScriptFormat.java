@@ -25,35 +25,41 @@ public enum ScriptFormat {
 	/**
 	 * SQL DML.
 	 */
-	SQL("SQL", "SQL Export", ".sql"),
+	SQL("SQL", "SQL Export", ".sql", false),
 
 	/**
 	 * Intra database export.
 	 */
-	INTRA_DATABASE("Schema in same database", "Intra Database Export - Receipt File", ".txt"),
+	INTRA_DATABASE("Schema in same database", "Intra Database Export - Receipt File", ".txt", false),
 	
 	/**
 	 * DbUnit's FlatXmlDataSet format.
 	 */
-	DBUNIT_FLAT_XML("DbUnit flat dataset", "DbUnit flat dataset Export", ".xml"),
+	DBUNIT_FLAT_XML("DbUnit flat dataset", "DbUnit flat dataset Export", ".xml", false),
 	
 	
-	LIQUIBASE_XML("Liquibase", "Liquibase Export", ".xml"),
+	LIQUIBASE_XML("Liquibase", "Liquibase Export", ".xml", false),
 
 	/**
 	 * Template based XML.
 	 */
-	XML("XML", "XML Export", ".xml");
+	XML("XML", "XML Export", ".xml", true),
+
+	/**
+	 * Template based XML.
+	 */
+	JSON("JSON", "JSON Export", ".json", true);
 
 	/**
 	 * Constructor.
 	 * 
 	 * @param displayName human readable name
 	 */
-	private ScriptFormat(String displayName, String fileChooserTitle, String fileExtension) {
+	private ScriptFormat(String displayName, String fileChooserTitle, String fileExtension, boolean isObjectNotation) {
 		this.displayName = displayName;
 		this.fileChooserTitle = fileChooserTitle;
 		this.fileExtension = fileExtension;
+		this.isObjectNotation = isObjectNotation;
 	}
 
 	/**
@@ -78,6 +84,18 @@ public enum ScriptFormat {
 	 */
 	private final String fileExtension;
 	
+	/**
+	 * Is object notation format? (XML, jSON, YAML, ...)
+	 */
+	private final boolean isObjectNotation;
+	
+	/**
+	 * Is object notation format) (XML, jSON, YAML, ...)
+	 */
+	public boolean isObjectNotation() {
+		return isObjectNotation;
+	}
+
 	/**
 	 * Gets file chooser title.
 	 * 

@@ -2806,6 +2806,12 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			args.add(dataModel.getXmlSettings().datePattern);
 			args.add("-xml-timestamp");
 			args.add(dataModel.getXmlSettings().timestampPattern);
+		} else if (scriptFormat.isObjectNotation()) {
+			args.add(dataModel.getXmlSettings().rootTag);
+			args.add("-date-format");
+			args.add(dataModel.getXmlSettings().datePattern);
+			args.add("-timestamp-format");
+			args.add(dataModel.getXmlSettings().timestampPattern);
 		}
 
 		targetSchemaSet.clear();
@@ -3135,3 +3141,10 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	}
 
 }
+
+
+// TODO
+// TODO test: cycle in aggregations
+
+// TODO
+// TODO user option: include (or not) any non-subject top-level object

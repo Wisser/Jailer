@@ -859,7 +859,7 @@ public class GraphicalDataModelView extends JPanel {
 				modelEditor.openColumnMapper(table);
 			}
 		});
-		mapColumns.setEnabled(ScriptFormat.XML.equals(modelEditor.scriptFormat));
+		mapColumns.setEnabled(modelEditor.scriptFormat.isObjectNotation());
 
 		JMenuItem restrictAll = new JMenuItem("Disable Associations");
 		restrictAll.addActionListener(new ActionListener () {

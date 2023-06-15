@@ -1287,7 +1287,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		final String tmpFileName;
 		boolean isRunning = false;
 		try {
-			if (checkRI && extractionModelEditor.dataModel != null && !ScriptFormat.XML.equals(extractionModelEditor.scriptFormat)) {
+			if (checkRI && extractionModelEditor.dataModel != null && !extractionModelEditor.scriptFormat.isObjectNotation()) {
 				List<Association> restrictedDependencies = findRestrictedDependencies(extractionModelEditor.dataModel);
 				if (!restrictedDependencies.isEmpty()) {
 					Association restrictedDependency = restrictedDependencies.get(0);
@@ -1489,7 +1489,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 										ProgressTable progressTableForDelete = new ProgressTable();
 										final ProgressPanel progressPanel = new ProgressPanel(progressTable, progressTableForDelete, exportDialog.hasDeleteScript());
 										boolean confirm = exportDialog.scriptFormat == ScriptFormat.INTRA_DATABASE && exportDialog.getConfirmExport();
-										final ExportAndDeleteStageProgressListener progressListener = new ExportAndDeleteStageProgressListener(progressTable, progressTableForDelete, progressPanel, extractionModelEditor.dataModel, confirm, exportDialog.getTargetSchemaSet(), exportDialog.scriptFormat != ScriptFormat.XML && !exportDialog.insertScripFileNameFieldIsEmpty()) {
+										final ExportAndDeleteStageProgressListener progressListener = new ExportAndDeleteStageProgressListener(progressTable, progressTableForDelete, progressPanel, extractionModelEditor.dataModel, confirm, exportDialog.getTargetSchemaSet(), !exportDialog.scriptFormat.isObjectNotation() && !exportDialog.insertScripFileNameFieldIsEmpty()) {
 											@Override
 											protected void validatePrimaryKeys() {
 												try {
