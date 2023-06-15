@@ -85,12 +85,12 @@ public enum ScriptFormat {
 	private final String fileExtension;
 	
 	/**
-	 * Is object notation format (XML, jSON, YAML, ...)
+	 * Is object notation format? (XML, jSON, YAML, ...)
 	 */
 	private final boolean isObjectNotation;
 	
 	/**
-	 * Is object notation format (XML, jSON, YAML, ...)
+	 * Is object notation format) (XML, jSON, YAML, ...)
 	 */
 	public boolean isObjectNotation() {
 		return isObjectNotation;
