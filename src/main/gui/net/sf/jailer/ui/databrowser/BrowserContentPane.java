@@ -5264,17 +5264,24 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		pkColumns.clear();
 		
 		LinkedHashMap<Integer, Integer> bluePrint = null;
-		if (bluePrintForSQLConsole != null) {
-			bluePrint = bluePrintForSQLConsole;
-			bluePrintForSQLConsole = null;
-		} else {
-			if (tableColumnsInitialized && getQueryBuilderDialog() != null) { // SQLConsole
-				if (rowsTable.getRowCount() > 0) {
-					bluePrint = new LinkedHashMap<>();
-					for (int i = 0; i < rowsTable.getColumnCount(); i++) {
-						TableColumn column = rowsTable.getColumnModel().getColumn(i);
-						bluePrint.put(column.getModelIndex(), column.getPreferredWidth());
-					}
+		
+		if (getQueryBuilderDialog() == null) { // SQLConsole
+			if (bluePrintForSQLConsole != null) {
+				bluePrint = bluePrintForSQLConsole;
+				bluePrintForSQLConsole = null;
+			} else {
+				bluePrint = new LinkedHashMap<>();
+				for (int i = 0; i < rowsTable.getColumnCount(); i++) {
+					TableColumn column = rowsTable.getColumnModel().getColumn(i);
+					bluePrint.put(column.getModelIndex(), column.getPreferredWidth());
+				}
+			}
+		} else if (tableColumnsInitialized) {
+			if (rowsTable.getRowCount() > 0) {
+				bluePrint = new LinkedHashMap<>();
+				for (int i = 0; i < rowsTable.getColumnCount(); i++) {
+					TableColumn column = rowsTable.getColumnModel().getColumn(i);
+					bluePrint.put(column.getModelIndex(), column.getPreferredWidth());
 				}
 			}
 		}
