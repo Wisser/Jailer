@@ -63,6 +63,7 @@ import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.MemorizedResultSet;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.UIUtil.PLAF;
+import net.sf.jailer.ui.databrowser.BrowserContentPane;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataDetailsPanel;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
@@ -84,7 +85,8 @@ public class TabContentPanel extends javax.swing.JPanel {
      * Creates new form TabContentPanel
      * @param caretDotMark 
      */
-    public TabContentPanel(JLabel rowsCount, JTable theRowsTable, JComponent metaDataDetails, String type, boolean explain, javax.swing.JPanel shimPanel, Pair<Integer, Integer> caretDotMark, List<Integer> rowColumnTypes, boolean onlySelectedCells, boolean silent) {
+    public TabContentPanel(BrowserContentPane rowBrowser, JLabel rowsCount, JTable theRowsTable, JComponent metaDataDetails, String type, boolean explain, javax.swing.JPanel shimPanel, Pair<Integer, Integer> caretDotMark, List<Integer> rowColumnTypes, boolean onlySelectedCells, boolean silent) {
+    	this.rowBrowser = rowBrowser;
     	this.shimPanel = shimPanel == null? new javax.swing.JPanel(new GridBagLayout()) : shimPanel;
     	this.caretDotMark = caretDotMark;
         this.rowColumnTypes = rowColumnTypes;
@@ -1138,6 +1140,7 @@ public class TabContentPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
     public final javax.swing.JLabel statementLabel;
 	public final javax.swing.JPanel shimPanel;
+	public final BrowserContentPane rowBrowser;
 	javax.swing.JButton loadButton;
 	protected boolean doSync;
 	

@@ -121,6 +121,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -1403,7 +1404,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							logger.info("error", e1);
 						}
 						tabContentPanel =
-                        		new TabContentPanel(rb.rowsCount,
+                        		new TabContentPanel(
+                        				rb,
+                        				rb.rowsCount,
                         				rb.rowsTable,
                         				metaDataRenderer,
                         				finalResultSetType,
@@ -1411,7 +1414,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         				origTabContentPanel == null? null : origTabContentPanel.shimPanel,
                         				caretDotMark,
                         				rb.rowColumnTypes, false, false);
-                        tabContentPanel.contentPanel.add(rTabContainer);
+						if (origTabContentPanel != null && origTabContentPanel.rowBrowser != null && origTabContentPanel.rowBrowser.bluePrintForSQLConsole != null) {
+							rb.adjustRowTableColumnsWidth(rb.bluePrintForSQLConsole = origTabContentPanel.rowBrowser.bluePrintForSQLConsole);
+						}
+					    tabContentPanel.contentPanel.add(rTabContainer);
 
                         rb.setCurrentRowsTable(new Reference<JTable>() {
                         	public JTable get() {
@@ -1544,6 +1550,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 									if (tabContentPanel.textViewScrollPane.getViewport() != null) {
 										initialTextTablesPos = tabContentPanel.textViewScrollPane.getViewport().getViewPosition();
 									}
+									
+									List<Integer> bluePrint = null;
+									bluePrint = new ArrayList<>();
+									for (int i = 0; i < rb.rowsTable.getColumnCount(); i++) {
+										TableColumn column = rb.rowsTable.getColumnModel().getColumn(i);
+										bluePrint.add(column.getPreferredWidth());
+									}
+									rb.bluePrintForSQLConsole = bluePrint;
 								} catch (Exception e2) {
 									initialSortKeys = null;
 									fullTextSearchPanel.remove(rb.getStatementForReloading());
@@ -2795,7 +2809,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	};
 	
     abstract class ResultContentPane extends BrowserContentPane {
-    	protected boolean doSync;
+		protected boolean doSync;
 		private final Frame parentFrame;
     	private final WCTypeAnalyser.Result wcBaseTable;
     	private String secodaryCond = null;

@@ -5252,12 +5252,29 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	private boolean dontPaintSortIcon = false;
 	private Color origCondBG;
-
+	private boolean tableColumnsInitialized = false;
+	public List<Integer> bluePrintForSQLConsole;
+	
 	private void doUpdateTableModel(int limit, boolean limitExceeded, boolean closureLimitExceeded) {
 		lastLimit = limit;
 		lastLimitExceeded = limitExceeded;
 		lastClosureLimitExceeded = closureLimitExceeded;
 		pkColumns.clear();
+		
+		List<Integer> bluePrint = null;
+		if (bluePrintForSQLConsole != null) {
+			bluePrint = bluePrintForSQLConsole;
+			bluePrintForSQLConsole = null;
+		} else {
+			if (tableColumnsInitialized && getQueryBuilderDialog() != null) { // SQLConsole
+				bluePrint = new ArrayList<>();
+				for (int i = 0; i < rowsTable.getColumnCount(); i++) {
+					TableColumn column = rowsTable.getColumnModel().getColumn(i);
+					bluePrint.add(column.getPreferredWidth());
+				}
+			}
+		}
+		tableColumnsInitialized = true;
 
 		if (UIUtil.plaf == PLAF.FLAT) {
 			JTextField f = ((JTextField) andCondition.getEditor().getEditorComponent());
@@ -5318,7 +5335,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			}
 		}
-
+		
 		DefaultTableModel dtm;
 		findColumnsLabel.setEnabled(true);
 		singleRowDetailsView = null;
@@ -5448,7 +5465,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					}
 				}
 			};
-
+			
 			boolean stripHour[] = new boolean[columns.size()];
 			final String HOUR = " 00:00:00.0";
 			for (int i = 0; i < columns.size(); ++i) {
@@ -5727,8 +5744,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 		inplaceEditorTextField.addMouseListener(tempClosureListener);
 	    inplaceEditorTextField.addMouseMotionListener(tempClosureListener);
-
-	    adjustRowTableColumnsWidth();
+		
+	    adjustRowTableColumnsWidth(bluePrint);
 
 		if (sortColumnsCheckBox.isSelected()) {
 			TableColumnModel cm = rowsTable.getColumnModel();
@@ -5792,7 +5809,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			if (rowsTable.getRowSorter() != null && rowsTable.getRowSorter().getViewRowCount() == 0) {
 				filterHeader.setTable(null);
 				filterHeader = null;
-				adjustRowTableColumnsWidth();
+				adjustRowTableColumnsWidth(bluePrint);
 			}
 		}
 
@@ -5848,7 +5865,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 		isLimitExceeded = limitExceeded;
 		isClosureLimitExceeded = closureLimitExceeded;
-		appendClosure();
+	    appendClosure();
 		if (tablePosition != null) {
 			if (singleRowDetailsView != null) {
 				singleRowDetailsView.scrollRectToVisible(tablePosition);
@@ -6057,7 +6074,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		return new Row(rowId, theRow.primaryKey, theRow.values);
 	}
 
-	public void adjustRowTableColumnsWidth() {
+	public void adjustRowTableColumnsWidth(List<Integer> bluePrint) {
+		if (bluePrint != null && bluePrint.size() == rowsTable.getColumnCount()) {
+			for (int i = 0; i < rowsTable.getColumnCount(); i++) {
+				TableColumn column = rowsTable.getColumnModel().getColumn(i);
+				column.setPreferredWidth(bluePrint.get(i));
+			}
+			return;
+		}
+		
 		DefaultTableModel dtm = (DefaultTableModel) rowsTable.getModel();
 		int MAXLINES = 400;
 		if (rowsTable.getColumnCount() > 0) {

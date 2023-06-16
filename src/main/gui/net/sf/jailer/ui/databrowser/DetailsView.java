@@ -1183,7 +1183,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		cTypes.add(Types.VARCHAR);
 		cTypes.add(Types.VARCHAR);
 		cTypes.add(Types.VARCHAR);
-		tabContentPanel = new TabContentPanel(new JLabel(""), null, new JLabel(""), table.getName(), 
+		tabContentPanel = new TabContentPanel(null, new JLabel(""), null, new JLabel(""), table.getName(), 
 				false,
 				null,
 				null,

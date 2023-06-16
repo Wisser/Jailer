@@ -106,7 +106,7 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 		window.setSize(Math.max(window.getWidth(), jTable.getParent().getWidth()), window.getHeight());
 		copyPanel.previewPanel.setMinimumSize(new Dimension(1, 180));
 		copyPanel.previewPanel.setPreferredSize(copyPanel.previewPanel.getMinimumSize());
-		copyPanel.tabContentPanel = new TabContentPanel(new JLabel(""), null, new JLabel(""), tableName, 
+		copyPanel.tabContentPanel = new TabContentPanel(null, new JLabel(""), null, new JLabel(""), tableName, 
 				false,
 				null,
 				null,
