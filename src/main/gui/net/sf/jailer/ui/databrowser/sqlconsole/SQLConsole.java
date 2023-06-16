@@ -65,6 +65,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -1551,11 +1552,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 										initialTextTablesPos = tabContentPanel.textViewScrollPane.getViewport().getViewPosition();
 									}
 									
-									List<Integer> bluePrint = null;
-									bluePrint = new ArrayList<>();
+									LinkedHashMap<Integer, Integer> bluePrint = null;
+									bluePrint = new LinkedHashMap<>();
 									for (int i = 0; i < rb.rowsTable.getColumnCount(); i++) {
 										TableColumn column = rb.rowsTable.getColumnModel().getColumn(i);
-										bluePrint.add(column.getPreferredWidth());
+										bluePrint.put(column.getModelIndex(), column.getPreferredWidth());
 									}
 									rb.bluePrintForSQLConsole = bluePrint;
 								} catch (Exception e2) {

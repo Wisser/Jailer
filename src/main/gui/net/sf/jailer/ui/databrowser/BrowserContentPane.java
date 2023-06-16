@@ -74,9 +74,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
@@ -5253,7 +5255,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private boolean dontPaintSortIcon = false;
 	private Color origCondBG;
 	private boolean tableColumnsInitialized = false;
-	public List<Integer> bluePrintForSQLConsole;
+	public LinkedHashMap<Integer, Integer> bluePrintForSQLConsole;
 	
 	private void doUpdateTableModel(int limit, boolean limitExceeded, boolean closureLimitExceeded) {
 		lastLimit = limit;
@@ -5261,16 +5263,18 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		lastClosureLimitExceeded = closureLimitExceeded;
 		pkColumns.clear();
 		
-		List<Integer> bluePrint = null;
+		LinkedHashMap<Integer, Integer> bluePrint = null;
 		if (bluePrintForSQLConsole != null) {
 			bluePrint = bluePrintForSQLConsole;
 			bluePrintForSQLConsole = null;
 		} else {
 			if (tableColumnsInitialized && getQueryBuilderDialog() != null) { // SQLConsole
-				bluePrint = new ArrayList<>();
-				for (int i = 0; i < rowsTable.getColumnCount(); i++) {
-					TableColumn column = rowsTable.getColumnModel().getColumn(i);
-					bluePrint.add(column.getPreferredWidth());
+				if (rowsTable.getRowCount() > 0) {
+					bluePrint = new LinkedHashMap<>();
+					for (int i = 0; i < rowsTable.getColumnCount(); i++) {
+						TableColumn column = rowsTable.getColumnModel().getColumn(i);
+						bluePrint.put(column.getModelIndex(), column.getPreferredWidth());
+					}
 				}
 			}
 		}
@@ -6074,11 +6078,20 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		return new Row(rowId, theRow.primaryKey, theRow.values);
 	}
 
-	public void adjustRowTableColumnsWidth(List<Integer> bluePrint) {
+	public void adjustRowTableColumnsWidth(LinkedHashMap<Integer, Integer> bluePrint) {
 		if (bluePrint != null && bluePrint.size() == rowsTable.getColumnCount()) {
 			for (int i = 0; i < rowsTable.getColumnCount(); i++) {
 				TableColumn column = rowsTable.getColumnModel().getColumn(i);
 				column.setPreferredWidth(bluePrint.get(i));
+			}
+			int i = 0;
+			for (Entry<Integer, Integer> e: bluePrint.entrySet()) {
+				for (int j = 0; j < rowsTable.getColumnCount(); j++) {
+					if (rowsTable.getColumnModel().getColumn(j).getModelIndex() == e.getKey()) {
+						rowsTable.getColumnModel().moveColumn(j, i++);
+						break;
+					}
+				}
 			}
 			return;
 		}
