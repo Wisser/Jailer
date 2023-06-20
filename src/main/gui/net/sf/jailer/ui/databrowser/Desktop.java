@@ -2928,7 +2928,7 @@ public abstract class Desktop extends JDesktopPane {
 					xPosition = i;
 				}
 				rb.internalFrame.setBounds(layout(rb.parent, rb.association, rb.browserContentPane, toLayout, maxH, xPosition));
-				rb.browserContentPane.adjustRowTableColumnsWidth(null);
+				rb.browserContentPane.adjustRowTableColumnsWidth(null, null);
 				toLayout.remove(rb);
 				for (RowBrowser rbc : toLayout) {
 					if (rbc.parent == rb) {

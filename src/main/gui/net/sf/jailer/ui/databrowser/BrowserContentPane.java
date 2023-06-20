@@ -31,6 +31,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
+import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -5255,7 +5256,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private boolean dontPaintSortIcon = false;
 	private Color origCondBG;
 	private boolean tableColumnsInitialized = false;
-	public LinkedHashMap<Integer, Integer> bluePrintForSQLConsole;
+	public LinkedHashMap<Integer, Integer> bluePrintForSQLConsole; // TODO
 	
 	private void doUpdateTableModel(int limit, boolean limitExceeded, boolean closureLimitExceeded) {
 		lastLimit = limit;
@@ -5265,18 +5266,18 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		
 		LinkedHashMap<Integer, Integer> bluePrint = null;
 		
-		if (getQueryBuilderDialog() == null) { // SQLConsole
+		/* if (getQueryBuilderDialog() == null) { // SQLConsole // TODO
 			if (bluePrintForSQLConsole != null) {
 				bluePrint = bluePrintForSQLConsole;
 				bluePrintForSQLConsole = null;
-			} else {
+			} else if (rowsTable.getRowCount() > 0) {
 				bluePrint = new LinkedHashMap<>();
 				for (int i = 0; i < rowsTable.getColumnCount(); i++) {
 					TableColumn column = rowsTable.getColumnModel().getColumn(i);
 					bluePrint.put(column.getModelIndex(), column.getPreferredWidth());
 				}
 			}
-		} else if (tableColumnsInitialized) {
+		} else */ if (tableColumnsInitialized) {
 			if (rowsTable.getRowCount() > 0) {
 				bluePrint = new LinkedHashMap<>();
 				for (int i = 0; i < rowsTable.getColumnCount(); i++) {
@@ -5287,6 +5288,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 		tableColumnsInitialized = true;
 
+		LinkedHashMap<Integer, Integer> columnConfig = null;
+		columnConfig = new LinkedHashMap<>();
+		for (int i = 0; i < rowsTable.getColumnCount(); i++) {
+			TableColumn column = rowsTable.getColumnModel().getColumn(i);
+			columnConfig.put(column.getModelIndex(), column.getPreferredWidth());
+		}
+		
 		if (UIUtil.plaf == PLAF.FLAT) {
 			JTextField f = ((JTextField) andCondition.getEditor().getEditorComponent());
 			andCondition.setBackground(f.getText().trim().isEmpty()? origCondBG : new Color(255, 255, 205));
@@ -5756,7 +5764,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		inplaceEditorTextField.addMouseListener(tempClosureListener);
 	    inplaceEditorTextField.addMouseMotionListener(tempClosureListener);
 		
-	    adjustRowTableColumnsWidth(bluePrint);
+	    adjustRowTableColumnsWidth(bluePrint, columnConfig);
 
 		if (sortColumnsCheckBox.isSelected()) {
 			TableColumnModel cm = rowsTable.getColumnModel();
@@ -5820,7 +5828,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			if (rowsTable.getRowSorter() != null && rowsTable.getRowSorter().getViewRowCount() == 0) {
 				filterHeader.setTable(null);
 				filterHeader = null;
-				adjustRowTableColumnsWidth(bluePrint);
+				adjustRowTableColumnsWidth(bluePrint, columnConfig);
 			}
 		}
 
@@ -6085,14 +6093,33 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		return new Row(rowId, theRow.primaryKey, theRow.values);
 	}
 
-	public void adjustRowTableColumnsWidth(LinkedHashMap<Integer, Integer> bluePrint) {
-		if (bluePrint != null && bluePrint.size() == rowsTable.getColumnCount()) {
+	public LinkedHashMap<Integer, Integer> lastColumnConfig;
+	public LinkedHashMap<Integer, Integer> userColumnConfig;
+	
+	public void adjustRowTableColumnsWidth(LinkedHashMap<Integer, Integer> bluePrint_, LinkedHashMap<Integer, Integer> columnConfig) {
+		if (columnConfig == null) {
+			lastColumnConfig = null;
+			userColumnConfig = null;
+		}
+		if (userColumnConfig == null) {
+			if (lastColumnConfig != null && columnConfig != null) {
+				if (columnConfig.size() == rowsTable.getColumnCount() && !columnConfig.equals(lastColumnConfig) && (rowsTable.getRowCount() > 0 || getQueryBuilderDialog() == null)) {
+					userColumnConfig = columnConfig;
+					
+					// TODO
+//					Toolkit.getDefaultToolkit().beep();
+					
+				}
+			}
+		}
+
+		if (userColumnConfig != null) {
 			for (int i = 0; i < rowsTable.getColumnCount(); i++) {
 				TableColumn column = rowsTable.getColumnModel().getColumn(i);
-				column.setPreferredWidth(bluePrint.get(i));
+				column.setPreferredWidth(userColumnConfig.get(i));
 			}
 			int i = 0;
-			for (Entry<Integer, Integer> e: bluePrint.entrySet()) {
+			for (Entry<Integer, Integer> e: userColumnConfig.entrySet()) {
 				for (int j = 0; j < rowsTable.getColumnCount(); j++) {
 					if (rowsTable.getColumnModel().getColumn(j).getModelIndex() == e.getKey()) {
 						rowsTable.getColumnModel().moveColumn(j, i++);
@@ -6170,6 +6197,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 			column.setPreferredWidth(Math.min(maxColumnWidth, width));
 		}
+		
+		lastColumnConfig = new LinkedHashMap<>();
+		for (int i = 0; i < rowsTable.getColumnCount(); i++) {
+			TableColumn column = rowsTable.getColumnModel().getColumn(i);
+			lastColumnConfig.put(column.getModelIndex(), column.getPreferredWidth());
+		};
 	}
 
 	/**

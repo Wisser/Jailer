@@ -1416,7 +1416,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         				caretDotMark,
                         				rb.rowColumnTypes, false, false);
 						if (origTabContentPanel != null && origTabContentPanel.rowBrowser != null && origTabContentPanel.rowBrowser.bluePrintForSQLConsole != null) {
-							rb.adjustRowTableColumnsWidth(rb.bluePrintForSQLConsole = origTabContentPanel.rowBrowser.bluePrintForSQLConsole);
+							rb.lastColumnConfig = origTabContentPanel.rowBrowser.lastColumnConfig;
+							rb.userColumnConfig = origTabContentPanel.rowBrowser.userColumnConfig;
+							LinkedHashMap<Integer, Integer> columnConfig = new LinkedHashMap<>();
+							for (int i = 0; i < origTabContentPanel.rowBrowser.rowsTable.getColumnCount(); i++) {
+								TableColumn column = origTabContentPanel.rowBrowser.rowsTable.getColumnModel().getColumn(i);
+								columnConfig.put(column.getModelIndex(), column.getPreferredWidth());
+							};
+							rb.adjustRowTableColumnsWidth(columnConfig, columnConfig);
 						}
 					    tabContentPanel.contentPanel.add(rTabContainer);
 

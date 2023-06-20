@@ -132,7 +132,7 @@ public class DesktopAnimation {
 			if (moveFrom == null) {
 				moveFrom = iFrame.getBounds();
 				if (Math.abs(moveFrom.width - moveTo.width) > 2) {
-					browserContentPane.adjustRowTableColumnsWidth(null);
+					browserContentPane.adjustRowTableColumnsWidth(null, null);
 				}
 			}
 			int wx = wAvg(f, moveFrom.x, moveTo.x);
@@ -146,7 +146,7 @@ public class DesktopAnimation {
 			}
 			if (f == 1.0) {
 				if (Math.abs(moveFrom.width - moveTo.width) > 2) {
-					browserContentPane.adjustRowTableColumnsWidth(null);
+					browserContentPane.adjustRowTableColumnsWidth(null, null);
 				}
 			}
 			return !(wx == moveTo.x && wy == moveTo.y && ww == moveTo.width && wh == moveTo.height);
@@ -268,7 +268,7 @@ public class DesktopAnimation {
 	 */
 	public void setIFrameBoundsImmediately(JInternalFrame internalFrame, BrowserContentPane browserContentPane, Rectangle newBounds) {
 		internalFrame.setBounds(newBounds);
-		browserContentPane.adjustRowTableColumnsWidth(null);
+		browserContentPane.adjustRowTableColumnsWidth(null, null);
 		waiting.remove(internalFrame);
 		animations.remove(internalFrame);
 	}
