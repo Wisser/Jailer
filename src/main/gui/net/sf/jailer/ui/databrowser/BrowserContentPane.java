@@ -5256,7 +5256,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private boolean dontPaintSortIcon = false;
 	private Color origCondBG;
 	private boolean tableColumnsInitialized = false;
-	public LinkedHashMap<Integer, Integer> bluePrintForSQLConsole; // TODO
 	
 	private void doUpdateTableModel(int limit, boolean limitExceeded, boolean closureLimitExceeded) {
 		lastLimit = limit;
@@ -5266,18 +5265,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		
 		LinkedHashMap<Integer, Integer> bluePrint = null;
 		
-		/* if (getQueryBuilderDialog() == null) { // SQLConsole // TODO
-			if (bluePrintForSQLConsole != null) {
-				bluePrint = bluePrintForSQLConsole;
-				bluePrintForSQLConsole = null;
-			} else if (rowsTable.getRowCount() > 0) {
-				bluePrint = new LinkedHashMap<>();
-				for (int i = 0; i < rowsTable.getColumnCount(); i++) {
-					TableColumn column = rowsTable.getColumnModel().getColumn(i);
-					bluePrint.put(column.getModelIndex(), column.getPreferredWidth());
-				}
-			}
-		} else */ if (tableColumnsInitialized) {
+		if (tableColumnsInitialized) {
 			if (rowsTable.getRowCount() > 0) {
 				bluePrint = new LinkedHashMap<>();
 				for (int i = 0; i < rowsTable.getColumnCount(); i++) {
@@ -6105,10 +6093,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			if (lastColumnConfig != null && columnConfig != null) {
 				if (columnConfig.size() == rowsTable.getColumnCount() && !columnConfig.equals(lastColumnConfig) && (rowsTable.getRowCount() > 0 || getQueryBuilderDialog() == null)) {
 					userColumnConfig = columnConfig;
-					
-					// TODO
-//					Toolkit.getDefaultToolkit().beep();
-					
 				}
 			}
 		}

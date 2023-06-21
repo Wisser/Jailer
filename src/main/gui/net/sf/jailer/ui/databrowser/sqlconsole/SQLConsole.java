@@ -1415,7 +1415,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         				origTabContentPanel == null? null : origTabContentPanel.shimPanel,
                         				caretDotMark,
                         				rb.rowColumnTypes, false, false);
-						if (origTabContentPanel != null && origTabContentPanel.rowBrowser != null && origTabContentPanel.rowBrowser.bluePrintForSQLConsole != null) {
+						if (origTabContentPanel != null && origTabContentPanel.rowBrowser != null) {
 							rb.lastColumnConfig = origTabContentPanel.rowBrowser.lastColumnConfig;
 							rb.userColumnConfig = origTabContentPanel.rowBrowser.userColumnConfig;
 							LinkedHashMap<Integer, Integer> columnConfig = new LinkedHashMap<>();
@@ -1559,13 +1559,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 										initialTextTablesPos = tabContentPanel.textViewScrollPane.getViewport().getViewPosition();
 									}
 									
-									LinkedHashMap<Integer, Integer> bluePrint = null;
-									bluePrint = new LinkedHashMap<>();
-									for (int i = 0; i < rb.rowsTable.getColumnCount(); i++) {
-										TableColumn column = rb.rowsTable.getColumnModel().getColumn(i);
-										bluePrint.put(column.getModelIndex(), column.getPreferredWidth());
-									}
-									rb.bluePrintForSQLConsole = bluePrint;
 								} catch (Exception e2) {
 									initialSortKeys = null;
 									fullTextSearchPanel.remove(rb.getStatementForReloading());
