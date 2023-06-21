@@ -1,3 +1,7 @@
+15.0.2
+  - Preserving manual changes of column width and position in the result view after a reload.
+  - More minor improvements to the user interface.
+
 15.0.1
   - SQL statement analysis in the console had problems with single-line comments in literals.
   - In the desktop, tool-tips were not shown for cell contents if they were full-text search hits.
