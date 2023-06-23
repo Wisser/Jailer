@@ -2487,6 +2487,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         explainButton = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JToolBar.Separator();
         cancelButton = new javax.swing.JButton();
+        jSeparator4 = new javax.swing.JToolBar.Separator();
+        transactionalBox = new javax.swing.JCheckBox();
         jSeparator2 = new javax.swing.JToolBar.Separator();
         clearButton = new javax.swing.JButton();
         jSeparator3 = new javax.swing.JToolBar.Separator();
@@ -2568,6 +2570,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             }
         });
         jToolBar1.add(cancelButton);
+        jToolBar1.add(jSeparator4);
+
+        transactionalBox.setText("Transactional");
+        transactionalBox.setToolTipText("In \"Transactional\" mode, the effect of all previously executed statements is undone in case of an error (\"rollback\").");
+        transactionalBox.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        transactionalBox.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jToolBar1.add(transactionalBox);
         jToolBar1.add(jSeparator2);
 
         clearButton.setText("Clear");
@@ -2728,6 +2737,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private javax.swing.JToolBar.Separator jSeparator1;
     private javax.swing.JToolBar.Separator jSeparator2;
     private javax.swing.JToolBar.Separator jSeparator3;
+    private javax.swing.JToolBar.Separator jSeparator4;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JToolBar jToolBar1;
@@ -2735,6 +2745,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private javax.swing.JButton runSQLButton;
     private javax.swing.JButton runnAllButton;
     private javax.swing.JLabel statusLabel;
+    private javax.swing.JCheckBox transactionalBox;
     // End of variables declaration//GEN-END:variables
     private Object currentHighlightTag = null;
 	private Supplier<Object> currentHighlightTagSupplier;

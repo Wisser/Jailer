@@ -144,6 +144,16 @@
                             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cancelButtonActionPerformed"/>
                           </Events>
                         </Component>
+                        <Component class="javax.swing.JToolBar$Separator" name="jSeparator4">
+                        </Component>
+                        <Component class="javax.swing.JCheckBox" name="transactionalBox">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Transactional"/>
+                            <Property name="toolTipText" type="java.lang.String" value="In &quot;Transactional&quot; mode, the effect of all previously executed statements is undone in case of an error (&quot;rollback&quot;)."/>
+                            <Property name="horizontalTextPosition" type="int" value="4"/>
+                            <Property name="verticalTextPosition" type="int" value="3"/>
+                          </Properties>
+                        </Component>
                         <Component class="javax.swing.JToolBar$Separator" name="jSeparator2">
                         </Component>
                         <Component class="javax.swing.JButton" name="clearButton">
