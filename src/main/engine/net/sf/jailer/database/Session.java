@@ -96,8 +96,8 @@ public class Session {
 	private Map<Connection, Long> lastConnectionActiviyTimeStamp = Collections.synchronizedMap(new HashMap<Connection, Long>());
 
 	private final boolean transactional;
-	public final boolean local;
-
+	private Map<Long, Integer> connectionCount = new HashMap<Long, Integer>();
+	
 	/**
 	 * Reads a JDBC-result-set.
 	 */
@@ -253,7 +253,6 @@ public class Session {
 	 */
 	public Session(final DataSource dataSource, DBMS dbms, final Integer isolationLevel, final WorkingTableScope scope, boolean transactional, final boolean local) throws SQLException {
 		this.transactional = transactional;
-		this.local = local;
 		this.scope = scope;
 		this.dbms = dbms;
 		this.driverClassName = (dataSource instanceof BasicDataSource)? ((BasicDataSource) dataSource).driverClassName : null;
@@ -356,7 +355,7 @@ public class Session {
 					if ((Session.this.transactional && !local) || scope == WorkingTableScope.SESSION_LOCAL || scope == WorkingTableScope.TRANSACTION_LOCAL) {
 						temporaryTableSession = con;
 					} else {
-						connection.set(con);
+						setConnection(con);
 						boolean addCon = true;
 						if (con != globalFallbackConnection) {
 							synchronized (connections) {
@@ -384,13 +383,31 @@ public class Session {
 		init();
 	}
 
+	protected synchronized void setConnection(Connection con) {
+		connection.set(con);
+		Long tid = Thread.currentThread().getId();
+		if (con == null) {
+			Integer count = connectionCount.get(tid);
+			if (count != null) {
+				connectionCount.put(tid, count - 1);
+			}
+		} else {
+			Integer count = connectionCount.get(tid);
+			if (count != null) {
+				connectionCount.put(tid, count + 1);
+			} else {
+				connectionCount.put(tid, 1);
+			}
+		}
+	}
+
 	/**
 	 * Releases a connection get from {@link #getConnection()}.
 	 * Indicated that the connection is no longer in use for the time being.
 	 * 
 	 * @param con the connection
 	 */
-	public void releaseConnection(Connection con) {
+	private void releaseConnection(Connection con) {
 		lastConnectionActiviyTimeStamp.put(con, System.currentTimeMillis());
 	}
 
@@ -428,7 +445,7 @@ public class Session {
 			} catch (Throwable e) { // SQLException e) {
 				// ignore
 			}
-			connection.set(null);
+			setConnection(null);
 			if (con == temporaryTableSession) {
 				temporaryTableSession = null;
 				return;
@@ -1313,6 +1330,9 @@ public class Session {
 			}
 		 }
 		connection = new ThreadLocal<Connection>();
+		synchronized (this) {
+			connectionCount = new HashMap<Long, Integer>();
+		}
 	}
 
 	/**
@@ -1542,6 +1562,19 @@ public class Session {
 
 	public void resetGlobalFallbackConnection() {
 		Session.globalFallbackConnection = null;
+	}
+
+	public synchronized boolean isConnectionExclusive() {
+		Long tid = Thread.currentThread().getId();
+		Integer count = connectionCount.get(tid);
+		return count != null && count <= 1;
+		// TODO
+		// TODO fallback: try reassign an exclusive con from other thread to tis thread.
+		// TODO problem: not yet possible to decide if con is exclusive. solution: add "releaseConnection" method here and call it exhaustively.
+	}
+
+	public synchronized String getConnectionStats() {
+		return "ConStats:" + connections.size() + "/" + connectionCount.size() + "/" + connectionCount.keySet().size();
 	}
 
 }

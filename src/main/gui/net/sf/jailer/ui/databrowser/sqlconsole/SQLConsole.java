@@ -103,6 +103,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
@@ -147,6 +148,7 @@ import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.MemorizedResultSet;
+import net.sf.jailer.ui.DataModelManager;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.JComboBox2;
@@ -783,7 +785,19 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             disableLastErrorTab();
             final Pair<Integer, Integer> caretDotMark = new Pair<Integer, Integer>(editorPane.getCaret().getDot(), editorPane.getCaret().getMark());
             final int finalLineStartOffset = lineStartOffset;
-            final boolean transactional = transactionalBox.isSelected() && !explain;
+            boolean transactionalMode = transactionalBox.isSelected() && !explain;
+            if (transactionalMode && !session.isConnectionExclusive()) {
+            	String ok = "OK";
+				int option = JOptionPane.showOptionDialog(this, "A dedicated database connection could not be established. \nTransactions are not available. \nDo you want to process the statements non-transactionally? \n(no rollback possible)", "Transactions not available", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,
+    					null, new Object[] { ok, "Cancel" }, ok);
+				LogUtil.warn(new RuntimeException(option + " " + session.dbms + " " + session.getConnectionStats()));
+				if (0 == option) {
+    				transactionalBox.setSelected(false);
+    				executeSQLBlock(sqlBlock, location, emptyLineSeparatesStatements, locFragmentOffset, explain, tabContentPanel, successState);
+    			}
+				return;
+            }
+            final boolean transactional = transactionalMode;
             queue.add(new Runnable() {
                 @Override
                 public void run() {
@@ -800,8 +814,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                     try {
                     	con = session.getConnection();
                     	if (transactional) {
-                    		// TODO
-                    		// TODO if con is exclusiv
                     		con.setAutoCommit(false);
                     	}
                     	for (;;) {

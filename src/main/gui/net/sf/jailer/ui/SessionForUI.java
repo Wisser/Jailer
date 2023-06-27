@@ -169,7 +169,7 @@ public class SessionForUI extends Session {
 			throw new RuntimeException(throwable);
 		}
 		if (con.get() != null) {
-			session.connection.set(con.get());
+			session.setConnection(con.get());
 			return session;
 		}
 		return null;
