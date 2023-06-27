@@ -709,7 +709,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private enum Mode { COUNT, EXECUTE, CONTINUE, RETRY };
     
     private class SuccessState {
-    	Set<Integer> failed = Collections.synchronizedSet(new HashSet<>()); // statment numbers
+    	Set<Integer> failed = Collections.synchronizedSet(new HashSet<>()); // statement numbers
     	Set<Integer> failedButRetryable = Collections.synchronizedSet(new HashSet<>());
     	Set<Integer> succeeded = Collections.synchronizedSet(new HashSet<>());
     	Map<Integer, Pair<Integer, Integer>> statementLocation = Collections.synchronizedMap(new HashMap<>());
@@ -783,6 +783,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             disableLastErrorTab();
             final Pair<Integer, Integer> caretDotMark = new Pair<Integer, Integer>(editorPane.getCaret().getDot(), editorPane.getCaret().getMark());
             final int finalLineStartOffset = lineStartOffset;
+            final boolean transactional = transactionalBox.isSelected() && !explain;
             queue.add(new Runnable() {
                 @Override
                 public void run() {
@@ -795,7 +796,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         }
                     });
                     Status status = null;
+                    Connection con = null;
                     try {
+                    	con = session.getConnection();
+                    	if (transactional) {
+                    		// TODO
+                    		// TODO if con is exclusiv
+                    		con.setAutoCommit(false);
+                    	}
                     	for (;;) {
                     		if (successState.mode != Mode.COUNT) {
 	                    		status = new Status();
@@ -852,7 +860,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                                		++successState.numStatements;
 	                                	} else if (successState.shouldRun(statementNumber)) {
 	                                		status.failed = false;
-	                                		executeSQL(pureSql, status, lineStartOffset, explain, tabContentPanel, caretDotMark, locFragmentOffset);
+	                                		executeSQL(pureSql, status, lineStartOffset, explain, tabContentPanel, caretDotMark, locFragmentOffset, transactional);
 		                                    if (status.failed) {
 		                                    	successState.failed.add(statementNumber);
 		                                        if (locFragmentOffset != null) {
@@ -920,7 +928,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                                 	} else if (successState.shouldRun(statementNumber)) {
 		                                status.linesExecuting += countLines(sql);
                                 		status.failed = false;
-                                		executeSQL(sql, status, lineStartOffset, explain, tabContentPanel, caretDotMark, locFragmentOffset);
+                                		executeSQL(sql, status, lineStartOffset, explain, tabContentPanel, caretDotMark, locFragmentOffset, transactional);
 		                                if (!status.failed) {
 		                                	successState.succeeded.add(statementNumber);
 		                                	successState.failed.remove(statementNumber);
@@ -956,7 +964,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                     		successState.mode = Mode.RETRY;
                     	}
                     	UIUtil.invokeLater(() -> {
-                            if (successState != null && successState.hasNextStep()) {
+                            if (!transactional && successState != null && successState.hasNextStep()) {
                             	UIUtil.invokeLater(() -> {
                             		currentSuccessState = successState;
                             		continueButton.setText(successState.createContinueButtonText());
@@ -975,7 +983,23 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                             	}
                             }
                     	});
-                    } finally {
+                    } catch (SQLException e1) {
+						UIUtil.invokeLater(() -> UIUtil.showException(SQLConsole.this, "Error", e1));
+					} finally {
+						if (transactional && con != null) {
+							if (status != null && !status.failed) {
+								try {
+									con.commit();
+								} catch (SQLException e) {
+									UIUtil.invokeLater(() -> UIUtil.showException(SQLConsole.this, "Error", e));
+								}
+							}
+							try {
+								con.setAutoCommit(true);
+							} catch (SQLException e) {
+								UIUtil.invokeLater(() -> UIUtil.showException(SQLConsole.this, "Error", e));
+							}
+						}
                     	if (status != null) {
                     		status.setRunning(false);
                     		successState.numRowsRead = status.numRowsRead;
@@ -1020,8 +1044,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
      * @param explain
      * @param origTabContentPanel the panel to show result (option)
      * @param locFragmentOffset 
+     * @param transactional 
      */
-    private void executeSQL(final String sql, final Status status, int statementStartOffset, final boolean explain, final TabContentPanel origTabContentPanel, final Pair<Integer, Integer> caretDotMark, Pair<Integer, Integer> locFragmentOffset) {
+    private void executeSQL(final String sql, final Status status, int statementStartOffset, final boolean explain, final TabContentPanel origTabContentPanel, final Pair<Integer, Integer> caretDotMark, Pair<Integer, Integer> locFragmentOffset, boolean transactional) {
         Statement statement = null;
         ResultSet resultSet = null;
         final Status localStatus = new Status();
@@ -1821,6 +1846,19 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 } catch (SQLException e) {
                 }
             }
+            
+            if (!isCommentOnly(sqlStatement) || (error instanceof CancellationException)) {
+            	try {
+            		if (transactional) {
+	            		connection.rollback();
+	            		status.rolledback = true;
+						connection.setAutoCommit(true);
+            		}
+				} catch (SQLException e) {
+					UIUtil.invokeLater(() -> UIUtil.showException(SQLConsole.this, "Error", e));
+				}
+            }
+            
             if (!isCommentOnly(sqlStatement)) {
             	if (explainCreateExplainTable != null && error instanceof SQLException) {
             		error = new SQLException(error.getMessage() + " (caused by: " + explainCreateExplainTable.getMessage() + ")");
@@ -1848,7 +1886,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 status.numStatements--;
             }
             if (error instanceof CancellationException) {
-                CancellationHandler.reset(SQLConsole.this);
+            	status.cancelled = true;
+            	CancellationHandler.reset(SQLConsole.this);
                 queue.clear();
             }
             status.updateView(false);
@@ -2171,7 +2210,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     }
 
     private class Status {
-        protected SuccessState successState;
+        private boolean cancelled;
+		private boolean rolledback;
+		protected SuccessState successState;
 		public int origErrorPosition;
 		public int errorPosition = -1;
         public boolean errorPositionIsKnown = false;
@@ -2230,7 +2271,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                                             errorLine = editorPane.getLineOfOffset(errorPosition);
                                             if (errorPositionIsKnown) {
                                                 int col = errorPosition - editorPane.getLineStartOffset(errorLine) + 1;
-                                                pos = "theError at line " + (errorLine + 1) + ", column " + col + ": ";
+                                                pos = "Error at line " + (errorLine + 1) + ", column " + col + ": ";
                                             }
                                            setCaretPosition(errorPosition);
                                         } catch (BadLocationException e) {
@@ -2274,7 +2315,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                                         	hl = failedColor;
                                         } else {
 	                                        if (i < linesExecuted + location.a) {
-	                                            hl = okColor;
+	                                        	if (rolledback) {
+	                                        		hl = null;
+	                                        	} else {
+	                                        		hl = okColor;
+	                                        	}
 	                                        } else if (i >= linesExecuting + location.a) {
 	                                            hl = pendingColor;
 	                                        } else {
@@ -2287,7 +2332,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                                            }
 	                                        }
                                         }
-                                        editorPane.addLineHighlight(i, hl);
+                                        if (hl != null) {
+                                        	editorPane.addLineHighlight(i, hl);
+                                        }
                                     }
                                 } catch (BadLocationException e) {
                                 }
@@ -2347,7 +2394,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         }
 
 		private String getText() {
-            String text = "<html>";
+			if (rolledback) {
+				return "<html><font color=\"dd0000\">" + (cancelled? "Cancelled" : (successState.failed.size() + " Error")) + ". Transaction rolled back.</font><html>";
+			}
+			String text = "<html>";
             if (running) {
                 text += "Running... ";
                 if (numStatements <= 1 && numRowsRead == 0 && numRowsUpdated == 0) {
@@ -2355,7 +2405,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 }
             }
             if (successState != null) {
-	            if (numStatements + successState.failed.size() > 1) {
+            	if (numStatements + successState.failed.size() > 1) {
 	                boolean f = !successState.failed.isEmpty();
 	                int left = successState.numStatements - successState.succeeded.size() - successState.failed.size();
 	                text += numStatements + " " + (f? "successful. " : ("statement" + (numStatements > 1? "s. " : ". ")));
@@ -2363,7 +2413,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                	text += "<font color=\"0000dd\">" + left + " remaining. </font>";
 	                }
 					if (f) {
-	                	text += "<font color=\"dd0000\">" + successState.failed.size() + " failed. </font>";
+	                	text += "<font color=\"dd0000\">" + (cancelled? "Cancelled" : (successState.failed.size() + " failed")) + ". </font>";
 	                }
 	            }
             }
@@ -3984,6 +4034,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	        in.close();
 	        editorPane.setText(sb.toString());
 	        dirty = false;
+	        transactionalBox.setSelected(true);
 		} else {
 			editorPane.setText("");
 	        dirty = true;
