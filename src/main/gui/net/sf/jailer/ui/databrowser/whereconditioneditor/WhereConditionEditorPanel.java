@@ -166,7 +166,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	}
 	
 	private List<Comparison> comparisons = new ArrayList<Comparison>();
-	public Set<Integer> involvedColumns = new HashSet<Integer>();
+	private Set<Integer> involvedColumns = new HashSet<Integer>();
 	private Map<String, Consumer<JLabel>> columnLabelConsumers = new HashMap<String, Consumer<JLabel>>();
 
     /**
@@ -2617,6 +2617,20 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 
 	public void close() {
 		onFocusGained = null;
+	}
+	
+	public void acceptValue(Column column, String valAsString) {
+		Comparison comparison = null;
+		for (Comparison comparisonOpt: comparisons) {
+			if (comparisonOpt.column == column) {
+				comparison = comparisonOpt;
+				break;
+			}
+		}
+		if (comparison == null) {
+			comparison = new Comparison(Operator.Equal, column);
+		}
+		accept(comparison, valAsString, Operator.Equal);
 	}
 
 	private JButton clearButton;

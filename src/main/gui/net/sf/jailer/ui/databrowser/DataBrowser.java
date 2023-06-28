@@ -1142,6 +1142,27 @@ public class DataBrowser extends javax.swing.JFrame {
 			protected void findPathTo(Table table) {
 				closureView.findPath(DataBrowser.this.datamodel.get().getDisplayName(table));
 			}
+
+			@Override
+			protected WhereConditionEditorPanel getWhereConditionEditorPanel(RowBrowser rowBrowser) {
+				Table table = rowBrowser != null && rowBrowser.browserContentPane != null ? rowBrowser.browserContentPane.table
+							: null;
+				if (table != null) {
+					SearchBarRSyntaxTextArea searchBarEditor = new SearchBarRSyntaxTextArea();
+					SearchBarRSyntaxTextArea popUpSearchBarEditor = new SearchBarRSyntaxTextArea();
+
+					BrowserContentCellEditor cellEditor = rowBrowser.browserContentPane.browserContentCellEditor;
+					WhereConditionEditorPanelForDataBrowser wced = new WhereConditionEditorPanelForDataBrowser(DataBrowser.this, datamodel, table,
+								cellEditor,
+								rowBrowser.browserContentPane.sortColumnsCheckBox.isSelected(),
+								whereConditionEditorPanel, searchBarEditor, whereConditionEditorCloseButton, false, -1, session,
+								executionContext, rowBrowser);
+					wced.parseCondition(rowBrowser.browserContentPane.getAndConditionText());
+					searchBarEditor.whereConditionEditorPanel = wced;
+					return wced;
+					}
+				return null;
+			}
 		};
 
 		desktop.setUndoManager(desktopUndoManager);

@@ -148,7 +148,6 @@ import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.MemorizedResultSet;
-import net.sf.jailer.ui.DataModelManager;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.JComboBox2;
@@ -1419,6 +1418,20 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							}
 							@Override
 							protected void forceRepaint() {
+							}
+							@Override
+							protected WhereConditionEditorPanel getWhereConditionEditorPanel(RowBrowser rowBrowser) {
+								BrowserContentCellEditor cellEditor = browserContentCellEditor;
+								try {
+									SearchBarRSyntaxTextArea popUpSearchBarEditor = new SearchBarRSyntaxTextArea();
+									WhereConditionEditorPanelConsole wced = createWhereConditionEditor(-1, SwingUtilities.getWindowAncestor(SQLConsole.this), () -> {}, cellEditor, popUpSearchBarEditor);
+									wced.setTableAlias(null);
+									wced.parseCondition(secodaryCond); // TODO
+									return wced;
+								} catch (SQLException e1) {
+									LogUtil.warn(e1);
+								}
+								return null;
 							}
                         };
                         rb.initSecondaryCondition();
@@ -2886,7 +2899,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		protected boolean doSync;
 		private final Frame parentFrame;
     	private final WCTypeAnalyser.Result wcBaseTable;
-    	private String secodaryCond = null;
+    	protected String secodaryCond = null;
     	private boolean condEditorNeverOpened = true;
     	private final String origSql;
     	private final int origStartOffset;
@@ -3147,296 +3160,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		    		BrowserContentCellEditor cellEditor = browserContentCellEditor;
 					try {
 						SearchBarRSyntaxTextArea popUpSearchBarEditor = new SearchBarRSyntaxTextArea();
-						popUpWhereConditionEditorPanel = new WhereConditionEditorPanelConsole(dialog, datamodel.get(), getWhereClauseEditorBaseTable(), cellEditor, null,
-								popUpWhereConditionEditorPanel, popUpSearchBarEditor, null, true, column, session, executionContext, ResultContentPane.this) {
-							@Override
-							protected void onEscape() {
-								close.run();
-							}
-							
-							@Override
-							protected boolean inSQLConsole() {
-								return true;
-							}
-							
-							@Override
-							protected String columnAlias(Column column) {
-								String value = columnLabel(column);
-								if (value != null && value.toString().startsWith("<html>")) {
-									String[] ntPair = value.toString().replaceAll("<br>", "\t").replaceAll("<[^>]*>", "").split("\t");
-									if (ntPair.length == 2) {
-										return ntPair[0];
-									}
-									if (ntPair.length == 3) {
-										return ntPair[1];
-									}
-								}
-								return super.columnAlias(column);
-							}
-							
-							@Override
-							protected String columnLabel(Column column) {
-								String[] acl = getAlternativeColumnLabels();
-								if (acl != null) {
-									for (int i = 0; i < wcBaseTable.table.getColumns().size() && i < acl.length; ++i) {
-										if (acl[i] != null && column.name.equals(wcBaseTable.table.getColumns().get(i).name)) {
-											return acl[i];
-										}
-									}
-								}
-								return super.columnLabel(column);
-							}
-
-							@Override
-							protected String columnToolTip(Column column) {
-								String[] acl = getAlternativeColumnLabelsFull();
-								if (acl != null) {
-									for (int i = 0; i < wcBaseTable.table.getColumns().size() && i < acl.length; ++i) {
-										if (acl[i] != null && column.name.equals(wcBaseTable.table.getColumns().get(i).name)) {
-											return acl[i];
-										}
-									}
-								}
-								return super.columnLabel(column);
-							}
-
-							@Override
-							protected void hightlight(Column column) {
-								if (column == null) {
-//									SQLConsole.this.hightlight(editorPane, 0, 0);
-								} else {
-									Pair<Integer, Integer> pos = getCurrentStatementPos();
-									if (pos != null) {
-										String statement = getLatestSyncStatement();
-										Pair<Integer, Integer> positivePos = positivesPos.get(column);
-										int start = -1;
-										int end = 0;
-										if (positivePos != null && positivePos.a != 0) {
-											int cd = positivePos.a;
-											Matcher matcher = createComparisionMatcher(true, column, statement);
-											while (matcher != null && matcher.find()) {
-												String g = matcher.group();
-												String pref = g.replaceFirst("(?is)^((?:\\s*\\bAnd\\b)?\\s*).*$", "$1");
-												start = matcher.start();
-												if (!g.equals(pref)) {
-													start += pref.length();
-												}
-												end = matcher.end();
-												if (--cd <= 0) {
-													break;
-												}
-											}
-										} else if (wcBaseTable != null) {
-											int off = 0;
-											if (wcBaseTable.hasCondition) {
-												off = wcBaseTable.conditionEnd;
-											} else {
-												off = wcBaseTable.table.getName().length();
-											}
-											int wherePos = statement.toLowerCase().lastIndexOf("where");
-											if (off >= statement.length()) {
-												off = wherePos;
-											}
-											if (off > 0) {
-												Matcher matcher = createComparisionMatcher(true, column, statement.substring(off));
-												if (matcher != null) {
-													boolean found = matcher.find();
-													if (!found && wherePos > 0) {
-														off = wherePos;
-														matcher = createComparisionMatcher(true, column, statement.substring(off));
-														if (matcher != null) {
-															found = matcher.find();
-														}
-													}
-													if (found) {
-														String g = matcher.group();
-														String pref = g.replaceFirst("(?is)^((?:\\s*\\bAnd\\b)?\\s*).*$", "$1");
-														start = matcher.start() + off;
-														if (!g.equals(pref)) {
-															start += pref.length();
-														}
-														end = matcher.end() + off;
-													}
-												}
-											}
-										}
-										if (start >= 0) {
-											int dot = editorPane.getCaret().getDot();
-											int mark = editorPane.getCaret().getMark();
-											try {
-												editorPane.setCaretPosition(pos.a + start);
-												editorPane.select(Math.min(dot, mark), Math.max(dot, mark));
-											} catch (Exception e) {
-												// ignore
-											}
-											SQLConsole.this.hightlight(editorPane, pos.a + start, pos.a + end);
-										} else {
-											SQLConsole.this.hightlight(editorPane, 0, 0);
-										}
-									} else {
-										SQLConsole.this.hightlight(editorPane, 0, 0);
-									}
-								}
-							}
-
-							@Override
-							protected void consume(String condition, Set<Integer> involvedColumns) {
-								ResultContentPane.this.filteredColumns = involvedColumns;
-								condition = condition.trim();
-								if (resultContentPane != null && !secodaryCond.trim().matches(SqlUtil.createSQLFragmentSearchPattern(condition.trim(), true))) {
-									secodaryCond = condition.trim();
-									UISettings.s12 += 100000;
-
-									String tableWithCondition = createTableWithCondition(wcBaseTable.originalQuery, secodaryCond);
-									
-									setStatementForReloading(tableWithCondition);
-									updateStatementLabel(tableWithCondition);
-									UIUtil.suspectQuery = tableWithCondition;
-									
-									syncStatement(statementForReloading);
-									
-									reloadRows();
-								} else {
-									repaint();
-								}
-							}
-							
-							@Override
-							protected String createTableWithCondition(String condition, String tabName, String extJoin) {
-								return createTableWithCondition(wcBaseTable.table.getName(), condition);
-							}
-							
-							private boolean findNth(Matcher matcher, int pos) {
-								for (int i = 1; i < pos; ++i) {
-									if (!matcher.find()) {
-										return false;
-									}
-								}
-								return matcher.find();
-							}
-							
-							private String createTableWithCondition(String table, String condition) {
-								if (wcBaseTable.hasCondition) {
-									String mainCondition = table.substring(wcBaseTable.conditionStart, wcBaseTable.conditionEnd);
-									List<Column> pCols = new ArrayList<>(positivesPos.keySet());
-									pCols.sort((a, b) -> positivesPos.get(b).b - positivesPos.get(a).b);
-									for (Column c: pCols) {
-										if (positivesPos.get(c).a == 0) {
-											continue;
-										}
-										Matcher matcher = createComparisionMatcher(true, c, condition);
-										if (matcher != null) {
-											Pair<Integer, Integer> pp = WCTypeAnalyser.getPositivePosition(Pattern.compile(createComparisionRE(true, c, condition), Pattern.CASE_INSENSITIVE | Pattern.DOTALL), condition);
-											if (pp != null) {
-												for (int i = 1; i < pp.a; ++i) {
-													if (!matcher.find()) {
-														matcher = null;
-														break;
-													}
-												}
-											}
-										}
-										if (matcher != null && matcher.find()) {
-											int opStart = operationStart(matcher);
-											Matcher mainMatcher = createComparisionMatcher(true, c, mainCondition);
-											if (mainMatcher != null && findNth(mainMatcher, positivesPos.get(c).a)) {
-												int mainOpStart = operationStart(mainMatcher);
-												if (!condition.substring(opStart, matcher.end()).trim().matches(SqlUtil.createSQLFragmentSearchPattern(mainCondition.substring(mainOpStart, mainMatcher.end()), true))) {
-													mainCondition = mainCondition.substring(0, mainOpStart)
-														+ (condition.length() > opStart && Character.isWhitespace(condition.charAt(opStart - 1))? "" : " ")
-														+ condition.substring(opStart, matcher.end())
-														+ mainCondition.substring(mainMatcher.end());
-												}
-											}
-											condition = removeErasedFragment("\f", condition.substring(0, matcher.start()) + "\f" + condition.substring(matcher.end()));
-										} else {
-											Matcher mainMatcher = createComparisionMatcher(true, c, mainCondition);
-											if (mainMatcher != null && findNth(mainMatcher, positivesPos.get(c).a)) {
-												int start = mainMatcher.start();
-												if (mainMatcher.group().trim().matches("(?is)^\\bAnd\\b.*")) {
-													start += 3;
-												}
-												mainCondition = removeErasedFragment("\f", 
-														mainCondition.substring(0, start)
-														+ "\f"
-														+ mainCondition.substring(mainMatcher.end()));
-											}
-										}
-									}
-									StringBuilder result = new StringBuilder();
-									result.append(table.substring(0, wcBaseTable.conditionStart));
-									if (!mainCondition.trim().isEmpty()) {
-										if (result.length() > 0 && !Character.isWhitespace(result.charAt(result.length() - 1))) {
-											result.append(" ");
-										}
-										if (!WCTypeAnalyser.isPositiveExpression(mainCondition)) {
-											result.append("(" + mainCondition + ")");
-										} else {
-											result.append(mainCondition);
-										}
-									}
-									if (!condition.trim().isEmpty()) {
-										if (result.length() > 0 && !Character.isWhitespace(result.charAt(result.length() - 1))) {
-											result.append(" ");
-										}
-										if (!mainCondition.trim().isEmpty()) {
-											result.append("and");
-										}
-										if (result.length() > 0 && !Character.isWhitespace(result.charAt(result.length() - 1))) {
-											result.append(" ");
-										}
-										result.append(condition.trim().replaceAll("(?is)\\n\\s*(And )", " $1"));
-									}
-									if (mainCondition.trim().isEmpty() && condition.trim().isEmpty()) {
-										result = new StringBuilder(result.toString().replaceFirst("(?is)\\s*\\b(where|having)\\s*$", ""));
-									}
-									if (result.length() > 0 && !Character.isWhitespace(result.charAt(result.length() - 1))) {
-										result.append(" ");
-									}
-									result.append(table.substring(wcBaseTable.conditionEnd));
-										
-									return result.toString().trim();
-								} else {
-									if (condition.trim().isEmpty()) {
-										return table;
-									} else {
-										if (table.length() > 100 || table.contains("\n")) {
-											if (table.charAt(table.length() - 1) != '\n') {
-												table += "\n";
-											}
-										} else if (table.length() > 0 && !Character.isWhitespace(table.charAt(table.length() - 1))) {
-											table += " ";
-										}
-										return table + (wcBaseTable.isHaving? "Having " : "Where ") + condition.trim().replaceAll("(?is)\\n\\s*(And )", " $1");
-									}
-								}
-							}
-							
-							@Override
-							protected String getCTE() {
-								return wcBaseTable.cte;
-							}
-							
-							@Override
-							protected String columnNameToRegExp(String name) {
-								Set<String> names = wcBaseTable.getAlternativeNames(name);
-								if (names == null) {
-									return SqlUtil.createSQLFragmentSearchPattern(name, false);
-								} else {
-									return "(?:" + names.stream().map(aName -> "(?:" + SqlUtil.createSQLFragmentSearchPattern(aName, false) + ")").collect(Collectors.joining("|")) + ")";
-								}
-							}
-
-							@Override
-							protected Set<String> getAlternativeNames(String name) {
-								return wcBaseTable != null? wcBaseTable.getAlternativeNames(name) : null;
-							}
-
-							@Override
-							protected boolean isColumnNullable(Table table, Column column) {
-								return isColumnNullable(table, column, metaDataSource);
-							}
-						};
+						popUpWhereConditionEditorPanel = createWhereConditionEditor(column, dialog, close, cellEditor, popUpSearchBarEditor);
 						popUpWhereConditionEditorPanel.setTableAlias(null);
 					} catch (SQLException e1) {
 						UIUtil.showException(SQLConsole.this, "Error", e1);
@@ -3544,6 +3268,301 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 					}
 				}
 			});
+		}
+		
+		protected WhereConditionEditorPanelConsole createWhereConditionEditor(int column, Window dialog, Runnable close,
+				BrowserContentCellEditor cellEditor, SearchBarRSyntaxTextArea popUpSearchBarEditor)
+				throws SQLException {
+			return new WhereConditionEditorPanelConsole(dialog, datamodel.get(), getWhereClauseEditorBaseTable(), cellEditor, null,
+					popUpWhereConditionEditorPanel, popUpSearchBarEditor, null, true, column, session, executionContext, ResultContentPane.this) {
+				@Override
+				protected void onEscape() {
+					close.run();
+				}
+				
+				@Override
+				protected boolean inSQLConsole() {
+					return true;
+				}
+				
+				@Override
+				protected String columnAlias(Column column) {
+					String value = columnLabel(column);
+					if (value != null && value.toString().startsWith("<html>")) {
+						String[] ntPair = value.toString().replaceAll("<br>", "\t").replaceAll("<[^>]*>", "").split("\t");
+						if (ntPair.length == 2) {
+							return ntPair[0];
+						}
+						if (ntPair.length == 3) {
+							return ntPair[1];
+						}
+					}
+					return super.columnAlias(column);
+				}
+				
+				@Override
+				protected String columnLabel(Column column) {
+					String[] acl = getAlternativeColumnLabels();
+					if (acl != null) {
+						for (int i = 0; i < wcBaseTable.table.getColumns().size() && i < acl.length; ++i) {
+							if (acl[i] != null && column.name.equals(wcBaseTable.table.getColumns().get(i).name)) {
+								return acl[i];
+							}
+						}
+					}
+					return super.columnLabel(column);
+				}
+
+				@Override
+				protected String columnToolTip(Column column) {
+					String[] acl = getAlternativeColumnLabelsFull();
+					if (acl != null) {
+						for (int i = 0; i < wcBaseTable.table.getColumns().size() && i < acl.length; ++i) {
+							if (acl[i] != null && column.name.equals(wcBaseTable.table.getColumns().get(i).name)) {
+								return acl[i];
+							}
+						}
+					}
+					return super.columnLabel(column);
+				}
+
+				@Override
+				protected void hightlight(Column column) {
+					if (column == null) {
+//									SQLConsole.this.hightlight(editorPane, 0, 0);
+					} else {
+						Pair<Integer, Integer> pos = getCurrentStatementPos();
+						if (pos != null) {
+							String statement = getLatestSyncStatement();
+							Pair<Integer, Integer> positivePos = positivesPos.get(column);
+							int start = -1;
+							int end = 0;
+							if (positivePos != null && positivePos.a != 0) {
+								int cd = positivePos.a;
+								Matcher matcher = createComparisionMatcher(true, column, statement);
+								while (matcher != null && matcher.find()) {
+									String g = matcher.group();
+									String pref = g.replaceFirst("(?is)^((?:\\s*\\bAnd\\b)?\\s*).*$", "$1");
+									start = matcher.start();
+									if (!g.equals(pref)) {
+										start += pref.length();
+									}
+									end = matcher.end();
+									if (--cd <= 0) {
+										break;
+									}
+								}
+							} else if (wcBaseTable != null) {
+								int off = 0;
+								if (wcBaseTable.hasCondition) {
+									off = wcBaseTable.conditionEnd;
+								} else {
+									off = wcBaseTable.table.getName().length();
+								}
+								int wherePos = statement.toLowerCase().lastIndexOf("where");
+								if (off >= statement.length()) {
+									off = wherePos;
+								}
+								if (off > 0) {
+									Matcher matcher = createComparisionMatcher(true, column, statement.substring(off));
+									if (matcher != null) {
+										boolean found = matcher.find();
+										if (!found && wherePos > 0) {
+											off = wherePos;
+											matcher = createComparisionMatcher(true, column, statement.substring(off));
+											if (matcher != null) {
+												found = matcher.find();
+											}
+										}
+										if (found) {
+											String g = matcher.group();
+											String pref = g.replaceFirst("(?is)^((?:\\s*\\bAnd\\b)?\\s*).*$", "$1");
+											start = matcher.start() + off;
+											if (!g.equals(pref)) {
+												start += pref.length();
+											}
+											end = matcher.end() + off;
+										}
+									}
+								}
+							}
+							if (start >= 0) {
+								int dot = editorPane.getCaret().getDot();
+								int mark = editorPane.getCaret().getMark();
+								try {
+									editorPane.setCaretPosition(pos.a + start);
+									editorPane.select(Math.min(dot, mark), Math.max(dot, mark));
+								} catch (Exception e) {
+									// ignore
+								}
+								SQLConsole.this.hightlight(editorPane, pos.a + start, pos.a + end);
+							} else {
+								SQLConsole.this.hightlight(editorPane, 0, 0);
+							}
+						} else {
+							SQLConsole.this.hightlight(editorPane, 0, 0);
+						}
+					}
+				}
+
+				@Override
+				protected void consume(String condition, Set<Integer> involvedColumns) {
+					ResultContentPane.this.filteredColumns = involvedColumns;
+					condition = condition.trim();
+					if (resultContentPane != null && !secodaryCond.trim().matches(SqlUtil.createSQLFragmentSearchPattern(condition.trim(), true))) {
+						secodaryCond = condition.trim();
+						UISettings.s12 += 100000;
+
+						String tableWithCondition = createTableWithCondition(wcBaseTable.originalQuery, secodaryCond);
+						
+						setStatementForReloading(tableWithCondition);
+						updateStatementLabel(tableWithCondition);
+						UIUtil.suspectQuery = tableWithCondition;
+						
+						syncStatement(statementForReloading);
+						
+						reloadRows();
+					} else {
+						repaint();
+					}
+				}
+				
+				@Override
+				protected String createTableWithCondition(String condition, String tabName, String extJoin) {
+					return createTableWithCondition(wcBaseTable.table.getName(), condition);
+				}
+				
+				private boolean findNth(Matcher matcher, int pos) {
+					for (int i = 1; i < pos; ++i) {
+						if (!matcher.find()) {
+							return false;
+						}
+					}
+					return matcher.find();
+				}
+				
+				private String createTableWithCondition(String table, String condition) {
+					if (wcBaseTable.hasCondition) {
+						String mainCondition = table.substring(wcBaseTable.conditionStart, wcBaseTable.conditionEnd);
+						List<Column> pCols = new ArrayList<>(positivesPos.keySet());
+						pCols.sort((a, b) -> positivesPos.get(b).b - positivesPos.get(a).b);
+						for (Column c: pCols) {
+							if (positivesPos.get(c).a == 0) {
+								continue;
+							}
+							Matcher matcher = createComparisionMatcher(true, c, condition);
+							if (matcher != null) {
+								Pair<Integer, Integer> pp = WCTypeAnalyser.getPositivePosition(Pattern.compile(createComparisionRE(true, c, condition), Pattern.CASE_INSENSITIVE | Pattern.DOTALL), condition);
+								if (pp != null) {
+									for (int i = 1; i < pp.a; ++i) {
+										if (!matcher.find()) {
+											matcher = null;
+											break;
+										}
+									}
+								}
+							}
+							if (matcher != null && matcher.find()) {
+								int opStart = operationStart(matcher);
+								Matcher mainMatcher = createComparisionMatcher(true, c, mainCondition);
+								if (mainMatcher != null && findNth(mainMatcher, positivesPos.get(c).a)) {
+									int mainOpStart = operationStart(mainMatcher);
+									if (!condition.substring(opStart, matcher.end()).trim().matches(SqlUtil.createSQLFragmentSearchPattern(mainCondition.substring(mainOpStart, mainMatcher.end()), true))) {
+										mainCondition = mainCondition.substring(0, mainOpStart)
+											+ (condition.length() > opStart && Character.isWhitespace(condition.charAt(opStart - 1))? "" : " ")
+											+ condition.substring(opStart, matcher.end())
+											+ mainCondition.substring(mainMatcher.end());
+									}
+								}
+								condition = removeErasedFragment("\f", condition.substring(0, matcher.start()) + "\f" + condition.substring(matcher.end()));
+							} else {
+								Matcher mainMatcher = createComparisionMatcher(true, c, mainCondition);
+								if (mainMatcher != null && findNth(mainMatcher, positivesPos.get(c).a)) {
+									int start = mainMatcher.start();
+									if (mainMatcher.group().trim().matches("(?is)^\\bAnd\\b.*")) {
+										start += 3;
+									}
+									mainCondition = removeErasedFragment("\f", 
+											mainCondition.substring(0, start)
+											+ "\f"
+											+ mainCondition.substring(mainMatcher.end()));
+								}
+							}
+						}
+						StringBuilder result = new StringBuilder();
+						result.append(table.substring(0, wcBaseTable.conditionStart));
+						if (!mainCondition.trim().isEmpty()) {
+							if (result.length() > 0 && !Character.isWhitespace(result.charAt(result.length() - 1))) {
+								result.append(" ");
+							}
+							if (!WCTypeAnalyser.isPositiveExpression(mainCondition)) {
+								result.append("(" + mainCondition + ")");
+							} else {
+								result.append(mainCondition);
+							}
+						}
+						if (!condition.trim().isEmpty()) {
+							if (result.length() > 0 && !Character.isWhitespace(result.charAt(result.length() - 1))) {
+								result.append(" ");
+							}
+							if (!mainCondition.trim().isEmpty()) {
+								result.append("and");
+							}
+							if (result.length() > 0 && !Character.isWhitespace(result.charAt(result.length() - 1))) {
+								result.append(" ");
+							}
+							result.append(condition.trim().replaceAll("(?is)\\n\\s*(And )", " $1"));
+						}
+						if (mainCondition.trim().isEmpty() && condition.trim().isEmpty()) {
+							result = new StringBuilder(result.toString().replaceFirst("(?is)\\s*\\b(where|having)\\s*$", ""));
+						}
+						if (result.length() > 0 && !Character.isWhitespace(result.charAt(result.length() - 1))) {
+							result.append(" ");
+						}
+						result.append(table.substring(wcBaseTable.conditionEnd));
+							
+						return result.toString().trim();
+					} else {
+						if (condition.trim().isEmpty()) {
+							return table;
+						} else {
+							if (table.length() > 100 || table.contains("\n")) {
+								if (table.charAt(table.length() - 1) != '\n') {
+									table += "\n";
+								}
+							} else if (table.length() > 0 && !Character.isWhitespace(table.charAt(table.length() - 1))) {
+								table += " ";
+							}
+							return table + (wcBaseTable.isHaving? "Having " : "Where ") + condition.trim().replaceAll("(?is)\\n\\s*(And )", " $1");
+						}
+					}
+				}
+				
+				@Override
+				protected String getCTE() {
+					return wcBaseTable.cte;
+				}
+				
+				@Override
+				protected String columnNameToRegExp(String name) {
+					Set<String> names = wcBaseTable.getAlternativeNames(name);
+					if (names == null) {
+						return SqlUtil.createSQLFragmentSearchPattern(name, false);
+					} else {
+						return "(?:" + names.stream().map(aName -> "(?:" + SqlUtil.createSQLFragmentSearchPattern(aName, false) + ")").collect(Collectors.joining("|")) + ")";
+					}
+				}
+
+				@Override
+				protected Set<String> getAlternativeNames(String name) {
+					return wcBaseTable != null? wcBaseTable.getAlternativeNames(name) : null;
+				}
+
+				@Override
+				protected boolean isColumnNullable(Table table, Column column) {
+					return isColumnNullable(table, column, metaDataSource);
+				}
+			};
 		}
     }
     

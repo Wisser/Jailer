@@ -125,10 +125,12 @@ import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.RowsClosure;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.SqlStatementTable;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.UserAction;
+import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.ui.databrowser.TreeLayoutOptimizer.Node;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
+import net.sf.jailer.ui.databrowser.whereconditioneditor.WhereConditionEditorPanel;
 import net.sf.jailer.ui.util.HSLColor;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.CancellationException;
@@ -1398,6 +1400,11 @@ public abstract class Desktop extends JDesktopPane {
 			protected void findPathTo(Table table) {
 				Desktop.this.findPathTo(table);
 			}
+
+			@Override
+			protected WhereConditionEditorPanel getWhereConditionEditorPanel(RowBrowser rowBrowser) {
+				return Desktop.this.getWhereConditionEditorPanel(rowBrowser);
+			}
 		};
 		browserContentPane.addUserAction(new UserAction(
 				"Align Horizontally",
@@ -1511,6 +1518,8 @@ public abstract class Desktop extends JDesktopPane {
 
 		return tableBrowser;
 	}
+
+	protected abstract WhereConditionEditorPanel getWhereConditionEditorPanel(RowBrowser rowBrowser);
 
 	protected abstract void findPathTo(Table table);
 

@@ -197,6 +197,7 @@ import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.ColumnsTable;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
+import net.sf.jailer.ui.databrowser.whereconditioneditor.WhereConditionEditorPanel;
 import net.sf.jailer.ui.scrollmenu.JScrollC2Menu;
 import net.sf.jailer.ui.scrollmenu.JScrollMenu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
@@ -1878,10 +1879,41 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 												break;
 											}
 										}
+										int cvi = rowsTable.columnAtPoint(e.getPoint());
+										cvi = -1; // TODO
+										if (cvi >= 0 && rows.size() > 1) {
+											int ci = rowsTable.convertColumnIndexToModel(cvi);
+											Table wcBaseTable = getWhereClauseEditorBaseTable();
+											if (wcBaseTable != null && browserContentCellEditor != null && browserContentCellEditor.isEditable(wcBaseTable, ci, row.values[ci], true)) {
+												String valAsString = browserContentCellEditor.cellContentToText(ci, row.values[ci]);
+												for (int n = 0; n < popup.getComponentCount(); ++n) {
+													if ("selectRow".equals(popup.getComponent(n).getName())) {
+														String sql = row.values[ci] instanceof Number || row.values[ci] instanceof Boolean? valAsString : ("'" + valAsString + "'");
+														JMenuItem item = new JMenuItem(wcBaseTable.getColumns().get(ci).name + " " + sql); // TODO
+														// TODO "is null"
+														item.addActionListener(e2 -> {
+															WhereConditionEditorPanel wcep = getWhereConditionEditorPanel(BrowserContentPane.this.getRowBrowser());
+															if (wcep != null) {
+																Column column = wcBaseTable.getColumns().get(ci);
+																// TODO
+																if (column != null) {
+																	UIUtil.invokeLater(4, () -> {
+																		wcep.acceptValue(column, valAsString);
+																		onConditionChange(getAndConditionText());
+																	});
+																}
+															}
+														});
+														popup.add(item, n);
+														break;
+													}
+												}
+											}
+										}
 									}
+									
 									UIUtil.showPopup(source, x, y, popup);
 									popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
-
 										@Override
 										public void propertyChange(PropertyChangeEvent evt) {
 											if (Boolean.FALSE.equals(evt.getNewValue())) {
@@ -2946,6 +2978,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			JMenuItem det = new JMenuItem("Details");
 			det.setIcon(detailsIcon);
 			det.setEnabled(row != null);
+			det.setName("selectRow");
 			popup.insert(det, 0);
 			popup.insert(new JSeparator(), 1);
 			det.addActionListener(new ActionListener() {
@@ -7247,6 +7280,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			e.printStackTrace();
 		}
 		return children;
+	}
+
+	protected WhereConditionEditorPanel getWhereConditionEditorPanel(RowBrowser rowBrowser) {
+		return null;
 	}
 
 	protected abstract RowBrowser navigateTo(Association association, List<Row> pRows);
