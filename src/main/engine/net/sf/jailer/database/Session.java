@@ -1568,9 +1568,6 @@ public class Session {
 		Long tid = Thread.currentThread().getId();
 		Integer count = connectionCount.get(tid);
 		return count != null && count <= 1;
-		// TODO
-		// TODO fallback: try reassign an exclusive con from other thread to tis thread.
-		// TODO problem: not yet possible to decide if con is exclusive. solution: add "releaseConnection" method here and call it exhaustively.
 	}
 
 	public synchronized String getConnectionStats() {

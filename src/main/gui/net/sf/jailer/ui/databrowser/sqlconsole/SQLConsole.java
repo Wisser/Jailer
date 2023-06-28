@@ -790,7 +790,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             	String ok = "OK";
 				int option = JOptionPane.showOptionDialog(this, "A dedicated database connection could not be established. \nTransactions are not available. \nDo you want to process the statements non-transactionally? \n(no rollback possible)", "Transactions not available", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,
     					null, new Object[] { ok, "Cancel" }, ok);
-				LogUtil.warn(new RuntimeException(option + " " + session.dbms + " " + session.getConnectionStats()));
+				LogUtil.warn(new RuntimeException(option + " " + session.dbms + " " + (file == null) + " " + session.getConnectionStats()));
 				if (0 == option) {
     				transactionalBox.setSelected(false);
     				executeSQLBlock(sqlBlock, location, emptyLineSeparatesStatements, locFragmentOffset, explain, tabContentPanel, successState);
