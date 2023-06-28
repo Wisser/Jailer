@@ -1426,7 +1426,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 									SearchBarRSyntaxTextArea popUpSearchBarEditor = new SearchBarRSyntaxTextArea();
 									WhereConditionEditorPanelConsole wced = createWhereConditionEditor(-1, SwingUtilities.getWindowAncestor(SQLConsole.this), () -> {}, cellEditor, popUpSearchBarEditor);
 									wced.setTableAlias(null);
-									wced.parseCondition(secodaryCond); // TODO
+									wced.parseCondition(secodaryCond);
 									return wced;
 								} catch (SQLException e1) {
 									LogUtil.warn(e1);

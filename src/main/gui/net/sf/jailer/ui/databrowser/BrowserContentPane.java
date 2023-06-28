@@ -31,7 +31,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
-import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -100,6 +99,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
+import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -1132,7 +1132,38 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jPanel7.add(andCondition, gridBagConstraints);
 
 		UIUtil.setLeadingComponent(andCondition, conditionEditorButton);
-
+		if (UIUtil.plaf == PLAF.FLAT &&  andCondition.getEditor() != null && (andCondition.getEditor().getEditorComponent() instanceof JTextField)) {
+			JTextField f = ((JTextField) andCondition.getEditor().getEditorComponent());
+			JButton clearButton = new JButton();
+			clearButton.setText(null);
+			clearButton.setIcon(clearIcon);
+			UIUtil.setTrailingComponent(f, clearButton);
+			clearButton.setEnabled(!f.getText().isEmpty());
+			clearButton.addActionListener(e -> {
+				setAndCondition("", true);
+				reloadRows();
+				onConditionChange(getAndConditionText());
+			});
+			clearButton.setToolTipText("Clear Condition");
+			f.getDocument().addDocumentListener(new DocumentListener() {
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					update();
+				}
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					update();
+				}
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					update();
+				}
+				private void update() {
+					clearButton.setEnabled(!f.getText().isEmpty());
+				}
+			});
+		}
+		
 		setPendingState(false, false);
 
 		sqlLabel1.setIcon(menuIcon);
@@ -1880,22 +1911,34 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 											}
 										}
 										int cvi = rowsTable.columnAtPoint(e.getPoint());
-										cvi = -1; // TODO
 										if (cvi >= 0 && rows.size() > 1) {
 											int ci = rowsTable.convertColumnIndexToModel(cvi);
 											Table wcBaseTable = getWhereClauseEditorBaseTable();
 											if (wcBaseTable != null && browserContentCellEditor != null && browserContentCellEditor.isEditable(wcBaseTable, ci, row.values[ci], true)) {
-												String valAsString = browserContentCellEditor.cellContentToText(ci, row.values[ci]);
+												boolean isNull = row.values[ci] == null || row.values[ci] == UIUtil.NULL;
+												String valAsString = isNull? "null" : browserContentCellEditor.cellContentToText(ci, row.values[ci]);
 												for (int n = 0; n < popup.getComponentCount(); ++n) {
 													if ("selectRow".equals(popup.getComponent(n).getName())) {
-														String sql = row.values[ci] instanceof Number || row.values[ci] instanceof Boolean? valAsString : ("'" + valAsString + "'");
-														JMenuItem item = new JMenuItem(wcBaseTable.getColumns().get(ci).name + " " + sql); // TODO
-														// TODO "is null"
+														String colName = wcBaseTable.getColumns().get(ci).name;
+														String sql = isNull? "null" : row.values[ci] instanceof Number || row.values[ci] instanceof Boolean? valAsString : ("'" + valAsString + "'");
+														String op = isNull? " is " : " = ";
+														String tooltip = "<html>Select * Where <font color=\"0000ff\">" + colName + "</font>" + op + "<font color=\"005500\">" + sql + "</font></html>";
+														colName = Quoting.staticUnquote(colName.replaceFirst("^[^\\.]*\\.", ""));
+														int max = 20;
+														if (colName.length() > max + 2) {
+															colName = colName.substring(0, max) + "...";
+														}
+														max = 30;
+														if (sql.length() > max + 2) {
+															sql = sql.substring(0, max) + "...";
+														}
+														JMenuItem item = new JMenuItem("<html>Where <font color=\"0000ff\">" + colName + "</font>" + op + "<font color=\"005500\">" + sql + "</font></html>");
+														item.setToolTipText(tooltip);
+														item.setIcon(UIUtil.scaleIcon(item, findColumnIcon1));
 														item.addActionListener(e2 -> {
 															WhereConditionEditorPanel wcep = getWhereConditionEditorPanel(BrowserContentPane.this.getRowBrowser());
 															if (wcep != null) {
 																Column column = wcBaseTable.getColumns().get(ci);
-																// TODO
 																if (column != null) {
 																	UIUtil.invokeLater(4, () -> {
 																		wcep.acceptValue(column, valAsString);
@@ -3246,7 +3289,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					findPathTo(table);
 				});
 				findPath.add(menuItem);
-				JLabel distLabel = new JLabel("<html><font color=\"#9999ff\"><small>\u0394 </small></font><font color=\"#0000ff\">" + distances.get(table) + "</font></html>");
+				JLabel distLabel = new JLabel("\u25B4 " + distances.get(table));
+				distLabel.setForeground(Color.blue);
 				distLabel.setToolTipText("Distance to Table \"" + dataModel.getDisplayName(BrowserContentPane.this.table) + "\".");
 				findPath.add(distLabel);
 			});
@@ -8410,6 +8454,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private static ImageIcon hAlignButtonIcon1;
 	private static ImageIcon hAlignButtonIcon2;
 	private static ImageIcon findPathIcon;
+	private static ImageIcon clearIcon;
 
 	static {
         // load images
@@ -8443,6 +8488,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
      	hAlignButtonIcon1 = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/anchor1.png"), sf);
      	hAlignButtonIcon2 = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/anchor0.png"), sf);
      	findPathIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/search22.png"));
+	    clearIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/clear.png"));
 	}
 
 }
