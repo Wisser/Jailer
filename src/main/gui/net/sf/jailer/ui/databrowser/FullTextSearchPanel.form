@@ -18,7 +18,6 @@
   <SubComponents>
     <Container class="javax.swing.JToolBar" name="jToolBar1">
       <Properties>
-        <Property name="floatable" type="boolean" value="false"/>
         <Property name="rollover" type="boolean" value="true"/>
       </Properties>
       <Constraints>
@@ -70,7 +69,18 @@
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel3">
           <Properties>
-            <Property name="text" type="java.lang.String" value="    "/>
+            <Property name="text" type="java.lang.String" value="  "/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="warnLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="warn"/>
+            <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;The row limit has been exceeded. &lt;br&gt;The search result is potentially incomplete.&lt;/html&gt;"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="jLabel5">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="  "/>
           </Properties>
         </Component>
         <Component class="javax.swing.JLabel" name="counterLabel">

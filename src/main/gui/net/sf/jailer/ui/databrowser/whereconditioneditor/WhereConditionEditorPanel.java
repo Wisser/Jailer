@@ -2629,6 +2629,8 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		}
 		if (comparison == null) {
 			comparison = new Comparison(Operator.Equal, column);
+			comparison.operatorField = new JLabel("");
+			comparison.valueTextField = new JTextField();
 		}
 		accept(comparison, valAsString, Operator.Equal);
 	}

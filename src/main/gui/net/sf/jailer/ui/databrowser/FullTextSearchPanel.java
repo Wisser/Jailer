@@ -92,6 +92,11 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
         nextButton.setText(null);
         nextButton.setIcon(UIUtil.scaleIcon(nextButton, nextIcon));
         
+        warnLabel.setText(null);
+        warnLabel.setIcon(UIUtil.scaleIcon(warnLabel, warnIcon));
+        warnLabel.setVisible(false);
+        UIUtil.setTrailingComponent(searchField, warnLabel);
+        
         searchField.setMinimumSize(new Dimension(200, searchField.getMinimumSize().height));
         searchField.setPreferredSize(new Dimension(200, searchField.getMinimumSize().height));
         
@@ -277,6 +282,7 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 		searchField.setBackground(predecessor.searchField.getBackground());
 		prevButton.setEnabled(predecessor.prevButton.isEnabled());
 		nextButton.setEnabled(predecessor.nextButton.isEnabled());
+		warnLabel.setVisible(predecessor.warnLabel.isVisible());
 
 		if (predecessor.isVisible()) {
 			setVisible(true);
@@ -618,12 +624,13 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
         nextButton = new javax.swing.JButton();
         closeButton = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
+        warnLabel = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
         counterLabel = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
-        jToolBar1.setFloatable(false);
         jToolBar1.setRollover(true);
 
         searchField.setToolTipText("<html>Search criteria.<br><br>\nSearch for items that contain the search criteria as:<br>\n<table>\n<tr><td><b>Prefix</b></td><td>if it starts with a space</td></tr>\n<tr><td><b>Suffix</b></td><td>if it ends with a space</td></tr>\n<tr><td><b>Substring</b></td><td>else</td></tr>\n</table>\n<br>\n(<b>*</b> = any string, <b>?</b> = any character)\n</html>");
@@ -657,8 +664,15 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
         });
         jToolBar1.add(closeButton);
 
-        jLabel3.setText("    ");
+        jLabel3.setText("  ");
         jToolBar1.add(jLabel3);
+
+        warnLabel.setText("warn");
+        warnLabel.setToolTipText("<html>The row limit has been exceeded. <br>The search result is potentially incomplete.</html>");
+        jToolBar1.add(warnLabel);
+
+        jLabel5.setText("  ");
+        jToolBar1.add(jLabel5);
 
         counterLabel.setText("counter");
         jToolBar1.add(counterLabel);
@@ -681,6 +695,10 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 	public void setTransposedTable(ColumnsTable transposedTable) {
 		this.transposedTable = transposedTable;
 	}
+	
+	public void setLimitExceeded(boolean limitExceeded) {
+		warnLabel.setVisible(limitExceeded);
+	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton closeButton;
@@ -688,10 +706,12 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JButton nextButton;
     private javax.swing.JButton prevButton;
     private javax.swing.JTextField searchField;
+    private javax.swing.JLabel warnLabel;
     // End of variables declaration//GEN-END:variables
     
     private static final long serialVersionUID = 2251485971289829275L;
@@ -699,11 +719,13 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 	private ImageIcon closeIcon;
 	private ImageIcon prevIcon;
 	private ImageIcon nextIcon;
+	private ImageIcon warnIcon;
 	{
 		// load images
 		closeIcon = UIUtil.readImage("/buttoncancel.png");
 		prevIcon = UIUtil.readImage("/prev.png");
 		nextIcon = UIUtil.readImage("/next.png");
+		warnIcon = UIUtil.readImage("/wanr.png");
 	}
 	
 }

@@ -1920,9 +1920,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 												for (int n = 0; n < popup.getComponentCount(); ++n) {
 													if ("selectRow".equals(popup.getComponent(n).getName())) {
 														String colName = wcBaseTable.getColumns().get(ci).name;
-														String sql = isNull? "null" : row.values[ci] instanceof Number || row.values[ci] instanceof Boolean? valAsString : ("'" + valAsString + "'");
+														boolean isNumber = row.values[ci] instanceof Number || row.values[ci] instanceof Boolean;
+														String sql = isNull? "null" : isNumber? valAsString : ("'" + (valAsString.replace("'", "''")) + "'");
+														if (source == rowsTable && i >= 0) {
+															Object v = rowsTable.getModel().getValueAt(i, ci);
+															sql = v == null || isNull? "null" : !isNumber? ("'" + (v.toString().replace("'", "''")) + "'") : v.toString();
+														}
 														String op = isNull? " is " : " = ";
-														String tooltip = "<html>Select * Where <font color=\"0000ff\">" + colName + "</font>" + op + "<font color=\"005500\">" + sql + "</font></html>";
+														String tooltip = "<html>Find rows where: <font color=\"0000ff\">" + colName + "</font>" + op + "<font color=\"005500\">" + sql + "</font></html>";
 														colName = Quoting.staticUnquote(colName.replaceFirst("^[^\\.]*\\.", ""));
 														int max = 20;
 														if (colName.length() > max + 2) {
@@ -1932,7 +1937,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 														if (sql.length() > max + 2) {
 															sql = sql.substring(0, max) + "...";
 														}
-														JMenuItem item = new JMenuItem("<html>Where <font color=\"0000ff\">" + colName + "</font>" + op + "<font color=\"005500\">" + sql + "</font></html>");
+														JMenuItem item = new JMenuItem("<html>Find by: <font color=\"0000ff\">" + colName + "</font>" + op + "<font color=\"005500\">" + sql + "</font></html>");
 														item.setToolTipText(tooltip);
 														item.setIcon(UIUtil.scaleIcon(item, findColumnIcon1));
 														item.addActionListener(e2 -> {
@@ -5949,6 +5954,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 		isLimitExceeded = limitExceeded;
 		isClosureLimitExceeded = closureLimitExceeded;
+		fullTextSearchPanel.setLimitExceeded(limitExceeded);
 	    appendClosure();
 		if (tablePosition != null) {
 			if (singleRowDetailsView != null) {
