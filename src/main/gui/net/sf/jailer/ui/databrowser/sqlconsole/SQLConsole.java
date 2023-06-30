@@ -2871,6 +2871,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		protected void onEscape() {
 			// do nothing
 		}
+		
+		@Override
+		protected boolean currentWhereClauseNeedsParentsToBeAppended() {
+			return false;
+		}
 	};
 	
 	private WhereConditionEditorPanelConsole popUpWhereConditionEditorPanel;
@@ -3495,7 +3500,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							if (result.length() > 0 && !Character.isWhitespace(result.charAt(result.length() - 1))) {
 								result.append(" ");
 							}
-							if (!WCTypeAnalyser.isPositiveExpression(mainCondition)) {
+							if (!WCTypeAnalyser.isHighPrecedenceExpression(mainCondition)) {
 								result.append("(" + mainCondition + ")");
 							} else {
 								result.append(mainCondition);

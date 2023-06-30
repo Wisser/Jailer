@@ -2438,6 +2438,10 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						}
 						hightlight(editor, pos.a, pos.b);
 					} else {
+						if (currentWhereClauseNeedsParentsToBeAppended()) {
+							editor.setText("(" + (editor.getText().trim()) + ")");
+						}
+						
 						int start = editor.getDocument().getEndPosition().getOffset() - 1;
 						String prefix = "";
 						try {
@@ -2474,6 +2478,20 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				hightlight(value.isEmpty()? null : comparison.column);
 			}
 		}
+	}
+
+	protected boolean currentWhereClauseNeedsParentsToBeAppended() {
+		try {
+			String text = editor.getDocument().getText(0, editor.getDocument().getLength());
+			if (!text.trim().isEmpty()) {
+				if (!WCTypeAnalyser.isHighPrecedenceExpression(text)) {
+					return true;
+				}
+			}
+		} catch (BadLocationException e1) {
+			LogUtil.warn(e1);
+		}
+		return false;
 	}
 
 	public static final Color HIGHLIGHT_COLOR = new Color(0, 255, 0, 50);

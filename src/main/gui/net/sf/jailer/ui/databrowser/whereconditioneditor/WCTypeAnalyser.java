@@ -1884,7 +1884,7 @@ public class WCTypeAnalyser {
 		}
 	}
 	
-	public static boolean isPositiveExpression(String condition) {
+	public static boolean isHighPrecedenceExpression(String condition) {
 		if (condition.isEmpty()) {
 			return true;
 		}

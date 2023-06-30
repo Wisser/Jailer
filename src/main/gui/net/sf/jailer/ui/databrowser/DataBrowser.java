@@ -1149,7 +1149,6 @@ public class DataBrowser extends javax.swing.JFrame {
 							: null;
 				if (table != null) {
 					SearchBarRSyntaxTextArea searchBarEditor = new SearchBarRSyntaxTextArea();
-					SearchBarRSyntaxTextArea popUpSearchBarEditor = new SearchBarRSyntaxTextArea();
 
 					BrowserContentCellEditor cellEditor = rowBrowser.browserContentPane.browserContentCellEditor;
 					WhereConditionEditorPanelForDataBrowser wced = new WhereConditionEditorPanelForDataBrowser(DataBrowser.this, datamodel, table,
@@ -5036,8 +5035,8 @@ public class DataBrowser extends javax.swing.JFrame {
 		searchBarToggleButton.setEnabled(rowBrowser != null && SessionForUI.isWCEditorSupported(session));
 		if (table != null) {
 			SearchBarRSyntaxTextArea searchBarEditor = new SearchBarRSyntaxTextArea();
-			SearchBarRSyntaxTextArea popUpSearchBarEditor = new SearchBarRSyntaxTextArea();
-
+			searchBarEditor.setMarkOccurrences(false);
+			
 			BrowserContentCellEditor cellEditor = rowBrowser.browserContentPane.browserContentCellEditor;
 			whereConditionEditorPanel = new WhereConditionEditorPanelForDataBrowser(this, datamodel.get(), table,
 					cellEditor,
