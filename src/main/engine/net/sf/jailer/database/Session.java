@@ -1560,7 +1560,7 @@ public class Session {
 		Session.globalFallbackConnection = defaultConnection;
 	}
 
-	public void resetGlobalFallbackConnection() {
+	public static void resetGlobalFallbackConnection() {
 		Session.globalFallbackConnection = null;
 	}
 
