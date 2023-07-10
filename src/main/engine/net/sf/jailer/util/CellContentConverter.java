@@ -215,9 +215,9 @@ public class CellContentConverter {
 	}
 
 	private static final int TYPE_POBJECT = 10500;
-	private static Set<String> POSTGRES_EXTENSIONS = new HashSet<String>();
+	private static Set<String> OBJECT_TYPES = new HashSet<String>();
 	static {
-		POSTGRES_EXTENSIONS.addAll(Arrays.asList("hstore", "ghstore", "json", "jsonb", "_hstore", "_json", "_jsonb", "_ghstore"));
+		OBJECT_TYPES.addAll(Arrays.asList("uuid", "hstore", "ghstore", "json", "jsonb", "_hstore", "_json", "_jsonb", "_ghstore"));
 	}
 
 	public class SQLExpressionWrapper implements Comparable<SQLExpressionWrapper> {
@@ -565,7 +565,7 @@ public class CellContentConverter {
 		if (i >= 0) {
 			columnTypeName = columnTypeName.substring(i + 1);
 		}
-		return POSTGRES_EXTENSIONS.contains(Quoting.staticUnquote(columnTypeName.toLowerCase(Locale.ENGLISH)));
+		return OBJECT_TYPES.contains(Quoting.staticUnquote(columnTypeName.toLowerCase(Locale.ENGLISH)));
 	}
 
 	/**
