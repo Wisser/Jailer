@@ -3382,6 +3382,14 @@ public abstract class Desktop extends JDesktopPane {
 	 */
 	public void storeSession(BookmarksPanel bookmarksPanel) {
 		String fnProp = null;
+		Map<String, Integer> lOfProp = new HashMap<>();
+		Set<String> props = new TreeSet<String>((a, b) -> {
+			int d = lOfProp.getOrDefault(b, 0) - lOfProp.getOrDefault(a, 0);
+			if (d == 0) {
+				d = a.compareToIgnoreCase(b);
+			}
+			return d;
+		});
 		int propLen = 0;
 		final String INVALID_CHARS = "[:;\\*\\?<>'`\"/\\\\\\~]+";
 		for (RowBrowser rb : tableBrowsers) {
@@ -3395,6 +3403,8 @@ public abstract class Desktop extends JDesktopPane {
 					String prop = datamodel.get().getDisplayName(parent.browserContentPane.table).replaceAll(INVALID_CHARS, " ").trim();
 					if (parent != rb) {
 						prop += " - " + datamodel.get().getDisplayName(rb.browserContentPane.table).replaceAll(INVALID_CHARS, " ").trim();
+						lOfProp.put(prop, l);
+						props.add(prop);
 					}
 					if (l > propLen || fnProp == null || l == propLen && fnProp.compareTo(prop) < 0) {
 						fnProp = prop;
@@ -3418,7 +3428,7 @@ public abstract class Desktop extends JDesktopPane {
 		
 		if (bookmarksPanel != null) {
 			File startDir = BookmarksPanel.getBookmarksFolder(executionContext);
-			sFile = bookmarksPanel.newBookmark(fnProp);
+			sFile = bookmarksPanel.newBookmark(fnProp, props);
 			if (sFile != null) {
 				File f = new File(startDir, sFile + ".dbl");
 				startDir.mkdirs();

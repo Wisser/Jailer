@@ -17,6 +17,7 @@ package net.sf.jailer.ui.databrowser;
 
 import java.awt.Color;
 import java.awt.Frame;
+import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -36,15 +37,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JTextField;
 
 import org.fife.rsta.ui.EscapableDialog;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.ui.Environment;
+import net.sf.jailer.ui.JComboBox2;
 import net.sf.jailer.ui.ListEditor;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.util.UISettings;
@@ -73,10 +77,31 @@ public class BookmarksPanel extends javax.swing.JPanel {public static final Stri
 		this.executionContext = executionContext;
 		initComponents();
 		
+		try {
+			nameField = (JTextField) nameFieldCB.getEditor().getEditorComponent();
+		} catch (Exception e) {
+			nameField = null;
+		}
+		nameFieldCB.setEditable(true);
+		JComponent nf = nameFieldCB;
+		if (nameField == null) {
+			nf = nameField = new JTextField();
+		}
+		
+		nf = nameField = new JTextField();
+		
+        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(8, 2, 8, 2);
+        add(nf, gridBagConstraints);
+
 		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
 		closeButton.setIcon(UIUtil.scaleIcon(closeButton, cancelIcon));
 		
-		nameTextField.addKeyListener(new KeyAdapter() {
+		nameField.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyTyped(KeyEvent e) {
 				char c = e.getKeyChar();
@@ -87,14 +112,42 @@ public class BookmarksPanel extends javax.swing.JPanel {public static final Stri
 		});
 	}
 
-	public String newBookmark(String defaultName) {
+	public String newBookmark(String defaultName, Set<String> props) {
+		remove(nameField);
+		try {
+			nameField = (JTextField) nameFieldCB.getEditor().getEditorComponent();
+		} catch (Exception e) {
+			nameField = null;
+		}
+		nameFieldCB.setEditable(true);
+		JComponent nf = nameFieldCB;
+		if (nameField == null) {
+			nf = nameField = new JTextField();
+		}
+		nameFieldCB.setModel(new DefaultComboBoxModel<>(props.toArray(new String[0])));
+		
+		nameFieldCB.setSelectedItem(defaultName);
+		nameField.setText(defaultName);
+		
+		UIUtil.invokeLater(12, () -> {
+			nameField.setCaretPosition(nameField.getText().length());
+		});
+		
+		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(8, 2, 8, 2);
+        add(nf, gridBagConstraints);
+
     	dialog = new EscapableDialog(owner, "New Layout") {
         };
         dialog.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowActivated(WindowEvent e) {
 				super.windowActivated(e);
-				nameTextField.grabFocus();
+				nameField.grabFocus();
 			}
 		});
         dialog.setModal(true);
@@ -109,13 +162,13 @@ public class BookmarksPanel extends javax.swing.JPanel {public static final Stri
 		List<StringBuilder> bookmarks = loadBookmarks(executionContext);
 		tableEditor.setModel(new ArrayList<StringBuilder>(bookmarks));
 		jPanel1.add(tableEditor);
-		nameTextField.setText(defaultName);
+		nameField.setText(defaultName);
  		okButton.grabFocus();
  		isOk = false;
  		okButton.setText("Add");
  		dialog.setVisible(true);
  		
- 		String name = UIUtil.toValidFileName(nameTextField.getText());
+ 		String name = UIUtil.toValidFileName(nameField.getText());
 
  		if (!isOk || name.isEmpty()) {
  			return null;
@@ -138,7 +191,7 @@ public class BookmarksPanel extends javax.swing.JPanel {public static final Stri
  		dialog.setLocation(owner.getX() + (owner.getWidth() - dialog.getWidth()) / 2, Math.max(0, owner.getY() + (owner.getHeight() - dialog.getHeight()) / 2));
  		UIUtil.fit(dialog);
 
- 		nameTextField.setVisible(false);
+ 		nameField.setVisible(false);
  		jLabel1.setVisible(false);
  		okButton.setVisible(false);
  		
@@ -216,13 +269,13 @@ public class BookmarksPanel extends javax.swing.JPanel {public static final Stri
 			}
 
 			protected void onElementClicked(StringBuilder element) {
-				nameTextField.setText(getDisplayName(element));
+				nameField.setText(getDisplayName(element));
 				okButton.setText("Update");
 			}
 			
 			protected void onDoubleClick(StringBuilder element) {
 				if (!forRenaming) {
-					nameTextField.setText(getDisplayName(element));
+					nameField.setText(getDisplayName(element));
 					okButtonActionPerformed(null);
 				}
 			}
@@ -245,7 +298,6 @@ public class BookmarksPanel extends javax.swing.JPanel {public static final Stri
         renameTextField = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
-        nameTextField = new javax.swing.JTextField();
         jPanel1 = new javax.swing.JPanel();
         okButton = new javax.swing.JButton();
         closeButton = new javax.swing.JButton();
@@ -290,13 +342,6 @@ public class BookmarksPanel extends javax.swing.JPanel {public static final Stri
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(8, 4, 8, 2);
         add(jLabel1, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(8, 2, 8, 2);
-        add(nameTextField, gridBagConstraints);
 
         jPanel1.setLayout(new javax.swing.BoxLayout(jPanel1, javax.swing.BoxLayout.LINE_AXIS));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -356,11 +401,13 @@ public class BookmarksPanel extends javax.swing.JPanel {public static final Stri
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JTextField nameTextField;
     private javax.swing.JButton okButton;
     private javax.swing.JPanel renamePanel;
     private javax.swing.JTextField renameTextField;
     // End of variables declaration//GEN-END:variables
+    
+    private JTextField nameField;
+    private JComboBox2<String> nameFieldCB = new JComboBox2<>();
 
     /**
      * @return folder containing bookmarks for current data model
