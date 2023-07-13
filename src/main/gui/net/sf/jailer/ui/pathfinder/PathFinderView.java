@@ -325,14 +325,25 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 			});
     		if (x > 0) {
 	    		JButton excludeButton = new JButton(null, scaledCancelIcon);
-	    		excludeButton.setToolTipText("Exclude all tables with distance " + x);
 	    		excludeButtons.add(excludeButton);
 	    		excludeButton.setVisible(showExcludeButton);
-				final Set<Table> toExclude = new HashSet<Table>();
+				Set<Table> toExclude = new HashSet<Table>();
+				String tabList = "";
+				boolean tlFull = false;
+				int l = 0;
 				for (Node node: nodes) {
 					toExclude.add(node.table);
+					if (!tlFull) {
+						if (++l > 20) {
+							tlFull = true;
+							tabList += "<li>...</li>";
+						} else {
+							tabList += "<li>" + UIUtil.toHTML(dataModel.getDisplayName(node.table), 0) + "</li>";
+						}
+					}
 				}
-				toExclude.remove(source);
+				excludeButton.setToolTipText("<html>Exclude all tables with distance " + x + ". <br>This means that all paths are excluded that contain one of the following tables: <ul>" + tabList + "</ul></html>");
+	    		toExclude.remove(source);
 				toExclude.remove(destination);
 	    		if (showExcludeButton) {
 	    			Set<Table> excl = new HashSet<Table>(excludedTables);
