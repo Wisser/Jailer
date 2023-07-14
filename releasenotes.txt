@@ -1,3 +1,6 @@
+15.1.1
+  - The dynamic search of the data browser now supports columns of type "UUID".
+
 15.1
   - New menu item "Find by: ..." in context menu of the data browser allows to quickly narrow down the result by a column value.
   - In the SQL console, statement blocks or the entire script can be executed transactionally. This allows a rollback in case of errors.
