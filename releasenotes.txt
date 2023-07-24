@@ -1,3 +1,6 @@
+15.1.2
+  - Selection of a single row in the data browser was made possible.
+
 15.1.1
   - The dynamic search of the data browser now supports columns of type "UUID".
 
