@@ -3068,7 +3068,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				} else {
 					JMenuItem sr = new JMenuItem(toSelect.size() <= 1? "Select Row" : ("Select Rows (" + toSelect.size() + ")"));
 					sr.setIcon(selectIcon);
-					sr.setEnabled(row != null && rows != null && rows.size() > 1 && !row.rowId.isEmpty());
+					sr.setEnabled(row != null && rows != null && rows.size() > 0 && !row.rowId.isEmpty());
 					popup.insert(sr, 0);
 					sr.addActionListener(new ActionListener() {
 						@Override
