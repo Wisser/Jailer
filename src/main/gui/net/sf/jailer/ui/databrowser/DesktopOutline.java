@@ -416,15 +416,14 @@ public class DesktopOutline extends JPanel {
 
 	@Override
 	public Dimension getMinimumSize() {
-		int maxHeight = (int) ((Math.max(1.0, Math.min(1.5, (controlPanel.getHeight() - 750) / 500.0)) + 1) * 220.0);
 		if (desktop.getWidth() == 0 || desktop.getHeight() == 0) {
-			return new Dimension(1, maxHeight);
+			return new Dimension(1, 1);
 		}
-		maxHeight = (int) Math.max(1.0, Math.min(maxHeight, sameWidthFriend.getHeight() - 124));
+		int maxHeight = (int) Math.max(1.0, sameWidthFriend.getHeight() - 150);
 		double r = 6;
 		return new Dimension(1, Math.max(1, (int) (Math.min(maxHeight, (((double) sameWidthFriend.getWidth() - r * 2.0) / (double) desktop.getWidth() * (double) desktop.getHeight())) + r * 2.0)));
 	}
-	
+
 	public boolean draggingInProgress() {
 		return draggingStart != null;
 	}

@@ -369,6 +369,8 @@ public class DataBrowser extends javax.swing.JFrame {
 		searchPanelSplitSizerPanel.add(createSearchPanelSplitSizer());
 		searchPanelSplitSizerPanel.setVisible(searchPanelContainer.isVisible());
 		
+		UIUtil.invokeLater(64, () -> initialHGPanel.setVisible(false));
+		
 		modelNavigationSplitSizerPanel.setCursor(Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR));
 		modelNavigationSplitSizerPanel.setVisible(false);
 		modelNavigationSplitSizerPanel.add(createModelNavSplitSizer());
@@ -2190,6 +2192,7 @@ public class DataBrowser extends javax.swing.JFrame {
         refreshButton = new javax.swing.JButton();
         jPanel7 = new javax.swing.JPanel();
         metaDataViewPanel = new javax.swing.JPanel();
+        initialHGPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
@@ -2894,107 +2897,114 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.weighty = 1.0;
         jPanel7.add(metaDataViewPanel, gridBagConstraints);
 
+        initialHGPanel.setLayout(new java.awt.GridBagLayout());
+
         jLabel1.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        jPanel7.add(jLabel1, gridBagConstraints);
+        initialHGPanel.add(jLabel1, gridBagConstraints);
 
         jLabel3.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
-        jPanel7.add(jLabel3, gridBagConstraints);
+        initialHGPanel.add(jLabel3, gridBagConstraints);
 
         jLabel4.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
-        jPanel7.add(jLabel4, gridBagConstraints);
+        initialHGPanel.add(jLabel4, gridBagConstraints);
 
         jLabel5.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
-        jPanel7.add(jLabel5, gridBagConstraints);
+        initialHGPanel.add(jLabel5, gridBagConstraints);
 
         jLabel6.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
-        jPanel7.add(jLabel6, gridBagConstraints);
+        initialHGPanel.add(jLabel6, gridBagConstraints);
 
         jLabel7.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
-        jPanel7.add(jLabel7, gridBagConstraints);
+        initialHGPanel.add(jLabel7, gridBagConstraints);
 
         jLabel8.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;
-        jPanel7.add(jLabel8, gridBagConstraints);
+        initialHGPanel.add(jLabel8, gridBagConstraints);
 
         jLabel9.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 8;
-        jPanel7.add(jLabel9, gridBagConstraints);
+        initialHGPanel.add(jLabel9, gridBagConstraints);
 
         jLabel10.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 10;
-        jPanel7.add(jLabel10, gridBagConstraints);
+        initialHGPanel.add(jLabel10, gridBagConstraints);
 
         jLabel11.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 11;
-        jPanel7.add(jLabel11, gridBagConstraints);
+        initialHGPanel.add(jLabel11, gridBagConstraints);
 
         jLabel12.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 12;
-        jPanel7.add(jLabel12, gridBagConstraints);
+        initialHGPanel.add(jLabel12, gridBagConstraints);
 
         jLabel13.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 13;
-        jPanel7.add(jLabel13, gridBagConstraints);
+        initialHGPanel.add(jLabel13, gridBagConstraints);
 
         jLabel14.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 14;
-        jPanel7.add(jLabel14, gridBagConstraints);
+        initialHGPanel.add(jLabel14, gridBagConstraints);
 
         jLabel19.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 19;
-        jPanel7.add(jLabel19, gridBagConstraints);
+        initialHGPanel.add(jLabel19, gridBagConstraints);
 
         jLabel20.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 20;
-        jPanel7.add(jLabel20, gridBagConstraints);
+        initialHGPanel.add(jLabel20, gridBagConstraints);
 
         jLabel21.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 21;
-        jPanel7.add(jLabel21, gridBagConstraints);
+        initialHGPanel.add(jLabel21, gridBagConstraints);
 
         jLabel22.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 22;
-        jPanel7.add(jLabel22, gridBagConstraints);
+        initialHGPanel.add(jLabel22, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        jPanel7.add(initialHGPanel, gridBagConstraints);
 
         jSplitPane4.setRightComponent(jPanel7);
 
@@ -4413,6 +4423,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenu helpMenu;
     private javax.swing.JPanel hiddenPanel;
     private javax.swing.JLabel ignored;
+    private javax.swing.JPanel initialHGPanel;
     private javax.swing.JButton jButton1;
     private javax.swing.JInternalFrame jInternalFrame1;
     private javax.swing.JLabel jLabel1;

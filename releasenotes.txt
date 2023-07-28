@@ -1,6 +1,5 @@
 15.1.4
-  - Fixed an issue that caused syntactically incorrect statements to be generated when using user-defined data types
-    across schema boundaries (in PostgreSQL). 
+  - The desktop overview view in the data browser can now be enlarged to any size.
 
 15.1.3
   - Selection of a single row in the data browser was made possible.
