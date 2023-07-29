@@ -350,7 +350,7 @@ public class DesktopOutline extends JPanel {
 							}
 						}
 						if (linesNeeded <= 1) {
-							g2d.drawString(title, (int)(sx + Math.max(0, (sw - stringBounds.getWidth()) / 2)), (int)(sy + stringBounds.getHeight() * (hf - 1) + 3 - stringBounds.getY()));
+							g2d.drawString(title, sx + sb, (int)(sy + stringBounds.getHeight() * (hf - 1) + 3 - stringBounds.getY()));
 						}
 					}
 					g2d.setClip(clip);
