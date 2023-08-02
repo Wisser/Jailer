@@ -1,5 +1,5 @@
 15.1.4
-  - The desktop overview view in the data browser can now be enlarged to any size.
+  - The desktop overview view has been improved.
 
 15.1.3
   - Selection of a single row in the data browser was made possible.
