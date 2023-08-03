@@ -204,9 +204,6 @@ public class TabContentPanel extends javax.swing.JPanel {
 		if (!silent && !explain && lastHeaderCheckBoxIsSelected != null) {
 			headerCheckBox.setSelected(lastHeaderCheckBoxIsSelected);
 		}
-		if (!silent && !explain && lastRotated != null) {
-			rotateCheckBox.setSelected(lastRotated);
-		}
 		
 		JScrollPane scrollPane = new JScrollPane();
 		RSyntaxTextArea area = new RSyntaxTextArea();
@@ -374,7 +371,6 @@ public class TabContentPanel extends javax.swing.JPanel {
 
 	private static Boolean lastHeaderCheckBoxIsSelected;
 	private static Object lastColumnSeparator;
-	private static Boolean lastRotated;
     private final boolean onlySelectedCells;
     
     private int rowAndColumnsLimit = Integer.MAX_VALUE;

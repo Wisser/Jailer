@@ -383,20 +383,22 @@ public class Session {
 		init();
 	}
 
-	protected synchronized void setConnection(Connection con) {
+	protected void setConnection(Connection con) {
 		connection.set(con);
-		Long tid = Thread.currentThread().getId();
-		if (con == null) {
-			Integer count = connectionCount.get(tid);
-			if (count != null) {
-				connectionCount.put(tid, count - 1);
-			}
-		} else {
-			Integer count = connectionCount.get(tid);
-			if (count != null) {
-				connectionCount.put(tid, count + 1);
+		synchronized (this) {
+			Long tid = Thread.currentThread().getId();
+			if (con == null) {
+				Integer count = connectionCount.get(tid);
+				if (count != null) {
+					connectionCount.put(tid, count - 1);
+				}
 			} else {
-				connectionCount.put(tid, 1);
+				Integer count = connectionCount.get(tid);
+				if (count != null) {
+					connectionCount.put(tid, count + 1);
+				} else {
+					connectionCount.put(tid, 1);
+				}
 			}
 		}
 	}
