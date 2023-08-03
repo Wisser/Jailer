@@ -318,10 +318,6 @@ public class MDTable extends MDObject {
 	            		try {
 	            			con = session.createNewConnection();
 	            			readColumns(cached, con);
-	                    	if (!warnedFallback.get()) {
-	                    		LogUtil.warn(new RuntimeException("OkWithFBCon: " + e.getMessage(), e));
-	                    		warnedFallback.set(true);
-	                    	}
 	            			return;
 	            		} catch (Exception e2) {
 	            			if (!warned2.get() && !session.isDown()) {
@@ -350,7 +346,6 @@ public class MDTable extends MDObject {
 
     private static final AtomicBoolean warned = new AtomicBoolean();
     private static final AtomicBoolean warned2 = new AtomicBoolean();
-    private static final AtomicBoolean warnedFallback = new AtomicBoolean();
 
     /**
      * Compares data model table with this table.
