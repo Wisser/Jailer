@@ -514,6 +514,13 @@ public class StringSearchPanel extends javax.swing.JPanel {
     	this.renderConsumer = renderConsumer;
         initComponents();
         
+        if (jScrollPane2.getHorizontalScrollBar() != null) {
+        	jScrollPane2.getHorizontalScrollBar().setUnitIncrement(16);
+        }
+        if (jScrollPane2.getVerticalScrollBar() != null) {
+        	jScrollPane2.getVerticalScrollBar().setUnitIncrement(16);
+        }
+       
         MovePanel comp = new MovePanel();
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
