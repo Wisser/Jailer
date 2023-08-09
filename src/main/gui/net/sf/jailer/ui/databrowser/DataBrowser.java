@@ -6058,6 +6058,9 @@ public class DataBrowser extends javax.swing.JFrame {
 	}// GEN-LAST:event_loadScriptMenuItemActionPerformed
 
 	private void loadSQLScriptFile(File file) {
+		if (file.exists() && file.isDirectory()) {
+			return;
+		}
 		if (file.exists() && file.length() > 65L*1024L*1024L / (file.getName().toLowerCase().endsWith(".zip") || file.getName().toLowerCase().endsWith(".gz")? 5 : 1)) {
 			int o = JOptionPane.showOptionDialog(SwingUtilities.getWindowAncestor(this), "File " + file.getAbsolutePath() + "\nis large (" + (file.length() / 1024 / 1024) + " MB). Loading might fail.", "File is large", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, new Object[] { "Open", "Cancel" }, "Open");
 			if (o != 0) {
@@ -6335,7 +6338,11 @@ public class DataBrowser extends javax.swing.JFrame {
 				} catch (Throwable t) {
 					t.printStackTrace();
 				}
-				dtde.rejectDrop();
+				try {
+					dtde.rejectDrop();
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
 			}
 
 			@Override
