@@ -6336,12 +6336,12 @@ public class DataBrowser extends javax.swing.JFrame {
 					}
 					return;
 				} catch (Throwable t) {
-					t.printStackTrace();
+					LogUtil.warn(t);
 				}
 				try {
 					dtde.rejectDrop();
 				} catch (Throwable t) {
-					t.printStackTrace();
+					LogUtil.warn(t);
 				}
 			}
 
