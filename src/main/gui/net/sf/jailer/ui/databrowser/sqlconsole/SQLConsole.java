@@ -4080,7 +4080,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	        dirty = true;
 		}
 		editorPane.discardAllEdits();
-        initialContentSize = editorPane.getDocument().getLength();
+		initialContentSize = editorPane.getDocument().getLength();
         initialContentHash = editorPane.getText().hashCode();
         consoleContainerPanel.setVisible(false);
         UIUtil.invokeLater(new Runnable() {
@@ -4092,6 +4092,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		});
         setCaretPosition(0);
         onContentStateChange(file, dirty);
+        UIUtil.invokeLater(2, () -> editorPane.scrollRectToVisible(new Rectangle(0, 0, 1, 1)));
 	}
 
 	/**
