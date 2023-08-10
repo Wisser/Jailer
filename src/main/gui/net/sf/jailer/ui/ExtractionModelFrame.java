@@ -1328,10 +1328,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				}
 //			}
 			tmpFileName = tmpF;
-			try {
-				SubsettingEngine.registerTmpURL(new File(tmpFileName).toURI().toURL(), extractionModelEditor.extractionModelFile == null? null : new File(extractionModelEditor.extractionModelFile).getAbsolutePath());
-			} catch (Exception e) {
-				LogUtil.warn(e);
+			if (tmpFileName != null) {
+				try {
+					SubsettingEngine.registerTmpURL(new File(tmpFileName).toURI().toURL(), extractionModelEditor.extractionModelFile == null? null : new File(extractionModelEditor.extractionModelFile).getAbsolutePath());
+				} catch (Exception e) {
+					LogUtil.warn(e);
+				}
 			}
 			if (tmpFileName != null || saveIfNeeded("Export data", false, true)) {
 				if (tmpFileName != null || (extractionModelEditor.extractionModelFile != null || extractionModelEditor.save(true, "Export data"))) {
