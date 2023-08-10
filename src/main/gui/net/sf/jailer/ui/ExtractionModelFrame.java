@@ -30,6 +30,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.sql.SQLException;
@@ -81,6 +82,7 @@ import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.render.HtmlDataModelRenderer;
 import net.sf.jailer.subsetting.ScriptFormat;
+import net.sf.jailer.subsetting.SubsettingEngine;
 import net.sf.jailer.ui.UIUtil.ResultConsumer;
 import net.sf.jailer.ui.associationproposer.AssociationProposerView;
 import net.sf.jailer.ui.commandline.CommandLineInstance;
@@ -92,6 +94,7 @@ import net.sf.jailer.ui.progress.ExportAndDeleteStageProgressListener;
 import net.sf.jailer.ui.util.AnimationController;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.ui.util.UpdateInfoManager;
+import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.PrintUtil;
 
 /**
@@ -1325,6 +1328,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				}
 //			}
 			tmpFileName = tmpF;
+			try {
+				SubsettingEngine.registerTmpURL(new File(tmpFileName).toURI().toURL(), extractionModelEditor.extractionModelFile == null? null : new File(extractionModelEditor.extractionModelFile).getAbsolutePath());
+			} catch (Exception e) {
+				LogUtil.warn(e);
+			}
 			if (tmpFileName != null || saveIfNeeded("Export data", false, true)) {
 				if (tmpFileName != null || (extractionModelEditor.extractionModelFile != null || extractionModelEditor.save(true, "Export data"))) {
 					if (connectToDBIfNeeded("Export data")) {

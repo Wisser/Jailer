@@ -1556,7 +1556,11 @@ public class SubsettingEngine {
 			appendCommentHeader("");
 			String condition = (subjectCondition != null && !SqlUtil.SQL_TRUE.equals(subjectCondition)) ? extractionModel.subject.getName() + " where " + subjectCondition
 					: "all rows from " + extractionModel.subject.getName();
-			appendCommentHeader("Extraction Model:  " + (condition.replaceAll("\\s+", " ")) + " (" + extractionModelURL + ")");
+			String extractionModelURLNT = null;
+			if (tmpUrl.containsKey(extractionModelURL)) {
+				extractionModelURLNT = tmpUrl.get(extractionModelURL);
+			}
+			appendCommentHeader("Extraction Model:  " + (condition.replaceAll("\\s+", " ")) + (extractionModelURLNT != null? " (" + extractionModelURLNT + ")" : ""));
 			if (extractionModel.subjectLimitDefinition.limit != null) {
 				appendCommentHeader("                         limit " + extractionModel.subjectLimitDefinition.limit + (extractionModel.subjectLimitDefinition.orderBy != null? " order by " + extractionModel.subjectLimitDefinition.orderBy : ""));
 			}
@@ -2092,6 +2096,15 @@ public class SubsettingEngine {
 			}
 		}
 		return resetFilters;
+	}
+	
+	private static Map<URL, String> tmpUrl = Collections.synchronizedMap(new HashMap<>());
+	
+	/**
+	 * Registers real name of extraction model for temp URL (GUI support).
+	 */
+	public static void registerTmpURL(URL extractionModelURL, String name) {
+		tmpUrl.put(extractionModelURL, name);
 	}
 
 	// TODO "optimierung", 1. im Header "deferred collections" ausweisen + hinweis, dass am Ende die Quittung komplet steht.
