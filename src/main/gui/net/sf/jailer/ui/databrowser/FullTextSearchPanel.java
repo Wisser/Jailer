@@ -80,7 +80,8 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
     	this.table = table;
     	
         initComponents();
-        
+        jToolBar1.setFloatable(false);
+
         setVisible(false);
 
         origBackground = searchField.getBackground();

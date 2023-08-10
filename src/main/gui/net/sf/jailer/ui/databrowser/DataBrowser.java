@@ -362,7 +362,9 @@ public class DataBrowser extends javax.swing.JFrame {
 		};
 		executionContext.setUseRowIdsOnlyForTablesWithoutPK(true);
 		initComponents();
-		initMenu();
+        jToolBar1.setFloatable(false);
+        jToolBar2.setFloatable(false);
+        initMenu();
 		initNavTree();
 		initTabSelectionAnimationManager();
 		searchPanelSplitSizerPanel.setCursor(Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR));

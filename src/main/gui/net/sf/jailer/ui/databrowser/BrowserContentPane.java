@@ -971,6 +971,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		initComponents();
 		origCondBG = andCondition.getBackground();
 		
+		jToolBar1.setFloatable(false);
+		jToolBar2.setFloatable(false);
+		
 		if (UIUtil.plaf == PLAF.FLAT) {
 			removeConditionButton.setBackground(new Color(220, 220, 255));
 		}

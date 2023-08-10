@@ -125,7 +125,8 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		this.browserContentCellEditor = browserContentCellEditor;
 		this.tableModel = tableModel;
 		initComponents();
-		if (UIUtil.plaf == PLAF.FLAT) {
+        jToolBar1.setFloatable(false);
+        if (UIUtil.plaf == PLAF.FLAT) {
 			contentTabbedPane.putClientProperty(FlatClientProperties.TABBED_PANE_TAB_HEIGHT, 16);
 		}
 		editModeToggleButton.setFocusable(true);

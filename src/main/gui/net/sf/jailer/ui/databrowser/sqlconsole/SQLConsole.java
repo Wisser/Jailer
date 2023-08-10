@@ -263,6 +263,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         this.datamodel = datamodel;
         this.executionContext = executionContext;
         initComponents();
+        jToolBar1.setFloatable(false);
+
         initMenuItems();
         historyComboBox.setMaximumRowCount(25);
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1643,6 +1645,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                        gridBagConstraints.gridx = 24;
 	                        gridBagConstraints.gridy = 1;
 	                        JToolBar toolBar = new JToolBar();
+	                        toolBar.setFloatable(false);
 	                        JButton explButton = new JButton("Explain");
 	                        explButton.setToolTipText("Show Query Execution Plan ");
 	                        explButton.setIcon(UIUtil.scaleIcon(explButton, explainIcon));

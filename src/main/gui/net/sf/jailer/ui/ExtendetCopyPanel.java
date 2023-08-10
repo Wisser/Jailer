@@ -495,6 +495,7 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
     
 	private ExtendetCopyPanel(boolean columnNamesInFirstRow) {
         initComponents();
+        jToolBar1.setFloatable(false);
         maximizeButton.setIcon(maximizeIcon);
         selectAllButton.setIcon(selectIcon);
         copyButton.setIcon(copyIcon);
@@ -593,7 +594,6 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         jPanel1.add(jLabel1, gridBagConstraints);
 
-        jToolBar1.setFloatable(false);
         jToolBar1.setRollover(true);
 
         selectAllButton.setText("Select all");

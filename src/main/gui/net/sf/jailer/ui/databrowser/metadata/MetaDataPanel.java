@@ -501,7 +501,9 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         this.parent = parent;
         this.executionContext = executionContext;
         initComponents();
-        
+        jToolBar1.setFloatable(false);
+        jToolBar2.setFloatable(false);
+
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
