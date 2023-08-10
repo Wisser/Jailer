@@ -1,3 +1,6 @@
+15.1.5
+  - Improved some messy bits in the user interface with native-L&F.
+
 15.1.4
   - The desktop overview view has been improved.
 
