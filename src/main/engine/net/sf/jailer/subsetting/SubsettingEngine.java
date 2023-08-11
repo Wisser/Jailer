@@ -895,8 +895,6 @@ public class SubsettingEngine {
 			entityGraph.dropMappingTables(result, targetDBMSConfiguration(targetSession));
 			if (executionContext.getScriptFormat() != ScriptFormat.INTRA_DATABASE) {
 				// write epilogs
-				result.append("-- epilog");
-				result.append(PrintUtil.LINE_SEPARATOR);
 				for (ScriptEnhancer enhancer : Configuration.getScriptEnhancer()) {
 					enhancer.addEpilog(result, scriptType, session, targetDBMSConfiguration(session), entityGraph, progress, executionContext);
 				}
