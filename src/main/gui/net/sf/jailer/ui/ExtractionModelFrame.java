@@ -1330,7 +1330,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			tmpFileName = tmpF;
 			if (tmpFileName != null) {
 				try {
-					SubsettingEngine.registerTmpURL(new File(tmpFileName).toURI().toURL(), extractionModelEditor.extractionModelFile == null? null : new File(extractionModelEditor.extractionModelFile).getAbsolutePath());
+					SubsettingEngine.registerTmpURL(new File(tmpFileName).toURI().toURL(), extractionModelEditor.extractionModelFile == null? null : Configuration.getInstance().isTempFile(new File(extractionModelEditor.extractionModelFile))? null : new File(extractionModelEditor.extractionModelFile).getAbsolutePath());
 				} catch (Exception e) {
 					LogUtil.warn(e);
 				}
