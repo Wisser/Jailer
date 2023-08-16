@@ -73,9 +73,9 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
 	private Map<String, DataModel.ColumnOrderPriority> columnOrderPrio;
 	private boolean ok = false;
 	
-	private static final String TYPE_PK = "PK";
-	private static final String TYPE_FK = "FK";
-	private static final String TYPE_FK_PK = "FK+PK";
+	private static final String TYPE_PK = "Primary";
+	private static final String TYPE_FK = "Foreign";
+	private static final String TYPE_FK_PK = "Primary+Foreign";
 	private static final String ALL_TABLES = "(all tables)";
 
     /**
@@ -101,7 +101,7 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
         dialog.setModal(true);
 		dialog.getContentPane().add(this);
 		dialog.pack();
-		UIUtil.setDialogSize(dialog, 550, 600);
+		UIUtil.setDialogSize(dialog, 800, 700);
 		dialog.setLocation(owner.getX() + (owner.getWidth() - dialog.getWidth()) / 2, Math.max(0, owner.getY() + (owner.getHeight() - dialog.getHeight()) / 2));
 		UIUtil.fit(dialog);
 		okButton.grabFocus();
@@ -110,7 +110,7 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
     }
 
 	private void updateTableModel(Component owner, DataModel dataModel) {
-		columnOrderModel = new DefaultTableModel(new String[] { "Column", "Frequency", "Type", "Top (Left)", "Bottom (Right)" }, 0) {
+		columnOrderModel = new DefaultTableModel(new String[] { "Column", currentTable == null? "Frequency" : "Type", "Key", "Left/Top (least significant)", "Right/Bottom (most significant)" }, 0) {
 			@Override
 			public boolean isCellEditable(int row, int column) {
 				return column == 3 || column == 4;
@@ -182,11 +182,14 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
 		});
 		columnOrderTable.setRowSelectionAllowed(false);
 		
+		Set<String> pks = new HashSet<String>();
+		Set<String> fks = new HashSet<String>();
+		
 		final TableCellRenderer defaultTableCellRenderer = columnOrderTable.getDefaultRenderer(String.class);
 		TableCellRenderer renderer = new TableCellRenderer() {
 			final Color BG1 = UIUtil.TABLE_BACKGROUND_COLOR_1;
 			final Color BG2 = UIUtil.TABLE_BACKGROUND_COLOR_2;
-
+			
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 				Component render = defaultTableCellRenderer.getTableCellRendererComponent(table, value, isSelected, false, row, column);
@@ -200,13 +203,17 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
 					render.setBackground((row % 2 == 0) ? BG1 : BG2);
 				}
 				if (render instanceof JLabel) {
+					((JLabel) render).setForeground(Color.black);
 					if (column == 2) {
 						if (TYPE_FK.equals(value)) {
 							((JLabel) render).setToolTipText("Foreign Key");
+							((JLabel) render).setForeground(Color.blue);
 						} else if (TYPE_PK.equals(value)) {
 							((JLabel) render).setToolTipText("Primary Key");
+							((JLabel) render).setForeground(Color.red);
 						} else if (TYPE_FK_PK.equals(value)) {
 							((JLabel) render).setToolTipText("Primary Key + Foreign Key");
+							((JLabel) render).setForeground(Color.red);
 						} else {
 							((JLabel) render).setToolTipText(null);
 						}
@@ -218,6 +225,13 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
 							((JLabel) render).setToolTipText(null);
 						}
 					}
+					if (column == 0) {
+						if (pks.contains(value)) {
+							((JLabel) render).setForeground(Color.red);
+						} else if (fks.contains(value)) {
+							((JLabel) render).setForeground(Color.blue);
+						}
+					}
 				}
 				return render;
 			}
@@ -226,19 +240,20 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
 		try {
 			UIUtil.setWaitCursor(owner);
 	        
-			Set<String> pks = new HashSet<String>();
-			Set<String> fks = new HashSet<String>();
-			
-			Map<String, Integer> columnsCount = currentTable != null? new LinkedHashMap<String, Integer>() : new TreeMap<String, Integer>();
+			Map<String, Object> columnsCount = currentTable != null? new LinkedHashMap<String, Object>() : new TreeMap<String, Object>();
 			for (Table table: dataModel.getTables()) {
 				if (currentTable == null || currentTable == table) {
 					for (Column column: table.getColumns()) {
 						String name = Quoting.normalizeIdentifier(column.name);
-						Integer i = columnsCount.get(name);
-						if (i == null) {
-							columnsCount.put(name, 1);
+						if (currentTable != null) {
+							columnsCount.put(name, column.type);
 						} else {
-							columnsCount.put(name, i + 1);
+							Integer i = (Integer) columnsCount.get(name);
+							if (i == null) {
+								columnsCount.put(name, Integer.valueOf(1));
+							} else {
+								columnsCount.put(name, Integer.valueOf(i + 1));
+							}
 						}
 					}
 					if (table.primaryKey != null && table.primaryKey.getColumns() != null) {
@@ -258,7 +273,7 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
 					}
 				}
 			}
-			for (Entry<String, Integer> e: columnsCount.entrySet()) {
+			for (Entry<String, Object> e: columnsCount.entrySet()) {
 				String type = "";
 				if (fks.contains(e.getKey())) {
 					if (pks.contains(e.getKey())) {
