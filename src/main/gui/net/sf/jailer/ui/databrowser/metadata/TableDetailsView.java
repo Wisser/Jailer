@@ -34,10 +34,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import javax.swing.DefaultComboBoxModel;
@@ -89,9 +91,25 @@ public class TableDetailsView extends javax.swing.JPanel {
         	commentLabel.setVisible(false);
         }
         
+        Set<Column> fks = new HashSet<>();
+        
+        table.associations.forEach(a -> {
+        	a.createSourceToDestinationKeyMapping().keySet().forEach(c -> fks.add(c));
+        });
+        
 		renderConsumer = new HashMap<String, Consumer<JLabel>>();
 		table.getColumns().forEach(c -> { if (c.name != null) { renderConsumer.put(Quoting.staticUnquote(c.name), label -> label.setIcon(emptyIcon)); }});
-    	if (table.primaryKey != null) {
+		fks.forEach(c -> {
+			if (c.name != null) {
+				renderConsumer.put(c.name, 
+						label -> {
+							label.setForeground(Color.blue);
+							label.setIcon(emptyIcon);
+						}
+				);
+			}
+		});
+		if (table.primaryKey != null) {
 			table.primaryKey.getColumns().forEach(c -> {
 				if (c.name != null) {
 					renderConsumer.put(c.name, 
@@ -301,6 +319,8 @@ public class TableDetailsView extends javax.swing.JPanel {
 			        
 			        if (isPk) {
 			        	label.setForeground(Color.red);
+			        } else if (fks.contains(column)) {
+			        	label.setForeground(Color.blue);
 			        }
 			        
 			        label.setText(Quoting.staticUnquote(column.name));

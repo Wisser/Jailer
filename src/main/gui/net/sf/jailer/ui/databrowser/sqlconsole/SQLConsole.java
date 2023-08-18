@@ -1081,10 +1081,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	            	resetAutoCommitConnection = connection;
 	            }
 	        }
-	        status.numStatements++;
-            localStatus.numStatements++;
-            UISettings.s3++;
-            status.updateView(false);
+	        status.updateView(false);
             statement = connection.createStatement();
 			if (session.dbms != null) {
 				Object limit = limitComboBox.getSelectedItem();
@@ -1105,6 +1102,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             		.replaceAll("((?:\\n(?: |\\t|\\r)*?)) ?\\\\([ \\t\\r]*)(?=\\n)", "$1");
 			sqlStatement = sqlPlusSupport.replaceVariables(sqlStatement, positionOffsets);
 			status.statement = sqlStatement;
+			if (!isCommentOnly(sqlStatement)) {
+				status.numStatements++;
+	            localStatus.numStatements++;
+	            UISettings.s3++;
+			}
 	        boolean loadButtonIsVisible = true;
             boolean hasResultSet;
             boolean hasUpdateCount = true;
@@ -1915,7 +1917,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 }
                 status.failed = true;
                 status.error = error;
-                status.numStatements--;
             }
             if (error instanceof CancellationException) {
             	status.cancelled = true;
