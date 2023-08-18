@@ -91,13 +91,7 @@ public class TableDetailsView extends javax.swing.JPanel {
         	commentLabel.setVisible(false);
         }
         
-        Set<Column> fks = new HashSet<>();
-        
-        table.associations.forEach(a -> {
-        	if (a.isInsertDestinationBeforeSource()) {
-            	a.createSourceToDestinationKeyMapping().keySet().forEach(c -> fks.add(c));
-        	}
-        });
+        Set<Column> fks = UIUtil.extractForeignKeyColumns(table);
         
 		renderConsumer = new HashMap<String, Consumer<JLabel>>();
 		table.getColumns().forEach(c -> { if (c.name != null) { renderConsumer.put(Quoting.staticUnquote(c.name), label -> label.setIcon(emptyIcon)); }});

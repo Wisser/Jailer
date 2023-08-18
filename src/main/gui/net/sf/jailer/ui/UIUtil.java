@@ -72,6 +72,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -151,6 +152,7 @@ import net.sf.jailer.util.CycleFinder;
 import net.sf.jailer.util.JobManager;
 import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Pair;
+import net.sf.jailer.util.Quoting;
 import net.sf.jsqlparser.parser.CCJSqlParser;
 
 /**
@@ -2405,5 +2407,35 @@ public class UIUtil {
 				}
 			});
 	}
-
+	
+	/**
+	 * Collects all FK columns of a table by analyzing associations.
+	 * 
+	 * @return set of FK columns
+	 */
+	public static Set<Column> extractForeignKeyColumns(Table table) {
+		Set<Column> fks = new HashSet<>();
+        table.associations.forEach(a -> {
+        	if (a.isInsertDestinationBeforeSource()) {
+        		a.createSourceToDestinationKeyMapping().keySet().forEach(c -> fks.add(c));
+        	}
+        });
+        Map<String, Column> byName = new HashMap<>();
+        Map<String, Column> byCIName = new HashMap<>();
+        table.getColumns().forEach(c -> {
+        	byName.put(c.name, c);
+        	byCIName.put(Quoting.staticUnquote(c.name).toUpperCase(Locale.ENGLISH), c);
+        });
+        Set<Column> result = new HashSet<>();
+        fks.forEach(c -> {
+        	Column column = byName.get(c.name);
+        	if (column == null) {
+        		column = byCIName.get(Quoting.staticUnquote(c.name).toUpperCase(Locale.ENGLISH));
+        	}
+    		if (column != null) {
+    			result.add(column);
+    		}
+        });
+        return result;
+	}
 }

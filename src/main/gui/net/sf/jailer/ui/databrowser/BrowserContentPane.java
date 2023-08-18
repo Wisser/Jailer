@@ -8163,14 +8163,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		final JComboBox2 combobox = new JComboBox2();
 		combobox.setModel(new DefaultComboBoxModel(columNames.toArray()));
 
-		Set<Column> fks = new HashSet<>();
-        
-        table.associations.forEach(a -> {
-        	if (a.isInsertDestinationBeforeSource()) {
-        		a.createSourceToDestinationKeyMapping().keySet().forEach(c -> fks.add(c));
-        	}
-        });
-        
+		Set<Column> fks = UIUtil.extractForeignKeyColumns(table);
 		Map<String, Consumer<JLabel>> renderConsumer;
 		renderConsumer = new HashMap<String, Consumer<JLabel>>();
 		rowIdSupport.getColumns(table, session, false).forEach(c -> { if (c.name != null) { renderConsumer.put(Quoting.staticUnquote(c.name), label -> label.setIcon(emptyIcon)); }});
