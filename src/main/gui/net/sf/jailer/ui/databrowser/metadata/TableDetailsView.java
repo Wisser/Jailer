@@ -94,14 +94,16 @@ public class TableDetailsView extends javax.swing.JPanel {
         Set<Column> fks = new HashSet<>();
         
         table.associations.forEach(a -> {
-        	a.createSourceToDestinationKeyMapping().keySet().forEach(c -> fks.add(c));
+        	if (a.isInsertDestinationBeforeSource()) {
+            	a.createSourceToDestinationKeyMapping().keySet().forEach(c -> fks.add(c));
+        	}
         });
         
 		renderConsumer = new HashMap<String, Consumer<JLabel>>();
 		table.getColumns().forEach(c -> { if (c.name != null) { renderConsumer.put(Quoting.staticUnquote(c.name), label -> label.setIcon(emptyIcon)); }});
 		fks.forEach(c -> {
 			if (c.name != null) {
-				renderConsumer.put(c.name, 
+				renderConsumer.put(Quoting.staticUnquote(c.name), 
 						label -> {
 							label.setForeground(Color.blue);
 							label.setIcon(emptyIcon);
@@ -112,7 +114,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 		if (table.primaryKey != null) {
 			table.primaryKey.getColumns().forEach(c -> {
 				if (c.name != null) {
-					renderConsumer.put(c.name, 
+					renderConsumer.put(Quoting.staticUnquote(c.name), 
 							label -> {
 								label.setForeground(Color.red);
 								label.setIcon(constraintPKIcon);
