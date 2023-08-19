@@ -1724,7 +1724,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						render.setName("final");
 					}
 					((JLabel) render).setForeground(
-							renderRowAsPK || pkColumns.contains(convertedColumnIndex) || (pkColumnsConsole.contains(convertedColumnIndex) && !fkColumnsConsole.contains(convertedColumnIndex)) ? FG1 :
+							renderRowAsPK || pkColumns.contains(convertedColumnIndex) || (pkColumnsConsole.contains(convertedColumnIndex) /* && !fkColumnsConsole.contains(convertedColumnIndex) */)? FG1 :
 								fkColumns.contains(convertedColumnIndex) || fkColumnsConsole.contains(convertedColumnIndex) ? FG2 :
 										Color.BLACK);
 					boolean isNull = false;
@@ -5869,7 +5869,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				try {
 					dontPaintSortIcon = ignoreSortKey;
 					int convertedColumnIndex = rowsTable.convertColumnIndexToModel(column);
-					Color fg = pkColumns.contains(convertedColumnIndex) || (pkColumnsConsole.contains(convertedColumnIndex) && !fkColumnsConsole.contains(convertedColumnIndex)) ? UIUtil.FG_PK :
+					Color fg = pkColumns.contains(convertedColumnIndex) || (pkColumnsConsole.contains(convertedColumnIndex) /* && !fkColumnsConsole.contains(convertedColumnIndex) */) ? UIUtil.FG_PK :
 						fkColumns.contains(convertedColumnIndex) || fkColumnsConsole.contains(convertedColumnIndex) ? UIUtil.FG_FK : null;
 					Component render = origRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 					if (fg != null) {
