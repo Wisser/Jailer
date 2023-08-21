@@ -106,6 +106,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
+import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -113,6 +114,8 @@ import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.WindowConstants;
 import javax.swing.border.Border;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.plaf.BorderUIResource;
 import javax.swing.text.DefaultEditorKit;
 
@@ -2437,5 +2440,18 @@ public class UIUtil {
     		}
         });
         return result;
+	}
+
+	public static void initComponents(Component component) {
+		UIUtil.traverse(component, null, c-> null, (c, o) -> null, (t, c) -> {
+			if (c instanceof JTabbedPane) {
+				((JTabbedPane) c).addChangeListener(new ChangeListener() {
+					@Override
+					public void stateChanged(ChangeEvent e) {
+						((JTabbedPane) c).grabFocus();
+					}
+				});
+			}
+		});
 	}
 }

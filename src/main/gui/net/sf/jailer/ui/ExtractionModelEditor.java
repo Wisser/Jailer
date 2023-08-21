@@ -325,7 +325,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		}
 
 		boolean saveNeedsSave = needsSave;
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		subjectTable = new JComboBox2() {
 			@Override
 			public Dimension getPreferredSize() {

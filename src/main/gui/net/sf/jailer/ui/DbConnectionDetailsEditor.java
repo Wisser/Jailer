@@ -322,7 +322,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		this.parent = parent;
 		this.needsTest = needsTest;
 		this.dataModelAware = dataModelAware;
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		newDataModelButton.setVisible(!dataModelAware);
 		ImageIcon scaledWarnIcon = UIUtil.scaleIcon(jtdsWarnLabel, warnIcon, 1);
 		jtdsWarnLabel.setIcon(scaledWarnIcon);

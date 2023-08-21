@@ -57,7 +57,7 @@ public class CLIPanel extends javax.swing.JPanel {
 		this.bookmarks = bookmarks;
 		this.bookmark = bookmark;
 		this.executionContext = executionContext;
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		copyButton.setIcon(UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/copy.png")));
 		closeButton.setIcon(UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/buttoncancel.png")));
 	}

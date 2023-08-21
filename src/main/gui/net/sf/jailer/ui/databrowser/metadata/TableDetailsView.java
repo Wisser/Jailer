@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -79,7 +78,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 	 * @param row 
      */
     public TableDetailsView(final Table table, final MDTable mdTable, final MetaDataDetailsPanel metaDataDetailsPanel, final Row row, final DataModel dataModel, TableDetailsView currentView) {
-        initComponents();
+        initComponents(); UIUtil.initComponents(this);
         
         String ttt = UIUtil.getToolTip(table, dataModel);
         tableNameLabel.setToolTipText(ttt);

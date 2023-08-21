@@ -316,7 +316,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 		}
 		
 		sortLineList(associations, false);
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		
 		newTable.setIcon(UIUtil.scaleIcon(newTable, table_32Icon));
 		editTable.setIcon(UIUtil.scaleIcon(newTable, editdetailsitemIcon));

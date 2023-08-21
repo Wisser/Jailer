@@ -84,7 +84,7 @@ public class AssociationEditor extends javax.swing.JDialog {
 		this.tables = tables;
 		this.associations = associations;
 		this.columns = columns;
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		AutoCompletion.enable(destination);
 		AutoCompletion.enable(source);
 		

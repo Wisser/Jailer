@@ -67,7 +67,7 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 				sql = new BasicFormatterImpl().format(sql);
 			}
 		}
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 
 		if (isWarning) {
 			jPanel1.setVisible(false);

@@ -92,7 +92,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
      */
     public DbConnectionSettings(Component root) {
     	this.owner = root;
-        initComponents();
+        initComponents(); UIUtil.initComponents(this);
         okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
 		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
 		pTextFieldBGColor = paramField1.getBackground();

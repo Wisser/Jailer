@@ -84,7 +84,7 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 	 */
 	public AnalyseOptionsDialog(java.awt.Frame parent, DataModel dataModel, ExecutionContext executionContext) throws Exception {
 		super(parent, true);
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 
 		majorSchema = null;
 		if (dataModel != null) {

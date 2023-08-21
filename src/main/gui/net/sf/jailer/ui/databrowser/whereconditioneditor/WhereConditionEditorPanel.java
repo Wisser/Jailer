@@ -185,7 +185,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     	this.initialColumn = initialColumn;
     	this.session = session;
     	this.executionContext = executionContext;
-        initComponents();
+        initComponents(); UIUtil.initComponents(this);
         applyButton.setIcon(UIUtil.scaleIcon(applyButton, okIcon));
 		
         if (asPopup) {

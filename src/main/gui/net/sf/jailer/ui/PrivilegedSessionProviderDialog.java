@@ -139,7 +139,7 @@ public class PrivilegedSessionProviderDialog extends javax.swing.JDialog {
      */
     public PrivilegedSessionProviderDialog(Frame parent) {
         super(parent, true);
-        initComponents();
+        initComponents(); UIUtil.initComponents(this);
     }
 
     /**

@@ -262,7 +262,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         this.metaDataSource = metaDataSource;
         this.datamodel = datamodel;
         this.executionContext = executionContext;
-        initComponents();
+        initComponents(); UIUtil.initComponents(this);
         jToolBar1.setFloatable(false);
 
         initMenuItems();

@@ -104,7 +104,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
     	this.session = session;
     	this.owner = owner;
     	this.executionContext = executionContext;
-        initComponents();
+        initComponents(); UIUtil.initComponents(this);
         
         if (session != null && session.dbms.getConstraintsQuery() != null) {
         	constraintsPanel = new JPanel(new BorderLayout());

@@ -86,7 +86,7 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
     	this.currentTable = currentTable;
         this.executionContext = executionContext;
     	
-    	initComponents();
+    	initComponents(); UIUtil.initComponents(this);
         
     	initTablesCombobox();
     	

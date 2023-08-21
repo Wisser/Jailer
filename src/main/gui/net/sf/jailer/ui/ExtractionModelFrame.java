@@ -30,7 +30,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.sql.SQLException;
@@ -158,7 +157,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 */
 	public ExtractionModelFrame(String extractionModelFile, boolean isHorizonal, DbConnectionDialog initDbConnectionDialog, ExecutionContext executionContext) throws IOException {
 		this.executionContext = executionContext;
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		initMenu();
 		initSandbox();
         AnimationController.registerWindow(this, new AnimationController.AnimationControl() {

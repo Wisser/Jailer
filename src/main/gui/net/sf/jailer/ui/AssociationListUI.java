@@ -237,7 +237,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 	/** Creates new form AssociationListUI */
 	public AssociationListUI(String actionButtonText, String actionButtonToolTip, boolean stableSourceOrder) {
 		this.stableSourceOrder = stableSourceOrder;
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		doItButton.setText(actionButtonText);
 		doItButton.setToolTipText(actionButtonToolTip);
 		groupByComboBox.setModel(new DefaultComboBoxModel(GroupByDefinition.values()));

@@ -105,7 +105,7 @@ public class AssociationProposerView extends javax.swing.JPanel {
         this.timeoutSec = timeoutSec;
     	this.executionContext = executionContext;
     	
-    	initComponents();
+    	initComponents(); UIUtil.initComponents(this);
     	
     	loadButton.setIcon(UIUtil.scaleIcon(loadButton, loadIcon));
     	closeButton.setIcon(UIUtil.scaleIcon(closeButton, cancelIcon));

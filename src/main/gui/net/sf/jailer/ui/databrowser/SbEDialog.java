@@ -38,7 +38,7 @@ public class SbEDialog extends javax.swing.JDialog {
 	 * @param message2 */
 	public SbEDialog(Window window, String message, String message2) {
 		super(window, ModalityType.DOCUMENT_MODAL);
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
 		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
 		textLabel.setText(message);

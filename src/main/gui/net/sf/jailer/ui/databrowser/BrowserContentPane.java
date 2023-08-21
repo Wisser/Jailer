@@ -968,7 +968,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			this.table = new SqlStatementTable(null, null, false);
 		}
 
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		origCondBG = andCondition.getBackground();
 		
 		jToolBar1.setFloatable(false);

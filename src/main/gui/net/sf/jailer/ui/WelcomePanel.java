@@ -17,7 +17,7 @@ public class WelcomePanel extends javax.swing.JPanel {
      * Creates new form WelcomePanel
      */
     public WelcomePanel() {
-        initComponents();
+        initComponents(); UIUtil.initComponents(this);
         
         okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
         noButton.setIcon(UIUtil.scaleIcon(noButton, cancelIcon));

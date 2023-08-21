@@ -512,7 +512,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
     	this.prepare = prepare;
     	this.onSuccess = onSuccess;
     	this.renderConsumer = renderConsumer;
-        initComponents();
+        initComponents(); UIUtil.initComponents(this);
         
         if (jScrollPane2.getHorizontalScrollBar() != null) {
         	jScrollPane2.getHorizontalScrollBar().setUnitIncrement(16);

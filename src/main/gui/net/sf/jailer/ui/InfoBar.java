@@ -44,7 +44,7 @@ public class InfoBar extends JPanel {
 		this.titel = titel;
 		this.message = message;
 		this.footer = footer;
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		int y = 1;
 		if (titel != null) {
 			JLabel label = new JLabel(titel);

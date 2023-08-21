@@ -55,7 +55,7 @@ public class ProgressPanel extends javax.swing.JPanel {
 	public ProgressPanel(ProgressTable progressTable, ProgressTable deleteProgressTable, boolean withDelete) {
 		this.progressTable = progressTable;
 		this.deleteProgressTable = deleteProgressTable;
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		jLabel1.setForeground(jLabel1.getBackground());
 		progressTableHolder.setViewportView(progressTable);
 		progressTableHolderForDelete.setViewportView(deleteProgressTable);

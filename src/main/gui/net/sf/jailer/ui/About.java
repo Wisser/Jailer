@@ -37,7 +37,7 @@ public final class About extends javax.swing.JDialog {
 	 */
 	public About(java.awt.Frame parent, boolean modal) {
 		super(parent, modal);
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		InfoBar infoBar = new InfoBar(
 				"Jailer Database Tools",
 				"Database Subsetting and Relational Data Browsing", 

@@ -494,7 +494,7 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
     private TabContentPanel tabContentPanel;
     
 	private ExtendetCopyPanel(boolean columnNamesInFirstRow) {
-        initComponents();
+        initComponents(); UIUtil.initComponents(this);
         jToolBar1.setFloatable(false);
         maximizeButton.setIcon(maximizeIcon);
         selectAllButton.setIcon(selectIcon);

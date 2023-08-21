@@ -240,7 +240,7 @@ public abstract class TableEditor extends javax.swing.JDialog {
 		this.associations = associations;
 		this.excludeFromDeletionList = excludeFromDeletionList;
 		this.displayNames = displayNames;
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		
 		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
 		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));

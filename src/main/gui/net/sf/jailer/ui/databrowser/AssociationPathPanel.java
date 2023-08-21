@@ -53,7 +53,7 @@ public class AssociationPathPanel extends javax.swing.JPanel {
      * @param depOnColor 
      */
     public AssociationPathPanel(DataModel dataModel, List<Table> path, Color depOnColor, Color hasDepColor, Color assocColor, Color ignoredColor) {
-        initComponents();
+        initComponents(); UIUtil.initComponents(this);
         Font font = new JLabel("normal").getFont();
 		Font bold = font.deriveFont(font.getStyle() | Font.BOLD);
 		

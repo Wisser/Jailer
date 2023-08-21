@@ -36,7 +36,7 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
 	/** Creates new form XmlSettingsDialog */
 	public XmlSettingsDialog(java.awt.Frame parent) {
 		super(parent, true);
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		setModal(true);
 		UIUtil.setInitialWindowLocation(this, parent, 100, 150);
 		Ok.setIcon(UIUtil.scaleIcon(Ok, okIcon));

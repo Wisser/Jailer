@@ -94,7 +94,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         this.theRowsTable = theRowsTable;
         this.silent = silent;
         
-        initComponents();
+        initComponents(); UIUtil.initComponents(this);
         controlsContainer.setFloatable(false);
         if (UIUtil.plaf == PLAF.FLAT) {
 			tabbedPane.putClientProperty(FlatClientProperties.TABBED_PANE_TAB_HEIGHT, 16);

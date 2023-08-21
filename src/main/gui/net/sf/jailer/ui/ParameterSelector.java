@@ -51,7 +51,7 @@ public class ParameterSelector extends javax.swing.JPanel {
 		this.parametersGetter = parametersGetter;
 		parameters = new ArrayList<String>();
 		
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		try {
 			((DefaultTableCellRenderer) paramTable.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
 		} catch (Exception e) {

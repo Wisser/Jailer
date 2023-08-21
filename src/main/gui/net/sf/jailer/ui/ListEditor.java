@@ -91,7 +91,7 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 		this.columnNames = columnNames;
 		this.elementTypeDisplayName = elementTypeDisplayName;
 		
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		
 		try {
 			((DefaultTableCellRenderer) columnsTable.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);

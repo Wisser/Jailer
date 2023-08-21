@@ -26,7 +26,7 @@ public abstract class ExpansionLimitMessage extends javax.swing.JPanel {
      * Creates new form ExpansionLimitMessage
      */
     public ExpansionLimitMessage(int limit, int numAllTables) {
-        initComponents();
+        initComponents(); UIUtil.initComponents(this);
         if (limit >= numAllTables) {
         	limit = numAllTables;
         }

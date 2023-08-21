@@ -65,7 +65,7 @@ public abstract class PendingDecisionsPanel extends javax.swing.JPanel {
 	public PendingDecisionsPanel(DataModel dataModel, ExtractionModelEditor extractionModelEditor) {
 		this.dataModel = dataModel;
 		this.extractionModelEditor = extractionModelEditor;
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 
 		DefaultTableCellRenderer associationsListItemRenderer = new DefaultTableCellRenderer() {
 			final Color BG_SELCOLOR = new Color(0.45f, 0.85f, 1.0f);

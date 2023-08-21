@@ -202,7 +202,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		try {
 			UIUtil.setWaitCursor(parent);
 
-			initComponents();
+			initComponents(); UIUtil.initComponents(this);
 			copyButton.setIcon(copyIcon);
 			
 			cliArea.setDocument(new DefaultStyledDocument());

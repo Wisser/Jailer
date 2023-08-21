@@ -500,7 +500,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         this.metaDataDetailsPanel = metaDataDetailsPanel;
         this.parent = parent;
         this.executionContext = executionContext;
-        initComponents();
+        initComponents(); UIUtil.initComponents(this);
         jToolBar1.setFloatable(false);
         jToolBar2.setFloatable(false);
 

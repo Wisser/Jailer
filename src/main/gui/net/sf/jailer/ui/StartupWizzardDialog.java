@@ -41,7 +41,7 @@ public abstract class StartupWizzardDialog extends javax.swing.JDialog {
 	public StartupWizzardDialog(Window parent, boolean withLoad, Point pos) {
 		super(parent, ModalityType.MODELESS);
 		setUndecorated(true);
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		try {
 			iconLabel.setText(null);
 			Icon errorIcon = UIManager.getIcon("OptionPane.questionIcon");

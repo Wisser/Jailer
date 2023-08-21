@@ -81,7 +81,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 		this.session = session;
 		this.afterExecution = afterExecution;
 		this.dialog = dialog;
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		
 		closeButton.setIcon(closeIcon);
 		executeButton.setIcon(runIcon);

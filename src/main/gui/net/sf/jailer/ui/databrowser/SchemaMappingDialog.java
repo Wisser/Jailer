@@ -57,7 +57,7 @@ public class SchemaMappingDialog extends javax.swing.JDialog {
 	 * @throws Exception */
 	public SchemaMappingDialog(java.awt.Frame parent, DataModel dataModel, DbConnectionDialog connectionDialog, Session session, Map<String, String> mapping, ExecutionContext executionContext) throws Exception {
 		super(parent, true);
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		
 		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
 		jButton2.setIcon(UIUtil.scaleIcon(jButton2, cancelIcon));

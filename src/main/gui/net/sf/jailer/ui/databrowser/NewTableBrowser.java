@@ -45,7 +45,7 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public NewTableBrowser(java.awt.Frame parent, DataModel datamodel, boolean offerAlternatives) {
 		super(parent, true);
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 
 		AutoCompletion.enable(tableComboBox);
 		tableComboBox.getEditor().getEditorComponent().addKeyListener(new KeyListener() {

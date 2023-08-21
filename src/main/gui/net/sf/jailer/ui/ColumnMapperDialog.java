@@ -54,7 +54,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 		mappingField.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_XML);
 		mappingField.setCodeFoldingEnabled(true);
 
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 
 		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
 		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));

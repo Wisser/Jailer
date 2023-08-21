@@ -41,7 +41,7 @@ public class TipDialog extends javax.swing.JDialog {
 	/** Creates new form TipDialog */
 	public TipDialog(Window parent, String tip) {
 		super(parent, ModalityType.DOCUMENT_MODAL);
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		jButton1.setIcon(UIUtil.scaleIcon(jButton1, okIcon));
 		InfoBar infoBar = new InfoBar("Did you know?", tip, null);
 		UIUtil.replace(infoBarLabel, infoBar);

@@ -79,7 +79,7 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
     public FullTextSearchPanel(JTable table) {
     	this.table = table;
     	
-        initComponents();
+        initComponents(); UIUtil.initComponents(this);
         jToolBar1.setFloatable(false);
 
         setVisible(false);

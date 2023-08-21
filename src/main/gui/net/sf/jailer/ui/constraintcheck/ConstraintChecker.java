@@ -80,7 +80,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
      * Creates new form ConstraintChecker
      */
     public ConstraintChecker(JFrame owner, DataModel dataModel, boolean withViewButton, final Session session) {
-        initComponents();
+        initComponents(); UIUtil.initComponents(this);
         
     	closeButton.setIcon(UIUtil.scaleIcon(closeButton, cancelIcon));
 

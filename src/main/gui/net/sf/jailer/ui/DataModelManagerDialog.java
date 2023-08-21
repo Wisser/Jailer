@@ -161,7 +161,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		this.executionContext = executionContext;
 		this.tabPropertyName = "DMMDPropTab" + module;
 		this.module = module;
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
+		
 		dummyContent.setVisible(false);
 		DbConnectionDetailsEditor.addNewDatamodelListener(() -> {
 			loadModelList();
@@ -405,7 +406,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		this.executionContext = executionContext;
 		this.tabPropertyName = null;
 		this.module = module;
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		DbConnectionDetailsEditor.addNewDatamodelListener(() -> {
 			loadModelList();
 			refresh();

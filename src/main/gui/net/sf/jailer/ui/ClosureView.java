@@ -153,7 +153,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		super();
 		this.extractionModelEditor = extractionModelEditor;
 		this.rootTable = rootTable;
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 
 		AutoCompletion.enable(searchComboBox);
 		searchComboBox.getEditor().getEditorComponent().addKeyListener(new KeyListener() {

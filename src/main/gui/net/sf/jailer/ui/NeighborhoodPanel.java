@@ -82,7 +82,7 @@ public class NeighborhoodPanel extends javax.swing.JPanel {
         this.hasDepColor = hasDepColor;
         this.assocWithColor = assocWithColor;
         this.ignoredColor = ignoredColor;
-    	initComponents();
+    	initComponents(); UIUtil.initComponents(this);
     	
     	upLabel.setIcon(upbuttonIcon);
     	downLabel.setIcon(dropDownIcon);

@@ -97,7 +97,7 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 	@SuppressWarnings("serial")
 	private void init(ParameterSelector.ParametersGetter parametersGetter, DataModel dataModel, final boolean withPseudoColumns) {
 		setUndecorated(true);
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 
 		scalarSQIconToggleButton.addActionListener(new ActionListener() {
 			@Override

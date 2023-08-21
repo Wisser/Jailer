@@ -169,7 +169,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 		subjects = new ArrayList<ExtractionModel.AdditionalSubject>(this.extractionModel.additionalSubjects);
 		additionalSubjectListEditor = new AdditionalSubjectListEditor();
 		additionalSubjectListEditor.setModel(subjects);
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		
 		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
 		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));

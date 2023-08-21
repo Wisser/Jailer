@@ -35,7 +35,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
 	
 	/** Creates new form RestrictionEditor */
 	public RestrictionEditor() {
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		
 		ImageIcon scaledWarnIcon = UIUtil.scaleIcon(this, warnIcon, 1);
 		

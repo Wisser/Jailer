@@ -38,6 +38,7 @@ import net.sf.jailer.modelbuilder.MemorizedResultSet;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
+import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.LoadJob;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.RowsClosure;
@@ -61,7 +62,7 @@ public class ResultSetRenderer extends javax.swing.JPanel {
      * @param executionContext
      */
     public ResultSetRenderer(ResultSet resultSet, String titel, DataModel datamodel, Session session, ExecutionContext executionContext) throws SQLException {
-        initComponents();
+        initComponents(); UIUtil.initComponents(this);
         if (titel != null && titel.length() > 40) {
             titelLabel.setText(titel.substring(0, 40) + "...");
         	titelLabel.setToolTipText(titel);

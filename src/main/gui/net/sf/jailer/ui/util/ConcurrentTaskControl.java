@@ -45,7 +45,7 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
      * @param parent
      */
     public ConcurrentTaskControl(Window parent, String info) {
-        initComponents();
+        initComponents(); UIUtil.initComponents(this);
         cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
 		
         infoLabel.setText(info);

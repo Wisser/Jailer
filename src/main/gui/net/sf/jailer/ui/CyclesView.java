@@ -110,7 +110,7 @@ public class CyclesView extends javax.swing.JDialog {
 	public CyclesView(ExtractionModelFrame extractionModelFrame) {
 		super(extractionModelFrame, false);
 		this.extractionModelFrame = extractionModelFrame;
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		
 		cyclesTable = new JTable() {
 			private static final long serialVersionUID = 8960056200057023368L;
@@ -272,7 +272,7 @@ public class CyclesView extends javax.swing.JDialog {
 	private class FindCyclesDialog extends javax.swing.JDialog {
 		public FindCyclesDialog() {
 			super(extractionModelFrame, true);
-			initComponents();
+			initComponents(); UIUtil.initComponents(this);
 			setTitle("Find cycles");
 		}
 		

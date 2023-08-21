@@ -48,7 +48,7 @@ public class NewDataModelDialog extends javax.swing.JDialog {
 			existingFoldersLC.add(s.toLowerCase(Locale.ENGLISH));
 		}
 		
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		pack();
 		setSize(Math.max(400, getWidth()), getHeight());
 		setLocation(parent.getX() + (parent.getWidth() - getWidth()) / 2, parent.getY() + (parent.getHeight() - getHeight()) / 2);

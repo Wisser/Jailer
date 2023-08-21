@@ -361,7 +361,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			}
 		};
 		executionContext.setUseRowIdsOnlyForTablesWithoutPK(true);
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
         jToolBar1.setFloatable(false);
         jToolBar2.setFloatable(false);
         initMenu();

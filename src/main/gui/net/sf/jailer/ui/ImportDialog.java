@@ -67,7 +67,7 @@ public class ImportDialog extends javax.swing.JDialog {
 		this.initialArgs = new ArrayList<String>(initialArgs);
 		this.user = user;
 		this.password = password;
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		copyButton.setIcon(copyIcon);
 		
 		cliArea.setDocument(new DefaultStyledDocument());

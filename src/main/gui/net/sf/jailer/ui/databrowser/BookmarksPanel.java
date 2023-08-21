@@ -75,7 +75,7 @@ public class BookmarksPanel extends javax.swing.JPanel {public static final Stri
 		this.bookmarksMenu = bookmarksMenu;
 		this.desktop = desktop;
 		this.executionContext = executionContext;
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		
 		try {
 			nameField = (JTextField) nameFieldCB.getEditor().getEditorComponent();

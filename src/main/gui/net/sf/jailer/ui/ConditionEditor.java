@@ -77,7 +77,7 @@ public class ConditionEditor extends EscapableDialog {
 	 */
 	public ConditionEditor(JComponent anchor, java.awt.Frame parent, ParameterSelector.ParametersGetter parametersGetter, DataModel dataModel, String altTitel) {
 		super(parent, true);
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		this.editorPane = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false) {
 			@Override
 			protected void runBlock() {

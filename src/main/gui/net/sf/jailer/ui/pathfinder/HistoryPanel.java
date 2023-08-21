@@ -42,7 +42,7 @@ public abstract class HistoryPanel extends javax.swing.JPanel {
     public HistoryPanel(Table source, DataModel dataModel) {
     	this.dataModel = dataModel;
     	this.source = source;
-        initComponents();
+        initComponents(); UIUtil.initComponents(this);
         if (source == null) {
         	setVisible(false);
         } else {

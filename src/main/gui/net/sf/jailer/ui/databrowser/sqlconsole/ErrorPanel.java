@@ -24,6 +24,8 @@ import javax.swing.UIManager;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 
+import net.sf.jailer.ui.UIUtil;
+
 /**
  * SQL-Console error view.
  *
@@ -39,7 +41,7 @@ public class ErrorPanel extends javax.swing.JPanel {
      * @param errorPosition error position
      */
     public ErrorPanel(String errorMessage, String statement, int errorPosition) {
-        initComponents();
+        initComponents(); UIUtil.initComponents(this);
         errorTextArea.setText(errorMessage);
         errorTextArea.setCaretPosition(0);
         iconLabel.setText(null);

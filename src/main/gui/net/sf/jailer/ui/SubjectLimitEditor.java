@@ -82,7 +82,7 @@ public abstract class SubjectLimitEditor extends EscapableDialog {
 		if (!modal) {
 			setUndecorated(true);
 		}
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 
 		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
 		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));

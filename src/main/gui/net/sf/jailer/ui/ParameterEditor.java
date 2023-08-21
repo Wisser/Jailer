@@ -56,7 +56,7 @@ public class ParameterEditor extends javax.swing.JDialog {
 	/** Creates new form */
 	public ParameterEditor(Frame parent) {
 		super(parent, true);
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 	}
 
 	/**

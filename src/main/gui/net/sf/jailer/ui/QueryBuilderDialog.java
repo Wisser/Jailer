@@ -82,7 +82,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 				}
 			}
 		};
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		
 		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
 		sqlEditButton.setIcon(UIUtil.scaleIcon(sqlEditButton, sqlConsoleIcon));

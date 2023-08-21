@@ -43,7 +43,7 @@ public abstract class ClosureBorderDialog extends javax.swing.JDialog {
 	/** Creates new form ClosureBorderDialog */
 	public ClosureBorderDialog(java.awt.Frame parent, boolean withInfoLine) {
 		super(parent, false);
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		if (!withInfoLine) {
 			rootNameLabel.setVisible(false);
 			jLabel1.setVisible(false);

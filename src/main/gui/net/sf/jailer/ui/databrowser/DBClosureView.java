@@ -367,7 +367,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         super();
         this.parent = parent;
         this.metaDataSourceSupplier = metaDataSourceSupplier;
-        initComponents();
+        initComponents(); UIUtil.initComponents(this);
 
         AutoCompletion.enable(searchComboBox);
         searchComboBox.getEditor().getEditorComponent().addKeyListener(new KeyListener() {

@@ -481,7 +481,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		this.parametersGetter = parametersGetter;
 		this.parent = parent;
 		this.conditionEditor = createConditionEditor();
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		
 		UIUtil.setLeadingComponent(templateDetailsNewValueField, templatesDetailsMulitlineLabel);
 		

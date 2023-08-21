@@ -82,7 +82,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 	public DBConditionEditor(java.awt.Frame parent, DataModel dataModel) {
 		super(parent, false);
 		setUndecorated(true);
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		
 		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
 		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));

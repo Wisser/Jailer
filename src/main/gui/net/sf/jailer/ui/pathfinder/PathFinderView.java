@@ -133,7 +133,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     	this.source = source;
     	this.destination = destination;
     	this.sourceClosure = source.closure();
-        initComponents();
+        initComponents(); UIUtil.initComponents(this);
 
         redDotIconScaled = UIUtil.scaleIcon(this, redDotIcon);
     	blueDotIconScaled = UIUtil.scaleIcon(this, blueDotIcon);

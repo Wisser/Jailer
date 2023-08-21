@@ -124,7 +124,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		this.session = session;
 		this.browserContentCellEditor = browserContentCellEditor;
 		this.tableModel = tableModel;
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
         jToolBar1.setFloatable(false);
         if (UIUtil.plaf == PLAF.FLAT) {
 			contentTabbedPane.putClientProperty(FlatClientProperties.TABBED_PANE_TAB_HEIGHT, 16);

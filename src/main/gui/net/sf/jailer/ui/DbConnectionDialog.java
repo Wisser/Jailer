@@ -379,7 +379,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		this.dataModelAware = dataModelAware;
 		this.showOnlyRecentyUsedConnections = showOnlyRecentyUsedConnections;
 		allDialogs.put(this, this);
-		initComponents();
+		initComponents(); UIUtil.initComponents(this);
 		loadConnectionList(showOnlyRecentyUsedConnections);
 		jButton1.setIcon(UIUtil.scaleIcon(jButton1, okIcon));
 		closeButton.setIcon(UIUtil.scaleIcon(closeButton, cancelIcon));
