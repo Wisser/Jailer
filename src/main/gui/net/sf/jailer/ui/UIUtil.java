@@ -2443,15 +2443,17 @@ public class UIUtil {
 	}
 
 	public static void initComponents(Component component) {
-		UIUtil.traverse(component, null, c-> null, (c, o) -> null, (t, c) -> {
-			if (c instanceof JTabbedPane) {
-				((JTabbedPane) c).addChangeListener(new ChangeListener() {
-					@Override
-					public void stateChanged(ChangeEvent e) {
-						((JTabbedPane) c).grabFocus();
-					}
-				});
-			}
-		});
+		if (plaf == PLAF.FLAT) {
+			UIUtil.traverse(component, null, c-> null, (c, o) -> null, (t, c) -> {
+				if (c instanceof JTabbedPane) {
+					((JTabbedPane) c).addChangeListener(new ChangeListener() {
+						@Override
+						public void stateChanged(ChangeEvent e) {
+							((JTabbedPane) c).grabFocus();
+						}
+					});
+				}
+			});
+		}
 	}
 }
