@@ -857,4 +857,10 @@ public class SqlUtil {
 		}
 		return encoding;
 	}
+	
+	// https://jdbc.postgresql.org/documentation/publicapi/constant-values.html
+    public static final long PG_NEGATIVE_INFINITY = -9223372036832400000L;
+    public static final long PG_NEGATIVE_SMALLER_INFINITY = -185543533774800000L;
+    public static final long PG_POSITIVE_INFINITY = 9223372036825200000L;
+    public static final long PG_POSITIVE_SMALLER_INFINITY = 185543533774800000L;
 }
