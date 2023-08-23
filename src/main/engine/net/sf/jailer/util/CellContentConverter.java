@@ -444,6 +444,9 @@ public class CellContentConverter {
 			}
 			if (type == Types.TIMESTAMP || type == 2014 /* Types.TIMESTAMP_WITH_TIMEZONE */) {
 				Timestamp ts = resultSet.getTimestamp(i);
+				if (ts == null) {
+					return ts;
+				}
 				long time = ts.getTime();
 				if (time != SqlUtil.PG_NEGATIVE_INFINITY && time != SqlUtil.PG_NEGATIVE_SMALLER_INFINITY&& time != SqlUtil.PG_POSITIVE_INFINITY && time != SqlUtil.PG_POSITIVE_SMALLER_INFINITY) {
 					return ts;
@@ -462,6 +465,9 @@ public class CellContentConverter {
 					}
 				}
 				Date date = resultSet.getDate(i);
+				if (date == null) {
+					return date;
+				}
 				long time = date.getTime();
 				if (time != SqlUtil.PG_NEGATIVE_INFINITY && time != SqlUtil.PG_NEGATIVE_SMALLER_INFINITY&& time != SqlUtil.PG_POSITIVE_INFINITY && time != SqlUtil.PG_POSITIVE_SMALLER_INFINITY) {
 					return date;
