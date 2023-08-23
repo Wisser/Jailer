@@ -2167,6 +2167,9 @@ public class UIUtil {
                     UIManager.put( "CheckBox.arc", 8 );
                     UIManager.put( "ProgressBar.arc", 8 );
                     
+                    UIManager.put( "TabbedPane.tabArc", 12);
+                    UIManager.put( "TabbedPane.tabSelectionArc", 4);
+                    
 //                    UIManager.put( "TextArea.background", Color.white);
                     
                     FlatLightLaf.setup();
