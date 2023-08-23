@@ -62,6 +62,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.SQLXML;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -5300,6 +5301,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						valueAsString = UIUtil.indicateLeadingAndTrailingSpaces(valueAsString, sqlType == Types.CHAR || sqlType == Types.NCHAR);
 						suffix = "";
 					}
+					if (value instanceof Timestamp || value instanceof Date) {
+						final long time = value instanceof Date? ((Date) value).getTime() : ((Timestamp) value).getTime();
+				        if (time == SqlUtil.PG_NEGATIVE_INFINITY || time == SqlUtil.PG_NEGATIVE_SMALLER_INFINITY) {
+				        	valueAsString = "-Infinity";
+				        }
+				        if (time == SqlUtil.PG_POSITIVE_INFINITY || time == SqlUtil.PG_POSITIVE_SMALLER_INFINITY) {
+				        	valueAsString = "Infinity";
+				        }
+					}
 					valueAsString = " " + (valueAsString.replace('\n', (char) 182)) + suffix;
 					// TODO get rid of suffix " ". Set valueAsString = value if valueAsString.equals(value)
 				}
@@ -5597,6 +5607,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						rowData[i] = UNKNOWN;
 					}
 					if (stripHour[i] && (rowData[i] instanceof java.sql.Date || rowData[i] instanceof java.sql.Timestamp)) {
+						final long time = rowData[i] instanceof Date? ((Date) rowData[i]).getTime() : ((Timestamp) rowData[i]).getTime();
+						if (time == SqlUtil.PG_NEGATIVE_INFINITY || time == SqlUtil.PG_NEGATIVE_SMALLER_INFINITY) {
+							continue;
+						}
+						if (time == SqlUtil.PG_POSITIVE_INFINITY || time == SqlUtil.PG_POSITIVE_SMALLER_INFINITY) {
+							continue;
+						}
 						String asString = rowData[i].toString();
 						int endIndex = asString.length() - HOUR.length();
 						if (endIndex > 0) {

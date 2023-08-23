@@ -443,7 +443,11 @@ public class CellContentConverter {
 				return resultSet.getString(i);
 			}
 			if (type == Types.TIMESTAMP || type == 2014 /* Types.TIMESTAMP_WITH_TIMEZONE */) {
-				return resultSet.getTimestamp(i);
+				Timestamp ts = resultSet.getTimestamp(i);
+				long time = ts.getTime();
+				if (time != SqlUtil.PG_NEGATIVE_INFINITY && time != SqlUtil.PG_NEGATIVE_SMALLER_INFINITY&& time != SqlUtil.PG_POSITIVE_INFINITY && time != SqlUtil.PG_POSITIVE_SMALLER_INFINITY) {
+					return ts;
+				}
 			}
 			if (type == Types.DATE) {
 				if (DBMS.MySQL.equals(configuration)) {
@@ -458,7 +462,10 @@ public class CellContentConverter {
 					}
 				}
 				Date date = resultSet.getDate(i);
-				return date;
+				long time = date.getTime();
+				if (time != SqlUtil.PG_NEGATIVE_INFINITY && time != SqlUtil.PG_NEGATIVE_SMALLER_INFINITY&& time != SqlUtil.PG_POSITIVE_INFINITY && time != SqlUtil.PG_POSITIVE_SMALLER_INFINITY) {
+					return date;
+				}
 			}
 		} catch (SQLException e) {
 			return resultSet.getString(i);
@@ -486,6 +493,33 @@ public class CellContentConverter {
 			}
 		}
 
+		if (object instanceof Double || object instanceof Float) {
+			double d = ((Number) object).doubleValue();
+			if (Double.isNaN(d)) {
+				object = new PObjectWrapper("NaN", resultSetMetaData.getColumnTypeName(i));
+			} else if (Double.isInfinite(d)) {
+				if (d < 0) {
+					object = new PObjectWrapper("-Infinity", resultSetMetaData.getColumnTypeName(i));
+				} else {
+					object = new PObjectWrapper("Infinity", resultSetMetaData.getColumnTypeName(i));
+				}
+			}
+			if (!DBMS.POSTGRESQL.equals(targetConfiguration) && object instanceof PObjectWrapper) {
+				object = ((PObjectWrapper) object).getValue();
+			}
+			return object;
+		}
+		
+		if (DBMS.POSTGRESQL.equals(targetConfiguration) && (object instanceof Timestamp || object instanceof Date)) {
+			final long time = object instanceof Date? ((Date) object).getTime() : ((Timestamp) object).getTime();
+	        if (time == SqlUtil.PG_NEGATIVE_INFINITY || time == SqlUtil.PG_NEGATIVE_SMALLER_INFINITY) {
+				return new PObjectWrapper("-Infinity", resultSetMetaData.getColumnTypeName(i));
+	        }
+	        if (time == SqlUtil.PG_POSITIVE_INFINITY || time == SqlUtil.PG_POSITIVE_SMALLER_INFINITY) {
+				return new PObjectWrapper("Infinity", resultSetMetaData.getColumnTypeName(i));
+	        }
+		}
+
 		if (type == TIMESTAMP_WITH_NANO && object instanceof Timestamp) {
 			long t = ((Timestamp) object).getTime();
 			int nano = ((Timestamp) object).getNanos();
@@ -502,8 +536,6 @@ public class CellContentConverter {
 		if (DBMS.POSTGRESQL.equals(configuration)) {
 			if (type == TYPE_POBJECT) {
 				return new PObjectWrapper(resultSet.getString(i), resultSetMetaData.getColumnTypeName(i));
-			} else if (object instanceof Double && Double.isNaN((double) object)) {
-				return "NaN";
 			} else if (object instanceof Boolean) {
 				String typeName = resultSetMetaData.getColumnTypeName(i);
 				if (typeName != null && typeName.toLowerCase(Locale.ENGLISH).equals("bit")) {

@@ -1665,6 +1665,9 @@ public class UIUtil {
 	}
 
 	public static String format(double number) {
+		if (Double.isNaN(number)) {
+			return "NaN";
+		}
 		return NumberFormat.getInstance().format(number);
 	}
 

@@ -55,6 +55,22 @@ public class BrowserContentCellEditor {
 		DECIMAL {
 			@Override
 			String cellContentToText(int columnType, Object content) {
+				if (content instanceof String) {
+					return (String) content;
+				}
+				if (content instanceof Double || content instanceof Float) {
+					double d = ((Number) content).doubleValue();
+					if (Double.isNaN(d)) {
+						return "NaN";
+					}
+					if (Double.isInfinite(d)) {
+						if (d < 0) {
+							return "-Infinity";
+						} else {
+							return "Infinity";
+						}
+					}
+				}
 				if (content instanceof BigDecimal) {
 					return SqlUtil.toString((BigDecimal) content);
 				}
@@ -72,6 +88,15 @@ public class BrowserContentCellEditor {
 
 			@Override
 			Object textToContent(int columnType, String text, Object oldContent) {
+				if ("NaN".equalsIgnoreCase(text)) {
+					return Double.NaN;
+				}
+				if ("-Infinity".equalsIgnoreCase(text)) {
+					return Double.NEGATIVE_INFINITY;
+				}
+				if ("Infinity".equalsIgnoreCase(text)) {
+					return Double.POSITIVE_INFINITY;
+				}
 				return new BigDecimal(text);
 			}
 
@@ -331,6 +356,7 @@ public class BrowserContentCellEditor {
 		converterPerType.put(Types.DECIMAL, Converter.DECIMAL);
 		converterPerType.put(Types.DOUBLE, Converter.DECIMAL);
 		converterPerType.put(Types.FLOAT, Converter.DECIMAL);
+		converterPerType.put(Types.REAL, Converter.DECIMAL);
 		converterPerType.put(Types.INTEGER, Converter.DECIMAL);
 		converterPerType.put(Types.NUMERIC, Converter.DECIMAL);
 		converterPerType.put(Types.SMALLINT, Converter.DECIMAL);

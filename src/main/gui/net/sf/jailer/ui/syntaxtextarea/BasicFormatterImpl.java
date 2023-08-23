@@ -150,7 +150,11 @@ public class BasicFormatterImpl {
 		sql = sb.toString().replace("&", marker + "r");
 		sql = sql.replaceAll("\\$(\\w+)\\b", marker + "d$1-");
 		sql = sql.replaceAll("\\b(\\w')", marker + "p$1"); // N'nvarchar'
+		sql = sql.replaceAll("(\\d[Ee])\\-(\\d)", "$1" + marker + "me$2"); // 2E-8
+		sql = sql.replaceAll("(\\d[Ee])\\+(\\d)", "$1" + marker + "e$2"); // 2E+8
 		sql = format1(sql);
+		sql = sql.replaceAll(marker + "me", "-"); // 2E-8
+		sql = sql.replaceAll(marker + "e", "+"); // 2E-8
 		sql = sql.replaceAll(marker + "p(\\w)\\s*'", "$1'"); // N'nvarchar'
 		sql = sql.replaceAll(marker + "d([^\\-\\s]+)\\s*\\-", Matcher.quoteReplacement("$") + "$1");
 		
