@@ -871,7 +871,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                                	lineNumber += countLines - 1;
 	                                	status.linesExecuting += countLines;
 	                                }
-	                                if (sql.trim().length() > 0) {
+	                                if (sql.trim().length() > 0 && !isCommentOnly(sql)) {
 	                                	++statementNumber;
 	                                	if (successState.mode == Mode.COUNT) {
 	                                		++successState.numStatements;
@@ -2441,12 +2441,16 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             	if (numStatements + successState.failed.size() > 1) {
 	                boolean f = !successState.failed.isEmpty();
 	                int left = successState.numStatements - successState.succeeded.size() - successState.failed.size();
-	                text += numStatements + " " + (!f? "successful. " : ("statement" + (numStatements > 1? "s. " : ". ")));
-	                if (left > 0) {
-	                	text += "<font color=\"0000dd\">" + left + " remaining. </font>";
-	                }
-					if (f) {
-	                	text += "<font color=\"dd0000\">" + (cancelled? "Cancelled" : (successState.failed.size() + " failed")) + ". </font>";
+	                if (left == 0 && numStatements == 1 && successState.failed.size() == 1) {
+	                	return "<html><font color=\"dd0000\">Error!</font></html>";
+	                } else {
+		                text += numStatements + " " + (!f? "successful. " : ("statement" + (numStatements > 1? "s. " : ". ")));
+		                if (left > 0) {
+		                	text += "<font color=\"0000dd\">" + left + " remaining. </font>";
+		                }
+						if (f) {
+		                	text += "<font color=\"dd0000\">" + (cancelled? "Cancelled" : (successState.failed.size() + " failed")) + ". </font>";
+		                }
 	                }
 	            }
             }
@@ -3797,12 +3801,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         }
     }
 
+    private final Pattern COMMENT_ONLY_PATTERN = Pattern.compile("('([^']*'))|(/\\*.*?\\*/)|(\\-\\-.*?(\n|$))", Pattern.DOTALL);
+    
     private boolean isCommentOnly(String statement) {
     	if (statement == null) {
     		return false;
     	}
-        Pattern pattern = Pattern.compile("('([^']*'))|(/\\*.*?\\*/)|(\\-\\-.*?(\n|$))", Pattern.DOTALL);
-        Matcher matcher = pattern.matcher(statement);
+        Matcher matcher = COMMENT_ONLY_PATTERN.matcher(statement);
         boolean result = matcher.find();
         StringBuffer sb = new StringBuffer();
         if (result) {
