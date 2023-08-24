@@ -29,8 +29,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Stream;
 
 import javax.sql.DataSource;
 
@@ -208,6 +210,9 @@ public class ModelBuilder {
 		_log.info("find tables with " + finder);
 		tables.addAll(finder.findTables(session, executionContext));
 
+		
+		Optional<Table> x = ((ArrayList<Table>) tables).stream().filter( t -> t.getName().equals("VA")).findFirst();
+		
 		Collection<Table> allTables = new ArrayList<Table>(tables);
 		Set<Table> written = new HashSet<Table>();
 		for (Iterator<Table> iT = tables.iterator(); iT.hasNext(); ) {
@@ -293,7 +298,7 @@ public class ModelBuilder {
 				}
 				tableDefinitions += CsvFile.encodeCell(table.getName()) + "; N; ";
 				for (Column pk: table.primaryKey.getColumns()) {
-					tableDefinitions += CsvFile.encodeCell(pk.toString()) + ";";
+					tableDefinitions += CsvFile.encodeCell(pk.toString()) + (pk.isNullable? " null" : "") + ";";
 				}
 				tableDefinitions += "   ;" + CsvFile.encodeCell(table.getAuthor()) + ";" + PrintUtil.LINE_SEPARATOR;
 			}

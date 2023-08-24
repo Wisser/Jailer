@@ -2441,7 +2441,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             	if (numStatements + successState.failed.size() > 1) {
 	                boolean f = !successState.failed.isEmpty();
 	                int left = successState.numStatements - successState.succeeded.size() - successState.failed.size();
-	                text += numStatements + " " + (f? "successful. " : ("statement" + (numStatements > 1? "s. " : ". ")));
+	                text += numStatements + " " + (!f? "successful. " : ("statement" + (numStatements > 1? "s. " : ". ")));
 	                if (left > 0) {
 	                	text += "<font color=\"0000dd\">" + left + " remaining. </font>";
 	                }

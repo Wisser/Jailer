@@ -479,7 +479,10 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			}
 			if (!hasPK) {
 				_log.info("find unique index of table " + tableName);
-				hasPK = findUniqueIndexBasedKey(quoting, session, tmp, pk, tableTypes.get(tableName));
+				hasPK = findUniqueIndexBasedKey(quoting, session, tmp, pk, tableTypes.get(tableName), false);
+				if (!hasPK) {
+					hasPK = findUniqueIndexBasedKey(quoting, session, tmp, pk, tableTypes.get(tableName), true);
+				}
 			}
 			_log.info((hasPK? "" : "no ") + "primary key found for table " + tableName);
 			if (resultSet != null) {
@@ -536,6 +539,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 					precision = -1;
 				}
 				Column column = new Column(colName, filterType(sqlType, length, resultSet.getString(6), type, session.dbms, resultSet.getInt(7)), filterLength(length, precision, resultSet.getString(6), type, session.dbms, resultSet.getInt(7)), filterPrecision(length, precision, resultSet.getString(6), type, session.dbms, resultSet.getInt(7)));
+				column.isNullable = resultSet.getInt(11) == DatabaseMetaData.columnNullable;
 				for (int i: pk.keySet()) {
 					if (pk.get(i).name.equals(column.name)) {
 						pk.put(i, column);
@@ -865,7 +869,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	/**
 	 * Find a key of a table based on an unique index on non-nullable columns.
 	 */
-	private boolean findUniqueIndexBasedKey(Quoting quoting, Session session, Table tmp, Map<Integer, Column> pk, String tableType) {
+	private boolean findUniqueIndexBasedKey(Quoting quoting, Session session, Table tmp, Map<Integer, Column> pk, String tableType, boolean allowNullable) {
 		try {
 			ResultSet resultSet = getColumns(session, quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()), "%", true, false, tableType);
 
@@ -906,7 +910,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			}
 			resultSet.close();
 
-			if (nonNullColumns.isEmpty()) {
+			if (!allowNullable && nonNullColumns.isEmpty()) {
 				return false;
 			}
 
@@ -930,11 +934,13 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 				List<Column> columns = new ArrayList<Column>();
 				boolean isNullable = false;
 				for (String column: indexes.get(index)) {
-					if (column == null || !nonNullColumns.contains(column)) {
+					if (column == null || (!allowNullable && !nonNullColumns.contains(column))) {
 						isNullable = true;
 						break;
 					}
-					columns.add(new Column(quoting.quote(column), "", 0, -1));
+					Column e = new Column(quoting.quote(column), "", 0, -1);
+					e.isNullable = !nonNullColumns.contains(column);
+					columns.add(e);
 				}
 				if (!isNullable && !columns.isEmpty()) {
 					for (int i = 1; i <= columns.size(); ++i) {

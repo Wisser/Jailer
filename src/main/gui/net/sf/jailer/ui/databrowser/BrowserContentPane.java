@@ -4940,8 +4940,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					if (inlineViewStyle != null && association != null) {
 						sb.append(" join ");
 						List<String> columnNames = new ArrayList<String>();
+						Set<String> nullables = new HashSet<>();
 						for (Column pkColumn: rowIdSupport.getPrimaryKey(association.source, session).getColumns()) {
 							columnNames.add(pkColumn.name);
+							if (pkColumn.isNullable) {
+								nullables.add(pkColumn.name);
+							}
 						}
 						String[] columnNamesAsArray = columnNames.toArray(new String[columnNames.size()]);
 						sb.append(inlineViewStyle.head(columnNamesAsArray));
@@ -4960,7 +4964,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							if (!f2) {
 								sb.append(" and ");
 							}
-							sb.append("B." + pkColumnName + " = " + "C." + pkColumnName);
+							if (nullables.contains(pkColumnName)) {
+								sb.append("(B." + pkColumnName + " = " + "C." + pkColumnName + " or (B." + pkColumnName + " is null and A." + pkColumnName + " is null))");
+							} else {
+								sb.append("B." + pkColumnName + " = " + "C." + pkColumnName);
+							}
 							f2 = false;
 						}
 						sb.append(")");

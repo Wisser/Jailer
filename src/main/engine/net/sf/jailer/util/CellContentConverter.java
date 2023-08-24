@@ -86,6 +86,29 @@ public class CellContentConverter {
 			return "null";
 		}
 
+		if (content instanceof Double || content instanceof Float) {
+			double d = ((Number) content).doubleValue();
+			if (Double.isNaN(d)) {
+				return "'NaN'";
+			} else if (Double.isInfinite(d)) {
+				if (d < 0) {
+					return "'-Infinity'";
+				} else {
+					return "'Infinity'";
+				}
+			}
+		}
+		
+		if (DBMS.POSTGRESQL.equals(targetConfiguration) && (content instanceof Timestamp || content instanceof Date)) {
+			final long time = content instanceof Date? ((Date) content).getTime() : ((Timestamp) content).getTime();
+	        if (time == SqlUtil.PG_NEGATIVE_INFINITY || time == SqlUtil.PG_NEGATIVE_SMALLER_INFINITY) {
+				return "'-Infinity'";
+	        }
+	        if (time == SqlUtil.PG_POSITIVE_INFINITY || time == SqlUtil.PG_POSITIVE_SMALLER_INFINITY) {
+				return "'Infinity'";
+	        }
+		}
+		
 		if (content instanceof SQLExpressionWrapper) {
 			return ((SQLExpressionWrapper) content).getExpression();
 		}

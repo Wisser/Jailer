@@ -31,6 +31,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.datamodel.Column;
@@ -204,7 +205,16 @@ public class BrowserContentCellEditor {
 
 			@Override
 			String cellContentToText(int columnType, Object content) {
-				if (columnType == Types.DATE && (content == null || content instanceof Date)) {
+				if ((content instanceof Timestamp || content instanceof Date)) {
+					final long time = content instanceof Date? ((Date) content).getTime() : ((Timestamp) content).getTime();
+					if (time == SqlUtil.PG_NEGATIVE_INFINITY || time == SqlUtil.PG_NEGATIVE_SMALLER_INFINITY) {
+						return "'-Infinity'";
+			        }
+			        if (time == SqlUtil.PG_POSITIVE_INFINITY || time == SqlUtil.PG_POSITIVE_SMALLER_INFINITY) {
+						return "'Infinity'";
+			        }
+				}
+		        if (columnType == Types.DATE && (content == null || content instanceof Date)) {
 					return dateFormatAlt1.format((Date) content);
 				}
 				return String.valueOf(/*(Timestamp)*/ content);
@@ -212,6 +222,20 @@ public class BrowserContentCellEditor {
 
 			@Override
 			Object textToContent(int columnType, String text, Object oldContent) {
+				long infTime = 0;
+				if ("-Infinity".equalsIgnoreCase(text)) {
+					infTime = SqlUtil.PG_NEGATIVE_SMALLER_INFINITY;
+				}
+				if ("Infinity".equalsIgnoreCase(text)) {
+					infTime = SqlUtil.PG_POSITIVE_SMALLER_INFINITY;
+				}
+				if (infTime != 0) {
+					if (columnType == Types.DATE && (oldContent == null || oldContent instanceof Date)) {
+						return new java.sql.Date(infTime);
+					} else {
+						return new Timestamp(infTime);
+					}
+				}
 				Object result = textToContent(columnType, text, oldContent, dateFormat, timeStampWONFormat);
 				if (result == INVALID) {
 					result = textToContent(columnType, text, oldContent, dateFormatAlt1, timeStampWONFormatAlt1);
