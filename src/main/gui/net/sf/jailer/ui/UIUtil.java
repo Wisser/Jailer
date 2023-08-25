@@ -105,6 +105,7 @@ import javax.swing.JMenu;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
@@ -2458,6 +2459,14 @@ public class UIUtil {
 							((JTabbedPane) c).grabFocus();
 						}
 					});
+				}
+				if (c instanceof JScrollPane) {
+			        if (((JScrollPane) c).getHorizontalScrollBar() != null) {
+			        	((JScrollPane) c).getHorizontalScrollBar().setUnitIncrement(16);
+			        }
+			        if (((JScrollPane) c).getVerticalScrollBar() != null) {
+			        	((JScrollPane) c).getVerticalScrollBar().setUnitIncrement(16);
+			        }
 				}
 			});
 		}
