@@ -2074,7 +2074,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							prevSelectedRows = selectedRows;
 							resetCurrentRowSelection();
 							for (int si: selectedRows) {
-								setCurrentRowSelection(si, true, true);
+								setCurrentRowSelection(si, true, true, selectedRows.size() == 1);
 							}
 							setCurrentRowSelection(-1, true);
 							startTimer();
@@ -4122,7 +4122,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 				resetCurrentRowSelection();
 				for (int si: selectedRows) {
-					setCurrentRowSelection(si, true, true);
+					setCurrentRowSelection(si, true, true, true);
 				}
 				setCurrentRowSelection(-1, true);
 			} else {
@@ -4156,10 +4156,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 	protected void setCurrentRowSelection(int i, boolean append) {
-		setCurrentRowSelection(i, append, false);
+		setCurrentRowSelection(i, append, false, true);
 	}
 
-	protected void setCurrentRowSelection(int i, boolean append, boolean withoutAdjustment) {
+	protected void setCurrentRowSelection(int i, boolean append, boolean withoutAdjustment, boolean doScroll) {
 		currentRowSelection = i;
 		if (i >= 0) {
 			int mi = rowsTable.getRowSorter().convertRowIndexToModel(i);
@@ -4176,9 +4176,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				rowsClosure.currentClosureRootID.add(row.nonEmptyRowId);
 				rowsClosure.currentClosureRootPane = this;
 				findClosure(row);
-				Rectangle visibleRect = rowsTable.getVisibleRect();
-				Rectangle pos = rowsTable.getCellRect(i, 0, false);
-				rowsTable.scrollRectToVisible(new Rectangle(visibleRect.x, pos.y, 1, pos.height));
+				if (doScroll) {
+					Rectangle visibleRect = rowsTable.getVisibleRect();
+					Rectangle pos = rowsTable.getCellRect(i, 0, false);
+					rowsTable.scrollRectToVisible(new Rectangle(visibleRect.x, pos.y, 1, pos.height));
+				}
 			}
 		}
 		if (!withoutAdjustment) {
