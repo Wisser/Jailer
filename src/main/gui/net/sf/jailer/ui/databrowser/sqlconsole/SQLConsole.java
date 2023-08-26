@@ -869,7 +869,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                                	int countLines = countLines(sql);
 	                                	successState.statementLocation.put(statementNumber + 1, new Pair<>(lineNumber, lineNumber + countLines - 1));
 	                                	lineNumber += countLines - 1;
-	                                	status.linesExecuting += countLines;
+	                                	status.linesExecuting += countLines - 1;
 	                                }
 	                                if (sql.trim().length() > 0 && !isCommentOnly(sql)) {
 	                                	++statementNumber;
@@ -878,7 +878,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                                	} else if (successState.shouldRun(statementNumber)) {
 	                                		status.failed = false;
 	                                		executeSQL(pureSql, status, lineStartOffset, explain, tabContentPanel, caretDotMark, locFragmentOffset, transactional);
-		                                    if (status.failed) {
+	                                		CancellationHandler.checkForCancellation(SQLConsole.this);
+	                                		if (status.failed) {
 		                                    	successState.failed.add(statementNumber);
 		                                        if (locFragmentOffset != null) {
 		                                            if (status.errorPositionIsKnown) {
@@ -946,7 +947,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		                                status.linesExecuting += countLines(sql);
                                 		status.failed = false;
                                 		executeSQL(sql, status, lineStartOffset, explain, tabContentPanel, caretDotMark, locFragmentOffset, transactional);
-		                                if (!status.failed) {
+                                		CancellationHandler.checkForCancellation(SQLConsole.this);
+                                		if (!status.failed) {
 		                                	successState.succeeded.add(statementNumber);
 		                                	successState.failed.remove(statementNumber);
 	                                    	successState.failedButRetryable.clear();
@@ -1002,7 +1004,21 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                     	});
                     } catch (SQLException e1) {
 						UIUtil.invokeLater(() -> UIUtil.showException(SQLConsole.this, "Error", e1));
-					} finally {
+                    } catch (CancellationException ce) {
+						status.failed = true;
+						status.cancelled = true;
+						status.error = ce;
+		            	try {
+		            		if (transactional && con != null) {
+		            			con.rollback();
+			            		status.rolledback = true;
+			            		con.setAutoCommit(true);
+		            		}
+						} catch (SQLException e) {
+							UIUtil.invokeLater(() -> UIUtil.showException(SQLConsole.this, "Error", e));
+						}
+						CancellationHandler.reset(SQLConsole.this);
+                    } finally {
 						if (transactional && con != null) {
 							if (status != null && !status.failed) {
 								try {
@@ -1920,8 +1936,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             }
             if (error instanceof CancellationException) {
             	status.cancelled = true;
-            	CancellationHandler.reset(SQLConsole.this);
-                queue.clear();
+            	queue.clear();
             }
             status.updateView(false);
             final Throwable finalError = error;
@@ -2448,7 +2463,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		                if (left > 0) {
 		                	text += "<font color=\"0000dd\">" + left + " remaining. </font>";
 		                }
-						if (f) {
+						if (f || cancelled) {
 		                	text += "<font color=\"dd0000\">" + (cancelled? "Cancelled" : (successState.failed.size() + " failed")) + ". </font>";
 		                }
 	                }
