@@ -89,6 +89,8 @@ import java.util.concurrent.PriorityBlockingQueue;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.swing.AbstractAction;
@@ -5309,7 +5311,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					} else {
 						valueAsString = String.valueOf(value);
 						valueAsString = UIUtil.indicateLeadingAndTrailingSpaces(valueAsString, sqlType == Types.CHAR || sqlType == Types.NCHAR);
-						suffix = "";
+						if ((sqlType != Types.DOUBLE && sqlType != Types.NUMERIC && sqlType != Types.DECIMAL)
+								||
+							!isNanOrInf(valueAsString)) {
+							suffix = "";
+						}
 					}
 					if (value instanceof Timestamp || value instanceof Date) {
 						final long time = value instanceof Date? ((Date) value).getTime() : ((Timestamp) value).getTime();
@@ -5325,6 +5331,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			}
 			return valueAsString;
+		}
+
+		private static Pattern p = Pattern.compile("(NaN|Infinity|\\-Infinity)", Pattern.CASE_INSENSITIVE);
+		
+		private boolean isNanOrInf(String valueAsString) {
+			Matcher m = p.matcher(valueAsString);
+			return m.matches();
 		}
 	}
 
