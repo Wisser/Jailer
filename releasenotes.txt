@@ -1,3 +1,9 @@
+15.2
+  - Support for "Infinity/-Infinity/NaN" for dates and floating point numbers.
+    See https://sourceforge.net/p/jailer/discussion/700499/thread/7741dc8aa3
+  - Canceling the execution of long scripts in the SQLConsole did not work reliably. This has been corrected.
+  - More minor improvements to the user interface.
+
 15.1.5
   - Improved some messy bits in the user interface with native-L&F.
 
