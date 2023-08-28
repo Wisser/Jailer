@@ -99,7 +99,7 @@ public class CellContentConverter {
 			}
 		}
 		
-		if (DBMS.POSTGRESQL.equals(targetConfiguration) && (content instanceof Timestamp || content instanceof Date)) {
+		if (content instanceof Timestamp || content instanceof Date) {
 			final long time = content instanceof Date? ((Date) content).getTime() : ((Timestamp) content).getTime();
 	        if (time == SqlUtil.PG_NEGATIVE_INFINITY || time == SqlUtil.PG_NEGATIVE_SMALLER_INFINITY) {
 				return "'-Infinity'";
@@ -471,7 +471,7 @@ public class CellContentConverter {
 					return ts;
 				}
 				long time = ts.getTime();
-				if (time != SqlUtil.PG_NEGATIVE_INFINITY && time != SqlUtil.PG_NEGATIVE_SMALLER_INFINITY&& time != SqlUtil.PG_POSITIVE_INFINITY && time != SqlUtil.PG_POSITIVE_SMALLER_INFINITY) {
+				if (time != SqlUtil.PG_NEGATIVE_INFINITY && time != SqlUtil.PG_NEGATIVE_SMALLER_INFINITY && time != SqlUtil.PG_POSITIVE_INFINITY && time != SqlUtil.PG_POSITIVE_SMALLER_INFINITY) {
 					return ts;
 				}
 			}
@@ -492,7 +492,7 @@ public class CellContentConverter {
 					return date;
 				}
 				long time = date.getTime();
-				if (time != SqlUtil.PG_NEGATIVE_INFINITY && time != SqlUtil.PG_NEGATIVE_SMALLER_INFINITY&& time != SqlUtil.PG_POSITIVE_INFINITY && time != SqlUtil.PG_POSITIVE_SMALLER_INFINITY) {
+				if (time != SqlUtil.PG_NEGATIVE_INFINITY && time != SqlUtil.PG_NEGATIVE_SMALLER_INFINITY && time != SqlUtil.PG_POSITIVE_INFINITY && time != SqlUtil.PG_POSITIVE_SMALLER_INFINITY) {
 					return date;
 				}
 			}
