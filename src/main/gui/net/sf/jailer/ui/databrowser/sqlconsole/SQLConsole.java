@@ -2472,7 +2472,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                if (left == 0 && numStatements == 1 && successState.failed.size() == 1) {
 	                	return "<html><font color=\"dd0000\">Error!</font></html>";
 	                } else {
-		                text += numStatements + " " + (!f? "successful. " : ("statement" + (numStatements > 1? "s. " : ". ")));
+	                	int sfull = numStatements;
+	                	if (!f && running) {
+	                		--sfull;
+	                	}
+		                text += sfull + " " + (!f? "successful. " : ("statement" + (sfull > 1? "s. " : ". ")));
 		                if (left > 0) {
 		                	text += "<font color=\"0000dd\">" + left + " remaining. </font>";
 		                }

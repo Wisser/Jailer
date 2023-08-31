@@ -749,6 +749,11 @@ public abstract class Desktop extends JDesktopPane {
 			public void propertyChange(PropertyChangeEvent evt) {
 				checkStopTS = System.currentTimeMillis();
 				manager.resizeDesktop();
+				if (Boolean.FALSE.equals(evt.getNewValue())) {
+					if (desktopViewPos != null) {
+						getScrollPane().getViewport().setViewPosition(desktopViewPos);
+					}
+				}
 			}
 		});
 
@@ -2691,8 +2696,9 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	void checkDesktopSize() {
-		if (getParent() != null && isVisible())
+		if (getParent() != null && isVisible()) {
 			manager.resizeDesktop();
+		}
 	}
 
 	public JScrollPane getScrollPane() {
@@ -2819,11 +2825,15 @@ public abstract class Desktop extends JDesktopPane {
 					scrollPane.invalidate();
 					scrollPane.validate();
 				}
+				if (!isMaximized) {
+					UIUtil.invokeLater(() -> desktopViewPos = getScrollPane().getViewport().getViewPosition());
+				}
 			}
 		}
 	}
 
 	private Dimension minimumDesktopSize;
+	private Point desktopViewPos;
 	
 	public Dimension getMinimumDesktopSize() {
 		return minimumDesktopSize != null? minimumDesktopSize : getSize();

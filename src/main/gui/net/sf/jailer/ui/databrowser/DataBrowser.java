@@ -1254,7 +1254,9 @@ public class DataBrowser extends javax.swing.JFrame {
 
 			@Override
 			public void windowClosed(WindowEvent e) {
-				storeLastSession();
+				if (wasConnected) {
+					storeLastSession();
+				}
 				desktop.stop();
 				DataBrowser.this.removeAll();
 				UIUtil.checkTermination();
@@ -1978,7 +1980,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				executionContext.getIsolationLevel(), false, true, this);
 		
 		if (newSession != null) {
-//			newSession.setSessionProperty(getClass(), "jSplitPane1", jSplitPane1);
+			wasConnected = true;
 			if (session != null) {
 				try {
 					session.shutDown();
@@ -1997,6 +1999,8 @@ public class DataBrowser extends javax.swing.JFrame {
 		}
 		return false;
 	}
+	
+	private boolean wasConnected = false;
 
 	protected boolean setConnection(DbConnectionDialog dbConnectionDialog) throws Exception {
 		String prevDatabaseName = currentDatabaseName;
