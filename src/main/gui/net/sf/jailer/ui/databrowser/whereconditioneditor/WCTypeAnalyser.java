@@ -309,11 +309,12 @@ public class WCTypeAnalyser {
 	/**
 	 * Parses a SQL query and tries to find out the type.
 	 *
-	 * @param sqlSelect the query
+	 * @param rawSqlSelect the query
 	 * @return the type or <code>null</code>
 	 */
-	public static Result getType(String sqlSelect, MetaDataSource metaDataSource, Quoting quoting) {
-		Result result = new Result();
+	public static Result getType(String rawSqlSelect, MetaDataSource metaDataSource, Quoting quoting) {
+		String sqlSelect = rawSqlSelect.replace((char) 160, ' '); // nbsp
+    	Result result = new Result();
 		result.originalQuery = sqlSelect;
 		net.sf.jsqlparser.statement.Statement st;
 		try {
