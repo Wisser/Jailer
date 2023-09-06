@@ -1,3 +1,6 @@
+15.2.1
+  - Preserving the desktop view position after the maximization of a table browser.
+
 15.2
   - Support for "Infinity/-Infinity/NaN" for dates and floating point numbers.
     See https://sourceforge.net/p/jailer/discussion/700499/thread/7741dc8aa3
