@@ -175,6 +175,7 @@ public class WCTypeAnalyser {
 		public boolean isHaving; // having/where
 		public int conditionStart;
 		public int conditionEnd;
+		public Pair<Integer, Integer> minimumWherePos;
 		public String originalQuery;
 		public boolean isSimpleSelect = true;
 		private boolean isDistinct;
@@ -334,8 +335,9 @@ public class WCTypeAnalyser {
 			}
 			
 			st.accept(new StatementVisitorAdapter() {
-
-				private void clearInStatement(Object o) {
+				Pair<Integer, Integer> minimumWherePos = null;
+				
+				private void clearInStatement(Object o, boolean afterWhere) {
 					if (o != null) {
 						Pair<Integer, Integer> pos = null;
 						
@@ -357,6 +359,11 @@ public class WCTypeAnalyser {
 							for (int i = pos.a; i < pos.b; ++i) {
 								woComments.setCharAt(i, ' ');
 							}
+							if (afterWhere) {
+								if (minimumWherePos == null || minimumWherePos.a > pos.a) {
+									minimumWherePos = pos;
+								}
+							}
 						}
 					}
 				}
@@ -377,27 +384,32 @@ public class WCTypeAnalyser {
 
 						@Override
 						public void visit(PlainSelect plainSelect) {
-							clearInStatement(plainSelect.getLimit());
-							clearInStatement(plainSelect.getDistinct());
-							clearInStatement(plainSelect.getTop());
-							clearInStatement(plainSelect.getFetch());
-							clearInStatement(plainSelect.getFirst());
-							clearInStatement(plainSelect.getForUpdateTable());
-							clearInStatement(plainSelect.getForXmlPath());
-							clearInStatement(plainSelect.getIntoTables());
-							clearInStatement(plainSelect.getOffset());
-							clearInStatement(plainSelect.getKsqlWindow());
-							clearInStatement(plainSelect.getMySqlHintStraightJoin());
-							clearInStatement(plainSelect.getMySqlSqlCalcFoundRows());
-							clearInStatement(plainSelect.getOptimizeFor());
-							clearInStatement(plainSelect.getOracleHierarchical());
-							clearInStatement(plainSelect.getOracleHint());
-							clearInStatement(plainSelect.getSkip());
-							clearInStatement(plainSelect.getWait());
+							minimumWherePos = null;
+							clearInStatement(plainSelect.getLimit(), true);
+							clearInStatement(plainSelect.getWithIsolation(), true);
+							clearInStatement(plainSelect.getDistinct(), false);
+							clearInStatement(plainSelect.getTop(), false);
+							clearInStatement(plainSelect.getFetch(), true);
+							clearInStatement(plainSelect.getKsqlWindow(), false);
+							clearInStatement(plainSelect.getFirst(), false);
+							clearInStatement(plainSelect.getForUpdateTable(), true);
+							clearInStatement(plainSelect.getForXmlPath(), true);
+							clearInStatement(plainSelect.getIntoTables(), false);
+							clearInStatement(plainSelect.getOffset(), true);
+							clearInStatement(plainSelect.getKsqlWindow(), false);
+							clearInStatement(plainSelect.getMySqlHintStraightJoin(), false);
+							clearInStatement(plainSelect.getMySqlSqlCalcFoundRows(), false);
+							clearInStatement(plainSelect.getOptimizeFor(), true);
+							clearInStatement(plainSelect.getOracleHierarchical(), true);
+							clearInStatement(plainSelect.getOracleHint(), false);
+							clearInStatement(plainSelect.getSkip(), false);
+							clearInStatement(plainSelect.getWait(), true);
 							List<OrderByElement> orderByElements = plainSelect.getOrderByElements();
 							if (orderByElements != null) {
-								clearInStatement("order by " + orderByElements.stream().map(e -> e.toString()).collect(Collectors.joining(", ")));
+								clearInStatement("order by " + orderByElements.stream().map(e -> e.toString()).collect(Collectors.joining(", ")), true);
 							}
+							
+							result.minimumWherePos = minimumWherePos;
 							
 							Expression cond = null;
 							if (plainSelect.getGroupBy() != null) {

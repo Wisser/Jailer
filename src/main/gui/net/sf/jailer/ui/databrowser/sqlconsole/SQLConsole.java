@@ -3565,24 +3565,36 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						if (mainCondition.trim().isEmpty() && condition.trim().isEmpty()) {
 							result = new StringBuilder(result.toString().replaceFirst("(?is)\\s*\\b(where|having)\\s*$", ""));
 						}
+						String rest = table.substring(wcBaseTable.conditionEnd);
 						if (result.length() > 0 && !Character.isWhitespace(result.charAt(result.length() - 1))) {
-							result.append(" ");
+							if (rest.length() > 0 && !Character.isWhitespace(rest.charAt(0))) {
+								result.append(" ");
+							}
 						}
-						result.append(table.substring(wcBaseTable.conditionEnd));
+						result.append(rest);
 							
 						return result.toString().trim();
 					} else {
 						if (condition.trim().isEmpty()) {
 							return table;
 						} else {
+							String afterWhere;
+							if (wcBaseTable.minimumWherePos != null && wcBaseTable.minimumWherePos.a < table.length()) {
+								afterWhere = table.substring(wcBaseTable.minimumWherePos.a);
+								table = table.substring(0, wcBaseTable.minimumWherePos.a);
+							} else {
+								afterWhere = null;
+							}
 							if (table.length() > 100 || table.contains("\n")) {
-								if (table.charAt(table.length() - 1) != '\n') {
+								if (!Character.isWhitespace(table.charAt(table.length() - 1))) {
 									table += "\n";
 								}
-							} else if (table.length() > 0 && !Character.isWhitespace(table.charAt(table.length() - 1))) {
-								table += " ";
+							} else {
+								if (table.length() > 0 && !Character.isWhitespace(table.charAt(table.length() - 1))) {
+									table += " ";
+								}
 							}
-							return table + (wcBaseTable.isHaving? "Having " : "Where ") + condition.trim().replaceAll("(?is)\\n\\s*(And )", " $1");
+							return table + (wcBaseTable.isHaving? "Having " : "Where ") + condition.trim().replaceAll("(?is)\\n\\s*(And )", " $1") + (afterWhere != null? " " + afterWhere : "");
 						}
 					}
 				}
