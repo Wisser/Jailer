@@ -346,22 +346,16 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                     logger.info("error", ble);
                     return null;
                 }
-
-                start = dot - getLineStartOffsetOfCurrentLine();
-                String segment = seg.toString();
-                char ch = start < segment.length()? segment.charAt(start) : ' ';
-                while (start<segment.length() && (Character.isLetterOrDigit(ch) || ch == '"' || ch == '`'|| ch == '_')) {
-                    start++;
-                    ch = start < segment.length()? segment.charAt(start) : ' ';
-                }
-
-                String line = seg.toString().substring(0, start);
+                String line = seg.toString().substring(0, len);
 
                 String reIdentifier = "(?:[\"][^\"]+[\"])|(?:[`][^`]+[`])|(?:['][^']+['])|(?:[\\w]+)";
 
-                Pattern pattern = Pattern.compile("(?:(" + reIdentifier + ")\\s*\\.\\s*)?(" + reIdentifier + ")$");
+                Pattern pattern = Pattern.compile("(?:(" + reIdentifier + ")\\s*\\.\\s*)?(" + reIdentifier + ")");
                 Matcher matcher = pattern.matcher(line);
-                if (matcher.find()) {
+                while (matcher.find()) {
+                	if (matcher.start() > (dot - start) || matcher.end() < (dot - start)) {
+                		continue;
+                	}
                     MDSchema schema;
                     if (matcher.group(1) != null) {
                         schema = SQLConsole.this.metaDataSource.find(matcher.group(1));
