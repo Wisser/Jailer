@@ -612,6 +612,12 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			}
 		};
 		
+		moduleDataBrowserToggleButton.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+		moduleSubsetterToggleButton.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+		moduleDataBrowserSubPanel.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+		moduleSubsetterPanel.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+		moduleDataBrowserPanel.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+		
 		gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
@@ -1787,7 +1793,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
         moduleSubsetterPanel.setLayout(new java.awt.GridBagLayout());
 
-        moduleSubsetterFramePanel.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         moduleSubsetterFramePanel.setOpaque(false);
         moduleSubsetterFramePanel.setLayout(new java.awt.GridBagLayout());
 
@@ -1828,7 +1833,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
         moduleDataBrowserPanel.setLayout(new java.awt.GridBagLayout());
 
-        moduleDataBrowserFramePanel1.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         moduleDataBrowserFramePanel1.setOpaque(false);
         moduleDataBrowserFramePanel1.setLayout(new java.awt.GridBagLayout());
 

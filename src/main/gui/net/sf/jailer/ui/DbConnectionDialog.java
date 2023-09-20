@@ -596,6 +596,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		if (inRefresh) return;
 		inRefresh = true;
 		try {
+			ConnectionInfo oldCurrentConnection = currentConnection;
 			final int selectedRow = connectionsTable.getSelectedRow();
 			Object[][] data = initTableModel();
 			RowSorter<?> rowSorter = connectionsTable.getRowSorter();
@@ -640,6 +641,9 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 				jButton1.setEnabled(false);
 			}
 			jButton1.setIcon(!warnOnConnect? UIUtil.scaleIcon(jButton1, okIcon) : getScaledWarnIcon());
+			if (oldCurrentConnection != null && currentConnection == null) {
+				currentConnection = oldCurrentConnection;
+			}
 		} finally {
 			inRefresh = false;
 		}
@@ -718,6 +722,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	private void loadConnectionList(boolean showOnlyRecentyUsedConnections) {
 		connectionList = new ArrayList<ConnectionInfo>();
 		String currentAlias = currentConnection != null? currentConnection.alias : null;
+		ConnectionInfo oldCurrentConnection = currentConnection;
 		currentConnection = null;
 		boolean ok = false;
 		boolean preV4 = true;
@@ -842,6 +847,9 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
 		if (currentAlias != null) {
 			connectionList.stream().filter(ci -> currentAlias.equals(ci.alias)).findAny().ifPresent(ci -> currentConnection = ci);
+		}
+		if (oldCurrentConnection != null && currentConnection == null) {
+			currentConnection = oldCurrentConnection;
 		}
 	}
 
