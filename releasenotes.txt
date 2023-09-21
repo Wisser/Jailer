@@ -1,3 +1,7 @@
+15.2.2
+  - Automatic "Where" clause adjustment in SQL console did not work correctly for queries with an "Order by" clause, but no "Where".
+    This was corrected.
+
 15.2.1
   - Preserving the desktop view position after the maximization of a table browser.
 
