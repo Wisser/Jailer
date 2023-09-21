@@ -28,9 +28,9 @@ import net.sf.jailer.ui.UIUtil;
 public class UpdateInfoManager {
 
 	private static final String[] versionURL = new String[] {
-			"http://jailer.sourceforge.net/currentVersion.php",
 			"https://jailer.sourceforge.net/currentVersion.php",
 			"https://jailer.sourceforge.io/currentVersion.php",
+			"http://jailer.sourceforge.net/currentVersion.php",
 	};
 	private static final String downloadURL = "https://sourceforge.net/projects/jailer/files/";
 	private static final long CHECK_INTERVALL = 1000L * 60 * 60 * 46;
@@ -95,6 +95,9 @@ public class UpdateInfoManager {
 							BufferedReader in = new BufferedReader(new StringReader(content));
 					        inputLine = in.readLine();
 					        in.close();
+					        if (inputLine != null && inputLine.equals("403")) {
+					        	continue;
+					        }
 					        if (inputLine != null && !inputLine.trim().isEmpty()) {
 					        	break;
 					        }
