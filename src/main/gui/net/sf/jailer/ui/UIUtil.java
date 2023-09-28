@@ -24,6 +24,7 @@ import java.awt.Dimension;
 import java.awt.FileDialog;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
@@ -41,6 +42,8 @@ import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.geom.Rectangle2D;
@@ -102,15 +105,20 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
+import javax.swing.Popup;
+import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.WindowConstants;
@@ -1437,6 +1445,7 @@ public class UIUtil {
 				if (invoker.isShowing()) {
 					setPopupActive(true);
 					popup.show(invoker, x, y);
+					initToolTips(popup);
 				}
 			}
 		});
@@ -2372,8 +2381,14 @@ public class UIUtil {
 		T value = composedValue.apply(parentValue, componentValue.apply(component));
 		consumer.accept(value, component);
 		if (component instanceof Container) {
-			for (Component child: ((Container) component).getComponents()) {
-				traverse(child, value, componentValue, composedValue, consumer);
+			if (component instanceof JMenu) {
+				for (Component child: ((JMenu) component).getMenuComponents()) {
+					traverse(child, value, componentValue, composedValue, consumer);
+				}
+			} else {
+				for (Component child: ((Container) component).getComponents()) {
+					traverse(child, value, componentValue, composedValue, consumer);
+				}
 			}
 		}
 	}
@@ -2470,5 +2485,181 @@ public class UIUtil {
 				}
 			});
 		}
+		
+		if (toolTipIndicator == null) {
+			toolTipIndicator = new JPanel(new GridBagLayout());
+			JLabel label = new JLabel();
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.insets = new Insets(2,  2,  2,  2);
+			toolTipIndicator.add(label, gbc);
+			label.setIcon(scaleIcon(scaleIcon(toolTipIndicator, explainIcon), 1f));
+			toolTipIndicator.setBorder(BorderFactory.createLineBorder(Color.gray));
+		}
+		
+		if (customCursor == null && useCustomCursor) { // TODO
+			Image image = explainIcon.getImage();
+			Dimension bcs = Toolkit.getDefaultToolkit().getBestCursorSize(image.getWidth(null), image.getHeight(null));
+			if (bcs.width > 0 && bcs.height > 0) {
+				try {
+					customCursor = Toolkit.getDefaultToolkit().createCustomCursor(image.getScaledInstance(image.getWidth(null), image.getWidth(null), Image.SCALE_SMOOTH), new Point(0, 0), "customCursor");
+				} catch (Exception e) {
+					useCustomCursor = false;
+					LogUtil.warn(e);
+				}
+			}
+		}
+		
+		initToolTips(component);
+		Window window = SwingUtilities.getWindowAncestor(component);
+		if (window instanceof JFrame) {
+			JMenuBar menu = ((JFrame) window).getJMenuBar();
+			if (menu != null) {
+				initToolTips(menu);
+			}
+		}
 	}
+
+	public static void initToolTips(Component component) {
+		if (isToolTipManagerTipShowingFieldAccessable()) {
+			return;
+		}
+		if (customCursor == null) {
+			return;
+		}
+		
+		UIUtil.invokeLater(new Runnable() {
+			public void run() {
+				UIUtil.traverse(component, null, c -> null, (c, o) -> null, (t, c) -> {
+					if (c instanceof JComponent) {
+						if (((JComponent) c).getToolTipText() != null) {
+							((JComponent) c).addMouseListener(new MouseListener() {
+								Popup popup;
+								Cursor cursor;
+								Border border;
+								
+								@Override
+								public void mouseClicked(MouseEvent e) {
+								}
+								@Override
+								public void mouseReleased(MouseEvent e) {
+									// TODO Auto-generated method stub
+
+								}
+
+								@Override
+								public void mousePressed(MouseEvent e) {
+									// TODO Auto-generated method stub
+
+								}
+
+								@Override
+								public void mouseExited(MouseEvent e) {
+									((JComponent) c).setCursor(cursor);
+									((JComponent) c).setBorder(border); // TODO
+									if (popup != null) {
+										popup.hide();
+									}
+								}
+
+								@Override
+								public void mouseEntered(MouseEvent e) {
+									if (popup != null) {
+										popup.hide();
+									}
+//										Point p = new Point(e.getXOnScreen() - (int)(toolTipIndicator.getWidth() * 1.2), e.getYOnScreen() - toolTipIndicator.getHeight() / 2);
+									Point p = new Point(- (int)(toolTipIndicator.getWidth() * 1.0), (c.getHeight() - toolTipIndicator.getHeight()) / 2);
+									SwingUtilities.convertPointToScreen(p, c);
+									border = ((JComponent) c).getBorder();
+									invokeLater(() -> {
+										if (!tipShowing()) {
+											Component w = SwingUtilities.getWindowAncestor(c);
+											if (w != null) {
+												popup = PopupFactory.getSharedInstance().getPopup(w, toolTipIndicator, p.x, p.y);
+												popup.show();
+												cursor = ((JComponent) c).getCursor();
+												border = ((JComponent) c).getBorder();
+//													((JComponent) c).setCursor(customCursor);
+												((JComponent) c).setBorder(new Border() {
+
+													@Override
+													public void paintBorder(Component c, Graphics g, int x, int y,
+															int width, int height) {
+														g.setColor(Color.black);
+														g.drawLine(x, y, x + width, y + height);
+													}
+
+													@Override
+													public Insets getBorderInsets(Component c) {
+														// TODO Auto-generated method stub
+														return border == null? new Insets(0, 0, 0, 0) : border.getBorderInsets(c);
+													}
+
+													@Override
+													public boolean isBorderOpaque() {
+														return false;
+													}
+													
+												});
+							System.out.println(this);
+												Timer timer = new Timer(Math.max(1, ToolTipManager.sharedInstance().getInitialDelay() + 50), ae -> {
+//														((JComponent) c).setCursor(cursor);
+													if (popup != null) {
+														popup.hide();
+														
+													}
+												});
+												timer.setRepeats(false);
+												timer.start();
+											}
+										}
+									});
+								}
+
+							});
+						}
+					}
+				});
+			}
+		});
+	}
+	
+	public static boolean tipShowing() {
+		if (isToolTipManagerTipShowingFieldAccessable()) {
+			try {
+				return tipShowingField.getBoolean(ToolTipManager.sharedInstance());
+			} catch (Exception e) {
+				LogUtil.warn(e);
+				isToolTipManagerTipShowingFieldAccessable = false;
+			}
+		}
+		return false;
+	}
+
+	public static boolean isToolTipManagerTipShowingFieldAccessable() {
+		if (isToolTipManagerTipShowingFieldAccessable == null) {
+			try {
+				isToolTipManagerTipShowingFieldAccessable = true;
+				tipShowingField = ToolTipManager.class.getDeclaredField("tipShowing");
+				tipShowingField.setAccessible(true);
+				tipShowingField.getBoolean(ToolTipManager.sharedInstance());
+			} catch (Exception e) {
+				LogUtil.warn(e);
+				isToolTipManagerTipShowingFieldAccessable = false;
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private static JPanel toolTipIndicator; // TODO
+	private static Cursor customCursor;// TODO
+	private static boolean useCustomCursor = true; // TODO
+	static private Boolean isToolTipManagerTipShowingFieldAccessable;
+	static private Field tipShowingField;
+	static private ImageIcon explainIcon;
+	static {
+        // load images
+        explainIcon = UIUtil.readImage("/explain.png");
+    }
+
 }

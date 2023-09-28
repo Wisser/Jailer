@@ -584,7 +584,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			}
 		});
 		item.setToolTipText(
-				"<html>Substitutes variables <i>(&amp;VAR[.])</i> with corresponding values. <br><br>\n" +
+				"<html>Substitutes variables <i>(&amp;VAR[.])</i> with corresponding values. <br>(Equivalent of the \"Substitution Variables\" feature of the Oracle \"SQL*Plus\" tool)<br><br>\n" +
 				"<b>Statements:</b>\n" +
 				"<table>\n" +
 				"<tr><td><b>&nbsp;DEFINE VAR=\"VALUE\"</b></td><td>&nbsp;&nbsp;&nbsp;</td><td>Assigns a value to variable VAR</td></tr>\n" +
@@ -4359,6 +4359,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		}
 	}
 
+	// TODO
+	// TODO tooltip, instant popup possible? (for tt indicator)
+	
 	// TODO 2
 	// TODO ordering per column: break down to SQL?
 		

@@ -377,6 +377,8 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 
 		appendPopupMenu(menu);
 		
+		UIUtil.initToolTips(menu);
+
 		return menu;
 	}
 
