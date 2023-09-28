@@ -2520,6 +2520,9 @@ public class UIUtil {
 	}
 
 	public static void initToolTips(Component component) {
+		// temp. disabled
+		if (1 == 1) return; // TODO
+		
 		if (isToolTipManagerTipShowingFieldAccessable()) {
 			return;
 		}
