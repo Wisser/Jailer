@@ -107,15 +107,12 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
-import javax.swing.Popup;
-import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.ToolTipManager;
@@ -2486,29 +2483,6 @@ public class UIUtil {
 			});
 		}
 		
-		if (toolTipIndicator == null) {
-			toolTipIndicator = new JPanel(new GridBagLayout());
-			JLabel label = new JLabel();
-			GridBagConstraints gbc = new GridBagConstraints();
-			gbc.insets = new Insets(2,  2,  2,  2);
-			toolTipIndicator.add(label, gbc);
-			label.setIcon(scaleIcon(scaleIcon(toolTipIndicator, explainIcon), 1f));
-			toolTipIndicator.setBorder(BorderFactory.createLineBorder(Color.gray));
-		}
-		
-		if (customCursor == null && useCustomCursor) { // TODO
-			Image image = explainIcon.getImage();
-			Dimension bcs = Toolkit.getDefaultToolkit().getBestCursorSize(image.getWidth(null), image.getHeight(null));
-			if (bcs.width > 0 && bcs.height > 0) {
-				try {
-					customCursor = Toolkit.getDefaultToolkit().createCustomCursor(image.getScaledInstance(image.getWidth(null), image.getWidth(null), Image.SCALE_SMOOTH), new Point(0, 0), "customCursor");
-				} catch (Exception e) {
-					useCustomCursor = false;
-					LogUtil.warn(e);
-				}
-			}
-		}
-		
 		initToolTips(component);
 		Window window = SwingUtilities.getWindowAncestor(component);
 		if (window instanceof JFrame) {
@@ -2523,146 +2497,79 @@ public class UIUtil {
 		// temp. disabled
 		if (1 == 1) return; // TODO
 		
-		if (isToolTipManagerTipShowingFieldAccessable()) {
-			return;
-		}
-		if (customCursor == null) {
-			return;
-		}
-		
 		UIUtil.invokeLater(new Runnable() {
 			public void run() {
 				UIUtil.traverse(component, null, c -> null, (c, o) -> null, (t, c) -> {
 					if (c instanceof JComponent) {
-						if (((JComponent) c).getToolTipText() != null) {
-							((JComponent) c).addMouseListener(new MouseListener() {
-								Popup popup;
-								Cursor cursor;
-								Border border;
-								
-								@Override
-								public void mouseClicked(MouseEvent e) {
-								}
-								@Override
-								public void mouseReleased(MouseEvent e) {
-									// TODO Auto-generated method stub
-
-								}
-
-								@Override
-								public void mousePressed(MouseEvent e) {
-									// TODO Auto-generated method stub
-
-								}
-
-								@Override
-								public void mouseExited(MouseEvent e) {
-									((JComponent) c).setCursor(cursor);
-									((JComponent) c).setBorder(border); // TODO
-									if (popup != null) {
-										popup.hide();
-									}
-								}
-
-								@Override
-								public void mouseEntered(MouseEvent e) {
-									if (popup != null) {
-										popup.hide();
-									}
-//										Point p = new Point(e.getXOnScreen() - (int)(toolTipIndicator.getWidth() * 1.2), e.getYOnScreen() - toolTipIndicator.getHeight() / 2);
-									Point p = new Point(- (int)(toolTipIndicator.getWidth() * 1.0), (c.getHeight() - toolTipIndicator.getHeight()) / 2);
-									SwingUtilities.convertPointToScreen(p, c);
-									border = ((JComponent) c).getBorder();
-									invokeLater(() -> {
-										if (!tipShowing()) {
-											Component w = SwingUtilities.getWindowAncestor(c);
-											if (w != null) {
-												popup = PopupFactory.getSharedInstance().getPopup(w, toolTipIndicator, p.x, p.y);
-												popup.show();
-												cursor = ((JComponent) c).getCursor();
-												border = ((JComponent) c).getBorder();
-//													((JComponent) c).setCursor(customCursor);
-												((JComponent) c).setBorder(new Border() {
-
-													@Override
-													public void paintBorder(Component c, Graphics g, int x, int y,
-															int width, int height) {
-														g.setColor(Color.black);
-														g.drawLine(x, y, x + width, y + height);
-													}
-
-													@Override
-													public Insets getBorderInsets(Component c) {
-														// TODO Auto-generated method stub
-														return border == null? new Insets(0, 0, 0, 0) : border.getBorderInsets(c);
-													}
-
-													@Override
-													public boolean isBorderOpaque() {
-														return false;
-													}
-													
-												});
-							System.out.println(this);
-												Timer timer = new Timer(Math.max(1, ToolTipManager.sharedInstance().getInitialDelay() + 50), ae -> {
-//														((JComponent) c).setCursor(cursor);
-													if (popup != null) {
-														popup.hide();
-														
-													}
-												});
-												timer.setRepeats(false);
-												timer.start();
-											}
-										}
-									});
-								}
-
-							});
-						}
+						initToolTip((JComponent) c);
 					}
 				});
-			}
-		});
+			}});
+	}
+
+	public static void initToolTip(JComponent c) {
+		if (c.getToolTipText() != null) {
+			c.addMouseListener(new MouseListener() {
+				Border border;
+
+				@Override
+				public void mouseExited(MouseEvent e) {
+					((JComponent) c).setBorder(border);
+				}
+
+				@Override
+				public void mouseEntered(MouseEvent e) {
+					border = c.getBorder();
+					if (!(border instanceof ToolTipBorder)) {
+						c.setBorder(new ToolTipBorder(border));
+						Timer timer = new Timer(
+								Math.max(1, ToolTipManager.sharedInstance().getInitialDelay() + 50),
+								ae -> ((JComponent) c).setBorder(border));
+						timer.setRepeats(false);
+						timer.start();
+					}
+				}
+				
+				@Override
+				public void mouseClicked(MouseEvent e) {
+				}
+				@Override
+				public void mouseReleased(MouseEvent e) {
+				}
+				@Override
+				public void mousePressed(MouseEvent e) {
+				}
+			});
+
+		}
 	}
 	
-	public static boolean tipShowing() {
-		if (isToolTipManagerTipShowingFieldAccessable()) {
-			try {
-				return tipShowingField.getBoolean(ToolTipManager.sharedInstance());
-			} catch (Exception e) {
-				LogUtil.warn(e);
-				isToolTipManagerTipShowingFieldAccessable = false;
-			}
+	private static final class ToolTipBorder implements Border {
+		private final Border border;
+		
+		public ToolTipBorder(Border border) {
+			this.border = border;
 		}
-		return false;
-	}
-
-	public static boolean isToolTipManagerTipShowingFieldAccessable() {
-		if (isToolTipManagerTipShowingFieldAccessable == null) {
-			try {
-				isToolTipManagerTipShowingFieldAccessable = true;
-				tipShowingField = ToolTipManager.class.getDeclaredField("tipShowing");
-				tipShowingField.setAccessible(true);
-				tipShowingField.getBoolean(ToolTipManager.sharedInstance());
-			} catch (Exception e) {
-				LogUtil.warn(e);
-				isToolTipManagerTipShowingFieldAccessable = false;
-				return false;
+		
+		@Override
+		public void paintBorder(Component c, Graphics g, int x, int y, int width,
+				int height) {
+			if (border != null) {
+				border.paintBorder(c, g, x, y, width, height);
 			}
+			g.setColor(Color.black);
+			g.drawLine(x, y, x + width, y + height);
 		}
-		return true;
-	}
 
-	private static JPanel toolTipIndicator; // TODO
-	private static Cursor customCursor;// TODO
-	private static boolean useCustomCursor = true; // TODO
-	static private Boolean isToolTipManagerTipShowingFieldAccessable;
-	static private Field tipShowingField;
-	static private ImageIcon explainIcon;
-	static {
-        // load images
-        explainIcon = UIUtil.readImage("/explain.png");
-    }
+		@Override
+		public Insets getBorderInsets(Component c) {
+			return border == null ? new Insets(0, 0, 0, 0) : border.getBorderInsets(c);
+		}
+
+		@Override
+		public boolean isBorderOpaque() {
+			return false;
+		}
+	}
 
 }
