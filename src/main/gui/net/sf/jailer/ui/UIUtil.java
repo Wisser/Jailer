@@ -2510,7 +2510,6 @@ public class UIUtil {
 	public static void initToolTip(JComponent c) {
 		if (c.getToolTipText() != null) {
 			c.addMouseListener(new MouseListener() {
-				Border border;
 				Runnable resetBorder;
 
 				@Override
@@ -2524,19 +2523,16 @@ public class UIUtil {
 				public void mouseEntered(MouseEvent e) {
 					Border origBorder = c.getBorder();
 					if (!(origBorder instanceof ToolTipBorder)) {
-						border = origBorder;
 						resetBorder = () -> {
 							((JComponent) c).setBorder(origBorder);
 							resetBorder = null;
 						};
-						c.setBorder(new ToolTipBorder(border));
+						c.setBorder(new ToolTipBorder(origBorder));
+						Runnable reset = resetBorder;
 						Timer timer = new Timer(
 								Math.max(1, ToolTipManager.sharedInstance().getInitialDelay() + 50),
-								ae -> {
-									if (resetBorder != null) {
-										resetBorder.run();
-									}
-								});
+								ae -> reset.run()
+								);
 						timer.setRepeats(false);
 						timer.start();
 					}
