@@ -2511,20 +2511,32 @@ public class UIUtil {
 		if (c.getToolTipText() != null) {
 			c.addMouseListener(new MouseListener() {
 				Border border;
+				Runnable resetBorder;
 
 				@Override
 				public void mouseExited(MouseEvent e) {
-					((JComponent) c).setBorder(border);
+					if (resetBorder != null) {
+						resetBorder.run();
+					}
 				}
 
 				@Override
 				public void mouseEntered(MouseEvent e) {
-					border = c.getBorder();
-					if (!(border instanceof ToolTipBorder)) {
+					Border origBorder = c.getBorder();
+					if (!(origBorder instanceof ToolTipBorder)) {
+						border = origBorder;
+						resetBorder = () -> {
+							((JComponent) c).setBorder(origBorder);
+							resetBorder = null;
+						};
 						c.setBorder(new ToolTipBorder(border));
 						Timer timer = new Timer(
 								Math.max(1, ToolTipManager.sharedInstance().getInitialDelay() + 50),
-								ae -> ((JComponent) c).setBorder(border));
+								ae -> {
+									if (resetBorder != null) {
+										resetBorder.run();
+									}
+								});
 						timer.setRepeats(false);
 						timer.start();
 					}
