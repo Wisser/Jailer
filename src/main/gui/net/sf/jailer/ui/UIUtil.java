@@ -109,6 +109,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButton;
 import javax.swing.JRadioButtonMenuItem;
@@ -2508,34 +2509,50 @@ public class UIUtil {
 			}});
 	}
 
+
 	public static void initToolTip(JComponent c) {
-		if (c.getToolTipText() != null) {
+		initToolTip(c, null); 
+	}
+
+	public static void initToolTip(JComponent c, JComponent proxy) {
+		if (c.getToolTipText() != null && !"no-tt-indicator".equals(c.getName())) {
 			if (c instanceof JCheckBox) {
 				((JCheckBox) c).setBorderPainted(true);
 			} else if (c instanceof JRadioButton) {
 				((JRadioButton) c).setBorderPainted(true);
 			}
+			JComponent indicatorComponent;
+			if (proxy != null) {	
+				c.setName("no-tt-indicator");
+				indicatorComponent = proxy;
+			} else {
+				indicatorComponent = c;
+			}
 			c.addMouseListener(new MouseListener() {
 				Runnable resetBorder;
+				Timer timer;
 
 				@Override
 				public void mouseExited(MouseEvent e) {
-					if (resetBorder != null) {
+					if (resetBorder != null && proxy == null) {
 						resetBorder.run();
 					}
 				}
 
 				@Override
 				public void mouseEntered(MouseEvent e) {
-					Border origBorder = c.getBorder();
+					Border origBorder = indicatorComponent.getBorder();
 					if (!(origBorder instanceof ToolTipBorder)) {
 						resetBorder = () -> {
-							((JComponent) c).setBorder(origBorder);
+							indicatorComponent.setBorder(origBorder);
 							resetBorder = null;
 						};
-						c.setBorder(new ToolTipBorder(origBorder));
+						indicatorComponent.setBorder(new ToolTipBorder(origBorder));
 						Runnable reset = resetBorder;
-						Timer timer = new Timer(
+						if (timer != null) {
+							timer.stop();
+						}
+						timer = new Timer(
 								Math.max(1, ToolTipManager.sharedInstance().getInitialDelay() + 100),
 								ae -> reset.run()
 								);
@@ -2571,13 +2588,13 @@ public class UIUtil {
 			if (border != null) {
 				border.paintBorder(c, g, x, y, width, height);
 			}
-			if (g instanceof Graphics2D) {
+			if (g instanceof Graphics2D && width >= 20) {
 				Graphics2D g2d = (Graphics2D) g;
 				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 				g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 				
 				int b = 10;
-				if (c instanceof JCheckBox || c instanceof JRadioButton || width < 20) {
+				if (c instanceof JCheckBox || c instanceof JRadioButton) {
 					b = 7;
 				}
 				
