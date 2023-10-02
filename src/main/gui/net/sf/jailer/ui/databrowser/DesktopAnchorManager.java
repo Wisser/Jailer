@@ -150,6 +150,7 @@ public abstract class DesktopAnchorManager {
 				}
 			}
 		});
+		UIUtil.initToolTip(anchorButton);
 		MouseListener ml;
 		anchorButton.addMouseListener(ml = new MouseListener() {
 			@Override
@@ -188,6 +189,7 @@ public abstract class DesktopAnchorManager {
 		button.setText(null);
 		button.setIcon(UIUtil.scaleIcon(icon, anchorIcon.getIconHeight() / (double) icon.getIconHeight()));
 		button.setToolTipText(tooltip);
+		UIUtil.initToolTip(button);
 		int componentCount = anchorPanel.getComponentCount();
 		button.addActionListener(new ActionListener() {
 			@Override

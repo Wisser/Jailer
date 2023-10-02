@@ -276,6 +276,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 				return m_arrowTrans;
 			}
     	};
+    	UIUtil.initToolTips(panel);
     	panel.setOpaque(false);
 
     	GridBagConstraints gridBagConstraints;

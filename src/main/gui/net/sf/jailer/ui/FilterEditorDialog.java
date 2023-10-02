@@ -1239,6 +1239,8 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 
 		validate();
 		repaint();
+		
+		UIUtil.initToolTips(filterPane);
 	}
 
 	private void refreshTemplatesDerivedList() {

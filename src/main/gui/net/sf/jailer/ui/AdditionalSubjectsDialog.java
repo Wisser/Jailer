@@ -162,6 +162,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 	 */
 	public AdditionalSubjectsDialog(Frame parent, ExtractionModelEditor extractionModelEditor, final ExtractionModel extractionModel, Table subject, String subjectCond) {
 		super(parent, true);
+		UIUtil.initComponents(this);
 		this.parent = parent;
 		this.extractionModel = extractionModel;
 		this.subjectCond = subjectCond;

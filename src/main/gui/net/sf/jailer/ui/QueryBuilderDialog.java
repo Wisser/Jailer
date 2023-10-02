@@ -541,6 +541,8 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 
 	private void resetRelationshipsPanel() {
 		relationshipsPanel.removeAll();
+		UIUtil.initToolTips(relationshipsPanel);
+
 		// Table lastTable = null;
 		List<Relationship> relationships = rootRelationship.flatten(0, null,
 				true);

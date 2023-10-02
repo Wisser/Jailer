@@ -34,6 +34,7 @@ import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
@@ -99,6 +100,7 @@ import javax.swing.ComboBoxEditor;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -108,10 +110,12 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JRadioButton;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -2494,9 +2498,6 @@ public class UIUtil {
 	}
 
 	public static void initToolTips(Component component) {
-		// temp. disabled
-		if (1 == 1) return; // TODO
-		
 		UIUtil.invokeLater(new Runnable() {
 			public void run() {
 				UIUtil.traverse(component, null, c -> null, (c, o) -> null, (t, c) -> {
@@ -2509,6 +2510,11 @@ public class UIUtil {
 
 	public static void initToolTip(JComponent c) {
 		if (c.getToolTipText() != null) {
+			if (c instanceof JCheckBox) {
+				((JCheckBox) c).setBorderPainted(true);
+			} else if (c instanceof JRadioButton) {
+				((JRadioButton) c).setBorderPainted(true);
+			}
 			c.addMouseListener(new MouseListener() {
 				Runnable resetBorder;
 
@@ -2530,7 +2536,7 @@ public class UIUtil {
 						c.setBorder(new ToolTipBorder(origBorder));
 						Runnable reset = resetBorder;
 						Timer timer = new Timer(
-								Math.max(1, ToolTipManager.sharedInstance().getInitialDelay() + 50),
+								Math.max(1, ToolTipManager.sharedInstance().getInitialDelay() + 100),
 								ae -> reset.run()
 								);
 						timer.setRepeats(false);
@@ -2565,8 +2571,21 @@ public class UIUtil {
 			if (border != null) {
 				border.paintBorder(c, g, x, y, width, height);
 			}
-			g.setColor(Color.black);
-			g.drawLine(x, y, x + width, y + height);
+			if (g instanceof Graphics2D) {
+				Graphics2D g2d = (Graphics2D) g;
+				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+				g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+				
+				int b = 10;
+				if (c instanceof JCheckBox || c instanceof JRadioButton || width < 20) {
+					b = 7;
+				}
+				
+				g2d.setColor(c instanceof JLabel || c instanceof JTextField? new Color(255, 255, 0, 128) : new Color(255, 255, 0));
+				g2d.fillPolygon(new int[] {x, x + b, x}, new int[] {y, y, y + b}, 3);
+				g2d.setColor(new Color(200, 200, 0));
+				g2d.drawPolygon(new int[] {x, x + b, x}, new int[] {y, y, y + b}, 3);
+			}
 		}
 
 		@Override
