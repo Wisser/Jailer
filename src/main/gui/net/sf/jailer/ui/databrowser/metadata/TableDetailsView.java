@@ -83,6 +83,7 @@ public class TableDetailsView extends javax.swing.JPanel {
         String ttt = UIUtil.getToolTip(table, dataModel);
         tableNameLabel.setToolTipText(ttt);
         jPanel1.setToolTipText(ttt);
+        UIUtil.initToolTip(tableNameLabel, jPanel1);
         if (dataModel.getComment(table, null) != null) {
         	commentLabel.setText(dataModel.getComment(table, null).replace("\n", " "));
         	commentLabel.setToolTipText(ttt);

@@ -4359,9 +4359,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		}
 	}
 
-	// TODO
-	// TODO tooltip, instant popup possible? (for tt indicator)
-	
 	// TODO 2
 	// TODO ordering per column: break down to SQL?
 		

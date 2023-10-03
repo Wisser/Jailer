@@ -326,6 +326,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
 		boolean saveNeedsSave = needsSave;
 		initComponents(); UIUtil.initComponents(this);
+		jPanel3.setName("no-tt-indicator");
 		subjectTable = new JComboBox2() {
 			@Override
 			public Dimension getPreferredSize() {

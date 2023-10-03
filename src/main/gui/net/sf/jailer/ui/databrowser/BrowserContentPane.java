@@ -554,9 +554,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 									}
 								}
 								errorMessageTextArea.setText(e.getMessage());
-								UIUtil.initToolTip(errorMessageTextArea);
 								errorMessageTextArea.setToolTipText(UIUtil.toHTML(UIUtil.lineWrap(e.getMessage(), 100).toString(), 120));
 								errorMessageTextArea.setCaretPosition(0);
+								UIUtil.initToolTip(errorMessageTextArea);
 								if (shouldShowLoadErrors()) {
 									SQLException sqlException = null;
 									if (e instanceof SqlException && e.getCause() != null && e.getCause() instanceof SQLException) {
