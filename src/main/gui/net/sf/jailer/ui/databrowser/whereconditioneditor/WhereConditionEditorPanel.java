@@ -1225,6 +1225,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		
         clearButton.setEnabled(comparisons.stream().anyMatch(c -> c.valueTextField != null && c.valueTextField.getText().trim().length() > 0));
         
+        UIUtil.initToolTips(searchFieldsPanel);
 		revalidate();
 		focusedComparision.ifPresent(c -> c.valueTextField.grabFocus());
     }

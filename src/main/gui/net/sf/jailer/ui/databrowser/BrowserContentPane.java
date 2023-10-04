@@ -1007,7 +1007,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		findColumnsLabel.setText(getQueryBuilderDialog() != null? null : "Find Column");
 		findColumnsLabel.setToolTipText("Find Column...");
 		findColumnsLabel.setIcon(scaledFindColumnIcon1);
-		if (UIUtil.plaf != PLAF.FLAT) {
+		findColumnsLabel.setName("no-tt-indicator");
+				if (UIUtil.plaf != PLAF.FLAT) {
 			findColumnsLabel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
 		}
 

@@ -2605,7 +2605,7 @@ public class UIUtil {
 			if (border != null) {
 				border.paintBorder(c, g, x, y, width, height);
 			}
-			if (g instanceof Graphics2D && width >= 20) {
+			if (g instanceof Graphics2D) {
 				Graphics2D g2d = (Graphics2D) g;
 				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 				g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);

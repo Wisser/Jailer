@@ -142,7 +142,8 @@ public class TableDetailsView extends javax.swing.JPanel {
 		findColumnsLabel.setText(null);
 		findColumnsLabel.setToolTipText("Find Column...");
 		findColumnsLabel.setIcon(scaledFindColumnIcon1);
-
+		findColumnsLabel.setName("no-tt-indicator");
+		
 		findColumnsLabel.addMouseListener(new java.awt.event.MouseAdapter() {
 			private boolean in = false;
 
