@@ -2507,14 +2507,26 @@ public class UIUtil {
 				});
 			}});
 	}
-
-
+	
 	public static void initToolTip(JComponent c) {
 		initToolTip(c, null); 
 	}
 
+	private static boolean isToolTipVisible() {
+		for (Window w : Window.getWindows()) {
+		    if (w.isShowing() && w.isAlwaysOnTop()) {
+		    	if (!w.getClass().getPackageName().contains("jailer")) {
+		    		// Tooltip window
+		            return true;
+		    	}
+		    }
+		}
+		return false;
+	}
+
 	public static void initToolTip(JComponent c, JComponent proxy) {
 		if (c.getToolTipText() != null && !"no-tt-indicator".equals(c.getName())) {
+			c.putClientProperty("Popup.forceHeavyWeight", true);
 			if (c instanceof JCheckBox) {
 				((JCheckBox) c).setBorderPainted(true);
 			} else if (c instanceof JRadioButton) {
@@ -2540,24 +2552,30 @@ public class UIUtil {
 
 				@Override
 				public void mouseEntered(MouseEvent e) {
-					Border origBorder = indicatorComponent.getBorder();
-					if (!(origBorder instanceof ToolTipBorder)) {
-						resetBorder = () -> {
-							indicatorComponent.setBorder(origBorder);
-							resetBorder = null;
-						};
-						indicatorComponent.setBorder(new ToolTipBorder(origBorder));
-						Runnable reset = resetBorder;
-						if (timer != null) {
-							timer.stop();
-						}
-						timer = new Timer(
-								Math.max(1, ToolTipManager.sharedInstance().getInitialDelay() + 100),
-								ae -> reset.run()
-								);
-						timer.setRepeats(false);
-						timer.start();
-					}
+					invokeLater(2, () -> {
+						Border origBorder = indicatorComponent.getBorder();
+						if (!(origBorder instanceof ToolTipBorder) && !isToolTipVisible()) {
+							resetBorder = () -> {
+								indicatorComponent.setBorder(origBorder);
+								resetBorder = null;
+							};
+							indicatorComponent.setBorder(new ToolTipBorder(origBorder));
+							Runnable reset = resetBorder;
+							if (timer != null) {
+								timer.stop();
+							}
+							long stopTime = System.currentTimeMillis()
+									+ ToolTipManager.sharedInstance().getInitialDelay() + 200;
+							timer = new Timer(100, ae -> {
+								if (System.currentTimeMillis() >= stopTime || isToolTipVisible()) {
+									reset.run();
+									timer.stop();
+								}
+							});
+							timer.setDelay(100);
+							timer.setRepeats(true);
+							timer.start();
+						}});
 				}
 				
 				@Override
