@@ -2566,13 +2566,13 @@ public class UIUtil {
 							}
 							long stopTime = System.currentTimeMillis()
 									+ ToolTipManager.sharedInstance().getInitialDelay() + 200;
-							timer = new Timer(100, ae -> {
+							timer = new Timer(10, ae -> {
 								if (System.currentTimeMillis() >= stopTime || isToolTipVisible()) {
 									reset.run();
 									timer.stop();
 								}
 							});
-							timer.setDelay(100);
+							timer.setDelay(10);
 							timer.setRepeats(true);
 							timer.start();
 						}});
