@@ -1,3 +1,7 @@
+15.2.3
+  - The new "Tooltip Indicator" feature lets you see which user interface elements provide a tooltip.
+  - A rarely occurring "ConcurrentModificationException" issue was corrected.
+
 15.2.2
   - Automatic "Where" clause adjustment in SQL console did not work correctly for queries with an "Order by" clause, but no "Where".
     This was corrected.

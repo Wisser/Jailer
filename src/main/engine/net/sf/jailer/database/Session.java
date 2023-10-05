@@ -1512,10 +1512,12 @@ public class Session {
 	 * @param owner the class that owns the properties
 	 */
 	public void removeSessionProperties(Class<?> owner) {
-		Iterator<Map.Entry<String, Object>> i = sessionProperty.entrySet().iterator();
-		while (i.hasNext()) {
-			if (i.next().getKey().startsWith(owner.getName() + ".")) {
-				i.remove();
+		synchronized (sessionProperty) {
+			Iterator<Map.Entry<String, Object>> i = sessionProperty.entrySet().iterator();
+			while (i.hasNext()) {
+				if (i.next().getKey().startsWith(owner.getName() + ".")) {
+					i.remove();
+				}
 			}
 		}
 	}

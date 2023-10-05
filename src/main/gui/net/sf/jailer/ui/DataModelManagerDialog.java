@@ -726,6 +726,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			public void windowActivated(WindowEvent e) {
 			}
 		});
+		
+		UIUtil.initToolTips(this);
 	}
 
 	public static void start(String module, boolean withStartupWizzard, ExecutionContext executionContext) {

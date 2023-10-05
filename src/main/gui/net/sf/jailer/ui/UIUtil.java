@@ -2615,7 +2615,8 @@ public class UIUtil {
 					b = 7;
 				}
 				
-				g2d.setColor(c instanceof JLabel || c instanceof JTextField? new Color(255, 255, 0, 128) : new Color(255, 255, 0));
+				g2d.setColor(((c instanceof JLabel) && ((JLabel) c).getIcon() == null) || c instanceof JTextField?
+						new Color(255, 255, 0, 128) : new Color(255, 255, 0));
 				g2d.fillPolygon(new int[] {x, x + b, x}, new int[] {y, y, y + b}, 3);
 				g2d.setColor(new Color(200, 200, 0));
 				g2d.drawPolygon(new int[] {x, x + b, x}, new int[] {y, y, y + b}, 3);
