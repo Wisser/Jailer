@@ -2512,10 +2512,10 @@ public class UIUtil {
 		initToolTip(c, null); 
 	}
 
-	private static boolean isToolTipVisible() {
+	private static boolean isToolTipVisible(Window parent) {
 		for (Window w : Window.getWindows()) {
-		    if (w.isShowing() && w.isAlwaysOnTop()) {
-		    	if (!w.getClass().getPackageName().contains("jailer")) {
+		    if (w.isShowing() && w.isAlwaysOnTop() && w != parent) {
+		    	if (!w.getClass().getName().contains("jailer")) {
 		    		// Tooltip window
 		            return true;
 		    	}
@@ -2552,9 +2552,10 @@ public class UIUtil {
 
 				@Override
 				public void mouseEntered(MouseEvent e) {
+					Window window = SwingUtilities.getWindowAncestor(c);
 					invokeLater(2, () -> {
 						Border origBorder = indicatorComponent.getBorder();
-						if (!(origBorder instanceof ToolTipBorder) && !isToolTipVisible()) {
+						if (!(origBorder instanceof ToolTipBorder) && !isToolTipVisible(window)) {
 							resetBorder = () -> {
 								indicatorComponent.setBorder(origBorder);
 								resetBorder = null;
@@ -2567,7 +2568,7 @@ public class UIUtil {
 							long stopTime = System.currentTimeMillis()
 									+ ToolTipManager.sharedInstance().getInitialDelay() + 200;
 							timer = new Timer(10, ae -> {
-								if (System.currentTimeMillis() >= stopTime || isToolTipVisible()) {
+								if (System.currentTimeMillis() >= stopTime || isToolTipVisible(window)) {
 									reset.run();
 									timer.stop();
 								}
