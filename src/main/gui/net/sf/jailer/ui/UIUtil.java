@@ -2524,6 +2524,8 @@ public class UIUtil {
 		return false;
 	}
 
+	private static Runnable resetBorder;
+	
 	public static void initToolTip(JComponent c, JComponent proxy) {
 		if (c.getToolTipText() != null && !"no-tt-indicator".equals(c.getName())) {
 			c.putClientProperty("Popup.forceHeavyWeight", true);
@@ -2540,7 +2542,6 @@ public class UIUtil {
 				indicatorComponent = c;
 			}
 			c.addMouseListener(new MouseListener() {
-				Runnable resetBorder;
 				Timer timer;
 
 				@Override
@@ -2556,12 +2557,17 @@ public class UIUtil {
 					invokeLater(2, () -> {
 						Border origBorder = indicatorComponent.getBorder();
 						if (!(origBorder instanceof ToolTipBorder) && !isToolTipVisible(window)) {
+							if (resetBorder != null && proxy == null) {
+								resetBorder.run();
+							}
 							resetBorder = () -> {
 								indicatorComponent.setBorder(origBorder);
 								resetBorder = null;
 							};
 							indicatorComponent.setBorder(new ToolTipBorder(origBorder));
-							Runnable reset = resetBorder;
+							Runnable reset = () -> {
+								indicatorComponent.setBorder(origBorder);
+							};
 							if (timer != null) {
 								timer.stop();
 							}
