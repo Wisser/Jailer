@@ -64,6 +64,7 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -116,6 +117,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
+import javax.swing.JToolTip;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -156,6 +158,7 @@ import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.util.ConcurrentTaskControl;
 import net.sf.jailer.ui.util.HttpUtil;
+import net.sf.jailer.ui.util.LRUCache;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
@@ -2511,15 +2514,43 @@ public class UIUtil {
 	public static void initToolTip(JComponent c) {
 		initToolTip(c, null); 
 	}
-
-	private static boolean isToolTipVisible(Window parent) {
+	
+	private static WeakReference<Map<Window, Boolean>> isToolTipPopupRef = new WeakReference<Map<Window, Boolean>>(null);
+	
+	private static boolean isToolTipVisible() {
+		Map<Window, Boolean> isToolTipPopup = isToolTipPopupRef.get();
+		if (isToolTipPopup == null) {
+			isToolTipPopup = new LRUCache<>(20);
+			isToolTipPopupRef = new WeakReference<Map<Window, Boolean>>(isToolTipPopup);
+		}
 		for (Window w : Window.getWindows()) {
-		    if (w.isShowing() && w.isAlwaysOnTop() && w != parent) {
-		    	if (!w.getClass().getName().contains("jailer")) {
-		    		// Tooltip window
-		            return true;
-		    	}
-		    }
+			if (w.isShowing() && w.isAlwaysOnTop()) {
+				Boolean isTTP = isToolTipPopup.get(w);
+				if (Boolean.TRUE.equals(isTTP)) {
+					return true;
+				}
+				if (Boolean.FALSE.equals(isTTP)) {
+					continue;
+				}
+				isToolTipPopup.put(w, false);
+				Stack<Component> todo = new Stack<>();
+				for (Component c: w.getComponents()) {
+					todo.add(c);
+				}
+				int i = 32;
+				while (!todo.isEmpty() && --i > 0) {
+					Component c = todo.pop();
+					if (c instanceof JToolTip) {
+						isToolTipPopup.put(w, true);
+						return true;
+					}
+					if (c instanceof JComponent) {
+						for (Component c2: ((JComponent) c).getComponents()) {
+							todo.add(c2);
+						}
+					}
+				}
+			}
 		}
 		return false;
 	}
@@ -2553,10 +2584,9 @@ public class UIUtil {
 
 				@Override
 				public void mouseEntered(MouseEvent e) {
-					Window window = SwingUtilities.getWindowAncestor(c);
 					invokeLater(2, () -> {
 						Border origBorder = indicatorComponent.getBorder();
-						if (!(origBorder instanceof ToolTipBorder) && !isToolTipVisible(window)) {
+						if (!(origBorder instanceof ToolTipBorder) && !isToolTipVisible()) {
 							if (resetBorder != null && proxy == null) {
 								resetBorder.run();
 							}
@@ -2574,7 +2604,7 @@ public class UIUtil {
 							long stopTime = System.currentTimeMillis()
 									+ ToolTipManager.sharedInstance().getInitialDelay() + 200;
 							timer = new Timer(10, ae -> {
-								if (System.currentTimeMillis() >= stopTime || isToolTipVisible(window)) {
+								if (System.currentTimeMillis() >= stopTime || isToolTipVisible()) {
 									reset.run();
 									timer.stop();
 								}
