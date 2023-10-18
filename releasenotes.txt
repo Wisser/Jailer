@@ -1,4 +1,7 @@
 15.2.3
+  - An error in handling "like" conditions in the "Condition Editor" has been fixed.
+
+15.2.3
   - The new "Tooltip Indicator" feature lets you see which user interface elements provide a tooltip.
   - A rarely occurring "ConcurrentModificationException" issue was corrected.
 

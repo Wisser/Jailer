@@ -4061,6 +4061,10 @@ public abstract class Desktop extends JDesktopPane {
 	 */
 	private void showInNewWindow(RowBrowser tableBrowser) {
 		DataBrowser newDataBrowser = openNewDataBrowser();
+		if (newDataBrowser != null && newDataBrowser.desktop.session == null) {
+			newDataBrowser.dispose();
+			newDataBrowser = null;
+		}
 		if (newDataBrowser != null) {
 			newDataBrowser.desktop.layoutMode = layoutMode;
 			newDataBrowser.desktop.updateMenu(layoutMode);
