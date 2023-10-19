@@ -3155,6 +3155,21 @@ public abstract class Desktop extends JDesktopPane {
 			}
 			rb.internalFrame.dispose();
 		}
+		Set<String> titles = new HashSet<>();
+		for (RowBrowser tb : tableBrowsers) {
+			if (tb.internalFrame != null && tb.internalFrame.getTitle() != null) {
+				titles.add(tb.internalFrame.getTitle());
+			}
+		}
+		for (RowBrowser tb : tableBrowsers) {
+			if (tb.browserContentPane != null && tb.browserContentPane.table != null) {
+				String title = datamodel.get().getDisplayName(tb.browserContentPane.table);
+				if (!titles.contains(title)) {
+					tb.internalFrame.setTitle(title);
+				}
+			}
+		}
+		
 		updateMenu();
 		checkHAlignedPath();
 		JInternalFrame first = null;
