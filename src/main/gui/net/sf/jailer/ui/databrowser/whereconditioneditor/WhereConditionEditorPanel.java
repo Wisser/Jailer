@@ -713,7 +713,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 								if ("!=".equals(op)) {
 									operator = Operator.NotEqual;
 								} else {
-									operator = Stream.of(Operator.values()).filter(o -> o.sql.equals(op)).findFirst().get();
+									operator = Stream.of(Operator.values()).filter(o -> o.sql.equals(op.toLowerCase())).findFirst().get();
 								}
 								sqlValue = matcher.group(6);
 								int opPos = matcher.start(5);
@@ -754,7 +754,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				}
 			});
 		} catch (Exception e) {
-			e.printStackTrace();
+			LogUtil.warn(e);
 			throw e;
 		}
 	}
