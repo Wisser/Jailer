@@ -124,7 +124,7 @@ public class DesktopUndoManager {
 				}
 				
 				if (state.selectedTable != null) {
-					Optional<RowBrowser> opt = dataBrowser.desktop.tableBrowsers.stream().filter(b -> b.internalFrame != null && state.selectedTable.equals(b.internalFrame.getTitle())).findAny();
+					Optional<RowBrowser> opt = dataBrowser.desktop.tableBrowsers.stream().filter(b -> b.internalFrame != null && state.selectedTable.equals(b.getTitle())).findAny();
 					if (opt.isPresent()) {
 						try {
 							opt.get().internalFrame.setSelected(true);
@@ -242,7 +242,7 @@ public class DesktopUndoManager {
 		String selectedTable = null;
 		Optional<RowBrowser> opt = dataBrowser.desktop.tableBrowsers.stream().filter(b -> b.internalFrame != null && b.internalFrame.isSelected()).findAny();
 		if (opt.isPresent()) {
-			selectedTable = opt.get().internalFrame.getTitle();
+			selectedTable = opt.get().getTitle();
 		}
 		State state = new State(scrollPane.getViewport().getViewPosition(), file, sb.toString(), undoDescription, redoDescription, selectedTable);
 		return state;

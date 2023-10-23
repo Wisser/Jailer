@@ -6056,7 +6056,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		if (cle && cleRelevant) {
 			rowsCount.setToolTipText("row selection incomplete");
 		} else if (!limitExceeded && theParentWithExceededLimit != null) {
-			rowsCount.setToolTipText("potentially incomplete because " + theParentWithExceededLimit.internalFrame.getTitle() + " exceeded row limit");
+			rowsCount.setToolTipText("potentially incomplete because " + theParentWithExceededLimit.getTitle() + " exceeded row limit");
 		} else {
 			rowsCount.setToolTipText(rowsCount.getText().trim());
 		}

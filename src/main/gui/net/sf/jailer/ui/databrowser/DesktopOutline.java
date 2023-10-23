@@ -81,7 +81,7 @@ public class DesktopOutline extends JPanel {
 				if (browser == null) {
 					setToolTipText(null);
 				} else {
-					setToolTipText(browser.internalFrame.getTitle());
+					setToolTipText(browser.getTitleHtml());
 				}
 			}
 			
@@ -310,12 +310,14 @@ public class DesktopOutline extends JPanel {
 					g2d.setColor(Color.black);
 					Shape clip = g2d.getClip();
 					g2d.clipRect(sx, sy, sw, sh);
-					String title = browser.internalFrame.getTitle();
+					String title = browser.getTitleWONumber();
 					Rectangle2D stringBounds = fontMetrics.getStringBounds(title, g2d);
 					double hf = 1.2;
 					if ((stringBounds.getHeight() * hf * hf + 0.5) >= sh - 2) {
 						hf = 1.0;
 					}
+					int nx = 0;
+					int ny = 0;
 					if (stringBounds.getHeight() / 2 < sh - 1) {
 						int linesAvailable = (int) (sh / Math.max(1, stringBounds.getHeight()) + 0.5);
 						if (linesAvailable == 2) {
@@ -341,8 +343,9 @@ public class DesktopOutline extends JPanel {
 							    if (l1 == null) {
 							    	break;
 							    }
-								g2d.drawString(l1, sx + sb, (int)(sy + stringBounds.getHeight() * (hf - 1) + 3 - stringBounds.getY() + i * stringBounds.getHeight()));
-							    l = l.substring(guess);
+								g2d.drawString(l1, nx = sx + sb, ny = (int)(sy + stringBounds.getHeight() * (hf - 1) + 3 - stringBounds.getY() + i * stringBounds.getHeight()));
+							    nx += stringBounds.getWidth();
+								l = l.substring(guess);
 							    ++linesNeeded;
 							    if (linesNeeded > linesAvailable) {
 							    	break;
@@ -350,7 +353,12 @@ public class DesktopOutline extends JPanel {
 							}
 						}
 						if (linesNeeded <= 1) {
-							g2d.drawString(title, sx + sb, (int)(sy + stringBounds.getHeight() * (hf - 1) + 3 - stringBounds.getY()));
+							g2d.drawString(title, nx = sx + sb, ny = (int)(sy + stringBounds.getHeight() * (hf - 1) + 3 - stringBounds.getY()));
+							nx += stringBounds.getWidth();
+						}
+						if (browser.getTitleNumber() != null) {
+							g2d.setColor(new Color(0, 6 * 16, 0));
+							g2d.drawString(" /" + browser.getTitleNumber(), nx, ny);
 						}
 					}
 					g2d.setClip(clip);

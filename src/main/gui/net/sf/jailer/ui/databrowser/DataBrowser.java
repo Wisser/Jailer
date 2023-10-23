@@ -1348,7 +1348,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			desktopUndoManager.setEnabled(false);
 			RowBrowser rb;
 			try {
-				rb = desktop.addTableBrowser(null, null, root, null, condition, null, null, true);
+				rb = desktop.addTableBrowser(null, null, root, null, condition, null, true);
 			} finally {
 				desktopUndoManager.setEnabled(true);
 			}
@@ -3801,7 +3801,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	private void openTableButtonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_openTableButtonActionPerformed
 		if (tablesComboBox.getSelectedItem() != null) {
 			String tableName = tablesComboBox.getSelectedItem().toString();
-			desktop.addTableBrowser(null, null, datamodel.get().getTableByDisplayName(tableName), null, "", null, null,
+			desktop.addTableBrowser(null, null, datamodel.get().getTableByDisplayName(tableName), null, "", null,
 					true);
 			switchToDesktop();
 		}
@@ -3859,7 +3859,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			protected void openTableBrowser(Table source, String where) {
 				workbenchTabbedPane.setSelectedComponent(desktopSplitPane);
 				desktop.addTableBrowser(null, null, source, null,
-						UIUtil.toSingleLineSQL(new BasicFormatterImpl().format(where)), null, null, true);
+						UIUtil.toSingleLineSQL(new BasicFormatterImpl().format(where)), null, true);
 			}
 		};
 	}// GEN-LAST:event_consistencyCheckMenuItemActionPerformed
@@ -4027,7 +4027,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				Table tableByDisplayName = datamodel.get().getTableByDisplayName(tableName);
 				if (tableByDisplayName != null) {
 					desktop.addTableBrowser(null, null, tableByDisplayName, null, "", null,
-						null, true);
+						true);
 					switchToDesktop();
 				}
 			}
@@ -4751,7 +4751,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
 		@Override
 		public String getSourceName() {
-			return rowBrowser.internalFrame.getTitle();
+			return rowBrowser.getTitle();
 		}
 
 		@Override
@@ -4800,7 +4800,7 @@ public class DataBrowser extends javax.swing.JFrame {
 					if (rb.internalFrame == desktop.getSelectedFrame() && !rb.isHidden()) {
 						allChildren.add(rb);
 						allChildren.addAll(collectChildren(rb));
-						titleLabel.setText(" Related Rows of Subtree " + rb.internalFrame.getTitle());
+						titleLabel.setText(" Related Rows of Subtree " + rb.getTitle());
 						break;
 					}
 				}
@@ -4902,7 +4902,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				BrowserAssociationModel associationModel = (BrowserAssociationModel) a;
 				desktop.addTableBrowser(associationModel.getRowBrowser(), associationModel.getRowBrowser(),
 						associationModel.getAssociation().destination, associationModel.getAssociation(), "", null,
-						null, true);
+						true);
 			}
 			if (currentSelection != null) {
 				try {
@@ -4942,7 +4942,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		public TreeNodeForRowBrowser(RowBrowser rowBrowser, int rowIndex) {
 			this.rowBrowser = rowBrowser;
 			this.rowIndex = rowIndex;
-			this.title = " " + rowBrowser.internalFrame.getTitle() + "  ";
+			this.title = rowBrowser.internalFrame.getTitle();
 			treeNodeByIFrame.put(rowBrowser.internalFrame, this);
 		}
 
@@ -5656,7 +5656,7 @@ public class DataBrowser extends javax.swing.JFrame {
 							protected void open(Table table) {
 								if (!selectNavTreeNode(navigationTree.getModel().getRoot(), table)) {
 									if (workbenchTabbedPane.getSelectedComponent() != getCurrentSQLConsole()) {
-										desktop.addTableBrowser(null, null, table, null, "", null, null, true);
+										desktop.addTableBrowser(null, null, table, null, "", null, true);
 									}
 								}
 								try {
