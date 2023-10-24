@@ -602,7 +602,7 @@ public abstract class Desktop extends JDesktopPane {
 		checkHAlignedPath();
 
 		if (desktopUndoManager != null && table != null) {
-			desktopUndoManager.beforeModification("Remove \"" + datamodel.get().getDisplayName(table) + "\"", "Add \"" + datamodel.get().getDisplayName(table));
+			desktopUndoManager.beforeModification("Remove \"" + datamodel.get().getDisplayName(table) + "\"", "Add \"" + datamodel.get().getDisplayName(table) + "\"");
 		}
 
 		checkHAlignButtons();
@@ -1297,8 +1297,8 @@ public abstract class Desktop extends JDesktopPane {
 						rootBrowser = root.getParentBrowser();
 						root = rootBrowser.browserContentPane;
 					}
-					String undoDescription = "Start Navigation at \"" + (rootBrowser != null? ((rootBrowser.getTitle().replaceFirst("\\s*\\(\\d+\\)$", "")) + "\" ") : "");
-					String redoDescription = "Start Navigation at \"" + (tableBrowser.getTitle().replaceFirst("\\s*\\(\\d+\\)$", "")) + "\" ";
+					String undoDescription = "Start Navigation at \"" + (rootBrowser != null? ((rootBrowser.getTitleWONumber()) + "\" ") : "");
+					String redoDescription = "Start Navigation at \"" + (tableBrowser.getTitleWONumber()) + "\" ";
 					desktopUndoManager.beforeModification(undoDescription, redoDescription);
 				}
 				try {
@@ -1463,6 +1463,11 @@ public abstract class Desktop extends JDesktopPane {
 			tableBrowser.color2 = getAssociationColor2(association);
 		}
 		tableBrowsers.add(tableBrowser);
+		
+		jInternalFrame.getContentPane().setLayout(new CardLayout());
+
+		jInternalFrame.getContentPane().add(browserContentPane, "C");
+		
 		renameTableBrowser();
 		UISettings.s2.set(Math.max(tableBrowsers.size(), UISettings.s2.get()));
 		
@@ -1687,12 +1692,8 @@ public abstract class Desktop extends JDesktopPane {
 			}
 		});
 		r.run();
-		
-		jInternalFrame.getContentPane().setLayout(new CardLayout());
 
-		jInternalFrame.getContentPane().add(browserContentPane, "C");
 		jInternalFrame.getContentPane().add(browserContentPane.thumbnail, "T");
-
 		browserContentPane.thumbnail.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -1916,6 +1917,7 @@ public abstract class Desktop extends JDesktopPane {
 		Set<Long> linesHash = new HashSet<Long>(20000);
 		Map<JTable, Integer> yPerRowTable1 = new HashMap<JTable, Integer>();
 		Map<JTable, Integer> yPerRowTable2 = new HashMap<JTable, Integer>();
+
 		for (RowBrowser tableBrowser : tableBrowsers) {
 			JInternalFrame internalFrame = tableBrowser.internalFrame;
 			if (internalFrame.isMaximum()) {
@@ -3263,7 +3265,7 @@ public abstract class Desktop extends JDesktopPane {
 
 	private void close(final RowBrowser tableBrowser, boolean convertChildrenToRoots) {
 		if (desktopUndoManager != null && tableBrowsers.contains(tableBrowser)) {
-			desktopUndoManager.beforeModification("Add \"" + tableBrowser.getTitle().replaceFirst("\\s*\\(\\d+\\)$", "") + "\"", "Remove \"" + tableBrowser.getTitle().replaceFirst("\\s*\\(\\d+\\)$", "") + "\"");
+			desktopUndoManager.beforeModification("Add \"" + tableBrowser.getTitleWONumber() + "\"", "Remove \"" + tableBrowser.getTitleWONumber() + "\"");
 		}
 		checkHAlignedPath();
 		List<RowBrowser> children = new ArrayList<RowBrowser>();

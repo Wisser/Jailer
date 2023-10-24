@@ -220,23 +220,41 @@ public class DesktopOutline extends JPanel {
 	public void paint(Graphics g) {
 		super.paint(g);
 		if (g instanceof Graphics2D) {
-			if (desktop.getWidth() == 0 || desktop.getHeight() == 0) {
+			int deskWidth = desktop.getWidth();
+			int deskHeight = desktop.getHeight();
+			if (deskWidth == 0 || deskHeight == 0) {
 				return;
+			}
+			int maxX = 0;
+			int maxY = 0;
+			for (RowBrowser browser: getBrowsers()) {
+				if (!browser.isHidden()) {
+					maxX = Math.max(maxX, browser.internalFrame.getX() + browser.internalFrame.getWidth());
+					maxY = Math.max(maxY, browser.internalFrame.getY() + browser.internalFrame.getHeight());
+				}
+			}
+			if (maxX > 0 && maxY > 0) {
+				deskWidth = Math.min(deskWidth, maxX);
+				deskHeight = Math.min(deskHeight, maxY);
 			}
 			Graphics2D g2d = (Graphics2D) g;
 			FontMetrics fontMetrics = g2d.getFontMetrics();
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 			double r = 6;
-			scale = Math.min(((double) sameWidthFriend.getWidth() - r * 2.0) / (double) desktop.getWidth(), ((double) (getHeight() - r * 2.0) / (double) desktop.getHeight()));
+			scale = Math.min(((double) sameWidthFriend.getWidth() - r * 2.0) / (double) deskWidth, ((double) (getHeight() - r * 2.0) / (double) deskHeight));
 			offX = r - 3;
 			offY = r - 1; // Math.max(0, (outLinePanel.getHeight() - outlineSize.getHeight()) / 2);
+			
+			deskWidth = desktop.getWidth();
+			deskHeight = desktop.getHeight();
+			
 			BasicStroke stroke = new BasicStroke();
 			double border = 4 / scale;
 			double x = -border;
 			double y = -border;
-			double width = desktop.getWidth() + 2 * border;
-			double height = desktop.getHeight() + 2 * border;
+			double width = deskWidth + 2 * border;
+			double height = deskHeight + 2 * border;
 			Color backgroundColor = new Color(232, 232, 255);
 			g2d.setColor(backgroundColor);
 			int gx = (int) (offX + scale * x + 0.5);
@@ -311,6 +329,9 @@ public class DesktopOutline extends JPanel {
 					Shape clip = g2d.getClip();
 					g2d.clipRect(sx, sy, sw, sh);
 					String title = browser.getTitleWONumber();
+					if (title == null) {
+						title = "?";
+					}
 					Rectangle2D stringBounds = fontMetrics.getStringBounds(title, g2d);
 					double hf = 1.2;
 					if ((stringBounds.getHeight() * hf * hf + 0.5) >= sh - 2) {
