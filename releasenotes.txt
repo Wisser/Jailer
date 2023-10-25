@@ -1,3 +1,6 @@
+15.2.4
+  - Workaround for issue "Popup is not closed on click outside of area controlled by XWayland". https://bugs.openjdk.org/browse/JDK-8280993
+
 15.2.3
   - An error in handling "like" conditions in the "Condition Editor" has been fixed.
 
