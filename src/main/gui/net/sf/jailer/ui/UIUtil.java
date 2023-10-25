@@ -2602,7 +2602,7 @@ public class UIUtil {
 								timer.stop();
 							}
 							long stopTime = System.currentTimeMillis()
-									+ ToolTipManager.sharedInstance().getInitialDelay() + 200;
+									+ ToolTipManager.sharedInstance().getInitialDelay() + 320;
 							timer = new Timer(10, ae -> {
 								if (System.currentTimeMillis() >= stopTime || isToolTipVisible()) {
 									reset.run();
