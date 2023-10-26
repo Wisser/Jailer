@@ -1,4 +1,5 @@
 15.2.4
+  - The "Desktop Overview" view has been improved.
   - Workaround for issue "Popup is not closed on click outside of area controlled by XWayland". https://bugs.openjdk.org/browse/JDK-8280993
 
 15.2.3
