@@ -1593,7 +1593,7 @@ public abstract class Desktop extends JDesktopPane {
 				for (RowBrowser tableBrowser: tableBrowsers) {
 					if (tableBrowser.internalFrame != null) {
 						tableBrowser.internalFrame.setTitle(UIUtil.plaf == PLAF.FLAT? tableBrowser.getTitleHtml() : tableBrowser.getTitle());
-						initIFrame(tableBrowser.internalFrame, tableBrowser.getTitle(), tableBrowser.browserContentPane);
+						initIFrame(tableBrowser.internalFrame, tableBrowser.getTitle(), tableBrowser.browserContentPane, tableBrowser.getTitleHtml());
 					}
 				}
 			});
@@ -1624,11 +1624,12 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 
-	private void initIFrame(final JInternalFrame jInternalFrame, String title, final BrowserContentPane browserContentPane) {
+	private void initIFrame(final JInternalFrame jInternalFrame, String title, final BrowserContentPane browserContentPane, String toolTip) {
 		if (browserContentPane.thumbnail != null && browserContentPane.thumbnail.getParent() != null) {
 			browserContentPane.thumbnail.getParent().remove(browserContentPane.thumbnail);
 		}
 		browserContentPane.thumbnail = new JPanel();
+		browserContentPane.thumbnail.setToolTipText(toolTip);
 		final JPanel thumbnailInner = new JPanel();
 		browserContentPane.thumbnail.setLayout(new GridBagLayout());
 		GridBagConstraints gridBagConstraints = new GridBagConstraints();
@@ -1651,8 +1652,6 @@ public abstract class Desktop extends JDesktopPane {
 			suffix = matcher.group(2);
 		}
 		
-//		boolean isEmpty = browserContentPane.get
-		
 		List<String> labels = new ArrayList<String>();
 		final List<JLabel> jLabels = new ArrayList<JLabel>();
 		
@@ -1664,6 +1663,7 @@ public abstract class Desktop extends JDesktopPane {
 		}
 		for (String l: labels) {
 			JLabel jl = new JLabel(l);
+			jl.setToolTipText(toolTip);
 			if (l.equals(suffix)) {
 				jl.setFont(jl.getFont().deriveFont(jl.getFont().getStyle() & ~Font.BOLD));
 				jl.setForeground(new Color(0, 6 * 16, 0));
