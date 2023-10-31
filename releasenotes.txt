@@ -1,3 +1,7 @@
+15.3
+  - Readability of the generated DML has been improved.
+  - "orai18n"-jar has been added to the Oracle JDBC driver.
+
 15.2.4
   - The "Desktop Overview" view has been improved.
   - Workaround for issue "Popup is not closed on click outside of area controlled by XWayland". https://bugs.openjdk.org/browse/JDK-8280993
