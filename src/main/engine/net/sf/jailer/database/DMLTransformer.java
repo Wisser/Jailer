@@ -492,7 +492,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 					// ON (T.c1 = incoming.c1)
 					// WHEN MATCHED THEN UPDATE SET T.c2 = incoming.c2
 					// WHEN NOT MATCHED THEN INSERT (T.c1, T.c2) VALUES (incoming.c1, incoming.c2)
-					insertHead = "MERGE INTO " + qualifiedTableName(table) + " T USING(";
+					insertHead = "MERGE INTO " + qualifiedTableName(table) + " T USING(" + PrintUtil.LINE_SEPARATOR;
 					StringBuffer terminator = new StringBuffer(") Q ON(" + whereForTerminator + ") ");
 
 					StringBuffer sets = new StringBuffer();
@@ -518,9 +518,9 @@ public class DMLTransformer extends AbstractResultSetReader {
 						iSchema.append("Q." + columnLabel[i]);
 					}
 					if (sets.length() > 0) {
-						terminator.append("WHEN MATCHED THEN UPDATE SET " + sets + " ");
+						terminator.append(PrintUtil.LINE_SEPARATOR + "WHEN MATCHED THEN UPDATE SET " + sets + " ");
 					}
-					terminator.append("WHEN NOT MATCHED THEN INSERT (" + tSchema + ") VALUES(" + iSchema + ");" + PrintUtil.LINE_SEPARATOR);
+					terminator.append(PrintUtil.LINE_SEPARATOR + "WHEN NOT MATCHED THEN INSERT (" + tSchema + ") VALUES(" + iSchema + ");" + PrintUtil.LINE_SEPARATOR);
 
 					StatementBuilder sb = upsertInsertStatementBuilder.get(insertHead);
 					if (sb == null) {
@@ -528,14 +528,14 @@ public class DMLTransformer extends AbstractResultSetReader {
 						upsertInsertStatementBuilder.put(insertHead, sb);
 					}
 
-					String item = "Select " + valueList + " from dual";
+					String item = "  Select " + valueList + " from dual";
 					if (!sb.isAppendable(insertHead)) {
 						writeToScriptFile(sb.build(), true);
 					}
 					if (sb.isEmpty()) {
-						item = "Select " + namedValues + " from dual";
+						item = "  Select " + namedValues + " from dual";
 					}
-					sb.append(insertHead, item, " UNION ALL ", terminator.toString());
+					sb.append(insertHead, item, " UNION ALL " + PrintUtil.LINE_SEPARATOR, terminator.toString());
 				} else if (currentDialect.getUpsertMode() == UPSERT_MODE.DB2) {
 					insertHead += "Select * From (values ";
 					StringBuffer terminator = new StringBuffer(") as Q(" + columnsWONull + ") Where not exists (Select * from " + qualifiedTableName(table) + " T "
