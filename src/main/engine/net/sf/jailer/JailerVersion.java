@@ -25,7 +25,7 @@ public class JailerVersion {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "15.2.5.2";
+	public static final String VERSION = "15.2.5.3";
 
 	/**
 	 * The Jailer working tables version.
@@ -45,3 +45,10 @@ public class JailerVersion {
 	}
 
 }
+
+
+// TODO
+// TODO DBConDialog: copy/import creditials mit "Verbindungstyp"
+
+// TODO
+// TODO DBConDialog: copy/import creditials: 1. tooltip + "connection-credentials"? 2. tooltip: "paste here"? ???

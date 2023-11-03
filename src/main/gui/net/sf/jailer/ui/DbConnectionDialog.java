@@ -91,6 +91,66 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	 * <code>true</code> if valid connection is available.
 	 */
 	public boolean isConnected = false;
+	
+	public enum ConnectionType {
+		Development("Development database") {
+			@Override
+			public Color getBg1() {
+				return null;
+			}
+			@Override
+			public Color getBg2() {
+				return null;
+			}
+		},
+		Test("Test (QA) database") {
+			@Override
+			public Color getBg1() {
+				return new Color(255, 255, 200);
+			}
+			@Override
+			public Color getBg2() {
+				return new Color(255, 255, 220);
+			}
+		},
+		Staging("Staging database") {
+			@Override
+			public Color getBg1() {
+				return new Color(255, 225, 200);
+			}
+			@Override
+			public Color getBg2() {
+				return new Color(255, 225, 220);
+			}
+		},
+		Production("Production database") {
+			@Override
+			public Color getBg1() {
+				return new Color(255, 190, 190);
+			}
+			@Override
+			public Color getBg2() {
+				return new Color(255, 180, 180);
+			}
+		};
+		
+		private ConnectionType(String displayName) {
+			this.displayName = displayName;
+		}
+		
+		@Override
+		public String toString() {
+			return displayName;
+		}
+		
+		public abstract Color getBg1();
+		public abstract Color getBg2();
+		// TODO
+		// TODO bg2 weg oder heller für tabelle?
+		// TODO farben zu ähnlich?
+		// TODO in tabelle die ersten beiden Spalten bei Selection weiterhin in bg-farbe?
+		public final String displayName;
+	}
 
 	/**
 	 * Holds connection information.
@@ -116,6 +176,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		public String jar3 = "";
 		public String jar4 = "";
 		public transient String dataModelFolder;
+		private String connectionTypeName;
+		private transient ConnectionType connectionType;
 		
 		/**
 		 * Constructor.
@@ -130,6 +192,26 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			dataModelFolder = DataModelManager.getCurrentModelSubfolder(executionContext);
 		}
 		
+		public ConnectionType getConnectionType() {
+			if (connectionType != null) {
+				return connectionType;
+			}
+			if (connectionTypeName == null) {
+				return connectionType = ConnectionType.Development;
+			}
+			try {
+				connectionType = ConnectionType.valueOf(connectionTypeName);
+			} catch (Exception e) {
+				connectionType = ConnectionType.Development;
+			}
+			return connectionType;
+		}
+		
+		public void setConnectionType(ConnectionType type) {
+			connectionType = type;
+			connectionTypeName = type.name();
+		}
+		
 		public void assign(ConnectionInfo ci) {
 			encrypted = ci.encrypted;
 			alias = ci.alias;
@@ -142,6 +224,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			jar3 = ci.jar3;
 			jar4 = ci.jar4;
 			dataModelFolder = ci.dataModelFolder;
+			connectionType = ci.connectionType;
+			connectionTypeName = ci.connectionTypeName;
 		}
 		
 		public boolean encrypt() {
@@ -223,7 +307,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		ok = false;
 		try {
 			pack();
-			setSize(Math.max(710, getWidth()), 450);
+			setSize(Math.max(840, getWidth()), 450);
 			if (parent != null && parent.isVisible()) {
 				int os = parent.getWidth() > 800 ? 0 : 80;
 				setLocation(os + parent.getX() + (parent.getWidth() - getWidth()) / 2,
@@ -422,6 +506,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 								.getTableCellRendererComponent(table, value,
 										isSelected, false /* hasFocus */, row, column);
 						if (render instanceof JLabel) {
+							((JLabel) render).setToolTipText(String.valueOf(value));
 							if (!isSelected) {
 								final Color BG1 = UIUtil.TABLE_BACKGROUND_COLOR_1;
 								final Color BG2 = UIUtil.TABLE_BACKGROUND_COLOR_2;
@@ -442,8 +527,24 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 							} else {
 								((JLabel) render).setForeground(Color.gray);
 							}
+							
+							Color bg = null;
+							
+							ConnectionType connectionType = null;
+							if (selectedRowIndex >= 0 && column == 1 && selectedRowIndex < connectionList.size()) {
+								connectionType = connectionList.get(selectedRowIndex).getConnectionType();
+							}
+							
+							if (connectionType != null && connectionType.getBg1() != null) {
+								bg = connectionType.getBg1();
+								// bg = (row % 2 == 0) ? connectionType.getBg1() : connectionType.getBg2();
+								((JLabel) render).setToolTipText("<html>" + UIUtil.toHTMLFragment(((JLabel) render).getToolTipText(), 0) + "<br><hr>" + connectionType.displayName + "</html>");
+							}
+							
+							if (bg != null) {
+								((JLabel) render).setBackground(bg);
+							}
 						}
-						((JLabel) render).setToolTipText(String.valueOf(value));
 						render.setFont(column == 0? bold : normal);
 						((JLabel) render).setIcon(null);
 						if (value instanceof String && ((String) value).startsWith("*")) {
@@ -455,6 +556,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 					}
 				});
 		
+		connectionsTable.getTableHeader().setReorderingAllowed(false);
 		try {
 			((DefaultTableCellRenderer) connectionsTable.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
 		} catch (Exception e) {
@@ -621,7 +723,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 												false, false, 0, i);
 				width = Math.max(width, comp.getPreferredSize().width);
 	
-				for (int line = 0; line < data.length; ++line) {
+				for (int line = 0; line < data.length && line < 30; ++line) {
 					comp = connectionsTable.getDefaultRenderer(String.class).
 									 getTableCellRendererComponent(
 											 connectionsTable, data[line][i],
@@ -685,7 +787,9 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 				onConnectionListChangedPending = true;
 				UIUtil.invokeLater(() -> {
 					onConnectionListChangedPending = false;
-					onConnectionListChangedAll();
+					onConnectionListChangedReload();
+					notifyConnectionTypeChangeListener();
+					UIUtil.invokeLater(() -> onConnectionListChangedAll());
 				});
 			}
 			
@@ -701,13 +805,16 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	private boolean onConnectionListChangedPending = false;
 	
 	private void onConnectionListChanged() {
-		loadConnectionList(false);
 		refresh();
 		if (dataModelChanger != null) {
 			dataModelChanger.onConnectionListChanged();
 		}
 	}
 	
+	private static void onConnectionListChangedReload() {
+		allDialogs.forEach((a, b) -> a.loadConnectionList(false));
+	}
+
 	private static void onConnectionListChangedAll() {
 		allDialogs.forEach((a, b) -> a.onConnectionListChanged());
 	}
@@ -1503,6 +1610,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		if (ci.driverClass != null
 				&& ci.url != null
 				&& ci.user != null) {
+				ci.setConnectionType(retrieveConnectionType(ci));
 				currentConnection = ci;
 				executionContext.setCurrentConnectionAlias(currentConnection.alias);
 				isConnected = true;
@@ -1558,5 +1666,34 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         cancelIcon = UIUtil.readImage("/buttoncancel.png");
 	}
 
+	public ConnectionType retrieveConnectionType(ConnectionInfo ci) {
+		return connectionList.stream().filter(c -> ci.url.equals(c.url) && ci.user.equals(c.user))
+				.map(c -> c.getConnectionType()).findAny().orElseGet(() -> ConnectionType.Development);
+	}
+	
+	public interface ConnectionTypeChangeListener {
+		void onConnectionTypeChange();
+	}
+	
+	private static void notifyConnectionTypeChangeListener() {
+		for (Window w : Window.getWindows()) {
+			if (w instanceof ConnectionTypeChangeListener) {
+				((ConnectionTypeChangeListener) w).onConnectionTypeChange();
+			}
+		}
+	}
+
 }
+
+
+// TODO
+// TODO import/export of sets of connections
+// TODO export no password
+// TODO ask for password 1. time user wants to use connection and persist that (later if allowed)
+// TODO ? (generally) allow password to be not persisted. For that connections: always ask for pw (and store it in mem)
+
+
+// TODO
+// TODO programmatic SLL certificate import?
+// TODO https://stackoverflow.com/questions/18889058/programmatically-import-ca-trust-cert-into-existing-keystore-file-without-using
 

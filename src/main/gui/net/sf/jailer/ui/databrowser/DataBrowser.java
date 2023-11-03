@@ -155,6 +155,8 @@ import net.sf.jailer.ui.DataModelManager;
 import net.sf.jailer.ui.DataModelManagerDialog;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
+import net.sf.jailer.ui.DbConnectionDialog.ConnectionType;
+import net.sf.jailer.ui.DbConnectionDialog.ConnectionTypeChangeListener;
 import net.sf.jailer.ui.DbConnectionDialog.DataModelChanger;
 import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.ExtractionModelFrame;
@@ -208,7 +210,7 @@ import net.sf.jailer.util.SqlUtil;
  *
  * @author Ralf Wisser
  */
-public class DataBrowser extends javax.swing.JFrame {
+public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeChangeListener {
 
 	/**
 	 * The desktop.
@@ -364,6 +366,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		initComponents(); UIUtil.initComponents(this);
         jToolBar1.setFloatable(false);
         jToolBar2.setFloatable(false);
+        
         initMenu();
 		initNavTree();
 		initTabSelectionAnimationManager();
@@ -1488,11 +1491,22 @@ public class DataBrowser extends javax.swing.JFrame {
 	
 	private void initModelNavigation() {
 		DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer() {
+			boolean gotBG = false;
+			Color bg;
+			boolean opaque;
+			
 			@Override
 			public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded,
 					boolean leaf, int row, boolean hasFocus) {
 				Component render = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 				if (render instanceof JLabel) {
+					if (!gotBG) {
+						gotBG = true;
+						bg = ((JLabel) render).getBackground();
+						opaque = ((JLabel) render).isOpaque();
+					}
+					((JLabel) render).setBackground(bg);
+					((JLabel) render).setOpaque(opaque);
 					Icon icon = null;
 					if (value instanceof DefaultMutableTreeNode
 							&& ((DefaultMutableTreeNode) value).getUserObject() instanceof ConnectionInfo) {
@@ -1511,7 +1525,13 @@ public class DataBrowser extends javax.swing.JFrame {
 								}
 							};
 						}
+						Color bgCol = node.getConnectionType().getBg1();
 						
+						if (bgCol != null && !sel) {
+							((JLabel) render).setBackground(bgCol);
+							((JLabel) render).setOpaque(true);
+						}
+				        
 						if (connectedAliases.contains(node.alias)) {
 							((JLabel) render).setText("<html><nobr><b>" + UIUtil.toHTMLFragment(((JLabel) render).getText(), 0) + "&nbsp;&nbsp;&nbsp;</b></html>");
 						} else {
@@ -1546,7 +1566,8 @@ public class DataBrowser extends javax.swing.JFrame {
 						modelNavigationTree.setToolTipText(
 								"<html><b>" + UIUtil.toHTMLFragment(ciRender(ci), 0) + "</b><br>" +
 								(ci.user != null && ci.user.length() > 0? UIUtil.toHTMLFragment(ci.user, 0) + "<br>" : "") +
-								UIUtil.toHTMLFragment(ci.url, 0)
+								UIUtil.toHTMLFragment(ci.url, 0) +
+								(ci.getConnectionType().getBg1() != null? "<br>" + ci.getConnectionType().displayName : "")
 								);
 						return;
 					}
@@ -1573,6 +1594,8 @@ public class DataBrowser extends javax.swing.JFrame {
 								if (e.getClickCount() > 1) {
 									connect(DataBrowser.this, o);
 								} else {
+									// TODO
+									// TODO check if necessary
 									dbConnectionDialog.select((ConnectionInfo) o);
 								}
 							}
@@ -2041,12 +2064,77 @@ public class DataBrowser extends javax.swing.JFrame {
 
 	private String currentDatabaseName;
 	
+	private Color origTBBG, origSNPBG, origCSBG, origL2BG;
+	private boolean origL2Op;
+	private boolean origKnown = false;
+	
+	private ConnectionInfo lastConnectionInfo = null;
+	
+	@Override
+	public void onConnectionTypeChange() {
+		ConnectionType connectionType = ConnectionType.Development;
+		if (lastConnectionInfo != null && dbConnectionDialog != null) {
+			lastConnectionInfo.setConnectionType(connectionType = dbConnectionDialog.retrieveConnectionType(lastConnectionInfo));
+		}
+		Color bg = connectionType != null ? connectionType.getBg1() : null;
+		if (bg == null) {
+			jToolBar1.setToolTipText(null);
+			jToolBar1.setBackground(origTBBG);
+			schemaNamePanel.setBackground(origSNPBG);
+	        connectivityState.setBackground(origCSBG);
+	        legende2.setBackground(origL2BG);
+	        legende2.setOpaque(origL2Op);
+		} else {
+			jToolBar1.setToolTipText(connectionType.displayName);
+			jToolBar1.setBackground(bg);
+	        schemaNamePanel.setBackground(bg);
+	        connectivityState.setBackground(bg);
+	        legende2.setBackground(bg);
+	        legende2.setOpaque(true);
+		}
+		String dburl = lastConnectionInfo != null ? (lastConnectionInfo.url) : " ";
+		if (bg != null) {
+			dburl = "<html>" + UIUtil.toHTMLFragment(dburl, 0) + "<br><hr>" + connectionType.displayName + "</html>";
+		}
+		connectivityState.setToolTipText(dburl);
+		schemaName.setToolTipText(dburl);
+		schemaNamePanel.setToolTipText(dburl);
+		
+		for (SQLConsoleWithTitle console: sqlConsoles) {
+			console.updateConnectionType(connectionType);
+		}
+	}
+
 	public void updateStatusBar() {
 		final int MAX_LENGTH = 40;
 		ConnectionInfo connection = dbConnectionDialog != null ? dbConnectionDialog.currentConnection : null;
+		ConnectionType connectionType = connection != null ? connection.getConnectionType() : null;
+		if (connection == null) {
+			lastConnectionInfo = null;
+		} else {
+			lastConnectionInfo = new ConnectionInfo();
+			lastConnectionInfo.assign(connection);
+		}
+
+		if (!origKnown) {
+			origKnown = true;
+			origTBBG = jToolBar1.getBackground();
+			origSNPBG = schemaNamePanel.getBackground();
+			origCSBG = connectivityState.getBackground();
+			origL2BG = legende2.getBackground();
+			origL2Op = legende2.isOpaque();
+		}
+		onConnectionTypeChange();
+		Color bg = connectionType != null ? connectionType.getBg1() : null;
+		
 		String dburl = connection != null ? (connection.url) : " ";
-		connectivityState.setToolTipText(dburl);
 		String dbmsLogoURL = UIUtil.getDBMSLogoURL(dburl);
+		if (bg != null) {
+			dburl = "<html>" + UIUtil.toHTMLFragment(dburl, 0) + "<br><hr>" + connectionType.displayName + "</html>";
+		}
+		connectivityState.setToolTipText(dburl);
+		schemaName.setToolTipText(dburl);
+		schemaNamePanel.setToolTipText(dburl);
 		if (dbmsLogoURL == null) {
 			connectivityState.setIcon(null);
 		} else {
@@ -2520,7 +2608,6 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
         jPanel11.add(schemaNamePanel, gridBagConstraints);
 
         legende2.setLayout(new java.awt.GridBagLayout());
@@ -3866,6 +3953,9 @@ public class DataBrowser extends javax.swing.JFrame {
 
 	private void reconnectMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_reconnectMenuItemActionPerformed
 		synchronized (this) {
+			if (lastConnectionInfo != null) {
+				dbConnectionDialog.select(lastConnectionInfo);
+			}
 			if (dbConnectionDialog.connect("Reconnect", true)) {
 				try {
 					setConnection(dbConnectionDialog);
@@ -5856,10 +5946,11 @@ public class DataBrowser extends javax.swing.JFrame {
 		private String title;
 
 		private SQLConsoleWithTitle(Session session, MetaDataSource metaDataSource, Reference<DataModel> datamodel,
-				ExecutionContext executionContext, String title, JLabel titleLbl) throws SQLException {
+				ExecutionContext executionContext, String title, JLabel titleLbl, ConnectionType connectionType) throws SQLException {
 			super(session, metaDataSource, datamodel, executionContext);
 			this.initialTitle = title;
 			this.titleLbl = titleLbl;
+			updateConnectionType(connectionType);
 		}
 
 		@Override
@@ -5934,9 +6025,11 @@ public class DataBrowser extends javax.swing.JFrame {
 		String tabName = "SQL Console";
 		++sqlConsoleNr;
 		String title = tabName + (sqlConsoleNr > 1 ? " (" + sqlConsoleNr + ")" : "") + " ";
-
+		ConnectionInfo connection = lastConnectionInfo != null? lastConnectionInfo : dbConnectionDialog != null ? dbConnectionDialog.currentConnection : null;
+		ConnectionType connectionType = connection != null ? connection.getConnectionType() : null;
+		
 		final SQLConsoleWithTitle sqlConsole = new SQLConsoleWithTitle(session, metaDataSource, datamodel,
-				executionContext, title, titleLbl);
+				executionContext, title, titleLbl, connectionType);
 		titleLbl.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {

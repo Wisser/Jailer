@@ -66,6 +66,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -83,7 +84,9 @@ import javax.swing.text.StyleConstants;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
+import net.sf.jailer.ui.DbConnectionDialog.ConnectionType;
 import net.sf.jailer.ui.UIUtil.PLAF;
+import net.sf.jailer.ui.databrowser.DBConditionEditor;
 import net.sf.jailer.ui.util.ConcurrentTaskControl;
 import net.sf.jailer.ui.util.HttpDownload;
 import net.sf.jailer.ui.util.LightBorderSmallButton;
@@ -235,6 +238,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         user.setText(ci.user);
 		password.setText(ci.password);
 		driverClass.setText(ci.driverClass);
+		typeComboBox.setSelectedItem(ci.getConnectionType());
 		jar1.setText(ci.jar1);
 		jar2.setText(ci.jar2);
 		jar3.setText(ci.jar3);
@@ -323,6 +327,31 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		this.needsTest = needsTest;
 		this.dataModelAware = dataModelAware;
 		initComponents(); UIUtil.initComponents(this);
+		
+		typeComboBox.setModel(new DefaultComboBoxModel(DbConnectionDialog.ConnectionType.values()));
+		Color dbg = typeComboBox.getBackground();
+		typeComboBox.setRenderer(new DefaultListCellRenderer() {
+			@Override
+			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+					boolean cellHasFocus) {
+				Component render = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				if (value instanceof ConnectionType && render instanceof JLabel) {
+					if (!isSelected) {
+						Color b1 = ((ConnectionType) value).getBg1();
+						render.setBackground(b1 == null? dbg : b1);
+						render.setForeground(Color.black);
+					}
+				}
+				return render;
+			}
+		});
+		typeComboBox.addItemListener(e -> {
+			if (typeComboBox.getSelectedItem() != null) {
+				Color b1 = ((ConnectionType) typeComboBox.getSelectedItem()).getBg1();
+				typeComboBox.setBackground(b1 == null? dbg : b1);
+			}
+		});
+		
 		newDataModelButton.setVisible(!dataModelAware);
 		ImageIcon scaledWarnIcon = UIUtil.scaleIcon(jtdsWarnLabel, warnIcon, 1);
 		jtdsWarnLabel.setIcon(scaledWarnIcon);
@@ -898,6 +927,8 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         dataModelComboBox = new javax.swing.JComboBox<>();
         newDataModelButton = new javax.swing.JButton();
         jPanel11 = new javax.swing.JPanel();
+        jLabel13 = new javax.swing.JLabel();
+        typeComboBox = new javax.swing.JComboBox<>();
 
         helpjdbc.setText("help");
 
@@ -1404,6 +1435,22 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel1.add(jPanel10, gridBagConstraints);
 
+        jLabel13.setText(" Type");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 81;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        jPanel1.add(jLabel13, gridBagConstraints);
+
+        typeComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 81;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        jPanel1.add(typeComboBox, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -1468,6 +1515,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 			ci.user = user.getText().trim();
 			ci.password = password.getText().trim();
 	       	ci.dataModelFolder = (String) dataModelComboBox.getSelectedItem();
+	       	ci.setConnectionType((ConnectionType) typeComboBox.getSelectedItem());
 		}
 		return ok;
 	}
@@ -1816,6 +1864,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -1853,6 +1902,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     private javax.swing.JButton renameButton;
     private javax.swing.JButton selectConnectionButton;
     private javax.swing.JButton testConnectionButton;
+    private javax.swing.JComboBox<String> typeComboBox;
     public javax.swing.JTextField user;
     // End of variables declaration//GEN-END:variables
 

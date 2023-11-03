@@ -16,6 +16,7 @@
 package net.sf.jailer.ui;
 
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Frame;
 import java.awt.Point;
@@ -82,6 +83,9 @@ import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.render.HtmlDataModelRenderer;
 import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.subsetting.SubsettingEngine;
+import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
+import net.sf.jailer.ui.DbConnectionDialog.ConnectionType;
+import net.sf.jailer.ui.DbConnectionDialog.ConnectionTypeChangeListener;
 import net.sf.jailer.ui.UIUtil.ResultConsumer;
 import net.sf.jailer.ui.associationproposer.AssociationProposerView;
 import net.sf.jailer.ui.commandline.CommandLineInstance;
@@ -101,7 +105,7 @@ import net.sf.jailer.util.PrintUtil;
  *
  * @author Ralf Wisser
  */
-public class ExtractionModelFrame extends javax.swing.JFrame {
+public class ExtractionModelFrame extends javax.swing.JFrame implements ConnectionTypeChangeListener {
 
 	/**
 	 * The embedded editor.
@@ -296,6 +300,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		}
 	}
 
+	Color origCSBG, origL2BG;
+	boolean origOp;
+	private boolean origKnown = false;
+	
 	/**
 	 * Updates state of some menu items.
 	 */
@@ -303,8 +311,42 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		connectDb.setSelected(dbConnectionDialog.isConnected);
 		disconnectDb.setEnabled(dbConnectionDialog.isConnected);
 		extractionModelEditor.connectivityState.setText(getConnectivityState());
-		extractionModelEditor.connectivityState.setToolTipText(getConnectivityStateToolTip());
 		extractionModelEditor.connectivityState.setIcon(getDBMSLogo());
+		
+		if (!origKnown) {
+			origKnown = true;
+			origCSBG = extractionModelEditor.connectivityState.getBackground();
+			origL2BG = extractionModelEditor.legende2.getBackground();
+		}
+		ConnectionInfo connection = dbConnectionDialog != null ? dbConnectionDialog.currentConnection : null;
+		if (connection == null) {
+			lastConnectionInfo = null;
+		} else {
+			lastConnectionInfo = new ConnectionInfo();
+			lastConnectionInfo.assign(connection);
+		}
+		onConnectionTypeChange();
+	}
+	
+	private ConnectionInfo lastConnectionInfo = null;
+	
+	@Override
+	public void onConnectionTypeChange() {
+		ConnectionType connectionType = ConnectionType.Development;
+		if (lastConnectionInfo != null && dbConnectionDialog != null) {
+			lastConnectionInfo.setConnectionType(connectionType = dbConnectionDialog.retrieveConnectionType(lastConnectionInfo));
+		}
+		Color bg = connectionType != null ? connectionType.getBg1() : null;
+		if (bg != null) {
+			extractionModelEditor.connectivityState.setBackground(bg);
+			extractionModelEditor.legende2.setBackground(bg);
+			extractionModelEditor.legende2.setOpaque(true);
+		} else {
+			extractionModelEditor.connectivityState.setBackground(origCSBG);
+			extractionModelEditor.legende2.setBackground(origL2BG);
+			extractionModelEditor.legende2.setOpaque(origOp);
+		}
+		extractionModelEditor.connectivityState.setToolTipText(getConnectivityStateToolTip(lastConnectionInfo));
 	}
 
 	private String getConnectivityState() {
@@ -317,7 +359,19 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
 	private String getConnectivityStateToolTip() {
 		if (dbConnectionDialog != null && dbConnectionDialog.isConnected) {
-			return dbConnectionDialog.currentConnection.url;
+			ConnectionInfo connectionInfo = dbConnectionDialog.currentConnection;
+			return getConnectivityStateToolTip(connectionInfo);
+		}
+		return getConnectivityStateToolTip(null);
+	}
+
+	private String getConnectivityStateToolTip(ConnectionInfo connectionInfo) {
+		if (connectionInfo != null) {
+			String url = connectionInfo.url;
+			if (connectionInfo.getConnectionType().getBg1() != null) {
+				url = "<html>" + UIUtil.toHTMLFragment(url, 0) + "<br><hr>" + connectionInfo.getConnectionType().displayName + "</html>";
+			}
+			return url;
 		} else {
 			return "offline";
 		}
@@ -1791,6 +1845,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			extractionModelEditor.closureBorderView.refresh();
 			restrictedDependenciesView.refresh();
 			updateTitle(extractionModelEditor.needsSave);
+			updateMenuItems();
 		} catch (Throwable t) {
 			UIUtil.showException(this, "Error", t);
 		} finally {
@@ -1823,6 +1878,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			extractionModelEditor.closureBorderView.refresh();
 			restrictedDependenciesView.refresh();
 			updateTitle(extractionModelEditor.needsSave);
+			updateMenuItems();
 		} catch (Throwable t) {
 			UIUtil.showException(this, "Error", t);
 		} finally {

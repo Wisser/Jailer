@@ -43,7 +43,6 @@
     <Container class="javax.swing.JSplitPane" name="jSplitPane1">
       <Properties>
         <Property name="orientation" type="int" value="0"/>
-        <Property name="continuousLayout" type="boolean" value="true"/>
         <Property name="oneTouchExpandable" type="boolean" value="true"/>
       </Properties>
       <Constraints>
@@ -76,7 +75,6 @@
                   <Properties>
                     <Property name="orientation" type="int" value="0"/>
                     <Property name="resizeWeight" type="double" value="1.0"/>
-                    <Property name="continuousLayout" type="boolean" value="true"/>
                     <Property name="oneTouchExpandable" type="boolean" value="true"/>
                   </Properties>
                   <Constraints>
@@ -995,6 +993,9 @@
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="legende2">
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
+          </AuxValues>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
               <GridBagConstraints gridX="-1" gridY="-1" gridWidth="1" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="0" insetsRight="4" anchor="13" weightX="1.0" weightY="0.0"/>
@@ -1012,7 +1013,7 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="offline"/>
                 <Property name="cursor" type="java.awt.Cursor" editor="org.netbeans.modules.form.editors2.CursorEditor">
-                  <Color id="Handcursor"/>
+                  <Color id="Default Cursor"/>
                 </Property>
               </Properties>
               <AuxValues>

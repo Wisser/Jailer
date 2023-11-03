@@ -895,6 +895,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		}
 		
 		List<String> model = new ArrayList<String>();
+		Map<String, String> ttipSuffix = new HashMap<>();
 		List<ImageIcon> logos = new ArrayList<ImageIcon>();
 		List<ActionListener> actions = new ArrayList<ActionListener>();
 		
@@ -929,7 +930,17 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				logos.add(UIUtil.scaleIcon(new JLabel(), UIUtil.readImage(dbmsLogoURL, false), 1.0));
 			}
 			
-			model.add("<html><nobr>" + 
+			String bgc = "";
+			if (connectionInfo != null && connectionInfo.getConnectionType().getBg1() != null) {
+				bgc = Integer.toHexString(connectionInfo.getConnectionType().getBg1().getRGB() & 0xffffff);
+				while (bgc.length() < 6) {
+					bgc = "0" + bgc;
+				}
+				bgc = "<font bgcolor=\"#" + bgc + "\" color=\"#000000\">" + connectionInfo.getConnectionType().displayName + "</font>";
+			}
+			
+			String v;
+			model.add(v = "<html><nobr>" + 
 					UIUtil.toHTMLFragment(UIUtil.toDateAsString(lastSession.date.getTime()), 0) + "&nbsp;-&nbsp;" +
 					(module.equals("S")?
 					"<font color=\"#0000ff\"><b>" +
@@ -940,12 +951,12 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 					("<font color=\"#006600\">" +
 					UIUtil.toHTMLFragment(((details != null? details.a : lastSession.datamodelFolder)), 0) + 
 					"</font>&nbsp;-&nbsp;<font color=\"#663300\">" +
-					(connectionInfo == null? "<i><font color=\"#888888\">offline</font></i>" : UIUtil.toHTMLFragment(connectionInfo.alias, 0) + "&nbsp;-&nbsp;<font color=\"#000000\">" + UIUtil.toHTMLFragment(((userName + " - ") + connectionInfo.url), 0, false) + "</font>") + 
+					(connectionInfo == null? "<i><font color=\"#888888\">offline</font></i>" : UIUtil.toHTMLFragment(connectionInfo.alias, 0) + "&nbsp;-&nbsp;<font color=\"#000000\">" + UIUtil.toHTMLFragment(((userName + " - ")), 0, false) + UIUtil.toHTML(connectionInfo.url, 0) + "</font>") + 
 					"</font></nobr></html>")
 					:
 					(
 					"<font color=\"#006600\">" +
-					(connectionInfo == null? "<i><font color=\"#888888\">offline</font></i>" : ("<b>" + UIUtil.toHTMLFragment(connectionInfo.alias, 0) + "</b>") + "&nbsp;-&nbsp;<font color=\"#000000\">" + 
+					(connectionInfo == null? "<i><font color=\"#888888\">offline</font></i>" : ("<b>" + UIUtil.toHTML(connectionInfo.alias, 0) + "</b>") + "&nbsp;-&nbsp;<font color=\"#000000\">" + 
 					"<font color=\"#0000ff\">" +
 					(lastSession.getContentInfo() != null? UIUtil.toHTMLFragment(lastSession.getContentInfo().replaceFirst("^\\d+ Table$", "$0s"), 0) + "&nbsp;-&nbsp;" : "") + 
 					"</font>" +
@@ -955,6 +966,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 					"</font>")					
 					) +
 					"</nobr></html>");
+			ttipSuffix.put(v, "<br>" + bgc);
+			
 			final ConnectionInfo finalConnectionInfo = connectionInfo;
 			actions.add(new ActionListener() {
 				@Override
@@ -1035,7 +1048,11 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
                 Component render = renderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 				String tooltip = null;
 				if (render instanceof JLabel) {
-					((JLabel) render).setToolTipText(tooltip = ((JLabel) render).getText().replace("&nbsp;-&nbsp;", "<br>"));
+					tooltip = ((JLabel) render).getText().replace("&nbsp;-&nbsp;", "<br>");
+					if (ttipSuffix.containsKey(((JLabel) render).getText())) {
+						tooltip = tooltip.replaceFirst("</nobr></html>", ttipSuffix.get(((JLabel) render).getText()) + "</nobr></html>").replace("</font>", "");
+					}
+					((JLabel) render).setToolTipText(tooltip);
 					if (isSelected) {
 						((JLabel) render).setText(((JLabel) render).getText().replaceAll("<.?font[^>]*>", ""));
 					}
@@ -1080,7 +1097,11 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				return render;
 			}
 		});
-		recentSessionsComboBox.setToolTipText(model.get(0).replace("&nbsp;-&nbsp;", "<br>"));
+		String tooltip = model.get(0).replace("&nbsp;-&nbsp;", "<br>");
+		if (ttipSuffix.containsKey(model.get(0))) {
+			tooltip = tooltip.replaceFirst("</nobr></html>", ttipSuffix.get(model.get(0)) + "</nobr></html>").replace("</font>", "");
+		}
+		recentSessionsComboBox.setToolTipText(tooltip);
 	}
 
 	private void hideRecentSessionsPanel() {

@@ -1538,7 +1538,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        aggregationCombobox = new javax.swing.JComboBox();
+        aggregationCombobox = new JComboBox2();
         tagField = new javax.swing.JTextField();
         jPanel5 = new javax.swing.JPanel();
         xmlTagApply = new javax.swing.JButton();
@@ -1567,7 +1567,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        jSplitPane1.setContinuousLayout(true);
         jSplitPane1.setOneTouchExpandable(true);
 
         jpanel.setLayout(new java.awt.BorderLayout());
@@ -1576,7 +1575,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane2.setResizeWeight(1.0);
-        jSplitPane2.setContinuousLayout(true);
         jSplitPane2.setOneTouchExpandable(true);
 
         toolBarPanel.setBackground(new java.awt.Color(255, 255, 255));
@@ -1673,7 +1671,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         layeredPane.setLayer(focusPanel, javax.swing.JLayeredPane.PALETTE_LAYER);
         layeredPane.add(focusPanel);
-        focusPanel.setBounds(0, 0, 291, 33);
+        focusPanel.setBounds(0, 0, 359, 32);
 
         rightBorderPanel.setOpaque(false);
         rightBorderPanel.setLayout(new java.awt.GridBagLayout());
@@ -2179,7 +2177,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         connectivityState.setFont(connectivityState.getFont().deriveFont(connectivityState.getFont().getSize()+1f));
         connectivityState.setText("offline");
-        connectivityState.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        connectivityState.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -4014,7 +4012,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton activateDesictionPendingButton;
     private javax.swing.JButton additionalSubjectsButton;
-    private javax.swing.JComboBox aggregationCombobox;
+    private JComboBox2 aggregationCombobox;
     private javax.swing.JLabel assocStatsLabel;
     private javax.swing.JLabel associatedWith;
     javax.swing.JTextField condition;
@@ -4022,7 +4020,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JLabel dependsOn;
     private javax.swing.JPanel editorPanel;
     public javax.swing.JButton exportButton;
-    private javax.swing.JComboBox exportFormat;
+    private JComboBox2 exportFormat;
     private javax.swing.JPanel focusLabelPanel;
     javax.swing.JPanel focusPanel;
     private javax.swing.JPanel graphContainer;
@@ -4070,7 +4068,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JButton leftButton;
     private javax.swing.JPanel legende;
     private javax.swing.JPanel legende1;
-    private javax.swing.JPanel legende2;
+    javax.swing.JPanel legende2;
     private javax.swing.JToggleButton limitButton;
     private javax.swing.JLabel limitLabel;
     private javax.swing.JButton mapColumns;
