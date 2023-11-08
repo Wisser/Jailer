@@ -1,4 +1,6 @@
 15.3
+  - Database connections can now be assigned to a database type (Develop, Test, Staging and Production).
+    This improves the transparency of the various databases and encourages careful interaction of (near-)production systems.
   - Readability of the generated DML has been improved.
   - "orai18n"-jar has been added to the Oracle JDBC driver.
 
