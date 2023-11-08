@@ -754,8 +754,6 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	 */
 	private static String CONNECTIONS_FILE = ".connections";
 
-	// TODO use xml or json..., with java serialization it's hard to automate connection definition
-	
 	/**
 	 * Stores the connections into the CONNECTIONS_FILE.
 	 */
@@ -1701,10 +1699,11 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 // TODO import/export of sets of connections
 // TODO export no password
 // TODO ask for password 1. time user wants to use connection and persist that (later if allowed)
+// TODO use csv for connection definition storage. Header (comment) line. "plain" + "obfuscated" password columns.
 // TODO ? (generally) allow password to be not persisted. For that connections: always ask for pw (and store it in mem)
 
 
-// TODO
+// TODO 1
 // TODO programmatic SLL certificate import?
 // TODO https://stackoverflow.com/questions/18889058/programmatically-import-ca-trust-cert-into-existing-keystore-file-without-using
 

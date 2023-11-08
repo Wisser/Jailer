@@ -45,3 +45,8 @@ public class JailerVersion {
 	}
 
 }
+
+
+// TODO
+// TODO backgr (grün und gelb) heller/ungesättigter für ConType, 2 bg-Farben?
+
