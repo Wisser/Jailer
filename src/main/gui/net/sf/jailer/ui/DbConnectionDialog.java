@@ -1673,6 +1673,10 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		if (result.size() >= 1) {
 			return result.get(0);
 		}
+		ConnectionType ciType = ci.getConnectionType();
+		if (ciType != null) {
+			return ciType;
+		}
 		return ConnectionType.Development;
 	}
 	
