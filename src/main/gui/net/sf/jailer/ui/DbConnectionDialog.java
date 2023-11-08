@@ -1699,7 +1699,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 // TODO import/export of sets of connections
 // TODO export no password
 // TODO ask for password 1. time user wants to use connection and persist that (later if allowed)
-// TODO use csv for connection definition storage. Header (comment) line. "plain" + "obfuscated" password columns.
+// TODO use csv for connection definition storage. Header (comment) line. "plain/obfuscated password (y/n)"; + password column.
 // TODO cli "import-connections" command
 // TODO ? (generally) allow password to be not persisted. For that connections: always ask for pw (and store it in mem)
 
