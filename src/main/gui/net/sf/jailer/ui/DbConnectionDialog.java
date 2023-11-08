@@ -1670,7 +1670,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		}
 		result = connectionList.stream().filter(c -> ci.alias.equals(c.alias))
 				.map(c -> c.getConnectionType()).collect(Collectors.toList());
-		if (result.size() >= 1) {
+		if (result.size() == 1) {
 			return result.get(0);
 		}
 		ConnectionType ciType = ci.getConnectionType();
