@@ -1254,6 +1254,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 						ci.password = currentConnection.password;
 						ci.url = currentConnection.url;
 						ci.user = currentConnection.user;
+						ci.connectionType = currentConnection.connectionType;
+						ci.connectionTypeName = currentConnection.connectionTypeName;
 						if (edit(ci, false, true)) {
 							connectionList.add(i + 1, ci);
 							refresh();
