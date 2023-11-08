@@ -931,8 +931,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			}
 			
 			String bgc = "";
-			if (connectionInfo != null && connectionInfo.getConnectionType().getBg1() != null) {
-				bgc = Integer.toHexString(connectionInfo.getConnectionType().getBg1().getRGB() & 0xffffff);
+			if (connectionInfo != null && connectionInfo.getConnectionType().getBackground() != null) {
+				bgc = Integer.toHexString(connectionInfo.getConnectionType().getBackground().getRGB() & 0xffffff);
 				while (bgc.length() < 6) {
 					bgc = "0" + bgc;
 				}

@@ -45,10 +45,3 @@ public class JailerVersion {
 	}
 
 }
-
-
-// TODO
-// TODO DBConDialog: copy/import creditials mit "Verbindungstyp"
-
-// TODO
-// TODO DBConDialog: copy/import creditials: 1. tooltip + "connection-credentials"? 2. tooltip: "paste here"? ???

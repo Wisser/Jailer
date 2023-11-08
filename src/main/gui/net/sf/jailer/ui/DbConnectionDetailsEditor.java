@@ -337,7 +337,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 				Component render = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 				if (value instanceof ConnectionType && render instanceof JLabel) {
 					if (!isSelected) {
-						Color b1 = ((ConnectionType) value).getBg1();
+						Color b1 = ((ConnectionType) value).getBackground();
 						render.setBackground(b1 == null? dbg : b1);
 						render.setForeground(Color.black);
 					}
@@ -347,7 +347,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		});
 		typeComboBox.addItemListener(e -> {
 			if (typeComboBox.getSelectedItem() != null) {
-				Color b1 = ((ConnectionType) typeComboBox.getSelectedItem()).getBg1();
+				Color b1 = ((ConnectionType) typeComboBox.getSelectedItem()).getBackground();
 				typeComboBox.setBackground(b1 == null? dbg : b1);
 			}
 		});
@@ -1580,6 +1580,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         	String separator = Arrays.stream(SEPARATORS).filter(sep -> !rawContent.contains(sep)).findAny().orElseGet(() -> null);
         	if (separator != null) {
         		content = separator + Arrays.stream(textFields).map(field -> field.getText()).collect(Collectors.joining(separator)) + separator;
+        		content += typeComboBox.getSelectedItem() + separator;
         		StringSelection contents = new StringSelection(content);
         		UIUtil.setClipboardContent(contents);
         		showFeedback("credentials copied to clipboard");
@@ -1605,9 +1606,16 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     				String separator = content.substring(0, 1);
     				content = content.substring(1);
     				String[] fields = content.split(Pattern.quote(separator));
-    				for (int i = 0; i < textFields.length && i < fields.length; ++i) {
+    				int i;
+    				for (i = 0; i < textFields.length && i < fields.length; ++i) {
     					textFields[i].setText(fields[i]);
     				}
+    				if (i >= 0 && i < fields.length) {
+    					String tField = fields[i].trim();
+						Arrays.stream(ConnectionType.values())
+							.filter(t -> t.displayName.equals(tField)).findAny()
+							.ifPresent(t -> typeComboBox.setSelectedItem(t));
+					}
     				String newName = createNewName(user.getText(), dbUrl.getText());
     				if (newName.replaceFirst("\\s*\\(\\d+\\)$", "").equals(alias.getText().replaceFirst("\\s*\\(\\d+\\)$", ""))) {
     					nameContent = alias.getText();

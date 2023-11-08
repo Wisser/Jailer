@@ -4373,7 +4373,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			origTBBG = jToolBar1.getBackground();
 			origP5BG = jPanel5.getBackground();
 		}
-		Color bg = connectionType == null? null : connectionType.getBg1();
+		Color bg = connectionType == null? null : connectionType.getBackground();
 		if (bg == null) {
 			jToolBar1.setBackground(origTBBG);
 			jPanel5.setBackground(origP5BG);

@@ -336,7 +336,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 		if (lastConnectionInfo != null && dbConnectionDialog != null) {
 			lastConnectionInfo.setConnectionType(connectionType = dbConnectionDialog.retrieveConnectionType(lastConnectionInfo));
 		}
-		Color bg = connectionType != null ? connectionType.getBg1() : null;
+		Color bg = connectionType != null ? connectionType.getBackground() : null;
 		if (bg != null) {
 			extractionModelEditor.connectivityState.setBackground(bg);
 			extractionModelEditor.legende2.setBackground(bg);
@@ -368,7 +368,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 	private String getConnectivityStateToolTip(ConnectionInfo connectionInfo) {
 		if (connectionInfo != null) {
 			String url = connectionInfo.url;
-			if (connectionInfo.getConnectionType().getBg1() != null) {
+			if (connectionInfo.getConnectionType().getBackground() != null) {
 				url = "<html>" + UIUtil.toHTMLFragment(url, 0) + "<br><hr>" + connectionInfo.getConnectionType().displayName + "</html>";
 			}
 			return url;

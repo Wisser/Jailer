@@ -18,6 +18,7 @@ package net.sf.jailer.ui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.ComponentEvent;
@@ -42,7 +43,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.stream.Collectors;
 
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -52,6 +55,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter;
 import javax.swing.RowSorter.SortKey;
 import javax.swing.SwingUtilities;
+import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -95,42 +100,26 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	public enum ConnectionType {
 		Development("Development database") {
 			@Override
-			public Color getBg1() {
-				return null;
-			}
-			@Override
-			public Color getBg2() {
+			public Color getBackground() {
 				return null;
 			}
 		},
 		Test("Test (QA) database") {
 			@Override
-			public Color getBg1() {
-				return new Color(255, 255, 200);
-			}
-			@Override
-			public Color getBg2() {
-				return new Color(255, 255, 220);
+			public Color getBackground() {
+				return new Color(180, 255, 180);
 			}
 		},
 		Staging("Staging database") {
 			@Override
-			public Color getBg1() {
-				return new Color(255, 225, 200);
-			}
-			@Override
-			public Color getBg2() {
-				return new Color(255, 225, 220);
+			public Color getBackground() {
+				return new Color(255, 255, 160);
 			}
 		},
 		Production("Production database") {
 			@Override
-			public Color getBg1() {
-				return new Color(255, 190, 190);
-			}
-			@Override
-			public Color getBg2() {
-				return new Color(255, 180, 180);
+			public Color getBackground() {
+				return new Color(255, 200, 200);
 			}
 		};
 		
@@ -143,12 +132,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			return displayName;
 		}
 		
-		public abstract Color getBg1();
-		public abstract Color getBg2();
-		// TODO
-		// TODO bg2 weg oder heller für tabelle?
-		// TODO farben zu ähnlich?
-		// TODO in tabelle die ersten beiden Spalten bei Selection weiterhin in bg-farbe?
+		public abstract Color getBackground();
 		public final String displayName;
 	}
 
@@ -535,9 +519,21 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 								connectionType = connectionList.get(selectedRowIndex).getConnectionType();
 							}
 							
-							if (connectionType != null && connectionType.getBg1() != null) {
-								bg = connectionType.getBg1();
-								// bg = (row % 2 == 0) ? connectionType.getBg1() : connectionType.getBg2();
+							if (connectionType != null && connectionType.getBackground() != null) {
+								bg = connectionType.getBackground();
+								if (isSelected) {
+									Border lb = new LineBorder(new Color(160, 200, 255), 2, false) {
+										@Override
+										public Insets getBorderInsets(Component c, Insets insets) {
+											return new Insets(0, 0, 0, 0);
+										}
+									};
+									if (((JLabel) render).getBorder() == null) {
+										((JLabel) render).setBorder(lb);
+									} else {
+										((JLabel) render).setBorder(BorderFactory.createCompoundBorder(lb, ((JLabel) render).getBorder()));
+									}
+								}
 								((JLabel) render).setToolTipText("<html>" + UIUtil.toHTMLFragment(((JLabel) render).getToolTipText(), 0) + "<br><hr>" + connectionType.displayName + "</html>");
 							}
 							
@@ -1667,8 +1663,17 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	}
 
 	public ConnectionType retrieveConnectionType(ConnectionInfo ci) {
-		return connectionList.stream().filter(c -> ci.url.equals(c.url) && ci.user.equals(c.user))
-				.map(c -> c.getConnectionType()).findAny().orElseGet(() -> ConnectionType.Development);
+		List<ConnectionType> result = connectionList.stream().filter(c -> ci.url.equals(c.url) && ci.user.equals(c.user))
+				.map(c -> c.getConnectionType()).collect(Collectors.toList());
+		if (result.size() == 1) {
+			return result.get(0);
+		}
+		result = connectionList.stream().filter(c -> ci.alias.equals(c.alias))
+				.map(c -> c.getConnectionType()).collect(Collectors.toList());
+		if (result.size() >= 1) {
+			return result.get(0);
+		}
+		return ConnectionType.Development;
 	}
 	
 	public interface ConnectionTypeChangeListener {

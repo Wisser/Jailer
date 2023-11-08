@@ -1525,7 +1525,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 								}
 							};
 						}
-						Color bgCol = node.getConnectionType().getBg1();
+						Color bgCol = node.getConnectionType().getBackground();
 						
 						if (bgCol != null && !sel) {
 							((JLabel) render).setBackground(bgCol);
@@ -1567,7 +1567,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 								"<html><b>" + UIUtil.toHTMLFragment(ciRender(ci), 0) + "</b><br>" +
 								(ci.user != null && ci.user.length() > 0? UIUtil.toHTMLFragment(ci.user, 0) + "<br>" : "") +
 								UIUtil.toHTMLFragment(ci.url, 0) +
-								(ci.getConnectionType().getBg1() != null? "<br>" + ci.getConnectionType().displayName : "")
+								(ci.getConnectionType().getBackground() != null? "<br>" + ci.getConnectionType().displayName : "")
 								);
 						return;
 					}
@@ -1594,8 +1594,6 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 								if (e.getClickCount() > 1) {
 									connect(DataBrowser.this, o);
 								} else {
-									// TODO
-									// TODO check if necessary
 									dbConnectionDialog.select((ConnectionInfo) o);
 								}
 							}
@@ -2076,7 +2074,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		if (lastConnectionInfo != null && dbConnectionDialog != null) {
 			lastConnectionInfo.setConnectionType(connectionType = dbConnectionDialog.retrieveConnectionType(lastConnectionInfo));
 		}
-		Color bg = connectionType != null ? connectionType.getBg1() : null;
+		Color bg = connectionType != null ? connectionType.getBackground() : null;
 		if (bg == null) {
 			jToolBar1.setToolTipText(null);
 			jToolBar1.setBackground(origTBBG);
@@ -2125,7 +2123,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 			origL2Op = legende2.isOpaque();
 		}
 		onConnectionTypeChange();
-		Color bg = connectionType != null ? connectionType.getBg1() : null;
+		Color bg = connectionType != null ? connectionType.getBackground() : null;
 		
 		String dburl = connection != null ? (connection.url) : " ";
 		String dbmsLogoURL = UIUtil.getDBMSLogoURL(dburl);
