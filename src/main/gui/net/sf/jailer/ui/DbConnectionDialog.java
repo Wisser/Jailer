@@ -107,13 +107,13 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		Test("Test (QA) database") {
 			@Override
 			public Color getBackground() {
-				return new Color(187, 247, 187);
+				return new Color(191, 244, 191);
 			}
 		},
 		Staging("Staging database") {
 			@Override
 			public Color getBackground() {
-				return new Color(245, 245, 169);
+				return new Color(246, 246, 166);
 			}
 		},
 		Production("Production database") {
