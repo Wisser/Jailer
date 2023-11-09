@@ -86,7 +86,6 @@ import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionType;
 import net.sf.jailer.ui.UIUtil.PLAF;
-import net.sf.jailer.ui.databrowser.DBConditionEditor;
 import net.sf.jailer.ui.util.ConcurrentTaskControl;
 import net.sf.jailer.ui.util.HttpDownload;
 import net.sf.jailer.ui.util.LightBorderSmallButton;
