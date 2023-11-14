@@ -491,7 +491,7 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 			render.setText(marked);
 			String toolTipText = render.getToolTipText();
 			if (toolTipText == null || toolTipText.length() < 5000) {
-				toolTipText = marked.replace("" + (char) 182, "<br>");
+				toolTipText = marked.replace("" + (char) 182, "<br>").replaceFirst("^<html>&nbsp;", "<html>");
 			}
 			render.setToolTipText(toolTipText);
 			render.setBackground(new Color(190, 255, 180));
@@ -506,6 +506,7 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 						border.paintBorder(this, graphics, 0, 0, getWidth(), getHeight());
 					}
 				};
+				panel.setToolTipText(toolTipText);
 				panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 				panel.add(render);
 				return panel;

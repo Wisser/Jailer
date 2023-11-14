@@ -5328,7 +5328,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				        	valueAsString = "Infinity";
 				        }
 					}
-					valueAsString = " " + (valueAsString.replace('\n', (char) 182)) + suffix;
+					valueAsString = " " + (valueAsString.replace('\n', (char) 182).replace("\r", "")) + suffix;
 					// TODO get rid of suffix " ". Set valueAsString = value if valueAsString.equals(value)
 				}
 			}
