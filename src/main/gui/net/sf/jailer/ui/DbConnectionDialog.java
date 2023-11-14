@@ -1038,13 +1038,15 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         copy = new javax.swing.JButton();
         deleteButton = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
+        importButton = new javax.swing.JButton();
+        exportButton = new javax.swing.JButton();
         infoBarLabel = new javax.swing.JLabel();
         borderPanel = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         connectionsTable = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Connect to Database");
+        setTitle("Connect with DB");
         getContentPane().setLayout(new java.awt.CardLayout());
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
@@ -1165,6 +1167,32 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 10;
         gridBagConstraints.gridy = 9;
         jPanel3.add(jLabel1, gridBagConstraints);
+
+        importButton.setText("  Import  ");
+        importButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                importButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 10;
+        gridBagConstraints.gridy = 40;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(12, 4, 2, 0);
+        jPanel3.add(importButton, gridBagConstraints);
+
+        exportButton.setText("  Export  ");
+        exportButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 10;
+        gridBagConstraints.gridy = 42;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 2, 0);
+        jPanel3.add(exportButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 10;
@@ -1357,6 +1385,35 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
     }//GEN-LAST:event_restoreLastSessionButtonActionPerformed
 
+    private void importButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importButtonActionPerformed
+        importConnections();
+    }//GEN-LAST:event_importButtonActionPerformed
+
+	public void importConnections() {
+		ConnectionInfo ci = new ConnectionInfo();
+        
+        ci.alias = "Test" 
+        		 + System.currentTimeMillis();
+        ci.dataModelFolder = "dm";
+        ci.driverClass = "dc";
+        ci.url = "jdbc...";
+		connectionList.add(ci);
+		store();
+		if (!onConnectionListChangedPending) {
+			onConnectionListChangedPending = true;
+			UIUtil.invokeLater(() -> {
+				onConnectionListChangedPending = false;
+				onConnectionListChangedReload();
+				notifyConnectionTypeChangeListener();
+				UIUtil.invokeLater(() -> onConnectionListChangedAll());
+			});
+		}
+	}
+
+    private void exportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_exportButtonActionPerformed
+
 	/**
 	 * Opens detail editor for a connection.
 	 * 
@@ -1528,6 +1585,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
     private javax.swing.JButton copy;
     private javax.swing.JButton deleteButton;
     private javax.swing.JButton editButton;
+    private javax.swing.JButton exportButton;
+    private javax.swing.JButton importButton;
     private javax.swing.JLabel infoBarLabel;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;

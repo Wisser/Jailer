@@ -501,6 +501,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		
 		AtomicInteger selectedModule = new AtomicInteger(0);
 		JButton deselButton = new JButton("Help", UIUtil.scaleIcon(yellowdotLabel, helpImg));
+		// TODO
+		// TODO dont show this initially (first time app starts)
 		helpLabel.setText(null);
 		helpLabel.setIcon(UIUtil.scaleIcon(helpImg, 0.4));
 		helpLabel.setVisible(false);
@@ -1731,6 +1733,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         editButton = new javax.swing.JButton();
         analyzeButton = new javax.swing.JButton();
         deleteButton = new javax.swing.JButton();
+        importButton = new javax.swing.JButton();
+        exportButton = new javax.swing.JButton();
         infoBarLabel = new javax.swing.JLabel();
         jPanel6 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -2167,6 +2171,32 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 2, 0);
         jPanel3.add(deleteButton, gridBagConstraints);
+
+        importButton.setText("  Import  ");
+        importButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                importButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 10;
+        gridBagConstraints.gridy = 40;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(12, 4, 2, 0);
+        jPanel3.add(importButton, gridBagConstraints);
+
+        exportButton.setText("  Export  ");
+        exportButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 10;
+        gridBagConstraints.gridy = 42;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 2, 0);
+        jPanel3.add(exportButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 10;
@@ -2729,6 +2759,14 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private void bmRecUsedOkButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bmRecUsedOkButtonActionPerformed
     }//GEN-LAST:event_bmRecUsedOkButtonActionPerformed
 
+    private void importButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importButtonActionPerformed
+    	dbConnectionDialog.importConnections();
+    }//GEN-LAST:event_importButtonActionPerformed
+
+    private void exportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_exportButtonActionPerformed
+
 	/**
 	 * Opens file chooser.
 	 */
@@ -2907,8 +2945,10 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JPanel dummyContent;
     private javax.swing.JLabel dummyLabel;
     private javax.swing.JButton editButton;
+    private javax.swing.JButton exportButton;
     private javax.swing.JLabel helpLabel;
     private javax.swing.JLabel histLabel;
+    private javax.swing.JButton importButton;
     private javax.swing.JLabel infoBarLabeRecUsedlBookmark;
     private javax.swing.JLabel infoBarLabel;
     private javax.swing.JLabel infoBarLabel2;
