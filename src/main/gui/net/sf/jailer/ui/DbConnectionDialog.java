@@ -27,15 +27,19 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -77,6 +81,7 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
 import net.sf.jailer.ui.util.StringObfuscator;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.ClasspathUtil;
+import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
 import net.sf.jailer.util.Pair;
 
@@ -399,6 +404,9 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	private final InfoBar infoBar;
 	private final boolean dataModelAware;
 	private final DataModelChanger dataModelChanger;
+	
+	// TODO
+	// TODO remove, no longer used
 	private final boolean showOnlyRecentyUsedConnections;
 	
 	public interface DataModelChanger {
@@ -752,7 +760,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	/**
 	 * File to store connections.
 	 */
-	private static String CONNECTIONS_FILE = ".connections";
+	public static String CONNECTIONS_FILE = "connections.csv";
+	private static String CONNECTIONS_FILE_LEGACY = ".connections";
 
 	/**
 	 * Stores the connections into the CONNECTIONS_FILE.
@@ -766,7 +775,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 				ci.encrypt();
 			}
 			
-			File file = Environment.newFile(CONNECTIONS_FILE);
+			File file = Environment.newFile(CONNECTIONS_FILE_LEGACY);
 			ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file)); // lgtm [java/output-resource-leak]
 			out.writeObject(connectionList);
 			out.writeInt(connectionList.indexOf(currentConnection));
@@ -829,7 +838,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		boolean preV4 = true;
 		
 		try {
-			File file = Environment.newFile(CONNECTIONS_FILE);
+			File file = Environment.newFile(CONNECTIONS_FILE_LEGACY);
 			if (file.exists()) {
 				ObjectInputStream in = new ObjectInputStream(new FileInputStream(file)); // lgtm [java/input-resource-leak]
 				List<ConnectionInfo> cis = (List<ConnectionInfo>) in.readObject();
@@ -1176,9 +1185,9 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 10;
-        gridBagConstraints.gridy = 40;
+        gridBagConstraints.gridy = 42;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 4, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(2, 4, 2, 0);
         jPanel3.add(importButton, gridBagConstraints);
 
         exportButton.setText("  Export  ");
@@ -1189,9 +1198,9 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 10;
-        gridBagConstraints.gridy = 42;
+        gridBagConstraints.gridy = 40;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(16, 4, 0, 0);
         jPanel3.add(exportButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1385,24 +1394,30 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
     }//GEN-LAST:event_restoreLastSessionButtonActionPerformed
 
-    private void importButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importButtonActionPerformed
-        importConnections();
-    }//GEN-LAST:event_importButtonActionPerformed
+	public void importConnections(Window owner) {
+		Pair<Boolean, Pair<Integer, List<ConnectionInfo>>> result = ExportPanel.doImport(owner, this);
+		if (result.a) {
+			if (result.b.a > 0) {
+				notifyDataModelsChanged();
+			}
 
-	public void importConnections() {
-		ConnectionInfo ci = new ConnectionInfo();
-        
-        ci.alias = "Test" 
-        		 + System.currentTimeMillis();
-        ci.dataModelFolder = "dm";
-        ci.driverClass = "dc";
-        ci.url = "jdbc...";
-		connectionList.add(ci);
-		store();
-		if (!onConnectionListChangedPending) {
-			onConnectionListChangedPending = true;
+			if (result.b.b != null) {
+				for (ConnectionInfo ci: result.b.b) {
+					boolean found = false;
+					for (int i = 0; i < connectionList.size(); ++i) {
+						if (connectionList.get(i).alias.equals(ci.alias)) {
+							found = true;
+							connectionList.set(i, ci);
+							break;
+						}
+					}
+					if (!found) {
+						connectionList.add(ci);
+					}
+				}
+				store();
+			}
 			UIUtil.invokeLater(() -> {
-				onConnectionListChangedPending = false;
 				onConnectionListChangedReload();
 				notifyConnectionTypeChangeListener();
 				UIUtil.invokeLater(() -> onConnectionListChangedAll());
@@ -1410,8 +1425,17 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		}
 	}
 
+    private void importButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importButtonActionPerformed
+    	importConnections(SwingUtilities.getWindowAncestor(importButton));
+    }//GEN-LAST:event_importButtonActionPerformed
+
+	public void exportConnections(Window owner, Object initiallySelected) {
+		ExportPanel exportPanel = new ExportPanel();
+		exportPanel.openExportDialog(owner, initiallySelected, this);
+	}
+
     private void exportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportButtonActionPerformed
-        // TODO add your handling code here:
+        exportConnections(SwingUtilities.getWindowAncestor(importButton), currentConnection);
     }//GEN-LAST:event_exportButtonActionPerformed
 
 	/**
@@ -1741,6 +1765,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	
 	public interface ConnectionTypeChangeListener {
 		void onConnectionTypeChange();
+		void onDataModelsChanged();
 	}
 	
 	private static void notifyConnectionTypeChangeListener() {
@@ -1750,18 +1775,76 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			}
 		}
 	}
+	
+	private static void notifyDataModelsChanged() {
+		for (Window w : Window.getWindows()) {
+			if (w instanceof ConnectionTypeChangeListener) {
+				((ConnectionTypeChangeListener) w).onDataModelsChanged();
+			}
+		}
+	}
+	
+	public static void saveAsCSV(Collection<ConnectionInfo> infos, File file) throws IOException {
+		StringObfuscator stringObfuscator = new StringObfuscator();
+		BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+		writer.append("# Jailer Database connections. (CSV format. escape sequence: '\"' -> '\\\"' and '\\' -> '\\\\')" + UIUtil.LINE_SEPARATOR);
+		writer.append("# Name; User; URL; Data model folder; Connection type (Development/Test/Staging or Production);  Password (plain); Password (obfuscated); Driver class; Driver JAR; additional JAR 1; additional JAR 2; additional JAR 3; additional JAR 4;" + UIUtil.LINE_SEPARATOR);
+		for (ConnectionInfo ci: infos) {
+			writer.append(CsvFile.encodeCell(ci.alias) + "; ");
+			writer.append(CsvFile.encodeCell(ci.user) + "; ");
+			writer.append(CsvFile.encodeCell(ci.url) + "; ");
+			writer.append(CsvFile.encodeCell(ci.dataModelFolder) + "; ");
+			writer.append(CsvFile.encodeCell(ci.getConnectionType().name()) + "; ");
+			writer.append("; ");
+			writer.append(CsvFile.encodeCell(stringObfuscator.encrypt(ci.password)) + "; ");
+			writer.append(CsvFile.encodeCell(ci.driverClass) + "; ");
+			writer.append(CsvFile.encodeCell(ci.jar1) + "; ");
+			writer.append(CsvFile.encodeCell(ci.jar2) + "; ");
+			writer.append(CsvFile.encodeCell(ci.jar3) + "; ");
+			writer.append(CsvFile.encodeCell(ci.jar4) + UIUtil.LINE_SEPARATOR);
+		}
+		writer.close();
+	}
+	
+	public static List<ConnectionInfo> loadAsCSV(File file) throws IOException {
+		StringObfuscator stringObfuscator = new StringObfuscator();
+		List<ConnectionInfo> list = new ArrayList<>();
+		CsvFile csvFile = new CsvFile(file);
+		for (Line line: csvFile.getLines()) {
+			if (!line.cells.get(0).isEmpty()) {
+				ConnectionInfo ci = new ConnectionInfo();
+				ci.alias = line.cells.get(0);
+				ci.user = line.cells.get(1);
+				ci.url = line.cells.get(2);
+				ci.dataModelFolder = line.cells.get(3);
+				ci.connectionTypeName = line.cells.get(4);
+				ci.password = line.cells.get(5);
+				if (ci.password.isEmpty() && !line.cells.get(6).isEmpty()) {
+					ci.password = stringObfuscator.decrypt(line.cells.get(6));
+				}
+				ci.driverClass = line.cells.get(7);
+				ci.jar1 = line.cells.get(8);
+				ci.jar2 = line.cells.get(9);
+				ci.jar3 = line.cells.get(10);
+				ci.jar4 = line.cells.get(11);
+				list.add(ci);
+			}
+		}
+		return list;
+	}
 
 }
 
 
 // TODO
 // TODO import/export of sets of connections
-// TODO export no password
-// TODO ask for password 1. time user wants to use connection and persist that (later if allowed)
 // TODO use csv for connection definition storage. Header (comment) line. "plain/obfuscated password (y/n)"; + password column.
-// TODO cli "import-connections" command
-// TODO ? (generally) allow password to be not persisted. For that connections: always ask for pw (and store it in mem)
 
+// TODO 
+// TODO "jailer.xml" should be editable for everyone, including state 1000+.
+
+// TODO 
+// TODO document new csv-format for connectios.csv
 
 // TODO 1
 // TODO programmatic SLL certificate import?

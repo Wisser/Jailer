@@ -430,6 +430,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
         jSeparator10 = new javax.swing.JSeparator();
         exportDisplay = new javax.swing.JMenuItem();
         exportDisplay1 = new javax.swing.JMenuItem();
+        jSeparator23 = new javax.swing.JPopupMenu.Separator();
+        exportMenuItem = new javax.swing.JMenuItem();
+        importMenuItem = new javax.swing.JMenuItem();
         jSeparator11 = new javax.swing.JPopupMenu.Separator();
         exit = new javax.swing.JMenuItem();
         jMenu1 = new javax.swing.JMenu();
@@ -659,6 +662,23 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
             }
         });
         fileMenu.add(exportDisplay1);
+        fileMenu.add(jSeparator23);
+
+        exportMenuItem.setText("Export Models and Connections");
+        exportMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(exportMenuItem);
+
+        importMenuItem.setText("Import Models and Connections");
+        importMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                importMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(importMenuItem);
         fileMenu.add(jSeparator11);
 
         exit.setText("Exit");
@@ -2239,6 +2259,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
     	exportDisplay1ActionPerformed(evt);
     }//GEN-LAST:event_renderHtml1ActionPerformed
 
+    private void exportMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportMenuItemActionPerformed
+        dbConnectionDialog.exportConnections(this, null);
+    }//GEN-LAST:event_exportMenuItemActionPerformed
+
+    private void importMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importMenuItemActionPerformed
+        dbConnectionDialog.importConnections(this);
+    }//GEN-LAST:event_importMenuItemActionPerformed
+
     private void executeAndReload(Callable<Boolean> callable) {
         File tmpFile = null;
         String extractionModelFile = extractionModelEditor.extractionModelFile;
@@ -2561,6 +2589,17 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 		});
 	}
 
+
+	@Override
+	public void onDataModelsChanged() {
+		executeAndReload(new Callable<Boolean>() {
+			@Override
+			public Boolean call() {
+				return true;
+			}
+        });
+	}
+	
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem analyzeSQLMenuItem;
     javax.swing.JMenuItem checkPKMenuItem;
@@ -2582,11 +2621,13 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
     private javax.swing.JMenuItem expandAllVisible;
     private javax.swing.JMenuItem exportDisplay;
     private javax.swing.JMenuItem exportDisplay1;
+    private javax.swing.JMenuItem exportMenuItem;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem helpContent;
     private javax.swing.JMenuItem helpForum;
     private javax.swing.JCheckBoxMenuItem horizontalLayoutMenuItem;
     private javax.swing.JMenuItem ignoreAll;
+    private javax.swing.JMenuItem importMenuItem;
     private javax.swing.JButton jButton1;
     private javax.swing.JLayeredPane jLayeredPane1;
     private javax.swing.JMenu jMenu1;
@@ -2607,6 +2648,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
     private javax.swing.JPopupMenu.Separator jSeparator14;
     private javax.swing.JPopupMenu.Separator jSeparator15;
     private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JPopupMenu.Separator jSeparator23;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JSeparator jSeparator4;
     private javax.swing.JSeparator jSeparator5;

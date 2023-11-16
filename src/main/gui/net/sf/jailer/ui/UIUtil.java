@@ -2015,7 +2015,7 @@ public class UIUtil {
 	public static String getDBMSLogoURL(String theUrl) {
 		String url = theUrl.toLowerCase();
 		if (!url.matches("jdbc:.+")) {
-			return null;
+			return urlOrSmallIconUrl("/dbmslogo/other.png");
 		}
 		Optional<Line> result = loadDriverList(null).stream().filter(line -> {
 			String prefix = line.cells.get(1).replaceFirst("[</\\[@].*$", "");
@@ -2023,14 +2023,18 @@ public class UIUtil {
 		}).findFirst();
 		if (result.isPresent()) {
 			String logoUrl = "/dbmslogo/" + result.get().cells.get(6);
-			String smallLogoUrl = logoUrl.replaceFirst("^(.*)(\\.([^\\.]+))$", "$1_small$2");
-			
-			if (readImage(smallLogoUrl, false) != null) {
-				return smallLogoUrl;
-			}
-			return logoUrl;
+			return urlOrSmallIconUrl(logoUrl);
 		}
-		return null;
+		return urlOrSmallIconUrl("/dbmslogo/other.png");
+	}
+
+	private static String urlOrSmallIconUrl(String logoUrl) {
+		String smallLogoUrl = logoUrl.replaceFirst("^(.*)(\\.([^\\.]+))$", "$1_small$2");
+		
+		if (readImage(smallLogoUrl, false) != null) {
+			return smallLogoUrl;
+		}
+		return logoUrl;
 	}
 
 	public static String getDBMSURLPattern(String theUrl) {

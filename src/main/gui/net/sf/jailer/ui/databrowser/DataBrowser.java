@@ -1715,11 +1715,28 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 			if (currentConnectionInfo == null) {
 				currentConnectionInfo = dbConnectionDialog.currentConnection;
 			}
+			Set<String> dup = new HashSet<>();
+			String cmsf = DataModelManager.getCurrentModelSubfolder(executionContext);
+			try {
+				DataModelManager.setCurrentModelSubfolder(null, executionContext);
+				Set<String> seen = new HashSet<>();
+				for (String m : DataModelManager.getModelFolderNames(executionContext)) {
+					String displayName = DataModelManager.getModelDetails(m, executionContext).a;
+					if (!seen.add(displayName)) {
+						dup.add(displayName);
+					}
+				}
+			} finally {
+				DataModelManager.setCurrentModelSubfolder(cmsf, executionContext);
+			}
 			Map<String, Set<ConnectionInfo>> models = new HashMap<String, Set<ConnectionInfo>>();
 			for (ConnectionInfo ci: dbConnectionDialog.getConnectionList()) {
 				if (existingModels.contains(ci.dataModelFolder)) {
 					Pair<String, Long> modelDetails = DataModelManager.getModelDetails(ci.dataModelFolder, executionContext);
 					String mName = modelDetails == null? ci.dataModelFolder : modelDetails.a;
+					if (dup.contains(mName)) {
+						mName += " (" + ci.dataModelFolder + ")";
+					}
 					Set<ConnectionInfo> cis = models.get(mName);
 					if (cis == null) {
 						cis = new TreeSet<DbConnectionDialog.ConnectionInfo>((a, b) -> ciRender(a).compareToIgnoreCase(ciRender(b)));
@@ -2322,6 +2339,9 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         storeSessionItem = new javax.swing.JMenuItem();
         restoreSessionItem = new javax.swing.JMenuItem();
         jSeparator12 = new javax.swing.JPopupMenu.Separator();
+        exportMenuItem = new javax.swing.JMenuItem();
+        importMenuItem = new javax.swing.JMenuItem();
+        jSeparator23 = new javax.swing.JPopupMenu.Separator();
         exitMenuItem = new javax.swing.JMenuItem();
         menuTools = new javax.swing.JMenu();
         analyseMenuItem = new javax.swing.JMenuItem();
@@ -3272,6 +3292,23 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         jMenu1.add(restoreSessionItem);
         jMenu1.add(jSeparator12);
 
+        exportMenuItem.setText("Export Models and Connections");
+        exportMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(exportMenuItem);
+
+        importMenuItem.setText("Import Models and Connections");
+        importMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                importMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(importMenuItem);
+        jMenu1.add(jSeparator23);
+
         exitMenuItem.setText("Exit");
         exitMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -3789,6 +3826,14 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
     private void tbClearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbClearButtonActionPerformed
     	desktop.closeAll();
     }//GEN-LAST:event_tbClearButtonActionPerformed
+
+    private void exportMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportMenuItemActionPerformed
+        dbConnectionDialog.exportConnections(this, null);
+    }//GEN-LAST:event_exportMenuItemActionPerformed
+
+    private void importMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importMenuItemActionPerformed
+        dbConnectionDialog.importConnections(this);
+    }//GEN-LAST:event_importMenuItemActionPerformed
 
 	private void newWindowMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_newWindowMenuItemActionPerformed
 		openNewWindow();
@@ -4510,6 +4555,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
     private javax.swing.JMenuItem editBookmarkMenuItem;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenuItem exportDataMenuItem;
+    private javax.swing.JMenuItem exportMenuItem;
     private javax.swing.JMenuItem goBackItem;
     private javax.swing.JMenuItem goForwardItem;
     private javax.swing.JLabel hasDependent;
@@ -4517,6 +4563,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
     private javax.swing.JMenu helpMenu;
     private javax.swing.JPanel hiddenPanel;
     private javax.swing.JLabel ignored;
+    private javax.swing.JMenuItem importMenuItem;
     private javax.swing.JPanel initialHGPanel;
     private javax.swing.JButton jButton1;
     private javax.swing.JInternalFrame jInternalFrame1;
@@ -4571,6 +4618,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
     private javax.swing.JPopupMenu.Separator jSeparator20;
     private javax.swing.JToolBar.Separator jSeparator21;
     private javax.swing.JToolBar.Separator jSeparator22;
+    private javax.swing.JPopupMenu.Separator jSeparator23;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JPopupMenu.Separator jSeparator5;
@@ -6724,6 +6772,22 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		}
 	}
 	
+	@Override
+	public void onDataModelsChanged() {
+		try {
+			UIUtil.setWaitCursor(this);
+			desktop.reloadDataModel(desktop.schemaMapping);
+			dataModelViewFrame = null;
+			updateDataModelView(null);
+			toFront();
+			updateStatusBar();
+		} catch (Exception e) {
+			UIUtil.showException(this, "Error", e, session);
+		} finally {
+			UIUtil.resetWaitCursor(this);
+		}
+	}
+
 	private ImageIcon tableIcon;
 	private ImageIcon databaseIcon;
 	private ImageIcon redIcon;

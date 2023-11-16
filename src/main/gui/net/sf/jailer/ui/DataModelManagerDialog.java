@@ -28,6 +28,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -72,6 +73,7 @@ import javax.swing.JTable;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -1391,7 +1393,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	}
 
 	private void initConnectionDialog(boolean all) {
-		DbConnectionDialog dialog = new DbConnectionDialog(this, JailerVersion.APPLICATION_NAME, all? infoBarConnection : infoBarRecUsedConnection, null, executionContext, false, !all) {
+		Window parent = master != null? master : this;
+		DbConnectionDialog dialog = new DbConnectionDialog(parent, JailerVersion.APPLICATION_NAME, all? infoBarConnection : infoBarRecUsedConnection, null, executionContext, false, !all) {
 			@Override
 			protected boolean isAssignedToDataModel(String dataModelFolder) {
 				return modelList.contains(dataModelFolder);
@@ -2180,9 +2183,9 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 10;
-        gridBagConstraints.gridy = 40;
+        gridBagConstraints.gridy = 42;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 4, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(2, 4, 2, 0);
         jPanel3.add(importButton, gridBagConstraints);
 
         exportButton.setText("  Export  ");
@@ -2193,9 +2196,9 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 10;
-        gridBagConstraints.gridy = 42;
+        gridBagConstraints.gridy = 40;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(16, 4, 0, 0);
         jPanel3.add(exportButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -2760,12 +2763,12 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     }//GEN-LAST:event_bmRecUsedOkButtonActionPerformed
 
     private void importButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importButtonActionPerformed
-    	dbConnectionDialog.importConnections();
+      	dbConnectionDialog.importConnections(SwingUtilities.getWindowAncestor(importButton));
     }//GEN-LAST:event_importButtonActionPerformed
 
     private void exportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportButtonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_exportButtonActionPerformed
+    	dbConnectionDialog.exportConnections(SwingUtilities.getWindowAncestor(exportButton), currentModel);
+     }//GEN-LAST:event_exportButtonActionPerformed
 
 	/**
 	 * Opens file chooser.
