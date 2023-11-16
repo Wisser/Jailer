@@ -492,6 +492,8 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 			String toolTipText = render.getToolTipText();
 			if (toolTipText == null || toolTipText.length() < 5000) {
 				toolTipText = marked.replace("" + (char) 182, "<br>").replaceFirst("^<html>&nbsp;", "<html>");
+				// TODO
+				// TODO cache
 			}
 			render.setToolTipText(toolTipText);
 			render.setBackground(new Color(190, 255, 180));
