@@ -1784,19 +1784,29 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		}
 	}
 	
+	private static String OBFUSCATED_MARKER_PREFIX = "encrypted:";
+	// TODO
+	// TODO test non-obf. connections.csv
+	
 	public static void saveAsCSV(Collection<ConnectionInfo> infos, File file) throws IOException {
 		StringObfuscator stringObfuscator = new StringObfuscator();
 		BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-		writer.append("# Jailer Database connections. (CSV format. escape sequence: '\"' -> '\\\"' and '\\' -> '\\\\')" + UIUtil.LINE_SEPARATOR);
-		writer.append("# Name; User; URL; Data model folder; Connection type (Development/Test/Staging or Production);  Password (plain); Password (obfuscated); Driver class; Driver JAR; additional JAR 1; additional JAR 2; additional JAR 3; additional JAR 4;" + UIUtil.LINE_SEPARATOR);
+		writer.append("# Jailer Database connections." + UIUtil.LINE_SEPARATOR);
+		writer.append(UIUtil.LINE_SEPARATOR);
+		writer.append("# Format: CVS, columns are separated by ';'" + UIUtil.LINE_SEPARATOR);
+		writer.append("#         Lines starting with '#' and empty lines are comments" + UIUtil.LINE_SEPARATOR);
+		writer.append("#         Escape sequences: '\"' -> '\\\"' and '\\' -> '\\\\'" + UIUtil.LINE_SEPARATOR);
+		writer.append("#         Passwords and URLs starting with '" + OBFUSCATED_MARKER_PREFIX + "' are encrypted." + UIUtil.LINE_SEPARATOR);
+		writer.append("#         You may use non-encrypted text here by omitting the prefix." + UIUtil.LINE_SEPARATOR);
+		writer.append(UIUtil.LINE_SEPARATOR);
+		writer.append("# Name; User; URL; Data model folder; Connection type (Development/Test/Staging/Production or empty); Password; Driver class; Driver JAR; additional JAR 1; additional JAR 2; additional JAR 3; additional JAR 4;" + UIUtil.LINE_SEPARATOR);
 		for (ConnectionInfo ci: infos) {
 			writer.append(CsvFile.encodeCell(ci.alias) + "; ");
 			writer.append(CsvFile.encodeCell(ci.user) + "; ");
-			writer.append(CsvFile.encodeCell(ci.url) + "; ");
+			writer.append(OBFUSCATED_MARKER_PREFIX + CsvFile.encodeCell(stringObfuscator.encrypt(ci.url)) + "; ");
 			writer.append(CsvFile.encodeCell(ci.dataModelFolder) + "; ");
 			writer.append(CsvFile.encodeCell(ci.getConnectionType().name()) + "; ");
-			writer.append("; ");
-			writer.append(CsvFile.encodeCell(stringObfuscator.encrypt(ci.password)) + "; ");
+			writer.append(OBFUSCATED_MARKER_PREFIX + CsvFile.encodeCell(stringObfuscator.encrypt(ci.password)) + "; ");
 			writer.append(CsvFile.encodeCell(ci.driverClass) + "; ");
 			writer.append(CsvFile.encodeCell(ci.jar1) + "; ");
 			writer.append(CsvFile.encodeCell(ci.jar2) + "; ");
@@ -1816,17 +1826,20 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 				ci.alias = line.cells.get(0);
 				ci.user = line.cells.get(1);
 				ci.url = line.cells.get(2);
+				if (ci.url.startsWith(OBFUSCATED_MARKER_PREFIX)) {
+					ci.url = stringObfuscator.decrypt(ci.url.substring(OBFUSCATED_MARKER_PREFIX.length()));
+				}
 				ci.dataModelFolder = line.cells.get(3);
 				ci.connectionTypeName = line.cells.get(4);
 				ci.password = line.cells.get(5);
-				if (ci.password.isEmpty() && !line.cells.get(6).isEmpty()) {
-					ci.password = stringObfuscator.decrypt(line.cells.get(6));
+				if (ci.password.startsWith(OBFUSCATED_MARKER_PREFIX)) {
+					ci.password = stringObfuscator.decrypt(ci.password.substring(OBFUSCATED_MARKER_PREFIX.length()));
 				}
-				ci.driverClass = line.cells.get(7);
-				ci.jar1 = line.cells.get(8);
-				ci.jar2 = line.cells.get(9);
-				ci.jar3 = line.cells.get(10);
-				ci.jar4 = line.cells.get(11);
+				ci.driverClass = line.cells.get(6);
+				ci.jar1 = line.cells.get(7);
+				ci.jar2 = line.cells.get(8);
+				ci.jar3 = line.cells.get(9);
+				ci.jar4 = line.cells.get(10);
 				list.add(ci);
 			}
 		}

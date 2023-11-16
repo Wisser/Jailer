@@ -39,7 +39,6 @@ import java.util.zip.ZipOutputStream;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -263,6 +262,7 @@ public class ExportPanel extends javax.swing.JPanel {
 		        	}
 		        }
 			}
+			updateStatus();
 			UIUtil.initComponents(this);
 		} finally {
 			DataModelManager.setCurrentModelSubfolder(cmsf, connectionDialog.executionContext);
@@ -433,7 +433,6 @@ public class ExportPanel extends javax.swing.JPanel {
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
     	if (!selectedConnections.isEmpty() || !selectedModels.isEmpty()) {
     		doExport();
-    		
     	}
         ok = true;
     	dialog.setVisible(false);
@@ -457,7 +456,7 @@ public class ExportPanel extends javax.swing.JPanel {
 					if (cFile != null) {
 						cFile.delete();
 					}
-					JOptionPane.showMessageDialog(this, okMessage);
+			    	JOptionPane.showMessageDialog(this, okMessage);
 				} catch (IOException e) {
 					UIUtil.showException(this, "Error", e);
 				}
