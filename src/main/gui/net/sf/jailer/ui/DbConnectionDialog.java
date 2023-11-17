@@ -31,11 +31,9 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
@@ -216,18 +214,6 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			dataModelFolder = ci.dataModelFolder;
 			connectionType = ci.connectionType;
 			connectionTypeName = ci.connectionTypeName;
-		}
-		
-		public boolean encrypt() {
-			if (!encrypted && System.getProperty("unencrypted-credentials") == null) {
-				url = stringObfuscator.encrypt(url);
-				user = stringObfuscator.encrypt(user);
-				password = stringObfuscator.encrypt(password);
-				encrypted = true;
-				return true;
-			} else {
-				return false;
-			}
 		}
 		
 		public boolean decrypt() {

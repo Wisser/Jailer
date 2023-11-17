@@ -67,7 +67,6 @@ import org.fife.rsta.ui.EscapableDialog;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
-import net.sf.jailer.ui.Environment.CopyFileVisitor;
 import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.util.CompoundIcon;
 import net.sf.jailer.util.LogUtil;
@@ -140,7 +139,7 @@ public class ExportPanel extends javax.swing.JPanel {
 			}
 			
 			int y = 1;
-			List<ConnectionInfo> connections = new ArrayList<>(connectionList);
+			List<ConnectionInfo> connections = connectionList == null? new ArrayList<>() : new ArrayList<>(connectionList);
 			connections.sort((a, b) -> a.alias.compareToIgnoreCase(b.alias));
 			List<ConnectionInfo> rest = new ArrayList<>(connections);
 			List<Entry<String, String>> entryList = new ArrayList<>(modelNames.entrySet());
@@ -527,7 +526,9 @@ public class ExportPanel extends javax.swing.JPanel {
 	    	    				sourcePath = dir;
 	    	    			}
 	    	    			Path targetDir = targetPath.resolve(sourcePath.relativize(dir));
-	    	    			if (!targetDir.toFile().exists()) {
+	    	    			if (targetDir.toFile().exists()) {
+	    	    				return FileVisitResult.SKIP_SUBTREE;
+	    	    			} else {
 	    	    				tabuModels.add(dir.toFile().getName());
 	    	    			}
 							Files.createDirectories(targetDir);
@@ -554,6 +555,7 @@ public class ExportPanel extends javax.swing.JPanel {
 	    			};
 	    			exportPanel.okButton.setText("  Import  ");
 					if (exportPanel.openDialog(owner, true, connectionList, tabuModels, "Import data models and connections", connectionDialog)) {
+			    		executionContext.setDatamodelFolder(oldDatamodelFolder);
 						return doImport(owner, file, false, exportPanel.selectedConnections, exportPanel.selectedModels, connectionDialog);
 					}
 	    		}
@@ -619,6 +621,7 @@ public class ExportPanel extends javax.swing.JPanel {
 
 					entry = zipIn.getNextEntry();
 					Set<String> models = new HashSet<>();
+					Set<String> seenTopLevelDirs = new HashSet<>();
 					// iterates over entries in the zip file
 					while (entry != null) {
 						String name = entry.getName();
@@ -636,6 +639,12 @@ public class ExportPanel extends javax.swing.JPanel {
 								cFile.delete();
 							} else {
 								String filePath = executionContext.getDatamodelFolder() + File.separator + name;
+								String topLevelDir = name.replaceFirst("[/\\\\].*", "");
+								if (!topLevelDir.equals(name)) {
+									if (seenTopLevelDirs.add(topLevelDir)) {
+										deleteDir(new File(executionContext.getDatamodelFolder() + File.separator + topLevelDir));
+									}
+								}
 								if (!entry.isDirectory()) {
 									// if the entry is a file, extracts it
 									models.add(new File(filePath).getParentFile().getName());
@@ -678,7 +687,8 @@ public class ExportPanel extends javax.swing.JPanel {
 					}
 					info = info + " imported.";
 					if (!silent) {
-						JOptionPane.showMessageDialog(owner, info);
+						String message = info;
+						UIUtil.invokeLater(() -> JOptionPane.showMessageDialog(owner, message));
 					}
 				} catch (Exception e) {
 					UIUtil.showException(owner, "Error", e);
@@ -763,3 +773,15 @@ public class ExportPanel extends javax.swing.JPanel {
 
 //TODO 
 //TODO test with linux
+
+//TODO 
+//TODO test basics!
+
+//TODO 
+//TODO file chooser: initial pattern: *.gz weg, *.zip wohl doppelt
+
+//TODO 
+//TODO file chooser: initial pattern: vorschlag dateiname? (? exakt 1 Ding -> danach benennen?)
+
+//TODO 
+//TODO delete model folder before importing it (bc. exclude-associations.csv etc.)

@@ -2764,6 +2764,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
     private void importButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importButtonActionPerformed
       	dbConnectionDialog.importConnections(SwingUtilities.getWindowAncestor(importButton));
+      	loadModelList();
+		refresh();
     }//GEN-LAST:event_importButtonActionPerformed
 
     private void exportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportButtonActionPerformed
