@@ -83,6 +83,7 @@ import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.ClasspathUtil;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
+import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Pair;
 
 /**
@@ -405,7 +406,6 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	private final boolean dataModelAware;
 	private final DataModelChanger dataModelChanger;
 	
-	// TODO
 	// TODO remove, no longer used
 	private final boolean showOnlyRecentyUsedConnections;
 	
@@ -771,20 +771,10 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			return;
 		}
 		try {
-			for (ConnectionInfo ci: connectionList) {
-				ci.encrypt();
-			}
+			File file = Environment.newFile(CONNECTIONS_FILE);
+			saveAsCSV(connectionList, file);
 			
-			File file = Environment.newFile(CONNECTIONS_FILE_LEGACY);
-			ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file)); // lgtm [java/output-resource-leak]
-			out.writeObject(connectionList);
-			out.writeInt(connectionList.indexOf(currentConnection));
-			List<String> dataModels = new ArrayList<String>();
-			for (ConnectionInfo ci: connectionList) {
-				dataModels.add(ci.dataModelFolder);
-			}
-			out.writeObject(dataModels);
-			out.close();
+			Environment.newFile(CONNECTIONS_FILE_LEGACY).renameTo(Environment.newFile(CONNECTIONS_FILE_LEGACY + ".obsolete"));
 			
 			if (!onConnectionListChangedPending) {
 				onConnectionListChangedPending = true;
@@ -797,11 +787,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			}
 			
 		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			for (ConnectionInfo ci: connectionList) {
-				ci.decrypt();
-			}
+			LogUtil.warn(e);
 		}
 	}
 	
@@ -835,51 +821,55 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		ConnectionInfo oldCurrentConnection = currentConnection;
 		currentConnection = null;
 		boolean ok = false;
-		boolean preV4 = true;
 		
 		try {
-			File file = Environment.newFile(CONNECTIONS_FILE_LEGACY);
+			File file = Environment.newFile(CONNECTIONS_FILE);
 			if (file.exists()) {
-				ObjectInputStream in = new ObjectInputStream(new FileInputStream(file)); // lgtm [java/input-resource-leak]
-				List<ConnectionInfo> cis = (List<ConnectionInfo>) in.readObject();
-				int i = in.readInt();
-				boolean isEncrypted = true;
-				try {
-					List<String> dma = (List<String>) in.readObject();
-					for (int n = 0; n < dma.size(); ++n) {
-						ConnectionInfo connectionInfo = cis.get(n);
-						if (!connectionInfo.decrypt()) {
-							isEncrypted = false;
-						}
-						connectionInfo.dataModelFolder = dma.get(n);
-						if (connectionInfo.jar1 == null) {
-							connectionInfo.jar1 = "";
-						}
-						if (connectionInfo.jar2 == null) {
-							connectionInfo.jar2 = "";
-						}
-						if (connectionInfo.jar3 == null) {
-							connectionInfo.jar3 = "";
-						}
-						if (connectionInfo.jar4 == null) {
-							connectionInfo.jar4 = "";
-						}
-						connectionInfo.jar1 = UIUtil.correctFileSeparator(connectionInfo.jar1);
-						connectionInfo.jar2 = UIUtil.correctFileSeparator(connectionInfo.jar2);
-						connectionInfo.jar3 = UIUtil.correctFileSeparator(connectionInfo.jar3);
-						connectionInfo.jar4 = UIUtil.correctFileSeparator(connectionInfo.jar4);
-					}
-					preV4 = false;
-				} catch (Throwable t) {
-					// ignore. pre 4.0 files do not contain data model assignments.
-				}
-				in.close();
-				connectionList = cis;
-				if (!isEncrypted) {
-					// The access data is not yet encrypted. Save it in encrypted form.
-					store();
-				}
+				connectionList = loadAsCSV(file);
 				ok = true;
+			} else {
+				file = Environment.newFile(CONNECTIONS_FILE_LEGACY);
+				if (file.exists()) {
+					ObjectInputStream in = new ObjectInputStream(new FileInputStream(file)); // lgtm [java/input-resource-leak]
+					List<ConnectionInfo> cis = (List<ConnectionInfo>) in.readObject();
+					int i = in.readInt();
+					boolean isEncrypted = true;
+					try {
+						List<String> dma = (List<String>) in.readObject();
+						for (int n = 0; n < dma.size(); ++n) {
+							ConnectionInfo connectionInfo = cis.get(n);
+							if (!connectionInfo.decrypt()) {
+								isEncrypted = false;
+							}
+							connectionInfo.dataModelFolder = dma.get(n);
+							if (connectionInfo.jar1 == null) {
+								connectionInfo.jar1 = "";
+							}
+							if (connectionInfo.jar2 == null) {
+								connectionInfo.jar2 = "";
+							}
+							if (connectionInfo.jar3 == null) {
+								connectionInfo.jar3 = "";
+							}
+							if (connectionInfo.jar4 == null) {
+								connectionInfo.jar4 = "";
+							}
+							connectionInfo.jar1 = UIUtil.correctFileSeparator(connectionInfo.jar1);
+							connectionInfo.jar2 = UIUtil.correctFileSeparator(connectionInfo.jar2);
+							connectionInfo.jar3 = UIUtil.correctFileSeparator(connectionInfo.jar3);
+							connectionInfo.jar4 = UIUtil.correctFileSeparator(connectionInfo.jar4);
+						}
+					} catch (Throwable t) {
+						// ignore. pre 4.0 files do not contain data model assignments.
+					}
+					in.close();
+					connectionList = cis;
+					if (!isEncrypted) {
+						// The access data is not yet encrypted. Save it in encrypted form.
+						store();
+					}
+					ok = true;
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -923,10 +913,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			ci.password = "";
 			ci.dataModelFolder = "Demo-Scott";
 			connectionList.add(ci);
-			store();
-		}
-		if (preV4) {
-			ConnectionInfo ci = new ConnectionInfo(executionContext);
+			
+			ci = new ConnectionInfo(executionContext);
 			ci.alias = "Demo Sakila";
 			ci.driverClass = "org.h2.Driver";
 			ci.jar1 = "lib" + File.separator + "h2-2.1.212.jar";
@@ -1395,7 +1383,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_restoreLastSessionButtonActionPerformed
 
 	public void importConnections(Window owner) {
-		Pair<Boolean, Pair<Integer, List<ConnectionInfo>>> result = ExportPanel.doImport(owner, this);
+		Pair<Boolean, Pair<Integer, List<ConnectionInfo>>> result = ExportPanel.openImportDialog(owner, this);
 		if (result.a) {
 			if (result.b.a > 0) {
 				notifyDataModelsChanged();
@@ -1799,13 +1787,13 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		writer.append("#         Passwords and URLs starting with '" + OBFUSCATED_MARKER_PREFIX + "' are encrypted." + UIUtil.LINE_SEPARATOR);
 		writer.append("#         You may use non-encrypted text here by omitting the prefix." + UIUtil.LINE_SEPARATOR);
 		writer.append(UIUtil.LINE_SEPARATOR);
-		writer.append("# Name; User; URL; Data model folder; Connection type (Development/Test/Staging/Production or empty); Password; Driver class; Driver JAR; additional JAR 1; additional JAR 2; additional JAR 3; additional JAR 4;" + UIUtil.LINE_SEPARATOR);
+		writer.append("# Name; User; Data model folder; Connection type (Development/Test/Staging/Production or empty); URL; Password; Driver class; Driver JAR; additional JAR 1; additional JAR 2; additional JAR 3; additional JAR 4;" + UIUtil.LINE_SEPARATOR);
 		for (ConnectionInfo ci: infos) {
 			writer.append(CsvFile.encodeCell(ci.alias) + "; ");
 			writer.append(CsvFile.encodeCell(ci.user) + "; ");
-			writer.append(OBFUSCATED_MARKER_PREFIX + CsvFile.encodeCell(stringObfuscator.encrypt(ci.url)) + "; ");
 			writer.append(CsvFile.encodeCell(ci.dataModelFolder) + "; ");
 			writer.append(CsvFile.encodeCell(ci.getConnectionType().name()) + "; ");
+			writer.append(OBFUSCATED_MARKER_PREFIX + CsvFile.encodeCell(stringObfuscator.encrypt(ci.url)) + "; ");
 			writer.append(OBFUSCATED_MARKER_PREFIX + CsvFile.encodeCell(stringObfuscator.encrypt(ci.password)) + "; ");
 			writer.append(CsvFile.encodeCell(ci.driverClass) + "; ");
 			writer.append(CsvFile.encodeCell(ci.jar1) + "; ");
@@ -1821,16 +1809,16 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		List<ConnectionInfo> list = new ArrayList<>();
 		CsvFile csvFile = new CsvFile(file);
 		for (Line line: csvFile.getLines()) {
-			if (!line.cells.get(0).isEmpty()) {
+			if (!line.cells.get(0).isEmpty() && !line.cells.get(0).matches("^\"#.*\"$")) {
 				ConnectionInfo ci = new ConnectionInfo();
 				ci.alias = line.cells.get(0);
 				ci.user = line.cells.get(1);
-				ci.url = line.cells.get(2);
+				ci.dataModelFolder = line.cells.get(2);
+				ci.connectionTypeName = line.cells.get(3);
+				ci.url = line.cells.get(4);
 				if (ci.url.startsWith(OBFUSCATED_MARKER_PREFIX)) {
 					ci.url = stringObfuscator.decrypt(ci.url.substring(OBFUSCATED_MARKER_PREFIX.length()));
 				}
-				ci.dataModelFolder = line.cells.get(3);
-				ci.connectionTypeName = line.cells.get(4);
 				ci.password = line.cells.get(5);
 				if (ci.password.startsWith(OBFUSCATED_MARKER_PREFIX)) {
 					ci.password = stringObfuscator.decrypt(ci.password.substring(OBFUSCATED_MARKER_PREFIX.length()));
@@ -1848,16 +1836,6 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
 }
 
-
-// TODO
-// TODO import/export of sets of connections
-// TODO use csv for connection definition storage. Header (comment) line. "plain/obfuscated password (y/n)"; + password column.
-
-// TODO 
-// TODO "jailer.xml" should be editable for everyone, including state 1000+.
-
-// TODO 
-// TODO document new csv-format for connectios.csv
 
 // TODO 1
 // TODO programmatic SLL certificate import?

@@ -1533,9 +1533,9 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 						}
 				        
 						if (connectedAliases.contains(node.alias)) {
-							((JLabel) render).setText("<html><nobr><b>" + UIUtil.toHTMLFragment(((JLabel) render).getText(), 0) + "&nbsp;&nbsp;&nbsp;</b></html>");
+							((JLabel) render).setText("<html><nobr><b>" + UIUtil.toHTMLFragment(((JLabel) render).getText(), 0) + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b></html>");
 						} else {
-							((JLabel) render).setText("<html><nobr>" + UIUtil.toHTMLFragment(((JLabel) render).getText(), 0) + "&nbsp;&nbsp;&nbsp;</html>");
+							((JLabel) render).setText("<html><nobr>" + UIUtil.toHTMLFragment(((JLabel) render).getText(), 0) + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</html>");
 						}
 					} else {
 						icon = modelIcon;

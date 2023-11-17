@@ -21,9 +21,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -46,16 +49,34 @@ import javax.swing.WindowConstants;
 
 import org.fife.rsta.ui.EscapableDialog;
 
+/*
+ * Copyright 2007 - 2023 Ralf Wisser.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
+import net.sf.jailer.ui.Environment.CopyFileVisitor;
 import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.util.CompoundIcon;
+import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Pair;
 
 /**
+ * UI for exporting data models and database connections.
  *
- * @author RalfW
+ * @author Ralf Wisser
  */
 public class ExportPanel extends javax.swing.JPanel {
 
@@ -82,6 +103,11 @@ public class ExportPanel extends javax.swing.JPanel {
     private ExecutionContext executionContext;
     
     public boolean openExportDialog(Window owner, Object initiallySelected, DbConnectionDialog connectionDialog) {
+    	List<ConnectionInfo> connectionList = connectionDialog.getConnectionList();
+    	return openDialog(owner, initiallySelected, connectionList, new HashSet<>(), "Export data models and connections", connectionDialog);
+    }
+    
+    private boolean openDialog(Window owner, Object initiallySelected, List<ConnectionInfo> connectionList, Set<String> tabuModels, String title, DbConnectionDialog connectionDialog) {
     	executionContext = connectionDialog.executionContext;
     	dialog = owner instanceof Dialog? new EscapableDialog((Dialog) owner) {
 		} : new EscapableDialog((Frame) owner) {
@@ -89,11 +115,10 @@ public class ExportPanel extends javax.swing.JPanel {
 		dialog.getContentPane().add(this);
 		dialog.setModal(true);
 		dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		dialog.setTitle("Export data models and connections");
+		dialog.setTitle(title);
 		dialog.pack();
 		dialog.setSize(Math.max(500, dialog.getWidth()), Math.min(700, Math.max(500, dialog.getHeight()))); 
-		// TODO
-		// TODO check size bounds
+
 		UIUtil.fit(dialog);
 		dialog.setLocation(owner.getX() + owner.getWidth() / 2 - dialog.getWidth() / 2, owner.getY() + owner.getHeight() / 2 - dialog.getHeight() / 2);
 		
@@ -115,7 +140,7 @@ public class ExportPanel extends javax.swing.JPanel {
 			}
 			
 			int y = 1;
-			List<ConnectionInfo> connections = new ArrayList<>(connectionDialog.getConnectionList());
+			List<ConnectionInfo> connections = new ArrayList<>(connectionList);
 			connections.sort((a, b) -> a.alias.compareToIgnoreCase(b.alias));
 			List<ConnectionInfo> rest = new ArrayList<>(connections);
 			List<Entry<String, String>> entryList = new ArrayList<>(modelNames.entrySet());
@@ -135,28 +160,32 @@ public class ExportPanel extends javax.swing.JPanel {
 				String value = entry == null? orphaned : entry.getValue();
 				JCheckBox jCheckBox = new JCheckBox();
 				if (entry != null) {
-					 checkBoxes.add(jCheckBox);
-					 jCheckBox.addItemListener(new ItemListener() {
-						@Override
-						public void itemStateChanged(ItemEvent e) {
-							if (jCheckBox.isSelected()) {
-								selectedModels.add(key);
-							} else {
-								selectedModels.remove(key);
+					if (!tabuModels.contains(key)) {
+						checkBoxes.add(jCheckBox);
+				        if (key.equals(initiallySelected) || Boolean.TRUE.equals(initiallySelected)) {
+				        	selectAndScrollTo(jCheckBox);
+				        }
+						jCheckBox.addItemListener(new ItemListener() {
+							@Override
+							public void itemStateChanged(ItemEvent e) {
+								if (jCheckBox.isSelected()) {
+									selectedModels.add(key);
+								} else {
+									selectedModels.remove(key);
+								}
+								updateStatus();
 							}
-							updateStatus();
-						}
-					});
+						});
+					} else {
+						jCheckBox.setEnabled(false);
+					}
 					jCheckBox.setText(" ");
 					jCheckBox.setFocusable(false);
-			        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-			        gridBagConstraints.gridx = 1;
-			        gridBagConstraints.gridy = y;
-			        gridBagConstraints.insets = new Insets(b, 0, b, 0);
-			        selectionPanel.add(jCheckBox, gridBagConstraints);
-			        if (key.equals(initiallySelected)) {
-			        	selectAndScrollTo(jCheckBox);
-			        }
+					GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+					gridBagConstraints.gridx = 1;
+					gridBagConstraints.gridy = y;
+					gridBagConstraints.insets = new Insets(b, 0, b, 0);
+					selectionPanel.add(jCheckBox, gridBagConstraints);
 		        }
 
 		        JLabel label = new JLabel();
@@ -204,7 +233,7 @@ public class ExportPanel extends javax.swing.JPanel {
 								updateStatus();
 							}
 						});
-				        if (ci.equals(initiallySelected)) {
+				        if (ci.equals(initiallySelected) || Boolean.TRUE.equals(initiallySelected)) {
 				        	selectAndScrollTo(jCheckBox2);
 				        }
 				        gridBagConstraints = new java.awt.GridBagConstraints();
@@ -439,7 +468,7 @@ public class ExportPanel extends javax.swing.JPanel {
         dialog.dispose();
     }//GEN-LAST:event_okButtonActionPerformed
 
-    private void doExport() {
+    protected void doExport() {
 		String cmsf = DataModelManager.getCurrentModelSubfolder(executionContext);
 		try {
 			DataModelManager.setCurrentModelSubfolder(null, executionContext);
@@ -467,14 +496,100 @@ public class ExportPanel extends javax.swing.JPanel {
 		}
 	}
     
-    public static Pair<Boolean, Pair<Integer, List<ConnectionInfo>>> doImport(Window owner, DbConnectionDialog connectionDialog) {
+    public static Pair<Boolean, Pair<Integer, List<ConnectionInfo>>> openImportDialog(Window owner, DbConnectionDialog connectionDialog) {
+    	ExecutionContext executionContext = connectionDialog.executionContext;
+		
+    	String oldDatamodelFolder = executionContext.getDatamodelFolder();
+    	File tmpFile = null;
+		try {
+    		tmpFile = Configuration.getInstance().createTempFile();
+    		executionContext.setDatamodelFolder(tmpFile.getPath());
+    		Path targetPath = tmpFile.toPath();
+     		
+    		String file = UIUtil.choseFile(null, ".", "Import data models and connections", ".zip", owner, true, true);
+    		if (file != null) {
+				Pair<Boolean, Pair<Integer, List<ConnectionInfo>>> importTmp = doImport(owner, file, true, null, null, connectionDialog);
+	    		Set<String> tabuModels = new HashSet<>();
+	    		if (importTmp.a) {
+	    			List<ConnectionInfo> connectionList = importTmp.b.b;
+					Path start = Paths.get(oldDatamodelFolder);
+					Files.walkFileTree(start, new SimpleFileVisitor<Path>() {
+	    	    		private Path sourcePath = null;
+	
+	    	    		@Override
+	    	    		public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
+	    	    			if (!dir.equals(start)) {
+	    	    				if (!connectionList.stream().anyMatch(ci -> dir.endsWith(ci.dataModelFolder))) {
+	    	    					return FileVisitResult.SKIP_SUBTREE;
+	    	    				}
+	    	    			}
+	    	    			if (sourcePath == null) {
+	    	    				sourcePath = dir;
+	    	    			}
+	    	    			Path targetDir = targetPath.resolve(sourcePath.relativize(dir));
+	    	    			if (!targetDir.toFile().exists()) {
+	    	    				tabuModels.add(dir.toFile().getName());
+	    	    			}
+							Files.createDirectories(targetDir);
+	    	    			return FileVisitResult.CONTINUE;
+	    	    		}
+	    	
+	    	    		@Override
+	    	    		public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+	    	    			try {
+	    	    				Path target = sourcePath == null ? targetPath : targetPath.resolve(sourcePath.relativize(file));
+	    	    				if (!target.toFile().exists()) {
+	    	    					Files.copy(file, target);
+	    	    				}
+	    	    			} catch (Exception e) {
+	    	    				// ignore
+	    	    			}
+	    	    			return FileVisitResult.CONTINUE;
+	    	    		}
+	    	    	});
+	    			ExportPanel exportPanel = new ExportPanel() {
+	    				@Override
+	    				protected void doExport() {
+	    				}
+	    			};
+	    			exportPanel.okButton.setText("  Import  ");
+					if (exportPanel.openDialog(owner, true, connectionList, tabuModels, "Import data models and connections", connectionDialog)) {
+						return doImport(owner, file, false, exportPanel.selectedConnections, exportPanel.selectedModels, connectionDialog);
+					}
+	    		}
+    		}
+    	} catch (Exception e) {
+			UIUtil.showException(owner, "Error", e);
+		} finally {
+    		executionContext.setDatamodelFolder(oldDatamodelFolder);
+    		if (tmpFile != null) {
+        		deleteDir(tmpFile);
+    		}
+    	}
+		return new Pair<Boolean, Pair<Integer, List<ConnectionInfo>>>(false, new Pair<Integer, List<ConnectionInfo>>(0, null));
+    }
+    
+    private static void deleteDir(File file) {
+    	try {
+	        File[] contents = file.listFiles();
+	        if (contents != null) {
+	            for (File f : contents) {
+	                deleteDir(f);
+	            }
+	        }
+	        file.delete();
+    	} catch (Throwable t) {
+    		LogUtil.warn(t);
+    	}
+    }
+
+    private static Pair<Boolean, Pair<Integer, List<ConnectionInfo>>> doImport(Window owner, String file, boolean silent, Set<ConnectionInfo> selectedConnections, Set<String> selectedModels, DbConnectionDialog connectionDialog) {
     	ExecutionContext executionContext = connectionDialog.executionContext;
 		String cmsf = DataModelManager.getCurrentModelSubfolder(executionContext);
 		int numModels = 0;
 		List<ConnectionInfo> cList = null;
 		try {
 			DataModelManager.setCurrentModelSubfolder(null, executionContext);
-			String file = UIUtil.choseFile(null, ".", "Import data models and connections", ".zip", owner, true, true);
 			UIUtil.setWaitCursor(owner);
 			if (file != null) {
 				try {
@@ -483,7 +598,8 @@ public class ExportPanel extends javax.swing.JPanel {
 					ZipEntry entry = zipIn.getNextEntry();
 					boolean ok = false;
 					while (entry != null) {
-						if (entry.getName().endsWith(EXPORT_MARKER)) {
+						String name2 = entry.getName();
+						if (name2.endsWith(EXPORT_MARKER)) {
 							ok = true;
 						}
 						zipIn.closeEntry();
@@ -505,8 +621,9 @@ public class ExportPanel extends javax.swing.JPanel {
 					Set<String> models = new HashSet<>();
 					// iterates over entries in the zip file
 					while (entry != null) {
-						if (!entry.getName().endsWith(EXPORT_MARKER)) {
-							if (entry.getName().equals(DbConnectionDialog.CONNECTIONS_FILE)) {
+						String name = entry.getName();
+						if (!name.endsWith(EXPORT_MARKER) && (selectedModels == null || selectedModels.stream().anyMatch(m -> name.startsWith(m + "/") || name.startsWith(m + "\\")))) {
+							if (name.equals(DbConnectionDialog.CONNECTIONS_FILE)) {
 								File cFile = Configuration.getInstance().createTempFile();
 								BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(cFile));
 								byte[] bytesIn = new byte[4096];
@@ -518,7 +635,7 @@ public class ExportPanel extends javax.swing.JPanel {
 								cList = DbConnectionDialog.loadAsCSV(cFile);
 								cFile.delete();
 							} else {
-								String filePath = executionContext.getDatamodelFolder() + File.separator + entry.getName();
+								String filePath = executionContext.getDatamodelFolder() + File.separator + name;
 								if (!entry.isDirectory()) {
 									// if the entry is a file, extracts it
 									models.add(new File(filePath).getParentFile().getName());
@@ -542,6 +659,10 @@ public class ExportPanel extends javax.swing.JPanel {
 					}
 					zipIn.close();
 					
+					if (selectedConnections != null) {
+						cList = new ArrayList<>(selectedConnections);
+					}
+					
 					numModels = models.size();
 					int numConnections = cList == null? 0 : cList.size();
 					
@@ -556,7 +677,9 @@ public class ExportPanel extends javax.swing.JPanel {
 						info += numConnections + " connection" + (numConnections == 1? "" : "s");
 					}
 					info = info + " imported.";
-					JOptionPane.showMessageDialog(owner, info);
+					if (!silent) {
+						JOptionPane.showMessageDialog(owner, info);
+					}
 				} catch (Exception e) {
 					UIUtil.showException(owner, "Error", e);
 					return new Pair<Boolean, Pair<Integer, List<ConnectionInfo>>>(true, new Pair<Integer, List<ConnectionInfo>>(1, cList));
@@ -580,7 +703,7 @@ public class ExportPanel extends javax.swing.JPanel {
 		try (ZipOutputStream zs = new ZipOutputStream(Files.newOutputStream(p))) {
 			for (String dm: selectedModels) {
 				Files.walk(dmPath.resolve(dm)).filter(path -> !Files.isDirectory(path)).forEach(path -> {
-					ZipEntry zipEntry = new ZipEntry(dmPath.relativize(path).toString());
+					ZipEntry zipEntry = new ZipEntry(dmPath.relativize(path).toString().replace(File.separatorChar, '/'));
 					try {
 						zs.putNextEntry(zipEntry);
 						Files.copy(path, zs);
@@ -637,3 +760,6 @@ public class ExportPanel extends javax.swing.JPanel {
     private javax.swing.JPanel selectionPanel;
     // End of variables declaration//GEN-END:variables
 }
+
+//TODO 
+//TODO test with linux

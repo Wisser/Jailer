@@ -234,6 +234,8 @@ public class Configuration {
 				File configFile;
 				if (applicationBase == null) {
 					configFile = new File(name);
+					// TODO
+					// TODO if .multi/.singleuser -> look in users home
 				} else {
 					configFile = new File(applicationBase, name);
 				}

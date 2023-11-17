@@ -1996,9 +1996,3 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 	private static final long serialVersionUID = -492511696901313920L;
 
 }
-
-
-// TODO 
-// TODO new csv-based load-method should use "DataModel-displayNName" as fallback (bco. externally generated "connections.csv")
-
-

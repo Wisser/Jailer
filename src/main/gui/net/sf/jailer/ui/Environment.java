@@ -136,6 +136,8 @@ public class Environment {
 				copyIfNotExists("demo-scott-subset.mv.db");
 				copyIfNotExists("example");
 				copyIfNotExists("render");
+				// TODO
+				// TODO jailer.xml
 
 				if (isJPacked()) {
 					File lib = newFile("lib");
