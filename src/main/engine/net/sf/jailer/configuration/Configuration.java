@@ -29,6 +29,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import net.sf.jailer.CommandLine;
 import net.sf.jailer.database.DefaultTemporaryTableManager;
 import net.sf.jailer.enhancer.FileBasedScriptEnhancer;
 import net.sf.jailer.enhancer.HelperTableEnhancer;
@@ -203,8 +204,6 @@ public class Configuration {
 	 */
 	private static Configuration theConfiguration = null;
 
-	public static File applicationBase;
-
 	/**
 	 * Gets the configuration.
 	 */
@@ -231,10 +230,9 @@ public class Configuration {
 			String name = "jailer.xml";
 			try {
 				InputStream res;
-				if(1==1) throw new RuntimeException( " "  + " " + applicationBase);
 				File configFile = null;
 				if (new File(".singleuser").exists() // legacy
-						|| new File(".multiuser").exists() || applicationBase != null) {
+						|| new File(".multiuser").exists() || CommandLine.applicationBase != null) {
 					File home = new File(System.getProperty("user.home"), ".jailer");
 					configFile = new File(home, name);
 					
@@ -245,12 +243,12 @@ public class Configuration {
 					}
 				}
 				if (configFile == null) {
-					if (applicationBase == null) {
+					if (CommandLine.applicationBase == null) {
 						configFile = new File(name);
 						// TODO
 						// TODO if .multi/.singleuser -> look in users home
 					} else {
-						configFile = new File(applicationBase, name);
+						configFile = new File(CommandLine.applicationBase, name);
 					}
 				}
 				if (!configFile.exists()) {

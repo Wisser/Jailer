@@ -41,6 +41,7 @@ import java.util.logging.LogManager;
 
 import javax.swing.JOptionPane;
 
+import net.sf.jailer.CommandLine;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.render.HtmlDataModelRenderer;
@@ -124,7 +125,7 @@ public class Environment {
 			home = new File(System.getProperty("user.home"), ".jailer");
 			home.mkdirs();
 			LogUtil.initLog4jConfig(home);
-			Configuration.applicationBase = applicationBase;
+			CommandLine.applicationBase = applicationBase;
 			Configuration configuration = Configuration.getInstance();
 			try {
 				copyIfNotExists("datamodel");

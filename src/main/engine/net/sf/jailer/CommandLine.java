@@ -15,6 +15,7 @@
  */
 package net.sf.jailer;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -185,4 +186,5 @@ public class CommandLine {
 		return null;
 	}
 
+	public static File applicationBase;
 }
