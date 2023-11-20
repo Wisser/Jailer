@@ -80,7 +80,7 @@ import net.sf.jailer.util.Pair;
 public class ExportPanel extends javax.swing.JPanel {
 
     private static final String EXPORT_MARKER = "JailerModelAndConnectionArchiv";
-    private static final String EXPORT_FILE_EXTENSION = ".jmaca.zip";
+    private static final String EXPORT_FILE_EXTENSION = ".jmcac.zip";
 
 	/**
      * Creates new form ExportPanel
