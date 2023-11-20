@@ -165,6 +165,10 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		this.module = module;
 		initComponents(); UIUtil.initComponents(this);
 		
+		helpLabel.setVisible(false);
+		// TODO
+		// TODO test
+		
 		dummyContent.setVisible(false);
 		DbConnectionDetailsEditor.addNewDatamodelListener(() -> {
 			loadModelList();
