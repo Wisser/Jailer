@@ -231,13 +231,23 @@ public class Configuration {
 			String name = "jailer.xml";
 			try {
 				InputStream res;
-				File configFile;
-				if (applicationBase == null) {
-					configFile = new File(name);
-					// TODO
-					// TODO if .multi/.singleuser -> look in users home
-				} else {
-					configFile = new File(applicationBase, name);
+				File configFile = null;
+				if (new File(".singleuser").exists() // legacy
+						|| new File(".multiuser").exists() || applicationBase != null) {
+					File home = new File(System.getProperty("user.home"), ".jailer");
+					configFile = new File(home, name);
+					if (!configFile.exists()) {
+						configFile = null;
+					}
+				}
+				if (configFile == null) {
+					if (applicationBase == null) {
+						configFile = new File(name);
+						// TODO
+						// TODO if .multi/.singleuser -> look in users home
+					} else {
+						configFile = new File(applicationBase, name);
+					}
 				}
 				if (!configFile.exists()) {
 					res = Configuration.class.getResourceAsStream(name);

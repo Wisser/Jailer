@@ -79,7 +79,10 @@ import net.sf.jailer.util.Pair;
  */
 public class ExportPanel extends javax.swing.JPanel {
 
-    /**
+    private static final String EXPORT_MARKER = "JailerModelAndConnectionArchiv";
+    private static final String EXPORT_FILE_EXTENSION = ".jmac.zip";
+
+	/**
      * Creates new form ExportPanel
      */
     public ExportPanel() {
@@ -92,8 +95,6 @@ public class ExportPanel extends javax.swing.JPanel {
 		}
     }
     
-    private static final String EXPORT_MARKER = "JailerModelExportArchiv";
-
     private JDialog dialog;
     private boolean ok = false;
     
@@ -471,7 +472,7 @@ public class ExportPanel extends javax.swing.JPanel {
 		String cmsf = DataModelManager.getCurrentModelSubfolder(executionContext);
 		try {
 			DataModelManager.setCurrentModelSubfolder(null, executionContext);
-			String file = UIUtil.choseFile(null, ".", dialog.getTitle(), ".zip", ExportPanel.this, true, false);
+			String file = UIUtil.choseFile(null, ".", dialog.getTitle(), EXPORT_FILE_EXTENSION, ExportPanel.this, true, false, false);
 			UIUtil.setWaitCursor(this);
 			if (file != null) {
 				try {
@@ -505,7 +506,7 @@ public class ExportPanel extends javax.swing.JPanel {
     		executionContext.setDatamodelFolder(tmpFile.getPath());
     		Path targetPath = tmpFile.toPath();
      		
-    		String file = UIUtil.choseFile(null, ".", "Import data models and connections", ".zip", owner, true, true);
+    		String file = UIUtil.choseFile(null, ".", "Import data models and connections", EXPORT_FILE_EXTENSION, owner, true, true, false);
     		if (file != null) {
 				Pair<Boolean, Pair<Integer, List<ConnectionInfo>>> importTmp = doImport(owner, file, true, null, null, connectionDialog);
 	    		Set<String> tabuModels = new HashSet<>();
@@ -782,6 +783,3 @@ public class ExportPanel extends javax.swing.JPanel {
 
 //TODO 
 //TODO file chooser: initial pattern: vorschlag dateiname? (? exakt 1 Ding -> danach benennen?)
-
-//TODO 
-//TODO delete model folder before importing it (bc. exclude-associations.csv etc.)

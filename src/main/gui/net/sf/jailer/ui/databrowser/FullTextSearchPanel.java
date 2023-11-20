@@ -339,6 +339,7 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 			lastSearchText = searchText;
 			
 			markedValues.clear();
+			tooltips.clear();
 			markedValuePerPosition.clear();
 			ordinalPerViewPosition.clear();
 			viewToModelPosition.clear();
@@ -489,11 +490,13 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 		String marked = markedValues.get(render.getText());
 		if (marked != null) {
 			render.setText(marked);
-			String toolTipText = render.getToolTipText();
-			if (toolTipText == null || toolTipText.length() < 5000) {
-				toolTipText = marked.replace("" + (char) 182, "<br>").replaceFirst("^<html>&nbsp;", "<html>");
-				// TODO
-				// TODO cache
+			String toolTipText = tooltips.get(marked);
+			if (toolTipText == null) {
+				toolTipText = render.getToolTipText();
+				if (toolTipText == null || toolTipText.length() < 5000) {
+					toolTipText = marked.replace("" + (char) 182, "<br>").replaceFirst("^<html>&nbsp;", "<html>");
+					tooltips.put(marked, toolTipText);
+				}
 			}
 			render.setToolTipText(toolTipText);
 			render.setBackground(new Color(190, 255, 180));
@@ -605,6 +608,7 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 	
 	private Color origBackground;
 	private Map<String, String> markedValues = new HashMap<String, String>();
+	private Map<String, String> tooltips = new HashMap<String, String>();
 	private NavigableMap<Integer, String> markedValuePerPosition = new TreeMap<Integer, String>();
 	private NavigableMap<Integer, Integer> ordinalPerViewPosition = new TreeMap<Integer, Integer>();
 	private Map<Integer, Integer> viewToModelPosition = new TreeMap<Integer, Integer>();
