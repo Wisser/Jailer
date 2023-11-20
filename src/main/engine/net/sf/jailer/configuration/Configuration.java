@@ -231,7 +231,7 @@ public class Configuration {
 			String name = "jailer.xml";
 			try {
 				InputStream res;
-				if(1==1) throw new RuntimeException(configFile.exists() + " "  + " " + applicationBase);
+				if(1==1) throw new RuntimeException( " "  + " " + applicationBase);
 				File configFile = null;
 				if (new File(".singleuser").exists() // legacy
 						|| new File(".multiuser").exists() || applicationBase != null) {
