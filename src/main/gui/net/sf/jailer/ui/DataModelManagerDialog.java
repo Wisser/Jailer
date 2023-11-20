@@ -525,6 +525,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		};
 		Runnable switchToSubsetter = ()-> {
 			deselButton.setEnabled(true);
+			deselButton.setVisible(true);
 			selectedModule.set(1);
 			((CardLayout) modulsCardPanel.getLayout()).show(modulsCardPanel, "subsetter");
 			dmmdSubsetter.mainContentPanel.setBackground(bgSubsetter);
@@ -539,6 +540,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		};
 		Runnable switchToDataBrowser = ()-> {
 			deselButton.setEnabled(true);
+			deselButton.setVisible(true);
 			selectedModule.set(2);
 			((CardLayout) modulsCardPanel.getLayout()).show(modulsCardPanel, "databrowser");
 			dmmdBrowser.mainContentPanel.setBackground(bgBrowser);
