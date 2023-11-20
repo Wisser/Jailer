@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipInputStream;
 
-import net.sf.jailer.configuration.Configuration;
+import net.sf.jailer.CommandLine;
 import net.sf.jailer.datamodel.Table;
 
 /**
@@ -103,10 +103,10 @@ public class PrintUtil {
 		StringBuffer sb;
 		sb = new StringBuffer();
 		File newFile;
-		if (Configuration.applicationBase == null) {
+		if (CommandLine.applicationBase == null) {
 			newFile = new File(name);
 		} else {
-			newFile = new File(Configuration.applicationBase, name);
+			newFile = new File(CommandLine.applicationBase, name);
 		}
 		BufferedReader reader;
 		if (newFile.exists()) {
