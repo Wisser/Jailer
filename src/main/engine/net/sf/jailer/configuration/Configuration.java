@@ -231,13 +231,13 @@ public class Configuration {
 			String name = "jailer.xml";
 			try {
 				InputStream res;
+				if(1==1) throw new RuntimeException(configFile.exists() + " "  + " " + applicationBase);
 				File configFile = null;
 				if (new File(".singleuser").exists() // legacy
 						|| new File(".multiuser").exists() || applicationBase != null) {
 					File home = new File(System.getProperty("user.home"), ".jailer");
 					configFile = new File(home, name);
 					
-					if(1==1) throw new RuntimeException(configFile.exists() + " " + configFile + " " + applicationBase);
 					
 					
 					if (!configFile.exists()) {
