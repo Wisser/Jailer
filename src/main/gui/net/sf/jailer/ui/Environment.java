@@ -212,7 +212,7 @@ public class Environment {
 			}
 		} else {
 			LogUtil.initLog4jConfig(home);
-			Configuration.applicationBase = applicationBase;
+			CommandLine.applicationBase = applicationBase;
 			if (!testCreateTempFile()) {
 				UIUtil.showException(null, "Error", new IllegalStateException("No write permission on "
 						+ new File(".").getAbsolutePath() + " \n"
