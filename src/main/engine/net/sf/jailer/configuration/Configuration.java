@@ -236,6 +236,10 @@ public class Configuration {
 						|| new File(".multiuser").exists() || applicationBase != null) {
 					File home = new File(System.getProperty("user.home"), ".jailer");
 					configFile = new File(home, name);
+					
+					if(1==1) throw new RuntimeException(configFile.exists() + " " + configFile + " " + applicationBase);
+					
+					
 					if (!configFile.exists()) {
 						configFile = null;
 					}
