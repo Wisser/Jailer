@@ -508,6 +508,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		helpLabel.setText(null);
 		helpLabel.setIcon(UIUtil.scaleIcon(helpImg, 0.4));
 		deselButton.setVisible(false);
+		helpLabel.setVisible(false);
 		
 		Runnable switchToNone = ()-> {
 			deselButton.setEnabled(false);
