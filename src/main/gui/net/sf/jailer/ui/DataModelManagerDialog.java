@@ -165,10 +165,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		this.module = module;
 		initComponents(); UIUtil.initComponents(this);
 		
-		helpLabel.setVisible(false);
-		// TODO
-		// TODO test
-		
 		dummyContent.setVisible(false);
 		DbConnectionDetailsEditor.addNewDatamodelListener(() -> {
 			loadModelList();
@@ -511,7 +507,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		// TODO dont show this initially (first time app starts)
 		helpLabel.setText(null);
 		helpLabel.setIcon(UIUtil.scaleIcon(helpImg, 0.4));
-		helpLabel.setVisible(false);
+		deselButton.setVisible(false);
 		
 		Runnable switchToNone = ()-> {
 			deselButton.setEnabled(false);
