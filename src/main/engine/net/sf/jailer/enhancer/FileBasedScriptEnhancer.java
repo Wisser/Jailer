@@ -25,13 +25,13 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.subsetting.ScriptType;
+import net.sf.jailer.ui.Environment;
 
 /**
  * Inserts the content of the files
@@ -59,7 +59,7 @@ public class FileBasedScriptEnhancer implements ScriptEnhancer {
 	@Override
 	public void addEpilog(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph,
 			Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
-		File dir = newWorkingFolderFile("epilog" + File.separatorChar + scriptType);
+		File dir = Environment.newFile("epilog" + File.separatorChar + scriptType);
 		addEnhancement(script, progress, dir, executionContext);
 		addEnhancement(script, dir, "EPILOG.sql");
 	}
@@ -69,7 +69,7 @@ public class FileBasedScriptEnhancer implements ScriptEnhancer {
 	@Override
 	public void addProlog(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph,
 			Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
-		File dir = newWorkingFolderFile("prolog" + File.separatorChar + scriptType);
+		File dir = Environment.newFile("prolog" + File.separatorChar + scriptType);
 		addEnhancement(script, dir, "PROLOG.sql");
 		addEnhancement(script, progress, dir, executionContext);
 	}
@@ -108,13 +108,5 @@ public class FileBasedScriptEnhancer implements ScriptEnhancer {
 			in.close();
 		}
 	}
-	
-	private static File newWorkingFolderFile(String name) {
-		if (Configuration.applicationBase == null || new File(name).isAbsolute()) {
-			return new File(name);
-		}
-		return new File(Configuration.applicationBase, name);
-	}
-
 }
 
