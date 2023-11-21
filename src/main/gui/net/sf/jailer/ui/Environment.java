@@ -138,8 +138,6 @@ public class Environment {
 				copyIfNotExists("example");
 				copyIfNotExists("render");
 				copyIfNotExists("jailer.xml");
-				// TODO
-				// TODO jailer.xml
 
 				if (isJPacked()) {
 					File lib = newFile("lib");

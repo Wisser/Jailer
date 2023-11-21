@@ -503,8 +503,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		
 		AtomicInteger selectedModule = new AtomicInteger(0);
 		JButton deselButton = new JButton("Help", UIUtil.scaleIcon(yellowdotLabel, helpImg));
-		// TODO
-		// TODO dont show this initially (first time app starts)
 		helpLabel.setText(null);
 		helpLabel.setIcon(UIUtil.scaleIcon(helpImg, 0.4));
 		deselButton.setVisible(false);

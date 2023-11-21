@@ -1759,8 +1759,6 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	}
 	
 	private static String OBFUSCATED_MARKER_PREFIX = "encrypted:";
-	// TODO
-	// TODO test non-obf. connections.csv
 	
 	public static void saveAsCSV(Collection<ConnectionInfo> infos, File file) throws IOException {
 		StringObfuscator stringObfuscator = new StringObfuscator();

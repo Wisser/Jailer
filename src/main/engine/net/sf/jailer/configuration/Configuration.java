@@ -245,8 +245,6 @@ public class Configuration {
 				if (configFile == null) {
 					if (CommandLine.applicationBase == null) {
 						configFile = new File(name);
-						// TODO
-						// TODO if .multi/.singleuser -> look in users home
 					} else {
 						configFile = new File(CommandLine.applicationBase, name);
 					}

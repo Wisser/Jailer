@@ -80,7 +80,7 @@ import net.sf.jailer.util.Pair;
 public class ExportPanel extends javax.swing.JPanel {
 
     private static final String EXPORT_MARKER = "JailerModelAndConnectionArchiv";
-    private static final String EXPORT_FILE_EXTENSION = ".jmcac.zip";
+    private static final String EXPORT_FILE_EXTENSION = ".jmarc.zip";
 
 	/**
      * Creates new form ExportPanel
@@ -704,9 +704,6 @@ public class ExportPanel extends javax.swing.JPanel {
 		}
 		return new Pair<Boolean, Pair<Integer, List<ConnectionInfo>>>(true, new Pair<Integer, List<ConnectionInfo>>(numModels, cList));
     }
-
-    // TODO
-    // TODO test with different base dir
   
     private void zip(String zipFilePath, File cFile) throws IOException {
 		Path p = Paths.get(zipFilePath);
@@ -771,15 +768,3 @@ public class ExportPanel extends javax.swing.JPanel {
     private javax.swing.JPanel selectionPanel;
     // End of variables declaration//GEN-END:variables
 }
-
-//TODO 
-//TODO test with linux
-
-//TODO 
-//TODO test basics!
-
-//TODO 
-//TODO file chooser: initial pattern: *.gz weg, *.zip wohl doppelt
-
-//TODO 
-//TODO file chooser: initial pattern: vorschlag dateiname? (? exakt 1 Ding -> danach benennen?)
