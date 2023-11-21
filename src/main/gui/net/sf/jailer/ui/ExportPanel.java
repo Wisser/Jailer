@@ -472,7 +472,11 @@ public class ExportPanel extends javax.swing.JPanel {
 		String cmsf = DataModelManager.getCurrentModelSubfolder(executionContext);
 		try {
 			DataModelManager.setCurrentModelSubfolder(null, executionContext);
-			String file = UIUtil.choseFile(null, ".", dialog.getTitle(), EXPORT_FILE_EXTENSION, ExportPanel.this, true, false, false);
+			File proposal = null;
+			if (selectedModels.size() == 1) {
+				proposal = new File(selectedModels.iterator().next() + EXPORT_FILE_EXTENSION);
+			}
+			String file = UIUtil.choseFile(proposal, ".", dialog.getTitle(), EXPORT_FILE_EXTENSION, ExportPanel.this, true, false, false);
 			UIUtil.setWaitCursor(this);
 			if (file != null) {
 				try {
