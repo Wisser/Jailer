@@ -1,3 +1,6 @@
+15.3.1
+  - A feature for exporting and importing data models and their database connections has been created.
+
 15.3
   - Database connections can now be assigned to a database type (Develop, Test, Staging and Production).
     This improves the transparency of the various databases and encourages careful interaction of (near-)production systems.
