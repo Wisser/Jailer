@@ -35,6 +35,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -477,6 +478,8 @@ public class ExportPanel extends javax.swing.JPanel {
 			File proposal = null;
 			if (selectedModels.size() == 1) {
 				proposal = new File(selectedModels.iterator().next() + EXPORT_FILE_EXTENSION);
+			} else if (selectedConnections.size() == 1) {
+				proposal = new File(selectedConnections.iterator().next().alias.replaceAll("[\\\\/:;*?\"\\<\\>\\|]+","_") + EXPORT_FILE_EXTENSION);
 			}
 			String file = UIUtil.choseFile(proposal, ".", dialog.getTitle(), EXPORT_FILE_EXTENSION, ExportPanel.this, true, false, false);
 			UIUtil.setWaitCursor(this);

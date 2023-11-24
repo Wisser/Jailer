@@ -19,7 +19,7 @@ import net.sf.jailer.ui.UIUtil;
 
 public class AWTWatchdog {
 
-	private static final long MAX_DELAY = 8000;
+	private static final long MAX_DELAY = 8000 + 4000;
 
 	public static void start() {
 		try {
@@ -27,6 +27,7 @@ public class AWTWatchdog {
 				@Override
 				public void run() {
 					boolean issueSent = false;
+					boolean issueBListed = false;
 					int activeCD = 5;
 					for (;;) {
 						try {
@@ -54,15 +55,18 @@ public class AWTWatchdog {
 						        }
 								dump = JailerVersion.VERSION + " " + dump;
 								String iMsg = dump;
-								UIUtil.sendIssue("AWTHanging", iMsg);
+								issueBListed = !UIUtil.sendIssue("AWTHanging", "(12s:)" + iMsg);
 								issueSent = true;
 							}
 						} else {
 							if (issueSent) {
-								String iMsg = "AWT-Thread working";
-								Session._log.info(iMsg);
-								UIUtil.sendIssue("AWTHanging", iMsg);
+								if (!issueBListed) {
+									String iMsg = "AWT-Thread working";
+									Session._log.info(iMsg);
+									UIUtil.sendIssue("AWTHanging", iMsg);
+								}
 								issueSent = false;
+								issueBListed = false;
 								if (--activeCD <= 0) {
 									return;
 								}
@@ -88,7 +92,7 @@ public class AWTWatchdog {
 		}
 	}
 
-	protected static String sendThreadDump() {
+	private static String sendThreadDump() {
 		ThreadMXBean threadMxBean = ManagementFactory.getThreadMXBean();
 		for (ThreadInfo ti : threadMxBean.dumpAllThreads(true, true)) {
 			if (ti.getThreadName() != null && ti.getThreadName().toLowerCase(Locale.ENGLISH).startsWith("awt-event")) {
