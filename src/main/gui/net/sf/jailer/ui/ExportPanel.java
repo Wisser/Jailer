@@ -329,6 +329,8 @@ public class ExportPanel extends javax.swing.JPanel {
 			selectAllButton.setText("Select All");
 		}
 		infoLabel.setText(info.isEmpty()? " " : info);
+		
+		okButton.setEnabled(!selectedConnections.isEmpty() || !selectedModels.isEmpty());
 	}
 
 	private List<JCheckBox> checkBoxes = new ArrayList<>();
