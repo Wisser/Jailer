@@ -253,13 +253,12 @@ public class CellContentConverter {
 			this.pattern = pattern;
 		}
 		public String getExpression() {
-			String expression;
+			String expression = pattern.replace("$1", "$\n1").replace("$2", type);
 			if (pattern.contains("'$1'")) {
-				expression = pattern.replace("$1", value == null? "null" : targetConfiguration.convertToStringLiteral(String.valueOf(value)));
+				expression = expression.replace("$\n1", value == null? "null" : targetConfiguration.convertToStringLiteral(String.valueOf(value)));
 			} else {
-				expression = pattern.replace("$1", value == null? "null" : String.valueOf(value));
+				expression = expression.replace("$\n1", value == null? "null" : String.valueOf(value));
 			}
-			expression = expression.replace("$2", type);
 			return expression;
 		}
 		@Override
