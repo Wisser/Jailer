@@ -1103,7 +1103,9 @@ public class UIUtil {
     private static int issueCount = 0;
     private static long lastIssueTS = 0;
 
-    public static void sendIssue(final String type,  String theIssue) {
+    public static boolean sendIssue(final String type,  String theIssue) {
+    	// TODO
+    	// TODO return false iff theIssue is black listed
     	String threadName = Thread.currentThread().getName();
 		new Thread(new Runnable() {
 			@Override
@@ -1197,6 +1199,7 @@ public class UIUtil {
 				}
 			}
 		}).start();
+		return true;
     }
 
     public static String toHTML(String plainText, int maxLineLength) {

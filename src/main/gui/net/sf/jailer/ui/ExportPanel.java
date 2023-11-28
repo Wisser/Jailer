@@ -329,6 +329,8 @@ public class ExportPanel extends javax.swing.JPanel {
 			selectAllButton.setText("Select All");
 		}
 		infoLabel.setText(info.isEmpty()? " " : info);
+		
+		okButton.setEnabled(!selectedConnections.isEmpty() || !selectedModels.isEmpty());
 	}
 
 	private List<JCheckBox> checkBoxes = new ArrayList<>();
@@ -472,7 +474,13 @@ public class ExportPanel extends javax.swing.JPanel {
 		String cmsf = DataModelManager.getCurrentModelSubfolder(executionContext);
 		try {
 			DataModelManager.setCurrentModelSubfolder(null, executionContext);
-			String file = UIUtil.choseFile(null, ".", dialog.getTitle(), EXPORT_FILE_EXTENSION, ExportPanel.this, true, false, false);
+			File proposal = null;
+			if (selectedModels.size() == 1) {
+				proposal = new File(selectedModels.iterator().next() + EXPORT_FILE_EXTENSION);
+			} else if (selectedModels.isEmpty() && selectedConnections.size() == 1) {
+				proposal = new File(selectedConnections.iterator().next().alias.replaceAll("[\\\\/:;*?\"\\<\\>\\|]+","_") + EXPORT_FILE_EXTENSION);
+			}
+			String file = UIUtil.choseFile(proposal, ".", dialog.getTitle(), EXPORT_FILE_EXTENSION, ExportPanel.this, true, false, false);
 			UIUtil.setWaitCursor(this);
 			if (file != null) {
 				try {
