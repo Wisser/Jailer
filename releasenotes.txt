@@ -1,3 +1,7 @@
+15.4.
+  - Fix for: "Exporting a varchar field containing $2 as substring".
+    https://sourceforge.net/p/jailer/discussion/700499/thread/71f33f91b8
+
 15.3.1
   - A feature for exporting and importing data models and their database connections has been created.
 
