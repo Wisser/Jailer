@@ -15,15 +15,18 @@
  */
 package net.sf.jailer.ui.databrowser.metadata;
 
+import java.awt.FlowLayout;
 import java.lang.reflect.Method;
 import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.swing.BoxLayout;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +35,7 @@ import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.modelbuilder.MemorizedResultSet;
+import net.sf.jailer.ui.UIUtil;
 
 /**
  * Information about the database.
@@ -195,12 +199,16 @@ public class MDDatabase extends MDGeneric {
 	        "supportsStoredProcedures"
 	    };
 
-        List<Object[]> rowList = Collections.synchronizedList(new ArrayList<Object[]>());
-        AtomicBoolean ready = new AtomicBoolean(false);
-        
+		JPanel panel = new JPanel();
+		panel.setLayout(new javax.swing.BoxLayout(panel, javax.swing.BoxLayout.LINE_AXIS));
+		
+		JLabel loading = new JLabel("loading...");
+		panel.add(loading);
+		
         Thread thread = new Thread(() -> {
 			try {
-	        	Session.setThreadSharesConnection();
+				List<Object[]> rowList = new ArrayList<Object[]>();
+				Session.setThreadSharesConnection();
 	    		DatabaseMetaData md = getMetaDataSource().getSession().getMetaData();
 	            for (String name : names) {
 	            	try {
@@ -209,28 +217,27 @@ public class MDDatabase extends MDGeneric {
 						displayName = displayName.substring(0, 1).toUpperCase() + displayName.substring(1);
 						rowList.add(new Object[] { displayName, m.invoke(md) });
 	            	} catch (Throwable t) {
-	    				logger.info("error", t);
+	    				// ignore
 	    			}
 	            }
+	            UIUtil.invokeLater(() -> {
+	            	MemorizedResultSet rs = new MemorizedResultSet(rowList, 2, new String[] { "Property", "Value" }, new int[] { Types.VARCHAR, Types.VARCHAR });
+		            try {
+		            	loading.setVisible(false);
+						panel.add(new ResultSetRenderer(rs, getName(), dataModel, getMetaDataSource().getSession(), executionContext));
+					} catch (SQLException e) {
+						// ignore
+					}
+	            });
 			} catch (Throwable t) {
+				loading.setText("Error: " + t.getMessage());
 				logger.info("error", t);
 			}
-			ready.set(true);
 		});
         thread.setDaemon(true);
         thread.start();
 
-    	Thread.sleep(10);
-        for (int i = 0; i < 25; ++i) {
-        	if (ready.get()) {
-        		break;
-        	}
-        	Thread.sleep(100);
-        }
-        thread.stop();
-
-        MemorizedResultSet rs = new MemorizedResultSet(rowList, 2, new String[] { "Property", "Value" }, new int[] { Types.VARCHAR, Types.VARCHAR });
-        return new ResultSetRenderer(rs, getName(), dataModel, getMetaDataSource().getSession(), executionContext);
+        return panel;
 	}
 
 }
