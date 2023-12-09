@@ -1102,10 +1102,21 @@ public class UIUtil {
 
     private static int issueCount = 0;
     private static long lastIssueTS = 0;
+    
+    // TODO
+	// TODO add more
+	private static Pattern blacklist = Pattern.compile(
+    		"(" +
+    			"PSQLException: .*Connection refused"
+    				+ ")|(" +
+    			"java.sql.SQLException: ORA-28001" +
+    		")", Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
 
     public static boolean sendIssue(final String type,  String theIssue) {
-    	// TODO
-    	// TODO return false iff theIssue is black listed
+    	if (blacklist.matcher(theIssue).find()) {
+    		return false;
+    	}
+    	
     	String threadName = Thread.currentThread().getName();
 		new Thread(new Runnable() {
 			@Override
