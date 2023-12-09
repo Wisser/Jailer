@@ -2429,9 +2429,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						if (running) {
 	        				++time;
 	        				Color startColor = runningStatusLabelColor;
-	        				double x = Math.sin(2 * Math.PI * time / 50.0);
-							double f = Math.pow(Math.abs(x), 6);
-	        				Color c = new Color(startColor.getRed(), mid(f, startColor.getGreen(), 245), startColor.getBlue());
+	        				double x = Math.sin(2 * Math.PI * time / 15.0);
+							double f = (Math.pow(Math.abs(x), 0.5) * Math.signum(x) + 1) / 2;
+	        				Color c = new Color(mid(f, startColor.getRed(), 255), mid(f, startColor.getGreen(), 0), startColor.getBlue());
 	        				statusLabel.setForeground(c);
 						} else {
 							timer.stop();
@@ -2459,10 +2459,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			}
 			String text = "<html>";
             if (running) {
-                text += "Running... ";
+                String runText = "Running... ";
                 if (numStatements <= 1 && numRowsRead == 0 && numRowsUpdated == 0) {
-                    return text + "</html>";
+                    return text + "<b>" + runText + "</b></html>";
                 }
+                text += runText;
             }
             if (successState != null) {
             	if (numStatements + successState.failed.size() > 1) {
