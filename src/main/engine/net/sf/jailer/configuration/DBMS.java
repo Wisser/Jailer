@@ -71,70 +71,6 @@ public class DBMS {
 	}
 
 	/**
-	 * Copy constructor.
-	 */
-	public DBMS(DBMS other) {
-		this.id = other.id;
-		this.familyId = other.familyId;
-		this.displayName = other.displayName;
-		this.urlPattern = other.urlPattern;
-		this.testQuery = other.testQuery;
-		this.statisticRenovator = other.statisticRenovator;
-		this.typeReplacement = other.typeReplacement;
-		this.experimentalTypeReplacement = other.experimentalTypeReplacement;
-		this.stringLiteralEscapeSequences = other.stringLiteralEscapeSequences;
-		this.sqlLimitSuffix = other.sqlLimitSuffix;
-		this.varcharLengthLimit = other.varcharLengthLimit;
-		this.tableProperties = other.tableProperties;
-		this.charToEscapeSequence = other.charToEscapeSequence;
-		this.keysOfCharToEscapeSequence = other.keysOfCharToEscapeSequence;
-		this.ncharPrefix = other.ncharPrefix;
-		this.exportBlocks = other.exportBlocks;
-		this.identityInserts = other.identityInserts;
-		this.emptyCLOBValue = other.emptyCLOBValue;
-		this.emptyNCLOBValue = other.emptyNCLOBValue;
-		this.emptyBLOBValue = other.emptyBLOBValue;
-		this.toBlob = other.toBlob;
-		this.toClob = other.toClob;
-		this.toNClob = other.toNClob;
-		this.embeddedLobSizeLimit = other.embeddedLobSizeLimit;
-		this.binaryPattern = other.binaryPattern;
-		this.avoidLeftJoin = other.avoidLeftJoin;
-		this.timestampPattern = other.timestampPattern;
-		this.timestampWithNanoTypeName = other.timestampWithNanoTypeName;
-		this.timestampWithNanoPattern = other.timestampWithNanoPattern;
-		this.datePattern = other.datePattern;
-		this.sqlDialect = other.sqlDialect;
-		this.rowidName = other.rowidName;
-		this.supportsSchemasInIndexDefinitions = other.supportsSchemasInIndexDefinitions;
-		this.useInlineViewsInDataBrowser = other.useInlineViewsInDataBrowser;
-		this.viewTextOrDDLQuery = other.viewTextOrDDLQuery;
-		this.synonymTableQuery = other.synonymTableQuery;
-		this.estimatedRowCountQuery = other.estimatedRowCountQuery;
-		this.virtualColumnsQuery = other.virtualColumnsQuery;
-		this.userDefinedColumnsQuery = other.userDefinedColumnsQuery;
-		this.importedKeysQuery = other.importedKeysQuery;
-		this.primaryKeysQuery = other.primaryKeysQuery;
-		this.indexInfoQuery = other.indexInfoQuery;
-		this.identifierQuoteString = other.identifierQuoteString;
-		this.rowidType = other.rowidType;
-		this.sessionTemporaryTableManager = other.sessionTemporaryTableManager;
-		this.transactionTemporaryTableManager = other.transactionTemporaryTableManager;
-		this.jdbcProperties = other.jdbcProperties;
-		this.nullableContraint = other.nullableContraint;
-		this.ddlQuery = other.ddlQuery;
-		this.ddlCall = other.ddlCall;
-		this.functionSourceQuery = other.functionSourceQuery;
-		this.procedureSourceQuery = other.procedureSourceQuery;
-		this.packageNamesQuery = other.packageNamesQuery;
-		this.objectRenderers = other.objectRenderers;
-		this.procedureDetailNeedsSpecificName = other.procedureDetailNeedsSpecificName;
-		this.limitTransactionSize = other.limitTransactionSize;
-		this.defaultSchemaQuery = other.defaultSchemaQuery;
-		this.fetchSize = other.fetchSize;
-	}
-
-	/**
 	 * Gets DBMS specific configuration.
 	 *
 	 * @param dbmsId the DBMS id
@@ -313,6 +249,7 @@ public class DBMS {
 	private boolean useInlineViewsInDataBrowser = true;
 	private String virtualColumnsQuery = null;
 	private String identityColumnsQuery = null;
+	private String partitionsQuery = null;
 	private String synonymTableQuery;
 	private String viewTextOrDDLQuery = "SELECT VIEW_DEFINITION FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA = '%1$s' and TABLE_NAME = '%2$s'";
 	private String estimatedRowCountQuery = null;
@@ -999,6 +936,14 @@ public class DBMS {
 		this.identityColumnsQuery = identityColumnsQuery;
 	}
 	
+	public String getPartitionsQuery() {
+		return partitionsQuery;
+	}
+
+	public void setPartitionsQuery(String partitionsQuery) {
+		this.partitionsQuery = partitionsQuery;
+	}
+
 	private String identityColumnInsertClause;
 
 	public String getIdentityColumnInsertClause() {

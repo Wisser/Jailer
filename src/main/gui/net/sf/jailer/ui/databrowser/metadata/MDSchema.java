@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -39,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.MemorizedResultSet;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.util.Quoting;
@@ -153,6 +155,7 @@ public class MDSchema extends MDObject {
 				try {
 					tables = new ArrayList<MDTable>();
 					MetaDataSource metaDataSource = getMetaDataSource();
+					Set<String> partitions = JDBCMetaDataBasedModelElementFinder.findPartitions(metaDataSource.getSession(), Quoting.staticUnquote(getName()));
 					synchronized (metaDataSource.getSession().getMetaData()) {
 						ResultSet rs = metaDataSource.readTables(getName());
 						Map<String, Runnable> loadJobs = new TreeMap<String, Runnable>();
@@ -164,6 +167,9 @@ public class MDSchema extends MDObject {
 	            				continue;
 	            			}
 	            			final String name = rs.getString(3);
+	            			if (partitions.contains(name)) {
+	            				continue;
+	            			}
 							String tableName = metaDataSource.getQuoting().quote(name);
 							final MDTable table = new MDTable(tableName, this, "VIEW".equalsIgnoreCase(rs.getString(4)),
 									"SYNONYM".equalsIgnoreCase(rs.getString(4))

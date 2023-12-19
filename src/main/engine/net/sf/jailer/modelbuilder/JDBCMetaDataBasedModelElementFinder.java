@@ -106,7 +106,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	/**
 	 * Set of sql types (uppercase) not listed in {@link Types} which don't accept a length argument.
 	 */
-	public static final Set<String> TYPES_WITHOUT_LENGTH = new HashSet<String>();
+	private static final Set<String> TYPES_WITHOUT_LENGTH = new HashSet<String>();
 	static {
 		TYPES_WITHOUT_LENGTH.add("HIERARCHYID"); // MSSQL
 	}
@@ -386,9 +386,11 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		}
 		PrimaryKeyFactory primaryKeyFactory = new PrimaryKeyFactory(executionContext);
 
+		Set<String> partitions = findPartitions(session, introspectionSchema);
+
 		Set<Table> tables = new HashSet<Table>();
 		Quoting quoting = Quoting.getQuoting(session);
-		List<String> types = getTypes(executionContext);
+		List<String> types = getTypes(session, executionContext);
 		ResultSet resultSet;
 		List<String> tableNames = new ArrayList<String>();
 		Map<String, String> commentPerTableName = new HashMap<>();
@@ -402,6 +404,9 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 					continue;
 				}
 				String tableName = resultSet.getString(3);
+				if (partitions.contains(tableName)) {
+					continue;
+				}
 				if (resultSet.getString(4) != null) {
 					if (isValidName(tableName, session)) {
 						tableName = quoting.quote(tableName);
@@ -653,6 +658,28 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		return tables;
 	}
 
+	public static Set<String> findPartitions(Session session, String introspectionSchema) {
+		Set<String> partitions = new HashSet<>();
+		String partitionsQuery = session.dbms.getPartitionsQuery();
+		if (partitionsQuery != null) {
+			try {
+				session.setSilent(true);
+				session.executeQuery(partitionsQuery.replace("${SCHEMA}", introspectionSchema),
+						new Session.AbstractResultSetReader() {
+							@Override
+							public void readCurrentRow(ResultSet resultSet) throws SQLException {
+								partitions.add(resultSet.getString(1));
+							}
+						});
+			} catch (Exception e) {
+				LogUtil.warn(e);
+			} finally {
+				session.setSilent(false);
+			}
+		}
+		return partitions;
+	}
+
 	private UnderlyingTableInfo parseViewText(final Session session, final ExecutionContext executionContext, final Quoting quoting, final int depth, String viewText, final String defaultSchema, final Table view) {
 		net.sf.jsqlparser.statement.Statement st;
 		try {
@@ -815,7 +842,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		return null;
 	}
 
-	private List<String> getTypes(ExecutionContext executionContext) {
+	private List<String> getTypes(Session session, ExecutionContext executionContext) {
 		ArrayList<String> result = new ArrayList<String>();
 		result.add("TABLE");
 		if (executionContext.getAnalyseAlias()) {
@@ -826,6 +853,13 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		}
 		if (executionContext.getAnalyseView()) {
 			result.add("VIEW");
+			if (DBMS.POSTGRESQL.equals(session.dbms)) {
+				result.add("MATERIALIZED VIEW");
+			}
+		}
+		if (DBMS.POSTGRESQL.equals(session.dbms)) {
+			result.add("PARTITIONED TABLE");
+			result.add("FOREIGN TABLE");
 		}
 		return result;
 	}

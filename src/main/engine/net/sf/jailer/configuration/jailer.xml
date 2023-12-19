@@ -1458,7 +1458,8 @@ WHERE  n.nspname = '%s'
         <explainPrepare></explainPrepare>
         <explainQuery>explain %1$s</explainQuery>
         <explainCleanup></explainCleanup>
-        <identityColumnsQuery>Select table_name, column_name From information_schema.columns Where table_schema='net' and is_identity='YES' and identity_generation='ALWAYS'</identityColumnsQuery>
+        <partitionsQuery>SELECT c.relname FROM pg_catalog.pg_namespace n, pg_catalog.pg_class c WHERE c.relnamespace = n.oid AND n.nspname = '${SCHEMA}' AND c.relispartition</partitionsQuery>
+        <identityColumnsQuery>Select table_name, column_name From information_schema.columns Where table_schema='${SCHEMA}' and is_identity='YES' and identity_generation='ALWAYS'</identityColumnsQuery>
         <identityColumnInsertClause>overriding system value</identityColumnInsertClause>
         <functionSourceQuery>
 SELECT 'Function', p.proname || '(' || pg_catalog.pg_get_function_arguments(p.oid) || ') RETURNS ' ||  pg_catalog.pg_get_function_result(p.oid)

@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
@@ -150,6 +151,9 @@ public class MetaDataSource {
 
 	ResultSet readTables(String schemaPattern) throws SQLException {
 		try {
+			if (DBMS.POSTGRESQL.equals(session.dbms)) {
+				return JDBCMetaDataBasedModelElementFinder.getTables(session, Quoting.staticUnquote(schemaPattern), "%", new String[] { "PARTITIONED TABLE", "FOREIGN TABLE", "MATERIALIZED VIEW", "TABLE", "VIEW", "SYNONYM", "ALIAS" });
+			}
 			return JDBCMetaDataBasedModelElementFinder.getTables(session, Quoting.staticUnquote(schemaPattern), "%", new String[] { "TABLE", "VIEW", "SYNONYM", "ALIAS" });
 		} catch (Exception e) {
 			if (!session.isDown()) {
