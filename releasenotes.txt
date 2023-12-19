@@ -1,4 +1,9 @@
-15.4.
+15.4.1
+  - Support of "identity" columns was added. (PostgreSQL, Microsoft SQL Server and DB/2)
+  - Fix for Issue 109: "Analyzing a Postgres DB with lots of partitioned tables creates seperate tables for each partition"
+    https://github.com/Wisser/Jailer/issues/109
+
+15.4
   - Fix for: "Exporting a varchar field containing $2 as substring".
     https://sourceforge.net/p/jailer/discussion/700499/thread/71f33f91b8
 
@@ -97,7 +102,6 @@
 
 14.5
   - Both the in-place editor and the search condition dialog now support columns of type "enum".
-  - Support of "identity" columns was added. (PostgreSQL, Microsoft SQL Server and DB/2)
 
 14.4.2
   - The maximum possible memory usage has been increased.
