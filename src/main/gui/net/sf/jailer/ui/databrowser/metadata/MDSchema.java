@@ -174,6 +174,7 @@ public class MDSchema extends MDObject {
 							final MDTable table = new MDTable(tableName, this, rs.getString(4) != null && rs.getString(4).toUpperCase().contains("VIEW"),
 									"SYNONYM".equalsIgnoreCase(rs.getString(4))
 								 || "ALIAS".equalsIgnoreCase(rs.getString(4)));
+							table.setTableType(rs.getString(4));
 							table.setComment(rs.getString(5));
 							tables.add(table);
 							if (loadTableColumns) {

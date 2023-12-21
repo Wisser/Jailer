@@ -1018,6 +1018,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 boolean isJailerTable = false;
                 boolean isView = false;
                 boolean isSynonym = false;
+                boolean isSystem = false;
                 Boolean isDirty = false;
                 ImageIcon image = null;
                 if (value instanceof DefaultMutableTreeNode) {
@@ -1048,6 +1049,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                     }
                     if (uo instanceof MDTable) {
                         Table table = MetaDataPanel.this.metaDataSource.toTable((MDTable) uo);
+                        isSystem = ((MDTable) uo).isSystem();
                         if (table == null) {
                             unknownTable = true;
                         } else {
@@ -1090,7 +1092,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                     	((JLabel) comp).setIcon(image);
                 	}
                 }
-                if ((unknownTable || isDirty) && !isJailerTable) {
+                if ((unknownTable || isDirty) && !isJailerTable && !isSystem) {
                 	if (comp instanceof JLabel) {
                 		if (image != null) {
                 			ImageIcon combinedIcon = combinedIcons.get(image);

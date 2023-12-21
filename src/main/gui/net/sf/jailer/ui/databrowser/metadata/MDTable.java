@@ -76,8 +76,9 @@ public class MDTable extends MDObject {
     private AtomicBoolean loaded = new AtomicBoolean(false);
     private final boolean isView;
     private final boolean isSynonym;
+    private String tableType;
 
-    private Long estimatedRowCount;
+	private Long estimatedRowCount;
 
     // DDL of the table or <code>null</code>, if no DDL is available
     private volatile String ddl;
@@ -354,7 +355,7 @@ public class MDTable extends MDObject {
      * @return <code>true</code> iff table is uptodate
      */
     public boolean isUptodate(Table table) {
-        Set<String> unquotedUCColumnNames = new HashSet<String>();
+    	Set<String> unquotedUCColumnNames = new HashSet<String>();
         for (Column column: table.getColumns()) {
             unquotedUCColumnNames.add(Quoting.normalizeIdentifier(column.name));
         }
@@ -372,6 +373,18 @@ public class MDTable extends MDObject {
         }
         return true;
     }
+
+	public boolean isSystem() {
+		if (getTableType() != null) {
+			if (getTableType().toUpperCase().contains("SYSTEM")) {
+				return true;
+			}
+			if (isView && "INFORMATION_SCHEMA".equals(getSchema().getName())) {
+				return true;
+			}
+    	}
+   		return false;
+	}
 
     public boolean isView() {
         return isView;
@@ -710,6 +723,14 @@ public class MDTable extends MDObject {
     public void setComment(String comment) {
     	this.comment = comment;
     }
+
+    public String getTableType() {
+		return tableType;
+	}
+
+	public void setTableType(String tableType) {
+		this.tableType = tableType;
+	}
 
     private AtomicBoolean ddlLoaded = new AtomicBoolean(false);
 

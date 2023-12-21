@@ -191,7 +191,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
     		
     		tableDetailsPanel.add(view);
     	} else if (mdTable != null) {
-    		if (!ModelBuilder.isJailerTable(mdTable.getUnquotedName())) {
+    		if (!mdTable.isSystem() && !ModelBuilder.isJailerTable(mdTable.getUnquotedName())) {
 	    		JButton analyseButton = new JButton("Analyse schema \"" + mdTable.getSchema().getUnquotedName() + "\"");
 	    		analyseButton.setIcon(MetaDataPanel.getScaledIcon(this, MetaDataPanel.warnIcon, false));
 	    		analyseButton.addActionListener(new ActionListener() {
@@ -253,7 +253,17 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 		        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
 	    		panel.add(analyseButton, gridBagConstraints);
 	    		tableDetailsPanel.add(panel);
-    		} else {
+    		} if (mdTable.isSystem()) {
+    			JPanel panel = new JPanel(new GridBagLayout());
+	    		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+		        gridBagConstraints.gridx = 1;
+		        gridBagConstraints.gridy = 1;
+		        gridBagConstraints.gridwidth = 1;
+		        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+		        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+	    		panel.add(new JLabel("System Object"), gridBagConstraints);
+	    		tableDetailsPanel.add(panel);
+   		} else {
     			JPanel panel = new JPanel(new GridBagLayout());
 	    		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 		        gridBagConstraints.gridx = 1;
