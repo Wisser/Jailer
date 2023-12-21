@@ -1103,15 +1103,35 @@ public class UIUtil {
     private static int issueCount = 0;
     private static long lastIssueTS = 0;
     
-    // TODO
-	// TODO add more
 	private static Pattern blacklist = Pattern.compile(
     		"(" +
-    			"PSQLException: .*Connection refused"
-    				+ ")|(" +
-    			"java.sql.SQLException: ORA-28001" +
-    		")", Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
-
+    			Pattern.quote("PSQLException:") + ".*Connection refused" + ".*DriverShim"
+   				+ ")|(" +
+    			Pattern.quote("SQLException: ORA-28001") + ".*DriverShim"
+   				+ ")|(" +
+   				Pattern.quote("Unknown database") + ".*DriverShim"
+   				+ ")|(" +
+   				Pattern.quote("Connect timed out") + ".*DriverShim"
+   				+ ")|(" +
+   				"database .* does not exist" + ".*DriverShim"
+   				+ ")|(" +
+   				Pattern.quote("authentication failed") + ".*DriverShim"
+   				+ ")|(" +
+   				Pattern.quote("Login failed") + ".*DriverShim"
+   				+ ")|(" +
+   				Pattern.quote("TCP connections to the port are not blocked") + ".*DriverShim"
+   				+ ")|(" +
+   				Pattern.quote("check that no firewall is blocking") + ".*DriverShim"
+   				+ ")|(" +
+   				Pattern.quote("ConnectException: Connection refused: connect") + ".*DriverShim"
+   				+ ")|(" +
+   				Pattern.quote("ORA-01017") + ".*DriverShim"
+   				+ ")|(" +
+   				Pattern.quote("invalid username/password") + ".*DriverShim"
+   				+ ")|(" +
+   				Pattern.quote("logon denied") + ".*DriverShim"
+    		+ ")", Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
+	
     public static boolean sendIssue(final String type,  String theIssue) {
     	if (blacklist.matcher(theIssue).find()) {
     		return false;

@@ -151,14 +151,29 @@ public class MetaDataSource {
 
 	ResultSet readTables(String schemaPattern) throws SQLException {
 		try {
-			if (DBMS.POSTGRESQL.equals(session.dbms)) {
-				return JDBCMetaDataBasedModelElementFinder.getTables(session, Quoting.staticUnquote(schemaPattern), "%", new String[] { "PARTITIONED TABLE", "FOREIGN TABLE", "MATERIALIZED VIEW", "TABLE", "VIEW", "SYNONYM", "ALIAS" });
+			if (DBMS.MySQL.equals(session.dbms)) {
+				return JDBCMetaDataBasedModelElementFinder.getTables(session, Quoting.staticUnquote(schemaPattern), "%", new String[] { "SYSTEM TABLE", "SYSTEM VIEW", "TABLE", "VIEW", "SYNONYM", "ALIAS" });
 			}
-			return JDBCMetaDataBasedModelElementFinder.getTables(session, Quoting.staticUnquote(schemaPattern), "%", new String[] { "TABLE", "VIEW", "SYNONYM", "ALIAS" });
+			if (DBMS.MSSQL.equals(session.dbms)) {
+				return JDBCMetaDataBasedModelElementFinder.getTables(session, Quoting.staticUnquote(schemaPattern), "%", new String[] { "SYSTEM TABLE", "TABLE", "VIEW", "SYNONYM", "ALIAS" });
+			}
+			if (DBMS.POSTGRESQL.equals(session.dbms)) {
+				// TODO 2 make types-selection configurable
+				return JDBCMetaDataBasedModelElementFinder.getTables(session, Quoting.staticUnquote(schemaPattern), "%", new String[] { "PARTITIONED TABLE", "FOREIGN TABLE", "MATERIALIZED VIEW", "TABLE", "VIEW", "SYSTEM VIEW", "SYNONYM", "ALIAS" });
+			}
+			return JDBCMetaDataBasedModelElementFinder.getTables(session, Quoting.staticUnquote(schemaPattern), "%", new String[] { "SYSTEM VIEW", "TABLE", "VIEW", "SYNONYM", "ALIAS" });
 		} catch (Exception e) {
 			if (!session.isDown()) {
 				logger.info("error", e);
-				return JDBCMetaDataBasedModelElementFinder.getTables(session, Quoting.staticUnquote(schemaPattern), "%", new String[] { "TABLE", "VIEW" });
+				try {
+					return JDBCMetaDataBasedModelElementFinder.getTables(session, Quoting.staticUnquote(schemaPattern), "%", new String[] { "TABLE", "VIEW", "SYNONYM", "ALIAS" });
+				} catch (Exception e2) {
+					if (!session.isDown()) {
+						return JDBCMetaDataBasedModelElementFinder.getTables(session, Quoting.staticUnquote(schemaPattern), "%", new String[] { "TABLE", "VIEW" });
+					} else {
+						throw e;
+					}
+				}
 			} else {
 				throw e;
 			}

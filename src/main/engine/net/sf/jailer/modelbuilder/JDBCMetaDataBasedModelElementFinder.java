@@ -843,6 +843,20 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	}
 
 	private List<String> getTypes(Session session, ExecutionContext executionContext) {
+		
+		// TODO
+		// TODO make this configurable.
+		// TODO oracle: TableTypes  SYNONYM, TABLE, VIEW
+		//		MSSQL: TableTypes  SYSTEM TABLE, TABLE, VIEW
+		//		DB2: TableTypes  ALIAS, HIERARCHY TABLE, INOPERATIVE VIEW, MATERIALIZED QUERY TABLE, NICKNAME, SYSTEM TABLE, TABLE, TYPED TABLE, TYPED VIEW, VIEW
+		//		MySQL: TableTypes  LOCAL TEMPORARY, SYSTEM TABLE, SYSTEM VIEW, TABLE, VIEW
+		//		Postgres: TableTypes  FOREIGN TABLE, INDEX, MATERIALIZED VIEW, PARTITIONED INDEX, PARTITIONED TABLE, SEQUENCE, SYSTEM INDEX, SYSTEM TABLE, SYSTEM TOAST INDEX, SYSTEM TOAST TABLE, SYSTEM VIEW, TABLE, TEMPORARY INDEX, TEMPORARY SEQUENCE, TEMPORARY TABLE, TEMPORARY VIEW, TYPE, VIEW
+		//		H2: TableTypes BASE TABLE, GLOBAL TEMPORARY, LOCAL TEMPORARY, SYNONYM, VIEW
+		
+		// TODO
+		// TODO use same for MDSchema
+
+		
 		ArrayList<String> result = new ArrayList<String>();
 		result.add("TABLE");
 		if (executionContext.getAnalyseAlias()) {

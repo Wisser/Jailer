@@ -18,10 +18,12 @@ package net.sf.jailer.ui.databrowser.metadata;
 import java.awt.FlowLayout;
 import java.lang.reflect.Method;
 import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
@@ -220,6 +222,17 @@ public class MDDatabase extends MDGeneric {
 	    				// ignore
 	    			}
 	            }
+	            try {
+	        	    ResultSet rs = md.getTableTypes();
+	        	    List<String> types = new ArrayList<>();
+	        	    while (rs.next()) {
+	        	    	types.add(rs.getString(1));
+	        	    }
+	        	    rs.close();
+	        	    rowList.add(new Object[] { "TableTypes", types.stream().collect(Collectors.joining(", "))});
+	            } catch (Throwable t) {
+    				// ignore
+    			}
 	            UIUtil.invokeLater(() -> {
 	            	MemorizedResultSet rs = new MemorizedResultSet(rowList, 2, new String[] { "Property", "Value" }, new int[] { Types.VARCHAR, Types.VARCHAR });
 		            try {

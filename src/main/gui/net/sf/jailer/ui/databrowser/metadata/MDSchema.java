@@ -171,7 +171,7 @@ public class MDSchema extends MDObject {
 	            				continue;
 	            			}
 							String tableName = metaDataSource.getQuoting().quote(name);
-							final MDTable table = new MDTable(tableName, this, "VIEW".equalsIgnoreCase(rs.getString(4)),
+							final MDTable table = new MDTable(tableName, this, rs.getString(4) != null && rs.getString(4).toUpperCase().contains("VIEW"),
 									"SYNONYM".equalsIgnoreCase(rs.getString(4))
 								 || "ALIAS".equalsIgnoreCase(rs.getString(4)));
 							table.setComment(rs.getString(5));

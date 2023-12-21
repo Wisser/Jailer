@@ -1127,6 +1127,9 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         renderer.setLeafIcon(null);
         renderer.setClosedIcon(null);
         metaDataTree.setCellRenderer(renderer);
+        
+		// TODO 2 render partitions (pg) as sub-nodes of partitioned table
+        
         metaDataTree.getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
 
         metaDataTree.addTreeSelectionListener(new TreeSelectionListener() {
