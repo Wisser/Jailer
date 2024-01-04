@@ -1,7 +1,9 @@
-15.4.1
+15.5
   - Support of "identity" columns was added. (PostgreSQL, Microsoft SQL Server and DB/2)
   - Fix for Issue 109: "Analyzing a Postgres DB with lots of partitioned tables creates seperate tables for each partition"
     https://github.com/Wisser/Jailer/issues/109
+  - Fix for Issue 101: "Ignore generated columns when export data"
+    https://github.com/Wisser/Jailer/issues/101
 
 15.4
   - Fix for: "Exporting a varchar field containing $2 as substring".
