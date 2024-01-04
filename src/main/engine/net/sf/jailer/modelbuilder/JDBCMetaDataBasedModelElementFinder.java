@@ -1363,12 +1363,14 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 				isVirtual = true;
 			}
 			if (isVirtual == null) {
-				String virtualColumnsQuery = session.dbms.getVirtualColumnsQuery();
-				if (virtualColumnsQuery != null) {
+				String virtualColumnsQueries = session.dbms.getVirtualColumnsQuery();
+				if (virtualColumnsQueries != null) {
 					@SuppressWarnings("unchecked")
 					Set<Pair<String, String>> virtualColumns = (Set<Pair<String, String>>) session.getSessionProperty(getClass(), "virtualColumns" + schemaName);
 					if (virtualColumns == null) {
 						virtualColumns = new HashSet<Pair<String,String>>();
+						for (String virtualColumnsQuery: virtualColumnsQueries.split(";\\s*")) {
+							boolean ok = false;
 							try {
 								session.setSilent(true);
 								final Set<Pair<String, String>> finalVirtualColumns = virtualColumns;
@@ -1378,13 +1380,18 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 										finalVirtualColumns.add(new Pair<String, String>(resultSet.getString(1), resultSet.getString(2)));
 									}
 								});
+								ok = true;
 							} catch (Exception e) {
 								// ignore
 							} finally {
 								session.setSilent(false);
 							}
 							session.setSessionProperty(getClass(), "virtualColumns" + schemaName, virtualColumns);
+							if (ok) {
+								break;
+							}
 						}
+					}
 					isVirtual = virtualColumns.contains(new Pair<String, String>(tableName, resultSet.getString(4)));
 				}
 			}
