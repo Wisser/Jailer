@@ -231,17 +231,6 @@ public class Configuration {
 			try {
 				InputStream res;
 				File configFile = null;
-				if (new File(".singleuser").exists() // legacy
-						|| new File(".multiuser").exists() || CommandLine.applicationBase != null) {
-					File home = new File(System.getProperty("user.home"), ".jailer");
-					configFile = new File(home, name);
-					
-					
-					
-					if (!configFile.exists()) {
-						configFile = null;
-					}
-				}
 				if (configFile == null) {
 					if (CommandLine.applicationBase == null) {
 						configFile = new File(name);
