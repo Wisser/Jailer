@@ -252,7 +252,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	/**
 	 * Pending Decisions Panel.
 	 */
-	PendingDecisionsPanel pendingDecisionsPanel;
+	public PendingDecisionsPanel pendingDecisionsPanel;
 
 	/**
 	 * Multi-line editor for subject condition.

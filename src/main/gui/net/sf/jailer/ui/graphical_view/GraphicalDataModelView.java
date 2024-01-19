@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.ButtonGroup;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -1133,6 +1134,22 @@ public class GraphicalDataModelView extends JPanel {
 		if (withModifications) {
 			popup.add(disable);
 			popup.add(enable);
+			if (modelEditor.pendingDecisionsPanel != null && modelEditor.pendingDecisionsPanel.origDecisionPending.contains(association.reversalAssociation.getName())) {
+				popup.add(new JSeparator());
+				JCheckBoxMenuItem check = new JCheckBoxMenuItem("Checked");
+				check.setSelected(modelEditor.pendingDecisionsPanel.isChecked(association));
+				check.addActionListener(new ActionListener () {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						if (modelEditor.pendingDecisionsPanel.isChecked(association)) {
+							modelEditor.pendingDecisionsPanel.decisionUndone(association);
+						} else {
+							modelEditor.pendingDecisionsPanel.decisionMade(association);
+						}
+					}
+				});
+				popup.add(check);
+			}
 			popup.add(new JSeparator());
 		}
 		popup.add(zoomToFit);

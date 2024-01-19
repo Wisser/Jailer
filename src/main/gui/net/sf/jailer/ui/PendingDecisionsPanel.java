@@ -58,6 +58,7 @@ public abstract class PendingDecisionsPanel extends javax.swing.JPanel {
 	
 	private List<Association> atBorder = new ArrayList<Association>();
 	private Set<Association> checked = new HashSet<Association>();
+	public final Set<String> origDecisionPending;
 
 	/**
 	 * Creates new form PendingDecisionsPanel
@@ -65,6 +66,7 @@ public abstract class PendingDecisionsPanel extends javax.swing.JPanel {
 	public PendingDecisionsPanel(DataModel dataModel, ExtractionModelEditor extractionModelEditor) {
 		this.dataModel = dataModel;
 		this.extractionModelEditor = extractionModelEditor;
+		this.origDecisionPending = new HashSet<String>(dataModel.decisionPending);
 		initComponents(); UIUtil.initComponents(this);
 
 		DefaultTableCellRenderer associationsListItemRenderer = new DefaultTableCellRenderer() {
@@ -545,6 +547,10 @@ public abstract class PendingDecisionsPanel extends javax.swing.JPanel {
 			}
 		}
 	}
+    
+    public boolean isChecked(Association association) {
+    	return checked.contains(association);
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable associationsTable;
