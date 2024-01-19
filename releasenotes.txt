@@ -1,3 +1,7 @@
+15.5.1
+  - Issue "QoL: Right click "check" in Model Migration view."
+    https://sourceforge.net/p/jailer/discussion/700498/thread/b64474f36f/
+
 15.5
   - Support of "identity" columns was added. (PostgreSQL, Microsoft SQL Server and DB/2)
   - Fix for Issue 109: "Analyzing a Postgres DB with lots of partitioned tables creates seperate tables for each partition"

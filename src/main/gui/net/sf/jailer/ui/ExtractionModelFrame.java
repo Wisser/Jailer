@@ -332,21 +332,23 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 	
 	@Override
 	public void onConnectionTypeChange() {
-		ConnectionType connectionType = ConnectionType.Development;
-		if (lastConnectionInfo != null && dbConnectionDialog != null) {
-			lastConnectionInfo.setConnectionType(connectionType = dbConnectionDialog.retrieveConnectionType(lastConnectionInfo));
+		if (extractionModelEditor != null) {
+			ConnectionType connectionType = ConnectionType.Development;
+			if (lastConnectionInfo != null && dbConnectionDialog != null) {
+				lastConnectionInfo.setConnectionType(connectionType = dbConnectionDialog.retrieveConnectionType(lastConnectionInfo));
+			}
+			Color bg = connectionType != null ? connectionType.getBackground() : null;
+			if (bg != null) {
+				extractionModelEditor.connectivityState.setBackground(bg);
+				extractionModelEditor.legende2.setBackground(bg);
+				extractionModelEditor.legende2.setOpaque(true);
+			} else {
+				extractionModelEditor.connectivityState.setBackground(origCSBG);
+				extractionModelEditor.legende2.setBackground(origL2BG);
+				extractionModelEditor.legende2.setOpaque(origOp);
+			}
+			extractionModelEditor.connectivityState.setToolTipText(getConnectivityStateToolTip(lastConnectionInfo));
 		}
-		Color bg = connectionType != null ? connectionType.getBackground() : null;
-		if (bg != null) {
-			extractionModelEditor.connectivityState.setBackground(bg);
-			extractionModelEditor.legende2.setBackground(bg);
-			extractionModelEditor.legende2.setOpaque(true);
-		} else {
-			extractionModelEditor.connectivityState.setBackground(origCSBG);
-			extractionModelEditor.legende2.setBackground(origL2BG);
-			extractionModelEditor.legende2.setOpaque(origOp);
-		}
-		extractionModelEditor.connectivityState.setToolTipText(getConnectivityStateToolTip(lastConnectionInfo));
 	}
 
 	private String getConnectivityState() {
