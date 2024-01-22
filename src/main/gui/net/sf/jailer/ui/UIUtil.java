@@ -2259,11 +2259,15 @@ public class UIUtil {
 					if (UIManager.get("InternalFrame:InternalFrameTitlePane[Enabled].textForeground") instanceof Color) {
 						UIManager.put("InternalFrame:InternalFrameTitlePane[Enabled].textForeground", Color.BLUE);
 					}
-					UIManager.put("TitledBorder.border", new BorderUIResource((Border) UIManager.get("TitledBorder.border")) {
-						public Insets getBorderInsets(Component c)       {
-							return new Insets(4, 4, 6, 4);
-						}
-					});
+					try {
+						UIManager.put("TitledBorder.border", new BorderUIResource((Border) UIManager.get("TitledBorder.border")) {
+							public Insets getBorderInsets(Component c)       {
+								return new Insets(4, 4, 6, 4);
+							}
+						});
+					} catch (Exception x) {
+						// ignore
+					}
 				} catch (Exception x) {
 					UIUtil.showException(null, "Error", x);
 				}
