@@ -112,12 +112,6 @@ public class Jailer {
 			}
 		});
 
-		try {
-			// TODO 2: update jaxb implementation. See https://mvnrepository.com/artifact/org.glassfish.jaxb/jaxb-runtime
-			System.setProperty("com.sun.xml.bind.v2.bytecode.ClassTailor.noOptimize", "true");
-		} catch (Exception e) {
-		}
-
 		if (new File(".singleuser").exists() // legacy
 				|| new File(".multiuser").exists()) {
 			File home = new File(System.getProperty("user.home"), ".jailer");
