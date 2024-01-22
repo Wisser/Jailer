@@ -13,7 +13,7 @@ mv $1.co/Jailer/* jailer
 cd jailer
 
 sed "s/stateOffset = 100/stateOffset = 0/g" src/main/gui/net/sf/jailer/ui/Environment.java --in-place
-ant all
+ant all &> ~/anterrtext
 sed "s/stateOffset = 0/stateOffset = 100/g" src/main/gui/net/sf/jailer/ui/Environment.java --in-place
 
 rm maven-artifacts/dummy
