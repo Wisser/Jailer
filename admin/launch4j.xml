@@ -16,30 +16,31 @@
   <icon>C:\Users\ralfw\git\Jailer\src\main\gui\net\sf\jailer\ui\resource\jailer.ico</icon>
   <classPath>
     <mainClass>net.sf.jailer.ui.ExtractionModelFrame</mainClass>
-    <cp>lib/activation-1.0.2.jar</cp>
-    <cp>lib/jaxb-core-2.3.0-b170127.1453.jar</cp>
-    <cp>lib/jaxb-impl-2.3.0-b170127.1453.jar</cp>
-    <cp>lib/jaxb-api-2.3.0-b170201.1204.jar</cp>
+    <cp>lib/angus-activation-2.0.1.jar</cp>
+    <cp>lib/istack-commons-runtime-4.1.2.jar</cp>
+    <cp>lib/jakarta.activation-api-2.1.2.jar</cp>
+    <cp>lib/jakarta.xml.bind-api-4.0.1.jar</cp>
+    <cp>lib/jaxb-core-4.0.4.jar</cp>
+    <cp>lib/jaxb-runtime-4.0.4.jar</cp>
+    <cp>lib/txw2-4.0.4.jar</cp>
     <cp>lib/prefuse.jar</cp>
     <cp>config/</cp>
     <cp>lib/log4j-api-2.17.2.jar</cp>
     <cp>lib/log4j-core-2.17.2.jar</cp>
     <cp>lib/log4j-slf4j-impl-2.17.2.jar</cp>
     <cp>lib/slf4j-api-1.7.25.jar</cp>
-    <cp>lib/flatlaf-2.2.jar</cp>
+    <cp>lib/flatlaf-3.3.jar</cp>
     <cp>lib/args4j.jar</cp>
     <cp>lib/sdoc-0.5.0-beta.jar</cp>
     <cp>lib/tablefilter-swing-5.3.1.jar</cp>
     <cp>lib/jsqlparser-3.2.jar</cp>
   </classPath>
   <jre>
-    <path></path>
-    <bundledJre64Bit>false</bundledJre64Bit>
-    <bundledJreAsFallback>false</bundledJreAsFallback>
+    <path>%JAVA_HOME%;%PATH%</path>
+    <requiresJdk>false</requiresJdk>
+    <requires64Bit>false</requires64Bit>
     <minVersion>1.8.0</minVersion>
     <maxVersion></maxVersion>
-    <jdkPreference>preferJre</jdkPreference>
-    <runtimeBits>64/32</runtimeBits>
     <maxHeapSize>1200</maxHeapSize>
     <opt>-Djava.util.Arrays.useLegacyMergeSort=true</opt>
   </jre>

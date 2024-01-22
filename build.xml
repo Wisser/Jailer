@@ -82,7 +82,7 @@ available targets:
 		<jar destfile="${JAR-ENGINE}" basedir="${COMPILE_DIR}">
 			<manifest>
 				<attribute name="Main-Class" value="net.sf.jailer.Jailer" />
-				<attribute name="Class-Path" value="lib/activation-1.0.2.jar lib/jaxb-core-2.3.0-b170127.1453.jar lib/jaxb-impl-2.3.0-b170127.1453.jar lib/jaxb-api-2.3.0-b170201.1204.jar lib/log4j-api-2.17.2.jar lib/log4j-core-2.17.2.jar lib/log4j-slf4j-impl-2.17.2.jar lib/slf4j-api-1.7.25.jar lib/flatlaf-2.2.jar lib/args4j.jar config/" />
+				<attribute name="Class-Path" value="lib/angus-activation-2.0.1.jar lib/istack-commons-runtime-4.1.2.jar lib/jakarta.activation-api-2.1.2.jar lib/jakarta.xml.bind-api-4.0.1.jar lib/jaxb-core-4.0.4.jar lib/jaxb-runtime-4.0.4.jar lib/txw2-4.0.4.jar lib/log4j-api-2.17.2.jar lib/log4j-core-2.17.2.jar lib/log4j-slf4j-impl-2.17.2.jar lib/slf4j-api-1.7.25.jar lib/flatlaf-3.3.jar lib/args4j.jar config/" />
 			</manifest>
 		</jar>
 	</target>
@@ -91,7 +91,7 @@ available targets:
 		<jar destfile="${JAR}" basedir="${COMPILE_DIR}">
 			<manifest>
 				<attribute name="Main-Class" value="net.sf.jailer.ui.JailerUI" />
-				<attribute name="Class-Path" value="lib/activation-1.0.2.jar lib/jaxb-core-2.3.0-b170127.1453.jar lib/jaxb-impl-2.3.0-b170127.1453.jar lib/jaxb-api-2.3.0-b170201.1204.jar lib/prefuse.jar config/ lib/log4j-api-2.17.2.jar lib/log4j-core-2.17.2.jar lib/log4j-slf4j-impl-2.17.2.jar lib/slf4j-api-1.7.25.jar lib/flatlaf-2.2.jar lib/args4j.jar lib/sdoc-0.5.0-beta.jar lib/jsqlparser-3.2.jar lib/tablefilter-swing-5.3.1.jar" />
+				<attribute name="Class-Path" value="lib/angus-activation-2.0.1.jar lib/istack-commons-runtime-4.1.2.jar lib/jakarta.activation-api-2.1.2.jar lib/jakarta.xml.bind-api-4.0.1.jar lib/jaxb-core-4.0.4.jar lib/jaxb-runtime-4.0.4.jar lib/txw2-4.0.4.jar lib/prefuse.jar config/ lib/log4j-api-2.17.2.jar lib/log4j-core-2.17.2.jar lib/log4j-slf4j-impl-2.17.2.jar lib/slf4j-api-1.7.25.jar lib/flatlaf-3.3.jar lib/args4j.jar lib/sdoc-0.5.0-beta.jar lib/jsqlparser-3.2.jar lib/tablefilter-swing-5.3.1.jar" />
 			</manifest>
 		</jar>
 		<copy todir=".">

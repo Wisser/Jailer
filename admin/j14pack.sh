@@ -45,17 +45,20 @@ rm ~/tmp/_/*.exe
 
 chmod a+x ~/tmp/_/*.sh 
  
-mv ~/tmp/_/jdbc_lib/activation-1.0.2.jar ~/tmp/_/lib/activation-1.0.2.jar 
 mv ~/tmp/_/jdbc_lib/args4j.jar ~/tmp/_/lib/args4j.jar 
-mv ~/tmp/_/jdbc_lib/jaxb-api-2.3.0-b170201.1204.jar ~/tmp/_/lib/jaxb-api-2.3.0-b170201.1204.jar 
-mv ~/tmp/_/jdbc_lib/jaxb-core-2.3.0-b170127.1453.jar ~/tmp/_/lib/jaxb-core-2.3.0-b170127.1453.jar 
-mv ~/tmp/_/jdbc_lib/jaxb-impl-2.3.0-b170127.1453.jar ~/tmp/_/lib/jaxb-impl-2.3.0-b170127.1453.jar 
+mv ~/tmp/_/jdbc_lib/angus-activation-2.0.1.jar ~/tmp/_/lib/angus-activation-2.0.1.jar
+mv ~/tmp/_/jdbc_lib/istack-commons-runtime-4.1.2.jar ~/tmp/_/lib/istack-commons-runtime-4.1.2.jar
+mv ~/tmp/_/jdbc_lib/jakarta.activation-api-2.1.2.jar ~/tmp/_/lib/jakarta.activation-api-2.1.2.jar
+mv ~/tmp/_/jdbc_lib/jakarta.xml.bind-api-4.0.1.jar ~/tmp/_/lib/jakarta.xml.bind-api-4.0.1.jar
+mv ~/tmp/_/jdbc_lib/jaxb-core-4.0.4.jar ~/tmp/_/lib/jaxb-core-4.0.4.jar
+mv ~/tmp/_/jdbc_lib/jaxb-runtime-4.0.4.jar ~/tmp/_/lib/jaxb-runtime-4.0.4.jar
+mv ~/tmp/_/jdbc_lib/txw2-4.0.4.jar ~/tmp/_/lib/txw2-4.0.4.jar
 mv ~/tmp/_/jdbc_lib/jsqlparser-3.2.jar ~/tmp/_/lib/jsqlparser-3.2.jar 
 mv ~/tmp/_/jdbc_lib/log4j-api-2.17.2.jar ~/tmp/_/lib/log4j-api-2.17.2.jar 
 mv ~/tmp/_/jdbc_lib/log4j-core-2.17.2.jar ~/tmp/_/lib/log4j-core-2.17.2.jar 
 mv ~/tmp/_/jdbc_lib/log4j-slf4j-impl-2.17.2.jar ~/tmp/_/lib/log4j-slf4j-impl-2.17.2.jar 
 mv ~/tmp/_/jdbc_lib/slf4j-api-1.7.25.jar ~/tmp/_/lib/slf4j-api-1.7.25.jar 
-mv ~/tmp/_/jdbc_lib/flatlaf-2.2.jar ~/tmp/_/lib/flatlaf-2.2.jar 
+mv ~/tmp/_/jdbc_lib/flatlaf-3.3.jar ~/tmp/_/lib/flatlaf-3.3.jar 
 mv ~/tmp/_/jdbc_lib/prefuse.jar ~/tmp/_/lib/prefuse.jar 
 mv ~/tmp/_/jdbc_lib/sdoc-0.5.0-beta.jar ~/tmp/_/lib/sdoc-0.5.0-beta.jar 
 mv ~/tmp/_/jdbc_lib/tablefilter-swing-5.3.1.jar ~/tmp/_/lib/tablefilter-swing-5.3.1.jar 
