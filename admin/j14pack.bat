@@ -61,6 +61,9 @@ move c:\tmp\_\jdbc_lib\prefuse.jar c:\tmp\_\lib\prefuse.jar
 move c:\tmp\_\jdbc_lib\sdoc-0.5.0-beta.jar c:\tmp\_\lib\sdoc-0.5.0-beta.jar
 move c:\tmp\_\jdbc_lib\tablefilter-swing-5.3.1.jar c:\tmp\_\lib\tablefilter-swing-5.3.1.jar
 
+move c:\tmp\_\jdbc_lib\testflatlaf.jar c:\tmp\_\lib\testflatlaf.jar
+move c:\tmp\_\jdbc_lib\testbadj.jar c:\tmp\_\lib\testbadj.jar
+
 del c:\tmp\_\jdbc_lib\dbunit-2.4.4.jar
 del c:\tmp\_\jdbc_lib\h2-1.3.160.jar
 del c:\tmp\_\jdbc_lib\h2-1.3.175.jar
@@ -77,8 +80,7 @@ for /f "tokens=*" %%f in ('dir /b c:\tmp\_\jdbc_lib\*') do (
 cd c:\tmp\_
 echo "" > .singleuser
 
-echo "dir"
-dir
+
 pause
 
 
