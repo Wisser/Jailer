@@ -46,7 +46,7 @@ move c:\tmp\_\jdbc_lib\args4j.jar c:\tmp\_\lib\args4j.jar
 move c:\tmp\_\jdbc_lib\activation-1.1.1.jar c:\tmp\_\lib\activation-1.1.1.jar
 move c:\tmp\_\jdbc_lib\FastInfoset-1.2.13.jar c:\tmp\_\lib\FastInfoset-1.2.13.jar
 move c:\tmp\_\jdbc_lib\istack-commons-runtime-3.0.5.jar c:\tmp\_\lib\istack-commons-runtime-3.0.5.jar
-move c:\tmp\_\jdbc_lib\axb-api-2.3.0.jar c:\tmp\_\lib\axb-api-2.3.0.jar
+move c:\tmp\_\jdbc_lib\jaxb-api-2.3.0.jar c:\tmp\_\lib\jaxb-api-2.3.0.jar
 move c:\tmp\_\jdbc_lib\jaxb-core-2.3.0.jar c:\tmp\_\lib\jaxb-core-2.3.0.jar
 move c:\tmp\_\jdbc_lib\jaxb-impl-2.3.0.jar c:\tmp\_\lib\jaxb-impl-2.3.0.jar
 move c:\tmp\_\jdbc_lib\jaxb-runtime-2.3.0.jar c:\tmp\_\lib\jaxb-runtime-2.3.0.jar
