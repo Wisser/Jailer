@@ -21,7 +21,6 @@ set CP=%CP%;%LIB%\FastInfoset-1.2.13.jar
 set CP=%CP%;%LIB%\istack-commons-runtime-3.0.5.jar
 set CP=%CP%;%LIB%\jaxb-api-2.3.0.jar
 set CP=%CP%;%LIB%\jaxb-core-2.3.0.jar
-set CP=%CP%;%LIB%\jaxb-impl-2.3.0.jar
 set CP=%CP%;%LIB%\jaxb-runtime-2.3.0.jar
 set CP=%CP%;%LIB%\stax-ex-1.7.8.jar
 set CP=%CP%;%LIB%\txw2-2.3.0.jar

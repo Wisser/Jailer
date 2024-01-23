@@ -26,7 +26,6 @@
 	<classpathentry kind="lib" path="lib/istack-commons-runtime-3.0.5.jar"/>
 	<classpathentry kind="lib" path="lib/jaxb-api-2.3.0.jar"/>
 	<classpathentry kind="lib" path="lib/jaxb-core-2.3.0.jar"/>
-	<classpathentry kind="lib" path="lib/jaxb-impl-2.3.0.jar"/>
 	<classpathentry kind="lib" path="lib/jaxb-runtime-2.3.0.jar"/>
 	<classpathentry kind="lib" path="lib/stax-ex-1.7.8.jar"/>
 	<classpathentry kind="lib" path="lib/txw2-2.3.0.jar"/>

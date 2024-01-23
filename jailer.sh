@@ -25,7 +25,6 @@ CP=$CP:$LIB/FastInfoset-1.2.13.jar
 CP=$CP:$LIB/istack-commons-runtime-3.0.5.jar
 CP=$CP:$LIB/axb-api-2.3.0.jar
 CP=$CP:$LIB/jaxb-core-2.3.0.jar
-CP=$CP:$LIB/jaxb-impl-2.3.0.jar
 CP=$CP:$LIB/jaxb-runtime-2.3.0.jar
 CP=$CP:$LIB/stax-ex-1.7.8.jar
 CP=$CP:$LIB/txw2-2.3.0.jar
