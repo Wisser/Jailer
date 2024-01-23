@@ -42,7 +42,7 @@ xcopy /S /E c:\tmp\_\lib c:\tmp\_\jdbc_lib\
 del /Q c:\tmp\_\lib\*
 del /Q c:\tmp\_\*.sh
 
-move c:\tmp\_\jdbc_lib\args4j.jar c:\tmp\_\lib\args4j.jar
+rem move c:\tmp\_\jdbc_lib\args4j.jar c:\tmp\_\lib\args4j.jar
 move c:\tmp\_\jdbc_lib\activation-1.1.1.jar c:\tmp\_\lib\activation-1.1.1.jar
 move c:\tmp\_\jdbc_lib\FastInfoset-1.2.13.jar c:\tmp\_\lib\FastInfoset-1.2.13.jar
 move c:\tmp\_\jdbc_lib\istack-commons-runtime-3.0.5.jar c:\tmp\_\lib\istack-commons-runtime-3.0.5.jar
@@ -63,6 +63,7 @@ move c:\tmp\_\jdbc_lib\tablefilter-swing-5.3.1.jar c:\tmp\_\lib\tablefilter-swin
 
 move c:\tmp\_\jdbc_lib\testflatlaf.jar c:\tmp\_\lib\testflatlaf.jar
 move c:\tmp\_\jdbc_lib\testbadj.jar c:\tmp\_\lib\testbadj.jar
+move c:\tmp\_\jdbc_lib\mariadb-java-client-2.7.3.jarr c:\tmp\_\lib\mariadb-java-client-2.7.3.jar
 
 del c:\tmp\_\jdbc_lib\dbunit-2.4.4.jar
 del c:\tmp\_\jdbc_lib\h2-1.3.160.jar
