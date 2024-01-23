@@ -74,6 +74,8 @@ for /f "tokens=*" %%f in ('dir /b c:\tmp\_\jdbc_lib\*') do (
   move c:\tmp\_\jdbc_lib\"%%f" c:\tmp\_\jdbc_lib\"%%f.x"
 )
 
+pause
+
 cd c:\tmp\_
 echo "" > .singleuser
 
