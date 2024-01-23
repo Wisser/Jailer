@@ -74,10 +74,13 @@ for /f "tokens=*" %%f in ('dir /b c:\tmp\_\jdbc_lib\*') do (
   move c:\tmp\_\jdbc_lib\"%%f" c:\tmp\_\jdbc_lib\"%%f.x"
 )
 
-pause
-
 cd c:\tmp\_
 echo "" > .singleuser
+
+echo "dir"
+dir
+pause
+
 
 jlink --add-options="-Xmx4000m" --add-modules java.se --output jre%version% 
 jpackage --name "Jailer Database Tools" --input . --main-jar jailer.jar --type msi --icon jailer.ico --win-menu --win-menu-group Jailer --vendor Wisser --app-version %version% --win-upgrade-uuid d636b4ee-6f10-451e-bf57-c89656780e22 --runtime-image jre%version%
