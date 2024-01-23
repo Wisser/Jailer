@@ -43,13 +43,15 @@ del /Q c:\tmp\_\lib\*
 del /Q c:\tmp\_\*.sh
 
 move c:\tmp\_\jdbc_lib\args4j.jar c:\tmp\_\lib\args4j.jar
-move c:\tmp\_\jdbc_lib\angus-activation-2.0.1.jar c:\tmp\_\lib\angus-activation-2.0.1.jar
-move c:\tmp\_\jdbc_lib\istack-commons-runtime-4.1.2.jar c:\tmp\_\lib\istack-commons-runtime-4.1.2.jar
-move c:\tmp\_\jdbc_lib\jakarta.activation-api-2.1.2.jar c:\tmp\_\lib\jakarta.activation-api-2.1.2.jar
-move c:\tmp\_\jdbc_lib\jakarta.xml.bind-api-4.0.1.jar c:\tmp\_\lib\jakarta.xml.bind-api-4.0.1.jar
-move c:\tmp\_\jdbc_lib\jaxb-core-4.0.4.jar c:\tmp\_\lib\jaxb-core-4.0.4.jar
-move c:\tmp\_\jdbc_lib\jaxb-runtime-4.0.4.jar c:\tmp\_\lib\jaxb-runtime-4.0.4.jar
-move c:\tmp\_\jdbc_lib\txw2-4.0.4.jar c:\tmp\_\lib\txw2-4.0.4.jar
+move c:\tmp\_\jdbc_lib\activation-1.1.1.jar c:\tmp\_\lib\activation-1.1.1.jar
+move c:\tmp\_\jdbc_lib\FastInfoset-1.2.13.jar c:\tmp\_\lib\FastInfoset-1.2.13.jar
+move c:\tmp\_\jdbc_lib\istack-commons-runtime-3.0.5.jar c:\tmp\_\lib\istack-commons-runtime-3.0.5.jar
+move c:\tmp\_\jdbc_lib\axb-api-2.3.0.jar c:\tmp\_\lib\axb-api-2.3.0.jar
+move c:\tmp\_\jdbc_lib\jaxb-core-2.3.0.jar c:\tmp\_\lib\jaxb-core-2.3.0.jar
+move c:\tmp\_\jdbc_lib\jaxb-impl-2.3.0.jar c:\tmp\_\lib\jaxb-impl-2.3.0.jar
+move c:\tmp\_\jdbc_lib\jaxb-runtime-2.3.0.jar c:\tmp\_\lib\jaxb-runtime-2.3.0.jar
+move c:\tmp\_\jdbc_lib\stax-ex-1.7.8.jar c:\tmp\_\lib\stax-ex-1.7.8.jar
+move c:\tmp\_\jdbc_lib\txw2-2.3.0.jar c:\tmp\_\lib\txw2-2.3.0.jar
 move c:\tmp\_\jdbc_lib\jsqlparser-3.2.jar c:\tmp\_\lib\jsqlparser-3.2.jar
 move c:\tmp\_\jdbc_lib\log4j-api-2.17.2.jar c:\tmp\_\lib\log4j-api-2.17.2.jar
 move c:\tmp\_\jdbc_lib\log4j-core-2.17.2.jar c:\tmp\_\lib\log4j-core-2.17.2.jar

@@ -25,8 +25,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
+
 import net.sf.jailer.database.DefaultTemporaryTableManager;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.SqlScriptBasedStatisticRenovator;

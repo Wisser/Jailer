@@ -16,13 +16,15 @@
   <icon>C:\Users\ralfw\git\Jailer\src\main\gui\net\sf\jailer\ui\resource\jailer.ico</icon>
   <classPath>
     <mainClass>net.sf.jailer.ui.ExtractionModelFrame</mainClass>
-    <cp>lib/angus-activation-2.0.1.jar</cp>
-    <cp>lib/istack-commons-runtime-4.1.2.jar</cp>
-    <cp>lib/jakarta.activation-api-2.1.2.jar</cp>
-    <cp>lib/jakarta.xml.bind-api-4.0.1.jar</cp>
-    <cp>lib/jaxb-core-4.0.4.jar</cp>
-    <cp>lib/jaxb-runtime-4.0.4.jar</cp>
-    <cp>lib/txw2-4.0.4.jar</cp>
+    <cp>lib/activation-1.1.1.jar</cp>
+    <cp>lib/FastInfoset-1.2.13.jar</cp>
+    <cp>lib/istack-commons-runtime-3.0.5.jar</cp>
+    <cp>lib/axb-api-2.3.0.jar</cp>
+    <cp>lib/jaxb-core-2.3.0.jar</cp>
+    <cp>lib/jaxb-impl-2.3.0.jar</cp>
+    <cp>lib/jaxb-runtime-2.3.0.jar</cp>
+    <cp>lib/stax-ex-1.7.8.jar</cp>
+    <cp>lib/txw2-2.3.0.jar</cp>
     <cp>lib/prefuse.jar</cp>
     <cp>config/</cp>
     <cp>lib/log4j-api-2.17.2.jar</cp>
