@@ -1,10 +1,14 @@
+15.6
+  - Migration of the JAXB implementation to "org.glassfish.jaxb" due to incompatibilities with JDK 20 or above.
+    https://sourceforge.net/p/jailer/discussion/700500/thread/6cf3f6badb/
+
 15.5.1
   - Issue "QoL: Right click "check" in Model Migration view."
     https://sourceforge.net/p/jailer/discussion/700498/thread/b64474f36f/
 
 15.5
   - Support of "identity" columns was added. (PostgreSQL, Microsoft SQL Server and DB/2)
-  - Fix for Issue 109: "Analyzing a Postgres DB with lots of partitioned tables creates seperate tables for each partition"
+  - Fix for Issue 109: "Analyzing a Postgres DB with lots of partitioned tables creates separate tables for each partition"
     https://github.com/Wisser/Jailer/issues/109
   - Fix for Issue 101: "Ignore generated columns when export data"
     https://github.com/Wisser/Jailer/issues/101

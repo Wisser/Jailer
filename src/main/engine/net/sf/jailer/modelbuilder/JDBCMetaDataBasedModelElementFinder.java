@@ -844,7 +844,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 
 	private List<String> getTypes(Session session, ExecutionContext executionContext) {
 		
-		// TODO
+		// TODO 1
 		// TODO make this configurable.
 		// TODO oracle: TableTypes  SYNONYM, TABLE, VIEW
 		//		MSSQL: TableTypes  SYSTEM TABLE, TABLE, VIEW
@@ -853,7 +853,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		//		Postgres: TableTypes  FOREIGN TABLE, INDEX, MATERIALIZED VIEW, PARTITIONED INDEX, PARTITIONED TABLE, SEQUENCE, SYSTEM INDEX, SYSTEM TABLE, SYSTEM TOAST INDEX, SYSTEM TOAST TABLE, SYSTEM VIEW, TABLE, TEMPORARY INDEX, TEMPORARY SEQUENCE, TEMPORARY TABLE, TEMPORARY VIEW, TYPE, VIEW
 		//		H2: TableTypes BASE TABLE, GLOBAL TEMPORARY, LOCAL TEMPORARY, SYNONYM, VIEW
 		
-		// TODO
+		// TODO 1
 		// TODO use same for MDSchema
 
 		

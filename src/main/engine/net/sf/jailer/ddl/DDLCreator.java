@@ -169,6 +169,7 @@ public class DDLCreator {
 
 	public static volatile boolean uPKWasTooLong = false;
 	public static volatile String uPK;
+	public static String lastDDL = "";
 
 	/**
 	 * Creates the DDL for the working-tables.
@@ -282,6 +283,7 @@ public class DDLCreator {
 		}
 
 		String ddl = new PrintUtil().applyTemplate(template, arguments, listArguments);
+		lastDDL = ddl;
 
 		if (session != null) {
 			File tmp = Configuration.getInstance().createTempFile();

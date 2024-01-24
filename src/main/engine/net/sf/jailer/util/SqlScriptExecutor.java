@@ -372,9 +372,6 @@ public class SqlScriptExecutor {
 									if (!stmt.trim().toUpperCase(Locale.ENGLISH).contains("DROP TABLE JAILER_DUAL")) {
 										Session._log.warn(stmt, e);
 										if (e instanceof SqlException) {
-											((SqlException) e).setInsufficientPrivileges(count.get() == 0);
-										}
-										if (e instanceof SqlException) {
 											String message = (scriptFileName.matches("(tmp|temp).*")? "" : "Error in file: \"" + scriptFileName + "\" line: " + finalCurrentStatementlineNumber + "\n") + ((SqlException) e).getMessage();
 											e = new SqlException(message, ((SqlException) e).sqlStatement, e);
 										}

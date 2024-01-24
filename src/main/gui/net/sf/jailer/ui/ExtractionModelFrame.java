@@ -2697,12 +2697,3 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 	private static final long serialVersionUID = -2252377308370736756L;
 
 }
-
-// TODO
-// TODO 2z0s. Thread-12Aut_oma_tic_ cr_eat_ion_ of_ wo_rki_ng-_tab_les_ fa_ile_d!
-// Possible solutions:
-//	  -_ ch_oos_e w_ork_ing_ ta_ble_ sc_ope_ "l_oca_l d_ata_bas_e"
-//	  -_ ch_oos_e a_not_her_ wo_rki_ng _tab_le _sch_ema_
-//	  -_ ex_ecu_te _the_ Ja_ile_r-D_DL _man_ual_ly _(ja_ile_r_d_dl._sql_)
-// show DDL
-

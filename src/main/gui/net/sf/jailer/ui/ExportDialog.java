@@ -2523,7 +2523,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 				"Possible solutions:\n" +
 				"  - choose working table scope \"local database\"\n" +
 				"  - choose another working table schema\n" +
-				"  - execute the Jailer-DDL manually (jailer_ddl.sql)\n";
+				"  - execute the Jailer-DDL manually (see below)\n ";
 		try {
 			if (!cDDLExecutionContext.isIndependentWorkingTables()) {
 				PrimaryKeyFactory.createUPKScope(tmpFileName != null? tmpFileName : jmFile, cDDLExecutionContext);
@@ -2557,17 +2557,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 						}
 						if (cause instanceof SqlException) {
 							SqlException sqlEx = (SqlException) cause;
-							if (sqlEx.getInsufficientPrivileges()) {
-								String message = "Insufficient privileges to create working-tables!\n" + hint;
-								if (scriptFormat == ScriptFormat.INTRA_DATABASE) {
-									JOptionPane.showOptionDialog(this, message, "Insufficient privileges", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Cancel" }, null);
-								} else if (0 == JOptionPane.showOptionDialog(this, message, "Insufficient privileges", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Use local database", "Cancel" }, null)) {
-									scopeLocal.setSelected(true);
-									return true;
-								}
-							} else {
-								UIUtil.showException(this, "Error", new SqlException("Automatic creation of working-tables failed!\n" + hint + "\n\nCause: " + sqlEx.message + "", sqlEx.sqlStatement, null));
-							}
+							UIUtil.showException(this, "Error", new SqlException("Automatic creation of working-tables failed!\n" + hint + "\n\nCause: " + sqlEx.message + "", DDLCreator.lastDDL, null));
 						} else {
 							UIUtil.showException(this, "Error", e);
 						}
@@ -2709,15 +2699,19 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	 * @param args the argument-list to fill
 	 */
 	public void fillCLIArgs(List<String> args) {
+		boolean opKnown = false;
 		if (insert.getText().trim().length() > 0) {
 			args.add(0, "export");
 			args.add("-e");
 			args.add(toFileName(insert.getText()));
+			opKnown = true;
 		} else {
 			if (delete.isVisible() && delete.getText().trim().length() > 0) {
 				args.add(0, "delete");
+				opKnown = true;
 			}
 		}
+		copyButton.setEnabled(opKnown);
 		if (delete.isVisible() && delete.getText().trim().length() > 0) {
 			args.add("-d");
 			args.add(toFileName(delete.getText().trim()));
@@ -3146,5 +3140,3 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 // TODO 1 test: cycle in aggregations
 // TODO 1 user option: include (or not) any non-subject top-level object
 
-// TODO
-// TODO API docu update
