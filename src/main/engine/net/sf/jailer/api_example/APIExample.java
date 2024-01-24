@@ -36,26 +36,29 @@ public class APIExample {
 	// JDBC connection pool size
 	private static final int POOL_SIZE = 10;
 
+	// Folder containing models and databases
+	private static final File baseFolder = new File(".");
+
 	// The subsetter
 	private static Subsetter subsetter = 
 		new Subsetter(
 			new BasicDataSource(
-					"org.h2.Driver", "jdbc:h2:" + new File("demo-scott").getAbsolutePath(), "sa", "",
+					"org.h2.Driver", "jdbc:h2:" + new File(baseFolder, "demo-scott").getAbsolutePath(), "sa", "",
 					POOL_SIZE,
-					new File("lib/h2-2.1.212.jar")),
+					new File(baseFolder, "lib/h2-2.1.212.jar")),
 			null,
-			APIExample.class.getResource("Demo-Scott"),
-			APIExample.class.getResource("Demo-Scott.jm"),
+			new File(baseFolder, "datamodel/Demo-Scott"),
+			new File(baseFolder, "extractionmodel/Demo-Scott.jm"),
 			ScriptFormat.SQL);
 	
 	// The importer
 	private static Importer importer =
 		new Importer(
 			new BasicDataSource(
-				"org.h2.Driver", "jdbc:h2:" + new File("demo-scott-subset").getAbsolutePath(), "sa", "",
-				10,
-				new File("lib/h2-2.1.212.jar")));
-
+				"org.h2.Driver", "jdbc:h2:" + new File(baseFolder, "demo-scott-subset").getAbsolutePath(), "sa", "",
+				POOL_SIZE,
+				new File(baseFolder, "lib/h2-2.1.212.jar")));
+	
 	/**
 	 * Exports data related with employee "SCOTT"
 	 * and imports it into another database.
@@ -70,5 +73,5 @@ public class APIExample {
 		
 		exportScriptFile.delete();
 	}
-
 }
+

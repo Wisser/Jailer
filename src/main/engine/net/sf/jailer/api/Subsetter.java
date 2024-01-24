@@ -66,8 +66,8 @@ public class Subsetter {
 	 *
 	 * @param dataSource the data-source to connect with the source database
 	 * @param dbms the DBMS of the source database
-	 * @param dataModel URL of the current data model (the datamodel's base folder)
-	 * @param extractionModel URL of the extraction model
+	 * @param dataModel URL of the current data model folder. Use {@link Class#getResource(String)} if the data model is available as a resource.
+	 * @param extractionModel URL of the extraction model. Use {@link Class#getResource(String)} if the extraction model is available as a resource.
 	 * @param scriptFormat script format
 	 */
 	public Subsetter(
