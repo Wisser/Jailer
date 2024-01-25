@@ -19,6 +19,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -58,6 +59,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.DefaultStyledDocument;
@@ -2521,7 +2523,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		BasicDataSource dataSource;
 		String hint =
 				"Possible solutions:\n" +
-				"  - choose working table scope \"local database\"\n" +
+				(scriptFormat == ScriptFormat.INTRA_DATABASE? "" : "  - choose working table scope \"local database\" (see button below)\n") +
 				"  - choose another working table schema\n" +
 				"  - execute the Jailer-DDL manually (see below)\n ";
 		try {
@@ -2557,7 +2559,21 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 						}
 						if (cause instanceof SqlException) {
 							SqlException sqlEx = (SqlException) cause;
-							UIUtil.showException(this, "Error", new SqlException("Automatic creation of working-tables failed!\n" + hint + "\n\nCause: " + sqlEx.message + "", DDLCreator.lastDDL, null));
+							JButton localDBButton = new JButton("Use local database");
+							AtomicBoolean useLocalDB = new AtomicBoolean(false);
+							localDBButton.addActionListener(ev -> {
+								useLocalDB.set(true);
+								Window window = SwingUtilities.getWindowAncestor(localDBButton);
+								if (window != null) {
+									window.setVisible(false);
+									window.dispose();
+								}
+							});
+							UIUtil.showException(this, "Error", new SqlException("Automatic creation of working-tables failed!\n" + hint + "\n\nCause: " + sqlEx.message + "", DDLCreator.lastDDL, null), null, scriptFormat == ScriptFormat.INTRA_DATABASE? null : localDBButton);
+							if (useLocalDB.get()) {
+								scopeLocal.setSelected(true);
+								return true;
+							}
 						} else {
 							UIUtil.showException(this, "Error", e);
 						}
