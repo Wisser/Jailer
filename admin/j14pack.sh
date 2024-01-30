@@ -20,7 +20,7 @@ cp -r jailer.bat ~/tmp/_
 cp -r Jailer.exe ~/tmp/_ 
 cp -r jailer.jar ~/tmp/_ 
 cp -r jailer.sh ~/tmp/_ 
-cp -r jailer.xml ~/tmp/_ 
+cp -r jailer.json ~/tmp/_ 
 cp -r jailerDataBrowser.bat ~/tmp/_ 
 cp -r JailerDataBrowser.exe ~/tmp/_ 
 cp -r jailerDataBrowser.sh ~/tmp/_ 
@@ -46,14 +46,9 @@ rm ~/tmp/_/*.exe
 chmod a+x ~/tmp/_/*.sh 
  
 mv ~/tmp/_/jdbc_lib/args4j.jar ~/tmp/_/lib/args4j.jar 
-mv ~/tmp/_/jdbc_lib/activation-1.1.1.jar ~/tmp/_/lib/activation-1.1.1.jar
-mv ~/tmp/_/jdbc_lib/FastInfoset-1.2.13.jar ~/tmp/_/lib/FastInfoset-1.2.13.jar
-mv ~/tmp/_/jdbc_lib/istack-commons-runtime-3.0.5.jar ~/tmp/_/lib/istack-commons-runtime-3.0.5.jar
-mv ~/tmp/_/jdbc_lib/jaxb-api-2.3.0.jar ~/tmp/_/lib/jaxb-api-2.3.0.jar
-mv ~/tmp/_/jdbc_lib/jaxb-core-2.3.0.jar ~/tmp/_/lib/jaxb-core-2.3.0.jar
-mv ~/tmp/_/jdbc_lib/jaxb-runtime-2.3.0.jar ~/tmp/_/lib/jaxb-runtime-2.3.0.jar
-mv ~/tmp/_/jdbc_lib/stax-ex-1.7.8.jar ~/tmp/_/lib/stax-ex-1.7.8.jar
-mv ~/tmp/_/jdbc_lib/txw2-2.3.0.jar ~/tmp/_/lib/txw2-2.3.0.jar
+mv ~/tmp/_/jdbc_lib/jackson-core-2.16.1.jar ~/tmp/_/lib/jackson-core-2.16.1.jar
+mv ~/tmp/_/jdbc_lib/jackson-annotations-2.16.1.jar ~/tmp/_/lib/jackson-annotations-2.16.1.jar
+mv ~/tmp/_/jdbc_lib/jackson-databind-2.16.1.jar ~/tmp/_/lib/jackson-databind-2.16.1.jar
 mv ~/tmp/_/jdbc_lib/jsqlparser-3.2.jar ~/tmp/_/lib/jsqlparser-3.2.jar 
 mv ~/tmp/_/jdbc_lib/log4j-api-2.17.2.jar ~/tmp/_/lib/log4j-api-2.17.2.jar 
 mv ~/tmp/_/jdbc_lib/log4j-core-2.17.2.jar ~/tmp/_/lib/log4j-core-2.17.2.jar 
