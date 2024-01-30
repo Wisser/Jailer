@@ -1,3 +1,8 @@
+15.7
+  - The configuration file was changed from XML to Json in order to eliminate the dependency on JAXB
+    due to compatibility problems with JDK 11 or higher.
+    https://sourceforge.net/p/jailer/discussion/700500/thread/6cf3f6badb/
+
 15.6
   - Migration of the JAXB implementation to "org.glassfish.jaxb" due to incompatibilities with JDK 20 or above.
     https://sourceforge.net/p/jailer/discussion/700500/thread/6cf3f6badb/
