@@ -17,33 +17,37 @@ package net.sf.jailer.configuration;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import net.sf.jailer.CommandLine;
-import net.sf.jailer.database.DefaultTemporaryTableManager;
 import net.sf.jailer.enhancer.FileBasedScriptEnhancer;
 import net.sf.jailer.enhancer.HelperTableEnhancer;
 import net.sf.jailer.enhancer.ScriptEnhancer;
 import net.sf.jailer.render.HtmlDataModelRenderer;
 
 /**
- * Reads and holds configuration file <code>jailer.xml</code>.
+ * Reads and holds configuration file <code>jailer.json</code>.
  * 
  * @author Ralf Wisser
  */
-@XmlRootElement
+@JsonPropertyOrder({
+	"localEntityGraphConfiguration",
+	"nullColumnPlaceholder",
+	"doMinimizeUPK",
+	"renderer",
+	"additionalSQLKeywords",
+	"urlRewriteRule",
+	"databaseConnectionInteractiveTimeout",
+	"generateUpsertStatementsWithoutNulls"
+})
 public class Configuration {
-
+	
 	/**
 	 * Gets the temporary files folder. Defaults to 'tmp'.
 	 * 
@@ -122,6 +126,8 @@ public class Configuration {
 		public void setReplacement(String replacement) {
 			this.replacement = replacement;
 		}
+		// Allows comment in jailer.json
+		public String comment;
 	}
 
 	/**
@@ -139,7 +145,6 @@ public class Configuration {
 	 */
 	private boolean doMinimizeUPK = false;
 
-	@XmlElement(name = "localDatabase")
 	public LocalDatabaseConfiguration localEntityGraphConfiguration;
 	
 	/**
@@ -237,7 +242,7 @@ public class Configuration {
 			} catch (Exception e) {
 				// ignore
 			}
-			String name = "jailer.xml";
+			String name = "jailer.json";
 			try {
 				InputStream res;
 				File configFile = null;
@@ -253,13 +258,9 @@ public class Configuration {
 				} else {
 					res = new FileInputStream(configFile);
 				}
-				JAXBContext jc = JAXBContext.newInstance(Configuration.class, DBMS.class, DefaultTemporaryTableManager.class);
-				Unmarshaller um = jc.createUnmarshaller();
-				theConfiguration = (Configuration) um.unmarshal(res);
+				theConfiguration = new ObjectMapper().readValue(res, Configuration.class);
 				res.close();
-			} catch (JAXBException e) {
-				throw new RuntimeException(e);
-			} catch (IOException e) {
+			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
 		}
@@ -289,7 +290,6 @@ public class Configuration {
 	/**
 	 * @return the URL rewrite rules.
 	 */
-	@XmlElement(name = "urlRewriteRule")
 	public List<UrlRewriteRule> getUrlRewriteRules() {
 		return urlRewriteRules;
 	}
@@ -304,7 +304,6 @@ public class Configuration {
 	/**
 	 * @return the dBMSConfigurations
 	 */
-	@XmlElement(name = "dbms")
 	public List<DBMS> getDBMS() {
 		return dBMSConfigurations;
 	}
@@ -350,6 +349,14 @@ public class Configuration {
 	public void setGenerateUpsertStatementsWithoutNulls(boolean generateUpsertStatementsWithoutNulls) {
 		this.generateUpsertStatementsWithoutNulls = generateUpsertStatementsWithoutNulls;
 	}
+	
+	// Allows comments in jailer.json
+	public String commentNullColumnPlaceholder;
+	public String commentDoMinimizeUPK;
+	public String commentRenderer;
+	public String commentAdditionalSQLKeywords;
+	public String commentDatabaseConnectionInteractiveTimeout;
+	public String commentColumnsPerIFMTable;
 
 	static {
 		DBMS.values(); // trigger static init

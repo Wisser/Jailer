@@ -15,6 +15,8 @@
  */
 package net.sf.jailer.configuration;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * Describes how generic database objects are rendered (Functions, Procedures etc).
  * 
@@ -146,6 +148,7 @@ public class DatabaseObjectRenderingDescription {
 		this.iconURL = iconURL;
 	}
 
+	@JsonIgnore
 	public boolean isCheap() {
 		return !expensive;
 	}

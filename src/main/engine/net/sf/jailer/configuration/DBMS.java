@@ -25,8 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlTransient;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import net.sf.jailer.database.DefaultTemporaryTableManager;
 import net.sf.jailer.database.SQLDialect;
@@ -37,6 +36,51 @@ import net.sf.jailer.database.SqlScriptBasedStatisticRenovator;
  *
  * @author Ralf Wisser
  */
+@JsonPropertyOrder({
+	"id",
+	"displayName",
+	"urlPattern",
+	"sqlDialect",
+	"statisticRenovator",
+	"jdbcProperties",
+	"stringLiteralEscapeSequences",
+	"sqlLimitSuffix",
+	"tableProperties",
+	"sessionTemporaryTableManager",
+	"ncharPrefix",
+	"exportBlocks",
+	"typeReplacement",
+	"clobTypesRE",
+	"nClobTypesRE",
+	"blobTypesRE",
+	"identityInserts",
+	"timestampPattern",
+	"timestampWithNanoTypeName",
+	"timestampWithNanoPattern",
+	"emptyBLOBValue",
+	"emptyCLOBValue",
+	"emptyNCLOBValue",
+	"toBlob",
+	"toClob",
+	"toNClob",
+	"embeddedLobSizeLimit",
+	"binaryPattern",
+	"avoidLeftJoin",
+	"supportsSchemasInIndexDefinitions",
+	"useInlineViewsInDataBrowser",
+	"limitTransactionSize",
+	"estimatedRowCountQuery",
+	"defaultSchemaQuery",
+	"viewTextOrDDLQuery",
+	"virtualColumnsQuery",
+	"userDefinedColumnsQuery",
+	"nullableContraint",
+	"identifierQuoteString",
+	"explainPrepare",
+	"explainQuery",
+	"explainCleanup",
+	"constraintsQuery"
+})
 public class DBMS {
 
 	// predefined DBMSes
@@ -239,7 +283,6 @@ public class DBMS {
 	private String timestampWithNanoTypeName = null;
 	private String timestampWithNanoPattern = null;
 	private String datePattern = null;
-	@XmlTransient
 	private ThreadLocal<SimpleDateFormat> timestampFormat = new ThreadLocal<SimpleDateFormat>();
 	private ThreadLocal<SimpleDateFormat> timestampWithNanoFormat = new ThreadLocal<SimpleDateFormat>();
 	private ThreadLocal<SimpleDateFormat> dateFormat = new ThreadLocal<SimpleDateFormat>();
@@ -621,6 +664,9 @@ public class DBMS {
 	 * Sets replacement map for special characters in string literals.
 	 */
 	public void setStringLiteralEscapeSequences(Map<String, String> stringLiteralEscapeSequences) {
+		if (stringLiteralEscapeSequences == null) {
+			stringLiteralEscapeSequences = new HashMap<String, String>();
+		}
 		this.stringLiteralEscapeSequences = stringLiteralEscapeSequences;
 		try {
 			for (Map.Entry<String, String> e: stringLiteralEscapeSequences.entrySet()) {
@@ -1163,7 +1209,6 @@ public class DBMS {
 		this.packageNamesQuery = packageNamesQuery;
 	}
 
-	@XmlElement(name = "objectRenderers")
 	public List<DatabaseObjectRenderingDescription> getObjectRenderers() {
 		return objectRenderers;
 	}
@@ -1250,10 +1295,9 @@ public class DBMS {
 	/**
 	 * Information about how to to limit transaction size (never <code>null</code>).
 	 */
-	@XmlElement
 	public LimitTransactionSizeInfo getLimitTransactionSize() {
 		if (limitTransactionSize == null) {
-			limitTransactionSize = new LimitTransactionSizeInfo();
+			 limitTransactionSize = new LimitTransactionSizeInfo();
 		}
 		return limitTransactionSize;
 	}

@@ -153,4 +153,7 @@ public class LocalDatabaseConfiguration {
 	public void setPassword(String password) {
 		this.password = password;
 	}
+	
+	// Allows comment in jailer.json
+	public String comment;
 }

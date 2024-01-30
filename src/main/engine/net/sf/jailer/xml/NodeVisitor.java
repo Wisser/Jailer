@@ -15,6 +15,8 @@
  */
 package net.sf.jailer.xml;
 
+import org.w3c.dom.Document;
+
 /**
  * Visits the nodes of a {@link Document}.
  * 

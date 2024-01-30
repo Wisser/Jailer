@@ -87,7 +87,7 @@ public class Environment {
 				} catch (URISyntaxException e) {
 					throw new RuntimeException(e);
 				}
-				File configFile = new File(jPackApp, "jailer.xml");
+				File configFile = new File(jPackApp, "jailer.json");
 				if (!configFile.exists()) {
 					throw new IllegalStateException("missing file \"" + configFile + "\". Base URL: " + url);
 				}
@@ -103,12 +103,12 @@ public class Environment {
 				applicationBase = jPackApp;
 			} else {
 				app = new File("app"); // Windows
-				if (new File(app, "jailer.xml").exists()) {
+				if (new File(app, "jailer.json").exists()) {
 					applicationBase = app;
 				} else {
 					// not yet supported
 //					app = new File("Contents", "app"); // macOS
-//					if (new File(app, "jailer.xml").exists()) {
+//					if (new File(app, "jailer.json").exists()) {
 //						applicationBase = app;
 //					}
 				}
