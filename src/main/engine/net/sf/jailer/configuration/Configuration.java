@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -45,6 +46,14 @@ import net.sf.jailer.render.HtmlDataModelRenderer;
 	"urlRewriteRule",
 	"databaseConnectionInteractiveTimeout",
 	"generateUpsertStatementsWithoutNulls"
+})
+@JsonIgnoreProperties({
+	"commentNullColumnPlaceholder",
+	"commentDoMinimizeUPK",
+	"commentRenderer",
+	"commentAdditionalSQLKeywords",
+	"commentDatabaseConnectionInteractiveTimeout",
+	"commentColumnsPerIFMTable"
 })
 public class Configuration {
 	
@@ -109,6 +118,7 @@ public class Configuration {
 	/**
 	 * URL rewrite rule.
 	 */
+	@JsonIgnoreProperties({"comment"})
 	public static class UrlRewriteRule {
 		private String pattern;
 		private String replacement;
@@ -126,8 +136,6 @@ public class Configuration {
 		public void setReplacement(String replacement) {
 			this.replacement = replacement;
 		}
-		// Allows comment in jailer.json
-		public String comment;
 	}
 
 	/**
@@ -350,14 +358,6 @@ public class Configuration {
 		this.generateUpsertStatementsWithoutNulls = generateUpsertStatementsWithoutNulls;
 	}
 	
-	// Allows comments in jailer.json
-	public String commentNullColumnPlaceholder;
-	public String commentDoMinimizeUPK;
-	public String commentRenderer;
-	public String commentAdditionalSQLKeywords;
-	public String commentDatabaseConnectionInteractiveTimeout;
-	public String commentColumnsPerIFMTable;
-
 	static {
 		DBMS.values(); // trigger static init
 	}

@@ -15,11 +15,14 @@
  */
 package net.sf.jailer.configuration;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * Configuration of the local database.
  * 
  * @author Ralf Wisser
  */
+@JsonIgnoreProperties({"comment"})
 public class LocalDatabaseConfiguration {
 
 	private String localPKType = "VARCHAR";
@@ -153,7 +156,4 @@ public class LocalDatabaseConfiguration {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-	
-	// Allows comment in jailer.json
-	public String comment;
 }
