@@ -21,13 +21,9 @@
 	<classpathentry kind="lib" path="lib/tablefilter-swing-5.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/jsqlparser-3.2.jar"/>
 	<classpathentry kind="lib" path="lib/flatlaf-3.3.jar"/>
-	<classpathentry kind="lib" path="lib/activation-1.1.1.jar"/>
-	<classpathentry kind="lib" path="lib/FastInfoset-1.2.13.jar"/>
 	<classpathentry kind="lib" path="lib/istack-commons-runtime-3.0.5.jar"/>
-	<classpathentry kind="lib" path="lib/jaxb-api-2.3.0.jar"/>
-	<classpathentry kind="lib" path="lib/jaxb-core-2.3.0.jar"/>
-	<classpathentry kind="lib" path="lib/jaxb-runtime-2.3.0.jar"/>
-	<classpathentry kind="lib" path="lib/stax-ex-1.7.8.jar"/>
-	<classpathentry kind="lib" path="lib/txw2-2.3.0.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-annotations-2.16.1.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-core-2.16.1.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-databind-2.16.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

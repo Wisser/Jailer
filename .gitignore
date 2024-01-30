@@ -22,7 +22,7 @@ render/
 bookmark/
 scratch/
 script/
-jailer.xml
+jailer.json
 downloads/
 nbproject/build-impl.xml
 condition/
