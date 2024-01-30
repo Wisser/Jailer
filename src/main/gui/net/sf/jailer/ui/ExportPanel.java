@@ -50,7 +50,7 @@ import javax.swing.WindowConstants;
 import org.fife.rsta.ui.EscapableDialog;
 
 /*
- * Copyright 2007 - 2023 Ralf Wisser.
+ * Copyright 2007 - 2024 Ralf Wisser.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
