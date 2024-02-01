@@ -58,20 +58,24 @@ public class Environment {
 	private static File home = null;
 
 	public static String[] init(String[] args) {
-		// see:
-		// https://github.com/AdoptOpenJDK/openjdk-jdk11/issues/10
-		// https://bugs.java.com/bugdatabase/view_bug.do?bug_id=8215200
-		// https://bugs.openjdk.java.net/browse/JDK-8215200
-		System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
-
+		try {
+			// see:
+			// https://github.com/AdoptOpenJDK/openjdk-jdk11/issues/10
+			// https://bugs.java.com/bugdatabase/view_bug.do?bug_id=8215200
+			// https://bugs.openjdk.java.net/browse/JDK-8215200
+			System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
+		} catch (Exception e) {
+			// ignore
+		}
+		
 		try {
 			java.util.logging.Logger rootLogger = LogManager.getLogManager().getLogger("");
 			rootLogger.setLevel(Level.SEVERE);
 			for (Handler h : rootLogger.getHandlers()) {
 			    h.setLevel(Level.SEVERE);
 			}
-			System.setProperty("com.sun.xml.bind.v2.bytecode.ClassTailor.noOptimize", "true");
 		} catch (Exception e) {
+			// ignore
 		}
 
 		boolean jpack = false;

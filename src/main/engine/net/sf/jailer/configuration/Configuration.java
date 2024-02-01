@@ -240,16 +240,6 @@ public class Configuration {
 	 */
 	private synchronized static void loadConfigurationFile() {
 		if (theConfiguration == null) {
-			try {
-				System.setProperty("com.sun.xml.bind.v2.runtime.JAXBContextImpl.fastBoot", "true");
-			} catch (Exception e) {
-				// ignore
-			}
-			try {
-				System.setProperty("com.sun.xml.bind.v2.bytecode.ClassTailor.noOptimize", "true");
-			} catch (Exception e) {
-				// ignore
-			}
 			String name = "jailer.json";
 			try {
 				InputStream res;
