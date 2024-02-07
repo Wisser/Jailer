@@ -6763,6 +6763,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         singleRowViewScrollPaneContainer.add(jPanel11, gridBagConstraints);
 
         deselectButton.setText("Deselect Row");
+        deselectButton.setFocusable(false);
         deselectButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 deselectButtonActionPerformed(evt);
