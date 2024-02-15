@@ -512,7 +512,7 @@
 			"procedureSourceQuery": "SHOW CREATE PROCEDURE %1$s.%2$s",
 			"packageSourceQuery": null,
 			"packageNamesQuery": null,
-			"fetchSize": 4096,
+			"fetchSize": null,
 			"objectRenderers": [
 				{
 					"listQuery": "SHOW TRIGGERS FROM %1$s",
@@ -966,7 +966,7 @@
 			"procedureSourceQuery": null,
 			"packageSourceQuery": null,
 			"packageNamesQuery": null,
-			"fetchSize": 4096,
+			"fetchSize": null,
 			"objectRenderers": [
 				{
 					"listQuery": "select trigger_name, event_manipulation,event_object_catalog,event_object_schema,event_object_table,action_order,action_condition,action_statement,action_orientation,action_timing,action_reference_old_table,action_reference_new_table,action_reference_old_row,action_reference_new_row,created FROM information_schema.triggers where trigger_schema = '%1$s'",
@@ -1115,7 +1115,7 @@
 			"procedureSourceQuery": null,
 			"packageSourceQuery": null,
 			"packageNamesQuery": null,
-			"fetchSize": 4096,
+			"fetchSize": null,
 			"objectRenderers": [
 				{
 					"listQuery": "select trigger_name, event_manipulation,event_object_catalog,event_object_schema,event_object_table,action_order,action_condition,action_statement,action_orientation,action_timing,action_reference_old_table,action_reference_new_table,action_reference_old_row,action_reference_new_row,created FROM information_schema.triggers where trigger_schema = '%1$s'",

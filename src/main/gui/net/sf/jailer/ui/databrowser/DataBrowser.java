@@ -541,8 +541,13 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		initRowLimitButtons();
 		workbenchTabbedPane.setTabComponentAt(0, new JLabel("Desktop", desktopIcon, JLabel.LEFT));
 		workbenchTabbedPane.setTabComponentAt(1, new JLabel("SQL Console ", sqlConsoleIcon, JLabel.LEFT));
-		workbenchTabbedPane.setTabComponentAt(workbenchTabbedPane.getTabCount() - 1, new JLabel(addSqlConsoleIcon));
-
+		JLabel newConsoleLabel = new JLabel(addSqlConsoleIcon);
+		int tabIndex = workbenchTabbedPane.getTabCount() - 1;
+		workbenchTabbedPane.setTabComponentAt(tabIndex, newConsoleLabel);
+		String toolTipText = "New SQL Console";
+		workbenchTabbedPane.setToolTipTextAt(tabIndex, toolTipText);
+		newConsoleLabel.setToolTipText(toolTipText);
+		
 		tableTreesTabbedPane.setTabComponentAt(0, new JLabel("Navigation", navigationIcon, JLabel.LEFT));
 		tableTreesTabbedPane.setTabComponentAt(1, new JLabel("Database", databaseIcon, JLabel.LEFT));
 
@@ -6863,3 +6868,11 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	}
 
 }
+
+
+// TODO
+// TODO additional "open table" button in data browser? (naeher an desktop)
+
+// TODO
+// TODO "new table" menu item (cntrl-T): "doClick" "open table" button iff it is "visibleOfScreen" and enabled. (old idea: no, but look for "old style" search Widget: was: use StringSearchPanel)
+

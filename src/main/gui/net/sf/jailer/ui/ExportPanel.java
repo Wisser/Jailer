@@ -701,7 +701,7 @@ public class ExportPanel extends javax.swing.JPanel {
 					}
 				} catch (Exception e) {
 					UIUtil.showException(owner, "Error", e);
-					return new Pair<Boolean, Pair<Integer, List<ConnectionInfo>>>(true, new Pair<Integer, List<ConnectionInfo>>(1, cList));
+					return new Pair<Boolean, Pair<Integer, List<ConnectionInfo>>>(false, new Pair<Integer, List<ConnectionInfo>>(1, cList));
 				}
 			} else {
 				return new Pair<Boolean, Pair<Integer, List<ConnectionInfo>>>(false, new Pair<Integer, List<ConnectionInfo>>(0, null));
