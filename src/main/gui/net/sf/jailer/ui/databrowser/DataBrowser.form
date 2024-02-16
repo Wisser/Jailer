@@ -1217,6 +1217,8 @@
                                         </Component>
                                         <Component class="javax.swing.JToolBar$Separator" name="jSeparator17">
                                         </Component>
+                                        <Component class="javax.swing.JToolBar$Separator" name="jSeparator24">
+                                        </Component>
                                         <Component class="javax.swing.JButton" name="tbBackButton">
                                           <Properties>
                                             <Property name="text" type="java.lang.String" value="back"/>

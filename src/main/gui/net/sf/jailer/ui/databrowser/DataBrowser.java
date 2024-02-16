@@ -461,7 +461,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		tbZoom4Button.setText(null);
 		tbZoomInButton.setText(null);
 		tbZoomOutButton.setText(null);
-
+		
 		tbBackButton.setIcon(tbBackIcon);
 		tbForewardButton.setIcon(tbForwardIcon);
 		tbZoom0Button.setIcon(tbZoom0Icon);
@@ -475,7 +475,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		tbreloadButton.setHorizontalTextPosition(SwingConstants.RIGHT);
 		tbClearButton.setIcon(clearIcon);
 		tbClearButton.setHorizontalTextPosition(SwingConstants.RIGHT);
-
+		
 		desktopUndoManager = new DesktopUndoManager(tbBackButton, tbForewardButton, goBackItem, goForwardItem, this,
 				jScrollPane1);
 
@@ -593,45 +593,21 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		gridBagConstraints.gridy = 1;
 		gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
 		gridBagConstraints.weightx = 0;
-		searchButton = StringSearchPanel.createSearchButton(this, tablesComboBox, "Open Table Browser", new Runnable() {
-			@Override
-			public void run() {
-				openTableButtonActionPerformed(null);
-			}
-		}, null, null, null, false, null, true, false, null, false,
-		() -> {
-			Map<String, Integer> stringCount = new HashMap<String, Integer>();
-			MetaDataSource metaDataSource = session != null? getMetaDataSource(session) : null;
-			if (metaDataSource != null && this.datamodel.get() != null) {
-		        for (int i = 0; i < tablesComboBox.getModel().getSize(); ++i) {
-		        	Object e = tablesComboBox.getModel().getElementAt(i);
-		        	if (e instanceof String) {
-		        		Table table = this.datamodel.get().getTableByDisplayName((String) e);
-		        		if (table != null && metaDataSource.isInitialized()) {
-		        			MDTable mdTable = metaDataSource.toMDTable(table);
-		        			if (mdTable != null) {
-		        				Long count = mdTable.getEstimatedRowCount();
-		        				if (count != null) {
-		        					if (count == 1 && !mdTable.isEstRCIsLowerBound()) {
-        		        				stringCount.put((String) e, Integer.MAX_VALUE / 2);
-        		        			} else {
-        		        				stringCount.put((String) e, count.intValue() + (mdTable.isEstRCIsLowerBound()? Integer.MAX_VALUE / 2 : 0));
-        		        			}
-		        				}
-		        			}
-		        		}
-		        	}
-	        	}
-	        }
-			return stringCount;
-		}
-		);
+		
+		tbAddTableButton = createSearchButton();
+		tbAddTableButton.setText(null);
+		tbAddTableButton.setIcon(addTableIcon);
+		tbAddTableButton.setToolTipText("Open Table");
+		jToolBar1.add(tbAddTableButton, 2);
+		
+		searchButton = createSearchButton();
 		jToolBar2.add(searchButton);
 
 		tablesComboBox.setVisible(false);
 		openTableButton.setVisible(false);
 		searchButton.setText("Open Table");
-		searchButton.setIcon(tableIcon);
+		searchButton.setIcon(addTableIcon);
+		searchButton.setToolTipText("<html>Open Table.<br><hr><i>Cntrl-T</i></html>");
 
 		metaDataDetailsPanel = createMetaDataDetailsPanel(executionContext);
 		metaDataViewPanel.add(metaDataDetailsPanel);
@@ -1406,6 +1382,42 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 
 		navigationTree.getSelectionModel().addTreeSelectionListener(treeListener);
 		initDnD(this);
+	}
+
+	private JToggleButton createSearchButton() {
+		return StringSearchPanel.createSearchButton(this, 1, tablesComboBox, "Open Table Browser", new Runnable() {
+			@Override
+			public void run() {
+				openTableButtonActionPerformed(null);
+			}
+		}, null, null, null, false, null, true, false, null, false,
+		() -> {
+			Map<String, Integer> stringCount = new HashMap<String, Integer>();
+			MetaDataSource metaDataSource = session != null? getMetaDataSource(session) : null;
+			if (metaDataSource != null && this.datamodel.get() != null) {
+		        for (int i = 0; i < tablesComboBox.getModel().getSize(); ++i) {
+		        	Object e = tablesComboBox.getModel().getElementAt(i);
+		        	if (e instanceof String) {
+		        		Table table = this.datamodel.get().getTableByDisplayName((String) e);
+		        		if (table != null && metaDataSource.isInitialized()) {
+		        			MDTable mdTable = metaDataSource.toMDTable(table);
+		        			if (mdTable != null) {
+		        				Long count = mdTable.getEstimatedRowCount();
+		        				if (count != null) {
+		        					if (count == 1 && !mdTable.isEstRCIsLowerBound()) {
+        		        				stringCount.put((String) e, Integer.MAX_VALUE / 2);
+        		        			} else {
+        		        				stringCount.put((String) e, count.intValue() + (mdTable.isEstRCIsLowerBound()? Integer.MAX_VALUE / 2 : 0));
+        		        			}
+		        				}
+		        			}
+		        		}
+		        	}
+	        	}
+	        }
+			return stringCount;
+		}
+		);
 	}
 
 	private void setSearchPanelWidth(int width) {
@@ -2270,6 +2282,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         jToolBar1 = new javax.swing.JToolBar();
         searchBarToggleButton = new javax.swing.JToggleButton();
         jSeparator17 = new javax.swing.JToolBar.Separator();
+        jSeparator24 = new javax.swing.JToolBar.Separator();
         tbBackButton = new javax.swing.JButton();
         tbForewardButton = new javax.swing.JButton();
         jSeparator18 = new javax.swing.JToolBar.Separator();
@@ -2747,6 +2760,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         });
         jToolBar1.add(searchBarToggleButton);
         jToolBar1.add(jSeparator17);
+        jToolBar1.add(jSeparator24);
 
         tbBackButton.setText("back");
         tbBackButton.setFocusable(false);
@@ -4019,7 +4033,11 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	}// GEN-LAST:event_thumbnailLayoutRadioButtonMenuItemActionPerformed
 
 	private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jMenuItem1ActionPerformed
-		openNewTableBrowser(false);
+		if (searchButton != null && searchButton.isShowing() && searchButton.isEnabled()) {
+			searchButton.doClick(1);
+		} else {
+			openNewTableBrowser(false);
+		}
 	}// GEN-LAST:event_jMenuItem1ActionPerformed
 
 	private void closeAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_cloaseAllMenuItemActionPerformed
@@ -4624,6 +4642,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
     private javax.swing.JToolBar.Separator jSeparator21;
     private javax.swing.JToolBar.Separator jSeparator22;
     private javax.swing.JPopupMenu.Separator jSeparator23;
+    private javax.swing.JToolBar.Separator jSeparator24;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JPopupMenu.Separator jSeparator5;
@@ -4720,8 +4739,9 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
     private javax.swing.JCheckBoxMenuItem zoomWithMouseWheelMenuItem;
     // End of variables declaration//GEN-END:variables
 
-	private JToggleButton searchButton;
-
+    private JToggleButton searchButton;
+    private JToggleButton tbAddTableButton;
+	
 	/**
 	 * Sets Look&Feel.
 	 *
@@ -6794,6 +6814,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	}
 
 	private ImageIcon tableIcon;
+	private ImageIcon addTableIcon;
 	private ImageIcon databaseIcon;
 	private ImageIcon redIcon;
 	private ImageIcon blueIcon;
@@ -6831,6 +6852,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	{
 		// load images
 		tableIcon = UIUtil.readImage("/table.png");
+		addTableIcon = UIUtil.readImage("/addtable.png");
 		databaseIcon = UIUtil.readImage("/database.png");
 		redIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/reddot.gif"));
 		blueIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/bluedot.gif"));
@@ -6868,11 +6890,3 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	}
 
 }
-
-
-// TODO
-// TODO additional "open table" button in data browser? (naeher an desktop)
-
-// TODO
-// TODO "new table" menu item (cntrl-T): "doClick" "open table" button iff it is "visibleOfScreen" and enabled. (old idea: no, but look for "old style" search Widget: was: use StringSearchPanel)
-
