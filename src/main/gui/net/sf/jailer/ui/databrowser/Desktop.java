@@ -135,6 +135,7 @@ import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
+import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.SqlUtil;
 import prefuse.util.GraphicsLib;
@@ -617,21 +618,31 @@ public abstract class Desktop extends JDesktopPane {
 		     * Creates a new buffered image to use as an offscreen buffer.
 		     */
 		    protected BufferedImage getNewOffscreenBuffer(int width, int height) {
+		    	if (noBuffers) {
+		    		return null;
+		    	}
 		    	if (originalTransform != null) {
 					width = (int) (width * originalTransform.getScaleX());
 					height = (int) (height * originalTransform.getScaleY());
 		    	}
 		        BufferedImage img = null;
-		        if ( !GraphicsEnvironment.isHeadless() ) {
+		        if (!GraphicsEnvironment.isHeadless()) {
 		            try {
-		                img = (BufferedImage)createImage(width, height);
+		                img = (BufferedImage) createImage(width, height);
 		            } catch ( Exception e ) {
 		                img = null;
 		            }
 		        }
-		        if ( img == null ) {
-		            return new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		        if (img == null) {
+		        	try {
+			            return new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		        	} catch ( Exception e ) {
+		        		LogUtil.warn(e);
+		                img = null;
+		                noBuffers = true;
+		            }
 		        }
+		    	
 		        return img;
 		    }
 
@@ -707,6 +718,11 @@ public abstract class Desktop extends JDesktopPane {
 		    	
 		        if (m_offscreen[0] == null || newBuffer) {
 		            m_offscreen[0] = getNewOffscreenBuffer(getWidth(), getHeight());
+		            if (m_offscreen[0] == null) {
+		            	bufferSize = null;
+		            	super.paint(g);
+			    		return;
+		            }
 		            bufferSize = getSize();
 		        }
 		        Graphics2D buf_g2D = (Graphics2D) m_offscreen[0].getGraphics();
@@ -2581,7 +2597,7 @@ public abstract class Desktop extends JDesktopPane {
 			if (!pbg) {
 				Color mc = fgColorMap.get(fg);
 				if (mc == null) {
-					mc = new HSLColor(fg).adjustLuminance(fg.getBlue() > fg.getRed() && fg.getBlue() > fg.getGreen()? 80 : fg.getGreen() > 130 && fg.getRed() > 130 && fg.getBlue() < 8? 60 : fg.getGreen() > fg.getRed() && fg.getGreen() > fg.getBlue()? 50 : fg.getGreen() > 130 && fg.getBlue() > 130 && fg.getRed() < 30? 70 : 86);
+					mc = new HSLColor(fg).adjustLuminance(fg.getBlue() > fg.getRed() && fg.getBlue() > fg.getGreen()? 80 : fg.getGreen() > 130 && fg.getRed() > 130 && fg.getBlue() < 8? 60 : fg.getGreen() > fg.getRed() && fg.getGreen() > fg.getBlue()? 44 : fg.getGreen() > 130 && fg.getBlue() > 130 && fg.getRed() < 30? 70 : 86);
 					fgColorMap.put(fg, mc);
 				}
 				g2d.setColor(mc);
@@ -4391,6 +4407,7 @@ public abstract class Desktop extends JDesktopPane {
 		return mapping.toString();
 	}
 
+    private static boolean noBuffers = false;
 	private Row currentlyViewedRow = null;
 	
 	public static class FindClosureContext {
@@ -4544,3 +4561,4 @@ public abstract class Desktop extends JDesktopPane {
 	// TODO display names for associations? (using unique fk-column list?)
 	
 }
+

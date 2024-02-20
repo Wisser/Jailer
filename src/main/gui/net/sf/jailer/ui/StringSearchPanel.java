@@ -137,7 +137,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				UIUtil.setWaitCursor(button);
-				UIUtil.invokeLater(ticks, new Runnable() {
+				Runnable r = new Runnable() {
 					@Override
 					public void run() {
 				        try {
@@ -169,7 +169,12 @@ public class StringSearchPanel extends javax.swing.JPanel {
 				        	UIUtil.resetWaitCursor(button);
 				        }
 					}
-				});
+				};
+				if (ticks < 0) {
+					r.run();
+				} else {
+					UIUtil.invokeLater(ticks, r);
+				}
 			}
 		});
 		if (prepare == null) {

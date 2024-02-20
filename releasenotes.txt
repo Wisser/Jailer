@@ -1,3 +1,8 @@
+15.8
+  - Problems regarding the performance of object bindings have been fixed.
+  - The semantics of the "fetchSize" property in "jaier.json" have been changed. It is now always relevant, not just when it is negative.
+  - Minor improvements to the user interface.
+
 15.7
   - The configuration file was changed from XML to Json in order to eliminate the dependency on JAXB
     due to compatibility problems with JDK 11 or higher.

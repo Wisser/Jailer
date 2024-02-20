@@ -1385,7 +1385,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	}
 
 	private JToggleButton createSearchButton() {
-		return StringSearchPanel.createSearchButton(this, 1, tablesComboBox, "Open Table Browser", new Runnable() {
+		return StringSearchPanel.createSearchButton(this, -1, tablesComboBox, "Open Table Browser", new Runnable() {
 			@Override
 			public void run() {
 				openTableButtonActionPerformed(null);
