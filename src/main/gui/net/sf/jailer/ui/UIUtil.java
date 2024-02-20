@@ -1130,6 +1130,8 @@ public class UIUtil {
    				Pattern.quote("invalid username/password") + ".*DriverShim"
    				+ ")|(" +
    				Pattern.quote("logon denied") + ".*DriverShim"
+   				+ ")|(" +
+   				Pattern.quote("too many terms in compound SELECT") + ".*JDBCMetaDataBasedModelElementFinder.getColumns"
     		+ ")", Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
 	
     public static boolean sendIssue(final String type,  String theIssue) {
