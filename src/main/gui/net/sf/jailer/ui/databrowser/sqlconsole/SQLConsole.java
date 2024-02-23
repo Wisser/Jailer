@@ -1911,16 +1911,18 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             }
             
             if (!isCommentOnly(sqlStatement) || (error instanceof CancellationException)) {
-            	try {
-            		if (transactional) {
-	            		connection.rollback();
-	            		status.rolledback = true;
+				if (transactional) {
+					try {
+						connection.rollback();
+					} catch (SQLException e) {
+					}
+					status.rolledback = true;
+					try {
 						connection.setAutoCommit(true);
-            		}
-				} catch (SQLException e) {
-					UIUtil.invokeLater(() -> UIUtil.showException(SQLConsole.this, "Error", e));
+					} catch (SQLException e) {
+					}
 				}
-            }
+	        }
             
             if (!isCommentOnly(sqlStatement)) {
             	if (explainCreateExplainTable != null && error instanceof SQLException) {
