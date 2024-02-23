@@ -1019,10 +1019,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                     	}
 		            	try {
 		            		if (transactional && con != null) {
-		            			con.rollback();
-		                    	if (status != null) {
-		                    		status.rolledback = true;
-		                    	}
+		            			if (status != null) {
+			                    	if (!status.rolledback) {
+			                    		con.rollback();
+			                    		status.rolledback = true;
+			                    	}
+		            			}
 			            		con.setAutoCommit(true);
 		            		}
 						} catch (SQLException e) {
