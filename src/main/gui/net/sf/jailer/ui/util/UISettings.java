@@ -206,15 +206,6 @@ public class UISettings {
 		}
 	}
 
-	private static boolean isSbeModel(File file) {
-		try {
-			File pFile = file.getParentFile();
-			return pFile != null && pFile.getName() != null && "by-example".equals(pFile.getName());
-		} catch (Throwable t) {
-			return false;
-		}
-	}
-
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static List<Pair<File, Date>> loadRecentFiles() {
 		Object files = restore(RECENT_FILES);
@@ -232,7 +223,7 @@ public class UISettings {
 				} else {
 					continue;
 				}
-				if (!isSbeModel(p.a) && !Configuration.getInstance().isTempFile(p.a)) {
+				if (!Configuration.getInstance().isTempFile(p.a)) {
 					result.add(p);
 				}
 			}
@@ -241,7 +232,7 @@ public class UISettings {
 	}
 
 	public static void addRecentFile(File file) {
-		if (!isSbeModel(file) && !Configuration.getInstance().isTempFile(file)) {
+		if (!Configuration.getInstance().isTempFile(file)) {
 			List<Pair<File, Date>> files = loadRecentFiles();
 			for (Iterator<Pair<File, Date>> i = files.iterator(); i.hasNext(); ) {
 				if (i.next().a.equals(file)) {
