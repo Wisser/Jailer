@@ -24,6 +24,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Frame;
+import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
@@ -194,6 +195,7 @@ import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.util.AnimationController;
 import net.sf.jailer.ui.util.CompoundIcon;
 import net.sf.jailer.ui.util.CompoundIcon.Axis;
+import net.sf.jailer.ui.util.HSLColor;
 import net.sf.jailer.ui.util.RotatedIcon;
 import net.sf.jailer.ui.util.SmallButton;
 import net.sf.jailer.ui.util.TextIcon;
@@ -204,6 +206,7 @@ import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
+import sun.swing.DefaultLookup;
 
 /**
  * Data Browser Frame.
@@ -1511,11 +1514,17 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 			boolean gotBG = false;
 			Color bg;
 			boolean opaque;
-			
+			boolean sel;
+			float lDiff;
+			boolean paintBG;
+	            
 			@Override
 			public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded,
 					boolean leaf, int row, boolean hasFocus) {
 				Component render = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+				this.sel = sel;
+				this.paintBG = false;
+				this.lDiff = 20;
 				if (render instanceof JLabel) {
 					if (!gotBG) {
 						gotBG = true;
@@ -1547,6 +1556,23 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 						if (bgCol != null && !sel) {
 							((JLabel) render).setBackground(bgCol);
 							((JLabel) render).setOpaque(true);
+							paintBG = getComponentOrientation().isLeftToRight() && UIUtil.plaf == PLAF.FLAT;
+							switch (node.getConnectionType()) {
+							case Staging: 
+								lDiff = 30;
+								break;
+							case Development:
+								lDiff = 25;
+								break;
+							case Production:
+								lDiff = 10;
+								break;
+							case Test:
+								lDiff = 10;
+								break;
+							default:
+								break;
+							} 
 						}
 				        
 						if (connectedAliases.contains(node.alias)) {
@@ -1559,7 +1585,31 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 					}
 					((JLabel) render).setIcon(icon);
 				}
+				if (paintBG) {
+					setOpaque(false);
+				}
 				return render;
+			}
+
+			public void paint(Graphics g) {
+				int imageOffset = 0;
+				Icon currentI = getIcon();
+		        if(currentI != null && getText() != null) {
+		        	imageOffset = currentI.getIconWidth() + Math.max(0, getIconTextGap() - 1);
+		        }
+		        if (paintBG && !sel && getBackground() != null && g instanceof Graphics2D) {
+		        	int h2 = (int) (getHeight() / 1.8);
+		        	g.setColor(getBackground());
+					g.fillRect(imageOffset, 0, getWidth() - imageOffset, h2);
+		        	HSLColor hslColor = new HSLColor(getBackground());
+					GradientPaint paint = new GradientPaint(
+							0, h2, getBackground(),
+							0, getHeight(), hslColor.adjustLuminance(Math.min(100f, Math.max(0f, hslColor.getLuminance() - lDiff))));
+					((Graphics2D) g).setPaint(paint);
+					g.fillRect(imageOffset, h2, getWidth() - imageOffset,
+	                           getHeight());
+				}
+	            super.paint(g);
 			}
 		};
 		renderer.setOpenIcon(null);
