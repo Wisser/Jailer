@@ -1,3 +1,6 @@
+15.8.1
+  - After manually canceling a transaction in the SQL console, a misleading error message in some cases was displayed. This has been corrected.
+
 15.8
   - Problems regarding the performance of object bindings have been fixed.
   - The semantics of the "fetchSize" property in "jaier.json" have been changed. It is now always relevant, not just when it is negative.
