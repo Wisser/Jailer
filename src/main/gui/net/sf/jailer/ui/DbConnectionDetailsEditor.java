@@ -181,6 +181,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 	 */
 	private Map<String, Pair<String, Long>> modelDetails;
 
+	@SuppressWarnings("serial")
 	private void loadModelList(ExecutionContext executionContext) {
 		String cmsf = DataModelManager.getCurrentModelSubfolder(executionContext);
 		try {
@@ -210,6 +211,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 			dataModelComboBox.setModel(new DefaultComboBoxModel<String>(modelList.toArray(new String[0])));
 			ListCellRenderer<? super String> renderer = dataModelComboBox.getRenderer();
 			dataModelComboBox.setRenderer(new DefaultListCellRenderer() {
+				@SuppressWarnings("unchecked")
 				@Override
 				public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
 						boolean cellHasFocus) {
