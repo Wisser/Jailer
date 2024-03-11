@@ -679,8 +679,6 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
 	private boolean inRefresh = false;
 
-	public static final String jdbcHelpURL = "http://jailer.sourceforge.net/doc/jdbc.html?src=app";
-
 	/**
 	 * Refreshes the dialog after model changes.
 	 */
@@ -1420,7 +1418,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	 * @return <code>true</code> if connection has been edited
 	 */
 	private boolean edit(ConnectionInfo ci, boolean forNew, boolean forClone) {
-		return new DbConnectionDetailsEditor(parent, jdbcHelpURL, forNew, forClone, dataModelAware).edit(ci, connectionList, executionContext);
+		return new DbConnectionDetailsEditor(parent, forNew, ci != null? ci.url : null, forClone, dataModelAware).edit(ci, connectionList, executionContext);
 	}
 
 	private void connect() {
@@ -1825,3 +1823,5 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 // TODO programmatic SLL certificate import?
 // TODO https://stackoverflow.com/questions/18889058/programmatically-import-ca-trust-cert-into-existing-keystore-file-without-using
 
+// TODO
+// TODO SSL/SSH support like dbeaver

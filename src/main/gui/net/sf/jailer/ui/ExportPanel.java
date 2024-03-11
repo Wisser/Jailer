@@ -514,7 +514,7 @@ public class ExportPanel extends javax.swing.JPanel {
     		executionContext.setDatamodelFolder(tmpFile.getPath());
     		Path targetPath = tmpFile.toPath();
      		
-    		String file = UIUtil.choseFile(null, ".", "Import data models and connections", EXPORT_FILE_EXTENSION, owner, true, true, false);
+    		String file = UIUtil.choseFile(null, ".", "Import data models and connections", EXPORT_FILE_EXTENSION, owner, false, true, false);
     		if (file != null) {
 				Pair<Boolean, Pair<Integer, List<ConnectionInfo>>> importTmp = doImport(owner, file, true, null, null, connectionDialog);
 	    		Set<String> tabuModels = new HashSet<>();

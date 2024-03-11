@@ -79,7 +79,7 @@ public class PrivilegedSessionProviderDialog extends javax.swing.JDialog {
 								return true;
 							}
 						};
-						final DbConnectionDetailsEditor detailsEditor = new DbConnectionDetailsEditor(theParent, DbConnectionDialog.jdbcHelpURL, false, false, infoBar, true, true) {
+						final DbConnectionDetailsEditor detailsEditor = new DbConnectionDetailsEditor(theParent, false, false, infoBar, session.dbUrl, true, true) {
 							@Override
 							protected void onClose(boolean ok, ConnectionInfo info) {
 								dialog.setVisible(false);

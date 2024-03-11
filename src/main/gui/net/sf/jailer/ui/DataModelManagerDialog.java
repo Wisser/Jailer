@@ -166,6 +166,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		initComponents(); UIUtil.initComponents(this);
 		
 		dummyContent.setVisible(false);
+		disabledPanel.setVisible(false);
 		DbConnectionDetailsEditor.addNewDatamodelListener(() -> {
 			loadModelList();
 			refresh();
@@ -409,6 +410,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		this.tabPropertyName = null;
 		this.module = module;
 		initComponents(); UIUtil.initComponents(this);
+
+		disabledPanel.setVisible(false);
 		DbConnectionDetailsEditor.addNewDatamodelListener(() -> {
 			loadModelList();
 			refresh();
@@ -845,9 +848,16 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 							ConnectionInfo ci = e.getValue();
 							UIUtil.subModule += 1;
 							setWaitCursor();
-							dmmd.openBookmark(new BookmarkId(bookmark.bookmark, bookmark.datamodelFolder, bookmark.connectionAlias, bookmark.rawSchemaMapping), ci);
-							resetWaitCursor();
-							dmmd.closeAndDispose();
+							(master == null? DataModelManagerDialog.this : master).disabledPanel.setVisible(true);
+							UIUtil.invokeLater(() -> {
+								try {
+									dmmd.openBookmark(new BookmarkId(bookmark.bookmark, bookmark.datamodelFolder, bookmark.connectionAlias, bookmark.rawSchemaMapping), ci);
+									dmmd.closeAndDispose();
+								} finally {
+									(master == null? DataModelManagerDialog.this : master).disabledPanel.setVisible(false);
+									resetWaitCursor();
+								}
+							});
 						});
 						welcomePanel.notYetButton.addActionListener(evt -> {
 							UISettings.store(ASK_LATER, true);
@@ -978,12 +988,19 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					lastSessionRestored = true;
-					BookmarkId bookmark = new BookmarkId(forEMEditor? lastSession.bookmark : "", lastSession.datamodelFolder, lastSession.connectionAlias, lastSession.rawSchemaMapping);
-					bookmark.setContent(lastSession.getContent());
-					bookmark.setContentInfo(lastSession.getContentInfo());
-					openBookmark(bookmark, finalConnectionInfo);
-					resetWaitCursor();
-					closeAndDispose();
+					(master == null? DataModelManagerDialog.this : master).disabledPanel.setVisible(true);
+					UIUtil.invokeLater(() -> {
+						try {
+							BookmarkId bookmark = new BookmarkId(forEMEditor? lastSession.bookmark : "", lastSession.datamodelFolder, lastSession.connectionAlias, lastSession.rawSchemaMapping);
+							bookmark.setContent(lastSession.getContent());
+							bookmark.setContentInfo(lastSession.getContentInfo());
+							openBookmark(bookmark, finalConnectionInfo);
+							closeAndDispose();
+						} finally {
+							resetWaitCursor();
+							(master == null? DataModelManagerDialog.this : master).disabledPanel.setVisible(false);
+						}
+					});
 				}
 			});
 		}
@@ -1248,8 +1265,15 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				if (i >= 0 && i < bookmarksListModel.size()) {
 					BookmarkId bookmark = bookmarksListModel.get(i);
 					ConnectionInfo ci = ciOfBookmark.get(bookmark);
-					openBookmark(new BookmarkId(bookmark.bookmark, bookmark.datamodelFolder, bookmark.connectionAlias, bookmark.rawSchemaMapping), ci);
-					closeAndDispose();
+					(master == null? DataModelManagerDialog.this : master).disabledPanel.setVisible(true);
+					UIUtil.invokeLater(() -> {
+						try {
+							openBookmark(new BookmarkId(bookmark.bookmark, bookmark.datamodelFolder, bookmark.connectionAlias, bookmark.rawSchemaMapping), ci);
+							closeAndDispose();
+						} finally {
+							(master == null? DataModelManagerDialog.this : master).disabledPanel.setVisible(false);
+						}
+					});
 				}
 			}
 		};
@@ -1406,15 +1430,22 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 					JOptionPane.showMessageDialog(DataModelManagerDialog.this,
 							"Data Model \"" + currentConnection.dataModelFolder + "\" does not exist.\n");
 				} else {
-					DataModelManager.setCurrentModelSubfolder(currentConnection.dataModelFolder, executionContext);
-					setWaitCursor();
-					dbConnectionDialog.currentConnection = currentConnection;
-					dbConnectionDialog.isConnected = true;
-					store();
-					onSelect(dbConnectionDialog, executionContext);
-					UISettings.store(tabPropertyName, jTabbedPane1.getSelectedIndex());
-					resetWaitCursor();
-					DataModelManagerDialog.this.closeAndDispose();
+					(master == null? DataModelManagerDialog.this : master).disabledPanel.setVisible(true);
+					UIUtil.invokeLater(() -> {
+						try {
+							DataModelManager.setCurrentModelSubfolder(currentConnection.dataModelFolder, executionContext);
+							setWaitCursor();
+							dbConnectionDialog.currentConnection = currentConnection;
+							dbConnectionDialog.isConnected = true;
+							store();
+							onSelect(dbConnectionDialog, executionContext);
+							UISettings.store(tabPropertyName, jTabbedPane1.getSelectedIndex());
+							resetWaitCursor();
+							DataModelManagerDialog.this.closeAndDispose();
+						} finally {
+							(master == null? DataModelManagerDialog.this : master).disabledPanel.setVisible(false);
+						}
+					});
 				}
 			}
 		};
@@ -1687,6 +1718,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        jLayeredPane1 = new javax.swing.JLayeredPane();
         cardPanel = new javax.swing.JPanel();
         jPanel9 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
@@ -1775,10 +1807,14 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         jPanel21 = new javax.swing.JPanel();
         titelLabel = new javax.swing.JLabel();
         welcomeContainerPanel = new javax.swing.JPanel();
+        jPanel8 = new javax.swing.JPanel();
+        disabledPanel = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Connect with DB");
         getContentPane().setLayout(new java.awt.GridBagLayout());
+
+        jLayeredPane1.setLayout(new java.awt.GridBagLayout());
 
         cardPanel.setLayout(new java.awt.CardLayout());
 
@@ -2573,11 +2609,42 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         cardPanel.add(mainPanel, "main");
 
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
-        getContentPane().add(cardPanel, gridBagConstraints);
+        jLayeredPane1.add(cardPanel, gridBagConstraints);
+
+        jPanel8.setOpaque(false);
+        jPanel8.setLayout(new java.awt.GridBagLayout());
+
+        disabledPanel.setBackground(new Color(255,255,255,150));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel8.add(disabledPanel, gridBagConstraints);
+
+        jLayeredPane1.setLayer(jPanel8, javax.swing.JLayeredPane.MODAL_LAYER);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jLayeredPane1.add(jPanel8, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        getContentPane().add(jLayeredPane1, gridBagConstraints);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -2808,16 +2875,20 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
 		hasSelectedModel = true;
 		setWaitCursor();
-		try {
-			store();
-			onSelect(null, executionContext);
-			UISettings.store(tabPropertyName, jTabbedPane1.getSelectedIndex());
-		} catch (Throwable t) {
-			UIUtil.showException(this, "Error", t);
-		} finally {
-			resetWaitCursor();
-		}
-		closeAndDispose();
+		(master == null? this : master).disabledPanel.setVisible(true);
+		UIUtil.invokeLater(() -> {
+			try {
+				store();
+				onSelect(null, executionContext);
+				UISettings.store(tabPropertyName, jTabbedPane1.getSelectedIndex());
+			} catch (Throwable t) {
+				UIUtil.showException(this, "Error", t);
+			} finally {
+				(master == null? this : master).disabledPanel.setVisible(false);
+				resetWaitCursor();
+			}
+			closeAndDispose();
+		});
 	}// GEN-LAST:event_okButtonActionPerformed
 
 	protected abstract void onSelect(DbConnectionDialog dbConnectionDialog, ExecutionContext executionContext);
@@ -2948,6 +3019,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JPanel dataBrowserPanel;
     private javax.swing.JTable dataModelsTable;
     private javax.swing.JButton deleteButton;
+    private javax.swing.JPanel disabledPanel;
     private javax.swing.JPanel dummyContent;
     private javax.swing.JLabel dummyLabel;
     private javax.swing.JButton editButton;
@@ -2967,6 +3039,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
+    private javax.swing.JLayeredPane jLayeredPane1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel11;
@@ -2986,6 +3059,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
+    private javax.swing.JPanel jPanel8;
     private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
@@ -3076,3 +3150,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		helpImg = UIUtil.readImage("/explain.png");
 	}
 }
+
+// TODO
+// TODO show disabled state after click on "restore"
+
