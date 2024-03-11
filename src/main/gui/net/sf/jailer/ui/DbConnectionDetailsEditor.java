@@ -2244,6 +2244,3 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 
 // TODO
 // TODO allow entering jdbc properties (extended cli, api. Allow dynamic (pgsql) and static (driver.csv) prop. declaration. Steal static ones)
-
-// TODO
-// TODO driver.csv anhand dbeaver aufwerten (fuer wichtigste DBMS, Oracle, MSSQL, DB2, Postgres, MySQL, MariaDB)
