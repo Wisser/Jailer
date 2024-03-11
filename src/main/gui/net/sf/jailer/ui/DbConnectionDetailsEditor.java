@@ -457,7 +457,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 			}
 		});
 		if (settingsDialog != null) {
-			paramRadioButton.setText(settingsDialog.pLabel[0].getText().trim() + (settingsDialog.pLabel[1].isVisible()? " etc." : ""));
+			paramRadioButton.setText(settingsDialog.pLabel[0].getText().trim() + (settingsDialog.pLabel[1].isVisible() && !settingsDialog.pLabel[1].getText().trim().equalsIgnoreCase(PROP_PARAMETER)? " etc." : ""));
 			for (int i = 0; i < settingsDialog.pLabel.length; ++i) {
 				if (PROP_PARAMETER.equalsIgnoreCase(settingsDialog.pLabel[i].getText().trim())) {
 					continue;
