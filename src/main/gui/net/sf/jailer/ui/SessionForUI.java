@@ -16,6 +16,7 @@
 package net.sf.jailer.ui;
 
 import java.awt.Color;
+import java.awt.Dialog;
 import java.awt.Point;
 import java.awt.Window;
 import java.sql.Connection;
@@ -131,7 +132,7 @@ public class SessionForUI extends Session {
 			startFadeIn();
 		}
 		
-		if (fadeStart != null) {
+		if (fadeStart != null && !(w instanceof DataModelManagerDialog) && !(w instanceof Dialog)) {
 			int fadeTime = 800;
 			if (fadeTimer != null) {
 				fadeTimer.stop();

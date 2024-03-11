@@ -511,14 +511,10 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		        gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 10);
 		        panel.add(settingsDialog.defaultLabel[i], gridBagConstraints);
 			}
-
-	// TODO       urlRadioButton.getTe
-
 		} else {
 			urlRadioButton.setSelected(true);
 			paramRadioButton.setVisible(false);
 			urlRadioButton.doClick(0);
-			// TODO
 		}
 
 		typeComboBox.setModel(new DefaultComboBoxModel(DbConnectionDialog.ConnectionType.values()));

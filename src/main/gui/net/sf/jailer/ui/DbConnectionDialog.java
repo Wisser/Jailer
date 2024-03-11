@@ -1823,5 +1823,5 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 // TODO programmatic SLL certificate import?
 // TODO https://stackoverflow.com/questions/18889058/programmatically-import-ca-trust-cert-into-existing-keystore-file-without-using
 
-// TODO
-// TODO SSL/SSH support like dbeaver
+// TODO 2
+// TODO SSL/SSH support
