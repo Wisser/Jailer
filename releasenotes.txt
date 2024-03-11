@@ -1,10 +1,13 @@
+15.8.2
+  - The dialog for entering the database credentials has been improved.
+  - Minor improvements to the user interface.
+  
 15.8.1
   - After manually canceling a transaction in the SQL console, a misleading error message in some cases was displayed. This has been corrected.
 
 15.8
   - Problems regarding the performance of object bindings have been fixed.
   - The semantics of the "fetchSize" property in "jaier.json" have been changed. It is now always relevant, not just when it is negative.
-  - Minor improvements to the user interface.
 
 15.7
   - The configuration file was changed from XML to Json in order to eliminate the dependency on JAXB
