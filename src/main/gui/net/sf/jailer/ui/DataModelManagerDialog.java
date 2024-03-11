@@ -1425,6 +1425,13 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				return modelList.contains(dataModelFolder);
 			}
 			@Override
+			protected void prepareTestingConnectivity() {
+				(master == null? DataModelManagerDialog.this : master).disabledPanel.setVisible(true);
+			}
+			protected void followUpTestingConnectivity() {
+				(master == null? DataModelManagerDialog.this : master).disabledPanel.setVisible(false);
+			}
+			@Override
 			protected void onConnect(ConnectionInfo currentConnection) {
 				if (!modelList.contains(currentConnection.dataModelFolder)) {
 					JOptionPane.showMessageDialog(DataModelManagerDialog.this,

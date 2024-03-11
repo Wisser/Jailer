@@ -1442,7 +1442,10 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		}
 		try {
 			UIUtil.setWaitCursor(root);
-			if (testConnection(mainPanel, currentConnection, null)) {
+			prepareTestingConnectivity();
+			boolean testat = testConnection(mainPanel, currentConnection, null);
+			followUpTestingConnectivity();
+			if (testat) {
 				isConnected = true;
 				ok = true;
 				executionContext.setCurrentConnectionAlias(currentConnection.alias);
@@ -1524,6 +1527,12 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			}
 			return false;
 		}
+	}
+
+	protected void prepareTestingConnectivity() {
+	}
+
+	protected void followUpTestingConnectivity() {
 	}
 
 	/**
