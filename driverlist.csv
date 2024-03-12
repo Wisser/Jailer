@@ -16,5 +16,8 @@ Amazon Redshift;jdbc:redshift://<HOST(localhost)>[:<PORT(5439)>]/[<DATABASE>];co
 HSQL (HyperSQL);jdbc:hsqldb:<file|hsql|http>:<DATABASE>;org.hsqldb.jdbcDriver;;;jdbc:hsqldb:.*:([^/\\\\:]*);hsqldb.png
 Derby;jdbc:derby://<HOST(localhost)>:<PORT>/<DATABASE>;org.apache.derby.jdbc.ClientDriver;lib/derbyclient.jar lib/derbytools.jar;;jdbc:derby://.*/([^\\?]+).* jdbc:derby://([^\\?/\;]+).*;derby.png
 Interbase;jdbc:interbase://<HOST(localhost)>/<DATABASE>;interbase.interclient.Driver;;;jdbc:interbase://([^\\?/\;]+).* jdbc:interbase:([^\\?/\;]+).*;interbase.png
-Exasol;jdbc:exa:<HOST(localhost)>:<PORT(8563)>;com.exasol.jdbc.EXADriver;;;jdbc:exa:.*?([^/\\\\]+);exasol.png
+Exasol;jdbc:exa:<HOST(localhost)>:<PORT(8563)>[\;schema=<SCHEMA>];com.exasol.jdbc.EXADriver;;;jdbc:exa:.*schema=(.*) jdbc:exa:(.*);exasol.png
+HANA;jdbc:sap://<HOST(localhost)>[:<PORT(30015)>];com.sap.db.jdbc.Driver;;;jdbc:sap://(.*);sap_hana.png
+Vertica;jdbc:vertica://<HOST(localhost)>:<PORT(5433)>[/<DATABASE>];com.vertica.jdbc.Driver;;;jdbc:vertica://(.*);vertica.png
+Snowflake;jdbc:snowflake://<HOST(localhost)>:<PORT(443)>[/?db=<DATABASE>];net.snowflake.client.jdbc.SnowflakeDriver;;;jdbc:snowflake:.*db=(.*) jdbc:snowflake://(.*);snowflake.png
 <other>;jdbc:<SUBPROTOCOL>:<DATABASE>;;;;jdbc:odbc:([^\\?/\;]+).* jdbc:([^:]+).*;other.png
