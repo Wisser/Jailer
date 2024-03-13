@@ -548,7 +548,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		workbenchTabbedPane.setTabComponentAt(tabIndex, newConsoleLabel);
 		String toolTipText = "New SQL Console";
 		workbenchTabbedPane.setToolTipTextAt(tabIndex, toolTipText);
-		newConsoleLabel.setToolTipText(toolTipText);
+//		newConsoleLabel.setToolTipText(toolTipText);
 		
 		tableTreesTabbedPane.setTabComponentAt(0, new JLabel("Navigation", navigationIcon, JLabel.LEFT));
 		tableTreesTabbedPane.setTabComponentAt(1, new JLabel("Database", databaseIcon, JLabel.LEFT));
