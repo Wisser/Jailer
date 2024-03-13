@@ -296,7 +296,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 			matcher.reset();
 			boolean result = matcher.find();
 			if (result) {
-				StringBuilder sb = new StringBuilder();
+				StringBuffer sb = new StringBuffer();
 				do {
 					matcher.appendReplacement(sb, "");
 					if (matcher.group(2) != null) {
