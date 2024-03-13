@@ -1,7 +1,10 @@
+15.8.3
+  - The tab button for creating new SQL consoles did not work properly.
+ 
 15.8.2
   - The dialog for entering the database credentials has been improved.
   - Minor improvements to the user interface.
-  
+ 
 15.8.1
   - After manually canceling a transaction in the SQL console, a misleading error message in some cases was displayed. This has been corrected.
 
