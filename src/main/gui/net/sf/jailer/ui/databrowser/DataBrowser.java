@@ -206,7 +206,6 @@ import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
-import sun.swing.DefaultLookup;
 
 /**
  * Data Browser Frame.
