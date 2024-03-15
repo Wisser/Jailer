@@ -625,7 +625,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							setPendingState(false, true);
 							onContentChange(rows, true); // rows.isEmpty() || currentHash != prevHash || rows.size() != prevSize || !prevIDs.equals(currentIDs) || rows.size() != currentIDs.size());
 							updateMode("table", null);
-							updateWhereField();
 							if (BrowserContentPane.this.association == null && (andCond == null || andCond.trim().isEmpty())) {
 								updateERCounts(table, limitExceeded, rows.size());
 							}
@@ -2813,7 +2812,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			join.setText(this.dataModel.getDisplayName(this.association.source));
 			on.setText(!this.association.reversed ? SqlUtil.reversRestrictionCondition(this.association.getUnrestrictedJoinCondition()) : this.association
 					.getUnrestrictedJoinCondition());
-			updateWhereField();
 			join.setToolTipText(join.getText());
 			on.setToolTipText(assocToolTip(on.getText(), this.association));
 		}
@@ -7638,36 +7636,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		});
 		UIUtil.invokeLater(() -> d.requestFocus());
 		d.setVisible(true);
-	}
-
-	private void updateWhereField() {
-		if (association != null) {
-			if (parentRows != null && parentRows.size() > 0) {
-				StringBuilder sb = new StringBuilder();
-				for (int i = 0; i < parentRows.size(); ++i) {
-					if (i > 0) {
-						sb.append(" or\n");
-					}
-					sb.append(parentRows.get(i).rowId);
-					if (i > 50) {
-						sb.append("\n...");
-						break;
-					}
-				}
-				String currentCond = getAndConditionText().trim();
-				String toolTip;
-				if (currentCond.length() > 0) {
-					toolTip = currentCond + "\nand (\n" + sb + ")";
-				} else {
-					toolTip = sb.toString();
-				}
-				whereLabel.setToolTipText(UIUtil.toHTML(toolTip, 0));
-			} else {
-				whereLabel.setToolTipText(null);
-			}
-		} else {
-			whereLabel.setToolTipText(null);
-		}
 	}
 
 	public void convertToRoot() {
