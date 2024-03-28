@@ -1,3 +1,7 @@
+15.8.4
+  - Added support for ClickHouse.
+    https://github.com/Wisser/Jailer/issues/110
+
 15.8.3
   - The tab button for creating new SQL consoles did not work properly.
  
