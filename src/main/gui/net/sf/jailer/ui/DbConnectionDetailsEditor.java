@@ -1016,8 +1016,8 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 
 	protected List<String> retrieveDriverURLs(List<Line> driverlist) {
 		if (driverlist != null) {
-			String url = dbUrl.getText().trim().replaceAll("^(\\w+:\\w+:).*", "$1");
-			Line line = driverlist.stream().filter(l -> l.cells.get(1).startsWith(url)).findFirst().orElse(null);
+			String url = dbUrl.getText().trim().replace("[", "").replaceAll("^(\\w+:\\w+:).*", "$1");
+			Line line = driverlist.stream().filter(l -> l.cells.get(1).replace("[", "").startsWith(url)).findFirst().orElse(null);
 			if (line != null) {
 				if (!line.cells.get(4).isEmpty()) {
 					return new ArrayList<String>(Arrays.asList(line.cells.get(4).split("\\s+")));
