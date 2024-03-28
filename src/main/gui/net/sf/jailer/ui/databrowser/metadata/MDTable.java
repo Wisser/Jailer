@@ -209,7 +209,7 @@ public class MDTable extends MDObject {
                 	ResultSet resultSet;
                 	if (fallbackConnection != null) {
                 		DatabaseMetaData metaData = fallbackConnection.getMetaData();
-                		if (DBMS.MySQL.equals(session.dbms)) {
+                		if (session.dbms.isUsesCatalog()) {
                 			resultSet = metaData.getColumns(Quoting.staticUnquote(getSchema().getName()), null, Quoting.staticUnquote(getName()), "%");
             			} else {
             				resultSet = metaData.getColumns(null, Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()), "%");
@@ -233,6 +233,9 @@ public class MDTable extends MDObject {
                         String comment = null;
                         try {
                         	comment = resultSet.getString(12);
+                        	if ("".equals(comment)) {
+                        		comment = null;
+                        	}
                         } catch (Exception e) {
                         	// ignore
                         }
@@ -272,7 +275,7 @@ public class MDTable extends MDObject {
 
                     if (fallbackConnection != null) {
                     	DatabaseMetaData metaData = fallbackConnection.getMetaData();
-                		if (DBMS.MySQL.equals(session.dbms)) {
+                		if (session.dbms.isUsesCatalog()) {
                     		resultSet = metaData.getPrimaryKeys(Quoting.staticUnquote(getSchema().getName()), null, Quoting.staticUnquote(getName()));
                 		} else {
                 			resultSet = metaData.getPrimaryKeys(null, Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()));
@@ -285,9 +288,12 @@ public class MDTable extends MDObject {
                     while (resultSet.next()) {
                         int keySeq = resultSet.getInt(5);
                         pkConstraintName = resultSet.getString(6);
-                        if (DBMS.SQLITE.equals(session.dbms)) {
+                        if (DBMS.SQLITE.equals(session.dbms) || pk.containsKey(keySeq)) {
                             // SQlite driver doesn't return the keySeq
                             keySeq = nextKeySeq++;
+                            while (pk.containsKey(keySeq)) {
+                            	++keySeq;
+                            }
                         }
                         pk.put(keySeq, metaDataSource.getQuoting().quote(resultSet.getString(4)));
                     }
@@ -462,7 +468,7 @@ public class MDTable extends MDObject {
 	                    cStmt = connection.createStatement();
 	                    ResultSet rs = cStmt.executeQuery(statement.replace("${type}", isView? "VIEW" : "TABLE").replace("${table}", Quoting.staticUnquote(getName())).replace("${schema}", Quoting.staticUnquote(getSchema().getName())));
 	                    if (rs.next()) {
-	                        ddl = rs.getString(session.dbms.equals(DBMS.MySQL)? 2 : 1).trim();
+	                        ddl = rs.getString(session.dbms.isUsesCatalog()? 2 : 1).trim();
 	                    }
 	                    rs.close();
 	                } catch (Exception e) {
@@ -721,7 +727,7 @@ public class MDTable extends MDObject {
 //	static AtomicBoolean estUpdatePending = new AtomicBoolean(false);
 	
     public void setComment(String comment) {
-    	this.comment = comment;
+    	this.comment = "".equals(comment)? null : comment;
     }
 
     public String getTableType() {

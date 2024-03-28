@@ -46,6 +46,7 @@
 		{
 			"id": "ORACLE",
 			"displayName": "Oracle",
+			"icon": "oracle.png",
 			"urlPattern": "jdbc:oracle.*",
 			"sqlDialect": {
 				"needsValuesKeywordForDeletes": false,
@@ -175,6 +176,7 @@
 		{
 			"id": "MSSQL",
 			"displayName": "MS SQL Server",
+			"icon": "mssql.png",
 			"urlPattern": "jdbc:sqlserver.*|jdbc:inetdae.*|jdbc:JTurbo.*|jdbc:weblogic:mssqlserver.*|jdbc:jtds:sqlserver.*|jdbc:JSQLConnect.*",
 			"sqlDialect": {
 				"needsValuesKeywordForDeletes": false,
@@ -282,7 +284,9 @@
 		{
 			"id": "MySQL",
 			"displayName": "MySQL",
+			"icon": "mysql.png",
 			"urlPattern": "jdbc:mysql.*",
+			"usesCatalog": true,
 			"sqlDialect": {
 				"needsValuesKeywordForDeletes": false,
 				"supportsInClauseForDeletes": true,
@@ -409,8 +413,11 @@
 		
 		{
 			"id": "MariaDB",
+			"familyId": "MySQL",
+			"icon": "mariadb.png",
 			"displayName": "MariaDB",
 			"urlPattern": "jdbc:mariadb.*",
+			"usesCatalog": true,
 			"sqlDialect": {
 				"needsValuesKeywordForDeletes": false,
 				"supportsInClauseForDeletes": true,
@@ -485,7 +492,6 @@
 			"explainQuery": "explain %1$s",
 			"explainCleanup": "",
 			"constraintsQuery": "\nSelect CNAME, TNAME, COLNAME, CTYPE, DETAIL From\n(\n\tSelect concat('pk_', KCU.TABLE_NAME) CNAME, KCU.TABLE_NAME TNAME, KCU.COLUMN_NAME COLNAME, 'PK' CTYPE, null DETAIL, KCU.ORDINAL_POSITION POS, 1 TYPEPOS\n    From\n        INFORMATION_SCHEMA.TABLE_CONSTRAINTS C\n    join\n        INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU\n            ON KCU.CONSTRAINT_CATALOG = C.CONSTRAINT_CATALOG\n            AND KCU.CONSTRAINT_SCHEMA = C.CONSTRAINT_SCHEMA\n            AND KCU.TABLE_NAME = C.TABLE_NAME\n            AND KCU.CONSTRAINT_NAME = C.CONSTRAINT_NAME\n    where\n        C.CONSTRAINT_TYPE = 'PRIMARY KEY'\n        AND KCU.TABLE_SCHEMA = '%1$s'\nunion all\n\tSelect C.CONSTRAINT_NAME CNAME, KCU.TABLE_NAME TNAME, KCU.COLUMN_NAME COLNAME, 'Unique' CTYPE, null DETAIL, KCU.ORDINAL_POSITION POS, 2 TYPEPOS\n    From\n        INFORMATION_SCHEMA.TABLE_CONSTRAINTS C\n    join\n        INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU\n            ON KCU.CONSTRAINT_CATALOG = C.CONSTRAINT_CATALOG\n            AND KCU.CONSTRAINT_SCHEMA = C.CONSTRAINT_SCHEMA\n            AND KCU.TABLE_NAME = C.TABLE_NAME\n            AND KCU.CONSTRAINT_NAME = C.CONSTRAINT_NAME\n    where\n        C.CONSTRAINT_TYPE = 'UNIQUE'\n        AND KCU.TABLE_SCHEMA = '%1$s'\n) pk order by TYPEPOS, CNAME, TNAME, POS, COLNAME\n\t\t",
-			"familyId": "MySQL",
 			"testQuery": null,
 			"sqlExpressionRule": {},
 			"experimentalTypeReplacement": {
@@ -538,6 +544,7 @@
 		{
 			"id": "DB2",
 			"displayName": "DB2 LUW",
+			"icon": "db2.png",
 			"urlPattern": "jdbc:db2.*",
 			"sqlDialect": {
 				"needsValuesKeywordForDeletes": true,
@@ -663,6 +670,7 @@
 		{
 			"id": "DB2_ZOS",
 			"displayName": "DB2 z/OS",
+			"icon": "db2.png",
 			"urlPattern": "jdbc:db2.*",
 			"sqlDialect": {
 				"needsValuesKeywordForDeletes": true,
@@ -761,6 +769,7 @@
 		{
 			"id": "INFORMIX",
 			"displayName": "Informix",
+			"icon": "informix.png",
 			"urlPattern": "jdbc:informix.*",
 			"sqlDialect": {
 				"needsValuesKeywordForDeletes": true,
@@ -856,6 +865,7 @@
 		{
 			"id": "POSTGRESQL",
 			"displayName": "PostgreSQL",
+			"icon": "postgresql.png",
 			"urlPattern": "jdbc:postgres.*",
 			"sqlDialect": {
 				"needsValuesKeywordForDeletes": true,
@@ -1004,7 +1014,9 @@
 		
 		{
 			"id": "Redshift",
+			"familyId": "POSTGRESQL",
 			"displayName": "Redshift",
+			"icon": "redshift.png",
 			"urlPattern": "jdbc:redshift.*",
 			"sqlDialect": {
 				"needsValuesKeywordForDeletes": true,
@@ -1077,7 +1089,6 @@
 			"explainQuery": "explain %1$s",
 			"explainCleanup": "",
 			"constraintsQuery": "\nSelect CNAME, TNAME, COLNAME, CTYPE, DETAIL From\n(\n\tSelect KCU.CONSTRAINT_NAME CNAME, KCU.TABLE_NAME TNAME, KCU.COLUMN_NAME COLNAME, 'PK' CTYPE, null DETAIL, KCU.ORDINAL_POSITION POS, 1 TYPEPOS\n    From\n        INFORMATION_SCHEMA.TABLE_CONSTRAINTS C\n    join\n        INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU\n            ON KCU.CONSTRAINT_CATALOG = C.CONSTRAINT_CATALOG\n            AND KCU.CONSTRAINT_SCHEMA = C.CONSTRAINT_SCHEMA\n            AND KCU.TABLE_NAME = C.TABLE_NAME\n            AND KCU.CONSTRAINT_NAME = C.CONSTRAINT_NAME\n    where\n        C.CONSTRAINT_TYPE = 'PRIMARY KEY'\n        AND KCU.TABLE_SCHEMA = '%1$s'\nunion all\n\tSelect C.CONSTRAINT_NAME CNAME, KCU.TABLE_NAME TNAME, KCU.COLUMN_NAME COLNAME, 'Unique' CTYPE, null DETAIL, KCU.ORDINAL_POSITION POS, 2 TYPEPOS\n    From\n        INFORMATION_SCHEMA.TABLE_CONSTRAINTS C\n    join\n        INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU\n            ON KCU.CONSTRAINT_CATALOG = C.CONSTRAINT_CATALOG\n            AND KCU.CONSTRAINT_SCHEMA = C.CONSTRAINT_SCHEMA\n            AND KCU.TABLE_NAME = C.TABLE_NAME\n            AND KCU.CONSTRAINT_NAME = C.CONSTRAINT_NAME\n    where\n        C.CONSTRAINT_TYPE = 'UNIQUE'\n        AND KCU.TABLE_SCHEMA = '%1$s'\n\tunion all\n\tSelect C.CONSTRAINT_NAME CNAME, C.TABLE_NAME TNAME, CU.COLUMN_NAME COLNAME, 'Check' CTYPE, CHECK_CLAUSE DETAIL, 1 POS, 3 TYPEPOS\n\tFrom\n\t\tINFORMATION_SCHEMA.CHECK_CONSTRAINTS CC\n\tjoin\n\t\tINFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE CU\n\t    on CU.CONSTRAINT_CATALOG = CC.CONSTRAINT_CATALOG\n\t    and CU.CONSTRAINT_SCHEMA = CC.CONSTRAINT_SCHEMA\n\t    and CU.CONSTRAINT_NAME = CC.CONSTRAINT_NAME\n\tjoin\n\t\tINFORMATION_SCHEMA.TABLE_CONSTRAINTS C\n\t    on C.CONSTRAINT_CATALOG = CC.CONSTRAINT_CATALOG\n\t    and C.CONSTRAINT_SCHEMA = CC.CONSTRAINT_SCHEMA\n\t    and C.CONSTRAINT_NAME = CC.CONSTRAINT_NAME\n\t\tand C.CONSTRAINT_TYPE = 'CHECK'\n\t\tand C.TABLE_SCHEMA = '%1$s'\n) pk order by TYPEPOS, CNAME, TNAME, POS, COLNAME\n\t\t",
-			"familyId": "POSTGRESQL",
 			"testQuery": null,
 			"sqlExpressionRule": {
 				"daterange": "'$1'::$2",
@@ -1154,6 +1165,7 @@
 		{
 			"id": "CLOADSCAPE",
 			"displayName": "Cloudscape",
+			"icon": "other.png",
 			"urlPattern": "jdbc:cloudscape.*",
 			"sqlDialect": {
 				"needsValuesKeywordForDeletes": false,
@@ -1234,6 +1246,7 @@
 		{
 			"id": "FIREBIRD",
 			"displayName": "Firebird",
+			"icon": "firebird.png",
 			"urlPattern": "jdbc:firebirdsql.*",
 			"sqlDialect": {
 				"needsValuesKeywordForDeletes": false,
@@ -1316,6 +1329,7 @@
 		{
 			"id": "DERBY",
 			"displayName": "Derby",
+			"icon": "derby.png",
 			"urlPattern": "jdbc:derby.*",
 			"sqlDialect": {
 				"needsValuesKeywordForDeletes": false,
@@ -1396,6 +1410,7 @@
 		{
 			"id": "SYBASE",
 			"displayName": "Sybase",
+			"icon": "sybase.png",
 			"urlPattern": "jdbc:sybase.*|jdbc:jtds:sybase.*",
 			"sqlDialect": {
 				"needsValuesKeywordForDeletes": false,
@@ -1497,6 +1512,7 @@
 		{
 			"id": "SQLITE",
 			"displayName": "SQLite",
+			"icon": "sqlite.png",
 			"urlPattern": "jdbc:sqlite.*",
 			"sqlDialect": {
 				"needsValuesKeywordForDeletes": false,
@@ -1588,6 +1604,7 @@
 		{
 			"id": "HSQL",
 			"displayName": "HSQLDB",
+			"icon": "hsqldb.png",
 			"urlPattern": "jdbc:hsqldb.*",
 			"sqlDialect": {
 				"needsValuesKeywordForDeletes": false,
@@ -1666,6 +1683,7 @@
 		{
 			"id": "H2",
 			"displayName": "H2",
+			"icon": "h2.png",
 			"urlPattern": "jdbc:h2.*",
 			"sqlDialect": {
 				"needsValuesKeywordForDeletes": false,
@@ -1775,6 +1793,26 @@
 			"transactionTemporaryTableManager": null,
 			"supportsCStyleBackslashEscapes": false,
 			"identityColumnInsertClause": null
+		},
+		
+		{
+			"id": "ClickHouse",
+			"displayName": "ClickHouse",
+			"icon": "clickhouse.png",
+			"urlPattern": "jdbc:(clickhouse|ch):.*",
+			
+			"sqlDialect": {
+				"needsValuesKeywordForDeletes": false,
+				"supportsInClauseForDeletes": true,
+				"supportsMultiRowInserts": true,
+				"upsertMode": "UNION_ALL",
+				"updateMode": null
+			},
+
+			"usesCatalog": true,
+			"supportsGlobalWorkingtables": false,
+			
+			"primaryKeysQuery": "Select table_schema, table_schema, table_name, column_name, ordinal_position, constraint_name From information_schema.key_column_usage where table_schema = '${SCHEMA}'  ORDER BY ordinal_position"
 		}
 	]
 }

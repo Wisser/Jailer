@@ -49,7 +49,7 @@ public class SQLDialect {
 	 */
 	private boolean needsValuesKeywordForDeletes = false;
 	private boolean supportsInClauseForDeletes = false;
-	private boolean supportsMultiRowInserts = false;
+	private boolean supportsMultiRowInserts = true;
 
 	/**
 	 * Upsert mode.

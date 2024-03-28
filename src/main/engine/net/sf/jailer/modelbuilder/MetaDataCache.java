@@ -158,7 +158,7 @@ public class MetaDataCache {
 		MetaDataCache metaDataCache = new MetaDataCache();
 		ResultSet rs;
 		try {
-			if (DBMS.MySQL.equals(session.dbms)) {
+			if (session.dbms.isUsesCatalog()) {
 				rs = session.getMetaData().getColumns(schema, null, "%", "%");
 			} else {
 				rs = session.getMetaData().getColumns(null, schema, "%", "%");

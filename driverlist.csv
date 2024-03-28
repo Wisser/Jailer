@@ -20,4 +20,5 @@ Exasol;jdbc:exa:<HOST(localhost)>:<PORT(8563)>[\;schema=<SCHEMA>];com.exasol.jdb
 HANA;jdbc:sap://<HOST(localhost)>[:<PORT(30015)>];com.sap.db.jdbc.Driver;;;jdbc:sap://(.*);sap_hana.png
 Vertica;jdbc:vertica://<HOST(localhost)>:<PORT(5433)>[/<DATABASE>];com.vertica.jdbc.Driver;;;jdbc:vertica://(.*);vertica.png
 Snowflake;jdbc:snowflake://<HOST(localhost)>:<PORT(443)>[/?db=<DATABASE>];net.snowflake.client.jdbc.SnowflakeDriver;;;jdbc:snowflake:.*db=(.*) jdbc:snowflake://(.*);snowflake.png
+ClickHouse;jdbc:clickhouse[:<PROTOCOL(https)>]://<ENDPOINT>[:<PORT(8443)>][/<DATABASE>];com.clickhouse.jdbc.ClickHouseDriver;;https://github.com/ClickHouse/clickhouse-java/releases/download/v0.6.0-patch2/clickhouse-jdbc-0.6.0-patch2-all.jar;jdbc:clickhouse:(.*);clickhouse.png
 <other>;jdbc:<SUBPROTOCOL>:<DATABASE>;;;;jdbc:odbc:([^\\?/\;]+).* jdbc:([^:]+).*;other.png

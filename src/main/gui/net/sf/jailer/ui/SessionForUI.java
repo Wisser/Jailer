@@ -203,6 +203,7 @@ public class SessionForUI extends Session {
 		
         jLabel1.setForeground(java.awt.Color.red);
         jLabel1.setText("connecting...");
+        jLabel1.setFont(jLabel1.getFont().deriveFont((float) (jLabel1.getFont().getSize() * 1.4)));
         connectingPanel.add(jLabel1);
 
         cancelConnectingButton.setText("Cancel");

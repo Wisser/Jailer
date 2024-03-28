@@ -665,6 +665,10 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			UIUtil.setLeadingComponent(where, openWhereEditor);
 
 			workingTableSchemaComboBox.setEnabled(!scopeLocal.isSelected());
+			scopeGlobal.setEnabled(sourceDBMS == null || sourceDBMS.isSupportsGlobalWorkingtables());
+			if (scopeGlobal.isSelected() && !scopeGlobal.isEnabled()) {
+				scopeLocal.setSelected(true);
+			}
 			
 			pack();
 			cliArea.setBorder(threads.getBorder());
@@ -699,7 +703,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	}
 
 	private void unknownDBMSWarning(Session session) {
-		if (DBMS.forDBMS(null) == session.dbms) {
+		if (DBMS.forDBMS(null) == session.dbms || (session.dbms != null && !session.dbms.isSupported())) {
 			final String title = "Unknown DBMS";
 			unknownDBMSLabel.setIcon(warnIcon);
 			unknownDBMSButton.setIcon(warnIcon);
@@ -769,7 +773,11 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		resetTargetButton.setBackground(new Color(255, 255, 210));
 		resetTargetButton.setIcon(resetIcon);
 		if (scriptFormat == ScriptFormat.SQL) {
-			targetDBMSComboBox.setModel(new DefaultComboBoxModel<DBMS>(DBMS.values()));
+			DefaultComboBoxModel<DBMS> aModel = new DefaultComboBoxModel<DBMS>(DBMS.values());
+			if (DBMS.forDBMS(null).equals(sourceDBMS)) {
+				aModel.addElement(sourceDBMS);
+			}
+			targetDBMSComboBox.setModel(aModel);
 			targetDBMSComboBox.setRenderer(new DefaultListCellRenderer() {
 				ListCellRenderer renderer = targetDBMSComboBox.getRenderer();
 				@SuppressWarnings("rawtypes")
@@ -777,9 +785,22 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 				public Component getListCellRendererComponent(JList list,
 						Object value, int index, boolean isSelected,
 						boolean cellHasFocus) {
-					return renderer.getListCellRendererComponent(list,
+					Component render = renderer.getListCellRendererComponent(list,
 							value instanceof DBMS? ((DBMS) value).getDisplayName() : value, index, isSelected,
 							cellHasFocus);
+					if (render instanceof JLabel && value instanceof DBMS) {
+						String logoUrl = "/dbmslogo/" + ((DBMS) value).getIcon();
+						logoUrl = UIUtil.urlOrSmallIconUrl(logoUrl);
+						if (logoUrl == null) {
+				        	((JLabel) render).setIcon(null);
+				        	((JLabel) render).setIconTextGap(4);
+				        } else {
+				        	ImageIcon scaleIcon = UIUtil.scaleIcon((JLabel) render, UIUtil.readImage(logoUrl, false), 1.2);
+							((JLabel) render).setIcon(scaleIcon);
+				        	((JLabel) render).setIconTextGap(Math.max(4, scaleIcon == null? 0 : 36 - scaleIcon.getIconWidth()));
+				        }
+					}
+					return render;
 				}
 			});
 			targetDBMSComboBox.setSelectedItem(sourceDBMS);

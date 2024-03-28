@@ -98,6 +98,7 @@ public class DBMS {
 	public static final DBMS CLOADSCAPE;
 	public static final DBMS FIREBIRD;
 	public static final DBMS DERBY;
+	public static final DBMS CLICKHOUSE;
 
 	/**
 	 * Gets all DBMSes.
@@ -162,11 +163,13 @@ public class DBMS {
 		CLOADSCAPE = forDBMS("CLOADSCAPE");
 		FIREBIRD = forDBMS("FIREBIRD");
 		DERBY = forDBMS("DERBY");
+		CLICKHOUSE = forDBMS("ClickHouse");
 	}
 
 	private String id;
 	private String familyId;
 	private String displayName;
+	private String icon;
 
 	/**
 	 * DB-URL pattern of DBMS for which this holds the configuration.
@@ -326,6 +329,36 @@ public class DBMS {
 	private Pattern clobTypesPattern;
 	private Pattern nClobTypesPattern;
 	private Pattern blobTypesPattern;
+	
+	private boolean usesCatalog;
+	
+	public boolean isUsesCatalog() {
+		return usesCatalog;
+	}
+
+	public void setUsesCatalog(boolean usesCatalog) {
+		this.usesCatalog = usesCatalog;
+	}
+	
+	private boolean supportsGlobalWorkingtables = true;
+	
+	public boolean isSupportsGlobalWorkingtables() {
+		return supportsGlobalWorkingtables;
+	}
+
+	public void setSupportsGlobalWorkingtables(boolean supportsGlobalWorkingtables) {
+		this.supportsGlobalWorkingtables = supportsGlobalWorkingtables;
+	}
+
+	private boolean supported = true;
+	
+	public boolean isSupported() {
+		return supported;
+	}
+
+	public void setSupported(boolean supported) {
+		this.supported = supported;
+	}
 
 	public boolean isClobType(String typeWithLength) {
 		if (clobTypesRE == null) {
@@ -1143,6 +1176,14 @@ public class DBMS {
 
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
+	}
+
+	public String getIcon() {
+		return icon;
+	}
+
+	public void setIcon(String icon) {
+		this.icon = icon;
 	}
 
 	public String getExplainPrepare() {

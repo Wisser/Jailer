@@ -2064,7 +2064,7 @@ public class UIUtil {
 		return urlOrSmallIconUrl("/dbmslogo/other.png");
 	}
 
-	private static String urlOrSmallIconUrl(String logoUrl) {
+	static String urlOrSmallIconUrl(String logoUrl) {
 		String smallLogoUrl = logoUrl.replaceFirst("^(.*)(\\.([^\\.]+))$", "$1_small$2");
 		
 		if (readImage(smallLogoUrl, false) != null) {
