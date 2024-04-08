@@ -45,7 +45,7 @@ public class APIExample {
 			new BasicDataSource(
 					"org.h2.Driver", "jdbc:h2:" + new File(baseFolder, "demo-scott").getAbsolutePath(), "sa", "",
 					POOL_SIZE,
-					new File(baseFolder, "lib/h2-2.1.212.jar")),
+					new File(baseFolder, "lib/h2-2.2.224.jar")),
 			null,
 			new File(baseFolder, "datamodel/Demo-Scott"),
 			new File(baseFolder, "extractionmodel/Demo-Scott.jm"),
@@ -57,7 +57,7 @@ public class APIExample {
 			new BasicDataSource(
 				"org.h2.Driver", "jdbc:h2:" + new File(baseFolder, "demo-scott-subset").getAbsolutePath(), "sa", "",
 				POOL_SIZE,
-				new File(baseFolder, "lib/h2-2.1.212.jar")));
+				new File(baseFolder, "lib/h2-2.2.224.jar")));
 	
 	/**
 	 * Exports data related with employee "SCOTT"

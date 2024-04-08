@@ -135,8 +135,10 @@ public class ExportPanel extends javax.swing.JPanel {
 				}
 			}
 			for (String model : DataModelManager.getModelFolderNames(connectionDialog.executionContext)) {
-				String displayName = DataModelManager.getModelDetails(model, connectionDialog.executionContext).a;
-				modelNames.put(model, displayName + (dup.contains(displayName) ? " (" + model + ")" : ""));
+				if (model != null) {
+					String displayName = DataModelManager.getModelDetails(model, connectionDialog.executionContext).a;
+					modelNames.put(model, displayName + (dup.contains(displayName) ? " (" + model + ")" : ""));
+				}
 			}
 			
 			int y = 1;
@@ -159,6 +161,7 @@ public class ExportPanel extends javax.swing.JPanel {
 				String key = entry == null? orphaned : entry.getKey();
 				String value = entry == null? orphaned : entry.getValue();
 				JCheckBox jCheckBox = new JCheckBox();
+				int sep = y > 1? 8 : 0;
 				if (entry != null) {
 					if (!tabuModels.contains(key)) {
 						checkBoxes.add(jCheckBox);
@@ -184,7 +187,16 @@ public class ExportPanel extends javax.swing.JPanel {
 					GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 					gridBagConstraints.gridx = 1;
 					gridBagConstraints.gridy = y;
-					gridBagConstraints.insets = new Insets(b, 0, b, 0);
+					gridBagConstraints.insets = new Insets(b + sep, 0, b, 0);
+					selectionPanel.add(jCheckBox, gridBagConstraints);
+		        } else {
+		        	jCheckBox.setText(" ");
+		        	jCheckBox.setFocusable(false);
+		        	jCheckBox.setEnabled(false);
+					GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+					gridBagConstraints.gridx = 1;
+					gridBagConstraints.gridy = y;
+					gridBagConstraints.insets = new Insets(b + sep, 0, b, 0);
 					selectionPanel.add(jCheckBox, gridBagConstraints);
 		        }
 
@@ -209,7 +221,8 @@ public class ExportPanel extends javax.swing.JPanel {
 		        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 		        gridBagConstraints.gridx = 2;
 		        gridBagConstraints.gridy = y;
-		        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		        gridBagConstraints.insets = new Insets(b + sep, 0, b, 0);
+				gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
 		        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
 		        gridBagConstraints.weightx = 1.0;
 		        selectionPanel.add(label, gridBagConstraints);
