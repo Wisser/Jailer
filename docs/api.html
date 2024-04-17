@@ -130,8 +130,8 @@
                               "font-weight: bold;">Example</span></big><br />
                               <br />
                               The example is included in the sources. It extracts some data
-                              from the "demo-scott" database and imports it into another
-                              database "demo-scott-subset".<br />
+                              from the "demo-scott-h2" database and imports it into another
+                              database "demo-scott-h2-subset".<br />
 
                               <ul>
                                 
@@ -148,7 +148,7 @@
 	<span style="color: #000000; font-weight: bold;">private</span> <span style="color: #000000; font-weight: bold;">static</span> Subsetter subsetter <span style="color: #339933;">=</span> 
 		<span style="color: #000000; font-weight: bold;">new</span> Subsetter<span style="color: #009900;">&#40;</span>
 			<span style="color: #000000; font-weight: bold;">new</span> BasicDataSource<span style="color: #009900;">&#40;</span>
-					<span style="color: #0000ff;">&quot;org.h2.Driver&quot;</span>, <span style="color: #0000ff;">&quot;jdbc:h2:&quot;</span> <span style="color: #339933;">+</span> <span style="color: #000000; font-weight: bold;">new</span> <span style="color: #003399;">File</span><span style="color: #009900;">&#40;</span>baseFolder, <span style="color: #0000ff;">&quot;demo-scott&quot;</span><span style="color: #009900;">&#41;</span>.<span style="color: #006633;">getAbsolutePath</span><span style="color: #009900;">&#40;</span><span style="color: #009900;">&#41;</span>, <span style="color: #0000ff;">&quot;sa&quot;</span>, <span style="color: #0000ff;">&quot;&quot;</span>,
+					<span style="color: #0000ff;">&quot;org.h2.Driver&quot;</span>, <span style="color: #0000ff;">&quot;jdbc:h2:&quot;</span> <span style="color: #339933;">+</span> <span style="color: #000000; font-weight: bold;">new</span> <span style="color: #003399;">File</span><span style="color: #009900;">&#40;</span>baseFolder, <span style="color: #0000ff;">&quot;demo-scott-h2&quot;</span><span style="color: #009900;">&#41;</span>.<span style="color: #006633;">getAbsolutePath</span><span style="color: #009900;">&#40;</span><span style="color: #009900;">&#41;</span>, <span style="color: #0000ff;">&quot;sa&quot;</span>, <span style="color: #0000ff;">&quot;&quot;</span>,
 					POOL_SIZE,
 					<span style="color: #000000; font-weight: bold;">new</span> <span style="color: #003399;">File</span><span style="color: #009900;">&#40;</span>baseFolder, <span style="color: #0000ff;">&quot;lib/h2-2.2.224.jar&quot;</span><span style="color: #009900;">&#41;</span><span style="color: #009900;">&#41;</span>,
 			<span style="color: #000066; font-weight: bold;">null</span>,
@@ -160,7 +160,7 @@
 	<span style="color: #000000; font-weight: bold;">private</span> <span style="color: #000000; font-weight: bold;">static</span> Importer importer <span style="color: #339933;">=</span>
 		<span style="color: #000000; font-weight: bold;">new</span> Importer<span style="color: #009900;">&#40;</span>
 			<span style="color: #000000; font-weight: bold;">new</span> BasicDataSource<span style="color: #009900;">&#40;</span>
-				<span style="color: #0000ff;">&quot;org.h2.Driver&quot;</span>, <span style="color: #0000ff;">&quot;jdbc:h2:&quot;</span> <span style="color: #339933;">+</span> <span style="color: #000000; font-weight: bold;">new</span> <span style="color: #003399;">File</span><span style="color: #009900;">&#40;</span>baseFolder, <span style="color: #0000ff;">&quot;demo-scott-subset&quot;</span><span style="color: #009900;">&#41;</span>.<span style="color: #006633;">getAbsolutePath</span><span style="color: #009900;">&#40;</span><span style="color: #009900;">&#41;</span>, <span style="color: #0000ff;">&quot;sa&quot;</span>, <span style="color: #0000ff;">&quot;&quot;</span>,
+				<span style="color: #0000ff;">&quot;org.h2.Driver&quot;</span>, <span style="color: #0000ff;">&quot;jdbc:h2:&quot;</span> <span style="color: #339933;">+</span> <span style="color: #000000; font-weight: bold;">new</span> <span style="color: #003399;">File</span><span style="color: #009900;">&#40;</span>baseFolder, <span style="color: #0000ff;">&quot;demo-scott-h2-subset&quot;</span><span style="color: #009900;">&#41;</span>.<span style="color: #006633;">getAbsolutePath</span><span style="color: #009900;">&#40;</span><span style="color: #009900;">&#41;</span>, <span style="color: #0000ff;">&quot;sa&quot;</span>, <span style="color: #0000ff;">&quot;&quot;</span>,
 				POOL_SIZE,
 				<span style="color: #000000; font-weight: bold;">new</span> <span style="color: #003399;">File</span><span style="color: #009900;">&#40;</span>baseFolder, <span style="color: #0000ff;">&quot;lib/h2-2.2.224.jar&quot;</span><span style="color: #009900;">&#41;</span><span style="color: #009900;">&#41;</span><span style="color: #009900;">&#41;</span><span style="color: #339933;">;</span>
 &nbsp;

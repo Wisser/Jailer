@@ -25,5 +25,12 @@
 	<classpathentry kind="lib" path="lib/jackson-annotations-2.16.1.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-core-2.16.1.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-databind-2.16.1.jar"/>
+	<classpathentry kind="lib" path="lib/liquibase-core-4.27.0.jar" sourcepath="liqlib/liquibase-core-4.27.0-sources.jar"/>
+	<classpathentry kind="lib" path="liqlib/commons-collections4-4.4.jar"/>
+	<classpathentry kind="lib" path="liqlib/commons-lang3-3.14.0.jar"/>
+	<classpathentry kind="lib" path="liqlib/commons-text-1.11.0.jar"/>
+	<classpathentry kind="lib" path="liqlib/liquibase-core-4.27.0.jar"/>
+	<classpathentry kind="lib" path="liqlib/opencsv-5.9.jar"/>
+	<classpathentry kind="lib" path="liqlib/snakeyaml-2.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

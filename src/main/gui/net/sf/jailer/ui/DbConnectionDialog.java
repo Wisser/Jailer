@@ -892,7 +892,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			ci.alias = "Demo Scott";
 			ci.driverClass = "org.h2.Driver";
 			ci.jar1 = "lib" + File.separator + "h2-2.2.224.jar";
-			ci.url = "jdbc:h2:" + Environment.newFile("demo-scott").getAbsolutePath();
+			ci.url = "jdbc:h2:" + Environment.newFile("demo-scott-h2").getAbsolutePath();
 			ci.user = "sa";
 			ci.password = "";
 			ci.dataModelFolder = "Demo-Scott";
@@ -902,7 +902,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			ci.alias = "Demo Sakila";
 			ci.driverClass = "org.h2.Driver";
 			ci.jar1 = "lib" + File.separator + "h2-2.2.224.jar";
-			ci.url = "jdbc:h2:" + Environment.newFile("demo-sakila").getAbsolutePath();
+			ci.url = "jdbc:h2:" + Environment.newFile("demo-sakila-h2").getAbsolutePath();
 			ci.user = "sa";
 			ci.password = "";
 			ci.dataModelFolder = "Demo-Sakila";

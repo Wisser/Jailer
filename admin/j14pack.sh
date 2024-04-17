@@ -11,9 +11,9 @@ cp -r template ~/tmp/_
 cp -r build.xml ~/tmp/_ 
 cp -r config ~/tmp/_ 
 cp -r datamodel ~/tmp/_ 
-cp -r demo-sakila.mv.db ~/tmp/_ 
-cp -r demo-scott.mv.db ~/tmp/_ 
-cp -r demo-scott-subset.mv.db ~/tmp/_ 
+cp -r demo-sakila-h2.mv.db ~/tmp/_ 
+cp -r demo-scott-h2.mv.db ~/tmp/_ 
+cp -r demo-scott-h2-subset.mv.db ~/tmp/_ 
 cp -r driverlist.csv ~/tmp/_ 
 cp -r extractionmodel ~/tmp/_ 
 cp -r jailer.bat ~/tmp/_ 

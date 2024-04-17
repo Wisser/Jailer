@@ -12,9 +12,9 @@ xcopy /S /E bookmark c:\tmp\_\bookmark\
 xcopy /S /E config c:\tmp\_\config\
 xcopy /S /E datamodel c:\tmp\_\datamodel\
 xcopy /S /E template c:\tmp\_\template\
-xcopy demo-sakila.mv.db c:\tmp\_
-xcopy demo-scott.mv.db c:\tmp\_
-xcopy demo-scott-subset.mv.db c:\tmp\_
+xcopy demo-sakila-h2.mv.db c:\tmp\_
+xcopy demo-scott-h2.mv.db c:\tmp\_
+xcopy demo-scott-h2-subset.mv.db c:\tmp\_
 xcopy driverlist.csv c:\tmp\_
 xcopy /S /E extractionmodel c:\tmp\_\extractionmodel\
 xcopy jailer.bat c:\tmp\_
