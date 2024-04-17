@@ -3157,7 +3157,3 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		helpImg = UIUtil.readImage("/explain.png");
 	}
 }
-
-// TODO
-// TODO show disabled state after click on "restore"
-

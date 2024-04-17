@@ -2597,7 +2597,7 @@ public abstract class Desktop extends JDesktopPane {
 			if (!pbg) {
 				Color mc = fgColorMap.get(fg);
 				if (mc == null) {
-					mc = new HSLColor(fg).adjustLuminance(fg.getBlue() > fg.getRed() && fg.getBlue() > fg.getGreen()? 80 : fg.getGreen() > 130 && fg.getRed() > 130 && fg.getBlue() < 8? 60 : fg.getGreen() > fg.getRed() && fg.getGreen() > fg.getBlue()? 47 : fg.getGreen() > 130 && fg.getBlue() > 130 && fg.getRed() < 30? 70 : 86);
+					mc = new HSLColor(fg).adjustLuminance(fg.getBlue() > fg.getRed() && fg.getBlue() > fg.getGreen()? 80 : fg.getGreen() > 130 && fg.getRed() > 130 && fg.getBlue() < 8? 60 : fg.getGreen() > fg.getRed() && fg.getGreen() > fg.getBlue()? 47 : fg.getGreen() > 130 && fg.getBlue() > 130 && fg.getRed() < 30? 70 : 83);
 					fgColorMap.put(fg, mc);
 				}
 				g2d.setColor(mc);

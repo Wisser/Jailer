@@ -283,6 +283,17 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="consistencyCheckMenuItem1ActionPerformed"/>
               </Events>
             </MenuItem>
+            <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator25">
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="generateDDLMenuItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Generate DDL Script"/>
+                <Property name="toolTipText" type="java.lang.String" value="Generate a DDL script that creates the database objects (CREATE TABLE, VIEW etc.)"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="generateDDLMenuItemActionPerformed"/>
+              </Events>
+            </MenuItem>
           </SubComponents>
         </Menu>
         <Menu class="javax.swing.JMenu" name="jviewMenu">

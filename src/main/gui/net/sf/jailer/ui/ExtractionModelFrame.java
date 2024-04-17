@@ -93,6 +93,7 @@ import net.sf.jailer.ui.commandline.UICommandLine;
 import net.sf.jailer.ui.constraintcheck.ConstraintChecker;
 import net.sf.jailer.ui.databrowser.BookmarksPanel.BookmarkId;
 import net.sf.jailer.ui.databrowser.DataBrowser;
+import net.sf.jailer.ui.ddl_script_generator.DDLScriptGeneratorPanel;
 import net.sf.jailer.ui.progress.ExportAndDeleteStageProgressListener;
 import net.sf.jailer.ui.util.AnimationController;
 import net.sf.jailer.ui.util.UISettings;
@@ -448,6 +449,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
         modelMigrationMenuItem = new javax.swing.JMenuItem();
         checkPKMenuItem = new javax.swing.JMenuItem();
         consistencyCheckMenuItem1 = new javax.swing.JMenuItem();
+        jSeparator25 = new javax.swing.JPopupMenu.Separator();
+        generateDDLMenuItem = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
         undoMenuItem = new javax.swing.JMenuItem();
         redoMenuItem = new javax.swing.JMenuItem();
@@ -753,6 +756,16 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
             }
         });
         jMenu1.add(consistencyCheckMenuItem1);
+        jMenu1.add(jSeparator25);
+
+        generateDDLMenuItem.setText("Generate DDL Script");
+        generateDDLMenuItem.setToolTipText("Generate a DDL script that creates the database objects (CREATE TABLE, VIEW etc.)");
+        generateDDLMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                generateDDLMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(generateDDLMenuItem);
 
         jMenuBar2.add(jMenu1);
 
@@ -2269,6 +2282,24 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
         dbConnectionDialog.importConnections(this);
     }//GEN-LAST:event_importMenuItemActionPerformed
 
+    private void generateDDLMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateDDLMenuItemActionPerformed
+        if (connectToDBIfNeeded("Generate \"CREATE TABLE\" script")) {
+        	if (theSession == null) {
+				try {
+					BasicDataSource dataSource = new BasicDataSource(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword(), 0, dbConnectionDialog.currentJarURLs());
+					theSession = SessionForUI.createSession(dataSource, dataSource.dbms, executionContext.getIsolationLevel(), true, true, this);
+				} catch (Exception e) {
+					UIUtil.showException(this, "Error", e);
+					return;
+				}
+				if (theSession == null) {
+					return;
+				}
+			}
+			DDLScriptGeneratorPanel.open(this, null, extractionModelEditor.dataModel, theSession, dbConnectionDialog.getExecutionContext());
+        }
+    }//GEN-LAST:event_generateDDLMenuItemActionPerformed
+
     private void executeAndReload(Callable<Boolean> callable) {
         File tmpFile = null;
         String extractionModelFile = extractionModelEditor.extractionModelFile;
@@ -2625,6 +2656,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
     private javax.swing.JMenuItem exportDisplay1;
     private javax.swing.JMenuItem exportMenuItem;
     private javax.swing.JMenu fileMenu;
+    private javax.swing.JMenuItem generateDDLMenuItem;
     private javax.swing.JMenuItem helpContent;
     private javax.swing.JMenuItem helpForum;
     private javax.swing.JCheckBoxMenuItem horizontalLayoutMenuItem;
@@ -2651,6 +2683,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
     private javax.swing.JPopupMenu.Separator jSeparator15;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator23;
+    private javax.swing.JPopupMenu.Separator jSeparator25;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JSeparator jSeparator4;
     private javax.swing.JSeparator jSeparator5;

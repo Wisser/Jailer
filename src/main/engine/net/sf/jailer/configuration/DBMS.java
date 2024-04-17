@@ -193,6 +193,16 @@ public class DBMS {
 
 	private Map<String, String> sqlExpressionRule = new HashMap<String, String>();
 
+	private String liquibaseProductName;
+	
+	public String getLiquibaseProductName() {
+		return liquibaseProductName;
+	}
+
+	public void setLiquibaseProductName(String liquibaseProductName) {
+		this.liquibaseProductName = liquibaseProductName;
+	}
+
 	/**
 	 * Replacement map for column types used for DDL generation. Only used if DBMS accept it.
 	 */

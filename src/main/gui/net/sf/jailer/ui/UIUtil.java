@@ -260,48 +260,25 @@ public class UIUtil {
         fileChooser.setMode(forLoad ? FileDialog.LOAD : FileDialog.SAVE);
         fileChooser.setVisible(true);
         String fn = fileChooser.getFile();
-        if (fn != null) {
-            File selFile = new File(fileChooser.getDirectory(), fn);
-            try {
-                File f = selFile;
-                String work = new File(".").getCanonicalPath();
-                if (f.getCanonicalPath().startsWith(work)) {
-                    fn = f.getName();
-                    f = f.getParentFile();
-                    while (f != null && !f.getCanonicalPath().equals(work)) {
-                        fn = f.getName() + File.separator + fn;
-                        f = f.getParentFile();
-                    }
-                } else {
-                    fn = f.getCanonicalPath();
-                }
-                if (addExtension && !(fn.endsWith(extension)
-                        || (allowZip && (fn.endsWith(extension + ".zip") || fn.endsWith(extension + ".gz"))))) {
-                    fn += extension;
-                } else {
-                	if (forLoad && !fn.endsWith(extension) && !new File(fn).exists()) {
-                        fn += extension;
-                	}
-                }
-                try {
-                    storeCurrentDir(extension, selFile.getParent());
-                } catch (Exception e) {
-                    // ignore
-                }
-                return fn;
-            } catch (IOException e1) {
-                try {
-                    fn = selFile.getCanonicalPath();
-                    if (addExtension && !(fn.endsWith(extension)
-                            || (allowZip && (fn.endsWith(extension + ".zip") || fn.endsWith(extension + ".gz"))))) {
-                        fn += extension;
-                    }
-                    return fn;
-                } catch (IOException e) {
-                    throw new RuntimeException(e.getMessage(), e);
-                }
-            }
-        }
+		if (fn != null) {
+			File selFile = new File(fileChooser.getDirectory(), fn);
+			File f = selFile;
+			fn = f.getAbsolutePath();
+			if (addExtension && !(fn.endsWith(extension)
+					|| (allowZip && (fn.endsWith(extension + ".zip") || fn.endsWith(extension + ".gz"))))) {
+				fn += extension;
+			} else {
+				if (forLoad && !fn.endsWith(extension) && !new File(fn).exists()) {
+					fn += extension;
+				}
+			}
+			try {
+				storeCurrentDir(extension, selFile.getParent());
+			} catch (Exception e) {
+				// ignore
+			}
+			return fn;
+		}
         return null;
     }
 
@@ -2064,7 +2041,7 @@ public class UIUtil {
 		return urlOrSmallIconUrl("/dbmslogo/other.png");
 	}
 
-	static String urlOrSmallIconUrl(String logoUrl) {
+	public static String urlOrSmallIconUrl(String logoUrl) {
 		String smallLogoUrl = logoUrl.replaceFirst("^(.*)(\\.([^\\.]+))$", "$1_small$2");
 		
 		if (readImage(smallLogoUrl, false) != null) {

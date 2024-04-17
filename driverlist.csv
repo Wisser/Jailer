@@ -10,8 +10,8 @@ SQLite;jdbc:sqlite:<FILE>;org.sqlite.JDBC;lib/sqlite-jdbc-3.28.0.jar;;jdbc:sqlit
 Sybase;jdbc:sybase:Tds:<HOST(localhost)>[:<PORT(5000)>];com.sybase.jdbc3.jdbc.SybDriver;;;jdbc:sybase:.*//([^/:]+).*;sybase.png
 Firebird;jdbc:firebirdsql://<HOST(localhost)>[:<PORT(3050)>]/<DATABASE>;org.firebirdsql.jdbc.FBDriver;;;jdbc:jdbc:firebirdsql://([^/:]+).* jdbc:firebirdsql:([^\\?/\;]+).*;firebird.png
 Informix Dynamic Server;jdbc:informix-sqli://<HOST(localhost)>:<PORT(1533)>/<DATABASE>:INFORMIXSERVER=<SERVER_NAME>;com.informix.jdbc.IfxDriver;;;jdbc:informix-sqli://([^\\?/\;]+).* jdbc:informix-sqli:([^/:]+).*;informix.png
-H2 embedded;jdbc:h2:<FILE>;org.h2.Driver;lib/h2-2.1.212.jar;;jdbc:h2:.*?([^/\\\\]+);h2.png
-H2 TCP;jdbc:h2:tcp://<HOST(localhost)>[:<PORT(9092)>]/<FILE>;org.h2.Driver;lib/h2-2.1.212.jar;;jdbc:h2:tcp:.*?([^/\\\\]+);h2.png
+H2 embedded;jdbc:h2:<FILE>;org.h2.Driver;lib/h2-2.2.224.jar;;jdbc:h2:.*?([^/\\\\]+);h2.png
+H2 TCP;jdbc:h2:tcp://<HOST(localhost)>[:<PORT(9092)>]/<FILE>;org.h2.Driver;lib/h2-2.2.224.jar;;jdbc:h2:tcp:.*?([^/\\\\]+);h2.png
 Amazon Redshift;jdbc:redshift://<HOST(localhost)>[:<PORT(5439)>]/[<DATABASE>];com.amazon.redshift.jdbc4.Driver;;;jdbc:redshift://([^/:]+).* jdbc:redshift:([^\\?/\;]+).*;redshift.png
 HSQL (HyperSQL);jdbc:hsqldb:<file|hsql|http>:<DATABASE>;org.hsqldb.jdbcDriver;;;jdbc:hsqldb:.*:([^/\\\\:]*);hsqldb.png
 Derby;jdbc:derby://<HOST(localhost)>:<PORT>/<DATABASE>;org.apache.derby.jdbc.ClientDriver;lib/derbyclient.jar lib/derbytools.jar;;jdbc:derby://.*/([^\\?]+).* jdbc:derby://([^\\?/\;]+).*;derby.png

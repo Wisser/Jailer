@@ -860,7 +860,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 			public void actionPerformed(ActionEvent e) {
 				String fn = UIUtil.choseFile(null, Environment.isJPacked()? Environment.newFile("lib").getAbsolutePath() : Environment.newFile(".").getAbsolutePath(), "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
 				if (fn != null) {
-					jar1.setText(fn);
+					jar1.setText(Environment.makeRelative(fn));
 				}
 			}
 		});
@@ -869,7 +869,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 			public void actionPerformed(ActionEvent e) {
 				String fn = UIUtil.choseFile(null, Environment.isJPacked()? Environment.newFile("lib").getAbsolutePath() : Environment.newFile(".").getAbsolutePath(), "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
 				if (fn != null) {
-					jar2.setText(fn);
+					jar2.setText(Environment.makeRelative(fn));
 				}
 			}
 		});
@@ -878,7 +878,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 			public void actionPerformed(ActionEvent e) {
 				String fn = UIUtil.choseFile(null, Environment.isJPacked()? Environment.newFile("lib").getAbsolutePath() : Environment.newFile(".").getAbsolutePath(), "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
 				if (fn != null) {
-					jar3.setText(fn);
+					jar3.setText(Environment.makeRelative(fn));
 				}
 			}
 		});
@@ -887,7 +887,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 			public void actionPerformed(ActionEvent e) {
 				String fn = UIUtil.choseFile(null, Environment.isJPacked()? Environment.newFile("lib").getAbsolutePath() : Environment.newFile(".").getAbsolutePath(), "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
 				if (fn != null) {
-					jar4.setText(fn);
+					jar4.setText(Environment.makeRelative(fn));
 				}
 			}
 		});

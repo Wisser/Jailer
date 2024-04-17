@@ -188,6 +188,7 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel.OutlineInfo;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.ui.databrowser.whereconditioneditor.WhereConditionEditorPanel;
+import net.sf.jailer.ui.ddl_script_generator.DDLScriptGeneratorPanel;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
@@ -2422,6 +2423,8 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         showDataModelMenuItem = new javax.swing.JCheckBoxMenuItem();
         checkPKMenuItem = new javax.swing.JMenuItem();
         consistencyCheckMenuItem1 = new javax.swing.JMenuItem();
+        jSeparator25 = new javax.swing.JPopupMenu.Separator();
+        generateDDLMenuItem = new javax.swing.JMenuItem();
         jviewMenu = new javax.swing.JMenu();
         rowLimitMenu = new javax.swing.JMenu();
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
@@ -3455,6 +3458,16 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
             }
         });
         menuTools.add(consistencyCheckMenuItem1);
+        menuTools.add(jSeparator25);
+
+        generateDDLMenuItem.setText("Generate DDL Script");
+        generateDDLMenuItem.setToolTipText("Generate a DDL script that creates the database objects (CREATE TABLE, VIEW etc.)");
+        generateDDLMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                generateDDLMenuItemActionPerformed(evt);
+            }
+        });
+        menuTools.add(generateDDLMenuItem);
 
         menuBar.add(menuTools);
 
@@ -3902,6 +3915,10 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
     private void importMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importMenuItemActionPerformed
         dbConnectionDialog.importConnections(this);
     }//GEN-LAST:event_importMenuItemActionPerformed
+
+    private void generateDDLMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateDDLMenuItemActionPerformed
+        DDLScriptGeneratorPanel.open(this, null, datamodel.get(), session, dbConnectionDialog.getExecutionContext());
+    }//GEN-LAST:event_generateDDLMenuItemActionPerformed
 
 	private void newWindowMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_newWindowMenuItemActionPerformed
 		openNewWindow();
@@ -4628,6 +4645,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenuItem exportDataMenuItem;
     private javax.swing.JMenuItem exportMenuItem;
+    private javax.swing.JMenuItem generateDDLMenuItem;
     private javax.swing.JMenuItem goBackItem;
     private javax.swing.JMenuItem goForwardItem;
     private javax.swing.JLabel hasDependent;
@@ -4692,6 +4710,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
     private javax.swing.JToolBar.Separator jSeparator22;
     private javax.swing.JPopupMenu.Separator jSeparator23;
     private javax.swing.JToolBar.Separator jSeparator24;
+    private javax.swing.JPopupMenu.Separator jSeparator25;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JPopupMenu.Separator jSeparator5;
@@ -5490,37 +5509,41 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 				if (path.isEmpty()) {
 					return null;
 				}
-				final AssociationPathPanel assocPanel = new AssociationPathPanel(getDataModel(), path,
-						dependsOn.getForeground(), hasDependent.getForeground(), associatedWith.getForeground(),
-						ignored.getForeground());
-				if (!assocPanel.needToAsk) {
-					return assocPanel.selectedAssociations;
-				}
-				final JDialog d = new JDialog(DataBrowser.this, "Open Path", true);
-				assocPanel.okButton.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						assocPanel.ok = true;
-						d.setVisible(false);
+				try {
+					final AssociationPathPanel assocPanel = new AssociationPathPanel(getDataModel(), path,
+							dependsOn.getForeground(), hasDependent.getForeground(), associatedWith.getForeground(),
+							ignored.getForeground());
+					if (!assocPanel.needToAsk) {
+						return assocPanel.selectedAssociations;
 					}
-				});
-				assocPanel.cancelButton.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						assocPanel.ok = false;
-						d.setVisible(false);
+					final JDialog d = new JDialog(DataBrowser.this, "Open Path", true);
+					assocPanel.okButton.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							assocPanel.ok = true;
+							d.setVisible(false);
+						}
+					});
+					assocPanel.cancelButton.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							assocPanel.ok = false;
+							d.setVisible(false);
+						}
+					});
+					d.getContentPane().add(assocPanel);
+					d.pack();
+					d.setSize(600, Math.max(d.getHeight() + 20, 400));
+					d.setLocation(DataBrowser.this.getX() + (DataBrowser.this.getWidth() - d.getWidth()) / 2,
+							Math.max(0, DataBrowser.this.getY() + (DataBrowser.this.getHeight() - d.getHeight()) / 2));
+					UIUtil.fit(d);
+					assocPanel.okButton.grabFocus();
+					d.setVisible(true);
+					if (assocPanel.ok) {
+						return assocPanel.selectedAssociations;
 					}
-				});
-				d.getContentPane().add(assocPanel);
-				d.pack();
-				d.setSize(600, Math.max(d.getHeight() + 20, 400));
-				d.setLocation(DataBrowser.this.getX() + (DataBrowser.this.getWidth() - d.getWidth()) / 2,
-						Math.max(0, DataBrowser.this.getY() + (DataBrowser.this.getHeight() - d.getHeight()) / 2));
-				UIUtil.fit(d);
-				assocPanel.okButton.grabFocus();
-				d.setVisible(true);
-				if (assocPanel.ok) {
-					return assocPanel.selectedAssociations;
+				} catch (Exception e) {
+					LogUtil.warn(e);
 				}
 				return null;
 			}
@@ -6276,7 +6299,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		}
 	}// GEN-LAST:event_loadScriptMenuItemActionPerformed
 
-	private void loadSQLScriptFile(File file) {
+	public void loadSQLScriptFile(File file) {
 		if (file.exists() && file.isDirectory()) {
 			return;
 		}

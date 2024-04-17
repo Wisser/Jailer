@@ -351,6 +351,28 @@ public class Environment {
 		}
 		return new File(home, name);
 	}
+	
+	public static String makeRelative(String file) {
+		try {
+			String work;
+			work = newFile(".").getCanonicalPath();
+			File f = new File(file);
+			String fn;
+			if (f.getCanonicalPath().startsWith(work)) {
+				fn = f.getName();
+				f = f.getParentFile();
+				while (f != null && !f.getCanonicalPath().equals(work)) {
+					fn = f.getName() + File.separator + fn;
+					f = f.getParentFile();
+				}
+			} else {
+				fn = f.getAbsolutePath();
+			}
+			return fn;
+		} catch (IOException e) {
+			return file;
+		}
+	}
 
 	public static boolean testCreateTempFile() {
 		try {

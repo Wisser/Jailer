@@ -2665,7 +2665,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	private void browseDeleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseDeleteButtonActionPerformed
 		String fn = UIUtil.choseFile(null, ".", "SQL Delete Script", ".sql", ExportDialog.this, true, false);
 		if (fn != null) {
-			delete.setText(fn);
+			delete.setText(Environment.makeRelative(Environment.makeRelative(fn)));
 		}
 	}//GEN-LAST:event_browseDeleteButtonActionPerformed
 

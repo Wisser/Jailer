@@ -46,6 +46,7 @@
 		{
 			"id": "ORACLE",
 			"displayName": "Oracle",
+			"liquibaseProductName": "oracle",
 			"icon": "oracle.png",
 			"urlPattern": "jdbc:oracle.*",
 			"sqlDialect": {
@@ -176,6 +177,7 @@
 		{
 			"id": "MSSQL",
 			"displayName": "MS SQL Server",
+			"liquibaseProductName": "mssql",
 			"icon": "mssql.png",
 			"urlPattern": "jdbc:sqlserver.*|jdbc:inetdae.*|jdbc:JTurbo.*|jdbc:weblogic:mssqlserver.*|jdbc:jtds:sqlserver.*|jdbc:JSQLConnect.*",
 			"sqlDialect": {
@@ -284,6 +286,7 @@
 		{
 			"id": "MySQL",
 			"displayName": "MySQL",
+			"liquibaseProductName": "mysql",
 			"icon": "mysql.png",
 			"urlPattern": "jdbc:mysql.*",
 			"usesCatalog": true,
@@ -415,6 +418,7 @@
 			"id": "MariaDB",
 			"familyId": "MySQL",
 			"icon": "mariadb.png",
+			"liquibaseProductName": "mariadb",
 			"displayName": "MariaDB",
 			"urlPattern": "jdbc:mariadb.*",
 			"usesCatalog": true,
@@ -544,6 +548,7 @@
 		{
 			"id": "DB2",
 			"displayName": "DB2 LUW",
+			"liquibaseProductName": "db2",
 			"icon": "db2.png",
 			"urlPattern": "jdbc:db2.*",
 			"sqlDialect": {
@@ -670,6 +675,7 @@
 		{
 			"id": "DB2_ZOS",
 			"displayName": "DB2 z/OS",
+			"liquibaseProductName": "db2z",
 			"icon": "db2.png",
 			"urlPattern": "jdbc:db2.*",
 			"sqlDialect": {
@@ -769,6 +775,7 @@
 		{
 			"id": "INFORMIX",
 			"displayName": "Informix",
+			"liquibaseProductName": "informix",
 			"icon": "informix.png",
 			"urlPattern": "jdbc:informix.*",
 			"sqlDialect": {
@@ -865,6 +872,7 @@
 		{
 			"id": "POSTGRESQL",
 			"displayName": "PostgreSQL",
+			"liquibaseProductName": "postgresql",
 			"icon": "postgresql.png",
 			"urlPattern": "jdbc:postgres.*",
 			"sqlDialect": {
@@ -1016,6 +1024,7 @@
 			"id": "Redshift",
 			"familyId": "POSTGRESQL",
 			"displayName": "Redshift",
+			"liquibaseProductName": "postgresql",
 			"icon": "redshift.png",
 			"urlPattern": "jdbc:redshift.*",
 			"sqlDialect": {
@@ -1165,6 +1174,7 @@
 		{
 			"id": "CLOADSCAPE",
 			"displayName": "Cloudscape",
+			"liquibaseProductName": "unsupported",
 			"icon": "other.png",
 			"urlPattern": "jdbc:cloudscape.*",
 			"sqlDialect": {
@@ -1246,6 +1256,7 @@
 		{
 			"id": "FIREBIRD",
 			"displayName": "Firebird",
+			"liquibaseProductName": "firebird",
 			"icon": "firebird.png",
 			"urlPattern": "jdbc:firebirdsql.*",
 			"sqlDialect": {
@@ -1329,6 +1340,7 @@
 		{
 			"id": "DERBY",
 			"displayName": "Derby",
+			"liquibaseProductName": "derby",
 			"icon": "derby.png",
 			"urlPattern": "jdbc:derby.*",
 			"sqlDialect": {
@@ -1410,6 +1422,7 @@
 		{
 			"id": "SYBASE",
 			"displayName": "Sybase",
+			"liquibaseProductName": "sybase",
 			"icon": "sybase.png",
 			"urlPattern": "jdbc:sybase.*|jdbc:jtds:sybase.*",
 			"sqlDialect": {
@@ -1512,6 +1525,7 @@
 		{
 			"id": "SQLITE",
 			"displayName": "SQLite",
+			"liquibaseProductName": "sqlite",
 			"icon": "sqlite.png",
 			"urlPattern": "jdbc:sqlite.*",
 			"sqlDialect": {
@@ -1604,6 +1618,7 @@
 		{
 			"id": "HSQL",
 			"displayName": "HSQLDB",
+			"liquibaseProductName": "hsqldb",
 			"icon": "hsqldb.png",
 			"urlPattern": "jdbc:hsqldb.*",
 			"sqlDialect": {
@@ -1683,6 +1698,7 @@
 		{
 			"id": "H2",
 			"displayName": "H2",
+			"liquibaseProductName": "h2",
 			"icon": "h2.png",
 			"urlPattern": "jdbc:h2.*",
 			"sqlDialect": {
@@ -1798,6 +1814,7 @@
 		{
 			"id": "ClickHouse",
 			"displayName": "ClickHouse",
+			"liquibaseProductName": "unsupported",
 			"icon": "clickhouse.png",
 			"urlPattern": "jdbc:(clickhouse|ch):.*",
 			
