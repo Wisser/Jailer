@@ -155,9 +155,6 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 		ddlScriptGeneratorPanel.owner = owner;
 		ddlScriptGeneratorPanel.session = session;
     	ddlScriptGeneratorPanel.initTargetDBMS(session);
-    	ddlScriptGeneratorPanel.statusLabel.setText((" "));
-    	ddlScriptGeneratorPanel.statusLabel2.setVisible(false);
-    	ddlScriptGeneratorPanel.statusLabelCancelled.setVisible(false);
     	
 		if (executionContext.getCurrentModelSubfolder() != null) {
 			ddlScriptGeneratorPanel.scriptFileTextField.setText((preselectedSchema != null? preselectedSchema : executionContext.getCurrentModelSubfolder()) + "-ddl.sql");
@@ -173,7 +170,11 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 		UIUtil.fit(dialog);
 		dialog.setLocation(owner.getX() + owner.getWidth() / 2 - dialog.getWidth() / 2, owner.getY() + owner.getHeight() / 2 - dialog.getHeight() / 2);
 		
-		dialog.addWindowListener(new WindowAdapter() {
+    	ddlScriptGeneratorPanel.statusLabel.setText((" "));
+    	ddlScriptGeneratorPanel.statusLabel2.setVisible(false);
+    	ddlScriptGeneratorPanel.statusLabelCancelled.setVisible(false);
+
+    	dialog.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowOpened(WindowEvent e) {
 				try {
