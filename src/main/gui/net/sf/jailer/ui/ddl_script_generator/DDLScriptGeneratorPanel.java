@@ -196,10 +196,9 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 		dialog.dispose();
     }
 	
-	private void cancel() {
+	private synchronized void cancel() {
 		if (!cancelled.get()) {
 			cancelled.set(true);
-			cancelled = new AtomicBoolean();
 			if (out != null) {
 				try {
 					out.close();
@@ -227,8 +226,12 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 	private PrintWriter out;
 	private AtomicBoolean cancelled = new AtomicBoolean();
     
-    private boolean doGenerate(String fileName, AtomicBoolean cancelled) {
-    	cancelled.set(false);
+    private boolean doGenerate(String fileName, AtomicBoolean isCancelled) {
+    	synchronized(this) {
+    		cancelled = isCancelled;
+        	this.cancelled = isCancelled;
+    		isCancelled.set(false);
+    	}
     	UIUtil.invokeLater(() -> {
     		statusLabel.setText(("Analyzing schema (might take a while)"));
        		statusLabel2.setVisible(true);
@@ -255,7 +258,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 			}
 		    generateChangeLog(liquibase, database);
 		} catch (Exception e1) {
-			if (!cancelled.get()) {
+			if (!isCancelled.get()) {
 				UIUtil.showException(this, "Error", e1);
 			}
 			return false;
@@ -267,6 +270,10 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 					// ignore
 				}
 			}
+		}
+		
+		if (isCancelled.get()) {
+			return false;
 		}
 		
 		File databaseChangeLogFile = new File(baseDir.getPath() + ".csv");
@@ -306,14 +313,17 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 					@Override
 					public void write(char[] cbuf, int off, int len) throws IOException {
 						try {
-							doWrite(cancelled, cbuf, off, len);
+							doWrite(isCancelled, cbuf, off, len);
 						} catch (Throwable t) {
-							if (!cancelled.get()) {
+							if (!isCancelled.get()) {
 								throw t;
 							}
 						}
 					}
 					private void doWrite(AtomicBoolean cancelled, char[] cbuf, int off, int len) {
+						if (isCancelled.get()) {
+							throw new RuntimeException("cancelled");
+						}
 						for (int i = 0; i < len; ++i) {
 							char c = cbuf[i + off];
 							if (c == '\n') {
@@ -357,9 +367,6 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 								currentLine.append(c);
 							}
 						}
-						if (cancelled.get()) {
-							throw new RuntimeException("cancelled");
-						}
 					}
 					@Override
 					public void flush() throws IOException {
@@ -378,7 +385,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 	    		return false;
 		    }
 		} catch (Exception e1) {
-			if (!cancelled.get()) {
+			if (!isCancelled.get()) {
 				UIUtil.showException(this, "Error", e1);
 			}
 			return false;
@@ -726,12 +733,12 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 		
 		toggleEnable(false);
 		
+		AtomicBoolean isCancelled = new AtomicBoolean();
+		
         Thread thread = new Thread(() -> {
         	Throwable throwable = null;
-        	AtomicBoolean cancelled = new AtomicBoolean();
-        	this.cancelled = cancelled;
         	try {
-        		if (doGenerate(fileName, cancelled)) {
+        		if (doGenerate(fileName, isCancelled)) {
 					UIUtil.invokeLater(() -> {
 	        			close();
 					});
@@ -748,19 +755,21 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
         			});
         		}
         	} catch (Throwable t) {
-        		if (!cancelled.get()) {
+        		if (!isCancelled.get()) {
         			throwable = t;
         		}
         	}
         	final Throwable finalThrowable = throwable;
         	UIUtil.invokeLater(() -> {
-        		statusLabel.setText(" ");
-        		statusLabel2.setVisible(false);
-        		statusLabelCancelled.setVisible(cancelled.get());
-        		if (finalThrowable != null) {
-        			UIUtil.showException(DDLScriptGeneratorPanel.this, "Error", finalThrowable);
-        		} else {
-        			toggleEnable(true);
+        		if (!isCancelled.get()) {
+	        		statusLabel.setText(" ");
+	        		statusLabel2.setVisible(false);
+	        		statusLabelCancelled.setVisible(false);
+	        		if (finalThrowable != null) {
+	        			UIUtil.showException(DDLScriptGeneratorPanel.this, "Error", finalThrowable);
+	        		} else {
+	        			toggleEnable(true);
+	        		}
         		}
         	});
         }, "generate-ddl");
