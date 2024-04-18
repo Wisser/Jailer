@@ -2239,6 +2239,4 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 
 }
 
-
-// TODO
-// TODO allow entering jdbc properties (extended cli, api. Allow dynamic (pgsql) and static (driver.csv) prop. declaration. Steal static ones)
+// TODO 1 allow entering jdbc properties (extended cli, api. Allow dynamic (pgsql) and static (driver.csv) prop. declaration. Steal static ones)
