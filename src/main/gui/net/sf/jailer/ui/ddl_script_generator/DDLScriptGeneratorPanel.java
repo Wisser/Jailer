@@ -154,7 +154,8 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
     	ddlScriptGeneratorPanel.initTargetDBMS(session);
     	ddlScriptGeneratorPanel.statusLabel.setText((" "));
     	ddlScriptGeneratorPanel.statusLabel2.setVisible(false);
-
+    	ddlScriptGeneratorPanel.statusLabelCancelled.setVisible(false);
+    	
 		if (executionContext.getCurrentModelSubfolder() != null) {
 			ddlScriptGeneratorPanel.scriptFileTextField.setText((preselectedSchema != null? preselectedSchema : executionContext.getCurrentModelSubfolder()) + "-ddl.sql");
 		}
@@ -230,7 +231,8 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
     	cancelled.set(false);
     	UIUtil.invokeLater(() -> {
     		statusLabel.setText(("Analyzing schema (might take a while)"));
-    		statusLabel2.setVisible(true);
+       		statusLabel2.setVisible(true);
+       		statusLabelCancelled.setVisible(false);
     	});
     	UISettings.s15 += 100000;
     	Liquibase liquibase = null;
@@ -531,6 +533,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
         dbmsComboBox = new javax.swing.JComboBox<>();
         statusLabel = new javax.swing.JLabel();
         statusLabel2 = new javax.swing.JLabel();
+        statusLabelCancelled = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         closeButton = new javax.swing.JButton();
         okButton = new javax.swing.JButton();
@@ -639,6 +642,18 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 8, 0);
         jPanel1.add(statusLabel2, gridBagConstraints);
 
+        statusLabelCancelled.setFont(statusLabelCancelled.getFont().deriveFont(statusLabelCancelled.getFont().getSize()+4f));
+        statusLabelCancelled.setForeground(java.awt.Color.red);
+        statusLabelCancelled.setText("Cancelled");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 40;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 8, 0);
+        jPanel1.add(statusLabelCancelled, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -695,7 +710,8 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
     	if (okButton.isEnabled()) {
     		close();
     	} else {
-    		toggleEnable(true);
+       		statusLabelCancelled.setVisible(true);
+       		toggleEnable(true);
     		cancel();
     	}
     }//GEN-LAST:event_closeButtonActionPerformed
@@ -740,6 +756,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
         	UIUtil.invokeLater(() -> {
         		statusLabel.setText(" ");
         		statusLabel2.setVisible(false);
+        		statusLabelCancelled.setVisible(cancelled.get());
         		if (finalThrowable != null) {
         			UIUtil.showException(DDLScriptGeneratorPanel.this, "Error", finalThrowable);
         		} else {
@@ -797,6 +814,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
     private javax.swing.JTextField scriptFileTextField;
     private javax.swing.JLabel statusLabel;
     private javax.swing.JLabel statusLabel2;
+    private javax.swing.JLabel statusLabelCancelled;
     private javax.swing.JTextField targetSchemaTextField;
     // End of variables declaration//GEN-END:variables
     private static ImageIcon okIcon;

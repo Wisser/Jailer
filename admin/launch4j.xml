@@ -17,6 +17,12 @@
   <classPath>
     <mainClass>net.sf.jailer.ui.ExtractionModelFrame</mainClass>
     <cp>lib/istack-commons-runtime-3.0.5.jar</cp>
+    <cp>lib/liquibase-core-4.27.0.jar</cp>
+    <cp>lib/commons-collections4-4.4.jar</cp>
+    <cp>lib/commons-lang3-3.14.0.jar</cp>
+    <cp>lib/commons-text-1.11.0.jar</cp>
+    <cp>lib/opencsv-5.9.jar</cp>
+    <cp>lib/snakeyaml-2.2.jar</cp>
     <cp>lib/jackson-core-2.16.1.jar</cp>
     <cp>lib/jackson-annotations-2.16.1.jar</cp>
     <cp>lib/jackson-databind-2.16.1.jar</cp>

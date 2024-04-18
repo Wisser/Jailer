@@ -43,6 +43,12 @@ del /Q c:\tmp\_\lib\*
 del /Q c:\tmp\_\*.sh
 
 move c:\tmp\_\jdbc_lib\args4j.jar c:\tmp\_\lib\args4j.jar
+move c:\tmp\_\jdbc_lib\liquibase-core-4.27.0.jar c:\tmp\_\lib\liquibase-core-4.27.0.jar
+move c:\tmp\_\jdbc_lib\commons-collections4-4.4.jar c:\tmp\_\lib\commons-collections4-4.4.jar
+move c:\tmp\_\jdbc_lib\commons-lang3-3.14.0.jar c:\tmp\_\lib\commons-lang3-3.14.0.jar
+move c:\tmp\_\jdbc_lib\commons-text-1.11.0.jar c:\tmp\_\lib\commons-text-1.11.0.jar
+move c:\tmp\_\jdbc_lib\opencsv-5.9.jar c:\tmp\_\lib\opencsv-5.9.jar
+move c:\tmp\_\jdbc_lib\snakeyaml-2.2.jar c:\tmp\_\lib\snakeyaml-2.2.jar
 move c:\tmp\_\jdbc_lib\jackson-core-2.16.1.jar c:\tmp\_\lib\jackson-core-2.16.1.jar
 move c:\tmp\_\jdbc_lib\jackson-annotations-2.16.1.jar c:\tmp\_\lib\jackson-annotations-2.16.1.jar
 move c:\tmp\_\jdbc_lib\jackson-databind-2.16.1.jar c:\tmp\_\lib\jackson-databind-2.16.1.jar

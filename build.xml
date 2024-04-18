@@ -77,7 +77,7 @@ available targets:
 		<jar destfile="${JAR-ENGINE}" basedir="${COMPILE_DIR}">
 			<manifest>
 				<attribute name="Main-Class" value="net.sf.jailer.Jailer" />
-				<attribute name="Class-Path" value="lib/axb-api-2.3.0.jar lib/jackson-core-2.16.1.jar lib/jackson-annotations-2.16.1.jar lib/jackson-databind-2.16.1.jar lib/log4j-api-2.17.2.jar lib/log4j-core-2.17.2.jar lib/log4j-slf4j-impl-2.17.2.jar lib/slf4j-api-1.7.25.jar lib/flatlaf-3.3.jar lib/args4j.jar config/" />
+				<attribute name="Class-Path" value="lib/axb-api-2.3.0.jar lib/liquibase-core-4.27.0.jar lib/commons-collections4-4.4.jar lib/commons-lang3-3.14.0.jar lib/commons-text-1.11.0.jar lib/opencsv-5.9.jar lib/snakeyaml-2.2.jar lib/jackson-core-2.16.1.jar lib/jackson-annotations-2.16.1.jar lib/jackson-databind-2.16.1.jar lib/log4j-api-2.17.2.jar lib/log4j-core-2.17.2.jar lib/log4j-slf4j-impl-2.17.2.jar lib/slf4j-api-1.7.25.jar lib/flatlaf-3.3.jar lib/args4j.jar config/" />
 			</manifest>
 		</jar>
 	</target>
@@ -86,7 +86,7 @@ available targets:
 		<jar destfile="${JAR}" basedir="${COMPILE_DIR}">
 			<manifest>
 				<attribute name="Main-Class" value="net.sf.jailer.ui.JailerUI" />
-				<attribute name="Class-Path" value="lib/axb-api-2.3.0.jar lib/jackson-core-2.16.1.jar lib/jackson-annotations-2.16.1.jar lib/jackson-databind-2.16.1.jar lib/prefuse.jar config/ lib/log4j-api-2.17.2.jar lib/log4j-core-2.17.2.jar lib/log4j-slf4j-impl-2.17.2.jar lib/slf4j-api-1.7.25.jar lib/flatlaf-3.3.jar lib/args4j.jar lib/sdoc-0.5.0-beta.jar lib/jsqlparser-3.2.jar lib/tablefilter-swing-5.3.1.jar" />
+				<attribute name="Class-Path" value="lib/axb-api-2.3.0.jar lib/liquibase-core-4.27.0.jar lib/commons-collections4-4.4.jar lib/commons-lang3-3.14.0.jar lib/commons-text-1.11.0.jar lib/opencsv-5.9.jar lib/snakeyaml-2.2.jar lib/jackson-core-2.16.1.jar lib/jackson-annotations-2.16.1.jar lib/jackson-databind-2.16.1.jar lib/prefuse.jar config/ lib/log4j-api-2.17.2.jar lib/log4j-core-2.17.2.jar lib/log4j-slf4j-impl-2.17.2.jar lib/slf4j-api-1.7.25.jar lib/flatlaf-3.3.jar lib/args4j.jar lib/sdoc-0.5.0-beta.jar lib/jsqlparser-3.2.jar lib/tablefilter-swing-5.3.1.jar" />
 			</manifest>
 		</jar>
 		<copy todir=".">

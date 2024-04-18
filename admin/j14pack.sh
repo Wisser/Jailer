@@ -46,6 +46,12 @@ rm ~/tmp/_/*.exe
 chmod a+x ~/tmp/_/*.sh 
  
 mv ~/tmp/_/jdbc_lib/args4j.jar ~/tmp/_/lib/args4j.jar 
+mv ~/tmp/_/jdbc_lib/liquibase-core-4.27.0.jar ~/tmp/_/lib/liquibase-core-4.27.0.jar
+mv ~/tmp/_/jdbc_lib/commons-collections4-4.4.jar ~/tmp/_/lib/commons-collections4-4.4.jar
+mv ~/tmp/_/jdbc_lib/commons-lang3-3.14.0.jar ~/tmp/_/lib/commons-lang3-3.14.0.jar
+mv ~/tmp/_/jdbc_lib/commons-text-1.11.0.jar ~/tmp/_/lib/commons-text-1.11.0.jar
+mv ~/tmp/_/jdbc_lib/opencsv-5.9.jar ~/tmp/_/lib/opencsv-5.9.jar
+mv ~/tmp/_/jdbc_lib/snakeyaml-2.2.jar ~/tmp/_/lib/snakeyaml-2.2.jar
 mv ~/tmp/_/jdbc_lib/jackson-core-2.16.1.jar ~/tmp/_/lib/jackson-core-2.16.1.jar
 mv ~/tmp/_/jdbc_lib/jackson-annotations-2.16.1.jar ~/tmp/_/lib/jackson-annotations-2.16.1.jar
 mv ~/tmp/_/jdbc_lib/jackson-databind-2.16.1.jar ~/tmp/_/lib/jackson-databind-2.16.1.jar
