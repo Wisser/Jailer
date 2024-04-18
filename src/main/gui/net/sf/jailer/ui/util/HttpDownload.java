@@ -136,6 +136,3 @@ public class HttpDownload {
 		}
 	}
 }
-
-// TODO
-// TODO allow user to easily copy URL in Error-Dialog if download fails
