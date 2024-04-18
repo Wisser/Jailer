@@ -1,3 +1,7 @@
+16.1
+  - Thanks to the integration of the Liquibase tool, DDL scripts can now be generated to create database objects.
+    This makes it possible to create subset databases from scratch using only on-board means.
+
 15.8.4
   - Added support for ClickHouse.
     https://github.com/Wisser/Jailer/issues/110
