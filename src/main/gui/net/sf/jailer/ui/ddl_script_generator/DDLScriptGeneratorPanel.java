@@ -312,15 +312,6 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 					AtomicBoolean uiPending = new AtomicBoolean(false);
 					@Override
 					public void write(char[] cbuf, int off, int len) throws IOException {
-						try {
-							doWrite(isCancelled, cbuf, off, len);
-						} catch (Throwable t) {
-							if (!isCancelled.get()) {
-								throw t;
-							}
-						}
-					}
-					private void doWrite(AtomicBoolean cancelled, char[] cbuf, int off, int len) {
 						if (isCancelled.get()) {
 							throw new RuntimeException("cancelled");
 						}
