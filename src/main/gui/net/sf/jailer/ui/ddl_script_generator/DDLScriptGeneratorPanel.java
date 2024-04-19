@@ -245,7 +245,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
     	Liquibase liquibase = null;
     	String dbmsName = null;
 		File baseDir = Configuration.getInstance().createTempFile();
-		File changeLogFile = new File(baseDir.getPath() + ".xml");
+		File changeLogFile = new File(baseDir.getPath() + ".json");
 		FileSystemResourceAccessor resourceAccessor = new FileSystemResourceAccessor(baseDir.getParent());
 		String shortName;
 		try {
