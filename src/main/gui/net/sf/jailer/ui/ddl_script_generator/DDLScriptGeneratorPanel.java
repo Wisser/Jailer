@@ -17,6 +17,7 @@ import java.io.Writer;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -28,9 +29,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.ImageIcon;
@@ -46,20 +47,55 @@ import org.fife.rsta.ui.EscapableDialog;
 import liquibase.CatalogAndSchema;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
+import liquibase.change.Change;
+import liquibase.change.core.DropAllForeignKeyConstraintsChange;
+import liquibase.change.core.DropDefaultValueChange;
+import liquibase.change.core.DropForeignKeyConstraintChange;
+import liquibase.change.core.DropIndexChange;
+import liquibase.change.core.DropNotNullConstraintChange;
+import liquibase.change.core.DropPrimaryKeyChange;
+import liquibase.change.core.DropProcedureChange;
+import liquibase.change.core.DropSequenceChange;
+import liquibase.change.core.DropTableChange;
+import liquibase.change.core.DropUniqueConstraintChange;
+import liquibase.change.core.DropViewChange;
+import liquibase.changelog.ChangeLogHistoryService;
+import liquibase.changelog.ChangeSet;
+import liquibase.changelog.MockChangeLogHistoryService;
 import liquibase.command.CommandScope;
+import liquibase.command.core.DropAllCommandStep;
 import liquibase.command.core.GenerateChangelogCommandStep;
 import liquibase.command.core.helpers.DbUrlConnectionArgumentsCommandStep;
 import liquibase.command.core.helpers.PreCompareCommandStep;
 import liquibase.database.Database;
 import liquibase.database.DatabaseConnection;
 import liquibase.database.DatabaseFactory;
+import liquibase.database.OfflineConnection;
+import liquibase.database.core.MSSQLDatabase;
+import liquibase.database.core.MockDatabase;
 import liquibase.database.jvm.JdbcConnection;
+import liquibase.diff.DiffGeneratorFactory;
+import liquibase.diff.DiffResult;
 import liquibase.diff.compare.CompareControl;
+import liquibase.diff.output.DiffOutputControl;
+import liquibase.diff.output.changelog.DiffToChangeLog;
 import liquibase.exception.CommandExecutionException;
 import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
+import liquibase.exception.UnexpectedLiquibaseException;
 import liquibase.resource.FileSystemResourceAccessor;
+import liquibase.snapshot.DatabaseSnapshot;
+import liquibase.snapshot.EmptyDatabaseSnapshot;
+import liquibase.snapshot.SnapshotControl;
+import liquibase.snapshot.SnapshotGeneratorFactory;
+import liquibase.sql.Sql;
+import liquibase.sqlgenerator.SqlGeneratorFactory;
+import liquibase.statement.SqlStatement;
 import liquibase.structure.DatabaseObject;
+import liquibase.structure.core.Index;
+import liquibase.structure.core.PrimaryKey;
+import liquibase.structure.core.UniqueConstraint;
+import liquibase.util.StringUtil;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.JailerVersion;
 import net.sf.jailer.configuration.Configuration;
@@ -95,6 +131,12 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
      */
     public DDLScriptGeneratorPanel() {
         initComponents(); UIUtil.initComponents(this);
+        
+        ButtonGroup buttonGroup = new ButtonGroup();
+        buttonGroup.add(createRadioButton);
+        buttonGroup.add(createAndDropRadioButton);
+        buttonGroup.add(dropRadioButton);
+        createRadioButton.setSelected(true);
 
         okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
         closeButton.setIcon(UIUtil.scaleIcon(closeButton, cancelIcon));
@@ -242,16 +284,20 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
        		statusLabelCancelled.setVisible(false);
     	});
     	UISettings.s15 += 100000;
+    	Liquibase liquibase4CLog = null;
     	Liquibase liquibase = null;
     	String dbmsName = null;
 		File baseDir = Configuration.getInstance().createTempFile();
 		File changeLogFile = new File(baseDir.getPath() + ".json");
+		File databaseChangeLogFile = new File(baseDir.getPath() + ".csv");
 		FileSystemResourceAccessor resourceAccessor = new FileSystemResourceAccessor(baseDir.getParent());
 		String shortName;
+		Database database;
+		CatalogAndSchema catalogAndSchema;
 		try {
 			connection.set(new JdbcConnection(session.createNewConnection()));
-			Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(connection.get());
-			liquibase = new Liquibase(changeLogFile.getPath(), resourceAccessor, database);
+			database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(connection.get());
+			liquibase4CLog = new Liquibase(changeLogFile.getPath(), resourceAccessor, database);
 			shortName = database.getShortName();
 			Object dbms = dbmsComboBox.getSelectedItem();
 			if (dbms instanceof DBMS && ((DBMS) dbms).getLiquibaseProductName() != null) {
@@ -260,34 +306,32 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 					shortName = ((DBMS) dbms).getLiquibaseProductName();
 				}
 			}
-		    generateChangeLog(liquibase, database);
-		} catch (Exception e1) {
-			if (!isCancelled.get()) {
-				UIUtil.showException(this, "Error", e1);
+			String defaultSchemaName = String.valueOf(schemaComboBox.getSelectedItem());
+			catalogAndSchema = new CatalogAndSchema(database.getDefaultCatalogName(), defaultSchemaName);
+			
+		    generateChangeLog(liquibase4CLog, database, catalogAndSchema);
+			
+			if (isCancelled.get()) {
+				return false;
 			}
-			return false;
-		} finally {
-			if (liquibase != null) {
-				try {
-					liquibase.close();
-				} catch (LiquibaseException e1) {
-					// ignore
-				}
-			}
-		}
-		
-		if (isCancelled.get()) {
-			return false;
-		}
-		
-		File databaseChangeLogFile = new File(baseDir.getPath() + ".csv");
-		String outputSchema = null;
-		try {
+			
+			String outputSchema = null;
 		    if (changeLogFile.exists()) {
-				liquibase = new Liquibase(changeLogFile.getName(), resourceAccessor, DatabaseFactory.getInstance().openConnection(
-						"offline:" + shortName + "?changeLogFile=" + databaseChangeLogFile.getPath()
-						+ "&outputLiquibaseSql=NONE",
-						session.getSchema(), "", "", null, resourceAccessor));
+				OfflineConnection conn = new OfflineConnection("offline:" + shortName + "?changeLogFile="
+						+ databaseChangeLogFile.getPath() + "&outputLiquibaseSql=NONE", resourceAccessor) {
+
+					@Override
+					protected ChangeLogHistoryService createChangeLogHistoryService(Database database) {
+						return new MockChangeLogHistoryService() {
+							@Override
+							public boolean supports(Database database) {
+								return true;
+							}
+						};
+					}
+				};
+				conn.setConnectionUserName(session.getSchema());
+				liquibase = new Liquibase(changeLogFile.getName(), resourceAccessor, conn);
 				
 				liquibase.getDatabase().setOutputDefaultSchema(false);
 				if (!targetSchemaTextField.getText().trim().isEmpty()) {
@@ -307,75 +351,92 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 				out.println("-- generated by Jailer " + JailerVersion.VERSION + ", " + new Date() + " from " + System.getProperty("user.name") + host);
 				out.println();
 				
-				Pattern jailerTablePattern = Pattern.compile("(\\b((" + SqlUtil.JAILER_TABLES.stream().collect(Collectors.joining("|")) + ")(_T)?)\\b)|(\\b" + ImportFilterManager.MAPPINGTABLE_NAME_PREFIX + ")", Pattern.CASE_INSENSITIVE);
+				if (dropRadioButton.isSelected() || createAndDropRadioButton.isSelected()) {
+					out.println("-- Drop objects:");
+					out.println();
+					out.println(dropDatabaseObjects(database, liquibase.getDatabase(), catalogAndSchema, new CatalogAndSchema(null, outputSchema)) + ";" + UIUtil.LINE_SEPARATOR);
+					out.println();
+				}
 				
-				Writer output = new Writer() {
-					AtomicInteger count = new AtomicInteger(0);
-					StringBuilder currentLine = new StringBuilder();
-					Pattern typeRe = Pattern.compile("(\\bcreate\\b.*\\btable\\b)|(\\bcreate\\b.*\\bindex\\b)|(\\bcreate\\b.*\\bview\\b)|(\\balter\\b)", Pattern.CASE_INSENSITIVE);
-					int type = -1;
-					boolean prevLineHadSemicolon = true;
-					AtomicBoolean uiPending = new AtomicBoolean(false);
-					@Override
-					public void write(char[] cbuf, int off, int len) throws IOException {
-						if (isCancelled.get()) {
-							throw new RuntimeException("cancelled");
-						}
-						for (int i = 0; i < len; ++i) {
-							char c = cbuf[i + off];
-							if (c == '\n') {
-								String line = currentLine.toString();
-								if (!line.startsWith("--") && !line.equals("GO") && !line.isEmpty() && !jailerTablePattern.matcher(line).find()) {
-									int newType = -1;
-									Matcher matcher = typeRe.matcher(line);
-									if (matcher.find()) {
-										if (matcher.group(1) != null) {
-											newType = 1;
-										} if (matcher.group(2) != null) {
-											newType = 2;
-										} if (matcher.group(3) != null) {
-											newType = 3;
-										} if (matcher.group(4) != null) {
-											newType = 4;
+				if (createRadioButton.isSelected() || createAndDropRadioButton.isSelected()) {
+					out.println("-- Create objects:");
+					out.println();
+					
+					Pattern jailerTablePattern = Pattern.compile("(\\b((" + SqlUtil.JAILER_TABLES.stream().collect(Collectors.joining("|")) + ")(_T)?)\\b)|(\\b" + ImportFilterManager.MAPPINGTABLE_NAME_PREFIX + ")", Pattern.CASE_INSENSITIVE);
+				
+					Writer output = new Writer() {
+						AtomicInteger count = new AtomicInteger(0);
+						StringBuilder currentLine = new StringBuilder();
+						Pattern typeRe = Pattern.compile("(\\bcreate\\b.*\\btable\\b)|(\\bcreate\\b.*\\bindex\\b)|(\\bcreate\\b.*\\bview\\b)|(\\balter\\b)|(\\bdrop\\b)", Pattern.CASE_INSENSITIVE);
+						Pattern tabuRe = Pattern.compile("(SELECT\\s+extended_properties.value\\s+FROM\\s+sys.extended_properties)", Pattern.CASE_INSENSITIVE);
+						int type = -1;
+						boolean prevLineHadSemicolon = true;
+						AtomicBoolean uiPending = new AtomicBoolean(false);
+						@Override
+						public void write(char[] cbuf, int off, int len) throws IOException {
+							if (isCancelled.get()) {
+								throw new RuntimeException("cancelled");
+							}
+							for (int i = 0; i < len; ++i) {
+								char c = cbuf[i + off];
+								if (c == '\n') {
+									String line = currentLine.toString();
+									if (!line.startsWith("--") && !line.equals("GO") && !line.isEmpty() && !jailerTablePattern.matcher(line).find() && !tabuRe.matcher(line).find()) {
+										boolean thisLineHadSemicolon = line.endsWith(";");
+										int newType = -1;
+										Matcher matcher = typeRe.matcher(line);
+										if (matcher.find()) {
+											if (matcher.group(1) != null) {
+												newType = 1;
+											} if (matcher.group(2) != null) {
+												newType = 2;
+											} if (matcher.group(3) != null) {
+												newType = 3;
+											} if (matcher.group(4) != null) {
+												newType = 4;
+											} if (matcher.group(5) != null) {
+												newType = 5;
+											}
+										}
+										if (thisLineHadSemicolon && type >= 0 && newType >= 0 && type != newType) {
+											out.println();
+										}
+										type = newType;
+										if (prevLineHadSemicolon && thisLineHadSemicolon && newType != 3 && newType != -1) {
+											line = new BasicFormatterImpl().format(line).replace("\r", "").replace("\n", UIUtil.LINE_SEPARATOR);
+										}
+										prevLineHadSemicolon = thisLineHadSemicolon;
+										out.println(line);
+										if (thisLineHadSemicolon) {
+											out.println();
+										}
+										count.incrementAndGet();
+										if (!uiPending.get()) {
+											uiPending.set(true);
+											UIUtil.invokeLater(() -> {
+												statusLabel.setText(count.get() + " Statements written");
+												uiPending.set(false);
+											});
 										}
 									}
-									if (type >= 0 && newType >= 0 && type != newType) {
-										out.println();
-									}
-									type = newType;
-									boolean thisLineHadSemicolon = line.endsWith(";");
-									if (prevLineHadSemicolon && thisLineHadSemicolon) {
-										line = new BasicFormatterImpl().format(line).replace("\r", "").replace("\n", UIUtil.LINE_SEPARATOR);
-									}
-									prevLineHadSemicolon = thisLineHadSemicolon;
-									out.println(line);
-									out.println();
-									count.incrementAndGet();
-									if (!uiPending.get()) {
-										uiPending.set(true);
-										UIUtil.invokeLater(() -> {
-											statusLabel.setText(count.get() + " Statements written");
-											uiPending.set(false);
-										});
-									}
+									currentLine.setLength(0);
+								} else if (c != '\r') {
+									currentLine.append(c);
 								}
-								currentLine.setLength(0);
-							} else if (c != '\r') {
-								currentLine.append(c);
 							}
 						}
-					}
-					@Override
-					public void flush() throws IOException {
-						out.flush();
-					}
-					@Override
-					public void close() throws IOException {
-						write("\n");
-						out.close();
-					}
-				};
-				liquibase.update(null, new LabelExpression(), output, false);
+						@Override
+						public void flush() throws IOException {
+							out.flush();
+						}
+						@Override
+						public void close() throws IOException {
+							write("\n");
+							out.close();
+						}
+					};
+					liquibase.update(null, new LabelExpression(), output, false);
+				}
 			    liquibase.close();
 		    } else {
 		    	JOptionPane.showMessageDialog(this, "Schema is empty.");
@@ -389,6 +450,13 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 		} finally {
 		    changeLogFile.delete();
 			databaseChangeLogFile.delete();					
+			if (liquibase4CLog != null) {
+				try {
+					liquibase4CLog.close();
+				} catch (LiquibaseException e1) {
+					// ignore
+				}
+			}
 			if (liquibase != null) {
 				try {
 					liquibase.close();
@@ -400,15 +468,114 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 		return true;
 	}
 
-	public void generateChangeLog(Liquibase liquibase, Database database)
+    private String dropDatabaseObjects(Database database, Database targetDatabase, CatalogAndSchema schemaToDrop, CatalogAndSchema targetCatalogAndSchema) throws LiquibaseException {
+       	SnapshotControl snapshotControl = new SnapshotControl(database);
+        try {
+            DatabaseSnapshot snapshot;
+            try {
+                final Set<Class<? extends DatabaseObject>> typesToInclude = snapshotControl.getTypesToInclude();
+
+                //We do not need to remove indexes and primary/unique keys explicitly. They should be removed
+                //as part of tables.
+                typesToInclude.remove(Index.class);
+                typesToInclude.remove(PrimaryKey.class);
+                typesToInclude.remove(UniqueConstraint.class);
+
+                snapshot = SnapshotGeneratorFactory.getInstance().createSnapshot(schemaToDrop, database, snapshotControl);
+            } catch (LiquibaseException e) {
+                throw new UnexpectedLiquibaseException(e);
+            }
+
+            CompareControl compareControl = new CompareControl(
+                    new CompareControl.SchemaComparison[]{
+                            new CompareControl.SchemaComparison(
+                                    CatalogAndSchema.DEFAULT,
+                                    schemaToDrop)},
+                    snapshot.getSnapshotControl().getTypesToInclude());
+            DiffResult diffResult = DiffGeneratorFactory.getInstance().compare(
+                    new EmptyDatabaseSnapshot(database),
+                    snapshot,
+                    compareControl);
+
+            List<ChangeSet> changeSets = new DiffToChangeLog(diffResult, new DiffOutputControl(true, true, false, null).addIncludedSchema(schemaToDrop)).generateChangeSets();
+           
+            StringBuilder completeSql = new StringBuilder();
+            try {
+            	targetCatalogAndSchema = targetCatalogAndSchema.customize(targetDatabase);
+                for (ChangeSet changeSet : changeSets) {
+                    changeSet.setFailOnError(false);
+                    String tCat = targetCatalogAndSchema.getCatalogName();
+                    String tSchem = targetCatalogAndSchema.getSchemaName();
+                    for (Change change : changeSet.getChanges()) {
+                        if (change instanceof DropTableChange) {
+                            ((DropTableChange) change).setCascadeConstraints(true);
+                            ((DropTableChange) change).setCatalogName(tCat);
+                            ((DropTableChange) change).setSchemaName(tSchem);
+                        } else if (change instanceof DropAllCommandStep) {
+                        	((DropAllForeignKeyConstraintsChange) change).setBaseTableCatalogName(tCat);
+                            ((DropAllForeignKeyConstraintsChange) change).setBaseTableSchemaName(tSchem);
+                        } else if (change instanceof DropForeignKeyConstraintChange) {
+                        	((DropForeignKeyConstraintChange) change).setBaseTableCatalogName(tCat);
+                            ((DropForeignKeyConstraintChange) change).setBaseTableSchemaName(tSchem);
+                        } else if (change instanceof DropIndexChange) {
+                        	((DropIndexChange) change).setCatalogName(tCat);
+                            ((DropIndexChange) change).setSchemaName(tSchem);
+                        } else if (change instanceof DropPrimaryKeyChange) {
+                        	((DropPrimaryKeyChange) change).setCatalogName(tCat);
+                            ((DropPrimaryKeyChange) change).setSchemaName(tSchem);
+                        } else if (change instanceof DropProcedureChange) {
+                        	((DropProcedureChange) change).setCatalogName(tCat);
+                            ((DropProcedureChange) change).setSchemaName(tSchem);
+                        } else if (change instanceof DropPrimaryKeyChange) {
+                        	((DropPrimaryKeyChange) change).setCatalogName(tCat);
+                            ((DropPrimaryKeyChange) change).setSchemaName(tSchem);
+                        } else if (change instanceof DropSequenceChange) {
+                        	((DropSequenceChange) change).setCatalogName(tCat);
+                            ((DropSequenceChange) change).setSchemaName(tSchem);
+                        } else if (change instanceof DropUniqueConstraintChange) {
+                        	((DropUniqueConstraintChange) change).setCatalogName(tCat);
+                            ((DropUniqueConstraintChange) change).setSchemaName(tSchem);
+                        } else if (change instanceof DropViewChange) {
+                        	((DropViewChange) change).setCatalogName(tCat);
+                            ((DropViewChange) change).setSchemaName(tSchem);
+                        } else if (change instanceof DropNotNullConstraintChange) {
+                        	((DropNotNullConstraintChange) change).setCatalogName(tCat);
+                            ((DropNotNullConstraintChange) change).setSchemaName(tSchem);
+                        } else if (change instanceof DropDefaultValueChange) {
+                        	((DropDefaultValueChange) change).setCatalogName(tCat);
+                            ((DropDefaultValueChange) change).setSchemaName(tSchem);
+                        } else {
+                        	if (!warned) {
+                        		LogUtil.warn(new RuntimeException("Statement " + change.getClass().getName()));
+                        		warned  = true;
+                        	}
+                        }
+                        SqlStatement[] sqlStatements = change.generateStatements(targetDatabase);
+                        for (SqlStatement statement : sqlStatements) {
+                        	Sql[] sql = SqlGeneratorFactory.getInstance().generateSql(statement, targetDatabase);
+                        	if (StringUtil.isNotEmpty(completeSql.toString()) && !completeSql.toString().endsWith(";" + UIUtil.LINE_SEPARATOR)) {
+                                completeSql.append("; " + UIUtil.LINE_SEPARATOR);
+                            }
+                            completeSql.append(StringUtil.join(Arrays.stream(sql).map(Sql::toSql).collect(Collectors.toList()), ";" + UIUtil.LINE_SEPARATOR));
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                throw new UnexpectedLiquibaseException(e);
+            } finally {
+            }
+            return completeSql.toString();
+        } finally {
+        }
+    }
+    
+    public void generateChangeLog(Liquibase liquibase, Database database, CatalogAndSchema catalogAndSchema)
 			throws DatabaseException, CommandExecutionException {
-		String defaultSchemaName = String.valueOf(schemaComboBox.getSelectedItem());
-		CatalogAndSchema catalogAndSchema = new CatalogAndSchema(database.getDefaultCatalogName(), defaultSchemaName);
 		Set<Class<? extends DatabaseObject>> finalCompareTypes = null;
 		CompareControl compareControl = new CompareControl(new CompareControl.SchemaComparison[]{
 		        new CompareControl.SchemaComparison(catalogAndSchema, catalogAndSchema)
 		}, finalCompareTypes);
-		
+
 		new CommandScope(GenerateChangelogCommandStep.COMMAND_NAME[0])
 		        .addArgumentValue(GenerateChangelogCommandStep.CHANGELOG_FILE_ARG, liquibase.getChangeLogFile())
 		        .addArgumentValue(PreCompareCommandStep.COMPARE_CONTROL_ARG, compareControl)
@@ -538,6 +705,10 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
         statusLabel = new javax.swing.JLabel();
         statusLabel2 = new javax.swing.JLabel();
         statusLabelCancelled = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        createRadioButton = new javax.swing.JRadioButton();
+        createAndDropRadioButton = new javax.swing.JRadioButton();
+        dropRadioButton = new javax.swing.JRadioButton();
         jPanel3 = new javax.swing.JPanel();
         closeButton = new javax.swing.JButton();
         okButton = new javax.swing.JButton();
@@ -657,6 +828,41 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 8, 0);
         jPanel1.add(statusLabelCancelled, gridBagConstraints);
+
+        jLabel7.setText("Content ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 18;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        jPanel1.add(jLabel7, gridBagConstraints);
+
+        createRadioButton.setText("Create");
+        createRadioButton.setToolTipText("<html>Generate \"<b>CREATE</b> TABLE/VIEW/INDEX etc.\" statements.</html>");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 18;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 0);
+        jPanel1.add(createRadioButton, gridBagConstraints);
+
+        createAndDropRadioButton.setText("Drop and Create");
+        createAndDropRadioButton.setToolTipText("<html>Generate “<b>DROP</b> TABLE/VIEW/INDEX etc.” statements, followed by “<b>CREATE</b> ...” statements.</html>");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 19;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 0);
+        jPanel1.add(createAndDropRadioButton, gridBagConstraints);
+
+        dropRadioButton.setText("Drop");
+        dropRadioButton.setToolTipText("<html>Generate \"<b>DROP</b> TABLE/VIEW/INDEX etc.\" statements.</html>");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 20;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 0);
+        jPanel1.add(dropRadioButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -781,6 +987,9 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 		comps.add(schemaComboBox);
 		comps.add(scriptFileTextField);
 		comps.add(targetSchemaTextField);
+		comps.add(createRadioButton);
+		comps.add(dropRadioButton);
+		comps.add(createAndDropRadioButton);
 		comps.add(okButton);
 		
 		comps.forEach(c -> c.setEnabled(enable));
@@ -806,13 +1015,17 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     javax.swing.JButton closeButton;
+    private javax.swing.JRadioButton createAndDropRadioButton;
+    private javax.swing.JRadioButton createRadioButton;
     private javax.swing.JComboBox<DBMS> dbmsComboBox;
+    private javax.swing.JRadioButton dropRadioButton;
     private javax.swing.JButton fileFindButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JButton okButton;
@@ -823,6 +1036,8 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
     private javax.swing.JLabel statusLabelCancelled;
     private javax.swing.JTextField targetSchemaTextField;
     // End of variables declaration//GEN-END:variables
+    
+    private static boolean warned = false;
     private static ImageIcon okIcon;
 	private static ImageIcon cancelIcon;
 	private static ImageIcon loadIcon;
