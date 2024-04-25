@@ -11,18 +11,24 @@ import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -43,8 +49,15 @@ import javax.swing.ListCellRenderer;
 import javax.swing.WindowConstants;
 
 import org.fife.rsta.ui.EscapableDialog;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.LoaderOptions;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
+import org.yaml.snakeyaml.representer.Representer;
+import org.yaml.snakeyaml.resolver.Resolver;
 
 import liquibase.CatalogAndSchema;
+import liquibase.GlobalConfiguration;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
 import liquibase.change.Change;
@@ -71,8 +84,6 @@ import liquibase.database.Database;
 import liquibase.database.DatabaseConnection;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.OfflineConnection;
-import liquibase.database.core.MSSQLDatabase;
-import liquibase.database.core.MockDatabase;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.diff.DiffGeneratorFactory;
 import liquibase.diff.DiffResult;
@@ -83,6 +94,7 @@ import liquibase.exception.CommandExecutionException;
 import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
 import liquibase.exception.UnexpectedLiquibaseException;
+import liquibase.parser.core.yaml.YamlSnapshotParser;
 import liquibase.resource.FileSystemResourceAccessor;
 import liquibase.snapshot.DatabaseSnapshot;
 import liquibase.snapshot.EmptyDatabaseSnapshot;
@@ -95,6 +107,7 @@ import liquibase.structure.DatabaseObject;
 import liquibase.structure.core.Index;
 import liquibase.structure.core.PrimaryKey;
 import liquibase.structure.core.UniqueConstraint;
+import liquibase.util.SnakeYamlUtil;
 import liquibase.util.StringUtil;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.JailerVersion;
@@ -145,6 +158,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
         UIUtil.setTrailingComponent(scriptFileTextField, fileFindButton);
     }
     
+    @SuppressWarnings("rawtypes")
 	private void initTargetDBMS(Session session) {
 		DefaultComboBoxModel<DBMS> aModel = new DefaultComboBoxModel<DBMS>(DBMS.values());
 		DBMS sourceDBMS = session.dbms;
@@ -155,10 +169,10 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 		dbmsComboBox.setRenderer(new DefaultListCellRenderer() {
 			ListCellRenderer renderer = dbmsComboBox.getRenderer();
 
-			@SuppressWarnings("rawtypes")
 			@Override
 			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
 					boolean cellHasFocus) {
+				@SuppressWarnings({ "unchecked" })
 				Component render = renderer.getListCellRendererComponent(list,
 						value instanceof DBMS ? ((DBMS) value).getDisplayName() : value, index, isSelected,
 						cellHasFocus);
@@ -288,7 +302,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
     	Liquibase liquibase = null;
     	String dbmsName = null;
 		File baseDir = Configuration.getInstance().createTempFile();
-		File changeLogFile = new File(baseDir.getPath() + ".json");
+		File changeLogFile = new File(baseDir.getPath() + ".yaml");
 		File databaseChangeLogFile = new File(baseDir.getPath() + ".csv");
 		FileSystemResourceAccessor resourceAccessor = new FileSystemResourceAccessor(baseDir.getParent());
 		String shortName;
@@ -359,6 +373,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 				}
 				
 				if (createRadioButton.isSelected() || createAndDropRadioButton.isSelected()) {
+					checkRemarks(changeLogFile);
 					out.println("-- Create objects:");
 					out.println();
 					
@@ -374,9 +389,6 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 						AtomicBoolean uiPending = new AtomicBoolean(false);
 						@Override
 						public void write(char[] cbuf, int off, int len) throws IOException {
-							if (isCancelled.get()) {
-								throw new RuntimeException("cancelled");
-							}
 							for (int i = 0; i < len; ++i) {
 								char c = cbuf[i + off];
 								if (c == '\n') {
@@ -398,6 +410,9 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 												newType = 5;
 											}
 										}
+										if (isCancelled.get()) {
+											throw new RuntimeException("cancelled");
+										}
 										if (thisLineHadSemicolon && type >= 0 && newType >= 0 && type != newType) {
 											out.println();
 										}
@@ -414,7 +429,9 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 										if (!uiPending.get()) {
 											uiPending.set(true);
 											UIUtil.invokeLater(() -> {
-												statusLabel.setText(count.get() + " Statements written");
+												if (!isCancelled.get()) {
+													statusLabel.setText(count.get() + " Statements written");
+												}
 												uiPending.set(false);
 											});
 										}
@@ -468,7 +485,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 		return true;
 	}
 
-    private String dropDatabaseObjects(Database database, Database targetDatabase, CatalogAndSchema schemaToDrop, CatalogAndSchema targetCatalogAndSchema) throws LiquibaseException {
+	private String dropDatabaseObjects(Database database, Database targetDatabase, CatalogAndSchema schemaToDrop, CatalogAndSchema targetCatalogAndSchema) throws LiquibaseException {
        	SnapshotControl snapshotControl = new SnapshotControl(database);
         try {
             DatabaseSnapshot snapshot;
@@ -777,7 +794,6 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         jPanel1.add(jLabel6, gridBagConstraints);
 
-        schemaComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 12;
@@ -921,8 +937,8 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
     		close();
     	} else {
        		statusLabelCancelled.setVisible(true);
-       		toggleEnable(true);
     		cancel();
+       		toggleEnable(true);
     	}
     }//GEN-LAST:event_closeButtonActionPerformed
 
@@ -1005,6 +1021,106 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 			scriptFileTextField.setText(Environment.makeRelative(fn));
 		}
     }//GEN-LAST:event_fileFindButtonActionPerformed
+
+    /**
+     * Replace any characters that will cause problems when parsing remarks in the change log file with '?'.
+     */
+	private void checkRemarks(File changeLogFile) {
+        LoaderOptions loaderOptions = new LoaderOptions();
+        SnakeYamlUtil.setCodePointLimitSafely(loaderOptions, YamlSnapshotParser.CODE_POINT_LIMIT);
+        Representer representer = new Representer(new DumperOptions());
+        DumperOptions dumperOptions = new DumperOptions();
+        dumperOptions.setDefaultFlowStyle(representer.getDefaultFlowStyle());
+        dumperOptions.setDefaultScalarStyle(representer.getDefaultScalarStyle());
+        dumperOptions
+                .setAllowReadOnlyProperties(representer.getPropertyUtils().isAllowReadOnlyProperties());
+        dumperOptions.setTimeZone(representer.getTimeZone());
+        Yaml yaml = new Yaml(new SafeConstructor(loaderOptions), representer, dumperOptions, loaderOptions, new Resolver());
+
+		try {
+			Object parsedYaml;
+			try (InputStream stream = new FileInputStream(changeLogFile)) {
+				try (InputStreamReader inputStreamReader = new InputStreamReader(stream,
+						GlobalConfiguration.OUTPUT_FILE_ENCODING.getCurrentValue())) {
+					parsedYaml = yaml.load(inputStreamReader);
+				}
+			}
+			if (checkRemarks(parsedYaml)) {
+				try (Writer outWriter = new FileWriter(changeLogFile)) {
+					yaml.dump(parsedYaml, outWriter);
+				}
+			}
+		} catch (Exception e) {
+			LogUtil.warn(e);
+		}
+	}
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	private boolean checkRemarks(Object yaml) {
+    	boolean modified = false;
+    	
+    	if (yaml instanceof Map) {
+			HashSet<?> keys = new HashSet<>(((Map) yaml).keySet());
+			for (Object key: keys) {
+				Object value = ((Map) yaml).get(key);
+				if ("remarks".equals(key) && value instanceof byte[]) {
+					modified = true;
+					((Map) yaml).put(key, checkRemark(new String((byte[]) value)));
+				}
+				if (checkRemarks(value)) {
+					modified = true;
+				}
+			}
+		} else if (yaml instanceof Collection) {
+			for (Object item : ((Collection) yaml)) {
+				if (checkRemarks(item)) {
+					modified = true;
+				}
+			}
+		}
+		return modified;
+	}
+
+	/**
+     * Replace any characters that will cause problems when parsing the change log file with '?'.
+     */
+    private String checkRemark(String text) throws UnexpectedLiquibaseException {
+        if (null == text || text.isEmpty()) {
+            return text;
+        }
+
+        final int len = text.length();
+        char current;
+        int codePoint;
+        boolean modified = false;
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < len; i++) {
+            current = text.charAt(i);
+            if (Character.isHighSurrogate(current) && i + 1 < len && Character.isLowSurrogate(text.charAt(i + 1))) {
+                codePoint = text.codePointAt(i++);
+            } else {
+                codePoint = current;
+            }
+            if ((codePoint == '\n')
+                    || (codePoint == '\r')
+                    || (codePoint == '\t')
+                    || (codePoint == 0xB)
+                    || (codePoint == 0xC)
+                    || ((codePoint >= 0x20) && (codePoint <= 0x7E))
+                    || ((codePoint >= 0xA0) && (codePoint <= 0xD7FF))
+                    || ((codePoint >= 0xE000) && (codePoint <= 0xFFFD))
+                    || ((codePoint >= 0x10000) && (codePoint <= 0x10FFFF))
+                    ) {
+                sb.append(current);
+            } else {
+                sb.append('?');
+                modified = true;
+            }
+        }
+
+        return modified? sb.toString() : text;
+    }
 
 	private String toFileName(String f) {
 		if (!new File(f).isAbsolute()) {
