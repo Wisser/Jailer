@@ -1,7 +1,7 @@
 16.1.2
   - Fix for Issue 113: "Liquibase exception: Invalid string encoding on column.remarks."
     https://github.com/Wisser/Jailer/issues/113
-  - The “Generate DDL” feature now also allows the optional generation of “Drop...” statements.
+  - The "Generate DDL" feature now also allows the optional generation of "Drop..." statements.
 
 16.1
   - Thanks to the integration of the Liquibase tool, DDL scripts can now be generated to create database objects.
