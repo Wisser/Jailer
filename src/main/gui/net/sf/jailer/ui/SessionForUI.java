@@ -157,8 +157,18 @@ public class SessionForUI extends Session {
 		session.connectionDialog.getContentPane().add(session.connectingPanel);
 		session.connectionDialog.pack();
 		session.connectionDialog.setLocation(los.x + w.getWidth() / 2 - session.connectionDialog.getWidth() / 2, los.y + w.getHeight() / 2 - session.connectionDialog.getHeight() / 2);
-		session.connectionDialog.setVisible(true);
+        
+		Timer timer = new Timer(500, e -> {
+			session.connectingPanel.setBackground(Color.white.equals(session.connectingPanel.getBackground())? new Color(255, 230, 230) : Color.white);
+        });
+        timer.setRepeats(true);
+        timer.setInitialDelay(timer.getDelay() * 3);
+        timer.start();
+        
+        session.connectionDialog.setVisible(true);
 		session.connectionDialog.dispose();
+		timer.stop();
+		
 		Throwable throwable = exception.get();
 		if (throwable  != null) {
 			if (throwable instanceof SQLException) {
@@ -201,11 +211,10 @@ public class SessionForUI extends Session {
 		connectingPanel.setBackground(java.awt.Color.white);
 		connectingPanel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
 		
-        jLabel1.setForeground(java.awt.Color.red);
-        jLabel1.setText("connecting...");
+//        jLabel1.setForeground(java.awt.Color.red);
+        jLabel1.setText("Connecting...");
         jLabel1.setFont(jLabel1.getFont().deriveFont((float) (jLabel1.getFont().getSize() * 1.4)));
         connectingPanel.add(jLabel1);
-
         cancelConnectingButton.setText("Cancel");
         cancelConnectingButton.setIcon(UIUtil.scaleIcon(cancelConnectingButton, cancelIcon));
         cancelConnectingButton.addActionListener(new java.awt.event.ActionListener() {
