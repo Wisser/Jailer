@@ -195,7 +195,7 @@
         <Component class="javax.swing.JRadioButton" name="createAndDropRadioButton">
           <Properties>
             <Property name="text" type="java.lang.String" value="Drop and Create"/>
-            <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;Generate &#x201c;&lt;b&gt;DROP&lt;/b&gt; TABLE/VIEW/INDEX etc.&#x201d; statements, followed by &#x201c;&lt;b&gt;CREATE&lt;/b&gt; ...&#x201d; statements.&lt;/html&gt;"/>
+            <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;Generate &quot;&lt;b&gt;DROP&lt;/b&gt; TABLE/VIEW/INDEX etc.&quot; statements, followed by &quot;&lt;b&gt;CREATE&lt;/b&gt; ...&quot; statements.&lt;/html&gt;"/>
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
