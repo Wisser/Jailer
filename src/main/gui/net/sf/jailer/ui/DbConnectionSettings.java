@@ -191,14 +191,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (defaultAllButton.isSelected()) {
-					updateUrl();
-					for (int i = 0; i < defValues.size(); ++i) {
-						String def = defValues.get(i);
-						pTextField[i].setText(def == null? "" : def);
-						pTextField[i].selectAll();
-						updateDefaultButton(i);
-					}
-					updateDefaultAllButton();
+					doDefaultAll();
 				}
 			}
 		});
@@ -416,6 +409,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 				} else {
 					pTextField[i].setText(optional? "<" + param + ">" : "");
 				}
+				pTextField[i].setName(pTextField[i].getText());
 				if (param.toLowerCase().endsWith("file")) {
 					pButton[i].setVisible(true);
 					pButton[i].setIcon(loadIcon);
@@ -1001,6 +995,20 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 			defaultButton[i].setEnabled(defValue != null && !defValue.equals(pTextField[i].getText()));
 			defaultButton[i].setSelected(defValue != null && defValue.equals(pTextField[i].getText()));
 		}
+	}
+
+	public void doDefaultAll() {
+		updateUrl();
+		for (int i = 0; i < defValues.size(); ++i) {
+			String def = defValues.get(i);
+			String text = def == null ? "" : def;
+			if (pTextField[i].getText().equals(pTextField[i].getName())) {
+				pTextField[i].setText(text);
+			}
+			pTextField[i].selectAll();
+			updateDefaultButton(i);
+		}
+		updateDefaultAllButton();
 	}
 
 	private boolean ok;

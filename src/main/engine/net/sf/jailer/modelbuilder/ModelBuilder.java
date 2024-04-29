@@ -264,6 +264,8 @@ public class ModelBuilder {
 
 		DataModel dataModel = new DataModel(knownIdentifiers, executionContext);
 
+		int numWarnings = 0;
+		int maxNumWarnings = 10;
 		for (Table table: sortedTables) {
 			if (!isJailerTable(table, quoting) &&
 				!excludeTablesCSV.contains(new String[] { table.getName()}) &&
@@ -289,7 +291,9 @@ public class ModelBuilder {
 
 					String warning = "Table '" + table.getName() + "' has no primary key";
 					if (table.primaryKey.getColumns().size() == 0) {
-						warnings.append(warning + PrintUtil.LINE_SEPARATOR);
+						if (++numWarnings < maxNumWarnings) {
+							warnings.append(warning + PrintUtil.LINE_SEPARATOR);
+						}
 					} else {
 						warning += ", taking manually defined key.";
 					}
@@ -301,6 +305,9 @@ public class ModelBuilder {
 				}
 				tableDefinitions += "   ;" + CsvFile.encodeCell(table.getAuthor()) + ";" + PrintUtil.LINE_SEPARATOR;
 			}
+		}
+		if (numWarnings > maxNumWarnings) {
+			warnings.append("(" + (numWarnings - maxNumWarnings) +" warnings more)" + PrintUtil.LINE_SEPARATOR);
 		}
 
 		resetTableFile(tableDefinitions, executionContext);
