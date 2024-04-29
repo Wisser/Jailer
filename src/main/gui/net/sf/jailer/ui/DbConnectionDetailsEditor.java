@@ -182,6 +182,8 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 	 */
 	private Map<String, Pair<String, Long>> modelDetails;
 
+	final static Color RED = new Color(255, 230, 230);
+
 	@SuppressWarnings("serial")
 	private void loadModelList(ExecutionContext executionContext) {
 		String cmsf = DataModelManager.getCurrentModelSubfolder(executionContext);
@@ -228,7 +230,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 				public void itemStateChanged(ItemEvent e) {
 					if (!dataModelAware) {
 						if ("".equals(dataModelComboBox.getSelectedItem())) {
-							dataModelComboBox.setBackground(new Color(255, 200, 200));
+							dataModelComboBox.setBackground(RED);
 							jLabel5.setForeground(Color.red);
 						} else {
 							jLabel5.setForeground(fg);
@@ -1757,7 +1759,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     @SuppressWarnings("deprecation")
 	private boolean fillConnectionInfo() {
 		boolean ok = true;
-		Color red = new Color(255, 200, 200);
+		Color red = RED;
 		if (alias.getText().trim().length() == 0) {
 			alias.setBackground(red);
 			ok = false;
