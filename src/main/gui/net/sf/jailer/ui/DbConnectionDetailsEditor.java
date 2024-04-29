@@ -68,6 +68,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -1790,14 +1791,30 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 	}//GEN-LAST:event_cancelButtonActionPerformed
 
 	private void testConnectionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testConnectionButtonActionPerformed
+		List<Runnable> undoList = new ArrayList<>();
+		if (paramRadioButton.isSelected()) {
+			for (JTextField field: settingsDialog.pTextField) {
+				String text = field.getText();
+				undoList.add(() -> field.setText(text));
+			}
+			settingsDialog.doDefaultAll();
+		}
+		boolean ok = false;
 		ConnectionInfo oldCi = new ConnectionInfo();
 		oldCi.assign(ci);
 		if (fillConnectionInfo()) {
 			if (DbConnectionDialog.testConnection(isVisible()? this : parent, ci, createDownloadButton())) {
+				// TODO
+				// TODO undo def.all
+				ok = true;
 				JOptionPane.showMessageDialog(isVisible()? this : parent, "Successfully established connection.", "Connected", JOptionPane.INFORMATION_MESSAGE);
 			}
 			ci.assign(oldCi);
 		}
+		if (paramRadioButton.isSelected() && !ok) {
+			undoList.forEach(Runnable::run);
+		}
+		
 	}//GEN-LAST:event_testConnectionButtonActionPerformed
 
 	private JButton createDownloadButton() {
