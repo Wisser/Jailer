@@ -235,6 +235,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 						} else {
 							tb.setSelected(true);
 						}
+						okButton.doClick();
 					});
 					tb.addMouseListener(new MouseAdapter() {
 						@Override
@@ -276,7 +277,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 			});
 			dbmsComboBox.setSelectedIndex(-1);
 			detailsPanel.setVisible(false);
-			String titel = "Connection Settings";
+			String titel = "Select the DBMS for the connection";
 			if (owner instanceof Frame) {
 				dialog = new EscapableDialog((Frame) owner, titel, true) {
 				};
@@ -465,7 +466,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 		if (pTextFieldBGColor != null && pTextFieldBGColor.getRed() + pTextFieldBGColor.getBlue() + pTextFieldBGColor.getGreen() < (256 * 3) / 2) {
 			red = new Color(150, 0, 0);
 		} else {
-			red = new Color(255, 220, 220);
+			red = DbConnectionDetailsEditor.RED;
 		}
 		for (int i = 0; i < pTextField.length; ++i) {
 			if (defaultButton[i].isVisible()) {
@@ -530,9 +531,6 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         dbmsComboBox = new javax.swing.JComboBox<>();
         jLabel3 = new javax.swing.JLabel();
         initialLabel = new javax.swing.JLabel();
-        jPanel3 = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
-        jToggleButton1 = new javax.swing.JToggleButton();
         detailsPanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         paramLabel1 = new javax.swing.JLabel();
@@ -570,8 +568,11 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         defaultAllLabel = new javax.swing.JLabel();
         jPanel6 = new javax.swing.JPanel();
         jPanel5 = new javax.swing.JPanel();
-        jPanel1 = new javax.swing.JPanel();
         okButton = new javax.swing.JButton();
+        jPanel3 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
+        jToggleButton1 = new javax.swing.JToggleButton();
+        jPanel1 = new javax.swing.JPanel();
         cancelButton = new javax.swing.JButton();
 
         jLabel5.setText("DBMS");
@@ -586,38 +587,6 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         jLabel3.setText(" ");
 
         initialLabel.setText("<html><i>Select DBMS</i></html>");
-
-        setLayout(new java.awt.GridBagLayout());
-
-        jPanel3.setLayout(new java.awt.GridBagLayout());
-
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("DBMS"));
-        jPanel2.setLayout(new java.awt.GridBagLayout());
-
-        jToggleButton1.setText("xy");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        jPanel2.add(jToggleButton1, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        jPanel3.add(jPanel2, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        add(jPanel3, gridBagConstraints);
 
         detailsPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -930,28 +899,46 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 12, 0);
         detailsPanel.add(jPanel5, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 8);
-        add(detailsPanel, gridBagConstraints);
-
-        jPanel1.setLayout(new java.awt.GridBagLayout());
-
         okButton.setText("Ok");
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
             }
         });
+
+        setLayout(new java.awt.GridBagLayout());
+
+        jPanel3.setLayout(new java.awt.GridBagLayout());
+
+        jPanel2.setLayout(new java.awt.GridBagLayout());
+
+        jToggleButton1.setText("xy");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 2);
-        jPanel1.add(okButton, gridBagConstraints);
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        jPanel2.add(jToggleButton1, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        jPanel3.add(jPanel2, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
+        add(jPanel3, gridBagConstraints);
+
+        jPanel1.setLayout(new java.awt.GridBagLayout());
 
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
@@ -962,7 +949,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 2);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 4);
         jPanel1.add(cancelButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -971,7 +958,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         add(jPanel1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
