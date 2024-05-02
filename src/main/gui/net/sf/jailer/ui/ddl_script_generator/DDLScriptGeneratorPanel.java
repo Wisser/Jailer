@@ -598,7 +598,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 			String tablesList = closure
 					.stream()
 					.map(t -> Quoting.staticUnquote(t.getUnqualifiedName()))
-					.map(name -> "\\Q" + (name.replace(",", "\\E.\\Q")) + "\\E") // ',' would split the regEx
+					.map(name -> "(?i)\\Q" + (name.replace(",", "\\E.\\Q")) + "\\E") // ',' would split the regEx
 					.collect(Collectors.joining(","));
 			commandScope.addArgumentValue(PreCompareCommandStep.INCLUDE_OBJECTS_ARG, tablesList);
 			// TODO
