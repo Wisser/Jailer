@@ -601,8 +601,6 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 					.map(name -> "(?i)\\Q" + (name.replace(",", "\\E.\\Q")) + "\\E") // ',' would split the regEx
 					.collect(Collectors.joining(","));
 			commandScope.addArgumentValue(PreCompareCommandStep.INCLUDE_OBJECTS_ARG, tablesList);
-			// TODO
-			System.out.println(tablesList);
 		}
 		commandScope.setOutput(System.out)
 		        .execute();
