@@ -2296,7 +2296,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 					return;
 				}
 			}
-			DDLScriptGeneratorPanel.open(this, null, extractionModelEditor.dataModel, theSession, dbConnectionDialog.getExecutionContext());
+			DDLScriptGeneratorPanel.open(this, null, extractionModelEditor.dataModel, extractionModelEditor.getCurrentSubjectClosure(), theSession, dbConnectionDialog.getExecutionContext());
         }
     }//GEN-LAST:event_generateDDLMenuItemActionPerformed
 

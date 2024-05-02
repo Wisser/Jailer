@@ -810,7 +810,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                         ddl.addActionListener(new ActionListener() {
                             @Override
                             public void actionPerformed(ActionEvent e) {
-                                DDLScriptGeneratorPanel.open(SwingUtilities.getWindowAncestor(MetaDataPanel.this), preselectedSchema, dataModel, metaDataSource.getSession(), executionContext);
+                                DDLScriptGeneratorPanel.open(SwingUtilities.getWindowAncestor(MetaDataPanel.this), preselectedSchema, dataModel, null, metaDataSource.getSession(), executionContext);
                             }
                         });
                         popup.add(ddl);

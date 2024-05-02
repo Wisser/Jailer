@@ -111,6 +111,7 @@ import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.util.ConcurrentTaskControl;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.LogUtil;
+import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
 /**
@@ -135,6 +136,11 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
         buttonGroup.add(createAndDropRadioButton);
         buttonGroup.add(dropRadioButton);
         createRadioButton.setSelected(true);
+       
+        buttonGroup = new ButtonGroup();
+        buttonGroup.add(includeAllButton);
+        buttonGroup.add(includeClosureButton);
+        includeAllButton.setSelected(true);
 
         okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
         closeButton.setIcon(UIUtil.scaleIcon(closeButton, cancelIcon));
@@ -183,7 +189,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 	
 	private Window owner;
 	
-	public static void open(Window owner, String preselectedSchema, DataModel dataModel, Session session, ExecutionContext executionContext) {
+	public static void open(Window owner, String preselectedSchema, DataModel dataModel, Set<Table> closure, Session session, ExecutionContext executionContext) {
 		EscapableDialog dialog = owner instanceof Dialog? new EscapableDialog((Dialog) owner) {
 		} : new EscapableDialog((Frame) owner) {
 		};
@@ -196,6 +202,12 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 		ddlScriptGeneratorPanel.owner = owner;
 		ddlScriptGeneratorPanel.session = session;
     	ddlScriptGeneratorPanel.initTargetDBMS(session);
+    	ddlScriptGeneratorPanel.closure = closure;
+    	
+    	ddlScriptGeneratorPanel.includeClosureButton.setEnabled(closure != null);
+    	if (closure != null) {
+    		ddlScriptGeneratorPanel.includeClosureButton.setText(ddlScriptGeneratorPanel.includeClosureButton.getText() + " (" + closure.size() + " Table" + (closure.size() == 1? "" : "s") + ")");
+    	}
     	
 		if (executionContext.getCurrentModelSubfolder() != null) {
 			ddlScriptGeneratorPanel.scriptFileTextField.setText((preselectedSchema != null? preselectedSchema : executionContext.getCurrentModelSubfolder()) + "-ddl.sql");
@@ -577,17 +589,28 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 		        new CompareControl.SchemaComparison(catalogAndSchema, catalogAndSchema)
 		}, finalCompareTypes);
 
-		new CommandScope(GenerateChangelogCommandStep.COMMAND_NAME[0])
+		CommandScope commandScope = new CommandScope(GenerateChangelogCommandStep.COMMAND_NAME[0])
 		        .addArgumentValue(GenerateChangelogCommandStep.CHANGELOG_FILE_ARG, liquibase.getChangeLogFile())
 		        .addArgumentValue(PreCompareCommandStep.COMPARE_CONTROL_ARG, compareControl)
 		        .addArgumentValue(DbUrlConnectionArgumentsCommandStep.DATABASE_ARG, liquibase.getDatabase())
-		        .addArgumentValue(PreCompareCommandStep.SNAPSHOT_TYPES_ARG, null)
-		        .setOutput(System.out)
+		        .addArgumentValue(PreCompareCommandStep.SNAPSHOT_TYPES_ARG, null);
+		if (includeClosureButton.isSelected() && closure != null) {
+			String tablesList = closure
+					.stream()
+					.map(t -> Quoting.staticUnquote(t.getUnqualifiedName()))
+					.map(name -> "\\Q" + (name.replace(",", "\\E.\\Q")) + "\\E") // ',' would split the regEx
+					.collect(Collectors.joining(","));
+			commandScope.addArgumentValue(PreCompareCommandStep.INCLUDE_OBJECTS_ARG, tablesList);
+			// TODO
+			System.out.println(tablesList);
+		}
+		commandScope.setOutput(System.out)
 		        .execute();
 	}
 
 	private String defaultSchema;
 	private Session session;
+	private Set<Table> closure;
 	
 	protected boolean readSchemas(String preselectedSchema, Session session, DataModel dataModel, EscapableDialog dialog) {
 		AtomicBoolean ok = new AtomicBoolean(false);
@@ -710,6 +733,9 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
         createRadioButton = new javax.swing.JRadioButton();
         createAndDropRadioButton = new javax.swing.JRadioButton();
         dropRadioButton = new javax.swing.JRadioButton();
+        includeLabel = new javax.swing.JLabel();
+        includeAllButton = new javax.swing.JRadioButton();
+        includeClosureButton = new javax.swing.JRadioButton();
         jPanel3 = new javax.swing.JPanel();
         closeButton = new javax.swing.JButton();
         okButton = new javax.swing.JButton();
@@ -722,13 +748,13 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
         jLabel1.setText("Script file  ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         jPanel1.add(jLabel1, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
@@ -743,7 +769,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.insets = new java.awt.Insets(4, 2, 0, 0);
         jPanel1.add(fileFindButton, gridBagConstraints);
 
@@ -863,6 +889,42 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 0);
         jPanel1.add(dropRadioButton, gridBagConstraints);
+
+        includeLabel.setText("Include ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        jPanel1.add(includeLabel, gridBagConstraints);
+
+        includeAllButton.setText("All tables");
+        includeAllButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                includeAllButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 0);
+        jPanel1.add(includeAllButton, gridBagConstraints);
+
+        includeClosureButton.setText("Tables associated with a subject table");
+        includeClosureButton.setToolTipText("<html>Generate DDL statements only for the tables that are directly or indirectly associated with a subject table. (the <i>Closure</i>)</html>");
+        includeClosureButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                includeClosureButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 2, 0);
+        jPanel1.add(includeClosureButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1006,6 +1068,12 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 		}
     }//GEN-LAST:event_fileFindButtonActionPerformed
 
+    private void includeAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_includeAllButtonActionPerformed
+    }//GEN-LAST:event_includeAllButtonActionPerformed
+
+    private void includeClosureButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_includeClosureButtonActionPerformed
+     }//GEN-LAST:event_includeClosureButtonActionPerformed
+
 	private String toFileName(String f) {
 		if (!new File(f).isAbsolute()) {
 			return Environment.newFile(f).getAbsolutePath();
@@ -1020,6 +1088,9 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
     private javax.swing.JComboBox<DBMS> dbmsComboBox;
     private javax.swing.JRadioButton dropRadioButton;
     private javax.swing.JButton fileFindButton;
+    private javax.swing.JRadioButton includeAllButton;
+    private javax.swing.JRadioButton includeClosureButton;
+    private javax.swing.JLabel includeLabel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel4;
