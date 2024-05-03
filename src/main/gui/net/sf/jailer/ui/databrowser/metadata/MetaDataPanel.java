@@ -792,14 +792,27 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             	 final MDTable mdTable = findTable(evt);
             	 TreePath node = findNode(evt);
             	 Object userObject = null;
+            	 boolean isLeaf = false;
             	 if (node != null) {
             		 metaDataTree.scrollRectToVisible(new Rectangle(0, (int) evt.getPoint().getY(), 1, 1));
             		 if (node.getLastPathComponent() instanceof DefaultMutableTreeNode) {
-            			 userObject = ((DefaultMutableTreeNode) node.getLastPathComponent()).getUserObject();
+            			 DefaultMutableTreeNode lastPathComponent = (DefaultMutableTreeNode) node.getLastPathComponent();
+            			 userObject = lastPathComponent.getUserObject();
+            			 isLeaf = !lastPathComponent.children().hasMoreElements();
+            			 if (userObject instanceof String || userObject == null) {
+            				 TreePath parentPath = node.getParentPath();
+            				 if (parentPath != null && parentPath.getLastPathComponent() instanceof DefaultMutableTreeNode) {
+                    			 userObject = ((DefaultMutableTreeNode) parentPath.getLastPathComponent()).getUserObject();
+            				 }
+            			 }
             		 }
             	 }
             	 final Set<MDTable> mdTables = new LinkedHashSet<MDTable>();
-           		 findTables(mdTables);
+            	 if (node == null || isLeaf) {
+               		 findTables(mdTables);           		 
+            	 } else {
+            		 findTables(mdTables, node.getLastPathComponent());
+            	 }
             	 if (evt.getButton() == MouseEvent.BUTTON3) {
                     if (mdTable != null || !mdTables.isEmpty() || userObject instanceof MDDatabase || userObject instanceof MDSchema) {
 //                    	int itemCount = 0;
@@ -810,7 +823,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                         ddl.addActionListener(new ActionListener() {
                             @Override
                             public void actionPerformed(ActionEvent e) {
-                                DDLScriptGeneratorPanel.open(SwingUtilities.getWindowAncestor(MetaDataPanel.this), preselectedSchema, dataModel, null, metaDataSource.getSession(), executionContext);
+                                DDLScriptGeneratorPanel.open(SwingUtilities.getWindowAncestor(MetaDataPanel.this), preselectedSchema != null? Quoting.staticUnquote(preselectedSchema) : null, dataModel, null, metaDataSource.getSession(), executionContext);
                             }
                         });
                         popup.add(ddl);

@@ -213,7 +213,10 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
     	}
     	ddlScriptGeneratorPanel.includeDatamodelButton.setEnabled(dataModel != null);
     	if (dataModel != null) {
-    		ddlScriptGeneratorPanel.includeDatamodelButton.setText(ddlScriptGeneratorPanel.includeDatamodelButton.getText() + " (" + dataModel.getTables().size() + ")");
+    		Set<String> schemas = dataModel.getTables().stream().map(t -> t.getSchema("")).collect(Collectors.toSet());
+    		if (schemas.size() < 1) {
+    			ddlScriptGeneratorPanel.includeDatamodelButton.setText(ddlScriptGeneratorPanel.includeDatamodelButton.getText() + " (" + dataModel.getTables().size() + ")");
+    		}
     	}
     	
 		if (executionContext.getCurrentModelSubfolder() != null) {
@@ -608,7 +611,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 			tables = dataModel.getTables();
 		}
 		if (tables != null) {
-			String tablesList = closure
+			String tablesList = tables
 					.stream()
 					.map(t -> Quoting.staticUnquote(t.getUnqualifiedName()))
 					.map(name -> "(?i)\\Q" + (name.replace(",", "\\E.\\Q")) + "\\E") // ',' would split the regEx
@@ -618,7 +621,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 		commandScope.setOutput(System.out)
 		        .execute();
 	}
-
+    
 	private String defaultSchema;
 	private Session session;
 	private DataModel dataModel;
