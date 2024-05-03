@@ -1,3 +1,8 @@
+16.1.3
+  - Enhancements of feature "Exporting SQL including creation of DB schema"
+    https://github.com/Wisser/Jailer/issues/111
+  - Simplification of the database connection dialogs.
+
 16.1.2
   - Fix for Issue 113: "Liquibase exception: Invalid string encoding on column.remarks."
     https://github.com/Wisser/Jailer/issues/113
