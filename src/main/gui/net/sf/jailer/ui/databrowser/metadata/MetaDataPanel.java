@@ -69,6 +69,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -820,10 +821,27 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                         JMenuItem ddl = new JMenuItem(DDLScriptGeneratorPanel.TITLE);
                         ddl.setToolTipText(DDLScriptGeneratorPanel.TOOLTIP);
                         String preselectedSchema = userObject instanceof MDDatabase? null : userObject instanceof MDSchema? ((MDSchema) userObject).getName() : userObject instanceof MDTable? ((MDTable) userObject).getSchema().getName() : null;
+                        Set<String> selectedTables = new HashSet<String>();
+                        TreePath[] paths = metaDataTree.getSelectionPaths();
+        				if (paths != null) {
+        					for (TreePath path: paths) {
+        						Object lpc = path.getLastPathComponent();
+        						if (lpc instanceof DefaultMutableTreeNode) {
+        							DefaultMutableTreeNode lastPathComponent = (DefaultMutableTreeNode) lpc;
+        							if (lastPathComponent.getUserObject() instanceof MDTable) {
+        								selectedTables.add(Quoting.staticUnquote(((MDTable) lastPathComponent.getUserObject()).getName()));
+        							}
+        						}
+        					}
+        				}
+                        if (userObject instanceof MDDatabase || userObject instanceof MDSchema || selectedTables.isEmpty()) {
+                        	selectedTables = null;
+                        }
+                        Set<String> finalSelectedTables = selectedTables;                        
                         ddl.addActionListener(new ActionListener() {
                             @Override
                             public void actionPerformed(ActionEvent e) {
-                                DDLScriptGeneratorPanel.open(SwingUtilities.getWindowAncestor(MetaDataPanel.this), preselectedSchema != null? Quoting.staticUnquote(preselectedSchema) : null, dataModel, null, metaDataSource.getSession(), executionContext);
+								DDLScriptGeneratorPanel.open(SwingUtilities.getWindowAncestor(MetaDataPanel.this), preselectedSchema != null? Quoting.staticUnquote(preselectedSchema) : null, dataModel, finalSelectedTables, null, metaDataSource.getSession(), executionContext);
                             }
                         });
                         popup.add(ddl);
@@ -856,16 +874,16 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 //                            if (itemCount > 0) {
 //                            	popup.add(new JSeparator());
 //                            }
-                            JMenu menu = new JMenu("Create Script");
-                            popup.add(menu);
+//                            JMenu menu = new JMenu("Create Script");
+//                            popup.add(menu);
 //                            ++itemCount;
                             Point pos = new Point(evt.getX(), evt.getY());
 							SwingUtilities.convertPointToScreen(pos, evt.getComponent());
 //                            menu.add(createScriptMenuItem("\"Create Table\" Script", "DDL", "", mdTables, false, pos));
-                            menu.add(createScriptMenuItem("\"Drop Table\" Script", "Drop %2$s %1$s;", "", mdTables, false, pos));
-                            menu.add(new JSeparator());
-                            menu.add(createScriptMenuItem("\"Delete\" Script", "Delete from %1$s;", "", mdTables, false, pos));
-                            menu.add(createScriptMenuItem("\"Count Rows\" Script", "Select '%1$s' as Tab, count(*) as NumberOfRows From %1$s", " union all", mdTables, true, pos));
+//                            menu.add(createScriptMenuItem("\"Drop Table\" Script", "Drop %2$s %1$s;", "", mdTables, false, pos));
+							popup.add(new JSeparator());
+							popup.add(createScriptMenuItem("\"Delete\" Script", "Delete from %1$s;", "", mdTables, false, pos));
+							popup.add(createScriptMenuItem("\"Count Rows\" Script", "Select '%1$s' as Tab, count(*) as NumberOfRows From %1$s", " union all", mdTables, true, pos));
                         }
                         UIUtil.initToolTips(popup);
                         popup.show(evt.getComponent(), evt.getX(), evt.getY());

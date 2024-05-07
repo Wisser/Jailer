@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
@@ -82,7 +83,7 @@ import liquibase.exception.CommandExecutionException;
 import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
 import liquibase.exception.UnexpectedLiquibaseException;
-import liquibase.resource.FileSystemResourceAccessor;
+import liquibase.resource.DirectoryResourceAccessor;
 import liquibase.snapshot.DatabaseSnapshot;
 import liquibase.snapshot.EmptyDatabaseSnapshot;
 import liquibase.snapshot.SnapshotControl;
@@ -93,6 +94,7 @@ import liquibase.statement.SqlStatement;
 import liquibase.structure.DatabaseObject;
 import liquibase.structure.core.Index;
 import liquibase.structure.core.PrimaryKey;
+import liquibase.structure.core.Relation;
 import liquibase.structure.core.UniqueConstraint;
 import liquibase.util.StringUtil;
 import net.sf.jailer.ExecutionContext;
@@ -139,6 +141,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
         createRadioButton.setSelected(true);
        
         buttonGroup = new ButtonGroup();
+        buttonGroup.add(includeSelectedButton);
         buttonGroup.add(includeAllButton);
         buttonGroup.add(includeDatamodelButton);
         buttonGroup.add(includeClosureButton);
@@ -191,7 +194,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 	
 	private Window owner;
 	
-	public static void open(Window owner, String preselectedSchema, DataModel dataModel, Set<Table> closure, Session session, ExecutionContext executionContext) {
+	public static void open(Window owner, String preselectedSchema, DataModel dataModel, Set<String> selectedTables, Set<Table> closure, Session session, ExecutionContext executionContext) {
 		EscapableDialog dialog = owner instanceof Dialog? new EscapableDialog((Dialog) owner) {
 		} : new EscapableDialog((Frame) owner) {
 		};
@@ -206,6 +209,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
     	ddlScriptGeneratorPanel.initTargetDBMS(session);
     	ddlScriptGeneratorPanel.dataModel = dataModel;
     	ddlScriptGeneratorPanel.closure = closure;
+    	ddlScriptGeneratorPanel.selectedTables = selectedTables;
     	
     	ddlScriptGeneratorPanel.includeClosureButton.setEnabled(closure != null);
     	if (closure != null) {
@@ -217,6 +221,15 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
     		if (schemas.size() < 1) {
     			ddlScriptGeneratorPanel.includeDatamodelButton.setText(ddlScriptGeneratorPanel.includeDatamodelButton.getText() + " (" + dataModel.getTables().size() + ")");
     		}
+    	}
+    	
+    	if (selectedTables != null && !selectedTables.isEmpty()) {
+    		ddlScriptGeneratorPanel.includeClosureButton.setVisible(false);
+    		ddlScriptGeneratorPanel.includeDatamodelButton.setVisible(false);
+    		ddlScriptGeneratorPanel.includeSelectedButton.setSelected(true);
+    		ddlScriptGeneratorPanel.includeSelectedButton.setText(ddlScriptGeneratorPanel.includeSelectedButton.getText() + " (" + selectedTables.size() + ")");
+    	} else {
+    		ddlScriptGeneratorPanel.includeSelectedButton.setVisible(false);
     	}
     	
 		if (executionContext.getCurrentModelSubfolder() != null) {
@@ -293,7 +306,8 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 	private PrintWriter out;
 	private AtomicBoolean cancelled = new AtomicBoolean();
     
-    private boolean doGenerate(String fileName, AtomicBoolean isCancelled) {
+    @SuppressWarnings("deprecation")
+	private boolean doGenerate(String fileName, AtomicBoolean isCancelled) {
     	synchronized(this) {
     		cancelled = isCancelled;
         	this.cancelled = isCancelled;
@@ -311,11 +325,11 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 		File baseDir = Configuration.getInstance().createTempFile();
 		File changeLogFile = new File(baseDir.getPath() + ".json");
 		File databaseChangeLogFile = new File(baseDir.getPath() + ".csv");
-		FileSystemResourceAccessor resourceAccessor = new FileSystemResourceAccessor(baseDir.getParent());
 		String shortName;
 		Database database;
 		CatalogAndSchema catalogAndSchema;
 		try {
+			DirectoryResourceAccessor resourceAccessor = new DirectoryResourceAccessor(baseDir.getParentFile());
 			connection.set(new JdbcConnection(session.createNewConnection()));
 			database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(connection.get());
 			liquibase4CLog = new Liquibase(changeLogFile.getPath(), resourceAccessor, database);
@@ -492,7 +506,19 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 	}
 
 	private String dropDatabaseObjects(Database database, Database targetDatabase, CatalogAndSchema schemaToDrop, CatalogAndSchema targetCatalogAndSchema) throws LiquibaseException {
-       	SnapshotControl snapshotControl = new SnapshotControl(database);
+       	SnapshotControl snapshotControl = new SnapshotControl(database) {
+			@Override
+			public <T extends DatabaseObject> boolean shouldInclude(T example) {
+				if (includeSelectedButton.isSelected() && selectedTables != null) {
+					if (example instanceof Relation) {
+						if (!selectedTables.stream().anyMatch(t -> t.equalsIgnoreCase(((Relation) example).getName()))) {
+							return false;
+						}
+					}
+				}
+				return super.shouldInclude(example);
+			}
+       	};
         try {
             DatabaseSnapshot snapshot;
             try {
@@ -610,10 +636,17 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 		} else if (includeDatamodelButton.isSelected() && dataModel != null) {
 			tables = dataModel.getTables();
 		}
+		Stream<String> tablesStream = null;
 		if (tables != null) {
-			String tablesList = tables
+			tablesStream = tables
 					.stream()
-					.map(t -> Quoting.staticUnquote(t.getUnqualifiedName()))
+					.map(t -> Quoting.staticUnquote(t.getUnqualifiedName()));
+		}
+		if (includeSelectedButton.isSelected() && selectedTables != null) {
+			tablesStream = selectedTables.stream();
+		}
+		if (tablesStream != null) {
+			String tablesList = tablesStream
 					.map(name -> "(?i)\\Q" + (name.replace(",", "\\E.\\Q")) + "\\E") // ',' would split the regEx
 					.collect(Collectors.joining(","));
 			commandScope.addArgumentValue(PreCompareCommandStep.INCLUDE_OBJECTS_ARG, tablesList);
@@ -626,6 +659,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 	private Session session;
 	private DataModel dataModel;
 	private Set<Table> closure;
+	private Set<String> selectedTables;
 	
 	protected boolean readSchemas(String preselectedSchema, Session session, DataModel dataModel, EscapableDialog dialog) {
 		AtomicBoolean ok = new AtomicBoolean(false);
@@ -752,6 +786,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
         includeAllButton = new javax.swing.JRadioButton();
         includeClosureButton = new javax.swing.JRadioButton();
         includeDatamodelButton = new javax.swing.JRadioButton();
+        includeSelectedButton = new javax.swing.JRadioButton();
         jPanel3 = new javax.swing.JPanel();
         closeButton = new javax.swing.JButton();
         okButton = new javax.swing.JButton();
@@ -794,7 +829,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 12;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         jPanel1.add(jLabel4, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -825,7 +860,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 12;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 0);
         jPanel1.add(schemaComboBox, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -940,7 +975,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 0);
         jPanel1.add(includeClosureButton, gridBagConstraints);
 
         includeDatamodelButton.setText("Tables belonging to the data model");
@@ -957,6 +992,20 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 0);
         jPanel1.add(includeDatamodelButton, gridBagConstraints);
+
+        includeSelectedButton.setText("Selected tables");
+        includeSelectedButton.setToolTipText("Generate DDL for all the selected tables.");
+        includeSelectedButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                includeSelectedButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 0);
+        jPanel1.add(includeSelectedButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1084,6 +1133,10 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 		comps.add(createRadioButton);
 		comps.add(dropRadioButton);
 		comps.add(createAndDropRadioButton);
+		comps.add(includeAllButton);
+		comps.add(includeClosureButton);
+		comps.add(includeDatamodelButton);
+		comps.add(includeSelectedButton);
 		comps.add(okButton);
 		
 		comps.forEach(c -> c.setEnabled(enable));
@@ -1109,6 +1162,9 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
     private void includeDatamodelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_includeDatamodelButtonActionPerformed
     }//GEN-LAST:event_includeDatamodelButtonActionPerformed
 
+    private void includeSelectedButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_includeSelectedButtonActionPerformed
+    }//GEN-LAST:event_includeSelectedButtonActionPerformed
+
 	private String toFileName(String f) {
 		if (!new File(f).isAbsolute()) {
 			return Environment.newFile(f).getAbsolutePath();
@@ -1127,6 +1183,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
     private javax.swing.JRadioButton includeClosureButton;
     private javax.swing.JRadioButton includeDatamodelButton;
     private javax.swing.JLabel includeLabel;
+    private javax.swing.JRadioButton includeSelectedButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel4;

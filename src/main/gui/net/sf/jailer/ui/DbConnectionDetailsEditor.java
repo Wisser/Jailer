@@ -1806,8 +1806,6 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		oldCi.assign(ci);
 		if (fillConnectionInfo()) {
 			if (DbConnectionDialog.testConnection(isVisible()? this : parent, ci, createDownloadButton())) {
-				// TODO
-				// TODO undo def.all
 				ok = true;
 				JOptionPane.showMessageDialog(isVisible()? this : parent, "Successfully established connection.", "Connected", JOptionPane.INFORMATION_MESSAGE);
 			}

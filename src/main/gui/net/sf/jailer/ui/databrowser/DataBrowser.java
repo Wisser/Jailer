@@ -3917,7 +3917,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
     }//GEN-LAST:event_importMenuItemActionPerformed
 
     private void generateDDLMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateDDLMenuItemActionPerformed
-        DDLScriptGeneratorPanel.open(this, null, datamodel.get(), null, session, dbConnectionDialog.getExecutionContext());
+        DDLScriptGeneratorPanel.open(this, null, datamodel.get(), null, null, session, dbConnectionDialog.getExecutionContext());
     }//GEN-LAST:event_generateDDLMenuItemActionPerformed
 
 	private void newWindowMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_newWindowMenuItemActionPerformed
