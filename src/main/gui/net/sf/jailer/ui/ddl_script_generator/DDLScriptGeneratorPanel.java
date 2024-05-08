@@ -1036,7 +1036,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
         jPanel1.add(includeAllButton, gridBagConstraints);
 
         includeClosureButton.setText("Tables associated with a subject table");
-        includeClosureButton.setToolTipText("<html>Generate DDL statements only for the tables that are directly or indirectly associated with a subject table. (the <i>Closure</i>)<br>Note that this excludes sequences.</html>");
+        includeClosureButton.setToolTipText("<html>Generate SQL/DDL statements only for the tables that are directly or indirectly associated with a subject table. (the <i>Closure</i>)<br>Note that this excludes sequences.</html>");
         includeClosureButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 includeClosureButtonActionPerformed(evt);
@@ -1141,13 +1141,17 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
     	}
     }//GEN-LAST:event_closeButtonActionPerformed
 
+    private static File silentDDLScriptFileName;
+    
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
     	String fileName;
     	
     	if (silent) {
-    		File tmp = Configuration.getInstance().createTempFile();
-    		tmp.deleteOnExit();
-    		fileName = tmp.getAbsolutePath();
+    		if (silentDDLScriptFileName == null) {
+    			silentDDLScriptFileName = new File(Configuration.getInstance().createTempFile(), "DDL");
+    			silentDDLScriptFileName.deleteOnExit();
+    		}
+    		fileName = silentDDLScriptFileName.getAbsolutePath();
     	} else {
 	    	String fn = scriptFileTextField.getText().trim();
 	    	if (fn.isEmpty()) {
@@ -1172,7 +1176,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
         			UIUtil.invokeLater(4, () -> {
         				try {
         					if (owner instanceof DataBrowser) {
-        						((DataBrowser) owner).loadSQLScriptFile(new File(fileName), silent);
+        						((DataBrowser) owner).loadSQLScriptFile(new File(fileName), silent, "Generated SQL/DDL Script.");
         					} else {
         						new FileView(owner, owner, fileName, true);
         					}

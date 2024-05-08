@@ -2668,9 +2668,9 @@ public class UIUtil {
 				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 				g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 				
-				int b = 10;
+				int b = 12;
 				if (c instanceof JCheckBox || c instanceof JRadioButton) {
-					b = 7;
+					b = 8;
 				}
 				
 				g2d.setColor(((c instanceof JLabel) && ((JLabel) c).getIcon() == null) || c instanceof JTextField?

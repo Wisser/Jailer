@@ -1116,7 +1116,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 
 			@Override
 			protected void loadScriptFile(String fileName) {
-				loadSQLScriptFile(new File(fileName), false);
+				loadSQLScriptFile(new File(fileName), false, null);
 			}
 
 			@Override
@@ -3461,7 +3461,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         menuTools.add(jSeparator25);
 
         generateDDLMenuItem.setText("Generate DDL Script");
-        generateDDLMenuItem.setToolTipText("Generate a DDL script that creates the database objects (CREATE TABLE, VIEW etc.)");
+        generateDDLMenuItem.setToolTipText("Generate a SQL/DDL script that creates the database objects (CREATE TABLE, VIEW etc.)");
         generateDDLMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 generateDDLMenuItemActionPerformed(evt);
@@ -6131,7 +6131,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 				titleLbl.setToolTipText(null);
 			} else {
 				title = file.getName();
-				titleLbl.setToolTipText(file.getAbsolutePath());
+				titleLbl.setToolTipText(alternativeToolTip == null? file.getAbsolutePath() : alternativeToolTip);
 			}
 			if (dirty && file != null) {
 				titleLbl.setText("* " + title);
@@ -6237,7 +6237,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		List<SQLConsoleWithTitle> toClose = new ArrayList<SQLConsoleWithTitle>(sqlConsoles);
 		for (SQLConsoleWithTitle sqlConsole : toClose) {
 			workbenchTabbedPane.setSelectedComponent(sqlConsole);
-			if (sqlConsole.getFile() != null && sqlConsole.isDirty()) {
+			if (sqlConsole.getFile() != null && sqlConsole.isDirty() && !sqlConsole.isTempFileBased()) {
 				if (!closeSQLConsole(sqlConsole, true)) {
 					return false;
 				}
@@ -6258,7 +6258,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 			if (!sqlConsole.isEmpty() && !(sqlConsole.getFile() != null && !sqlConsole.isDirty())) {
 				if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(DataBrowser.this,
 						"Close \"" + (sqlConsole instanceof SQLConsoleWithTitle? ((SQLConsoleWithTitle) sqlConsole).getTitle() : "SQL Console") + "\""
-								+ (sqlConsole.getFile() == null ? "?" : " without saving?"),
+								+ (sqlConsole.getFile() == null && !sqlConsole.isTempFileBased()? "?" : " without saving?"),
 						"Close Console", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
 					return false;
 				}
@@ -6281,7 +6281,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		if (sc instanceof SQLConsole) {
 			sqlConsole = (SQLConsole) sc;
 		}
-		saveScriptMenuItem.setEnabled(sqlConsole != null && sqlConsole.isDirty());
+		saveScriptMenuItem.setEnabled(sqlConsole != null && (sqlConsole.isDirty() && !sqlConsole.isTempFileBased()));
 		saveScriptAsMenuItem.setEnabled(sqlConsole != null && !sqlConsole.isEmpty());
 		if (sqlConsole != null) {
 			goBackItem.setEnabled(false);
@@ -6295,11 +6295,11 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		String fName = UIUtil.choseFile(null, ".", "Load SQL Script", "", this, false, true);
 		if (fName != null) {
 			File file = new File(fName);
-			loadSQLScriptFile(file, false);
+			loadSQLScriptFile(file, false, null);
 		}
 	}// GEN-LAST:event_loadScriptMenuItemActionPerformed
 
-	public void loadSQLScriptFile(File file, boolean silent) {
+	public void loadSQLScriptFile(File file, boolean silent, String alternativeToolTip) {
 		if (file.exists() && file.isDirectory()) {
 			return;
 		}
@@ -6317,7 +6317,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		}
 		try {
 			UIUtil.setWaitCursor(this);
-			createNewSQLConsole(getMetaDataSource()).loadFromFile(file, silent);
+			createNewSQLConsole(getMetaDataSource()).loadFromFile(file, silent, alternativeToolTip);
 		} catch (Throwable e) {
 			UIUtil.showException(this, "Error", e, session);
 		} finally {
@@ -6328,7 +6328,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	private void saveScriptMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_saveScriptMenuItemActionPerformed
 		SQLConsole sqlConsole = getCurrentSQLConsole();
 		if (sqlConsole != null) {
-			if (sqlConsole.getFile() == null) {
+			if (sqlConsole.getFile() == null && sqlConsole.isTempFileBased()) {
 				saveScriptAsMenuItemActionPerformed(evt);
 			} else {
 				try {
@@ -6570,7 +6570,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 							@SuppressWarnings("unchecked")
 							java.util.List<File> files = (java.util.List<File>) tr.getTransferData(flavors[i]);
 							for (int k = 0; k < files.size(); k++) {
-								loadSQLScriptFile(files.get(k), false);
+								loadSQLScriptFile(files.get(k), false, null);
 							}
 
 							dtde.dropComplete(true);

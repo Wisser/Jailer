@@ -226,6 +226,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private final ImageIcon scaledExplainIcon;
     private final SQLPlusSupport sqlPlusSupport = new SQLPlusSupport();
 	private File file;
+	private boolean tempFileBased;
+	protected String alternativeToolTip;
 	private JMenuItem menuItemToggle;
 	private JMenuItem menuItemToSingleLine;
 	private JMenuItem menuItemSubstituteVariables;
@@ -2600,6 +2602,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         jPanel1 = new javax.swing.JPanel();
         jSplitPane2 = new javax.swing.JSplitPane();
         jPanel2 = new javax.swing.JPanel();
+        jPanel7 = new javax.swing.JPanel();
         consoleContainerPanel = new javax.swing.JPanel();
         jPanel5 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
@@ -2635,6 +2638,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
+        jPanel7.setLayout(new java.awt.GridBagLayout());
+
         consoleContainerPanel.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -2643,7 +2648,16 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        jPanel2.add(consoleContainerPanel, gridBagConstraints);
+        jPanel7.add(consoleContainerPanel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel2.add(jPanel7, gridBagConstraints);
 
         jPanel5.setLayout(new java.awt.GridBagLayout());
 
@@ -2857,6 +2871,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
+    private javax.swing.JPanel jPanel7;
     private javax.swing.JToolBar.Separator jSeparator1;
     private javax.swing.JToolBar.Separator jSeparator2;
     private javax.swing.JToolBar.Separator jSeparator3;
@@ -4104,10 +4119,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	 *
 	 * @param file the file
 	 */
-	public void loadFromFile(File file, boolean silent) throws IOException {
-		if (!silent) {
-			this.file = file;
-		}
+	public void loadFromFile(File file, boolean tempFileBased, String alternativeToolTip) throws IOException {
+		this.file = file;
+		this.tempFileBased = tempFileBased;
+		this.alternativeToolTip = alternativeToolTip;
 		if (file.exists()) {
 			String path = file.getPath();
 			Charset encoding = SqlUtil.retrieveEncoding(path);
@@ -4142,18 +4157,59 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		initialContentSize = editorPane.getDocument().getLength();
         initialContentHash = editorPane.getText().hashCode();
         consoleContainerPanel.setVisible(false);
-        UIUtil.invokeLater(new Runnable() {
+        UIUtil.invokeLater(4, new Runnable() {
 			@Override
 			public void run() {
 		        consoleContainerPanel.setVisible(true);
 		        grabFocus();
+				if (file.exists()) {
+					startAfterLoadIndicatorTimer();
+				}
 			}
 		});
         setCaretPosition(0);
-        if (!silent) {
-        	onContentStateChange(file, dirty);
-        }
+        onContentStateChange(file, dirty);
         UIUtil.invokeLater(2, () -> editorPane.scrollRectToVisible(new Rectangle(0, 0, 1, 1)));
+	}
+
+	private void startAfterLoadIndicatorTimer() {
+		final double DELTA = 0.03;
+		int delay = 25;
+		Color c0 = editorPane.getBackground();
+		Color c1 = new Color(100, 255, 100);
+		if (c0 != null) {
+			Timer[] timer = new Timer[1];
+			timer[0] = new Timer(delay, new ActionListener() {
+				double x = 0;
+				double delta = DELTA;
+
+				// TODO
+				{ delta = delta / 10; }
+				
+				private int fade(int a, int b) {
+					double fScaled = 1 -Math.pow(x, 4);
+					
+					double rf = Math.sin(fScaled / Math.PI);
+					int color = (int) (a + rf * (b - a));
+					if (color < 0 || color > 255) {
+						throw new IllegalStateException(color + " not in color range");
+					}
+					return color;
+				}
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					if ((x += delta) > 1.0) {
+						editorPane.setBackground(c0);
+						timer[0].stop();
+					} else {
+						editorPane.setBackground(new Color(fade(c0.getRed(), c1.getRed()), fade(c0.getGreen(), c1.getGreen()), fade(c0.getBlue(), c1.getBlue())));
+					}
+				}
+		    });
+			timer[0].setInitialDelay(delay);
+			timer[0].setRepeats(true);
+			timer[0].start();
+		}
 	}
 
 	/**
@@ -4205,6 +4261,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	        initialContentSize = editorPane.getDocument().getLength();
 	        initialContentHash = editorPane.getText().hashCode();
 	        dirty = false;
+	        tempFileBased = false;
+	        alternativeToolTip = null;
 	        onContentStateChange(file, dirty);
 		}
 	}
@@ -4394,6 +4452,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			jToolBar1.setToolTipText(connectionType.displayName);
 			jPanel5.setToolTipText(connectionType.displayName);
 		}
+	}
+
+	public boolean isTempFileBased() {
+		return tempFileBased;
 	}
 
 	// TODO 2

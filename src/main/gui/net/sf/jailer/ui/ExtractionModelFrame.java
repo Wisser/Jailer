@@ -759,7 +759,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
         jMenu1.add(jSeparator25);
 
         generateDDLMenuItem.setText("Generate DDL Script");
-        generateDDLMenuItem.setToolTipText("Generate a DDL script that creates the database objects (CREATE TABLE, VIEW etc.)");
+        generateDDLMenuItem.setToolTipText("Generate a SQL/DDL script that creates the database objects (CREATE TABLE, VIEW etc.)");
         generateDDLMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 generateDDLMenuItemActionPerformed(evt);
