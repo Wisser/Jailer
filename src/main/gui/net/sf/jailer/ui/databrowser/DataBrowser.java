@@ -1116,7 +1116,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 
 			@Override
 			protected void loadScriptFile(String fileName) {
-				loadSQLScriptFile(new File(fileName));
+				loadSQLScriptFile(new File(fileName), false);
 			}
 
 			@Override
@@ -3917,7 +3917,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
     }//GEN-LAST:event_importMenuItemActionPerformed
 
     private void generateDDLMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateDDLMenuItemActionPerformed
-        DDLScriptGeneratorPanel.open(this, null, datamodel.get(), null, null, session, dbConnectionDialog.getExecutionContext());
+        DDLScriptGeneratorPanel.open(this, null, datamodel.get(), null, null, false, session, dbConnectionDialog.getExecutionContext());
     }//GEN-LAST:event_generateDDLMenuItemActionPerformed
 
 	private void newWindowMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_newWindowMenuItemActionPerformed
@@ -6295,11 +6295,11 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		String fName = UIUtil.choseFile(null, ".", "Load SQL Script", "", this, false, true);
 		if (fName != null) {
 			File file = new File(fName);
-			loadSQLScriptFile(file);
+			loadSQLScriptFile(file, false);
 		}
 	}// GEN-LAST:event_loadScriptMenuItemActionPerformed
 
-	public void loadSQLScriptFile(File file) {
+	public void loadSQLScriptFile(File file, boolean silent) {
 		if (file.exists() && file.isDirectory()) {
 			return;
 		}
@@ -6317,7 +6317,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		}
 		try {
 			UIUtil.setWaitCursor(this);
-			createNewSQLConsole(getMetaDataSource()).loadFromFile(file);
+			createNewSQLConsole(getMetaDataSource()).loadFromFile(file, silent);
 		} catch (Throwable e) {
 			UIUtil.showException(this, "Error", e, session);
 		} finally {
@@ -6570,7 +6570,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 							@SuppressWarnings("unchecked")
 							java.util.List<File> files = (java.util.List<File>) tr.getTransferData(flavors[i]);
 							for (int k = 0; k < files.size(); k++) {
-								loadSQLScriptFile(files.get(k));
+								loadSQLScriptFile(files.get(k), false);
 							}
 
 							dtde.dropComplete(true);

@@ -4104,8 +4104,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	 *
 	 * @param file the file
 	 */
-	public void loadFromFile(File file) throws IOException {
-		this.file = file;
+	public void loadFromFile(File file, boolean silent) throws IOException {
+		if (!silent) {
+			this.file = file;
+		}
 		if (file.exists()) {
 			String path = file.getPath();
 			Charset encoding = SqlUtil.retrieveEncoding(path);
@@ -4148,7 +4150,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			}
 		});
         setCaretPosition(0);
-        onContentStateChange(file, dirty);
+        if (!silent) {
+        	onContentStateChange(file, dirty);
+        }
         UIUtil.invokeLater(2, () -> editorPane.scrollRectToVisible(new Rectangle(0, 0, 1, 1)));
 	}
 

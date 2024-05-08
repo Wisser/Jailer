@@ -841,7 +841,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                         ddl.addActionListener(new ActionListener() {
                             @Override
                             public void actionPerformed(ActionEvent e) {
-								DDLScriptGeneratorPanel.open(SwingUtilities.getWindowAncestor(MetaDataPanel.this), preselectedSchema != null? Quoting.staticUnquote(preselectedSchema) : null, dataModel, finalSelectedTables, null, metaDataSource.getSession(), executionContext);
+								DDLScriptGeneratorPanel.open(SwingUtilities.getWindowAncestor(MetaDataPanel.this), preselectedSchema != null? Quoting.staticUnquote(preselectedSchema) : null, dataModel, finalSelectedTables, null, true, metaDataSource.getSession(), executionContext);
                             }
                         });
                         popup.add(ddl);
