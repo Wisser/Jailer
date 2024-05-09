@@ -4173,26 +4173,23 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	}
 
 	private void startAfterLoadIndicatorTimer() {
-		final double DELTA = 0.03;
+		final double DELTA = 0.025;
 		int delay = 25;
 		Color c0 = editorPane.getBackground();
-		Color c1 = new Color(100, 255, 100);
+		Color c1 = new Color(200, 255, 180);
 		if (c0 != null) {
 			Timer[] timer = new Timer[1];
 			timer[0] = new Timer(delay, new ActionListener() {
 				double x = 0;
 				double delta = DELTA;
-
-				// TODO
-				{ delta = delta / 10; }
-				
 				private int fade(int a, int b) {
-					double fScaled = 1 -Math.pow(x, 4);
+					double fScaled = Math.pow(1 - x, 3);
 					
-					double rf = Math.sin(fScaled / Math.PI);
+					double rf = Math.sin(fScaled * Math.PI);
 					int color = (int) (a + rf * (b - a));
 					if (color < 0 || color > 255) {
-						throw new IllegalStateException(color + " not in color range");
+						color = Math.min(Math.max(0, color), 255);
+//						throw new IllegalStateException(color + " not in color range");
 					}
 					return color;
 				}
