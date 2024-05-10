@@ -4156,7 +4156,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		editorPane.discardAllEdits();
 		initialContentSize = editorPane.getDocument().getLength();
         initialContentHash = editorPane.getText().hashCode();
-        consoleContainerPanel.setVisible(false);
+        jPanel7.setOpaque(true);
+        jPanel7.setBackground(editorPane.getBackground());
+         consoleContainerPanel.setVisible(false);
         UIUtil.invokeLater(4, new Runnable() {
 			@Override
 			public void run() {
