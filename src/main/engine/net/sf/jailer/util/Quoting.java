@@ -40,7 +40,7 @@ public class Quoting {
 	/**
 	 * The quote character, null if quoting is not supported.
 	 */
-	private String quote = null;
+	private final String quote;
 
 	/**
 	 * Whether the database treats mixed case unquoted SQL identifiers as case
@@ -131,6 +131,15 @@ public class Quoting {
 			keyWords.addAll(UCSQL2003KEYWORDS);
 			keyWordsMap.put(k, keyWords);
 		}
+	}
+
+	private Quoting(String quote, boolean unquotedIdentifierInUpperCase, boolean unquotedIdentifierInMixedCase,
+			Map<String, Set<String>> keyWordsMap, Set<String> keyWords) {
+		this.quote = quote;
+		this.unquotedIdentifierInUpperCase = unquotedIdentifierInUpperCase;
+		this.unquotedIdentifierInMixedCase = unquotedIdentifierInMixedCase;
+		this.keyWordsMap = keyWordsMap;
+		this.keyWords = keyWords;
 	}
 
 	/**
@@ -312,12 +321,12 @@ public class Quoting {
 	}
 
 	/**
-	 * Sets the identifierQuoteString
+	 * Creates new Quoting with different identifierQuoteString.
 	 * 
 	 * @param identifierQuoteString
 	 */
-	public void setIdentifierQuoteString(String identifierQuoteString) {
-		quote = identifierQuoteString;
+	public Quoting withIdentifierQuoteString(String identifierQuoteString) {
+		return new Quoting(identifierQuoteString, unquotedIdentifierInUpperCase, unquotedIdentifierInMixedCase, keyWordsMap, keyWords);
 	}
 
 	/**

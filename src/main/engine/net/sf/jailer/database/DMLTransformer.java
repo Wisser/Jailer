@@ -146,7 +146,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 	/**
 	 * For quoting of column names.
 	 */
-	protected final Quoting quoting;
+	protected Quoting quoting;
 
 	/**
 	 * If table has identity column (MSSQL/Sybase/Postgres)
@@ -263,7 +263,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 		this.importFilterTransformer = importFilterTransformer;
 		if (targetDBMSConfiguration != session.dbms) {
 			if (targetDBMSConfiguration.getIdentifierQuoteString() != null) {
-				this.quoting.setIdentifierQuoteString(targetDBMSConfiguration.getIdentifierQuoteString());
+				this.quoting = this.quoting.withIdentifierQuoteString(targetDBMSConfiguration.getIdentifierQuoteString());
 			}
 		}
 		this.identityInsertTable = identityInsertTable;
