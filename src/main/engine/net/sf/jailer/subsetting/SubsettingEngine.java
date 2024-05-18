@@ -728,7 +728,7 @@ public class SubsettingEngine {
 			Quoting targetQuoting;
 			targetQuoting = Quoting.getQuoting(session);
 			if (sourceConfig != targetConfig) {
-				targetQuoting.setIdentifierQuoteString(targetConfig.getIdentifierQuoteString());
+				targetQuoting = targetQuoting.withIdentifierQuoteString(targetConfig.getIdentifierQuoteString());
 			}
 			importFilterManager = new ImportFilterManager(localSession, result, progress, targetQuoting, executionContext) {
 				@Override
@@ -1376,7 +1376,7 @@ public class SubsettingEngine {
 	 *            the progress-set
 	 * @return the progress-set as string
 	 */
-	public static String asString(Set<Table> progress) {
+	private static String asString(Set<Table> progress) {
 		String str = "";
 		for (Table table : progress) {
 			if (!"".equals(str)) {

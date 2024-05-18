@@ -69,7 +69,7 @@ public class DeletionTransformer extends AbstractResultSetReader {
 	/**
 	 * For quoting of column names.
 	 */
-	private final Quoting quoting;
+	private Quoting quoting;
 
 	/**
 	 * The execution context.
@@ -137,7 +137,7 @@ public class DeletionTransformer extends AbstractResultSetReader {
 		this.quoting = Quoting.getQuoting(session);
 		if (targetDBMSConfiguration != null && targetDBMSConfiguration != session.dbms) {
 			if (targetDBMSConfiguration.getIdentifierQuoteString() != null) {
-				this.quoting.setIdentifierQuoteString(targetDBMSConfiguration.getIdentifierQuoteString());
+				this.quoting = this.quoting.withIdentifierQuoteString(targetDBMSConfiguration.getIdentifierQuoteString());
 			}
 		}
 		this.session = session;

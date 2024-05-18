@@ -91,7 +91,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
 	/**
 	 * For quoting of column names.
 	 */
-	private final Quoting quoting;
+	private Quoting quoting;
 	
 	/**
 	 * Current session;
@@ -155,7 +155,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
 		this.reason = reason;
 		if (targetDBMSConfiguration != session.dbms) {
 			if (targetDBMSConfiguration.getIdentifierQuoteString() != null) {
-				this.quoting.setIdentifierQuoteString(targetDBMSConfiguration.getIdentifierQuoteString());
+				this.quoting = this.quoting.withIdentifierQuoteString(targetDBMSConfiguration.getIdentifierQuoteString());
 			}
 		}
 		this.session = session;
