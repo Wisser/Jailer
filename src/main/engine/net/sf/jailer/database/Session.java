@@ -297,6 +297,13 @@ public class Session {
 							} catch (Throwable t) {
 								valid = true;
 							}
+							if (valid) {
+								try {
+									valid = !con.isClosed();
+								} catch (Throwable t) {
+									valid = true;
+								}
+							}
 							if (!valid) {
 								// LogUtil.warn(new RuntimeException("invalid connection, reconnecting (" + idleTime + ")"));
 								reconnect();
