@@ -31,7 +31,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
 import net.sf.jailer.ExecutionContext;
@@ -42,6 +41,7 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.MetaDataBasedSQLCompletionProvider;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithTheme;
 import net.sf.jailer.ui.syntaxtextarea.SQLAutoCompletion;
 import net.sf.jailer.util.SqlScriptExecutor;
 
@@ -405,7 +405,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
     public javax.swing.JLabel statusLabel;
     // End of variables declaration//GEN-END:variables
 
-    private final RSyntaxTextArea sqlTextArea;
+    private final RSyntaxTextAreaWithTheme sqlTextArea;
     public RTextScrollPane scrollPane;
 
 	private static ImageIcon closeIcon;

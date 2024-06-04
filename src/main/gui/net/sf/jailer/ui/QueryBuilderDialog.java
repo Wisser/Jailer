@@ -48,7 +48,6 @@ import javax.swing.event.DocumentListener;
 
 import org.fife.ui.autocomplete.AutoCompletion;
 import org.fife.ui.autocomplete.CompletionProvider;
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
@@ -60,6 +59,7 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.MetaDataBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithTheme;
 import net.sf.jailer.ui.syntaxtextarea.SQLAutoCompletion;
 import net.sf.jailer.util.SqlUtil;
 
@@ -1495,7 +1495,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
     public javax.swing.JButton sqlEditButton;
     // End of variables declaration//GEN-END:variables
 
-    private final RSyntaxTextArea sqlTextArea;
+    private final RSyntaxTextAreaWithTheme sqlTextArea;
     
 	private ImageIcon joinImage = null;
 	private ImageIcon minusImage = null;

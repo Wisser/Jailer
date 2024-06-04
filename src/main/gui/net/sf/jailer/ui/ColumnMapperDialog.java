@@ -30,6 +30,7 @@ import org.w3c.dom.Document;
 
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithTheme;
 import net.sf.jailer.xml.XmlUtil;
 
 /**
@@ -50,7 +51,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 	public ColumnMapperDialog(java.awt.Frame parent, ParameterSelector.ParametersGetter parametersGetter) {
 		super(parent, true);
 		this.parent = parent;
-		this.mappingField = new RSyntaxTextArea();
+		this.mappingField = new RSyntaxTextAreaWithTheme();
 		mappingField.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_XML);
 		mappingField.setCodeFoldingEnabled(true);
 

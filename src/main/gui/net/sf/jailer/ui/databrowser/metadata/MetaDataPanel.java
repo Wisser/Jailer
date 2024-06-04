@@ -132,6 +132,7 @@ import net.sf.jailer.ui.UIUtil.IconWithText;
 import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.Row;
 import net.sf.jailer.ui.ddl_script_generator.DDLScriptGeneratorPanel;
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithTheme;
 import net.sf.jailer.util.Quoting;
 
 /**
@@ -1949,7 +1950,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 	private final String fontName; {
 		String name = null;
 		try {
-			name = new RSyntaxTextArea().getFont().getName();
+			name = new RSyntaxTextAreaWithTheme().getFont().getName();
 		} catch (Throwable t) {
 			// ignore
 		}

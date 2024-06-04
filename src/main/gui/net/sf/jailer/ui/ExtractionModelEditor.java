@@ -138,6 +138,7 @@ import net.sf.jailer.ui.graphical_view.GraphicalDataModelView;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithTheme;
 import net.sf.jailer.ui.syntaxtextarea.SQLCompletionProvider;
 import net.sf.jailer.ui.undo.CompensationAction;
 import net.sf.jailer.ui.undo.UndoManager;
@@ -2862,7 +2863,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 */
 	private void addSketchTab(Table table) throws Exception {
 		JScrollPane tab = new JScrollPane();
-		RSyntaxTextArea xmlSketch = new RSyntaxTextArea();
+		RSyntaxTextArea xmlSketch = new RSyntaxTextAreaWithTheme();
 
 		xmlSketch.setEditable(false);
 		tab.setViewportView(xmlSketch);

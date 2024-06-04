@@ -70,6 +70,7 @@ import net.sf.jailer.ui.databrowser.Desktop.RunnableWithPriority;
 import net.sf.jailer.ui.databrowser.Reference;
 import net.sf.jailer.ui.databrowser.Row;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithTheme;
 import net.sf.jailer.util.Pair;
 
 /**
@@ -490,7 +491,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 		    		panel.add(new JLabel(" DDL not available"));
 		    	} else {
 		    		JScrollPane tab = new JScrollPane();
-		    		RSyntaxTextArea area = new RSyntaxTextArea();
+		    		RSyntaxTextArea area = new RSyntaxTextAreaWithTheme();
 					area.setBracketMatchingEnabled(false);
 
 		    		area.setEditable(false);

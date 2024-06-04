@@ -25,6 +25,7 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithTheme;
 
 /**
  * SQL-Console error view.
@@ -51,7 +52,7 @@ public class ErrorPanel extends javax.swing.JPanel {
 		} catch (Throwable t) {
 			// ignore
 		}
-		sqlEditorPane = new RSyntaxTextArea();
+		sqlEditorPane = new RSyntaxTextAreaWithTheme();
 		sqlEditorPane.setBracketMatchingEnabled(false);
 
 		sqlEditorPane.setFadeCurrentLineHighlight(true);

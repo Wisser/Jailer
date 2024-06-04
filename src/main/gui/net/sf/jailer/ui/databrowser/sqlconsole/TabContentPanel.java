@@ -67,6 +67,7 @@ import net.sf.jailer.ui.databrowser.BrowserContentPane;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataDetailsPanel;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithTheme;
 import net.sf.jailer.util.Pair;
 
 public class TabContentPanel extends javax.swing.JPanel {
@@ -207,7 +208,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 		}
 		
 		JScrollPane scrollPane = new JScrollPane();
-		RSyntaxTextArea area = new RSyntaxTextArea();
+		RSyntaxTextArea area = new RSyntaxTextAreaWithTheme();
 		area.setBracketMatchingEnabled(false);
 
 		area.setEditable(false);

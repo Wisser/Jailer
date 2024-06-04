@@ -135,7 +135,7 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.FlatDarculaLaf;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.Jailer;
@@ -156,6 +156,7 @@ import net.sf.jailer.ui.databrowser.Row;
 import net.sf.jailer.ui.scrollmenu.JScrollC2PopupMenu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithTheme;
 import net.sf.jailer.ui.util.ConcurrentTaskControl;
 import net.sf.jailer.ui.util.HttpUtil;
 import net.sf.jailer.ui.util.LRUCache;
@@ -1540,7 +1541,7 @@ public class UIUtil {
 					protected void waitLoading() {
 					}
 				};
-				new RSyntaxTextArea();
+				new RSyntaxTextAreaWithTheme();
 				getSQLEditorFont();
 				new RowCountRenderer("", null);
 			} catch (Throwable t) {
@@ -1950,7 +1951,7 @@ public class UIUtil {
 	
 	public static Font getSQLEditorFont() {
 		if (sqlEditorFont == null) {
-			sqlEditorFont = new RSyntaxTextArea().getFont();
+			sqlEditorFont = new RSyntaxTextAreaWithTheme().getFont();
 		}
 		return sqlEditorFont;
 	}
@@ -2206,7 +2207,7 @@ public class UIUtil {
                     
 //                    UIManager.put( "TextArea.background", Color.white);
                     
-                    FlatLightLaf.setup();
+                    FlatDarculaLaf.setup();
 					break;
 				} catch (Exception x) {
 					UIUtil.showException(null, "Error", x);

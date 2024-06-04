@@ -25,6 +25,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -58,6 +59,7 @@ import org.fife.rsta.ui.search.SearchEvent;
 import org.fife.rsta.ui.search.SearchListener;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+import org.fife.ui.rsyntaxtextarea.Theme;
 import org.fife.ui.rtextarea.Gutter;
 import org.fife.ui.rtextarea.SearchContext;
 import org.fife.ui.rtextarea.SearchEngine;
@@ -65,6 +67,7 @@ import org.fife.ui.rtextarea.SearchResult;
 
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
+import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Pair;
 
 /**
@@ -73,7 +76,7 @@ import net.sf.jailer.util.Pair;
  * @author Ralf Wisser
  */
 @SuppressWarnings("serial")
-public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implements SearchListener {
+public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme implements SearchListener {
 
 	private FindDialog findDialog;
 	private ReplaceDialog replaceDialog;
@@ -108,6 +111,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 		setAutoIndentEnabled(true);
 		setBracketMatchingEnabled(false);
 		// setTabsEmulated(true);
+		
 		
 		// load images
 		loadImages();
@@ -262,6 +266,17 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 		
 		createPopupMenu();
 		updateMenuItemState();
+		initTheme();
+	}
+
+	private void initTheme() {
+		try {
+			new Theme(this);
+			Theme t = Theme.load(getClass().getResourceAsStream("/org/fife/ui/rsyntaxtextarea/themes/dark.xml"));
+			t.apply(this);
+		} catch (IOException e1) {
+			LogUtil.warn(e1);
+		}
 	}
 
 	private Double initialFontSize = null;
@@ -1138,6 +1153,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 
 	public void setGutter(Gutter gutter) {
 		this.gutter = gutter;
+		initTheme();
 	}
 	
 	public void setLineTrackingIcon(int line, Icon theIcon) {
