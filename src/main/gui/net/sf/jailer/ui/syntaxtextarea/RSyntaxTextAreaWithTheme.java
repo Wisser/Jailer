@@ -51,6 +51,16 @@ public class RSyntaxTextAreaWithTheme extends RSyntaxTextArea {
 			new Theme(this);
 			Theme t = Theme.load(getClass().getResourceAsStream("/org/fife/ui/rsyntaxtextarea/themes/dark.xml"));
 			t.apply(this);
+			
+			// TODO
+			// TODO current line indicator with gradient (restore, it's gone after apply)
+			
+			// TODO
+			// TODO tool need to respect Color.RED/red (AWT-Colors) too
+			
+			// TODO
+			// TODO update rsyntaxtree
+			
 		} catch (IOException e1) {
 			LogUtil.warn(e1);
 		}

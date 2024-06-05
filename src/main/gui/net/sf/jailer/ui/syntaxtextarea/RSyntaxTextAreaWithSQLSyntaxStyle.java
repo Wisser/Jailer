@@ -25,7 +25,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -57,17 +56,13 @@ import org.fife.rsta.ui.search.FindDialog;
 import org.fife.rsta.ui.search.ReplaceDialog;
 import org.fife.rsta.ui.search.SearchEvent;
 import org.fife.rsta.ui.search.SearchListener;
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
-import org.fife.ui.rsyntaxtextarea.Theme;
-import org.fife.ui.rtextarea.Gutter;
 import org.fife.ui.rtextarea.SearchContext;
 import org.fife.ui.rtextarea.SearchEngine;
 import org.fife.ui.rtextarea.SearchResult;
 
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
-import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Pair;
 
 /**
@@ -266,17 +261,6 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 		
 		createPopupMenu();
 		updateMenuItemState();
-		initTheme();
-	}
-
-	private void initTheme() {
-		try {
-			new Theme(this);
-			Theme t = Theme.load(getClass().getResourceAsStream("/org/fife/ui/rsyntaxtextarea/themes/dark.xml"));
-			t.apply(this);
-		} catch (IOException e1) {
-			LogUtil.warn(e1);
-		}
 	}
 
 	private Double initialFontSize = null;
@@ -1149,12 +1133,6 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 
 	private final AtomicBoolean stopped = new AtomicBoolean(false);
 	private final AtomicBoolean pending = new AtomicBoolean(false);
-	private Gutter gutter;
-
-	public void setGutter(Gutter gutter) {
-		this.gutter = gutter;
-		initTheme();
-	}
 	
 	public void setLineTrackingIcon(int line, Icon theIcon) {
 		if (gutter != null) {

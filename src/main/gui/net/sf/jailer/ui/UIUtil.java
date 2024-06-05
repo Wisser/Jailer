@@ -131,11 +131,10 @@ import javax.swing.event.ChangeListener;
 import javax.swing.plaf.BorderUIResource;
 import javax.swing.text.DefaultEditorKit;
 
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.formdev.flatlaf.FlatDarculaLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.Jailer;
@@ -2207,7 +2206,7 @@ public class UIUtil {
                     
 //                    UIManager.put( "TextArea.background", Color.white);
                     
-                    FlatDarculaLaf.setup();
+                    FlatDarkLaf.setup();
 					break;
 				} catch (Exception x) {
 					UIUtil.showException(null, "Error", x);
