@@ -222,7 +222,7 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 			}
 		});
 		
-		if (UIUtil.plaf == PLAF.FLAT) {
+		if (UIUtil.plaf.isFlat) {
 			searchField.putClientProperty("JTextField.placeholderText", "Full Text Search");
 		}
     }

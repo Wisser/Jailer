@@ -132,6 +132,7 @@ import net.sf.jailer.ui.UIUtil.IconWithText;
 import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.Row;
 import net.sf.jailer.ui.ddl_script_generator.DDLScriptGeneratorPanel;
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithTheme;
 import net.sf.jailer.util.Quoting;
 
 /**
@@ -556,7 +557,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 			}
 		});
         
-		if (UIUtil.plaf == PLAF.FLAT) {
+		if (UIUtil.plaf.isFlat) {
 			splitPane.setDividerSize(16);
 		}
 		
@@ -1163,7 +1164,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 		}
                 	}
                 }
-                if (UIUtil.plaf == PLAF.FLAT) {
+                if (UIUtil.plaf.isFlat) {
 					setTextSelectionColor(tree.hasFocus()? Color.white : null);
 				}
                 
@@ -1949,7 +1950,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 	private final String fontName; {
 		String name = null;
 		try {
-			name = new RSyntaxTextArea().getFont().getName();
+			name = new RSyntaxTextAreaWithTheme().getFont().getName();
 		} catch (Throwable t) {
 			// ignore
 		}

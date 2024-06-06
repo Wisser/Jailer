@@ -331,7 +331,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		closureTable.setShowGrid(false);
 		closureTable.setSurrendersFocusOnKeystroke(true);
 		closureTable.getTableHeader().setReorderingAllowed(false);
-		if (UIUtil.plaf == PLAF.FLAT) {
+		if (UIUtil.plaf.isFlat) {
 			closureTable.getTableHeader().putClientProperty( "FlatLaf.style", "separatorColor: #fff; bottomSeparatorColor: #ccc" );
 			try {
 				((DefaultTableCellRenderer) closureTable.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
@@ -579,7 +579,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		neighborTable.setAutoCreateRowSorter(true);
 		neighborTable.getTableHeader().setReorderingAllowed(false);
 		neighborTable.getTableHeader().setToolTipText("<html>The degree of a table is the total number of adjacent tables<br>that can be reached directly with an enabled association.</html>");
-		if (UIUtil.plaf == PLAF.FLAT) {
+		if (UIUtil.plaf.isFlat) {
 			neighborTable.getTableHeader().putClientProperty( "FlatLaf.style", "separatorColor: #fff; bottomSeparatorColor: #ccc" );
 			try {
 				((DefaultTableCellRenderer) neighborTable.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
@@ -846,7 +846,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 	private final Color BG1 = UIUtil.TABLE_BACKGROUND_COLOR_1;
 	private final Color BG2 = UIUtil.TABLE_BACKGROUND_COLOR_2;
 	private final Color BG3 = new Color(255, 255, 240);
-	private final Color BG4 = UIUtil.plaf == PLAF.FLAT? new Color(242, 242, 242) : new Color(220, 220, 220);
+	private final Color BG4 = UIUtil.plaf.isFlat? new Color(242, 242, 242) : new Color(220, 220, 220);
 	private final Color BG5 = new Color(255, 240, 240);
 
 	/**

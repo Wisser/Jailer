@@ -610,7 +610,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		Border errFBorder = BorderFactory.createLineBorder(new Color(255, 100, 100));
 		Border errBorder = BorderFactory.createLineBorder(new Color(255, 50, 50));
 		updateBorder = () -> {
-			if (UIUtil.plaf == PLAF.FLAT) {
+			if (UIUtil.plaf.isFlat) {
 				boolean ok = true;
 				try {
 					if (dbUrl.isEnabled()) {

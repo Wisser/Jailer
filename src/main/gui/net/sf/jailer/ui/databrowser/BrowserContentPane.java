@@ -977,7 +977,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		jToolBar1.setFloatable(false);
 		jToolBar2.setFloatable(false);
 		
-		if (UIUtil.plaf == PLAF.FLAT) {
+		if (UIUtil.plaf.isFlat) {
 			removeConditionButton.setBackground(new Color(220, 220, 255));
 		}
 
@@ -1007,7 +1007,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		findColumnsLabel.setToolTipText("Find Column...");
 		findColumnsLabel.setIcon(scaledFindColumnIcon1);
 		findColumnsLabel.setName("no-tt-indicator");
-				if (UIUtil.plaf != PLAF.FLAT) {
+				if (!UIUtil.plaf.isFlat) {
 			findColumnsLabel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
 		}
 
@@ -1050,7 +1050,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 
 			private void updateBorder() {
-				if (UIUtil.plaf == PLAF.FLAT) {
+				if (UIUtil.plaf.isFlat) {
 					findColumnsPanel.setBackground(active? UIUtil.BG_FLATSELECTED : in? UIUtil.BG_FLATMOUSEOVER : null);
 				} else {
 					findColumnsLabel.setBorder(new javax.swing.border.SoftBevelBorder(in || active? javax.swing.border.BevelBorder.LOWERED : javax.swing.border.BevelBorder.RAISED));
@@ -1066,7 +1066,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		hAlignButtonLabel.setText(getQueryBuilderDialog() != null? null : "Find Column");
 		hAlignButtonLabel.setToolTipText("Align horizontally with predecessors");
 		hAlignButtonLabel.setIcon(scaledhAlignButtonIcon1);
-		if (UIUtil.plaf != PLAF.FLAT) {
+		if (!UIUtil.plaf.isFlat) {
 			hAlignButtonLabel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
 		}
 
@@ -1119,7 +1119,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 
 			private void updateBorder() {
-				if (UIUtil.plaf == PLAF.FLAT) {
+				if (UIUtil.plaf.isFlat) {
 					hAlignButtonPanel.setBackground(active? UIUtil.BG_FLATSELECTED : in? UIUtil.BG_FLATMOUSEOVER : null);
 				} else {
 					hAlignButtonLabel.setBorder(new javax.swing.border.SoftBevelBorder(in || active? javax.swing.border.BevelBorder.LOWERED : javax.swing.border.BevelBorder.RAISED));
@@ -1139,7 +1139,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jPanel7.add(andCondition, gridBagConstraints);
 
 		UIUtil.setLeadingComponent(andCondition, conditionEditorButton);
-		if (UIUtil.plaf == PLAF.FLAT &&  andCondition.getEditor() != null && (andCondition.getEditor().getEditorComponent() instanceof JTextField)) {
+		if (UIUtil.plaf.isFlat &&  andCondition.getEditor() != null && (andCondition.getEditor().getEditorComponent() instanceof JTextField)) {
 			JTextField f = ((JTextField) andCondition.getEditor().getEditorComponent());
 			JButton clearButton = new JButton();
 			clearButton.setText(null);
@@ -2202,7 +2202,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		loadButton.setFont(derivedFont);
 		relatedRowsPanel.setToolTipText("Navigate to a neighbor table.");
 		Color rRowsBGColor = relatedRowsPanel.getBackground();
-		if (UIUtil.plaf == PLAF.FLAT) {
+		if (UIUtil.plaf.isFlat) {
 			relatedRowsPanel.setBorder(null);
 		}
 		if (!Arrays.stream(createPopupMenu(null, -1, 0, 0, false, false, false).getComponents()).anyMatch(c -> c.isEnabled())) {
@@ -2251,7 +2251,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 
 				private void updateBorder() {
-					if (UIUtil.plaf == PLAF.FLAT) {
+					if (UIUtil.plaf.isFlat) {
 						Color bg = popup != null? UIUtil.BG_FLATSELECTED : in? UIUtil.BG_FLATMOUSEOVER : rRowsBGColor;
 						relatedRowsPanel.setBackground(bg);
 						relatedRowsLabel.setBackground(bg);
@@ -2265,7 +2265,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 		sqlPanel.setToolTipText("Open Menu");
 		Color sqlPBGColor = sqlPanel.getBackground();
-		if (UIUtil.plaf == PLAF.FLAT) {
+		if (UIUtil.plaf.isFlat) {
 			sqlPanel.setBorder(null);
 		}
 		sqlPanel.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -2312,7 +2312,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 
 			private void updateBorder() {
-				if (UIUtil.plaf == PLAF.FLAT) {
+				if (UIUtil.plaf.isFlat) {
 					Color bg = popup != null? UIUtil.BG_FLATSELECTED : in? UIUtil.BG_FLATMOUSEOVER : sqlPBGColor;
 					sqlPanel.setBackground(bg);
 					sqlLabel1.setBackground(bg);
@@ -2326,7 +2326,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		if (selectDistinct != null) {
 			selectDistinctCheckBox.setSelected(selectDistinct);
 		}
-		if (UIUtil.plaf == PLAF.FLAT) {
+		if (UIUtil.plaf.isFlat) {
 			sortColumnsPanel.setBorder(null);
 		}
 		sortColumnsPanel.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -2409,7 +2409,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 
 			private void updateBorder() {
-				if (UIUtil.plaf == PLAF.FLAT) {
+				if (UIUtil.plaf.isFlat) {
 					sortColumnsPanel.setBackground(popup != null? UIUtil.BG_FLATSELECTED : in? UIUtil.BG_FLATMOUSEOVER : null);
 				} else {
 					sortColumnsPanel.setBorder(new javax.swing.border.SoftBevelBorder((in || popup != null) ? javax.swing.border.BevelBorder.LOWERED
@@ -5401,7 +5401,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			columnConfig.put(column.getModelIndex(), column.getPreferredWidth());
 		}
 		
-		if (UIUtil.plaf == PLAF.FLAT) {
+		if (UIUtil.plaf.isFlat) {
 			JTextField f = ((JTextField) andCondition.getEditor().getEditorComponent());
 			andCondition.setBackground(f.getText().trim().isEmpty()? origCondBG : new Color(255, 255, 205));
 		}
@@ -5662,7 +5662,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				int spWidth = inplaceEditorTextField.getFontMetrics(inplaceEditorTextField.getFont()).stringWidth(" ");
 				public Insets getBorderInsets(Component c, Insets insets) {
 					Insets myInsets = super.getBorderInsets(c, insets);
-					return new Insets(myInsets.top, myInsets.left + spWidth + (PLAF.FLAT == UIUtil.plaf? 2 : 0), myInsets.bottom, myInsets.right);
+					return new Insets(myInsets.top, myInsets.left + spWidth + (UIUtil.plaf.isFlat? 2 : 0), myInsets.bottom, myInsets.right);
 				}
 			});
 		    DefaultCellEditor anEditor = new DefaultCellEditor(inplaceEditorTextField) {
@@ -6063,7 +6063,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 		allowNewLimit = limitExceeded && !moreLimits.isEmpty();
 		if (allowNewLimit) {
-			if (UIUtil.plaf != PLAF.FLAT) {
+			if (!UIUtil.plaf.isFlat) {
 				rowsCount.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
 			}
 			rowsCount.setIcon(dropDownIcon);
@@ -6147,7 +6147,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					}
 
 					private void updateBorder() {
-						if (UIUtil.plaf == PLAF.FLAT) {
+						if (UIUtil.plaf.isFlat) {
 							rowsCount.setBackground(popup != null? UIUtil.BG_FLATSELECTED : in? UIUtil.BG_FLATMOUSEOVER : null);
 						} else {
 							rowsCount.setBorder(new javax.swing.border.SoftBevelBorder((in || popup != null) ? javax.swing.border.BevelBorder.LOWERED
@@ -8396,6 +8396,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				// nothing to do
 				break;
 			case FLAT:
+			case FLATDARK:
 				result.y = ready == null? 4 : -(rowsTable.getTableHeader().getHeight() - ready.getIconHeight()) / 2 + 6;
 				break;
 			case NIMBUS:

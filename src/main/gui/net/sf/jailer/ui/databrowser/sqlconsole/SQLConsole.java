@@ -543,7 +543,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     }
 
 	private void updateResultUI() {
-		if (UIUtil.plaf == PLAF.FLAT) {
+		if (UIUtil.plaf.isFlat) {
 	        if (jTabbedPane1.getTabCount() > 0) {
 	        	jPanel3.setBorder(null);
 	        } else {

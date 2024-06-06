@@ -63,7 +63,7 @@ public class SQLAutoCompletion extends AutoCompletion {
 				if (c instanceof JLabel && value instanceof SQLCompletionProvider.SQLCompletion) {
 					((JLabel) c).setToolTipText(((SQLCompletionProvider.SQLCompletion) value).tooltip);
 				}
-				if (!initialized && UIUtil.plaf == PLAF.FLAT) {
+				if (!initialized && UIUtil.plaf.isFlat) {
 					initialized = true;
 					JComponent comp = list;
 					Container parent = comp.getParent();

@@ -544,7 +544,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         closureTable.setShowGrid(false);
         closureTable.setSurrendersFocusOnKeystroke(true);
         closureTable.getTableHeader().setReorderingAllowed(false);
-        if (UIUtil.plaf == PLAF.FLAT) {
+        if (UIUtil.plaf.isFlat) {
 			closureTable.getTableHeader().putClientProperty( "FlatLaf.style", "separatorColor: #fff; bottomSeparatorColor: #ccc" );
 			try {
 				((DefaultTableCellRenderer) closureTable.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
@@ -925,7 +925,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         final Color BG1 = UIUtil.TABLE_BACKGROUND_COLOR_1;
         final Color BG2 = UIUtil.TABLE_BACKGROUND_COLOR_2;
         final Color BG3 = new Color(255, 255, 240);
-        final Color BG4 = UIUtil.plaf == PLAF.FLAT? new Color(242, 242, 242) : new Color(220, 220, 220);
+        final Color BG4 = UIUtil.plaf.isFlat? new Color(242, 242, 242) : new Color(220, 220, 220);
         final Color BG5 = new Color(255, 240, 240);
         bgColor.clear();
 

@@ -110,7 +110,7 @@ public class RowCountRenderer extends JComponent {
 	}
 
 	public void doPaint(Graphics g) {
-		int oy = PLAF.FLAT == UIUtil.plaf ? 2 : 3;
+		int oy = UIUtil.plaf.isFlat ? 2 : 3;
 		if (g instanceof Graphics2D) {
 			Toolkit toolkit = Toolkit.getDefaultToolkit();
 			Map map = (Map) (toolkit.getDesktopProperty("awt.font.desktophints"));

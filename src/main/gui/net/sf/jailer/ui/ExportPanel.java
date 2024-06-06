@@ -89,7 +89,7 @@ public class ExportPanel extends javax.swing.JPanel {
         initComponents();
         okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
 		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
-		if (UIUtil.plaf == PLAF.FLAT) {
+		if (UIUtil.plaf.isFlat) {
 			selectionPanel.setBackground(Color.white);
 			jPanel3.setBackground(Color.white);
 		}

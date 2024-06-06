@@ -70,7 +70,7 @@ public final class About extends javax.swing.JDialog {
 				tf -> {
 					tf.setToolTipText(UIUtil.toHTML(tf.getText().replace(File.pathSeparator, "\n"), 0));
 					tf.setCaretPosition(0);
-					if (UIUtil.plaf == PLAF.FLAT) {
+					if (UIUtil.plaf.isFlat) {
 						tf.setBorder(null);
 					}
 					tf.addMouseListener(new MouseAdapter() {

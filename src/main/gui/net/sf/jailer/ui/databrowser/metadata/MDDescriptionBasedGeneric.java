@@ -53,6 +53,7 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.modelbuilder.MemorizedResultSet;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithTheme;
 import net.sf.jailer.util.Quoting;
 
 /**
@@ -201,7 +202,7 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 								if (!rows.isEmpty()) {
 									JTabbedPane tabbedPane = new JTabbedPane();
 									for (Entry<String, StringBuilder> e: rows.entrySet()) {
-										RSyntaxTextArea textPane = new RSyntaxTextArea(e.getValue().toString());
+										RSyntaxTextArea textPane = new RSyntaxTextAreaWithTheme(e.getValue().toString());
 										textPane.setBracketMatchingEnabled(false);
 										textPane.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
 										textPane.setEditable(false);

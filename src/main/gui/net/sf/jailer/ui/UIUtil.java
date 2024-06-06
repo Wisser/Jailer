@@ -131,10 +131,10 @@ import javax.swing.event.ChangeListener;
 import javax.swing.plaf.BorderUIResource;
 import javax.swing.text.DefaultEditorKit;
 
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 
 import net.sf.jailer.ExecutionContext;
@@ -156,6 +156,7 @@ import net.sf.jailer.ui.databrowser.Row;
 import net.sf.jailer.ui.scrollmenu.JScrollC2PopupMenu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithTheme;
 import net.sf.jailer.ui.util.ConcurrentTaskControl;
 import net.sf.jailer.ui.util.HttpUtil;
 import net.sf.jailer.ui.util.LRUCache;
@@ -1540,7 +1541,7 @@ public class UIUtil {
 					protected void waitLoading() {
 					}
 				};
-				new RSyntaxTextArea();
+				new RSyntaxTextAreaWithTheme();
 				getSQLEditorFont();
 				new RowCountRenderer("", null);
 			} catch (Throwable t) {
@@ -1950,7 +1951,7 @@ public class UIUtil {
 	
 	public static Font getSQLEditorFont() {
 		if (sqlEditorFont == null) {
-			sqlEditorFont = new RSyntaxTextArea().getFont();
+			sqlEditorFont = new RSyntaxTextAreaWithTheme().getFont();
 		}
 		return sqlEditorFont;
 	}
@@ -2128,19 +2129,21 @@ public class UIUtil {
 	}
 	
 	public static enum PLAF {
-		FLAT("Flat"), NIMBUS("Nimbus"), NATIVE("Native");
+		FLAT("Flat", true), NIMBUS("Nimbus", false), NATIVE("Native", false), FLATDARK("FlatDark", true);
 		
-		PLAF(String description) {
+		PLAF(String description, boolean isFlat) {
 			this.description = description;
+			this.isFlat = isFlat;
 		}
 		public final String description;
+		public final boolean isFlat;
 	};
 	
 	public static PLAF plaf = PLAF.NATIVE;
 	
 	public static void checkPLAF(Component parentComponent) {
 		Object oldPlafSetting = UISettings.restore("OLD_PLAF");
-		if (plaf != PLAF.FLAT && plaf != PLAF.NIMBUS && oldPlafSetting != null && !oldPlafSetting.equals(plaf.name())) {
+		if (plaf != PLAF.FLAT && plaf != PLAF.FLATDARK && plaf != PLAF.NIMBUS && oldPlafSetting != null && !oldPlafSetting.equals(plaf.name())) {
 			if (JOptionPane.showOptionDialog(parentComponent, 
 					"The \"look and feel\" has been changed.\nDo you want to keep the change?", 
 					"Look&Feel", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,
@@ -2172,6 +2175,16 @@ public class UIUtil {
 			}
 		}
 		
+		try {
+			// TODO
+			// TODO remove
+			if (System.getProperty("darkLAF").equalsIgnoreCase("true")) {
+				plaf = PLAF.FLATDARK;
+			}
+		} catch (Exception e) {
+			// ignore
+		}
+		
 		if (plaf == PLAF.NIMBUS) {
 			plaf = PLAF.FLAT;
 		}
@@ -2180,6 +2193,7 @@ public class UIUtil {
 			case NATIVE:
 				// nothing to do
 				break;
+			case FLATDARK:
 			case FLAT:
 				try {
 					UIManager.put("ScrollPane.border", BorderFactory.createLineBorder(FLAT_BORDER_COLOR));
@@ -2206,7 +2220,11 @@ public class UIUtil {
                     
 //                    UIManager.put( "TextArea.background", Color.white);
                     
-                    FlatLightLaf.setup();
+                    if (plaf == PLAF.FLATDARK) {
+                    	FlatDarkLaf.setup();
+                    } else {
+                    	FlatLightLaf.setup();
+                    }
 					break;
 				} catch (Exception x) {
 					UIUtil.showException(null, "Error", x);
@@ -2302,7 +2320,7 @@ public class UIUtil {
 	}
 
 	private static void setLeadingOrTrailingComponent(String propertyName, JComponent component, JComponent leadingComponent) {
-		if (plaf == PLAF.FLAT && component != null) {
+		if (plaf.isFlat && component != null) {
 			if (leadingComponent instanceof JButton) {
 				((JButton) leadingComponent).setText(null);
 			}
@@ -2490,7 +2508,7 @@ public class UIUtil {
 	}
 
 	public static void initComponents(Component component) {
-		if (plaf == PLAF.FLAT) {
+		if (plaf.isFlat) {
 			UIUtil.traverse(component, null, c-> null, (c, o) -> null, (t, c) -> {
 				if (c instanceof JTabbedPane) {
 					((JTabbedPane) c).addChangeListener(new ChangeListener() {

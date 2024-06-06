@@ -134,7 +134,7 @@ public class JScrollPopupMenu extends JPopupMenu {
 			}
 		});
 		
-		if (UIUtil.plaf == PLAF.FLAT) {
+		if (UIUtil.plaf.isFlat) {
 			searchField.putClientProperty("JTextField.placeholderText", PLACEHOLDERTEXT);
 		}
 //		searchField.setVisible(false);

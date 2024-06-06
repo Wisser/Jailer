@@ -126,7 +126,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		this.tableModel = tableModel;
 		initComponents(); UIUtil.initComponents(this);
         jToolBar1.setFloatable(false);
-        if (UIUtil.plaf == PLAF.FLAT) {
+        if (UIUtil.plaf.isFlat) {
 			contentTabbedPane.putClientProperty(FlatClientProperties.TABBED_PANE_TAB_HEIGHT, 16);
 		}
 		editModeToggleButton.setFocusable(true);
@@ -497,6 +497,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 							// nothing to do
 							break;
 						case FLAT:
+						case FLATDARK:
 						case NIMBUS:
 							f.setBorder(BorderFactory.createLineBorder(isEditable? new Color(255, 242, 240) : Color.white));
 							break;

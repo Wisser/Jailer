@@ -138,6 +138,7 @@ import net.sf.jailer.ui.graphical_view.GraphicalDataModelView;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithTheme;
 import net.sf.jailer.ui.syntaxtextarea.SQLCompletionProvider;
 import net.sf.jailer.ui.undo.CompensationAction;
 import net.sf.jailer.ui.undo.UndoManager;
@@ -698,13 +699,13 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		whereConEditorButton.setEnabled(restrictionEditor.restriction.isEnabled());
 		sm.setEnabled(restrictionEditor.restriction.isEnabled());
 		restrictionEditor.restriction.addPropertyChangeListener("enabled", e -> whereConEditorButton.setEnabled(restrictionEditor.restriction.isEnabled()));
-		if (UIUtil.plaf != PLAF.FLAT) {
+		if (!UIUtil.plaf.isFlat) {
 			restrictionEditor.restriction.addPropertyChangeListener("enabled", e -> sm.setVisible(restrictionEditor.restriction.isEnabled()));
 		}
 		// condition.setFont(UIUtil.getSQLEditorFont());
 		restrictionEditor.restriction.setFont(UIUtil.getSQLEditorFont());
 		
-		if (UIUtil.plaf == PLAF.FLAT) {
+		if (UIUtil.plaf.isFlat) {
 			sm.setVisible(false);
 			whereConEditorButton.setVisible(true);
 			UIUtil.setLeadingComponent(restrictionEditor.restriction, whereConEditorButton);
@@ -2862,7 +2863,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 */
 	private void addSketchTab(Table table) throws Exception {
 		JScrollPane tab = new JScrollPane();
-		RSyntaxTextArea xmlSketch = new RSyntaxTextArea();
+		RSyntaxTextArea xmlSketch = new RSyntaxTextAreaWithTheme();
 
 		xmlSketch.setEditable(false);
 		tab.setViewportView(xmlSketch);
@@ -3103,7 +3104,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			}
 			private void setTextColor(JTree tree, Color color) {
 				setTextNonSelectionColor(color);
-				if (UIUtil.plaf == PLAF.FLAT) {
+				if (UIUtil.plaf.isFlat) {
 					setTextSelectionColor(tree.hasFocus()? Color.white : color);
 				}
 			}
@@ -3199,6 +3200,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				// nothing to do
 				break;
 			case FLAT:
+				// nothing to do
+				break;
+			case FLATDARK:
 				// nothing to do
 				break;
 			case NIMBUS:

@@ -1599,7 +1599,7 @@ public abstract class Desktop extends JDesktopPane {
 			tableBrowser.setTitleNumber(number);
 			
 			if (tableBrowser.internalFrame != null) {
-				tableBrowser.internalFrame.setTitle(UIUtil.plaf == PLAF.FLAT? tableBrowser.getTitleHtml() : tableBrowser.getTitle());
+				tableBrowser.internalFrame.setTitle(UIUtil.plaf.isFlat? tableBrowser.getTitleHtml() : tableBrowser.getTitle());
 			}
 		}
 		
@@ -1608,7 +1608,7 @@ public abstract class Desktop extends JDesktopPane {
 				renameTableBrowserPending = false;
 				for (RowBrowser tableBrowser: tableBrowsers) {
 					if (tableBrowser.internalFrame != null) {
-						tableBrowser.internalFrame.setTitle(UIUtil.plaf == PLAF.FLAT? tableBrowser.getTitleHtml() : tableBrowser.getTitle());
+						tableBrowser.internalFrame.setTitle(UIUtil.plaf.isFlat? tableBrowser.getTitleHtml() : tableBrowser.getTitle());
 						initIFrame(tableBrowser.internalFrame, tableBrowser.getTitle(), tableBrowser.browserContentPane, tableBrowser.getTitleHtml());
 					}
 				}
@@ -2340,8 +2340,8 @@ public abstract class Desktop extends JDesktopPane {
 										boolean intersect = link.intersect;
 										boolean dotted = link.dotted || toJoin.dotted;
 										newLinks.add(new Link(link.from, toJoin.to, link.sourceRowID, toJoin.destRowID, link.x1, link.y1, toJoin.x2, toJoin.y2,
-												UIUtil.plaf == PLAF.FLAT? new Color(170, 200, 0) : Color.yellow.darker().darker(), 
-												UIUtil.plaf == PLAF.FLAT? new Color(170, 200, 0) : Color.yellow.darker(), 
+												UIUtil.plaf.isFlat? new Color(170, 200, 0) : Color.yellow.darker().darker(), 
+												UIUtil.plaf.isFlat? new Color(170, 200, 0) : Color.yellow.darker(), 
 												dotted, intersect, link.inClosure && toJoin.inClosure, link.inTempClosure && toJoin.inTempClosure, link.notHAligned, link.restricted || toJoin.restricted));
 									}
 								}
@@ -2560,7 +2560,7 @@ public abstract class Desktop extends JDesktopPane {
 		if (doPaint) {
 			if (UIUtil.plaf == PLAF.NIMBUS) {
 				g2d.setColor(inTempClosure && !pbg? new Color(220, 220, 255) : color);
-			} else if (UIUtil.plaf == PLAF.FLAT) {
+			} else if (UIUtil.plaf.isFlat) {
 				double f = 4;
 				if (fgColor.getGreen() > fgColor.getRed() + fgColor.getBlue()) {
 					f = 2.0;

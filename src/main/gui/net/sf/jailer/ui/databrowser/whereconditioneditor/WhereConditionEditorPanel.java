@@ -191,7 +191,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         if (asPopup) {
         	initPopupView();
         } else {
-        	setBorder(UIUtil.plaf == PLAF.FLAT? null : BorderFactory.createSoftBevelBorder(SoftBevelBorder.RAISED));
+        	setBorder(UIUtil.plaf.isFlat? null : BorderFactory.createSoftBevelBorder(SoftBevelBorder.RAISED));
     		statusPanel.setVisible(false);
         	popupTitelPanel.setVisible(false);
         }
@@ -1077,7 +1077,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						});
 						popup.add(item);
 					}
-					if (UIUtil.plaf == PLAF.FLAT) {
+					if (UIUtil.plaf.isFlat) {
 						setBackground(UIUtil.BG_FLATSELECTED);
 						setBorder(new LineBorder(UIUtil.BG_FLATSELECTED, 2, true));
 						freezed = true;

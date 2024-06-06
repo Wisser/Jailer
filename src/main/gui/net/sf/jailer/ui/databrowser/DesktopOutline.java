@@ -280,7 +280,7 @@ public class DesktopOutline extends JPanel {
 			g2d.setPaint(paint);
 			g2d.setStroke(stroke);
 			g2d.fillRoundRect(sx, sy, sw, sh, 8, 8);
-			g2d.setColor(UIUtil.plaf == PLAF.FLAT? UIUtil.FLAT_BORDER_COLOR : Color.LIGHT_GRAY);
+			g2d.setColor(UIUtil.plaf.isFlat? UIUtil.FLAT_BORDER_COLOR : Color.LIGHT_GRAY);
 			g2d.drawRoundRect(gx, gy, gw + 1, gh, 2, 2);
 			
 			g2d.setStroke(new BasicStroke(1));

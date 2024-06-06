@@ -39,6 +39,7 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithTheme;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.ui.util.UpdateInfoManager;
 
@@ -58,7 +59,7 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 		super(parent, ModalityType.APPLICATION_MODAL);
 		this.sqlError = sqlError;
 		this.message = message;
-		this.sqlEditorPane = new RSyntaxTextArea();
+		this.sqlEditorPane = new RSyntaxTextAreaWithTheme();
 		sqlEditorPane.setEditable(false);
 		if (sqlError) {
 			this.sqlEditorPane.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);

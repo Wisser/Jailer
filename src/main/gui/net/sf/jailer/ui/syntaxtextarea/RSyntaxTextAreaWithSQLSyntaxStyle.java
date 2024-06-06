@@ -56,9 +56,7 @@ import org.fife.rsta.ui.search.FindDialog;
 import org.fife.rsta.ui.search.ReplaceDialog;
 import org.fife.rsta.ui.search.SearchEvent;
 import org.fife.rsta.ui.search.SearchListener;
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
-import org.fife.ui.rtextarea.Gutter;
 import org.fife.ui.rtextarea.SearchContext;
 import org.fife.ui.rtextarea.SearchEngine;
 import org.fife.ui.rtextarea.SearchResult;
@@ -73,7 +71,7 @@ import net.sf.jailer.util.Pair;
  * @author Ralf Wisser
  */
 @SuppressWarnings("serial")
-public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implements SearchListener {
+public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme implements SearchListener {
 
 	private FindDialog findDialog;
 	private ReplaceDialog replaceDialog;
@@ -108,6 +106,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 		setAutoIndentEnabled(true);
 		setBracketMatchingEnabled(false);
 		// setTabsEmulated(true);
+		
 		
 		// load images
 		loadImages();
@@ -1134,11 +1133,6 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 
 	private final AtomicBoolean stopped = new AtomicBoolean(false);
 	private final AtomicBoolean pending = new AtomicBoolean(false);
-	private Gutter gutter;
-
-	public void setGutter(Gutter gutter) {
-		this.gutter = gutter;
-	}
 	
 	public void setLineTrackingIcon(int line, Icon theIcon) {
 		if (gutter != null) {

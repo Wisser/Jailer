@@ -67,6 +67,7 @@ import net.sf.jailer.ui.databrowser.BrowserContentPane;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataDetailsPanel;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithTheme;
 import net.sf.jailer.util.Pair;
 
 public class TabContentPanel extends javax.swing.JPanel {
@@ -96,7 +97,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         
         initComponents(); UIUtil.initComponents(this);
         controlsContainer.setFloatable(false);
-        if (UIUtil.plaf == PLAF.FLAT) {
+        if (UIUtil.plaf.isFlat) {
 			tabbedPane.putClientProperty(FlatClientProperties.TABBED_PANE_TAB_HEIGHT, 16);
 		}
         loadingPanel.setVisible(false);
@@ -207,7 +208,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 		}
 		
 		JScrollPane scrollPane = new JScrollPane();
-		RSyntaxTextArea area = new RSyntaxTextArea();
+		RSyntaxTextArea area = new RSyntaxTextAreaWithTheme();
 		area.setBracketMatchingEnabled(false);
 
 		area.setEditable(false);
@@ -390,7 +391,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 		textArea.setCaretPosition(0);
 		textArea.setEditable(false);
 		textArea.discardAllEdits();
-		if (UIUtil.plaf == PLAF.FLAT) {
+		if (UIUtil.plaf.isFlat) {
 			textArea.setBackground(Color.white);
 		}
 		UIUtil.invokeLater(() -> textViewScrollPane.getViewport().setViewPosition(vPos));

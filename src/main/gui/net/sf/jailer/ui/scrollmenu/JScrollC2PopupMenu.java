@@ -122,7 +122,7 @@ public class JScrollC2PopupMenu extends JPopupMenu {
 			}
 		});
 		
-		if (UIUtil.plaf == PLAF.FLAT) {
+		if (UIUtil.plaf.isFlat) {
 			searchField.putClientProperty("JTextField.placeholderText", PLACEHOLDERTEXT);
 		}
 //		searchField.setVisible(false);
@@ -431,7 +431,7 @@ public class JScrollC2PopupMenu extends JPopupMenu {
 			searchField.setBorder(null);
 		});
 
-		if (UIUtil.plaf == PLAF.FLAT) {
+		if (UIUtil.plaf.isFlat) {
 			MenuSelectionManager msm = MenuSelectionManager.defaultManager();
 			MenuElement[] path = msm.getSelectedPath();
 			if (path.length > 0 && path[0].getComponent() != null) {

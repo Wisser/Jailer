@@ -412,7 +412,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		modelNavigationGapPanel.setMinimumSize(new Dimension(300, 1));
 		modelNavigationGapPanel.setPreferredSize(modelNavigationGapPanel.getMinimumSize());
 		
-		if (UIUtil.plaf == PLAF.FLAT) {
+		if (UIUtil.plaf.isFlat) {
 			modelNavigationButtonV.addMouseListener(new MouseAdapter() {
 				Color bg = modelNavigationButtonV.getBackground();
 				
@@ -450,7 +450,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		zoomWithMouseWheelMenuItem.setSelected(Boolean.TRUE.equals(UISettings.restore(UISettings.ZOOM_WITH_MOUSE_WHEEL)));
 		setZoomWithMouseWheel(zoom);
 
-		if (UIUtil.plaf == PLAF.FLAT) {
+		if (UIUtil.plaf.isFlat) {
 			jSplitPane4.setDividerSize(16);
 		}
 		
@@ -882,6 +882,9 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 							// nothing to do
 							break;
 						case FLAT:
+							// nothing to do
+							break;
+						case FLATDARK:
 							// nothing to do
 							break;
 						case NIMBUS:
@@ -1556,7 +1559,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 						if (bgCol != null && !sel) {
 							((JLabel) render).setBackground(bgCol);
 							((JLabel) render).setOpaque(true);
-							paintBG = getComponentOrientation().isLeftToRight() && UIUtil.plaf == PLAF.FLAT;
+							paintBG = getComponentOrientation().isLeftToRight() && UIUtil.plaf.isFlat;
 							switch (node.getConnectionType()) {
 							case Staging: 
 								lDiff = 30;

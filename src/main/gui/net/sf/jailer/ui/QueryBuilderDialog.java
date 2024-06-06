@@ -48,7 +48,6 @@ import javax.swing.event.DocumentListener;
 
 import org.fife.ui.autocomplete.AutoCompletion;
 import org.fife.ui.autocomplete.CompletionProvider;
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
@@ -60,6 +59,7 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.MetaDataBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithTheme;
 import net.sf.jailer.ui.syntaxtextarea.SQLAutoCompletion;
 import net.sf.jailer.util.SqlUtil;
 
@@ -718,7 +718,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 				gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
 				gridBagConstraints.insets = new Insets(0, 4, 0, 0);
 
-				if (UIUtil.plaf != PLAF.FLAT) {
+				if (!UIUtil.plaf.isFlat) {
 					minusLabel.setBorder(BorderFactory.createSoftBevelBorder(BevelBorder.RAISED));
 				} else {
 					minusLabel.setOpaque(true);
@@ -728,7 +728,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 				minusLabel.addMouseListener(new java.awt.event.MouseAdapter() {
 					@Override
 					public void mouseEntered(java.awt.event.MouseEvent evt) {
-						if (UIUtil.plaf == PLAF.FLAT) {
+						if (UIUtil.plaf.isFlat) {
 							minusLabel.setBackground(UIUtil.BG_FLATMOUSEOVER);
 						} else {
 							minusLabel.setBorder(BorderFactory.createSoftBevelBorder(BevelBorder.LOWERED));
@@ -737,7 +737,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 
 					@Override
 					public void mouseExited(java.awt.event.MouseEvent evt) {
-						if (UIUtil.plaf == PLAF.FLAT) {
+						if (UIUtil.plaf.isFlat) {
 							minusLabel.setBackground(bg);
 						} else {
 							minusLabel.setBorder(BorderFactory.createSoftBevelBorder(BevelBorder.LOWERED));
@@ -778,7 +778,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 
 				final JComponent finalTCB = tableCB;
 				finalTCB.setVisible(false);
-				if (UIUtil.plaf != PLAF.FLAT) {
+				if (!UIUtil.plaf.isFlat) {
 					jlabel.setBorder(BorderFactory.createSoftBevelBorder(BevelBorder.RAISED));
 				} else {
 					jlabel.setOpaque(true);
@@ -788,7 +788,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 				jlabel.addMouseListener(new java.awt.event.MouseAdapter() {
 					@Override
 					public void mouseEntered(java.awt.event.MouseEvent evt) {
-						if (UIUtil.plaf == PLAF.FLAT) {
+						if (UIUtil.plaf.isFlat) {
 							jlabel.setBackground(UIUtil.BG_FLATMOUSEOVER);
 						} else {
 							jlabel.setBorder(BorderFactory.createSoftBevelBorder(BevelBorder.LOWERED));
@@ -797,7 +797,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 
 					@Override
 					public void mouseExited(java.awt.event.MouseEvent evt) {
-						if (UIUtil.plaf == PLAF.FLAT) {
+						if (UIUtil.plaf.isFlat) {
 							jlabel.setBackground(bg);
 						} else {
 							jlabel.setBorder(BorderFactory.createSoftBevelBorder(BevelBorder.LOWERED));
@@ -1495,7 +1495,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
     public javax.swing.JButton sqlEditButton;
     // End of variables declaration//GEN-END:variables
 
-    private final RSyntaxTextArea sqlTextArea;
+    private final RSyntaxTextAreaWithTheme sqlTextArea;
     
 	private ImageIcon joinImage = null;
 	private ImageIcon minusImage = null;
