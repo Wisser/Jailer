@@ -71,8 +71,8 @@ public class RowCountRenderer extends JComponent {
 			w = Math.max(Math.max(lk.getPreferredSize().width, lm.getPreferredSize().width), lg.getPreferredSize().width);
 			
 			lk.setForeground(FG_COLOR);
-			lm.setForeground(new Color(6 * 16 + 0, 4 * 16, 0));
-			lg.setForeground(new Color(9 * 16 + 6, 0, 6 * 16 + 4));
+			lm.setForeground(new Color(96, 64, 0));
+			lg.setForeground(new Color(150, 0, 100));
 			
 			lk.setFont(font);
 			lm.setFont(font);

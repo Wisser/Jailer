@@ -255,7 +255,7 @@ public class ProgressTable extends JTable {
 						if (p == 0) {
 							f = 0.0f;
 						}
-						numberRender.setForeground(new Color(f, 0.0f, 0.0f));
+						numberRender.setForeground(new Color(0, 0, 0));
 					}
 				} else {
 					tableRender.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);

@@ -378,7 +378,7 @@ public class DesktopOutline extends JPanel {
 							nx += stringBounds.getWidth();
 						}
 						if (browser.getTitleNumber() != null) {
-							g2d.setColor(new Color(0, 6 * 16, 0));
+							g2d.setColor(new Color(0, 96, 0));
 							g2d.drawString(" /" + browser.getTitleNumber(), nx, ny);
 						}
 					}

@@ -70,7 +70,7 @@ public abstract class PendingDecisionsPanel extends javax.swing.JPanel {
 		initComponents(); UIUtil.initComponents(this);
 
 		DefaultTableCellRenderer associationsListItemRenderer = new DefaultTableCellRenderer() {
-			final Color BG_SELCOLOR = new Color(0.45f, 0.85f, 1.0f);
+			final Color BG_SELCOLOR = new Color(115, 217, 255);
 			final Color BG1 = UIUtil.TABLE_BACKGROUND_COLOR_1;
 			final Color BG2 = UIUtil.TABLE_BACKGROUND_COLOR_2;
 

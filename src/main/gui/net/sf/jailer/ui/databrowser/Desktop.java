@@ -1682,7 +1682,7 @@ public abstract class Desktop extends JDesktopPane {
 			jl.setToolTipText(toolTip);
 			if (l.equals(suffix)) {
 				jl.setFont(jl.getFont().deriveFont(jl.getFont().getStyle() & ~Font.BOLD));
-				jl.setForeground(new Color(0, 6 * 16, 0));
+				jl.setForeground(new Color(0, 96, 0));
 			} else {
 				jl.setFont(jl.getFont().deriveFont(jl.getFont().getStyle() | Font.BOLD));
 				jLabels.add(jl);

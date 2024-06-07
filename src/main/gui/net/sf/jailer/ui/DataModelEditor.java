@@ -162,8 +162,8 @@ public class DataModelEditor extends javax.swing.JDialog {
 		this.dbConnectionDialog = dbConnectionDialog;
 		this.executionContext = executionContext;
 
-		final Color BG_COLOR = new Color(0.8f, 1.0f, 0.7f);
-		final Color BG_SELCOLOR = new Color(0.45f, 0.85f, 1.0f);
+		final Color BG_COLOR = new Color(124, 255, 178);
+		final Color BG_SELCOLOR = new Color(115, 217, 255);
 		final Color BG1 = UIUtil.TABLE_BACKGROUND_COLOR_1;
 		final Color BG2 = UIUtil.TABLE_BACKGROUND_COLOR_2;
 

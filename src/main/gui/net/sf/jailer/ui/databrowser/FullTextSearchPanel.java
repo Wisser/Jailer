@@ -503,7 +503,7 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 			
 			if (currentPosition != null && currentPosition == x + y * table.getColumnCount()) {
 				JPanel panel = new JPanel(null) {
-					Border border = new LineBorder(new Color(0, 11 * 16, 0), 1, true);
+					Border border = new LineBorder(new Color(0, 176, 0), 1, true);
 					
 					@Override
 					public void paint(Graphics graphics) {
