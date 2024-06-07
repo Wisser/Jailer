@@ -677,11 +677,11 @@ public class StringSearchPanel extends javax.swing.JPanel {
 				}
 				Color bgColor = Color.WHITE;
 				Color fgColor = new Color(0, 0, 0);
-				String hlColor = "#050aff";
+				String hlColor = "color=\"#050aff\"";
 				if (isSelected) {
 					bgColor = new Color(0, 0, 145);
 					fgColor = Color.WHITE;
-					hlColor = "#ff9999";
+					hlColor = "color=\"#ff9999\"";
 				}
 				String item = value.toString();
 				item = UIUtil.indicateLeadingAndTrailingSpaces(item, !indicateLeadingAndTrailingSpaces);
@@ -691,7 +691,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 				if (i >= 0) {
 					i = Math.min(i, item.length());
 					if (i + search.length() <= item.length()) {
-						item = UIUtil.toHTMLFragment(item.substring(0, i), 0, false) + "<b><font color=\"" + hlColor + "\">" + UIUtil.toHTMLFragment(item.substring(i, i + search.length()), 0, false) + "</font></b>" + UIUtil.toHTMLFragment(item.substring(i + search.length()), 0, false);
+						item = UIUtil.toHTMLFragment(item.substring(0, i), 0, false) + "<b><font " + hlColor + ">" + UIUtil.toHTMLFragment(item.substring(i, i + search.length()), 0, false) + "</font></b>" + UIUtil.toHTMLFragment(item.substring(i + search.length()), 0, false);
 					} else {
 						item = UIUtil.toHTMLFragment(item, 0);
 					}

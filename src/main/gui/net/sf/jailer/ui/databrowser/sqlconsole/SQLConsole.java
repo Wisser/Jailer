@@ -1317,7 +1317,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	            		if (tabPerIndex.isEmpty()) {
 	                		columnLabels[i] = "<html><nobr><b>" + columnLabel + "</b><br><font color=\"#808080\">" + type + "</font></html>";
 	                	} else {
-	                		String bgColor = "0066ff";
 	                		if (table != null) {
 	                			Integer ord = tableOrd.get(table);
 	                			if (ord == null) {
@@ -1337,7 +1336,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                		} else {
 	                			columnLabel = UIUtil.toHTMLFragment(columnLabel, 128).replaceFirst("<br>$", "");
 	                		}
-	                		columnLabels[i] = "<html><nobr><font color=\"#" + bgColor + "\">" + titel + "</font><br><b>" + columnLabel + "</b><br><font color=\"#808080\">" + type + "</font></html>";
+	                		columnLabels[i] = "<html><nobr><font color=\"#0066ff\">" + titel + "</font><br><b>" + columnLabel + "</b><br><font color=\"#808080\">" + type + "</font></html>";
 	                	}
 	                }
 	                if (step == 0) {

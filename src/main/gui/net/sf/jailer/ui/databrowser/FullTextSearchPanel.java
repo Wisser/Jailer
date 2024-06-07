@@ -68,7 +68,6 @@ import net.sf.jailer.util.LogUtil;
 public class FullTextSearchPanel extends javax.swing.JPanel {
 
 	private final static int MAX_OCCURRENCES = 100_000;
-	private final static String HL_COLOR = "#0000D0";
 
 	private final JTable table;
 	
@@ -396,10 +395,10 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 								i += offset;
 								i = Math.min(i, value.length());
 								if (i + searchTextUC.length() <= value.length()) {
-									markedValue = UIUtil.toHTMLFragment(value.substring(0, i), 0, false) + "<b><u><font color=\"" + HL_COLOR + "\">" + UIUtil.toHTMLFragment(value.substring(i, i + searchTextUC.length()), 0, false) + "</font></u></b>" + UIUtil.toHTMLFragment(value.substring(i + searchTextUC.length()), 0, false);
+									markedValue = UIUtil.toHTMLFragment(value.substring(0, i), 0, false) + "<b><u><font color=\"#0000D0\">" + UIUtil.toHTMLFragment(value.substring(i, i + searchTextUC.length()), 0, false) + "</font></u></b>" + UIUtil.toHTMLFragment(value.substring(i + searchTextUC.length()), 0, false);
 								}
 								if (markedValue == null) {
-									markedValue = "<b><u><font color=\"" + HL_COLOR + "\">" + UIUtil.toHTMLFragment(value, 0, false) + "</font></u></b>";
+									markedValue = "<b><u><font color=\"#0000D0\">" + UIUtil.toHTMLFragment(value, 0, false) + "</font></u></b>";
 								}
 								markedValue = "<html>" + markedValue + "</html>";
 								markedValues.put(value, markedValue);

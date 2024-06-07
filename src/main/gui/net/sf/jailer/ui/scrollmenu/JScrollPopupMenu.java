@@ -147,7 +147,6 @@ public class JScrollPopupMenu extends JPopupMenu {
 
 	private Map<JMenuItem, String> compText = null;
 	private JSeparator separator;
-	private final static String HL_COLOR = "#0000D0";
 
 	protected void search(String searchText) {
 		if (compText == null) {
@@ -205,10 +204,10 @@ public class JScrollPopupMenu extends JPopupMenu {
 					i += offset;
 					i = Math.min(i, value.length());
 					if (i + searchTextUC.length() <= value.length()) {
-						markedValue = UIUtil.toHTMLFragment(value.substring(0, i), 0, false) + "<b><u><font color=\"" + HL_COLOR + "\">" + UIUtil.toHTMLFragment(value.substring(i, i + searchTextUC.length()), 0, false) + "</font></u></b>" + UIUtil.toHTMLFragment(value.substring(i + searchTextUC.length()), 0, false);
+						markedValue = UIUtil.toHTMLFragment(value.substring(0, i), 0, false) + "<b><u><font color=\"#0000D0\">" + UIUtil.toHTMLFragment(value.substring(i, i + searchTextUC.length()), 0, false) + "</font></u></b>" + UIUtil.toHTMLFragment(value.substring(i + searchTextUC.length()), 0, false);
 					}
 					if (markedValue == null) {
-						markedValue = "<b><u><font color=\"" + HL_COLOR + "\">" + UIUtil.toHTMLFragment(value, 0, false) + "</font></u></b>";
+						markedValue = "<b><u><font color=\"#0000D0\">" + UIUtil.toHTMLFragment(value, 0, false) + "</font></u></b>";
 					}
 					markedValue = "<html>" + markedValue + "</html>";
 					((JMenuItem) comp).setText(markedValue);
