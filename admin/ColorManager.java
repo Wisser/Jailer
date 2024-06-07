@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 public class ColorManager {
 
 	public static void main(String[] args) throws IOException {
-
 		Path sourcePath = new File("src/main/gui").toPath();
 		Files.walkFileTree(sourcePath, new FileVisitor());
 		
@@ -31,7 +30,11 @@ public class ColorManager {
 		out.println();
 		out.println("public class Colors {");
 		colors.forEach((key, color) -> {
-			out.println("\tpublic static Color " + key + " = " + color+ ";");
+			if (key.startsWith("HTML")) {
+				out.println("\tpublic static String " + key + " = " + color+ ";");
+			} else {
+				out.println("\tpublic static Color " + key + " = " + color+ ";");
+			}
 		});
 		out.println("}");
 		out.close();
@@ -57,6 +60,16 @@ public class ColorManager {
 				System.out.println(file);
 				String content = new String(Files.readAllBytes(file));
 				String result = transform(content);
+				if (file.getFileName().toString().matches(".*\\.java")) {
+					result = find("color\\s*=\\s*\\\\\"(?:\\#)?([0-9a-zA-Z]+)\\\\\"",
+							result, m -> {
+								String key = "HTMLColor_" + m.group(1);
+								String color = "\"#" + m.group(1) + "\"";
+								System.out.println("!" + key);
+								colors.put(key, color);
+								return "\" + Colors." + key + " + \"";
+							});
+				}
 				if (!result.equals(content) && !file.getFileName().toString().matches(".*\\bColors\\.java")) {
 					Files.write(file, result.getBytes());
 				}
@@ -94,7 +107,7 @@ public class ColorManager {
 						colors.put(key, color);
 						return "<Connection code=\"Colors." + key + "\" type=\"code\"/>";
 					});
-
+			
 			return result;
 		}
 	}
