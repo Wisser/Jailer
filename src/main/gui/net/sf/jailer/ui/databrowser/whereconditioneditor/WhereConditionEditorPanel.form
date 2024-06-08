@@ -183,7 +183,7 @@
             <Container class="javax.swing.JPanel" name="popupTitelPanel">
               <Properties>
                 <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                  <Connection code="/* Renaming also in *.form! */ Colors.Color_255_250_250" type="code"/>
+                  <Connection code="/* Renaming also in *.form! */ Colors.Color_250_250_255" type="code"/>
                 </Property>
               </Properties>
               <Constraints>

@@ -127,7 +127,7 @@
                           </FontInfo>
                         </Property>
                         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                          <Connection code="/* Renaming also in *.form! */ Colors.Color_16_16_141" type="code"/>
+                          <Connection code="/* Renaming also in *.form! */ Colors.Color_141_16_16" type="code"/>
                         </Property>
                       </Properties>
                       <Constraints>
@@ -144,7 +144,7 @@
                           </FontInfo>
                         </Property>
                         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                          <Connection code="/* Renaming also in *.form! */ Colors.Color_16_16_141" type="code"/>
+                          <Connection code="/* Renaming also in *.form! */ Colors.Color_141_16_16" type="code"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="loading...     "/>
                       </Properties>
@@ -221,7 +221,7 @@
                     <Component class="javax.swing.JLabel" name="columnsSortedStateLabel">
                       <Properties>
                         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                          <Connection code="/* Renaming also in *.form! */ Colors.Color_255_0_0" type="code"/>
+                          <Connection code="/* Renaming also in *.form! */ Colors.Color_0_0_255" type="code"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value=" "/>
                       </Properties>
@@ -393,7 +393,7 @@
                     <Component class="javax.swing.JLabel" name="textSortedStateLabel">
                       <Properties>
                         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                          <Connection code="/* Renaming also in *.form! */ Colors.Color_255_0_0" type="code"/>
+                          <Connection code="/* Renaming also in *.form! */ Colors.Color_0_0_255" type="code"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="jLabel2"/>
                       </Properties>

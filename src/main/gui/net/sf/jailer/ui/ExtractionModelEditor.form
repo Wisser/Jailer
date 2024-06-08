@@ -166,7 +166,7 @@
                         <Container class="javax.swing.JPanel" name="focusPanel">
                           <Properties>
                             <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                              <Connection code="/* Renaming also in *.form! */ Colors.Color_125_82_86" type="code"/>
+                              <Connection code="/* Renaming also in *.form! */ Colors.Color_86_82_125" type="code"/>
                             </Property>
                             <Property name="opaque" type="boolean" value="false"/>
                           </Properties>
@@ -250,7 +250,7 @@
                             <Component class="javax.swing.JButton" name="activateDesictionPendingButton">
                               <Properties>
                                 <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                                  <Connection code="/* Renaming also in *.form! */ Colors.Color_152_153_255" type="code"/>
+                                  <Connection code="/* Renaming also in *.form! */ Colors.Color_255_153_152" type="code"/>
                                 </Property>
                                 <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                                   <Connection code="/* Renaming also in *.form! */ Colors.Color_1_0_0" type="code"/>
@@ -866,7 +866,7 @@
                   </FontInfo>
                 </Property>
                 <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                  <Connection code="/* Renaming also in *.form! */ Colors.Color_0_0_170" type="code"/>
+                  <Connection code="/* Renaming also in *.form! */ Colors.Color_170_0_0" type="code"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value=" Parent (depends on) "/>
               </Properties>
@@ -902,7 +902,7 @@
                   </FontInfo>
                 </Property>
                 <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                  <Connection code="/* Renaming also in *.form! */ Colors.Color_255_100_0" type="code"/>
+                  <Connection code="/* Renaming also in *.form! */ Colors.Color_0_100_255" type="code"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="   associated with"/>
               </Properties>
