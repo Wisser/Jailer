@@ -1320,9 +1320,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        splitPane.setBorder(null);
         splitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        splitPane.setContinuousLayout(true);
         splitPane.setOneTouchExpandable(true);
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
@@ -1358,7 +1356,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 4, 0);
         jPanel5.add(jPanel6, gridBagConstraints);
 
-        titlePanel.setBackground(Colors.Color_white);
+        titlePanel.setBackground(/* Renaming also in *.form! */ Colors.Color_255_255_255);
         titlePanel.setLayout(new java.awt.GridBagLayout());
 
         tableLabel.setText("<html><i>no table selected</i></html>");
@@ -1424,7 +1422,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         jPanel2.add(statusPanel, gridBagConstraints);
 
-        popupTitelPanel.setBackground(Colors.Color_250_250_255);
+        popupTitelPanel.setBackground(/* Renaming also in *.form! */ Colors.Color_255_250_250);
         popupTitelPanel.setLayout(new java.awt.GridBagLayout());
 
         popupTabNameLabel.setFont(popupTabNameLabel.getFont().deriveFont(popupTabNameLabel.getFont().getStyle() | java.awt.Font.BOLD));

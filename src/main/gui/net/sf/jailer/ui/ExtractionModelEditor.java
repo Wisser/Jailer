@@ -1577,7 +1577,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jSplitPane2.setResizeWeight(1.0);
         jSplitPane2.setOneTouchExpandable(true);
 
-        toolBarPanel.setBackground(Colors.Color_255_255_255);
+        toolBarPanel.setBackground(/* Renaming also in *.form! */ Colors.Color_255_255_255);
         toolBarPanel.setOpaque(false);
         toolBarPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
         layeredPane.setLayer(toolBarPanel, javax.swing.JLayeredPane.PALETTE_LAYER);
@@ -1600,7 +1600,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         layeredPane.add(inspectorHolder);
         inspectorHolder.setBounds(0, 0, 0, 0);
 
-        focusPanel.setForeground(Colors.Color_86_82_125);
+        focusPanel.setForeground(/* Renaming also in *.form! */ Colors.Color_125_82_86);
         focusPanel.setOpaque(false);
         focusPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -1648,8 +1648,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         focusPanel.add(leftButton, gridBagConstraints);
 
-        activateDesictionPendingButton.setBackground(Colors.Color_255_153_152);
-        activateDesictionPendingButton.setForeground(Colors.Color_0_0_1);
+        activateDesictionPendingButton.setBackground(/* Renaming also in *.form! */ Colors.Color_152_153_255);
+        activateDesictionPendingButton.setForeground(/* Renaming also in *.form! */ Colors.Color_1_0_0);
         activateDesictionPendingButton.setText("Migration pending");
         activateDesictionPendingButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2114,28 +2114,28 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         legende.setLayout(new java.awt.GridBagLayout());
 
         dependsOn.setFont(dependsOn.getFont().deriveFont(dependsOn.getFont().getSize()+1f));
-        dependsOn.setForeground(Colors.Color_170_0_0);
+        dependsOn.setForeground(/* Renaming also in *.form! */ Colors.Color_0_0_170);
         dependsOn.setText(" Parent (depends on) ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         legende.add(dependsOn, gridBagConstraints);
 
         hasDependent.setFont(hasDependent.getFont().deriveFont(hasDependent.getFont().getSize()+1f));
-        hasDependent.setForeground(Colors.Color_0_112_0);
+        hasDependent.setForeground(/* Renaming also in *.form! */ Colors.Color_0_112_0);
         hasDependent.setText("   Child (has dependent) ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         legende.add(hasDependent, gridBagConstraints);
 
         associatedWith.setFont(associatedWith.getFont().deriveFont(associatedWith.getFont().getSize()+1f));
-        associatedWith.setForeground(Colors.Color_0_100_255);
+        associatedWith.setForeground(/* Renaming also in *.form! */ Colors.Color_255_100_0);
         associatedWith.setText("   associated with");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         legende.add(associatedWith, gridBagConstraints);
 
         ignored.setFont(ignored.getFont().deriveFont(ignored.getFont().getSize()+1f));
-        ignored.setForeground(Colors.Color_153_153_153);
+        ignored.setForeground(/* Renaming also in *.form! */ Colors.Color_153_153_153);
         ignored.setText("   disabled ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -2162,7 +2162,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         legende1.add(modelName, gridBagConstraints);
 
         modelPath.setFont(modelPath.getFont().deriveFont(modelPath.getFont().getSize()+1f));
-        modelPath.setForeground(Colors.Color_gray);
+        modelPath.setForeground(/* Renaming also in *.form! */ Colors.Color_128_128_128);
         modelPath.setText("/home/jailer/datamodel/");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;

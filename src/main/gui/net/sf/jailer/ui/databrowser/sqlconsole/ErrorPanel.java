@@ -103,8 +103,8 @@ public class ErrorPanel extends javax.swing.JPanel {
         add(iconLabel, gridBagConstraints);
 
         errorTextArea.setEditable(false);
-        errorTextArea.setBackground(Colors.Color_254_255_255);
-        errorTextArea.setForeground(Colors.Color_red);
+        errorTextArea.setBackground(/* Renaming also in *.form! */ Colors.Color_254_255_255);
+        errorTextArea.setForeground(/* Renaming also in *.form! */ Colors.Color_255_0_0);
         jScrollPane1.setViewportView(errorTextArea);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

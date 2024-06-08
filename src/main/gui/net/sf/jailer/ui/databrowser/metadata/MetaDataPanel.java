@@ -1714,9 +1714,9 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
 
-        waitingPanel.setBackground(Colors.Color_white);
+        waitingPanel.setBackground(/* Renaming also in *.form! */ Colors.Color_255_255_255);
 
-        jLabel5.setForeground(Colors.Color_red);
+        jLabel5.setForeground(/* Renaming also in *.form! */ Colors.Color_0_0_255);
         jLabel5.setText("creating...");
         waitingPanel.add(jLabel5);
 
@@ -1732,7 +1732,6 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 
         splitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         splitPane.setResizeWeight(1.0);
-        splitPane.setContinuousLayout(true);
         splitPane.setOneTouchExpandable(true);
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
@@ -1751,7 +1750,6 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
         jPanel1.add(refreshButton1, gridBagConstraints);
 
-        jToolBar1.setFloatable(false);
         jToolBar1.setRollover(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
@@ -1761,7 +1759,6 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(jToolBar1, gridBagConstraints);
 
-        jToolBar2.setFloatable(false);
         jToolBar2.setRollover(true);
 
         refreshButton.setText("Refresh");

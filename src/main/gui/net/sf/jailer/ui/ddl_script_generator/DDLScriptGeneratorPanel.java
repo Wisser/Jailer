@@ -941,7 +941,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
         jPanel1.add(dbmsComboBox, gridBagConstraints);
 
         statusLabel.setFont(statusLabel.getFont().deriveFont(statusLabel.getFont().getSize()+4f));
-        statusLabel.setForeground(Colors.Color_0_102_0);
+        statusLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_0_102_0);
         statusLabel.setText("Analyzing schema (might take a while)  ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -953,7 +953,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
         jPanel1.add(statusLabel, gridBagConstraints);
 
         statusLabel2.setFont(statusLabel2.getFont().deriveFont(statusLabel2.getFont().getSize()+4f));
-        statusLabel2.setForeground(Colors.Color_0_102_0);
+        statusLabel2.setForeground(/* Renaming also in *.form! */ Colors.Color_0_102_0);
         statusLabel2.setText("Running...");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -965,7 +965,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
         jPanel1.add(statusLabel2, gridBagConstraints);
 
         statusLabelCancelled.setFont(statusLabelCancelled.getFont().deriveFont(statusLabelCancelled.getFont().getSize()+4f));
-        statusLabelCancelled.setForeground(Colors.Color_red);
+        statusLabelCancelled.setForeground(/* Renaming also in *.form! */ Colors.Color_255_0_0);
         statusLabelCancelled.setText("Cancelled");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1037,7 +1037,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
         jPanel1.add(includeAllButton, gridBagConstraints);
 
         includeClosureButton.setText("Tables associated with a subject table");
-        includeClosureButton.setToolTipText("<html>Generate SQL/DDL statements only for the tables that are directly or indirectly associated with a subject table. (the <i>Closure</i>)<br>Note that this excludes sequences.</html>");
+        includeClosureButton.setToolTipText("<html>Generate DDL statements only for the tables that are directly or indirectly associated with a subject table. (the <i>Closure</i>)<br>Note that this excludes sequences.</html>");
         includeClosureButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 includeClosureButtonActionPerformed(evt);

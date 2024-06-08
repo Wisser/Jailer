@@ -144,7 +144,6 @@
                 <Component class="javax.swing.JRadioButton" name="ignore">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Disabled    "/>
-                    <Property name="opaque" type="boolean" value="false"/>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
@@ -184,7 +183,6 @@
                 <Component class="javax.swing.JRadioButton" name="restricted">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Enabled. Restricted by   "/>
-                    <Property name="opaque" type="boolean" value="false"/>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>

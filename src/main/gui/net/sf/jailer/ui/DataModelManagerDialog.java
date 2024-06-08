@@ -2522,7 +2522,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.weighty = 1.0;
         mainContentPanel.add(jTabbedPane1, gridBagConstraints);
 
-        jPanel11.setBackground(Colors.Color_255_255_255);
+        jPanel11.setBackground(/* Renaming also in *.form! */ Colors.Color_255_255_255);
         jPanel11.setLayout(new java.awt.GridBagLayout());
 
         histLabel.setFont(histLabel.getFont().deriveFont(histLabel.getFont().getStyle() | java.awt.Font.BOLD, histLabel.getFont().getSize()+4));
@@ -2536,7 +2536,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
         jPanel12.setLayout(new java.awt.GridBagLayout());
 
-        jPanel10.setBackground(Colors.Color_255_255_255);
+        jPanel10.setBackground(/* Renaming also in *.form! */ Colors.Color_255_255_255);
         jPanel10.setLayout(new java.awt.GridBagLayout());
 
         restoreButton.setText("Restore");
@@ -2570,7 +2570,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         jPanel11.add(jPanel12, gridBagConstraints);
 
-        jPanel21.setBorder(javax.swing.BorderFactory.createLineBorder(Colors.Color_204_204_204));
+        jPanel21.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
         jPanel21.setLayout(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -2627,7 +2627,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         jPanel8.setOpaque(false);
         jPanel8.setLayout(new java.awt.GridBagLayout());
 
-        disabledPanel.setBackground(Colors.Color_255_255_255_150);
+        disabledPanel.setBackground(/* Renaming also in *.form! */ Colors.Color_255_255_255_150);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;

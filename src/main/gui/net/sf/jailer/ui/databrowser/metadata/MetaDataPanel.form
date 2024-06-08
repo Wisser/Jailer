@@ -49,7 +49,6 @@
       <Properties>
         <Property name="orientation" type="int" value="0"/>
         <Property name="resizeWeight" type="double" value="1.0"/>
-        <Property name="continuousLayout" type="boolean" value="true"/>
         <Property name="oneTouchExpandable" type="boolean" value="true"/>
       </Properties>
       <Constraints>
@@ -85,7 +84,6 @@
             </Component>
             <Container class="javax.swing.JToolBar" name="jToolBar1">
               <Properties>
-                <Property name="floatable" type="boolean" value="false"/>
                 <Property name="rollover" type="boolean" value="true"/>
               </Properties>
               <Constraints>
@@ -98,7 +96,6 @@
             </Container>
             <Container class="javax.swing.JToolBar" name="jToolBar2">
               <Properties>
-                <Property name="floatable" type="boolean" value="false"/>
                 <Property name="rollover" type="boolean" value="true"/>
               </Properties>
               <Constraints>

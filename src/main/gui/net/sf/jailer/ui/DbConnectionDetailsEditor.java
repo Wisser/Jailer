@@ -1383,7 +1383,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 8, 0);
         jPanel1.add(jSeparator2, gridBagConstraints);
 
-        jtdsWarnLabel.setForeground(Colors.Color_red);
+        jtdsWarnLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_0_0_255);
         jtdsWarnLabel.setText("<html>Due to known problems with the jTDS JDBC driver, it is strongly recommended to use the original driver for SQL Server or Sybase.<html>");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;

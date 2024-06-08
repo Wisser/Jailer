@@ -263,7 +263,6 @@ public class ProgressPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridLayout(1, 0));
 
-        jSplitPane1.setContinuousLayout(true);
         jSplitPane1.setOneTouchExpandable(true);
 
         jPanel3.setLayout(new javax.swing.BoxLayout(jPanel3, javax.swing.BoxLayout.LINE_AXIS));
@@ -336,7 +335,7 @@ public class ProgressPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         jPanel2.add(jScrollPane1, gridBagConstraints);
 
-        jLabel1.setForeground(Colors.Color_230_230_230);
+        jLabel1.setForeground(/* Renaming also in *.form! */ Colors.Color_230_230_230);
         jLabel1.setText("                                                     ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;

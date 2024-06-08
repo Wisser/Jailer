@@ -288,7 +288,7 @@ public class ConditionEditor extends EscapableDialog {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 2);
         jPanel1.add(jPanel3, gridBagConstraints);
 
-        jLabel2.setForeground(Colors.Color_128_128_128);
+        jLabel2.setForeground(/* Renaming also in *.form! */ Colors.Color_128_128_128);
         jLabel2.setText(" ctrl-space for code completion");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 10;

@@ -530,7 +530,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
         gridBagConstraints.weighty = 1.0;
         jLayeredPane1.add(editorPanel, gridBagConstraints);
 
-        updateInfoPanel.setBackground(Colors.Color_255_255_236);
+        updateInfoPanel.setBackground(/* Renaming also in *.form! */ Colors.Color_236_255_255);
         updateInfoPanel.setLayout(new java.awt.GridBagLayout());
 
         updateInfoLabel.setText("Release x available");

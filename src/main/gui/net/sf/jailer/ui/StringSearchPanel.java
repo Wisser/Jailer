@@ -1055,9 +1055,9 @@ public class StringSearchPanel extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         searchList = new javax.swing.JList<>();
 
-        loadingPanel.setBackground(Colors.Color_white);
+        loadingPanel.setBackground(/* Renaming also in *.form! */ Colors.Color_255_255_255);
 
-        jLabel1.setForeground(Colors.Color_red);
+        jLabel1.setForeground(/* Renaming also in *.form! */ Colors.Color_0_0_255);
         jLabel1.setText("loading...");
         loadingPanel.add(jLabel1);
 
@@ -1109,7 +1109,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
         jLayeredPane1.add(okButton, gridBagConstraints);
 
         infoLabel.setFont(infoLabel.getFont().deriveFont((infoLabel.getFont().getStyle() | java.awt.Font.ITALIC)));
-        infoLabel.setForeground(Colors.Color_lightgray);
+        infoLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_192_192_192);
         infoLabel.setText("  Type partial value to search");
         jLayeredPane1.setLayer(infoLabel, javax.swing.JLayeredPane.MODAL_LAYER);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1193,7 +1193,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         add(schemaPanel, gridBagConstraints);
 
-        plugInPanel.setBorder(javax.swing.BorderFactory.createLineBorder(Colors.Color_lightgray));
+        plugInPanel.setBorder(javax.swing.BorderFactory.createLineBorder(java.awt.Color.lightGray));
         plugInPanel.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 10;
@@ -1203,15 +1203,15 @@ public class StringSearchPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 0.1;
         add(plugInPanel, gridBagConstraints);
 
-        jPanel5.setBorder(new javax.swing.border.LineBorder(Colors.Color_lightgray, 1, true));
+        jPanel5.setBorder(new javax.swing.border.LineBorder(java.awt.Color.lightGray, 1, true));
         jPanel5.setLayout(new java.awt.GridBagLayout());
 
         bottomPanel.setLayout(new java.awt.GridBagLayout());
 
-        statusPanel.setBackground(Colors.Color_255_255_204);
+        statusPanel.setBackground(/* Renaming also in *.form! */ Colors.Color_204_255_255);
         statusPanel.setLayout(new java.awt.GridBagLayout());
 
-        statusLabel.setForeground(Colors.Color_0_0_77);
+        statusLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_77_0_0);
         statusLabel.setText("jLabel3");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1425,7 +1425,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
     private javax.swing.JPanel plugInPanel;
     private javax.swing.JPanel schemaPanel;
     private javax.swing.JList<String> searchList;
-	private javax.swing.JTextField searchTextField;
+    private javax.swing.JTextField searchTextField;
     private javax.swing.JButton selectAllButton;
     private javax.swing.JPanel sizeGripPanel;
     private javax.swing.JLabel statusLabel;

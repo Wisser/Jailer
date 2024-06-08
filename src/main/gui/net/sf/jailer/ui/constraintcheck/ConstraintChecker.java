@@ -439,7 +439,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(progressLabel, gridBagConstraints);
 
-        statusLabel.setForeground(Colors.Color_0_105_0);
+        statusLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_0_105_0);
         statusLabel.setText("Database is consistent");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -558,7 +558,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(4, 8, 0, 0);
         jPanel6.add(viewButton, gridBagConstraints);
 
-        childLabel.setForeground(Colors.Color_0_100_0);
+        childLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_0_100_0);
         childLabel.setText("jLabel5");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -568,7 +568,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
         jPanel6.add(childLabel, gridBagConstraints);
 
-        parentLabel.setForeground(Colors.Color_95_0_0);
+        parentLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_0_0_95);
         parentLabel.setText("jLabel5");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -578,7 +578,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
         jPanel6.add(parentLabel, gridBagConstraints);
 
-        conditionLabel.setForeground(Colors.Color_blue);
+        conditionLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_255_0_0);
         conditionLabel.setText("jLabel5");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -588,7 +588,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
         jPanel6.add(conditionLabel, gridBagConstraints);
 
-        problemLabel.setForeground(Colors.Color_red);
+        problemLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_0_0_255);
         problemLabel.setText("jLabel5");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -598,7 +598,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
         jPanel6.add(problemLabel, gridBagConstraints);
 
-        dummyLabel.setForeground(Colors.Color_red);
+        dummyLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_0_0_255);
         dummyLabel.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;

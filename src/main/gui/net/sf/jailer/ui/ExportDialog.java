@@ -1761,7 +1761,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel8.add(scopeSession, gridBagConstraints);
 
-        jLabel1.setForeground(Colors.Color_128_128_128);
+        jLabel1.setForeground(/* Renaming also in *.form! */ Colors.Color_128_128_128);
         jLabel1.setText("  (best for single-threaded performance)");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -1770,7 +1770,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         jPanel8.add(jLabel1, gridBagConstraints);
 
-        jLabel26.setForeground(Colors.Color_128_128_128);
+        jLabel26.setForeground(/* Renaming also in *.form! */ Colors.Color_128_128_128);
         jLabel26.setText("  (best for multi-threaded performance)");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -1779,7 +1779,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         jPanel8.add(jLabel26, gridBagConstraints);
 
-        jLabel27.setForeground(Colors.Color_128_128_128);
+        jLabel27.setForeground(/* Renaming also in *.form! */ Colors.Color_128_128_128);
         jLabel27.setText("  (no update-privilege required)");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -2157,7 +2157,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel3.add(isolationLevelComboBox, gridBagConstraints);
 
-        iLHintLabel.setForeground(Colors.Color_128_128_128);
+        iLHintLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_128_128_128);
         iLHintLabel.setText("  (for all collection and export transactions)");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;

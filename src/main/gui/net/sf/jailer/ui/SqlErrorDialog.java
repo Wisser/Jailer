@@ -297,7 +297,7 @@ public class SqlErrorDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 4);
         jPanel2.add(jButton1, gridBagConstraints);
 
-        updateInfoPanel.setBackground(Colors.Color_255_255_236);
+        updateInfoPanel.setBackground(/* Renaming also in *.form! */ Colors.Color_236_255_255);
         updateInfoPanel.setLayout(new java.awt.GridBagLayout());
 
         updateInfoLabel.setText("Release x available");

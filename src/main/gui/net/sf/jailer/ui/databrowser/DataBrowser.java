@@ -2603,7 +2603,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         legende1.add(modelName, gridBagConstraints);
 
         modelPath.setFont(modelPath.getFont().deriveFont(modelPath.getFont().getSize()+1f));
-        modelPath.setForeground(Colors.Color_gray);
+        modelPath.setForeground(/* Renaming also in *.form! */ Colors.Color_128_128_128);
         modelPath.setText("/home/jailer/datamodel/");
         modelPath.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -2642,28 +2642,28 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         legende.setLayout(new java.awt.GridBagLayout());
 
         dependsOn.setFont(dependsOn.getFont().deriveFont(dependsOn.getFont().getSize()+1f));
-        dependsOn.setForeground(Colors.Color_170_0_0);
+        dependsOn.setForeground(/* Renaming also in *.form! */ Colors.Color_0_0_170);
         dependsOn.setText(" Parent (depends on) ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         legende.add(dependsOn, gridBagConstraints);
 
         hasDependent.setFont(hasDependent.getFont().deriveFont(hasDependent.getFont().getSize()+1f));
-        hasDependent.setForeground(Colors.Color_0_112_0);
+        hasDependent.setForeground(/* Renaming also in *.form! */ Colors.Color_0_112_0);
         hasDependent.setText("  Child (has dependent) ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         legende.add(hasDependent, gridBagConstraints);
 
         associatedWith.setFont(associatedWith.getFont().deriveFont(associatedWith.getFont().getSize()+1f));
-        associatedWith.setForeground(Colors.Color_0_100_255);
+        associatedWith.setForeground(/* Renaming also in *.form! */ Colors.Color_255_100_0);
         associatedWith.setText("  associated with");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         legende.add(associatedWith, gridBagConstraints);
 
         ignored.setFont(ignored.getFont().deriveFont(ignored.getFont().getSize()+1f));
-        ignored.setForeground(Colors.Color_153_153_153);
+        ignored.setForeground(/* Renaming also in *.form! */ Colors.Color_153_153_153);
         ignored.setText("  disabled ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -3228,7 +3228,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         gridBagConstraints.weighty = 1.0;
         jLayeredPane2.add(jPanel1, gridBagConstraints);
 
-        updateInfoPanel.setBackground(Colors.Color_255_255_236);
+        updateInfoPanel.setBackground(/* Renaming also in *.form! */ Colors.Color_236_255_255);
         updateInfoPanel.setLayout(new java.awt.GridBagLayout());
 
         updateInfoLabel.setText("Release x available");

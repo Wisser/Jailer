@@ -212,7 +212,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 
         jPanel4.setLayout(new java.awt.GridBagLayout());
 
-        jPanel1.setBorder(new javax.swing.border.LineBorder(Colors.Color_lightgray, 1, true));
+        jPanel1.setBorder(new javax.swing.border.LineBorder(java.awt.Color.lightGray, 1, true));
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         jPanel2.setLayout(new java.awt.GridBagLayout());

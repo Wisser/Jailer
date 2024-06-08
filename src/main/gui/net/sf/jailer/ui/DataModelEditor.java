@@ -722,7 +722,7 @@ public class DataModelEditor extends javax.swing.JDialog {
         });
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
-        info.setForeground(Colors.Color_1_75_1);
+        info.setForeground(/* Renaming also in *.form! */ Colors.Color_1_75_1);
         info.setText("jLabel1");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -761,7 +761,6 @@ public class DataModelEditor extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 22);
         getContentPane().add(nameTextField, gridBagConstraints);
 
-        jSplitPane1.setContinuousLayout(true);
         jSplitPane1.setOneTouchExpandable(true);
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Tables"));

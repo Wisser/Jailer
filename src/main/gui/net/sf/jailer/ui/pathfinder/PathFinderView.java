@@ -772,14 +772,13 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         jSplitPane1.setResizeWeight(1.0);
-        jSplitPane1.setContinuousLayout(true);
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Union of all shortest paths without excluded tables."));
-        jPanel2.setForeground(Colors.Color_white);
+        jPanel2.setForeground(/* Renaming also in *.form! */ Colors.Color_255_255_255);
         jPanel2.setOpaque(false);
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        pathContainerPanel.setBackground(Colors.Color_white);
+        pathContainerPanel.setBackground(/* Renaming also in *.form! */ Colors.Color_255_255_255);
         pathContainerPanel.setLayout(new java.awt.BorderLayout());
         jScrollPane1.setViewportView(pathContainerPanel);
 
@@ -825,7 +824,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = 3;
         jPanel2.add(sepLabel, gridBagConstraints);
 
-        jLabel2.setForeground(Colors.Color_gray);
+        jLabel2.setForeground(/* Renaming also in *.form! */ Colors.Color_128_128_128);
         jLabel2.setText("Open context menu (right mouse click on table) to define its direct successor.");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

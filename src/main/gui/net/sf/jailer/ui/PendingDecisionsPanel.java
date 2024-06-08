@@ -473,10 +473,10 @@ public abstract class PendingDecisionsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         jPanel1.add(jPanel2, gridBagConstraints);
 
-        infoPanel.setBackground(Colors.Color_250_255_255);
+        infoPanel.setBackground(/* Renaming also in *.form! */ Colors.Color_255_255_250);
         infoPanel.setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setForeground(Colors.Color_0_0_62);
+        jLabel1.setForeground(/* Renaming also in *.form! */ Colors.Color_62_0_0);
         jLabel1.setText("<html>\nThis tool allows you to find and edit the newly added associations if the data model has been extended after the last change to this extraction model. <br>\nSelect associations here in the table and define restrictions, or check off an association if you're comfortable with the given restriction.\n</html>");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;

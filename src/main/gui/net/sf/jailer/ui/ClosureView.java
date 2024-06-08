@@ -1575,7 +1575,6 @@ public abstract class ClosureView extends javax.swing.JDialog {
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         jSplitPane1.setResizeWeight(0.75);
-        jSplitPane1.setContinuousLayout(true);
         jSplitPane1.setOneTouchExpandable(true);
 
         closureTablePanel.setLayout(new java.awt.GridBagLayout());
@@ -1594,8 +1593,6 @@ public abstract class ClosureView extends javax.swing.JDialog {
                 "Titel 1", "Titel 2", "Titel 3", "Titel 4"
             }
         ));
-        closureTable.setMinimumSize(new java.awt.Dimension(60, 80));
-        closureTable.setPreferredSize(new java.awt.Dimension(300, 80));
         closureTable.setSurrendersFocusOnKeystroke(true);
         jScrollPane1.setViewportView(closureTable);
 
@@ -1717,7 +1714,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 
         assocViewPanel.setLayout(new java.awt.GridBagLayout());
 
-        jLabel2.setBackground(Colors.Color_white);
+        jLabel2.setBackground(/* Renaming also in *.form! */ Colors.Color_255_255_255);
         jLabel2.setText(" Distance  ");
         jLabel2.setOpaque(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1727,7 +1724,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         assocViewPanel.add(jLabel2, gridBagConstraints);
 
-        jLabel3.setBackground(Colors.Color_white);
+        jLabel3.setBackground(/* Renaming also in *.form! */ Colors.Color_255_255_255);
         jLabel3.setText(" to ");
         jLabel3.setOpaque(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1737,7 +1734,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         assocViewPanel.add(jLabel3, gridBagConstraints);
 
-        jLabel4.setBackground(Colors.Color_white);
+        jLabel4.setBackground(/* Renaming also in *.form! */ Colors.Color_255_255_255);
         jLabel4.setText("         ");
         jLabel4.setOpaque(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1747,7 +1744,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         assocViewPanel.add(jLabel4, gridBagConstraints);
 
-        jLabel5.setBackground(Colors.Color_white);
+        jLabel5.setBackground(/* Renaming also in *.form! */ Colors.Color_255_255_255);
         jLabel5.setText(" on");
         jLabel5.setOpaque(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1758,7 +1755,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         assocViewPanel.add(jLabel5, gridBagConstraints);
 
-        jLabel6.setBackground(Colors.Color_white);
+        jLabel6.setBackground(/* Renaming also in *.form! */ Colors.Color_255_255_255);
         jLabel6.setText(" from     ");
         jLabel6.setOpaque(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1774,7 +1771,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         assocViewPanel.add(jSeparator1, gridBagConstraints);
 
-        jPanel3.setBackground(Colors.Color_white);
+        jPanel3.setBackground(/* Renaming also in *.form! */ Colors.Color_255_255_255);
         jPanel3.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 1, 1));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -1783,7 +1780,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         assocViewPanel.add(jPanel3, gridBagConstraints);
 
-        jPanel2.setBackground(Colors.Color_white);
+        jPanel2.setBackground(/* Renaming also in *.form! */ Colors.Color_255_255_255);
         jPanel2.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 2, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

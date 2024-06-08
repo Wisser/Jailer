@@ -2749,7 +2749,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
         jPanel6.setLayout(new java.awt.GridBagLayout());
 
-        statusLabel.setForeground(Colors.Color_gray);
+        statusLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_128_128_128);
         statusLabel.setText(" ctrl-space for code completion");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -2758,7 +2758,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 8, 2, 0);
         jPanel6.add(statusLabel, gridBagConstraints);
 
-        dummyLabel.setForeground(Colors.Color_gray);
+        dummyLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_128_128_128);
         dummyLabel.setText(" ");
         dummyLabel.setToolTipText("");
         gridBagConstraints = new java.awt.GridBagConstraints();
