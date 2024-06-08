@@ -352,7 +352,6 @@ public class GraphicalDataModelView extends JPanel {
 		display.setSize(width, height);
 		display.pan(width / 2, height / 2);
 		display.setForeground(Colors.Color_gray);
-		display.setBackground(Colors.Color_white);
 
 		// main display controls
 		display.addControlListener(new FocusControl(1));
@@ -471,7 +470,7 @@ public class GraphicalDataModelView extends JPanel {
 		display.addControlListener(new ToolTipControl("tooltip"));
 
 		display.setForeground(Colors.Color_gray);
-		display.setBackground(Colors.Color_white);
+		display.setBackground(Colors.GraphicalDataViewBackground);
 
 		// now we run our action list
 		visualization.run("draw");

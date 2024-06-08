@@ -23,6 +23,8 @@ import java.awt.Color;
  * @author Ralf Wisser
  */
 public class Colors {
+	public static final Color GraphicalDataViewBackground = new Color(255, 255, 255); // TODO
+	
 	public static Color Color_0_0_0 = new Color(0, 0, 0);
 	public static Color Color_0_0_0_0 = new Color(0, 0, 0, 0);
 	public static Color Color_0_0_0_60 = new Color(0, 0, 0, 60);
