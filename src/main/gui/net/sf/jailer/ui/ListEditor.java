@@ -143,7 +143,7 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 		}
 		final Color BG1 = UIUtil.TABLE_BACKGROUND_COLOR_1;
 		final Color BG2 = UIUtil.TABLE_BACKGROUND_COLOR_2;
-		final Color BGSEL = new Color(0, 200, 255);
+		final Color BGSEL = Colors.Color_0_200_255;
 		TableCellRenderer renderer = new DefaultTableCellRenderer() {
 			@Override
 			public Component getTableCellRendererComponent(JTable table,
@@ -163,7 +163,7 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 					if (color != null) {
 						render.setForeground(color);
 					} else {
-						render.setForeground(Color.BLACK);
+						render.setForeground(Colors.Color_black);
 					}
 				}
 				return render;

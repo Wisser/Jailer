@@ -301,8 +301,8 @@
                       <SubComponents>
                         <Component class="javax.swing.JLabel" name="jLabel2">
                           <Properties>
-                            <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                              <Color blue="ff" green="ff" id="white" palette="1" red="ff" type="palette"/>
+                            <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                              <Connection code="Colors.Color_255_255_255" type="code"/>
                             </Property>
                             <Property name="text" type="java.lang.String" value=" Distance  "/>
                             <Property name="opaque" type="boolean" value="true"/>
@@ -315,8 +315,8 @@
                         </Component>
                         <Component class="javax.swing.JLabel" name="jLabel3">
                           <Properties>
-                            <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                              <Color blue="ff" green="ff" id="white" palette="1" red="ff" type="palette"/>
+                            <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                              <Connection code="Colors.Color_255_255_255" type="code"/>
                             </Property>
                             <Property name="text" type="java.lang.String" value=" to "/>
                             <Property name="opaque" type="boolean" value="true"/>
@@ -329,8 +329,8 @@
                         </Component>
                         <Component class="javax.swing.JLabel" name="jLabel4">
                           <Properties>
-                            <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                              <Color blue="ff" green="ff" id="white" palette="1" red="ff" type="palette"/>
+                            <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                              <Connection code="Colors.Color_255_255_255" type="code"/>
                             </Property>
                             <Property name="text" type="java.lang.String" value="         "/>
                             <Property name="opaque" type="boolean" value="true"/>
@@ -343,8 +343,8 @@
                         </Component>
                         <Component class="javax.swing.JLabel" name="jLabel5">
                           <Properties>
-                            <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                              <Color blue="ff" green="ff" id="white" palette="1" red="ff" type="palette"/>
+                            <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                              <Connection code="Colors.Color_255_255_255" type="code"/>
                             </Property>
                             <Property name="text" type="java.lang.String" value=" on"/>
                             <Property name="opaque" type="boolean" value="true"/>
@@ -357,8 +357,8 @@
                         </Component>
                         <Component class="javax.swing.JLabel" name="jLabel6">
                           <Properties>
-                            <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                              <Color blue="ff" green="ff" id="white" palette="1" red="ff" type="palette"/>
+                            <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                              <Connection code="Colors.Color_255_255_255" type="code"/>
                             </Property>
                             <Property name="text" type="java.lang.String" value=" from     "/>
                             <Property name="opaque" type="boolean" value="true"/>
@@ -378,8 +378,8 @@
                         </Component>
                         <Container class="javax.swing.JPanel" name="jPanel3">
                           <Properties>
-                            <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                              <Color blue="ff" green="ff" id="white" palette="1" red="ff" type="palette"/>
+                            <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                              <Connection code="Colors.Color_255_255_255" type="code"/>
                             </Property>
                           </Properties>
                           <Constraints>
@@ -395,8 +395,8 @@
                         </Container>
                         <Container class="javax.swing.JPanel" name="jPanel2">
                           <Properties>
-                            <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                              <Color blue="ff" green="ff" id="white" palette="1" red="ff" type="palette"/>
+                            <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                              <Connection code="Colors.Color_255_255_255" type="code"/>
                             </Property>
                           </Properties>
                           <Constraints>

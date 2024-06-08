@@ -94,9 +94,9 @@ import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
-import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.BrowserContentCellEditor;
 import net.sf.jailer.ui.databrowser.DBConditionEditor;
 import net.sf.jailer.ui.databrowser.Desktop;
@@ -873,7 +873,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     				if (cellEditor != null && cellEditor.getColumnTypes().length > 0 && !cellEditor.isEditable(table, i, null)) {
     					columnLabelConsumers.put(uqName, label -> { label.setEnabled(false); label.setIcon(emptyIcon); });
     				} else if (table.primaryKey != null && table.primaryKey.getColumns().stream().anyMatch(pk -> pk.equals(column))) {
-    					columnLabelConsumers.put(uqName, label -> { label.setForeground(new Color(170, 0, 0)); label.setIcon(constraintPKIcon); });
+    					columnLabelConsumers.put(uqName, label -> { label.setForeground(Colors.Color_170_0_0); label.setIcon(constraintPKIcon); });
     		    	} else {
     					columnLabelConsumers.put(uqName, label -> { label.setIcon(emptyIcon); });
     		    	}
@@ -895,7 +895,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		}
 		BiFunction<JComponent, Integer, JComponent> wrap = (c, y) -> {
 			JPanel panel = new JPanel(new GridBagLayout());
-			c.setForeground(Color.black);
+			c.setForeground(Colors.Color_black);
 			panel.setBackground(y % 2 == 0? UIUtil.TABLE_BACKGROUND_COLOR_1 : UIUtil.TABLE_BACKGROUND_COLOR_2);
 			panel.setOpaque(true);
 			GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -938,7 +938,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	        
 			if (!inSQLConsole()) {
 				JLabel typeLabel = new JLabel();
-				typeLabel.setForeground(Color.gray);
+				typeLabel.setForeground(Colors.Color_gray);
 		        typeLabel.setText(comparison.column.toSQL(null).substring(comparison.column.name.length()).trim() + " ");
 		        typeLabel.setToolTipText(typeLabel.getText());
 		        gridBagConstraints = new java.awt.GridBagConstraints();
@@ -967,7 +967,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	        gridBagConstraints.fill = GridBagConstraints.BOTH;
 	        searchFieldsPanel.add(wrap.apply(namePanel, y), gridBagConstraints);
 	        boolean isPk = table.primaryKey != null && table.primaryKey.getColumns().contains(comparison.column);
-			nameLabel.setForeground(isPk? new Color(170, 0, 0) : Color.black);
+			nameLabel.setForeground(isPk? Colors.Color_170_0_0 : Colors.Color_black);
 			
 			SmallButton hideButton = new LightBorderSmallButton(UIUtil.scaleIcon(this, deleteIcon, 1.1)) {
 				@Override
@@ -1358,7 +1358,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 4, 0);
         jPanel5.add(jPanel6, gridBagConstraints);
 
-        titlePanel.setBackground(java.awt.Color.white);
+        titlePanel.setBackground(Colors.Color_white);
         titlePanel.setLayout(new java.awt.GridBagLayout());
 
         tableLabel.setText("<html><i>no table selected</i></html>");
@@ -1424,7 +1424,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         jPanel2.add(statusPanel, gridBagConstraints);
 
-        popupTitelPanel.setBackground(new java.awt.Color(250, 250, 255));
+        popupTitelPanel.setBackground(Colors.Color_250_250_255);
         popupTitelPanel.setLayout(new java.awt.GridBagLayout());
 
         popupTabNameLabel.setFont(popupTabNameLabel.getFont().deriveFont(popupTabNameLabel.getFont().getStyle() | java.awt.Font.BOLD));
@@ -1695,7 +1695,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				});
 			});
 		}
-		Color color = new Color(0, 100, 200);
+		Color color = Colors.Color_0_100_200;
 		String item;
 		if (isColumnNullable(table, comparison.column)) {
 			item = IS_NULL;
@@ -2406,7 +2406,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 					} else {
 						sqlValue = toSqlValue(value, comparison);
 						if (sqlValue == null) {
-							comparison.valueTextField.setBackground(new Color(255, 200, 200));
+							comparison.valueTextField.setBackground(Colors.Color_255_200_200);
 							comparison.value = oldValue;
 							return;
 						}
@@ -2495,7 +2495,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		return false;
 	}
 
-	public static final Color HIGHLIGHT_COLOR = new Color(0, 255, 0, 50);
+	public static final Color HIGHLIGHT_COLOR = Colors.Color_0_255_0_50;
 	private SmartHighlightPainter highlightPainterWOBorder = new SmartHighlightPainter(WhereConditionEditorPanel.HIGHLIGHT_COLOR);
 	private SmartHighlightPainter highlightPainter = new SmartHighlightPainter(HIGHLIGHT_COLOR);
 	{

@@ -52,6 +52,7 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.ModelBuilder;
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.JComboBox2;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
@@ -67,7 +68,7 @@ import net.sf.jailer.util.Quoting;
 @SuppressWarnings("serial")
 public class TableDetailsView extends javax.swing.JPanel {
 
-	private final Color selectedBG = new Color(255, 200, 200);
+	private final Color selectedBG = Colors.Color_255_200_200;
 	private final Runnable updateColumnsTable;
 	private boolean cacheable = true;
 	private Map<String, JComponent> rows = new HashMap<String, JComponent>();
@@ -99,7 +100,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 			if (c.name != null) {
 				renderConsumer.put(Quoting.staticUnquote(c.name), 
 						label -> {
-							label.setForeground(Color.blue);
+							label.setForeground(Colors.Color_blue);
 							label.setIcon(emptyIcon);
 						}
 				);
@@ -110,7 +111,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 				if (c.name != null) {
 					renderConsumer.put(Quoting.staticUnquote(c.name), 
 							label -> {
-								label.setForeground(Color.red);
+								label.setForeground(Colors.Color_red);
 								label.setIcon(constraintPKIcon);
 							}
 					);
@@ -277,7 +278,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 					});
 				}
 				columnsPanel.removeAll();
-				java.awt.Color bgDarker = new Color(248, 255, 248);
+				java.awt.Color bgDarker = Colors.Color_248_255_248;
 				jPanel2.setBackground(UIUtil.TABLE_BACKGROUND_COLOR_2);
 				boolean hasConstraints = false;
 				for (Column column: columns) {
@@ -315,9 +316,9 @@ public class TableDetailsView extends javax.swing.JPanel {
 			        label = new JLabel();
 			        
 			        if (isPk) {
-			        	label.setForeground(Color.red);
+			        	label.setForeground(Colors.Color_red);
 			        } else if (fks.contains(column)) {
-			        	label.setForeground(Color.blue);
+			        	label.setForeground(Colors.Color_blue);
 			        }
 			        
 			        label.setText(Quoting.staticUnquote(column.name));
@@ -344,7 +345,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 							}
 			        	};
 				        Object obj = columnValue.get(column);
-				        label.setForeground(obj == null? Color.gray : Color.black);
+				        label.setForeground(obj == null? Colors.Color_gray : Colors.Color_black);
 				        if (obj == null) {
 				        	label.setFont(italic);
 				        }
@@ -358,7 +359,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 				        panel.add(label, gridBagConstraints);
 			        } else {
 				        label = new JLabel();
-				        label.setForeground(Color.gray);
+				        label.setForeground(Colors.Color_gray);
 				        label.setText(column.toSQL("").substring(column.name.length()).trim());
 				        gridBagConstraints = new java.awt.GridBagConstraints();
 				        gridBagConstraints.gridx = 2;
@@ -382,7 +383,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 				        
 				        if (hasConstraints) {
 					        label = new JLabel();
-					        label.setForeground(Color.gray);
+					        label.setForeground(Colors.Color_gray);
 					        JPanel panelC = new JPanel();
 							if (y % 2 != 0) {
 								panelC.setOpaque(false);
@@ -538,10 +539,10 @@ public class TableDetailsView extends javax.swing.JPanel {
         findColumnsPanel = new javax.swing.JPanel();
         findColumnsLabel = new javax.swing.JLabel();
 
-        setBackground(java.awt.Color.white);
+        setBackground(Colors.Color_white);
         setLayout(new java.awt.GridBagLayout());
 
-        jPanel1.setBackground(java.awt.Color.white);
+        jPanel1.setBackground(Colors.Color_white);
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         tableNameLabel.setText("Test");

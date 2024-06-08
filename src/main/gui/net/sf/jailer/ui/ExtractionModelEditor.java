@@ -129,7 +129,6 @@ import net.sf.jailer.extractionmodel.SubjectLimitDefinition;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.ui.StringSearchPanel.StringSearchDialog;
-import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.commandline.CommandLineInstance;
 import net.sf.jailer.ui.databrowser.BrowserContentCellEditor;
 import net.sf.jailer.ui.databrowser.whereconditioneditor.WhereConditionEditorPanel;
@@ -773,7 +772,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		gridBagConstraints.weighty = 0;
 		layeredPane.add(rightBorderPanel, gridBagConstraints);
 
-		focusLabelPanel.setBackground(new Color(255, 255, 255, 200));
+		focusLabelPanel.setBackground(Colors.Color_255_255_255_200);
 
 		AssociationRenderer.COLOR_ASSOCIATION = associatedWith.getForeground();
 		AssociationRenderer.COLOR_DEPENDENCY = dependsOn.getForeground();
@@ -1201,7 +1200,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					if (!wcep.isVisible()) {
 						dialog.getContentPane().add(new JLabel("Condition editor not supported for DBMS \"" + (extractionModelFrame.theSession.dbms == null? null : extractionModelFrame.theSession.dbms.getId()) + "\"\n") {
 							{
-								setBorder(BorderFactory.createLineBorder(Color.red));
+								setBorder(BorderFactory.createLineBorder(Colors.Color_red));
 							}
 						});
 						whereConditionEditorPanel = null;
@@ -1578,7 +1577,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jSplitPane2.setResizeWeight(1.0);
         jSplitPane2.setOneTouchExpandable(true);
 
-        toolBarPanel.setBackground(new java.awt.Color(255, 255, 255));
+        toolBarPanel.setBackground(Colors.Color_255_255_255);
         toolBarPanel.setOpaque(false);
         toolBarPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
         layeredPane.setLayer(toolBarPanel, javax.swing.JLayeredPane.PALETTE_LAYER);
@@ -1601,7 +1600,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         layeredPane.add(inspectorHolder);
         inspectorHolder.setBounds(0, 0, 0, 0);
 
-        focusPanel.setForeground(new java.awt.Color(86, 82, 125));
+        focusPanel.setForeground(Colors.Color_86_82_125);
         focusPanel.setOpaque(false);
         focusPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -1649,8 +1648,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         focusPanel.add(leftButton, gridBagConstraints);
 
-        activateDesictionPendingButton.setBackground(new java.awt.Color(255, 153, 152));
-        activateDesictionPendingButton.setForeground(new java.awt.Color(0, 0, 1));
+        activateDesictionPendingButton.setBackground(Colors.Color_255_153_152);
+        activateDesictionPendingButton.setForeground(Colors.Color_0_0_1);
         activateDesictionPendingButton.setText("Migration pending");
         activateDesictionPendingButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2115,28 +2114,28 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         legende.setLayout(new java.awt.GridBagLayout());
 
         dependsOn.setFont(dependsOn.getFont().deriveFont(dependsOn.getFont().getSize()+1f));
-        dependsOn.setForeground(new java.awt.Color(170, 0, 0));
+        dependsOn.setForeground(Colors.Color_170_0_0);
         dependsOn.setText(" Parent (depends on) ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         legende.add(dependsOn, gridBagConstraints);
 
         hasDependent.setFont(hasDependent.getFont().deriveFont(hasDependent.getFont().getSize()+1f));
-        hasDependent.setForeground(new java.awt.Color(0, 112, 0));
+        hasDependent.setForeground(Colors.Color_0_112_0);
         hasDependent.setText("   Child (has dependent) ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         legende.add(hasDependent, gridBagConstraints);
 
         associatedWith.setFont(associatedWith.getFont().deriveFont(associatedWith.getFont().getSize()+1f));
-        associatedWith.setForeground(new java.awt.Color(0, 100, 255));
+        associatedWith.setForeground(Colors.Color_0_100_255);
         associatedWith.setText("   associated with");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         legende.add(associatedWith, gridBagConstraints);
 
         ignored.setFont(ignored.getFont().deriveFont(ignored.getFont().getSize()+1f));
-        ignored.setForeground(new java.awt.Color(153, 153, 153));
+        ignored.setForeground(Colors.Color_153_153_153);
         ignored.setText("   disabled ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -2163,7 +2162,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         legende1.add(modelName, gridBagConstraints);
 
         modelPath.setFont(modelPath.getFont().deriveFont(modelPath.getFont().getSize()+1f));
-        modelPath.setForeground(java.awt.Color.gray);
+        modelPath.setForeground(Colors.Color_gray);
         modelPath.setText("/home/jailer/datamodel/");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -2743,10 +2742,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				}
 			}
 		}
-		String iCol = "<font color=\"#0000B0\">";
-		String rCol = "<font color=\"#006000\">";
+		String iCol = "<font " + Colors.HTMLColor_0000B0 + ">";
+		String rCol = "<font " + Colors.HTMLColor_006000 + ">";
 		String ef = "</font>";
-//		assocStatsLabel.setForeground(Color.gray);
+//		assocStatsLabel.setForeground(Colors.Color_gray);
 		assocStatsLabel.setText("<html><nobr>" + iCol + ignored + ef + (restricted != 0? " + " + rCol + restricted + ef : "") + " / " + total +"<html>");
 		assocStatsLabel.setToolTipText("<html>" + iCol + ignored + ef +" disabled and " + rCol + restricted + ef +" restricted associations out of a total of " + total +" associations in the closure.<html>");
 	}
@@ -3079,7 +3078,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
 					if (node.getUserObject() instanceof Table) {
 						text = dataModel.getDisplayName(((Table) node.getUserObject()));
-						setTextColor(tree, Color.BLACK);
+						setTextColor(tree, Colors.Color_black);
 					} else if (node.getUserObject() instanceof Association) {
 						Association association = (Association) node.getUserObject();
 						text = dataModel.getDisplayName(association.destination);
@@ -3105,7 +3104,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			private void setTextColor(JTree tree, Color color) {
 				setTextNonSelectionColor(color);
 				if (UIUtil.plaf.isFlat) {
-					setTextSelectionColor(tree.hasFocus()? Color.white : color);
+					setTextSelectionColor(tree.hasFocus()? Colors.Color_white : color);
 				}
 			}
 			private static final long serialVersionUID = 2657584557290860355L;
@@ -3129,7 +3128,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		JPanel panel = new javax.swing.JPanel();
 		panel.setOpaque(false);
 //        ((JLabel) component).setOpaque(false);
-//        ((JLabel) component).setBackground(selected? Color.BLUE : null);
+//        ((JLabel) component).setBackground(selected? Colors.Color_blue : null);
 		final JLabel reversal = new javax.swing.JLabel();
 		reversal.setText("re");
 

@@ -82,6 +82,7 @@ import javax.swing.table.TableColumn;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.pathfinder.PathGraph.EdgeType;
@@ -220,13 +221,13 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 							Color color;
 							PathGraph.EdgeType type = pathGraph.getEdgeType(pre, node);
 							if (PathGraph.EdgeType.PARENT.equals(type)) {
-								color = new Color(255, 0, 0);
+								color = Colors.Color_255_0_0;
 							} else if (PathGraph.EdgeType.CHILD.equals(type)) {
-								color = new Color(0, 200, 0);
+								color = Colors.Color_0_200_0;
 							} else if (PathGraph.EdgeType.IGNORED.equals(type)) {
-								color = new Color(100, 100, 100);
+								color = Colors.Color_100_100_100;
 							} else {
-								color = new Color(0, 0, 255);
+								color = Colors.Color_0_0_255;
 							}
 							paintLink(start, end, color, selected, g2d);
 						}
@@ -479,11 +480,11 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 			final JComponent button;
     		if (node.table.equals(source) || node.table.equals(destination)) {
     			button = new JLabel(dataModel.getDisplayName(node.table));
-	    		button.setForeground(sourceClosure.contains(node.table)? Color.BLACK : COLOR_NOT_IN_CLOSURE);
+	    		button.setForeground(sourceClosure.contains(node.table)? Colors.Color_black : COLOR_NOT_IN_CLOSURE);
     		} else {
 	    		JToggleButton tButton = new JToggleButton(dataModel.getDisplayName(node.table));
 	    		tButton.setSelected(isSelected);
-	    		tButton.setForeground(sourceClosure.contains(node.table)? Color.BLACK : COLOR_NOT_IN_CLOSURE);
+	    		tButton.setForeground(sourceClosure.contains(node.table)? Colors.Color_black : COLOR_NOT_IN_CLOSURE);
 	    		final ArrayList<Table> nPathStations = new ArrayList<Table>(pathStations);
 	    		if (isSelected) {
 					nPathStations.remove(pathStationIndex);
@@ -774,11 +775,11 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         jSplitPane1.setContinuousLayout(true);
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Union of all shortest paths without excluded tables."));
-        jPanel2.setForeground(java.awt.Color.white);
+        jPanel2.setForeground(Colors.Color_white);
         jPanel2.setOpaque(false);
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        pathContainerPanel.setBackground(java.awt.Color.white);
+        pathContainerPanel.setBackground(Colors.Color_white);
         pathContainerPanel.setLayout(new java.awt.BorderLayout());
         jScrollPane1.setViewportView(pathContainerPanel);
 
@@ -824,7 +825,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = 3;
         jPanel2.add(sepLabel, gridBagConstraints);
 
-        jLabel2.setForeground(java.awt.Color.gray);
+        jLabel2.setForeground(Colors.Color_gray);
         jLabel2.setText("Open context menu (right mouse click on table) to define its direct successor.");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -1088,8 +1089,8 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 		return excludedTables;
 	}
 
-	private final Color SELECTED_BG = new Color(190, 210, 255);
-	private final Color SELECTED_BG_RELATED = new Color(228, 238, 255);
+	private final Color SELECTED_BG = Colors.Color_190_210_255;
+	private final Color SELECTED_BG_RELATED = Colors.Color_228_238_255;
 
 	static private ImageIcon cancelIcon;
 	static private ImageIcon leftIcon;
@@ -1353,7 +1354,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         }
     }
 
-	private static final Color COLOR_NOT_IN_CLOSURE = new Color(255, 80, 80);
+	private static final Color COLOR_NOT_IN_CLOSURE = Colors.Color_255_80_80;
 
 	static {
         // load images

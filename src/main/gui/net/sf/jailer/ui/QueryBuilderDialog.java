@@ -54,7 +54,6 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
-import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.MetaDataBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
@@ -978,7 +977,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 						}
 						a.aliasSuggestion = as;
 
-						Color bg = new Color(255, 150, 140);
+						Color bg = Colors.Color_255_150_140;
 						a.aliasTextField.setBackground(bg);
 						b.aliasTextField.setBackground(bg);
 					}

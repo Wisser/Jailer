@@ -64,6 +64,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.ModelBuilder;
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.DataModelEditor;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLPlusSupport;
@@ -532,7 +533,7 @@ public class AssociationProposerView extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(jProgressBar1, gridBagConstraints);
 
-        statusLabel.setForeground(java.awt.Color.blue);
+        statusLabel.setForeground(Colors.Color_blue);
         statusLabel.setText("Ready");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -744,7 +745,7 @@ public class AssociationProposerView extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 8, 0);
         jPanel1.add(emptyLineCheckBox, gridBagConstraints);
 
-        dummyLabel1.setForeground(new java.awt.Color(0, 105, 0));
+        dummyLabel1.setForeground(Colors.Color_0_105_0);
         dummyLabel1.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;

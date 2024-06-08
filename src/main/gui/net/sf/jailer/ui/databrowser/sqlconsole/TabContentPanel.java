@@ -15,7 +15,6 @@
  */
 package net.sf.jailer.ui.databrowser.sqlconsole;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -61,8 +60,8 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.MemorizedResultSet;
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
-import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataDetailsPanel;
@@ -117,7 +116,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         copyCBButton.setIcon(UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/copy.png")));
 		
         statementLabel = new JLabel();
-        statementLabel.setForeground(new Color(100, 110, 210));
+        statementLabel.setForeground(Colors.Color_100_110_210);
         GridBagConstraints gridBagConstraints;
         
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -392,7 +391,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 		textArea.setEditable(false);
 		textArea.discardAllEdits();
 		if (UIUtil.plaf.isFlat) {
-			textArea.setBackground(Color.white);
+			textArea.setBackground(Colors.Color_white);
 		}
 		UIUtil.invokeLater(() -> textViewScrollPane.getViewport().setViewPosition(vPos));
 	}
@@ -640,11 +639,11 @@ public class TabContentPanel extends javax.swing.JPanel {
 							}
 							if (incHeader && ((rotate ^ columnNamesInFirstRow)? (x == 0) : (y == 0))) {
 								if (colored) {
-									sb.append(" bgcolor=\"#eeeeff\"");
+									sb.append(" bg" + Colors.HTMLColor_eeeeff + "");
 								}
 							} else {
 								if (colored) {
-									sb.append(rowNum % 2 == 0? "" : " bgcolor=\"#eeffee\"");
+									sb.append(rowNum % 2 == 0? "" : " bg" + Colors.HTMLColor_eeffee + "");
 								}
 							}
 							if (aligned) {
@@ -814,7 +813,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 
         jLayeredPane1.setLayout(new java.awt.GridBagLayout());
 
-        loadingPanel.setBackground(new Color(255,255,255,150));
+        loadingPanel.setBackground(Colors.Color_255_255_255_150);
         loadingPanel.setLayout(new java.awt.GridBagLayout());
 
         cancelLoadButton.setText("Cancel");
@@ -842,7 +841,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         jPanel13.setLayout(new java.awt.GridBagLayout());
 
         loadingCauseLabel.setFont(loadingCauseLabel.getFont().deriveFont(loadingCauseLabel.getFont().getSize()+3f));
-        loadingCauseLabel.setForeground(new java.awt.Color(141, 16, 16));
+        loadingCauseLabel.setForeground(Colors.Color_141_16_16);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -852,7 +851,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         jPanel13.add(loadingCauseLabel, gridBagConstraints);
 
         loadingLabel.setFont(loadingLabel.getFont().deriveFont(loadingLabel.getFont().getStyle() | java.awt.Font.BOLD, loadingLabel.getFont().getSize()+3));
-        loadingLabel.setForeground(new java.awt.Color(141, 16, 16));
+        loadingLabel.setForeground(Colors.Color_141_16_16);
         loadingLabel.setText("loading...     ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -890,7 +889,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         columnsPanel.setLayout(new java.awt.BorderLayout());
         columnsPanel.add(columnsScrollPane, java.awt.BorderLayout.CENTER);
 
-        columnsSortedStateLabel.setForeground(java.awt.Color.blue);
+        columnsSortedStateLabel.setForeground(Colors.Color_blue);
         columnsSortedStateLabel.setText(" ");
         columnsPanel.add(columnsSortedStateLabel, java.awt.BorderLayout.NORTH);
 
@@ -980,7 +979,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
         textTabPanel.add(headerCheckBox, gridBagConstraints);
 
-        textSortedStateLabel.setForeground(java.awt.Color.blue);
+        textSortedStateLabel.setForeground(Colors.Color_blue);
         textSortedStateLabel.setText("jLabel2");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

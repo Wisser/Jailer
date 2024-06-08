@@ -150,6 +150,7 @@ import net.sf.jailer.ui.AssociationListUI.DefaultAssociationModel;
 import net.sf.jailer.ui.AutoCompletion;
 import net.sf.jailer.ui.BrowserLauncher;
 import net.sf.jailer.ui.CLIPanel;
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.ColumnOrderEditor;
 import net.sf.jailer.ui.DataModelEditor;
 import net.sf.jailer.ui.DataModelManager;
@@ -426,7 +427,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 				@Override
 				public void mouseEntered(MouseEvent e) {
 					if (!modelNavigationButtonV.isSelected()) {
-						modelNavigationButtonV.setBackground(new Color(247, 247, 247));
+						modelNavigationButtonV.setBackground(Colors.Color_247_247_247);
 					}
 				}
 			});
@@ -2602,7 +2603,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         legende1.add(modelName, gridBagConstraints);
 
         modelPath.setFont(modelPath.getFont().deriveFont(modelPath.getFont().getSize()+1f));
-        modelPath.setForeground(java.awt.Color.gray);
+        modelPath.setForeground(Colors.Color_gray);
         modelPath.setText("/home/jailer/datamodel/");
         modelPath.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -2641,28 +2642,28 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         legende.setLayout(new java.awt.GridBagLayout());
 
         dependsOn.setFont(dependsOn.getFont().deriveFont(dependsOn.getFont().getSize()+1f));
-        dependsOn.setForeground(new java.awt.Color(170, 0, 0));
+        dependsOn.setForeground(Colors.Color_170_0_0);
         dependsOn.setText(" Parent (depends on) ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         legende.add(dependsOn, gridBagConstraints);
 
         hasDependent.setFont(hasDependent.getFont().deriveFont(hasDependent.getFont().getSize()+1f));
-        hasDependent.setForeground(new java.awt.Color(0, 112, 0));
+        hasDependent.setForeground(Colors.Color_0_112_0);
         hasDependent.setText("  Child (has dependent) ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         legende.add(hasDependent, gridBagConstraints);
 
         associatedWith.setFont(associatedWith.getFont().deriveFont(associatedWith.getFont().getSize()+1f));
-        associatedWith.setForeground(new java.awt.Color(0, 100, 255));
+        associatedWith.setForeground(Colors.Color_0_100_255);
         associatedWith.setText("  associated with");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         legende.add(associatedWith, gridBagConstraints);
 
         ignored.setFont(ignored.getFont().deriveFont(ignored.getFont().getSize()+1f));
-        ignored.setForeground(new java.awt.Color(153, 153, 153));
+        ignored.setForeground(Colors.Color_153_153_153);
         ignored.setText("  disabled ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -3227,7 +3228,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         gridBagConstraints.weighty = 1.0;
         jLayeredPane2.add(jPanel1, gridBagConstraints);
 
-        updateInfoPanel.setBackground(new java.awt.Color(255, 255, 236));
+        updateInfoPanel.setBackground(Colors.Color_255_255_236);
         updateInfoPanel.setLayout(new java.awt.GridBagLayout());
 
         updateInfoLabel.setText("Release x available");
@@ -6826,7 +6827,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	     		}
 	     		int x = visibleRect.width - value.getWidth() - 1;
 				int y = ry - visibleRect.y + value.getHeight() - 1;
-				g.setColor(new Color(255, 255, 255));
+				g.setColor(Colors.Color_255_255_255);
 				g.fillRect(x - 8, y - value.getHeight() + 2, visibleRect.width - x + 9 + ow, value.getHeight() + oh);
 				y -= value.getHeight() - oh;
 				g.translate(x, y);

@@ -101,8 +101,8 @@
                       <SubComponents>
                         <Container class="javax.swing.JPanel" name="toolBarPanel">
                           <Properties>
-                            <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                              <Color blue="ff" green="ff" red="ff" type="rgb"/>
+                            <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                              <Connection code="Colors.Color_255_255_255" type="code"/>
                             </Property>
                             <Property name="opaque" type="boolean" value="false"/>
                           </Properties>
@@ -165,8 +165,8 @@
                         </Container>
                         <Container class="javax.swing.JPanel" name="focusPanel">
                           <Properties>
-                            <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                              <Color blue="7d" green="52" red="56" type="rgb"/>
+                            <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                              <Connection code="Colors.Color_125_82_86" type="code"/>
                             </Property>
                             <Property name="opaque" type="boolean" value="false"/>
                           </Properties>
@@ -249,11 +249,11 @@
                             </Component>
                             <Component class="javax.swing.JButton" name="activateDesictionPendingButton">
                               <Properties>
-                                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                                  <Color blue="98" green="99" red="ff" type="rgb"/>
+                                <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                                  <Connection code="Colors.Color_152_153_255" type="code"/>
                                 </Property>
-                                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                                  <Color blue="1" green="0" red="0" type="rgb"/>
+                                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                                  <Connection code="Colors.Color_1_0_0" type="code"/>
                                 </Property>
                                 <Property name="text" type="java.lang.String" value="Migration pending"/>
                               </Properties>
@@ -865,8 +865,8 @@
                     <Font component="dependsOn" property="font" relativeSize="true" size="1"/>
                   </FontInfo>
                 </Property>
-                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                  <Color blue="0" green="0" red="aa" type="rgb"/>
+                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection code="Colors.Color_0_0_170" type="code"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value=" Parent (depends on) "/>
               </Properties>
@@ -883,8 +883,8 @@
                     <Font component="hasDependent" property="font" relativeSize="true" size="1"/>
                   </FontInfo>
                 </Property>
-                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                  <Color blue="0" green="70" red="0" type="rgb"/>
+                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection code="Colors.Color_0_112_0" type="code"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="   Child (has dependent) "/>
               </Properties>
@@ -901,8 +901,8 @@
                     <Font component="associatedWith" property="font" relativeSize="true" size="1"/>
                   </FontInfo>
                 </Property>
-                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                  <Color blue="ff" green="64" red="0" type="rgb"/>
+                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection code="Colors.Color_255_100_0" type="code"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="   associated with"/>
               </Properties>
@@ -919,8 +919,8 @@
                     <Font component="ignored" property="font" relativeSize="true" size="1"/>
                   </FontInfo>
                 </Property>
-                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                  <Color blue="99" green="99" red="99" type="rgb"/>
+                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection code="Colors.Color_153_153_153" type="code"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="   disabled "/>
               </Properties>
@@ -976,8 +976,8 @@
                     <Font component="modelPath" property="font" relativeSize="true" size="1"/>
                   </FontInfo>
                 </Property>
-                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                  <Color blue="80" green="80" id="gray" palette="1" red="80" type="palette"/>
+                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection code="Colors.Color_128_128_128" type="code"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="/home/jailer/datamodel/"/>
               </Properties>

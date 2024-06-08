@@ -131,7 +131,7 @@ public class CyclesView extends javax.swing.JDialog {
 					}
 					int column = posInfo.column;
 					Rectangle r = cyclesTable.getCellRect(row, column, false);
-					Color color = new Color(255, 0, 0, 150);
+					Color color = Colors.Color_255_0_0_150;
 					g2d.setColor(color);
 					g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 					g2d.setStroke(new BasicStroke(2));
@@ -241,11 +241,11 @@ public class CyclesView extends javax.swing.JDialog {
 					if (!isSelected && row < bgColor.size()) {
 						((JLabel) render).setBackground(bgColor.get(row));
 					} else if (isSelected) {
-						((JLabel) render).setBackground(new Color(160, 200, 255));
+						((JLabel) render).setBackground(Colors.Color_160_200_255);
 					}	
 				}
 				if (render instanceof JLabel) {
-					((JLabel) render).setForeground(Color.BLACK);
+					((JLabel) render).setForeground(Colors.Color_black);
 					((JLabel) render).setFont(normal);
 					((JLabel) render).setToolTipText("".equals(((JLabel) render).getText())? null : ((JLabel) render).getText());
 					if (selectedTable != null) {

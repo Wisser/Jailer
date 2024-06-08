@@ -40,6 +40,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
 import prefuse.Constants;
 import prefuse.render.AbstractShapeRenderer;
@@ -459,7 +460,7 @@ public abstract class TableRenderer extends AbstractShapeRenderer {
 				double d = Math.sin((((System.currentTimeMillis() - (double) pos * 300.0) % PERIOD) / (double) PERIOD) * 2 * Math.PI);
 				d = Math.pow(d *= d, 2.2);
 				double f = isSelected || graphicalDataModelView.tablesOnPath.size() <= 3? 0.0 : 0.50 * d;
-				fillColor = ColorLib.rgba(
+				fillColor = ColorLib.rgba( // TODO
 						ColorLib.interp(76, 240, f),
 						ColorLib.interp(230, 120, f),
 						ColorLib.interp(255, 90, f),
@@ -627,7 +628,7 @@ public abstract class TableRenderer extends AbstractShapeRenderer {
 						a = a.substring(1);
 					}
 					if (a.startsWith("+")) {
-						g.setPaint(Color.RED);
+						g.setPaint(Colors.Color_red);
 						a = a.substring(1);
 					}
 				}
@@ -636,7 +637,7 @@ public abstract class TableRenderer extends AbstractShapeRenderer {
 				} else {
 					drawString(g, fm, a, useInt, x, y, tw, Constants.LEFT);
 					if (b != null) {
-						g.setPaint(Color.GRAY);
+						g.setPaint(Colors.Color_gray);
 						drawString(g, fm, b, useInt, x, y, tw, Constants.RIGHT);
 					}
 				}
@@ -1087,8 +1088,8 @@ public abstract class TableRenderer extends AbstractShapeRenderer {
 		if ( type == AbstractShapeRenderer.RENDER_TYPE_NONE )
 			return;
 		
-		Color fillColor = ColorLib.getColor(fillColorI);
-		
+		Color fillColor = fillColorI == 0? new Color(255, 235, 20, 75) : ColorLib.getColor(fillColorI);
+
 		// set up colors
 		Color strokeColor = ColorLib.getColor(item.getStrokeColor());
 		boolean sdraw = (type == AbstractShapeRenderer.RENDER_TYPE_DRAW ||

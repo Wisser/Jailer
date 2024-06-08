@@ -70,7 +70,7 @@ public abstract class PendingDecisionsPanel extends javax.swing.JPanel {
 		initComponents(); UIUtil.initComponents(this);
 
 		DefaultTableCellRenderer associationsListItemRenderer = new DefaultTableCellRenderer() {
-			final Color BG_SELCOLOR = new Color(115, 217, 255);
+			final Color BG_SELCOLOR = Colors.Color_115_217_255;
 			final Color BG1 = UIUtil.TABLE_BACKGROUND_COLOR_1;
 			final Color BG2 = UIUtil.TABLE_BACKGROUND_COLOR_2;
 
@@ -92,7 +92,7 @@ public abstract class PendingDecisionsPanel extends javax.swing.JPanel {
 					render = checkBox;
 				}
 				render.setBackground(isSelected ? BG_SELCOLOR : (row % 2 == 0) ? BG1 : BG2);
-				render.setForeground(Color.BLACK);
+				render.setForeground(Colors.Color_black);
 				if (render instanceof JLabel) {
 					((JLabel) render).setToolTipText(UIUtil.toHTML(String.valueOf(value), 100));
 				}
@@ -473,10 +473,10 @@ public abstract class PendingDecisionsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         jPanel1.add(jPanel2, gridBagConstraints);
 
-        infoPanel.setBackground(new java.awt.Color(250, 255, 255));
+        infoPanel.setBackground(Colors.Color_250_255_255);
         infoPanel.setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setForeground(new java.awt.Color(0, 0, 62));
+        jLabel1.setForeground(Colors.Color_0_0_62);
         jLabel1.setText("<html>\nThis tool allows you to find and edit the newly added associations if the data model has been extended after the last change to this extraction model. <br>\nSelect associations here in the table and define restrictions, or check off an association if you're comfortable with the given restriction.\n</html>");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;

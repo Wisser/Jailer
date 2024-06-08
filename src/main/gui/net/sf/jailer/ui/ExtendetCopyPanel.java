@@ -434,7 +434,7 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 								BasicStroke stroke = new BasicStroke();
 								g2d.setStroke(stroke);
 								g2d.drawRoundRect(x[0], y[0], x[1] - x[0], y[1] - y[0], 8, 8);
-								g2d.setColor(new Color(0, 0, 200, 100));
+								g2d.setColor(Colors.Color_0_0_200_100);
 								g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(),
 										stroke.getMiterLimit(), new float[] { 11f, 5f },
 										(float) ((System.currentTimeMillis() / 50.0 * 1.1) % 16)));
@@ -583,7 +583,7 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         jPanel1.add(jScrollPane1, gridBagConstraints);
 
         jLabel1.setFont(jLabel1.getFont().deriveFont(jLabel1.getFont().getSize()-1f));
-        jLabel1.setForeground(java.awt.Color.gray);
+        jLabel1.setForeground(Colors.Color_gray);
         jLabel1.setText("<html><i>Ctrl-Click:</i> Toggle row/column selection.<i> Ctrl-A:</i> Select All.</html>");
         jLabel1.setToolTipText("<html><i>Ctrl-Click: </i>Toggle row/column selection.<br>\n<i>Ctrl-A:</i> Select All</html>");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -632,7 +632,7 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         plainPanel.setLayout(new java.awt.BorderLayout());
         previewPanel.add(plainPanel, "plain");
 
-        jPanel3.setBackground(java.awt.Color.white);
+        jPanel3.setBackground(Colors.Color_white);
         jPanel3.setLayout(new java.awt.GridBagLayout());
 
         formattedContentLabel.setText("jLabel2");
@@ -654,7 +654,7 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         jPanel3.add(jPanel4, gridBagConstraints);
 
         stopRowLabel.setFont(stopRowLabel.getFont().deriveFont((stopRowLabel.getFont().getStyle() | java.awt.Font.ITALIC)));
-        stopRowLabel.setForeground(java.awt.Color.blue);
+        stopRowLabel.setForeground(Colors.Color_blue);
         stopRowLabel.setText("Preview ends here...");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -663,7 +663,7 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         jPanel3.add(stopRowLabel, gridBagConstraints);
 
         stopColumnLabel.setFont(stopColumnLabel.getFont().deriveFont((stopColumnLabel.getFont().getStyle() | java.awt.Font.ITALIC)));
-        stopColumnLabel.setForeground(java.awt.Color.blue);
+        stopColumnLabel.setForeground(Colors.Color_blue);
         stopColumnLabel.setText("Preview ends here...");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -672,7 +672,7 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         jPanel3.add(stopColumnLabel, gridBagConstraints);
 
         stopBothLabel.setFont(stopBothLabel.getFont().deriveFont((stopBothLabel.getFont().getStyle() | java.awt.Font.ITALIC)));
-        stopBothLabel.setForeground(java.awt.Color.blue);
+        stopBothLabel.setForeground(Colors.Color_blue);
         stopBothLabel.setText("Preview ends here...");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -692,7 +692,7 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         jPanel2.add(previewPanel, gridBagConstraints);
 
         jLabel2.setFont(jLabel2.getFont().deriveFont(jLabel2.getFont().getSize()+4f));
-        jLabel2.setForeground(java.awt.Color.blue);
+        jLabel2.setForeground(Colors.Color_blue);
         jLabel2.setText("Preview");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;

@@ -10,7 +10,6 @@
 package net.sf.jailer.ui.util;
 
 import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -27,6 +26,8 @@ import java.awt.geom.Path2D;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputAdapter;
+
+import net.sf.jailer.ui.Colors;
 
 public class MovePanel extends JPanel {
 		
@@ -81,7 +82,7 @@ public class MovePanel extends JPanel {
 			g2d.clipRect(0, 0, dim.width, dim.height);
 			Stroke s = new BasicStroke();
 			g2d.setStroke(s);
-			g2d.setColor(new Color(0, 0, 255, 80));
+			g2d.setColor(Colors.Color_0_0_255_80);
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 		            RenderingHints.VALUE_ANTIALIAS_ON);
 			g2d.setRenderingHint(RenderingHints.KEY_RENDERING,

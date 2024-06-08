@@ -16,7 +16,6 @@
 package net.sf.jailer.ui.graphical_view;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -56,6 +55,7 @@ import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.ExpansionLimitMessage;
 import net.sf.jailer.ui.ExtractionModelEditor;
 import net.sf.jailer.ui.QueryBuilderDialog;
@@ -315,20 +315,20 @@ public class GraphicalDataModelView extends JPanel {
 		final GraphDistanceFilter filter = new GraphDistanceFilter(graph, hops);
 
 		ColorAction fill = new ColorAction(nodes,
-				VisualItem.FILLCOLOR, ColorLib.rgba(255,235,20,75));
-		fill.add(VisualItem.FIXED, ColorLib.rgba(255,235,20,75));
-		fill.add(VisualItem.HIGHLIGHT, ColorLib.rgba(160,160,0,120));
+				VisualItem.FILLCOLOR, 0);
+		fill.add(VisualItem.FIXED, 0);
+//		fill.add(VisualItem.HIGHLIGHT, ColorLib.rgba(160,160,0,120));
 
 		ActionList draw = new ActionList();
 		draw.add(filter);
-		draw.add(fill);
-		draw.add(new ColorAction(nodes, VisualItem.STROKECOLOR, 0));
-		draw.add(new ColorAction(nodes, VisualItem.TEXTCOLOR, ColorLib.rgb(0,0,0)));
-		draw.add(new ColorAction(edges, VisualItem.FILLCOLOR, ColorLib.gray(200)));
-		draw.add(new ColorAction(edges, VisualItem.STROKECOLOR, ColorLib.gray(200)));
+//		draw.add(fill);
+//		draw.add(new ColorAction(nodes, VisualItem.STROKECOLOR, 0));
+//		draw.add(new ColorAction(nodes, VisualItem.TEXTCOLOR, ColorLib.rgb(0,0,0)));
+//		draw.add(new ColorAction(edges, VisualItem.FILLCOLOR, ColorLib.gray(200)));
+//		draw.add(new ColorAction(edges, VisualItem.STROKECOLOR, ColorLib.gray(200)));
 
 		animate = new ActionList(Activity.INFINITY);
-		animate.add(fill);
+//		animate.add(fill);
 		animate.add(new RepaintAction());
 
 		if (modelEditor.extractionModelFrame.animationStepTime > 0) {
@@ -351,8 +351,8 @@ public class GraphicalDataModelView extends JPanel {
 		display.setDamageRedraw(false);
 		display.setSize(width, height);
 		display.pan(width / 2, height / 2);
-		display.setForeground(Color.GRAY);
-		display.setBackground(Color.WHITE);
+		display.setForeground(Colors.Color_gray);
+		display.setBackground(Colors.Color_white);
 
 		// main display controls
 		display.addControlListener(new FocusControl(1));
@@ -470,8 +470,8 @@ public class GraphicalDataModelView extends JPanel {
 		display.addControlListener(zoomToFitControl);
 		display.addControlListener(new ToolTipControl("tooltip"));
 
-		display.setForeground(Color.GRAY);
-		display.setBackground(Color.WHITE);
+		display.setForeground(Colors.Color_gray);
+		display.setBackground(Colors.Color_white);
 
 		// now we run our action list
 		visualization.run("draw");

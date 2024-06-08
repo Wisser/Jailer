@@ -1368,37 +1368,37 @@ public class UIUtil {
 	/**
 	 * Background color of even table rows.
 	 */
-	public static final Color TABLE_BACKGROUND_COLOR_1 = new Color(238, 255, 238);
+	public static final Color TABLE_BACKGROUND_COLOR_1 = Colors.Color_238_255_238;
 
 	/**
 	 * Background color of odd table rows.
 	 */
-	public static final Color TABLE_BACKGROUND_COLOR_2 = new Color(255, 255, 255);
+	public static final Color TABLE_BACKGROUND_COLOR_2 = Colors.Color_255_255_255;
 
 	/**
 	 * Background color of selected even table rows.
 	 */
-	public static final Color TABLE_BG1SELECTED = new Color(255, 246, 206);
+	public static final Color TABLE_BG1SELECTED = Colors.Color_255_246_206;
 	
 	/**
 	 * Background color of selected odd table rows.
 	 */
-	public static final Color TABLE_BG2SELECTED  = new Color(255, 250, 215);
+	public static final Color TABLE_BG2SELECTED  = Colors.Color_255_250_215;
 				
 	/**
 	 * Background color of even table rows in closure.
 	 */
-	public static final Color TABLE_BACKGROUND_COLOR_1_INCLOSURE = new Color(196, 236, 255);
+	public static final Color TABLE_BACKGROUND_COLOR_1_INCLOSURE = Colors.Color_196_236_255;
 
 	/**
 	 * Background color of odd table rows in closure.
 	 */
-	public static final Color TABLE_BACKGROUND_COLOR_2_INCLOSURE = new Color(208, 245, 255);
+	public static final Color TABLE_BACKGROUND_COLOR_2_INCLOSURE = Colors.Color_208_245_255;
 
 	/**
 	 * Color of FLAT borders.
 	 */
-	public static final Color FLAT_BORDER_COLOR =  new Color(220, 220, 220);
+	public static final Color FLAT_BORDER_COLOR =  Colors.Color_220_220_220;
 	
 	public static String LINE_SEPARATOR = System.getProperty("line.separator", "\n");
 
@@ -1607,7 +1607,7 @@ public class UIUtil {
 										info = String.format("%1.1f", numDone.get() * 100d / total) + "%";
 										int errors = numErrors.get();
 										if (errors > 0) {
-											info += "&nbsp;<font color=\"#ff2222\">" + errors + "&nbsp;Error" + (errors == 1? "" : "s") + "</font>";
+											info += "&nbsp;<font " + Colors.HTMLColor_ff2222 + ">" + errors + "&nbsp;Error" + (errors == 1? "" : "s") + "</font>";
 										}
 										if (!initialized) {
 											concurrentTaskControl.master.cancelButton.setText("Stop");
@@ -1896,10 +1896,10 @@ public class UIUtil {
 		return result;
 	}
 
-	public static final Color FG_PK = new Color(170, 0, 0);
-	public static final Color FG_FK = new Color(0, 0, 220);
-	public static final Color BG_FLATMOUSEOVER = new Color(224, 224, 224);
-	public static final Color BG_FLATSELECTED = new Color(204, 204, 204);
+	public static final Color FG_PK = Colors.Color_170_0_0;
+	public static final Color FG_FK = Colors.Color_0_0_220;
+	public static final Color BG_FLATMOUSEOVER = Colors.Color_224_224_224;
+	public static final Color BG_FLATSELECTED = Colors.Color_204_204_204;
 	
 	private static final String[] INVALID_FILENAME_CHARACTERS = new String[] {"\\", "/", ":", ";", "*", "?", "\"", "<", ">", "|"};
 	private static final String[][] INVALID_FILENAME_CHARACTERS_TO_REPLACEMENT = new String[INVALID_FILENAME_CHARACTERS.length][];
@@ -2207,7 +2207,7 @@ public class UIUtil {
                     UIManager.put( "ScrollBar.showButtons", true );
                     UIManager.put( "ScrollBar.width", 14 );
                     UIManager.put( "InternalFrame.borderMargins", new Insets(2,2,1,1));
-                    UIManager.put( "TableHeader.separatorColor", Color.lightGray);
+                    UIManager.put( "TableHeader.separatorColor", Colors.Color_lightgray);
                     UIManager.put( "PasswordField.showRevealButton", true);
                     
                     UIManager.put( "Button.arc", 8 );
@@ -2218,7 +2218,7 @@ public class UIUtil {
                     UIManager.put( "TabbedPane.tabArc", 12);
                     UIManager.put( "TabbedPane.tabSelectionArc", 4);
                     
-//                    UIManager.put( "TextArea.background", Color.white);
+//                    UIManager.put( "TextArea.background", Colors.Color_white);
                     
                     if (plaf == PLAF.FLATDARK) {
                     	FlatDarkLaf.setup();
@@ -2237,7 +2237,7 @@ public class UIUtil {
 				try {
 					for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
 						if ("Nimbus".equals(info.getName())) {
-							UIManager.put("nimbusBase", new Color(66, 118, 187)); // orig. color: 51, 98, 140
+							UIManager.put("nimbusBase", Colors.Color_66_118_187); // orig. color: 51, 98, 140
 							UIManager.setLookAndFeel(info.getClassName());
 							break;
 						}
@@ -2254,7 +2254,7 @@ public class UIUtil {
 					}
 	
 					if (UIManager.get("InternalFrame:InternalFrameTitlePane[Enabled].textForeground") instanceof Color) {
-						UIManager.put("InternalFrame:InternalFrameTitlePane[Enabled].textForeground", Color.BLUE);
+						UIManager.put("InternalFrame:InternalFrameTitlePane[Enabled].textForeground", Colors.Color_blue);
 					}
 					try {
 						UIManager.put("TitledBorder.border", new BorderUIResource((Border) UIManager.get("TitledBorder.border")) {
@@ -2468,7 +2468,7 @@ public class UIUtil {
 				if (c instanceof JComponent) {
 					((JComponent) c).setToolTipText(value.toString() + ": " + c.getClass().getSimpleName());
 					try {
-						((JComponent) c).setBorder(BorderFactory.createLineBorder(Color.gray));
+						((JComponent) c).setBorder(BorderFactory.createLineBorder(Colors.Color_gray));
 					} catch (Exception e) {
 						// ignore
 					}
@@ -2692,9 +2692,9 @@ public class UIUtil {
 				}
 				
 				g2d.setColor(((c instanceof JLabel) && ((JLabel) c).getIcon() == null) || c instanceof JTextField?
-						new Color(255, 255, 0, 128) : new Color(255, 255, 0));
+						Colors.Color_255_255_0_128 : Colors.Color_255_255_0);
 				g2d.fillPolygon(new int[] {x, x + b, x}, new int[] {y, y, y + b}, 3);
-				g2d.setColor(new Color(200, 200, 0));
+				g2d.setColor(Colors.Color_200_200_0);
 				g2d.drawPolygon(new int[] {x, x + b, x}, new int[] {y, y, y + b}, 3);
 			}
 		}

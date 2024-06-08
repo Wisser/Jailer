@@ -24,6 +24,7 @@ import javax.swing.UIManager;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithTheme;
 
@@ -102,8 +103,8 @@ public class ErrorPanel extends javax.swing.JPanel {
         add(iconLabel, gridBagConstraints);
 
         errorTextArea.setEditable(false);
-        errorTextArea.setBackground(new java.awt.Color(254, 255, 255));
-        errorTextArea.setForeground(java.awt.Color.red);
+        errorTextArea.setBackground(Colors.Color_254_255_255);
+        errorTextArea.setForeground(Colors.Color_red);
         jScrollPane1.setViewportView(errorTextArea);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

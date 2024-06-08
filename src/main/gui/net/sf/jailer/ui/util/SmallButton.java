@@ -23,13 +23,14 @@ import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
 
 public abstract class SmallButton extends JLabel {
 
 	private final boolean borderStyle;
-	private static final Color BORDER_LIGHT = Color.lightGray;
-	private static final Color BORDER_SHADOW = Color.gray;
+	private static final Color BORDER_LIGHT = Colors.Color_lightgray;
+	private static final Color BORDER_SHADOW = Colors.Color_gray;
 	private final Icon icon;
 	private final Icon iconOver;
 	protected boolean entered = false;

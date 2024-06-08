@@ -34,6 +34,7 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
 import net.sf.jailer.configuration.Configuration;
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.Desktop.LayoutMode;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
@@ -182,7 +183,7 @@ public class DesktopUndoManager {
 			if (i == 1) {
 				sb.append("<hr><b>");
 			} else {
-				sb.append("<font color=\"#707080\">");
+				sb.append("<font " + Colors.HTMLColor_707080 + ">");
 			}
 			int rest = stack.size() - i + 1;
 			if (i > 8 && rest > 2) {

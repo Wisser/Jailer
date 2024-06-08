@@ -28,7 +28,7 @@
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
             <LineBorder roundedCorners="true">
-              <Color PropertyName="color" blue="c0" green="c0" id="lightGray" palette="1" red="c0" type="palette"/>
+              <Connection code="Colors.Color_192_192_192" type="code"/>
             </LineBorder>
           </Border>
         </Property>

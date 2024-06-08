@@ -75,11 +75,11 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.AutoCompletion;
 import net.sf.jailer.ui.ClosureView;
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.JComboBox2;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.StringSearchPanel.AdditionalComponentFactory;
 import net.sf.jailer.ui.UIUtil;
-import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
@@ -580,7 +580,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
                 CellInfo cellInfo = DBClosureView.this.cellInfo.get(value);
                 boolean onPath = false;
                 if (render instanceof JLabel) {
-                    ((JLabel) render).setForeground(Color.BLACK);
+                    ((JLabel) render).setForeground(Colors.Color_black);
                     ((JLabel) render).setFont(normal);
                     String text = ((JLabel) render).getText();
                     if (!"".equals(text)) {
@@ -596,10 +596,10 @@ public abstract class DBClosureView extends javax.swing.JDialog {
                             if (mainPathAsSet.contains(cellInfo)) {
                                 onPath = true;
                                 ((JLabel) render).setFont(bold);
-                                ((JLabel) render).setBackground(new Color(255, 230, 200));
+                                ((JLabel) render).setBackground(Colors.Color_255_230_200);
                             } else {
                                 ((JLabel) render).setFont(italic);
-                                ((JLabel) render).setBackground(new Color(200, 200, 200, 140));
+                                ((JLabel) render).setBackground(Colors.Color_200_200_200_140);
                             }
                         }
                     }
@@ -618,12 +618,12 @@ public abstract class DBClosureView extends javax.swing.JDialog {
                             }
                         }
                         if (allDisabled && someRestricted) {
-                            ((JLabel) render).setForeground(new Color(160, 80, 0));
+                            ((JLabel) render).setForeground(Colors.Color_160_80_0);
                         } else if (!allDisabled && someRestricted) {
-                            ((JLabel) render).setForeground(new Color(0, 80, 160));
+                            ((JLabel) render).setForeground(Colors.Color_0_80_160);
                         }
                         if (getVisibleTables().containsKey(t)) {
-                        	((JLabel) render).setForeground(new Color(0, 0, 225));
+                        	((JLabel) render).setForeground(Colors.Color_0_0_225);
                         }
                     }
                 }
@@ -924,9 +924,9 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 
         final Color BG1 = UIUtil.TABLE_BACKGROUND_COLOR_1;
         final Color BG2 = UIUtil.TABLE_BACKGROUND_COLOR_2;
-        final Color BG3 = new Color(255, 255, 240);
-        final Color BG4 = UIUtil.plaf.isFlat? new Color(242, 242, 242) : new Color(220, 220, 220);
-        final Color BG5 = new Color(255, 240, 240);
+        final Color BG3 = Colors.Color_255_255_240;
+        final Color BG4 = UIUtil.plaf.isFlat? Colors.Color_242_242_242 : Colors.Color_220_220_220;
+        final Color BG5 = Colors.Color_255_240_240;
         bgColor.clear();
 
         TreeSet<String> nonIsolated = new TreeSet<String>(String::compareToIgnoreCase);

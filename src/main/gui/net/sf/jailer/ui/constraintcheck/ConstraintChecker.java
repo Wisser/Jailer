@@ -55,6 +55,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.util.CancellationHandler;
@@ -307,7 +308,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 						statusLabel.setVisible(true);
 						if (numErrors > 0) {
 							statusLabel.setText(numErrors + " problems");
-							statusLabel.setForeground(Color.RED);
+							statusLabel.setForeground(Colors.Color_red);
 						}
 					}
 				});
@@ -371,8 +372,8 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 		    	progressLabel.setText(numChecksDone + " of " + numChecks);
 		    	jProgressBar1.setValue(numChecksDone);
 		    	if (numErrors > 0) {
-		    		jProgressBar1.setForeground(Color.red);
-		    		progressLabel.setForeground(Color.red);
+		    		jProgressBar1.setForeground(Colors.Color_red);
+		    		progressLabel.setForeground(Colors.Color_red);
 		    	}
 		    	checksPane.append(checkQuery + ";\n");
 		    	if (numErrors == 1) {
@@ -438,7 +439,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(progressLabel, gridBagConstraints);
 
-        statusLabel.setForeground(new java.awt.Color(0, 105, 0));
+        statusLabel.setForeground(Colors.Color_0_105_0);
         statusLabel.setText("Database is consistent");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -557,7 +558,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(4, 8, 0, 0);
         jPanel6.add(viewButton, gridBagConstraints);
 
-        childLabel.setForeground(new java.awt.Color(0, 100, 0));
+        childLabel.setForeground(Colors.Color_0_100_0);
         childLabel.setText("jLabel5");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -567,7 +568,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
         jPanel6.add(childLabel, gridBagConstraints);
 
-        parentLabel.setForeground(new java.awt.Color(95, 0, 0));
+        parentLabel.setForeground(Colors.Color_95_0_0);
         parentLabel.setText("jLabel5");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -577,7 +578,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
         jPanel6.add(parentLabel, gridBagConstraints);
 
-        conditionLabel.setForeground(java.awt.Color.blue);
+        conditionLabel.setForeground(Colors.Color_blue);
         conditionLabel.setText("jLabel5");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -587,7 +588,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
         jPanel6.add(conditionLabel, gridBagConstraints);
 
-        problemLabel.setForeground(java.awt.Color.red);
+        problemLabel.setForeground(Colors.Color_red);
         problemLabel.setText("jLabel5");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -597,7 +598,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
         jPanel6.add(problemLabel, gridBagConstraints);
 
-        dummyLabel.setForeground(java.awt.Color.red);
+        dummyLabel.setForeground(Colors.Color_red);
         dummyLabel.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;

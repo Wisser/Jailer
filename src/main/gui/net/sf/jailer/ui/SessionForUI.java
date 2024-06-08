@@ -15,7 +15,6 @@
  */
 package net.sf.jailer.ui;
 
-import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.Point;
 import java.awt.Window;
@@ -159,7 +158,7 @@ public class SessionForUI extends Session {
 		session.connectionDialog.setLocation(los.x + w.getWidth() / 2 - session.connectionDialog.getWidth() / 2, los.y + w.getHeight() / 2 - session.connectionDialog.getHeight() / 2);
         
 		Timer timer = new Timer(500, e -> {
-			session.connectingPanel.setBackground(Color.white.equals(session.connectingPanel.getBackground())? new Color(255, 230, 230) : Color.white);
+			session.connectingPanel.setBackground(Colors.Color_white.equals(session.connectingPanel.getBackground())? Colors.Color_255_230_230 : Colors.Color_white);
         });
         timer.setRepeats(true);
         timer.setInitialDelay(timer.getDelay() * 3);
@@ -208,10 +207,10 @@ public class SessionForUI extends Session {
 		super(dataSource, dbms, isolationLevel);
 		this.shutDownImmediatelly = shutDownImmediatelly;
 		this.testOnly = testOnly;
-		connectingPanel.setBackground(java.awt.Color.white);
-		connectingPanel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
+		connectingPanel.setBackground(Colors.Color_white);
+		connectingPanel.setBorder(BorderFactory.createLineBorder(Colors.Color_dark_gray));
 		
-//        jLabel1.setForeground(java.awt.Color.red);
+//        jLabel1.setForeground(Colors.Color_red);
         jLabel1.setText("Connecting...");
         jLabel1.setFont(jLabel1.getFont().deriveFont((float) (jLabel1.getFont().getSize() * 1.4)));
         connectingPanel.add(jLabel1);

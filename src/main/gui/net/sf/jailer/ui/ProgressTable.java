@@ -67,8 +67,8 @@ public class ProgressTable extends JTable {
 	private final List<Color> bgColors = new ArrayList<Color>();
 	private final Color BG1 = UIUtil.TABLE_BACKGROUND_COLOR_1;
 	private final Color BG2 = UIUtil.TABLE_BACKGROUND_COLOR_2;
-	private final Color SELECTED_FG = new Color(180, 160, 0);
-	private final Color INPROGRESS_FG = new Color(255, 40, 0);
+	private final Color SELECTED_FG = Colors.Color_180_160_0;
+	private final Color INPROGRESS_FG = Colors.Color_255_40_0;
 
 	/**
 	 * Holds infos about a cell.
@@ -192,7 +192,7 @@ public class ProgressTable extends JTable {
 		setRowHeight(getRowHeight() * 3);
 
 		final Border defaultBorder = cellPanel.getBorder();
-		final Border selBorder = BorderFactory.createLineBorder(Color.BLACK, 1);
+		final Border selBorder = BorderFactory.createLineBorder(Colors.Color_black, 1);
 
 		setDefaultRenderer(Object.class, new TableCellRenderer() {
 			private Font font = new JLabel("normal").getFont();
@@ -204,8 +204,8 @@ public class ProgressTable extends JTable {
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 				Color color = bgColors.get(row);
 				boolean fontIsSet = false;
-				tableRender.setForeground(Color.BLACK);
-				numberRender.setForeground(Color.BLACK);
+				tableRender.setForeground(Colors.Color_black);
+				numberRender.setForeground(Colors.Color_black);
 				JPanel outer = layerdPane;
 				outer.setToolTipText(null);
 				outer.setBorder(defaultBorder);
@@ -236,8 +236,8 @@ public class ProgressTable extends JTable {
 						numberRender.setForeground(cellInfo.inProgress? INPROGRESS_FG : SELECTED_FG);
 					} else if (cellInfo.numberOfRows == 0) {
 						numberRender.setText(cellInfo.numberOfRows + " rows");
-						tableRender.setForeground(Color.GRAY);
-						numberRender.setForeground(Color.GRAY);
+						tableRender.setForeground(Colors.Color_gray);
+						numberRender.setForeground(Colors.Color_gray);
 					} else {
 						long p = 0;
 						if (totalNumberOfCollectedRows > 0) {
@@ -247,7 +247,7 @@ public class ProgressTable extends JTable {
 							}
 						}
 						numberRender.setText(UIUtil.format(cellInfo.numberOfRows) + " rows" + (p == 0 ? "" : " (" + p + "%)"));
-						tableRender.setForeground(Color.BLACK);
+						tableRender.setForeground(Colors.Color_black);
 						float f = 0.2f + (p / 100.0f) * 0.8f;
 						if (f > 1.0f) {
 							f = 1.0f;
@@ -255,7 +255,7 @@ public class ProgressTable extends JTable {
 						if (p == 0) {
 							f = 0.0f;
 						}
-						numberRender.setForeground(new Color(0, 0, 0));
+						numberRender.setForeground(Colors.Color_0_0_0);
 					}
 				} else {
 					tableRender.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
@@ -367,8 +367,8 @@ public class ProgressTable extends JTable {
 		if (!(graphics instanceof Graphics2D))
 			return;
 		Graphics2D g2d = (Graphics2D) graphics;
-		Color color = new Color(0, 80, 255, 80);
-		Color selColor = new Color(255, 0, 0, 120);
+		Color color = Colors.Color_0_80_255_80;
+		Color selColor = Colors.Color_255_0_0_120;
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		int[] x = new int[2];
 		int[] y = new int[2];

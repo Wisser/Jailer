@@ -162,8 +162,8 @@ public class DataModelEditor extends javax.swing.JDialog {
 		this.dbConnectionDialog = dbConnectionDialog;
 		this.executionContext = executionContext;
 
-		final Color BG_COLOR = new Color(204, 255, 178);
-		final Color BG_SELCOLOR = new Color(115, 217, 255);
+		final Color BG_COLOR = Colors.Color_204_255_178;
+		final Color BG_SELCOLOR = Colors.Color_115_217_255;
 		final Color BG1 = UIUtil.TABLE_BACKGROUND_COLOR_1;
 		final Color BG2 = UIUtil.TABLE_BACKGROUND_COLOR_2;
 
@@ -432,7 +432,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 				}
 				boolean fromModelFinder = tableTableRowsFromModelFinder.contains(tablesTable.getRowSorter().convertRowIndexToModel(row));
 				Component render = super.getTableCellRendererComponent(table, value, isSelected, false, row, column);
-				render.setForeground(Color.BLACK);
+				render.setForeground(Colors.Color_black);
 				if (fromModelFinder || modifiedColumnTables.contains(value) && column == 0) {
 					render.setBackground(isSelected? BG_SELCOLOR : BG_COLOR);
 				} else {
@@ -441,7 +441,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 				if (tableTableRowsWithoutPK.contains(tablesTable.getRowSorter().convertRowIndexToModel(row))
 						||
 					tablesWithInvalidPK.contains(tablesTable.getRowSorter().convertRowIndexToModel(row))) {
-					render.setForeground(Color.RED);
+					render.setForeground(Colors.Color_red);
 				}
 				if (render instanceof JLabel) {
 					if (!"".equals(value)) {
@@ -476,7 +476,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 				} else {
 					render.setBackground(isSelected? BG_SELCOLOR : (row % 2 == 0) ? BG1 : BG2);
 				}
-				render.setForeground(Color.BLACK);
+				render.setForeground(Colors.Color_black);
 				if (render instanceof JLabel) {
 					if (column == 3) {
 						((JLabel) render).setToolTipText(typeTT);
@@ -722,7 +722,7 @@ public class DataModelEditor extends javax.swing.JDialog {
         });
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
-        info.setForeground(new java.awt.Color(1, 75, 1));
+        info.setForeground(Colors.Color_1_75_1);
         info.setText("jLabel1");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;

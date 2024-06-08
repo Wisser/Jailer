@@ -47,7 +47,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
 		buttonGroup.add(restricted);
 		buttonGroup.add(ignore);
 		
-		Color white = new Color(255, 255, 255, 200);
+		Color white = Colors.Color_255_255_255_200;
 		jPanel1.setBackground(white);
 		jPanel4.setBackground(white);
 		jPanel5.setBackground(white);
@@ -68,7 +68,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
 				setBG();
 			}
 			private void setBG() {
-				restriction.setBackground(new Color(255, 255, 220));
+				restriction.setBackground(Colors.Color_255_255_220);
 			}
 		});
 		restriction.addKeyListener(new KeyListener() {
@@ -153,7 +153,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         setOpaque(false);
         setLayout(new java.awt.GridBagLayout());
 
-        jPanel2.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel2.setBackground(Colors.Color_255_255_255);
         jPanel2.setOpaque(false);
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
@@ -176,7 +176,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         jPanel7.add(jLabel4, gridBagConstraints);
 
-        jPanel1.setBackground(java.awt.Color.white);
+        jPanel1.setBackground(Colors.Color_white);
         jPanel1.setOpaque(false);
         jPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
 
@@ -184,7 +184,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         ignore.setOpaque(false);
         jPanel1.add(ignore);
 
-        restrictedDependencyWarning.setForeground(new java.awt.Color(255, 0, 51));
+        restrictedDependencyWarning.setForeground(Colors.Color_255_0_51);
         restrictedDependencyWarning.setText("Restricted Dependency! ");
         jPanel1.add(restrictedDependencyWarning);
 
@@ -195,7 +195,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel7.add(jPanel1, gridBagConstraints);
 
-        jPanel8.setBackground(java.awt.Color.white);
+        jPanel8.setBackground(Colors.Color_white);
         jPanel8.setOpaque(false);
         jPanel8.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
 
@@ -253,7 +253,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         jPanel10.add(jLabel5, gridBagConstraints);
 
-        fk20DisabledHintLabel.setForeground(java.awt.Color.red);
+        fk20DisabledHintLabel.setForeground(Colors.Color_red);
         fk20DisabledHintLabel.setText("(Foreign key is not nullable)");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -284,7 +284,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 20, 0, 0);
         jPanel2.add(jPanel7, gridBagConstraints);
 
-        jPanel4.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel4.setBackground(Colors.Color_255_255_255);
         jPanel4.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 4, 0));
 
         source.setFont(source.getFont().deriveFont(source.getFont().getStyle() | java.awt.Font.BOLD, source.getFont().getSize()+1));
@@ -319,7 +319,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel2.add(jPanel4, gridBagConstraints);
 
-        jPanel5.setBackground(java.awt.Color.white);
+        jPanel5.setBackground(Colors.Color_white);
         jPanel5.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 4, 0));
 
         jLabel1.setText("on");

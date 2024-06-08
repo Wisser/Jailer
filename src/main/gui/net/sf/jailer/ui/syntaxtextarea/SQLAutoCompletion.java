@@ -33,8 +33,8 @@ import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.autocomplete.Util;
 import org.fife.ui.rtextarea.RTextArea;
 
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
-import net.sf.jailer.ui.UIUtil.PLAF;
 
 
 /**
@@ -100,7 +100,7 @@ public class SQLAutoCompletion extends AutoCompletion {
 					if (definition!=null) {
 						sb.append(" - ");
 						if (!selected) {
-							sb.append("<font color='").append(Util.getHexString(Color.gray)).append("'>");
+							sb.append("<font color='").append(Util.getHexString(Colors.Color_gray)).append("'>");
 						}
 						sb.append(definition);
 						if (!selected) {

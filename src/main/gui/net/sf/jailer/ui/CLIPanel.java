@@ -125,7 +125,7 @@ public class CLIPanel extends javax.swing.JPanel {
         commandLinePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Command line"));
         commandLinePanel.setLayout(new java.awt.GridBagLayout());
 
-        jScrollPane1.setBorder(new javax.swing.border.LineBorder(java.awt.Color.gray, 1, true));
+        jScrollPane1.setBorder(new javax.swing.border.LineBorder(Colors.Color_gray, 1, true));
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         cliArea.setEditable(false);

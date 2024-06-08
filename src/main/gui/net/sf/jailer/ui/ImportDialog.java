@@ -146,9 +146,9 @@ public class ImportDialog extends javax.swing.JDialog {
 		
 		SimpleAttributeSet set = new SimpleAttributeSet();
         ((DefaultStyledDocument) cliArea.getDocument()).setCharacterAttributes(0, cliArea.getText().length(), set, true);
-		addStyle("\"\\<password\\>\"", Color.RED);
-		addStyle("jailer\\.[^ ]+ ", Color.BLUE);
-		addStyle("export|delete|import", Color.BLUE);
+		addStyle("\"\\<password\\>\"", Colors.Color_red);
+		addStyle("jailer\\.[^ ]+ ", Colors.Color_blue);
+		addStyle("export|delete|import", Colors.Color_blue);
 	}
 
 	/**

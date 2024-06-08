@@ -109,7 +109,6 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import org.fife.rsta.ui.EscapableDialog;
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,6 +122,7 @@ import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.MemorizedResultSet;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.ui.AutoCompletion;
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.JComboBox2;
 import net.sf.jailer.ui.RowCountRenderer;
 import net.sf.jailer.ui.SessionForUI;
@@ -588,7 +588,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                     value = outlineTableRender((OutlineInfo) value, isSelected);
                 }
                 Component render = olRenderer.getListCellRendererComponent(list, value, index, false, cellHasFocus);
-                render.setBackground(isSelected? new Color(240, 240, 255) : index == indexOfInfoAtCaret? new Color(255, 255, 170) : Color.WHITE);
+                render.setBackground(isSelected? Colors.Color_240_240_255 : index == indexOfInfoAtCaret? Colors.Color_255_255_170 : Colors.Color_white);
                 if (render instanceof JLabel) {
                 	((JLabel) render).setToolTipText(tooltip);
 
@@ -603,17 +603,17 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 								border.paintBorder(c, g, x, y, width, height);
 								if (g instanceof Graphics2D) {
 									Graphics2D g2d = (Graphics2D) g;
-									Color color = new Color(140, 158, 255);
+									Color color = Colors.Color_140_158_255;
 									int ofs = 50;
 									GradientPaint paint = new GradientPaint(
-										x + ind - 20, 0, bg==null ? Color.WHITE : bg,
+										x + ind - 20, 0, bg==null ? Colors.Color_white : bg,
 										x + ind + ofs, 0, color);
 									g2d.setPaint(paint);
 									g2d.fillRect(x + ind - 20, 0, ofs + 20, 1);
 									if (ind + ofs < SEP_LENGTH) {
 										paint = new GradientPaint(
 												x + ind + ofs, 0, color,
-												x + SEP_LENGTH, 0, bg==null ? Color.WHITE : bg);
+												x + SEP_LENGTH, 0, bg==null ? Colors.Color_white : bg);
 										g2d.setPaint(paint);
 										g2d.fillRect(x + ind + ofs, 0, SEP_LENGTH, 1);
 									}
@@ -1130,7 +1130,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             	}
                 if (isJailerTable && !sel) {
                 	if (comp instanceof JLabel) {
-                    	((JLabel) comp).setForeground(Color.gray);
+                    	((JLabel) comp).setForeground(Colors.Color_gray);
                 	}
                 }
                 if (image != null) {
@@ -1165,7 +1165,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 	}
                 }
                 if (UIUtil.plaf.isFlat) {
-					setTextSelectionColor(tree.hasFocus()? Color.white : null);
+					setTextSelectionColor(tree.hasFocus()? Colors.Color_white : null);
 				}
                 
                 return comp;
@@ -1714,9 +1714,9 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
 
-        waitingPanel.setBackground(java.awt.Color.white);
+        waitingPanel.setBackground(Colors.Color_white);
 
-        jLabel5.setForeground(java.awt.Color.red);
+        jLabel5.setForeground(Colors.Color_red);
         jLabel5.setText("creating...");
         waitingPanel.add(jLabel5);
 
@@ -1958,9 +1958,9 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 	}
 
     private String outlineTableRender(OutlineInfo info, boolean selected) {
-    	String KEYWORD_ATTRIBUTES = "color=\"#0000cc\"";
+    	String KEYWORD_ATTRIBUTES = "" + Colors.HTMLColor_0000cc + "";
 		String face = fontName != null? "face=\"" + fontName + "\" " : "";
-        String render = "<font " + face + "color=\"#000000\">";
+        String render = "<font " + face + "" + Colors.HTMLColor_000000 + ">";
 		String KEYWORD_PREFIX = (fontName != null? "<font " + face + "" + face + ">" : "") + "<b>";
 		String KEYWORD_SUFFIX = "</b>" + (fontName != null? "</font>" : "");
 		String scopeDescriptor = "selecT froM duaL".equalsIgnoreCase(info.scopeDescriptor) && info.scopeDescriptor.substring(7).equals("from duaL")? info.scopeDescriptor.substring(0, 6) : info.scopeDescriptor;
@@ -2002,7 +2002,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         	render = indent + render;
         }
         if (info.context != null) {
-        	render += "<font " + face + "color=\"#dd8888\">&nbsp;" + info.context + "</font>";
+        	render += "<font " + face + "" + Colors.HTMLColor_dd8888 + ">&nbsp;" + info.context + "</font>";
         }
         render = "<html>" + render + "<html>";
         return render;
@@ -2193,7 +2193,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 						((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 								RenderingHints.VALUE_ANTIALIAS_OFF );
 					}
-					g.setColor(new Color(255, 255, 255));
+					g.setColor(Colors.Color_255_255_255);
 					g.fillRect(x - 8, y - value.getHeight() + 2, visibleRect.width - x + 9 + ow, value.getHeight() + oh);
 					y -= value.getHeight() - oh;
 					g.translate(x, y);

@@ -20,12 +20,12 @@ import java.awt.Color;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
-import net.sf.jailer.ui.UIUtil.PLAF;
 
 public abstract class LightBorderSmallButton extends SmallButton {
 	
-	private static final Color INVISIBLE = new Color(0, 0, 0, 0);
+	private static final Color INVISIBLE = Colors.Color_0_0_0_0;
 	protected boolean freezed = false;
 	
 	public LightBorderSmallButton(Icon icon) {
@@ -53,7 +53,7 @@ public abstract class LightBorderSmallButton extends SmallButton {
 		if (isEnabled()) {
 			if (!UIUtil.plaf.isFlat) {
 				super.onMouseEntered();
-				getFrame().setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED, Color.LIGHT_GRAY, Color.GRAY));
+				getFrame().setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED, Colors.Color_light_gray, Colors.Color_gray));
 			} else if (!freezed) {
 				entered = true;
 				getFrame().setOpaque(true);

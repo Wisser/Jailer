@@ -15,7 +15,6 @@
  */
 package net.sf.jailer.ui;
 
-import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -119,7 +118,7 @@ public class ConditionEditor extends EscapableDialog {
 		gridBagConstraints.weightx = 1.0;
 		gridBagConstraints.weighty = 0;
 		JLabel where = new JLabel(" " + (altTitel != null? altTitel : "Where"));
-		where.setForeground(new Color(0, 0, 255));
+		where.setForeground(Colors.Color_0_0_255);
 		jPanel1.add(where, gridBagConstraints);
 		
 		gridBagConstraints = new java.awt.GridBagConstraints();
@@ -289,7 +288,7 @@ public class ConditionEditor extends EscapableDialog {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 2);
         jPanel1.add(jPanel3, gridBagConstraints);
 
-        jLabel2.setForeground(new java.awt.Color(128, 128, 128));
+        jLabel2.setForeground(Colors.Color_128_128_128);
         jLabel2.setText(" ctrl-space for code completion");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 10;

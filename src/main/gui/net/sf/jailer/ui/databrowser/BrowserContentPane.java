@@ -178,6 +178,7 @@ import net.sf.jailer.extractionmodel.SubjectLimitDefinition;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.MemorizedResultSet.MemorizedResultSetMetaData;
 import net.sf.jailer.subsetting.ScriptFormat;
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.DataModelManager;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.Environment;
@@ -189,7 +190,6 @@ import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.SessionForUI;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
-import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.DBConditionEditor.RSyntaxTextArea;
 import net.sf.jailer.ui.databrowser.Desktop.FindClosureContext;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
@@ -978,7 +978,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		jToolBar2.setFloatable(false);
 		
 		if (UIUtil.plaf.isFlat) {
-			removeConditionButton.setBackground(new Color(220, 220, 255));
+			removeConditionButton.setBackground(Colors.Color_220_220_255);
 		}
 
 		cancelLoadButton.setIcon(UIUtil.scaleIcon(cancelLoadButton, cancelIcon));
@@ -1252,7 +1252,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		initialRowHeight = rowsTable.getRowHeight();
 
 		rowsTable = new JTable() {
-			private Color color = new Color(0, 0, 200, 60);
+			private Color color = Colors.Color_0_0_200_60;
 
 			@Override
 			public void paint(Graphics graphics) {
@@ -1285,7 +1285,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					Row row = rows.get(mi);
 					if (BrowserContentPane.this.rowsClosure.tempClosure.contains(row)) {
 						int vi = i;
-						g2d.setColor(new Color(255, 0, 0, 50));
+						g2d.setColor(Colors.Color_255_0_0_50);
 						Rectangle r = rowsTable.getCellRect(vi, 0, false);
 						x[0] = (int) visRect.getMinX();
 						y[0] = (int) r.getMinY();
@@ -1293,8 +1293,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						x[1] = (int) visRect.getMinX() + width;
 						y[1] = (int) r.getMaxY();
 						GradientPaint paint = new GradientPaint(
-								x[0], y[0], new Color(255, 0, 0, 60),
-								x[0] + width, y[1], new Color(255, 0, 0, 10));
+								x[0], y[0], Colors.Color_255_0_0_60,
+								x[0] + width, y[1], Colors.Color_255_0_0_10);
 						g2d.setPaint(paint);
 						g2d.fillRect(x[0], y[0], x[1] - x[0], y[1] - y[0]);
 					}
@@ -1399,7 +1399,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 									BasicStroke stroke = new BasicStroke();
 									g2d.setStroke(stroke);
 									g2d.drawRoundRect(x[0], y[0], x[1] - x[0], y[1] - y[0], 8, 8);
-									g2d.setColor(new Color(0, 0, 200, 100));
+									g2d.setColor(Colors.Color_0_0_200_100);
 									g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 11f, 5f }, (float) ((System.currentTimeMillis() / 50.0 * getAnimationFactor()) % 16)));
 									g2d.drawRoundRect(x[0], y[0], x[1] - x[0], y[1] - y[0], 8, 8);
 								}
@@ -1619,13 +1619,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 			final Color BG1 = UIUtil.TABLE_BACKGROUND_COLOR_1;
 			final Color BG2 = UIUtil.TABLE_BACKGROUND_COLOR_2;
-			final Color BG1_EM = new Color(255, 242, 240);
-			final Color BG2_EM = new Color(255, 236, 236);
+			final Color BG1_EM = Colors.Color_255_242_240;
+			final Color BG2_EM = Colors.Color_255_236_236;
 			final Color BG3 =  UIUtil.TABLE_BACKGROUND_COLOR_1_INCLOSURE;
 			final Color BG3_2 = UIUtil.TABLE_BACKGROUND_COLOR_2_INCLOSURE;
 			final Color BG4 = BG3;
 			final Color BG4_2 = BG3_2;
-			final Color BG4_LIGHT = new Color(80, 200, 255, 200);
+			final Color BG4_LIGHT = Colors.Color_80_200_255_200;
 			final Color FG1 = UIUtil.FG_PK;
 			final Color FG2 = UIUtil.FG_FK;
 			final Font font = new JLabel().getFont();
@@ -1730,10 +1730,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					((JLabel) render).setForeground(
 							renderRowAsPK || pkColumns.contains(convertedColumnIndex) || (pkColumnsConsole.contains(convertedColumnIndex) /* && !fkColumnsConsole.contains(convertedColumnIndex) */)? FG1 :
 								fkColumns.contains(convertedColumnIndex) || fkColumnsConsole.contains(convertedColumnIndex) ? FG2 :
-										Color.BLACK);
+										Colors.Color_black);
 					boolean isNull = false;
 					if (((JLabel) render).getText() == UIUtil.NULL || ((JLabel) render).getText() == UNKNOWN) {
-						((JLabel) render).setForeground(Color.gray);
+						((JLabel) render).setForeground(Colors.Color_gray);
 						((JLabel) render).setText(" null  ");
 						((JLabel) render).setFont(italic);
 						isNull = true;
@@ -1934,7 +1934,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 															sql = v == null || isNull? "null" : !isNumber? ("'" + (v.toString().replace("'", "''")) + "'") : v.toString();
 														}
 														String op = isNull? " is " : " = ";
-														String tooltip = "<html>Find rows where: <font color=\"0000ff\">" + colName + "</font>" + op + "<font color=\"005500\">" + sql + "</font></html>";
+														String tooltip = "<html>Find rows where: <font " + Colors.HTMLColor_0000ff + ">" + colName + "</font>" + op + "<font " + Colors.HTMLColor_005500 + ">" + sql + "</font></html>";
 														colName = Quoting.staticUnquote(colName.replaceFirst("^[^\\.]*\\.", ""));
 														int max = 20;
 														if (colName.length() > max + 2) {
@@ -1944,7 +1944,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 														if (sql.length() > max + 2) {
 															sql = sql.substring(0, max) + "...";
 														}
-														JMenuItem item = new JMenuItem("<html>Find by: <font color=\"0000ff\">" + colName + "</font>" + op + "<font color=\"005500\">" + sql + "</font></html>");
+														JMenuItem item = new JMenuItem("<html>Find by: <font " + Colors.HTMLColor_0000ff + ">" + colName + "</font>" + op + "<font " + Colors.HTMLColor_005500 + ">" + sql + "</font></html>");
 														item.setToolTipText(tooltip);
 														item.setIcon(UIUtil.scaleIcon(item, findColumnIcon1));
 														item.addActionListener(e2 -> {
@@ -2921,7 +2921,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 		tableFilter.setSelected(isTableFilterEnabled);
 		if (isLimitExceeded) {
-			tableFilter.setForeground(new Color(220, 20, 20));
+			tableFilter.setForeground(Colors.Color_220_20_20);
 			tableFilter.setIcon(getScaledWarnIcon());
 			tableFilter.setToolTipText("Row limit exceeded. Filtering may be incomplete.");
 		}
@@ -3301,7 +3301,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				});
 				findPath.add(menuItem);
 				JLabel distLabel = new JLabel("\u25B4 " + distances.get(table));
-				distLabel.setForeground(Color.blue);
+				distLabel.setForeground(Colors.Color_blue);
 				distLabel.setToolTipText("Distance to Table \"" + dataModel.getDisplayName(BrowserContentPane.this.table) + "\".");
 				findPath.add(distLabel);
 			});
@@ -3490,7 +3490,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			tableFilter.setAccelerator(KS_FILTER);
 			tableFilter.setSelected(isTableFilterEnabled);
 			if (isLimitExceeded) {
-				tableFilter.setForeground(new Color(220, 20, 20));
+				tableFilter.setForeground(Colors.Color_220_20_20);
 				tableFilter.setIcon(getScaledWarnIcon());
 				tableFilter.setToolTipText("Row limit exceeded. Filtering may be incomplete.");
 			}
@@ -3708,7 +3708,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						if (value instanceof DefaultMutableTreeNode) {
 							if (!(((DefaultMutableTreeNode) value).getUserObject() instanceof String)) {
 								if (result instanceof JLabel) {
-									((JLabel) result).setForeground(Color.red);
+									((JLabel) result).setForeground(Colors.Color_red);
 								}
 							}
 						}
@@ -4350,7 +4350,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								String cs = " " + (count.count < 0? "?" : (count.count > MAX_RC)? (">" + MAX_RC) : count.isExact? count.count : (">" + count.count)) + " ";
 								countLabel.setText(cs);
 								if (count.count == 0) {
-									countLabel.setForeground(Color.lightGray);
+									countLabel.setForeground(Colors.Color_lightgray);
 								}
 								if (!fExcludeFromANEmpty) {
 									allNonEmptyItem.rowsCounted(count.count, itemAction);
@@ -5403,7 +5403,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		
 		if (UIUtil.plaf.isFlat) {
 			JTextField f = ((JTextField) andCondition.getEditor().getEditorComponent());
-			andCondition.setBackground(f.getText().trim().isEmpty()? origCondBG : new Color(255, 255, 205));
+			andCondition.setBackground(f.getText().trim().isEmpty()? origCondBG : Colors.Color_255_255_205);
 		}
 
 		Rectangle tablePosition;
@@ -5658,7 +5658,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 
 			//set the editor as default on every column
-			inplaceEditorTextField.setBorder(new LineBorder(Color.black) {
+			inplaceEditorTextField.setBorder(new LineBorder(Colors.Color_black) {
 				int spWidth = inplaceEditorTextField.getFontMetrics(inplaceEditorTextField.getFont()).stringWidth(" ");
 				public Insets getBorderInsets(Component c, Insets insets) {
 					Insets myInsets = super.getBorderInsets(c, insets);
@@ -5812,7 +5812,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 								int width = (int) (visRect.width * 1.4);
 
-								g2d.setColor(new Color(255, 0, 0, 20));
+								g2d.setColor(Colors.Color_255_0_0_20);
 								int[] x = new int[2];
 								int[] y = new int[2];
 								x[0] = (int) visRect.getMinX();
@@ -5820,8 +5820,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								x[1] = (int) visRect.getMinX() + width;
 								y[1] = (int) visRect.getMaxY();
 								GradientPaint paint = new GradientPaint(
-										x[0], y[0], new Color(255, 0, 0, 20),
-										x[0] + width, y[1], new Color(255, 0, 0, 0));
+										x[0], y[0], Colors.Color_255_0_0_20,
+										x[0] + width, y[1], Colors.Color_255_0_0_0);
 								g2d.setPaint(paint);
 								g2d.fillRect(x[0], y[0], x[1] - x[0], y[1] - y[0]);
 								g2d.setPaint(null);
@@ -6037,10 +6037,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				rowsCount.setText(rowsCount.getText() + " (limited)");
 			}
 			if (cle || !cleRelevant) {
-				rowsCount.setForeground(Color.RED);
+				rowsCount.setForeground(Colors.Color_red);
 				bold = true;
 			} else {
-				rowsCount.setForeground(new Color(140, 0, 0));
+				rowsCount.setForeground(Colors.Color_140_0_0);
 			}
 		} else {
 			rowsCount.setForeground(new JLabel().getForeground());
@@ -6525,7 +6525,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         loadingPanel.setOpaque(false);
         loadingPanel.setLayout(new java.awt.GridBagLayout());
 
-        jPanel1.setBackground(new Color(255,255,255,150));
+        jPanel1.setBackground(Colors.Color_255_255_255_150);
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         cancelLoadButton.setText("Cancel");
@@ -6553,7 +6553,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jPanel13.setLayout(new java.awt.GridBagLayout());
 
         loadingCauseLabel.setFont(loadingCauseLabel.getFont().deriveFont(loadingCauseLabel.getFont().getSize()+3f));
-        loadingCauseLabel.setForeground(new java.awt.Color(141, 16, 16));
+        loadingCauseLabel.setForeground(Colors.Color_141_16_16);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -6563,7 +6563,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jPanel13.add(loadingCauseLabel, gridBagConstraints);
 
         loadingLabel.setFont(loadingLabel.getFont().deriveFont(loadingLabel.getFont().getStyle() | java.awt.Font.BOLD, loadingLabel.getFont().getSize()+3));
-        loadingLabel.setForeground(new java.awt.Color(141, 16, 16));
+        loadingLabel.setForeground(Colors.Color_141_16_16);
         loadingLabel.setText("loading...     ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -6710,8 +6710,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         singleRowViewScrollContentPanel.setLayout(new java.awt.GridBagLayout());
 
-        singleRowViewContainterPanel.setBackground(java.awt.Color.white);
-        singleRowViewContainterPanel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.gray, 1, true));
+        singleRowViewContainterPanel.setBackground(Colors.Color_white);
+        singleRowViewContainterPanel.setBorder(new javax.swing.border.LineBorder(Colors.Color_gray, 1, true));
         singleRowViewContainterPanel.setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -6738,11 +6738,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         singleRowViewScrollPaneContainer.add(singleRowViewScrollPane, gridBagConstraints);
 
-        jPanel11.setBackground(new java.awt.Color(228, 228, 232));
+        jPanel11.setBackground(Colors.Color_228_228_232);
         jPanel11.setLayout(new java.awt.GridBagLayout());
 
-        jLabel7.setBackground(new java.awt.Color(200, 200, 200));
-        jLabel7.setForeground(new java.awt.Color(1, 0, 0));
+        jLabel7.setBackground(Colors.Color_200_200_200);
+        jLabel7.setForeground(Colors.Color_1_0_0);
         jLabel7.setText(" Single Row Details ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -6801,7 +6801,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         jPanel5.setLayout(new java.awt.GridBagLayout());
 
-        errorLabel.setForeground(new java.awt.Color(141, 16, 16));
+        errorLabel.setForeground(Colors.Color_141_16_16);
         errorLabel.setText("Error");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -6843,7 +6843,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jPanel4.setLayout(new java.awt.GridBagLayout());
 
         jLabel8.setFont(jLabel8.getFont().deriveFont(jLabel8.getFont().getStyle() | java.awt.Font.BOLD, jLabel8.getFont().getSize()+3));
-        jLabel8.setForeground(new java.awt.Color(141, 16, 16));
+        jLabel8.setForeground(Colors.Color_141_16_16);
         jLabel8.setText("Cancelled");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -6861,7 +6861,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jPanel8.setLayout(new java.awt.GridBagLayout());
 
         jLabel11.setFont(jLabel11.getFont().deriveFont(jLabel11.getFont().getStyle() | java.awt.Font.BOLD, jLabel11.getFont().getSize()+3));
-        jLabel11.setForeground(new java.awt.Color(141, 16, 16));
+        jLabel11.setForeground(Colors.Color_141_16_16);
         jLabel11.setText("pending...");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -7040,11 +7040,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         rrPanel.setLayout(new java.awt.GridBagLayout());
 
-        relatedRowsPanel.setBackground(new java.awt.Color(224, 240, 255));
+        relatedRowsPanel.setBackground(Colors.Color_224_240_255);
         relatedRowsPanel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         relatedRowsPanel.setLayout(new java.awt.GridBagLayout());
 
-        relatedRowsLabel.setBackground(new java.awt.Color(224, 240, 255));
+        relatedRowsLabel.setBackground(Colors.Color_224_240_255);
         relatedRowsLabel.setText("Related Rows  ");
         relatedRowsLabel.setOpaque(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -7066,11 +7066,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         rrPanel.add(relatedRowsPanel, gridBagConstraints);
 
-        sqlPanel.setBackground(new java.awt.Color(255, 243, 218));
+        sqlPanel.setBackground(Colors.Color_255_243_218);
         sqlPanel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         sqlPanel.setLayout(new java.awt.GridBagLayout());
 
-        sqlLabel1.setForeground(new java.awt.Color(1, 0, 0));
+        sqlLabel1.setForeground(Colors.Color_1_0_0);
         sqlLabel1.setText("Menu  ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(2, 3, 2, 3);
@@ -7702,7 +7702,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			initialBorderSet = true;
 		}
 		if (isEditMode) {
-			jPanel2.setBorder(BorderFactory.createLineBorder(new Color(255, 0, 0), 1, true));
+			jPanel2.setBorder(BorderFactory.createLineBorder(Colors.Color_255_0_0, 1, true));
 		} else {
 			jPanel2.setBorder(initialBorder);
 		}
@@ -8182,7 +8182,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			if (c.name != null) {
 				renderConsumer.put(Quoting.staticUnquote(c.name), 
 						label -> {
-							label.setForeground(Color.blue);
+							label.setForeground(Colors.Color_blue);
 							label.setIcon(emptyIcon);
 						}
 				);
@@ -8193,7 +8193,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				if (c.name != null) {
 					renderConsumer.put(Quoting.staticUnquote(c.name),
 							label -> {
-								label.setForeground(Color.red);
+								label.setForeground(Colors.Color_red);
 								label.setIcon(constraintPKIcon);
 							}
 					);

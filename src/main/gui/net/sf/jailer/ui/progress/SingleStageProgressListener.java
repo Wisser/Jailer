@@ -15,7 +15,6 @@
  */
 package net.sf.jailer.ui.progress;
 
-import java.awt.Color;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -43,6 +42,7 @@ import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ddl.DDLCreator;
 import net.sf.jailer.progress.ProgressListener;
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.ProgressPanel;
 import net.sf.jailer.ui.ProgressTable;
 import net.sf.jailer.ui.UIUtil;
@@ -174,7 +174,7 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 								if (!progressPanel.inCancellingStep || isErrorStage) {
 									progressPanel.stepLabel.setText(currentStep);
 									if (isErrorStage) {
-										progressPanel.setStepLabelForeground(Color.RED);
+										progressPanel.setStepLabelForeground(Colors.Color_red);
 									}
 								}
 								long t = System.currentTimeMillis();
@@ -427,12 +427,12 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 							} catch (Throwable t) {
 								// ignore
 							}
-							String message = Stream.of(("<b><font color=\"ff0000\">Warning:</font></b> The number of rows collected ("
+							String message = Stream.of(("<b><font " + Colors.HTMLColor_ff0000 + ">Warning:</font></b> The number of rows collected ("
 									+ finalCollectedRows + ") differs from that of the exported ones ("
 									+ exportedRows.get() + ").<br> <br>"
 									+ "This may have been caused by an invalid primary key definition.<br>Please note that each primary key must be unique.<br> <br>"
 									+ "It is recommended to check the integrity of the primary keys.<br>"
-									+ "To do this, use the button here below <br>or the menu item \"<b><u><font color=\"ff0000\">Check primary keys</font></u></b>\" in the menu called \"Data Model\"."
+									+ "To do this, use the button here below <br>or the menu item \"<b><u><font " + Colors.HTMLColor_ff0000 + ">Check primary keys</font></u></b>\" in the menu called \"Data Model\"."
 									+ "<br><br>If that doesn't help, try using the \"local database\" working table scope."
 									+ "<br> <br>" + "<small>UPK: " + DDLCreator.uPK + "; " + universalPrimaryKey
 									+ "</small>")).map(l -> "<html>" + l + "<br></html>")

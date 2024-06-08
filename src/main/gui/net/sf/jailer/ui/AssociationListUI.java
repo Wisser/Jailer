@@ -66,7 +66,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 	 */
 	private enum AssociationType {
 		CHILD("1Child", GREEN),
-		ASSOC("2Association", new Color(0, 0, 150)),
+		ASSOC("2Association", Colors.Color_0_0_150),
 		PARENT("3Parent", RED);
 
 		public final String name;
@@ -293,8 +293,8 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 		updateModel();
 	}
 
-	private static final Color GREEN = new Color(0, 130, 0);
-	private static final Color RED = Color.red;
+	private static final Color GREEN = Colors.Color_0_130_0;
+	private static final Color RED = Colors.Color_red;
 
 	private static abstract class ColumnContentGetter {
 		public abstract String getContent(AssociationModel association);
@@ -462,7 +462,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 			for (int x = 0; x <= columnContentGetter.length; ++x) {
 				String text = x == 0? " " : columnContentGetter[x - 1].getDisplayName();
 				JLabel title = new JLabel(text + "  ");
-				title.setBackground(Color.WHITE);
+				title.setBackground(Colors.Color_white);
 				title.setOpaque(true);
 				title.setFont(bold);
 				GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -476,7 +476,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 		int[] y = new int[] { 2 };
 		updateUI(roots, 0, y, new boolean[] { false }, new HashMap<Integer, Integer>(), new Node[5]);
 		JLabel l = new JLabel(" ");
-		l.setBackground(Color.WHITE);
+		l.setBackground(Colors.Color_white);
 		l.setOpaque(true);
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 		gridBagConstraints.gridwidth = 5;
@@ -502,9 +502,9 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 			GridBagConstraints gridBagConstraints;
 			Color bgColor;
 			if (y[0] % 2 == 0) {
-				bgColor = new java.awt.Color(240, 255, 255);
+				bgColor = Colors.Color_240_255_255;
 			} else {
-				bgColor = Color.WHITE;
+				bgColor = Colors.Color_white;
 			}
 			if (!minLevelPerY.containsKey(y[0])) {
 				minLevelPerY.put(y[0], level);
@@ -522,7 +522,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 									lastFgColor.getGreen() + 2 * (255 - lastFgColor.getGreen()) / 3,
 									lastFgColor.getBlue() + 2 * (255 - lastFgColor.getBlue()) / 3);
 						} else {
-							lastFgColor = Color.lightGray;
+							lastFgColor = Colors.Color_lightgray;
 						}
 					}
 					JComponent l = createLabel(node, y[0], shorten(lastText), null, false, false, bgColor, lastFgColor, false, false);
@@ -539,7 +539,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 			if (a.isReversed()) {
 				joinCondition = SqlUtil.reversRestrictionCondition(joinCondition);
 			}
-			JComponent l = createLabel(node, y[0], node.group, level >= 3? joinCondition : null, level < 3, groupStart[0], bgColor, level >= 3? Color.gray : node.fgColor, node.isSelected(), true);
+			JComponent l = createLabel(node, y[0], node.group, level >= 3? joinCondition : null, level < 3, groupStart[0], bgColor, level >= 3? Colors.Color_gray : node.fgColor, node.isSelected(), true);
 			lastRowContent[level] = node;
 			gridBagConstraints = new java.awt.GridBagConstraints();
 			gridBagConstraints.gridx = level + 1;
@@ -598,7 +598,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 		}
 	}
 
-	private final Color BGCOLOR_OF_SELECTED_ROW = Color.CYAN;
+	private final Color BGCOLOR_OF_SELECTED_ROW = Colors.Color_cyan;
 	private Font font = new JLabel("normal").getFont();
 	private Font bold = font.deriveFont(font.getStyle() | Font.BOLD, font.getSize());
 	private Font nonbold = font.deriveFont(font.getStyle() & ~Font.BOLD, font.getSize());
@@ -612,7 +612,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 					if (!(graphics instanceof Graphics2D))
 						return;
 					Graphics2D g2d = (Graphics2D) graphics;
-					Color color = Color.gray;
+					Color color = Colors.Color_gray;
 					g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 					g2d.setColor(color);
 					g2d.setStroke(new BasicStroke());
@@ -622,7 +622,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 			private static final long serialVersionUID = 5285941807747744395L;
 		};
 		if (selected) {
-			bgColor = new Color(220, 225, 255);
+			bgColor = Colors.Color_220_225_255;
 		}
 		panel.setLayout(new GridBagLayout());
 		final JLabel label = new JLabel();

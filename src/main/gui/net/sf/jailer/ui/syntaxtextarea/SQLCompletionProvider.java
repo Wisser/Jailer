@@ -47,6 +47,7 @@ import org.fife.ui.autocomplete.ShorthandCompletion;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.modelbuilder.ModelBuilder;
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.databrowser.metadata.MDSchema;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel.OutlineInfo;
@@ -259,10 +260,10 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         public final Color color;
         public final String tooltip;
         
-        private static final Color COLOR_SCHEMA = new Color(145, 50, 0);
-        private static final Color COLOR_TABLE = new Color(0, 40, 90);
-        private static final Color COLOR_COLUMN = new Color(0, 55, 0);
-        private static final Color COLOR_KEYWORD = Color.BLUE;
+        private static final Color COLOR_SCHEMA = Colors.Color_145_50_0;
+        private static final Color COLOR_TABLE = Colors.Color_0_40_90;
+        private static final Color COLOR_COLUMN = Colors.Color_0_55_0;
+        private static final Color COLOR_KEYWORD = Colors.Color_blue;
 
         public SQLCompletion(CompletionProvider provider, String inputText, String replacementText, String context, Color color, String tooltip) {
             super(provider, inputText, replacementText);
@@ -367,11 +368,11 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                                 cond = SqlUtil.replaceAliases(cond, matcher.group(1), matcher.group(2));
                                 Color color = null;
                                 if (a.isInsertDestinationBeforeSource()) {
-                                    color = new Color(100, 0, 0);
+                                    color = Colors.Color_100_0_0;
                                 } else if (a.isInsertSourceBeforeDestination()) {
-                                    color = new Color(0, 100, 0);
+                                    color = Colors.Color_0_100_0;
                                 } else {
-                                    color = Color.BLUE;
+                                    color = Colors.Color_blue;
                                 }
                                 result.add(new SQLCompletion(SQLCompletionProvider.this, (endsWithOn? " " : "on ") + cond, (endsWithOn? "" : "on ") + cond + " ", a.getName(), color, cond));
                             }
@@ -411,11 +412,11 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                                         cond = SqlUtil.replaceAliases(cond, matcher.group(1), getTableName(dest));
                                         Color color = null;
                                         if (a.isInsertDestinationBeforeSource()) {
-                                            color = new Color(100, 0, 0);
+                                            color = Colors.Color_100_0_0;
                                         } else if (a.isInsertSourceBeforeDestination()) {
-                                            color = new Color(0, 100, 0);
+                                            color = Colors.Color_0_100_0;
                                         } else {
-                                            color = Color.BLUE;
+                                            color = Colors.Color_blue;
                                         }
                                         result.add(new SQLCompletion(SQLCompletionProvider.this, Quoting.staticUnquote(qualifiedName) + " on " + cond, qualifiedName + " on " + cond + " ", a.getName(), color, cond));
                                     }

@@ -104,9 +104,9 @@ public class ProgressPanel extends javax.swing.JPanel {
 		for (String tableName: rowsPerTable.keySet()) {
 			Color bgColor;
 			if (y % 2 == 0) {
-				bgColor = new java.awt.Color(240, 255, 255);
+				bgColor = Colors.Color_240_255_255;
 			} else {
-				bgColor = Color.WHITE;
+				bgColor = Colors.Color_white;
 			}
 			JLabel l = createLabel(y, tableName, bgColor);
 			l.setText(" " + tableName + " ");
@@ -121,9 +121,9 @@ public class ProgressPanel extends javax.swing.JPanel {
 
 			l = new JLabel("" + UIUtil.format(rowsPerTable.get(tableName)) + "  ");
 			if (y % 2 == 0) {
-				l.setBackground(new java.awt.Color(240, 255, 255));
+				l.setBackground(Colors.Color_240_255_255);
 			} else {
-				l.setBackground(Color.WHITE);
+				l.setBackground(Colors.Color_white);
 			}
 			l.setOpaque(true);
 			l.setFont(nonbold);
@@ -139,9 +139,9 @@ public class ProgressPanel extends javax.swing.JPanel {
 			l = new JLabel(" ");
 			reductionLabels.put(tableName, l);
 			if (y % 2 == 0) {
-				l.setBackground(new java.awt.Color(240, 255, 255));
+				l.setBackground(Colors.Color_240_255_255);
 			} else {
-				l.setBackground(Color.WHITE);
+				l.setBackground(Colors.Color_white);
 			}
 			l.setOpaque(true);
 			l.setFont(nonbold);
@@ -168,7 +168,7 @@ public class ProgressPanel extends javax.swing.JPanel {
 	}
 
 	private int currentlySelectedRow = -1;
-	private final Color BGCOLOR_OF_SELECTED_ROW = Color.CYAN;
+	private final Color BGCOLOR_OF_SELECTED_ROW = Colors.Color_cyan;
 	private List<MouseListener> allMouseListener = new ArrayList<MouseListener>();
 
 	private JLabel createLabel(final int y, final String tableName, Color bgColor) {
@@ -336,7 +336,7 @@ public class ProgressPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         jPanel2.add(jScrollPane1, gridBagConstraints);
 
-        jLabel1.setForeground(new java.awt.Color(230, 230, 230));
+        jLabel1.setForeground(Colors.Color_230_230_230);
         jLabel1.setText("                                                     ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -486,7 +486,7 @@ public class ProgressPanel extends javax.swing.JPanel {
 	public void onCancel() {
 		inCancellingStep = true;
 		stepLabel.setText("cancelling...");
-		setStepLabelForeground(Color.RED);
+		setStepLabelForeground(Colors.Color_red);
     }
 
 	public boolean inCancellingStep = false;
@@ -557,7 +557,7 @@ public class ProgressPanel extends javax.swing.JPanel {
 						stepLabel.setForeground(stepLabelColor);
 					}
 				} else {
-					stepLabel.setForeground(Color.red);
+					stepLabel.setForeground(Colors.Color_red);
 					isOn = true;
 					startTimer();
 				}

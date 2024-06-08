@@ -15,7 +15,6 @@
  */
 package net.sf.jailer.ui.databrowser;
 
-import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.Point;
 import java.io.File;
@@ -35,6 +34,7 @@ import org.fife.ui.rtextarea.RTextScrollPane;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
@@ -367,13 +367,13 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 			false, false, true, true, null, null, true, executionContext)) {
 				statusLabel.setText("Executed " + SqlScriptExecutor.getLastStatementCount().a + " statements. " +
 						SqlScriptExecutor.getLastStatementCount().b + " rows affected");
-				statusLabel.setForeground(new Color(0, 100, 0));
+				statusLabel.setForeground(Colors.Color_0_100_0);
 				afterExecution.run();
 				// JOptionPane.showMessageDialog(this, "Successfully executed " + SqlScriptExecutor.getLastStatementCount().a + " statements.\n" + SqlScriptExecutor.getLastStatementCount().b + " rows affected.", "SQL/DML", JOptionPane.INFORMATION_MESSAGE);
 
 			} else {
 				statusLabel.setText("Error, rolled back");
-				statusLabel.setForeground(new Color(115, 0, 0));
+				statusLabel.setForeground(Colors.Color_115_0_0);
 			}
 			new File(sqlFile).delete();
 		}

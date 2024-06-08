@@ -64,6 +64,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.ExtendetCopyPanel;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
@@ -309,8 +310,8 @@ public class ColumnsTable extends JTable {
 		});
 
 		setDefaultRenderer(Object.class, new TableCellRenderer() {
-			final Color BGCOLUMNS = new Color(255, 255, 230);
-			final Color BGSELECTED  = new Color(255, 230, 220);
+			final Color BGCOLUMNS = Colors.Color_255_255_230;
+			final Color BGSELECTED  = Colors.Color_255_230_220;
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
 					boolean hasFocus, int row, int column) {
@@ -336,7 +337,7 @@ public class ColumnsTable extends JTable {
 						String tabName = useTableName && (table == ColumnsTable.this || "columnNames".equals(table.getName()))? tableName.get(row) : null;
 						if (tabName != null) {
 							JLabel tab = new JLabel("<html>&nbsp;" + tabName + "&nbsp;</html>");
-							tab.setForeground(new Color(0, 0, 180));
+							tab.setForeground(Colors.Color_0_0_180);
 							tab.setBackground(render.getBackground());
 							tab.setOpaque(render.isOpaque());
 							JPanel panel = new JPanel(new GridBagLayout());
@@ -384,13 +385,13 @@ public class ColumnsTable extends JTable {
 					}
 				}
 				if (currentRow == row) {
-					render.setBackground(new Color(122, 210, 255, 200));
+					render.setBackground(Colors.Color_122_210_255_200);
 				}
 				return render;
 			}
 			private Color blend(Color color1) {
 				int alpha = 14;
-				Color color2 = new Color(255, 0, 0);
+				Color color2 = Colors.Color_255_0_0;
 				float factor = alpha / 255f;
 				int red = (int) (color1.getRed() * (1 - factor) + color2.getRed() * factor);
 				int green = (int) (color1.getGreen() * (1 - factor) + color2.getGreen() * factor);
@@ -643,7 +644,7 @@ public class ColumnsTable extends JTable {
 						BasicStroke stroke = new BasicStroke();
 						g2d.setStroke(stroke);
 						g2d.drawRoundRect(x[0], y[0], x[1] - x[0], y[1] - y[0] - 1, 8, 8);
-						g2d.setColor(new Color(0, 0, 200, 100));
+						g2d.setColor(Colors.Color_0_0_200_100);
 						g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(),
 								stroke.getMiterLimit(), new float[] { 11f, 5f },
 								(float) ((System.currentTimeMillis() / 50.0 * 1.1) % 16)));

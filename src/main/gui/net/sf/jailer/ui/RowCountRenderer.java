@@ -26,8 +26,6 @@ import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 
-import net.sf.jailer.ui.UIUtil.PLAF;
-
 /**
  * Renders row counts.
  *
@@ -35,7 +33,7 @@ import net.sf.jailer.ui.UIUtil.PLAF;
  */
 public class RowCountRenderer extends JComponent {
 	
-	private static final Color FG_COLOR = new Color(0, 80, 200);
+	private static final Color FG_COLOR = Colors.Color_0_80_200;
 	
 	private static JLabel lk;
 	private static JLabel lm;
@@ -71,8 +69,8 @@ public class RowCountRenderer extends JComponent {
 			w = Math.max(Math.max(lk.getPreferredSize().width, lm.getPreferredSize().width), lg.getPreferredSize().width);
 			
 			lk.setForeground(FG_COLOR);
-			lm.setForeground(new Color(96, 64, 0));
-			lg.setForeground(new Color(150, 0, 100));
+			lm.setForeground(Colors.Color_96_64_0);
+			lg.setForeground(Colors.Color_150_0_100);
 			
 			lk.setFont(font);
 			lm.setFont(font);

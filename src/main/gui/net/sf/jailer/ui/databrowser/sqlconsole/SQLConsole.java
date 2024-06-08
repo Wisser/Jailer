@@ -148,6 +148,7 @@ import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.MemorizedResultSet;
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionType;
 import net.sf.jailer.ui.Environment;
@@ -157,7 +158,6 @@ import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.SessionForUI;
 import net.sf.jailer.ui.StringSearchPanel.StringSearchDialog;
 import net.sf.jailer.ui.UIUtil;
-import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.associationproposer.AssociationProposerView;
 import net.sf.jailer.ui.databrowser.BrowserContentCellEditor;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
@@ -463,7 +463,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         if (jScrollPane.getGutter() != null) {
         	jScrollPane.getGutter().setIconRowHeaderInheritsGutterBackground(true);
         	try {
-        		jScrollPane.getGutter().setCurrentLineNumberColor(Color.black);
+        		jScrollPane.getGutter().setCurrentLineNumberColor(Colors.Color_black);
         	} catch (Throwable t) {
         		LogUtil.warn(t);
         	}
@@ -1315,7 +1315,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						}
 	            		String type = column.toSQL("").substring(column.name.length()).trim();
 	            		if (tabPerIndex.isEmpty()) {
-	                		columnLabels[i] = "<html><nobr><b>" + columnLabel + "</b><br><font color=\"#808080\">" + type + "</font></html>";
+	                		columnLabels[i] = "<html><nobr><b>" + columnLabel + "</b><br><font " + Colors.HTMLColor_808080 + ">" + type + "</font></html>";
 	                	} else {
 	                		if (table != null) {
 	                			Integer ord = tableOrd.get(table);
@@ -1336,7 +1336,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                		} else {
 	                			columnLabel = UIUtil.toHTMLFragment(columnLabel, 128).replaceFirst("<br>$", "");
 	                		}
-	                		columnLabels[i] = "<html><nobr><font color=\"#0066ff\">" + titel + "</font><br><b>" + columnLabel + "</b><br><font color=\"#808080\">" + type + "</font></html>";
+	                		columnLabels[i] = "<html><nobr><font " + Colors.HTMLColor_0066ff + ">" + titel + "</font><br><b>" + columnLabel + "</b><br><font " + Colors.HTMLColor_808080 + ">" + type + "</font></html>";
 	                	}
 	                }
 	                if (step == 0) {
@@ -2297,11 +2297,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         Throwable error;
         String statement;
         Pair<Integer, Integer> location;
-        Color failedColor = new Color(255, 210, 210);
-        Color okColor = new Color(220, 255, 220);
-        Color pendingColor = new Color(235, 235, 255);
-        Color runningColor = new Color(255, 249, 200);
-        Color runningStatusLabelColor = new Color(0, 100, 0);
+        Color failedColor = Colors.Color_255_210_210;
+        Color okColor = Colors.Color_220_255_220;
+        Color pendingColor = Colors.Color_235_235_255;
+        Color runningColor = Colors.Color_255_249_200;
+        Color runningStatusLabelColor = Colors.Color_0_100_0;
 
         private synchronized void updateView(boolean force) {
             if (force || !updatingStatus.get()) {
@@ -2321,12 +2321,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                                 cancelButton.setEnabled(!isFailed && running);
                                 if (!isFailed) {
                                     statusLabel.setVisible(true);
-                                    statusLabel.setForeground(running? runningStatusLabelColor : Color.BLACK);
+                                    statusLabel.setForeground(running? runningStatusLabelColor : Colors.Color_black);
                                     statusLabel.setText(getText());
                                 } else {
                                 	statusLabel.setVisible(true);
                                     if (theError instanceof CancellationException) {
-                                        statusLabel.setForeground(Color.RED);
+                                        statusLabel.setForeground(Colors.Color_red);
                                         statusLabel.setText("Cancelled");
                                         removeLastErrorTab();
                                     } else if (theError instanceof SQLException) {
@@ -2355,7 +2355,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                                 }
                                 if (successState != null && (successState.mode == Mode.RETRY || numStatements > 0)) {
                                 	statusLabel.setVisible(true);
-                                    statusLabel.setForeground(running? runningStatusLabelColor : Color.BLACK);
+                                    statusLabel.setForeground(running? runningStatusLabelColor : Colors.Color_black);
                                     statusLabel.setText(getText());
                                 }
                             }
@@ -2460,7 +2460,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
 		private String getText() {
 			if (rolledback) {
-				return "<html><font color=\"dd0000\">" + (cancelled? "Cancelled" : (successState.failed.size() + " Error")) + ". Transaction rolled back.</font><html>";
+				return "<html><font " + Colors.HTMLColor_dd0000 + ">" + (cancelled? "Cancelled" : (successState.failed.size() + " Error")) + ". Transaction rolled back.</font><html>";
 			}
 			String text = "<html>";
             if (running) {
@@ -2475,7 +2475,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                boolean f = !successState.failed.isEmpty();
 	                int left = successState.numStatements - successState.succeeded.size() - successState.failed.size();
 	                if (left == 0 && numStatements == 1 && successState.failed.size() == 1) {
-	                	return "<html><font color=\"dd0000\">Error!</font></html>";
+	                	return "<html><font " + Colors.HTMLColor_dd0000 + ">Error!</font></html>";
 	                } else {
 	                	int sfull = numStatements;
 	                	if (!f && running) {
@@ -2483,10 +2483,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                	}
 		                text += sfull + " " + (!f? "successful. " : ("statement" + (sfull > 1? "s. " : ". ")));
 		                if (left > 0) {
-		                	text += "<font color=\"0000dd\">" + left + " remaining. </font>";
+		                	text += "<font " + Colors.HTMLColor_0000dd + ">" + left + " remaining. </font>";
 		                }
 						if (f || cancelled) {
-		                	text += "<font color=\"dd0000\">" + (cancelled? "Cancelled" : (successState.failed.size() + " failed")) + ". </font>";
+		                	text += "<font " + Colors.HTMLColor_dd0000 + ">" + (cancelled? "Cancelled" : (successState.failed.size() + " failed")) + ". </font>";
 		                }
 	                }
 	            }
@@ -2507,7 +2507,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
     private void showError(String errorMessage, String statement, int errorPosition) {
     	statusLabel.setVisible(true);
-    	statusLabel.setForeground(Color.RED);
+    	statusLabel.setForeground(Colors.Color_red);
     	statusLabel.setText("Error");
 
     	removeLastErrorTab();
@@ -2573,7 +2573,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			if ("statementLabel".equals(c.getName())) {
 				JLabel label = (JLabel) c;
 				String statement = label.getText();
-				Function<String, String> prefix = dbName -> "<html><nobr><font color=\"#ff0000\">loaded from " + UIUtil.toHTMLFragment(dbName, 0) + ": </font>";
+				Function<String, String> prefix = dbName -> "<html><nobr><font " + Colors.HTMLColor_ff0000 + ">loaded from " + UIUtil.toHTMLFragment(dbName, 0) + ": </font>";
 				if (!statement.startsWith("<html>")) {
 					label.setIcon(UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/wanr.png")));
 					label.setText(prefix.apply(prevDatabaseName) + UIUtil.toHTMLFragment(statement, 0) + "</html>");
@@ -2749,7 +2749,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
         jPanel6.setLayout(new java.awt.GridBagLayout());
 
-        statusLabel.setForeground(java.awt.Color.gray);
+        statusLabel.setForeground(Colors.Color_gray);
         statusLabel.setText(" ctrl-space for code completion");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -2758,7 +2758,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 8, 2, 0);
         jPanel6.add(statusLabel, gridBagConstraints);
 
-        dummyLabel.setForeground(java.awt.Color.gray);
+        dummyLabel.setForeground(Colors.Color_gray);
         dummyLabel.setText(" ");
         dummyLabel.setToolTipText("");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -2837,7 +2837,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         statusLabel.setText("Canceling...");
-        statusLabel.setForeground(Color.RED);
+        statusLabel.setForeground(Colors.Color_red);
     	CancellationHandler.cancel(this);
     	cancelButton.setEnabled(false);
     }//GEN-LAST:event_cancelButtonActionPerformed
@@ -4177,7 +4177,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		final double DELTA = 0.025;
 		int delay = 25;
 		Color c0 = editorPane.getBackground();
-		Color c1 = new Color(200, 255, 180);
+		Color c1 = Colors.Color_200_255_180;
 		if (c0 != null) {
 			Timer[] timer = new Timer[1];
 			timer[0] = new Timer(delay, new ActionListener() {

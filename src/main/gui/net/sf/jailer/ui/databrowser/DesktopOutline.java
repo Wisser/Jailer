@@ -46,8 +46,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
-import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 
 /**
@@ -255,7 +255,7 @@ public class DesktopOutline extends JPanel {
 			double y = -border;
 			double width = deskWidth + 2 * border;
 			double height = deskHeight + 2 * border;
-			Color backgroundColor = new Color(232, 232, 255);
+			Color backgroundColor = Colors.Color_232_232_255;
 			g2d.setColor(backgroundColor);
 			int gx = (int) (offX + scale * x + 0.5);
 			int gy = (int)(offY + scale * y + 0.5);
@@ -272,15 +272,15 @@ public class DesktopOutline extends JPanel {
 			int sw = (int)(scale * (double) (rectangle.width) + 0.5);
 			int sh = (int)(scale * (double) rectangle.height + 0.5);
 			visibleRectInOutline = new Rectangle(sx, sy, sw, sh);
-			Color inDesktopColor = new Color(242, 242, 255);
+			Color inDesktopColor = Colors.Color_242_242_255;
 			g2d.setColor(inDesktopColor);
 			paint = new GradientPaint(
-						0, 0, new Color(255, 255, 255),
+						0, 0, Colors.Color_255_255_255,
 						gw, gh, inDesktopColor);
 			g2d.setPaint(paint);
 			g2d.setStroke(stroke);
 			g2d.fillRoundRect(sx, sy, sw, sh, 8, 8);
-			g2d.setColor(UIUtil.plaf.isFlat? UIUtil.FLAT_BORDER_COLOR : Color.LIGHT_GRAY);
+			g2d.setColor(UIUtil.plaf.isFlat? UIUtil.FLAT_BORDER_COLOR : Colors.Color_light_gray);
 			g2d.drawRoundRect(gx, gy, gw + 1, gh, 2, 2);
 			
 			g2d.setStroke(new BasicStroke(1));
@@ -294,9 +294,9 @@ public class DesktopOutline extends JPanel {
 					}
 					if (parentBrowser != null && !parentBrowser.isHidden()) {
 						if (browser.association == null) {
-							g2d.setColor(Color.GRAY);
+							g2d.setColor(Colors.Color_gray);
 						} else if (hiddenParent) {
-							g2d.setColor(Color.yellow.darker());
+							g2d.setColor(Colors.Color_yellow.darker());
 						} else {
 							g2d.setColor(desktop.getAssociationColor1(browser.association));
 						}
@@ -309,9 +309,9 @@ public class DesktopOutline extends JPanel {
 			for (RowBrowser browser: getBrowsers()) {
 				if (!browser.isHidden()) {
 					rectangle = subBorder(browser.internalFrame.getBounds());
-					Color backgroundColor1 = new Color(160, 200, 255);
+					Color backgroundColor1 = Colors.Color_160_200_255;
 					if (onPath.contains(browser)) {
-						backgroundColor1 = new Color(180, 255, 220);
+						backgroundColor1 = Colors.Color_180_255_220;
 					}
 					sx = (int)(offX + scale * (double) rectangle.x + 0.5);
 					sy = (int)(offY + scale * (double) rectangle.y + 0.5);
@@ -325,7 +325,7 @@ public class DesktopOutline extends JPanel {
 						g2d.setPaint(paint);
 						g2d.fillRoundRect(sx, sy, sw, sh, 8, 8);
 					}
-					g2d.setColor(Color.black);
+					g2d.setColor(Colors.Color_black);
 					Shape clip = g2d.getClip();
 					g2d.clipRect(sx, sy, sw, sh);
 					String title = browser.getTitleWONumber();
@@ -378,7 +378,7 @@ public class DesktopOutline extends JPanel {
 							nx += stringBounds.getWidth();
 						}
 						if (browser.getTitleNumber() != null) {
-							g2d.setColor(new Color(0, 96, 0));
+							g2d.setColor(Colors.Color_0_96_0);
 							g2d.drawString(" /" + browser.getTitleNumber(), nx, ny);
 						}
 					}
@@ -386,9 +386,9 @@ public class DesktopOutline extends JPanel {
 					if (onPath.contains(browser)) {
 						rectangle = subBorder(browser.internalFrame.getBounds());
 						if (browser.internalFrame.isSelected()) {
-							paintRect(g2d, rectangle.x, rectangle.y, rectangle.width, rectangle.height, new Color(0, 100, 255), null, new BasicStroke(2));
+							paintRect(g2d, rectangle.x, rectangle.y, rectangle.width, rectangle.height, Colors.Color_0_100_255, null, new BasicStroke(2));
 						} else {
-							paintRect(g2d, rectangle.x, rectangle.y, rectangle.width, rectangle.height, new Color(0, 100, 255).brighter(), null, new BasicStroke(1));
+							paintRect(g2d, rectangle.x, rectangle.y, rectangle.width, rectangle.height, Colors.Color_0_100_255.brighter(), null, new BasicStroke(1));
 						}
 					}
 				}
@@ -399,7 +399,7 @@ public class DesktopOutline extends JPanel {
 			sw = (int)(scale * (double) (rectangle.width) + 0.5);
 			sh = (int)(scale * (double) rectangle.height + 0.5);
 			visibleRectInOutline = new Rectangle(sx, sy, sw, sh);
-			g2d.setColor(new Color(0, 0, 200));
+			g2d.setColor(Colors.Color_0_0_200);
 			g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 11f, 5f }, (float) ((System.currentTimeMillis() / 50.0 * desktop.getAnimationFactor()) % 16)));
 			g2d.drawRoundRect(sx, sy, sw, sh, 8, 8);
 		}

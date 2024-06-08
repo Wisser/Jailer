@@ -283,7 +283,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 									.setBackground((row % 2 == 0) ? BG1
 											: BG2);
 							} else {
-								((JLabel) render).setBackground(new Color(160, 200, 255));
+								((JLabel) render).setBackground(Colors.Color_160_200_255);
 							}
 						}
 						render.setFont(column == 0? bold : normal);
@@ -490,8 +490,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		subsetterPanel.add(dmmdSubsetter.mainContentPanel);
 		dataBrowserPanel.add(dmmdBrowser.mainContentPanel);
 
-		final Color bgBrowser = new Color(248, 252, 255);
-		final Color bgSubsetter = new Color(255, 255, 238);
+		final Color bgBrowser = Colors.Color_248_252_255;
+		final Color bgSubsetter = Colors.Color_255_255_238;
 		
 		moduleDataBrowserPanel.setBackground(bgBrowser);
 		moduleSubsetterPanel.setBackground(bgSubsetter);
@@ -576,7 +576,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 //				if (selectedModule.get() != 2) {
 //					return super.getSelectedBackgroundColor();
 //				} else {
-//					return new Color(245, 245, 245);
+//					return Colors.Color_245_245_245;
 //				}
 			}
 			@Override
@@ -606,7 +606,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 //				if (selectedModule.get() != 1) {
 //					return super.getSelectedBackgroundColor();
 //				} else {
-//					return new Color(245, 245, 245);
+//					return Colors.Color_245_245_245;
 //				}
 			}
 			@Override
@@ -951,31 +951,31 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				while (bgc.length() < 6) {
 					bgc = "0" + bgc;
 				}
-				bgc = "<font bgcolor=\"#" + bgc + "\" color=\"#000000\">" + connectionInfo.getConnectionType().displayName + "</font>";
+				bgc = "<font bgcolor=\"#" + bgc + "\" " + Colors.HTMLColor_000000 + ">" + connectionInfo.getConnectionType().displayName + "</font>";
 			}
 			
 			String v;
 			model.add(v = "<html><nobr>" + 
 					UIUtil.toHTMLFragment(UIUtil.toDateAsString(lastSession.date.getTime()), 0) + "&nbsp;-&nbsp;" +
 					(module.equals("S")?
-					"<font color=\"#0000ff\"><b>" +
-					(lastSession.bookmark != null? UIUtil.toHTMLFragment(new File(lastSession.bookmark).getName(), 0) : "</b><i><font color=\"#888888\">New&nbsp;Model</font></i><b>") + "</b>" + 
+					"<font " + Colors.HTMLColor_0000ff + "><b>" +
+					(lastSession.bookmark != null? UIUtil.toHTMLFragment(new File(lastSession.bookmark).getName(), 0) : "</b><i><font " + Colors.HTMLColor_888888 + ">New&nbsp;Model</font></i><b>") + "</b>" + 
 					"&nbsp;-&nbsp;</font>" : 
 					"") +
 					(module.equals("S")?
-					("<font color=\"#006600\">" +
+					("<font " + Colors.HTMLColor_006600 + ">" +
 					UIUtil.toHTMLFragment(((details != null? details.a : lastSession.datamodelFolder)), 0) + 
-					"</font>&nbsp;-&nbsp;<font color=\"#663300\">" +
-					(connectionInfo == null? "<i><font color=\"#888888\">offline</font></i>" : UIUtil.toHTMLFragment(connectionInfo.alias, 0) + "&nbsp;-&nbsp;<font color=\"#000000\">" + UIUtil.toHTMLFragment(((userName + " - ")), 0, false) + UIUtil.toHTML(connectionInfo.url, 0) + "</font>") + 
+					"</font>&nbsp;-&nbsp;<font " + Colors.HTMLColor_663300 + ">" +
+					(connectionInfo == null? "<i><font " + Colors.HTMLColor_888888 + ">offline</font></i>" : UIUtil.toHTMLFragment(connectionInfo.alias, 0) + "&nbsp;-&nbsp;<font " + Colors.HTMLColor_000000 + ">" + UIUtil.toHTMLFragment(((userName + " - ")), 0, false) + UIUtil.toHTML(connectionInfo.url, 0) + "</font>") + 
 					"</font></nobr></html>")
 					:
 					(
-					"<font color=\"#006600\">" +
-					(connectionInfo == null? "<i><font color=\"#888888\">offline</font></i>" : ("<b>" + UIUtil.toHTML(connectionInfo.alias, 0) + "</b>") + "&nbsp;-&nbsp;<font color=\"#000000\">" + 
-					"<font color=\"#0000ff\">" +
+					"<font " + Colors.HTMLColor_006600 + ">" +
+					(connectionInfo == null? "<i><font " + Colors.HTMLColor_888888 + ">offline</font></i>" : ("<b>" + UIUtil.toHTML(connectionInfo.alias, 0) + "</b>") + "&nbsp;-&nbsp;<font " + Colors.HTMLColor_000000 + ">" + 
+					"<font " + Colors.HTMLColor_0000ff + ">" +
 					(lastSession.getContentInfo() != null? UIUtil.toHTMLFragment(lastSession.getContentInfo().replaceFirst("^\\d+ Table$", "$0s"), 0) + "&nbsp;-&nbsp;" : "") + 
 					"</font>" +
-					"<font color=\"#663300\">" +
+					"<font " + Colors.HTMLColor_663300 + ">" +
 					UIUtil.toHTMLFragment(((details != null? details.a : lastSession.datamodelFolder)), 0) + 
 					"</font>&nbsp;-&nbsp;" + UIUtil.toHTMLFragment(userName + " - " + connectionInfo.url, 0, false) + "</font>") + 
 					"</font>")					
@@ -1112,7 +1112,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 					JLabel label = new JLabel("");
 					panel.add(label, gbc);
 					
-					panel.setBackground(isSelected? UIUtil.plaf == PLAF.NIMBUS? new Color(240, 255, 255) : new Color(200, 200, 255) : null);
+					panel.setBackground(isSelected? UIUtil.plaf == PLAF.NIMBUS? Colors.Color_240_255_255 : Colors.Color_200_200_255 : null);
 					panel.setToolTipText(tooltip);
 					return panel;
 				}
@@ -1241,7 +1241,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 								.setBackground((row % 2 == 0) ? BG1
 										: BG2);
 						} else {
-							((JLabel) render).setBackground(new Color(160, 200, 255));
+							((JLabel) render).setBackground(Colors.Color_160_200_255);
 						}
 						((JLabel) render).setToolTipText(((JLabel) render).getText());
 					}
@@ -1374,7 +1374,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 									.setBackground((row % 2 == 0) ? BG1
 											: BG2);
 							} else {
-								((JLabel) render).setBackground(new Color(160, 200, 255));
+								((JLabel) render).setBackground(Colors.Color_160_200_255);
 							}
 						}
 						render.setFont(column == 0? bold : normal);
@@ -2522,7 +2522,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.weighty = 1.0;
         mainContentPanel.add(jTabbedPane1, gridBagConstraints);
 
-        jPanel11.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel11.setBackground(Colors.Color_255_255_255);
         jPanel11.setLayout(new java.awt.GridBagLayout());
 
         histLabel.setFont(histLabel.getFont().deriveFont(histLabel.getFont().getStyle() | java.awt.Font.BOLD, histLabel.getFont().getSize()+4));
@@ -2536,7 +2536,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
         jPanel12.setLayout(new java.awt.GridBagLayout());
 
-        jPanel10.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel10.setBackground(Colors.Color_255_255_255);
         jPanel10.setLayout(new java.awt.GridBagLayout());
 
         restoreButton.setText("Restore");
@@ -2570,7 +2570,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         jPanel11.add(jPanel12, gridBagConstraints);
 
-        jPanel21.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
+        jPanel21.setBorder(javax.swing.BorderFactory.createLineBorder(Colors.Color_204_204_204));
         jPanel21.setLayout(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -2627,7 +2627,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         jPanel8.setOpaque(false);
         jPanel8.setLayout(new java.awt.GridBagLayout());
 
-        disabledPanel.setBackground(new Color(255,255,255,150));
+        disabledPanel.setBackground(Colors.Color_255_255_255_150);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -3127,7 +3127,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
 		public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
 			Graphics2D g2d = (Graphics2D) g;
-			g2d.setPaint(new GradientPaint(x, y, color != null? color : Color.BLUE, x + width, y, color != null? color : Color.GREEN.darker()));
+			g2d.setPaint(new GradientPaint(x, y, color != null? color : Colors.Color_blue, x + width, y, color != null? color : Colors.Color_green.darker()));
 
 			Area border = new Area(new Rectangle(x, y, width, height));
 			border.subtract(new Area(new Rectangle(x + margin.left, y + margin.top, width - margin.left - margin.right,

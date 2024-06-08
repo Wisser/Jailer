@@ -203,17 +203,17 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
 					render.setBackground((row % 2 == 0) ? BG1 : BG2);
 				}
 				if (render instanceof JLabel) {
-					((JLabel) render).setForeground(Color.black);
+					((JLabel) render).setForeground(Colors.Color_black);
 					if (column == 2) {
 						if (TYPE_FK.equals(value)) {
 							((JLabel) render).setToolTipText("Foreign Key");
-							((JLabel) render).setForeground(Color.blue);
+							((JLabel) render).setForeground(Colors.Color_blue);
 						} else if (TYPE_PK.equals(value)) {
 							((JLabel) render).setToolTipText("Primary Key");
-							((JLabel) render).setForeground(Color.red);
+							((JLabel) render).setForeground(Colors.Color_red);
 						} else if (TYPE_FK_PK.equals(value)) {
 							((JLabel) render).setToolTipText("Primary Key + Foreign Key");
-							((JLabel) render).setForeground(Color.red);
+							((JLabel) render).setForeground(Colors.Color_red);
 						} else {
 							((JLabel) render).setToolTipText(null);
 						}
@@ -227,9 +227,9 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
 					}
 					if (column == 0) {
 						if (pks.contains(value)) {
-							((JLabel) render).setForeground(Color.red);
+							((JLabel) render).setForeground(Colors.Color_red);
 						} else if (fks.contains(value)) {
-							((JLabel) render).setForeground(Color.blue);
+							((JLabel) render).setForeground(Colors.Color_blue);
 						}
 					}
 				}

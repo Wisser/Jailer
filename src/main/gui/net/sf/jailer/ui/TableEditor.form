@@ -399,8 +399,8 @@
                 <Font component="warnPKChangedLabel" property="font" relativeSize="true" size="1"/>
               </FontInfo>
             </Property>
-            <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-              <Color blue="0" green="0" red="cd" type="rgb"/>
+            <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="Colors.Color_0_0_205" type="code"/>
             </Property>
             <Property name="text" type="java.lang.String" value="&lt;html&gt;Primary key has been changed.&lt;br&gt;Keep in mind that the primary key must be unique.&lt;br&gt;It is recommended to check the integrity of the primary key.&lt;br&gt;To do that, please select the option &quot;check primary keys&quot; in the export dialog or use the button below. &lt;/html&gt;"/>
           </Properties>
@@ -417,8 +417,8 @@
                 <Font component="warnNullablePKLabel" property="font" relativeSize="true" size="1"/>
               </FontInfo>
             </Property>
-            <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-              <Color blue="0" green="0" red="cd" type="rgb"/>
+            <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="Colors.Color_0_0_205" type="code"/>
             </Property>
             <Property name="text" type="java.lang.String" value="&lt;html&gt;Nullable primary key columns can have a negative impact on performance.&lt;/html&gt;"/>
           </Properties>

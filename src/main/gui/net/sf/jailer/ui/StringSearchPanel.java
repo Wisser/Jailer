@@ -673,15 +673,15 @@ public class StringSearchPanel extends javax.swing.JPanel {
 			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
 					boolean cellHasFocus) {
 				if (value.equals(showAllLabel)) {
-					return super.getListCellRendererComponent(list, "<html><font color=\"#ff0000\">" + value + "</font>", index, isSelected, cellHasFocus);
+					return super.getListCellRendererComponent(list, "<html><font " + Colors.HTMLColor_ff0000 + ">" + value + "</font>", index, isSelected, cellHasFocus);
 				}
-				Color bgColor = Color.WHITE;
-				Color fgColor = new Color(0, 0, 0);
-				String hlColor = "color=\"#050aff\"";
+				Color bgColor = Colors.Color_white;
+				Color fgColor = Colors.Color_0_0_0;
+				String hlColor = "" + Colors.HTMLColor_050aff + "";
 				if (isSelected) {
-					bgColor = new Color(0, 0, 145);
-					fgColor = Color.WHITE;
-					hlColor = "color=\"#ff9999\"";
+					bgColor = Colors.Color_0_0_145;
+					fgColor = Colors.Color_white;
+					hlColor = "" + Colors.HTMLColor_ff9999 + "";
 				}
 				String item = value.toString();
 				item = UIUtil.indicateLeadingAndTrailingSpaces(item, !indicateLeadingAndTrailingSpaces);
@@ -777,8 +777,8 @@ public class StringSearchPanel extends javax.swing.JPanel {
 				     		}
 
 							if (countRender != null) {
-								Color fg = new Color(0, 80, 200);
-								countRender.setForeground(lightCounters? new Color(160, 130, 100) : fg);
+								Color fg = Colors.Color_0_80_200;
+								countRender.setForeground(lightCounters? Colors.Color_160_130_100 : fg);
 								panel.add(countRender, gbc);
 							}
 						}
@@ -992,7 +992,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 							UIUtil.invokeLater(new Runnable() {
 								@Override
 								public void run() {
-									checkBox.setForeground(waitingState? Color.red : null);
+									checkBox.setForeground(waitingState? Colors.Color_red : null);
 									stateChangeMode.set(true);
 									checkboxPerSchema.get(schema).setSelected(selected);
 									stateChangeMode.set(false);
@@ -1055,9 +1055,9 @@ public class StringSearchPanel extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         searchList = new javax.swing.JList<>();
 
-        loadingPanel.setBackground(java.awt.Color.white);
+        loadingPanel.setBackground(Colors.Color_white);
 
-        jLabel1.setForeground(java.awt.Color.red);
+        jLabel1.setForeground(Colors.Color_red);
         jLabel1.setText("loading...");
         loadingPanel.add(jLabel1);
 
@@ -1109,7 +1109,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
         jLayeredPane1.add(okButton, gridBagConstraints);
 
         infoLabel.setFont(infoLabel.getFont().deriveFont((infoLabel.getFont().getStyle() | java.awt.Font.ITALIC)));
-        infoLabel.setForeground(java.awt.Color.lightGray);
+        infoLabel.setForeground(Colors.Color_lightgray);
         infoLabel.setText("  Type partial value to search");
         jLayeredPane1.setLayer(infoLabel, javax.swing.JLayeredPane.MODAL_LAYER);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1193,7 +1193,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         add(schemaPanel, gridBagConstraints);
 
-        plugInPanel.setBorder(javax.swing.BorderFactory.createLineBorder(java.awt.Color.lightGray));
+        plugInPanel.setBorder(javax.swing.BorderFactory.createLineBorder(Colors.Color_lightgray));
         plugInPanel.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 10;
@@ -1203,15 +1203,15 @@ public class StringSearchPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 0.1;
         add(plugInPanel, gridBagConstraints);
 
-        jPanel5.setBorder(new javax.swing.border.LineBorder(java.awt.Color.lightGray, 1, true));
+        jPanel5.setBorder(new javax.swing.border.LineBorder(Colors.Color_lightgray, 1, true));
         jPanel5.setLayout(new java.awt.GridBagLayout());
 
         bottomPanel.setLayout(new java.awt.GridBagLayout());
 
-        statusPanel.setBackground(new java.awt.Color(255, 255, 204));
+        statusPanel.setBackground(Colors.Color_255_255_204);
         statusPanel.setLayout(new java.awt.GridBagLayout());
 
-        statusLabel.setForeground(new java.awt.Color(0, 0, 77));
+        statusLabel.setForeground(Colors.Color_0_0_77);
         statusLabel.setText("jLabel3");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;

@@ -15,7 +15,6 @@
  */
 package net.sf.jailer.ui.util;
 
-import java.awt.Color;
 import java.awt.Window;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -29,6 +28,7 @@ import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.util.CancellationException;
 
@@ -209,7 +209,7 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
 		};
 		concurrentTaskControl.master = control;
 		
-		control.setBorder(BorderFactory.createLineBorder(Color.gray));
+		control.setBorder(BorderFactory.createLineBorder(Colors.Color_gray));
 		dialog.getContentPane().add(control);
 		dialog.pack();
  		dialog.setLocation(windowAncestor.getX() + (windowAncestor.getWidth() - dialog.getWidth()) / 2, Math.max(0, windowAncestor.getY() + (windowAncestor.getHeight() - dialog.getHeight()) / 2));

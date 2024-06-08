@@ -56,6 +56,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.ConditionEditor;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
@@ -211,7 +212,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 
         jPanel4.setLayout(new java.awt.GridBagLayout());
 
-        jPanel1.setBorder(new javax.swing.border.LineBorder(java.awt.Color.lightGray, 1, true));
+        jPanel1.setBorder(new javax.swing.border.LineBorder(Colors.Color_lightgray, 1, true));
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         jPanel2.setLayout(new java.awt.GridBagLayout());

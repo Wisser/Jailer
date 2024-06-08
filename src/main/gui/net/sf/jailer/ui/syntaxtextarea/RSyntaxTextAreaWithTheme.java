@@ -59,7 +59,7 @@ public class RSyntaxTextAreaWithTheme extends RSyntaxTextArea {
 			// TODO current line indicator with gradient (restore, it's gone after apply)
 			
 			// TODO
-			// TODO tool need to respect Color.RED/red (AWT-Colors) too
+			// TODO tool need to respect Colors.Color_red/red (AWT-Colors) too
 			
 			// TODO
 			// TODO update rsyntaxtree

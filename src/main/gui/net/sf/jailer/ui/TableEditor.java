@@ -215,7 +215,7 @@ public abstract class TableEditor extends javax.swing.JDialog {
 		@Override
 		protected Color getForegroundColor(ColumnModel element, int column) {
 			if (element.isPk && column == 0) {
-				return Color.RED;
+				return Colors.Color_red;
 			}
 			return null;
 		}
@@ -664,7 +664,7 @@ public abstract class TableEditor extends javax.swing.JDialog {
         warnPanel.setLayout(new java.awt.GridBagLayout());
 
         warnPKChangedLabel.setFont(warnPKChangedLabel.getFont().deriveFont(warnPKChangedLabel.getFont().getSize()+1f));
-        warnPKChangedLabel.setForeground(new java.awt.Color(205, 0, 0));
+        warnPKChangedLabel.setForeground(Colors.Color_205_0_0);
         warnPKChangedLabel.setText("<html>Primary key has been changed.<br>Keep in mind that the primary key must be unique.<br>It is recommended to check the integrity of the primary key.<br>To do that, please select the option \"check primary keys\" in the \"Data Model\" menu item or use the button below. </html>");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -675,7 +675,7 @@ public abstract class TableEditor extends javax.swing.JDialog {
         warnPanel.add(warnPKChangedLabel, gridBagConstraints);
 
         warnNullablePKLabel.setFont(warnNullablePKLabel.getFont().deriveFont(warnNullablePKLabel.getFont().getSize()+1f));
-        warnNullablePKLabel.setForeground(new java.awt.Color(205, 0, 0));
+        warnNullablePKLabel.setForeground(Colors.Color_205_0_0);
         warnNullablePKLabel.setText("<html>Nullable primary key columns can have a negative impact on performance.</html>");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;

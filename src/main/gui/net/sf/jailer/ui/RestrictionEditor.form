@@ -73,8 +73,8 @@
   <SubComponents>
     <Container class="javax.swing.JPanel" name="jPanel2">
       <Properties>
-        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="ff" green="ff" red="ff" type="rgb"/>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="Colors.Color_255_255_255" type="code"/>
         </Property>
         <Property name="opaque" type="boolean" value="false"/>
       </Properties>
@@ -125,8 +125,8 @@
             </Component>
             <Container class="javax.swing.JPanel" name="jPanel1">
               <Properties>
-                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                  <Color blue="ff" green="ff" id="white" palette="1" red="ff" type="palette"/>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection code="Colors.Color_255_255_255" type="code"/>
                 </Property>
                 <Property name="opaque" type="boolean" value="false"/>
               </Properties>
@@ -152,8 +152,8 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="restrictedDependencyWarning">
                   <Properties>
-                    <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                      <Color blue="33" green="0" red="ff" type="rgb"/>
+                    <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                      <Connection code="Colors.Color_51_0_255" type="code"/>
                     </Property>
                     <Property name="text" type="java.lang.String" value="Restricted Dependency! "/>
                   </Properties>
@@ -165,8 +165,8 @@
             </Container>
             <Container class="javax.swing.JPanel" name="jPanel8">
               <Properties>
-                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                  <Color blue="ff" green="ff" id="white" palette="1" red="ff" type="palette"/>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection code="Colors.Color_255_255_255" type="code"/>
                 </Property>
                 <Property name="opaque" type="boolean" value="false"/>
               </Properties>
@@ -260,8 +260,8 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="fk20DisabledHintLabel">
                   <Properties>
-                    <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                      <Color blue="0" green="0" id="red" palette="1" red="ff" type="palette"/>
+                    <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                      <Connection code="Colors.Color_0_0_255" type="code"/>
                     </Property>
                     <Property name="text" type="java.lang.String" value="(Foreign key is not nullable)"/>
                   </Properties>
@@ -295,8 +295,8 @@
         </Container>
         <Container class="javax.swing.JPanel" name="jPanel4">
           <Properties>
-            <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-              <Color blue="ff" green="ff" red="ff" type="rgb"/>
+            <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="Colors.Color_255_255_255" type="code"/>
             </Property>
           </Properties>
           <Constraints>
@@ -381,8 +381,8 @@
         </Container>
         <Container class="javax.swing.JPanel" name="jPanel5">
           <Properties>
-            <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-              <Color blue="ff" green="ff" id="white" palette="1" red="ff" type="palette"/>
+            <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="Colors.Color_255_255_255" type="code"/>
             </Property>
           </Properties>
           <Constraints>

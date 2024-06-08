@@ -39,6 +39,7 @@ import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.Timer;
 
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.ExtractionModelEditor;
 import net.sf.jailer.ui.UIUtil;
 
@@ -184,8 +185,8 @@ public class UndoManager {
 
 			int y = 1;
 
-			Color fg = new Color(0, 0, 0);
-			Color bg = new Color(255, 255, 255, 70);
+			Color fg = Colors.Color_0_0_0;
+			Color bg = Colors.Color_255_255_255_70;
 			for (Object[] line: protocol) {
 				JPanel panel = new JPanel(new GridBagLayout());
 				panel.setOpaque(false);
@@ -268,9 +269,9 @@ public class UndoManager {
 	private Long retentionStartTime;
 	
 	private enum ProtokollItemType {
-		UNDO(new Color(150, 255, 0, 70), "Undo"),
-		REDO(new Color(0, 255, 230, 70), "Redo"),
-		DONE(new Color(220, 255, 220, 70), "Done");
+		UNDO(Colors.Color_150_255_0_70, "Undo"),
+		REDO(Colors.Color_0_255_230_70, "Redo"),
+		DONE(Colors.Color_220_255_220_70, "Done");
 		
 		public final Color color;
 		public final String name;

@@ -57,7 +57,6 @@ import javax.swing.event.DocumentListener;
 
 import org.fife.rsta.ui.EscapableDialog;
 
-import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.util.CsvFile.Line;
 import net.sf.jailer.util.Pair;
 
@@ -156,7 +155,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 				}
 				private void update() {
 					if (UIUtil.plaf.isFlat && pTextField[finalI].getText().startsWith("<") && pTextField[finalI].getText().endsWith(">")) {
-						pTextField[finalI].setForeground(Color.red);
+						pTextField[finalI].setForeground(Colors.Color_red);
 					} else {
 						pTextField[finalI].setForeground(fgColor);
 					}
@@ -464,7 +463,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 		boolean selected = true;
 		Color red;
 		if (pTextFieldBGColor != null && pTextFieldBGColor.getRed() + pTextFieldBGColor.getBlue() + pTextFieldBGColor.getGreen() < (256 * 3) / 2) {
-			red = new Color(150, 0, 0);
+			red = Colors.Color_150_0_0;
 		} else {
 			red = DbConnectionDetailsEditor.RED;
 		}

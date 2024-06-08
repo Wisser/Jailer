@@ -109,6 +109,7 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.importfilter.ImportFilterManager;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.FileView;
 import net.sf.jailer.ui.UIUtil;
@@ -940,7 +941,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
         jPanel1.add(dbmsComboBox, gridBagConstraints);
 
         statusLabel.setFont(statusLabel.getFont().deriveFont(statusLabel.getFont().getSize()+4f));
-        statusLabel.setForeground(new java.awt.Color(0, 102, 0));
+        statusLabel.setForeground(Colors.Color_0_102_0);
         statusLabel.setText("Analyzing schema (might take a while)  ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -952,7 +953,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
         jPanel1.add(statusLabel, gridBagConstraints);
 
         statusLabel2.setFont(statusLabel2.getFont().deriveFont(statusLabel2.getFont().getSize()+4f));
-        statusLabel2.setForeground(new java.awt.Color(0, 102, 0));
+        statusLabel2.setForeground(Colors.Color_0_102_0);
         statusLabel2.setText("Running...");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -964,7 +965,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
         jPanel1.add(statusLabel2, gridBagConstraints);
 
         statusLabelCancelled.setFont(statusLabelCancelled.getFont().deriveFont(statusLabelCancelled.getFont().getSize()+4f));
-        statusLabelCancelled.setForeground(java.awt.Color.red);
+        statusLabelCancelled.setForeground(Colors.Color_red);
         statusLabelCancelled.setText("Cancelled");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;

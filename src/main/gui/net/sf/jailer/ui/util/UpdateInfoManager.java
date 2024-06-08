@@ -21,6 +21,7 @@ import javax.swing.Timer;
 
 import net.sf.jailer.JailerVersion;
 import net.sf.jailer.ui.BrowserLauncher;
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.DataModelManagerDialog;
 import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.UIUtil;
@@ -145,7 +146,7 @@ public class UpdateInfoManager {
 											@Override
 											public void actionPerformed(ActionEvent e) {
 												++t;
-												Color destColor = new Color(255, 210, 180);
+												Color destColor = Colors.Color_255_210_180;
 												double f = 0.5 * (1 + Math.sin(2 * Math.PI * t / 20.0));
 												ui.setBackground(new Color(mid(f, startColor.getRed(), destColor.getRed()), mid(f, startColor.getGreen(), destColor.getGreen()), mid(f, startColor.getBlue(), destColor.getBlue())));
 												

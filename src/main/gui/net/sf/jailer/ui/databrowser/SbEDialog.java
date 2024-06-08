@@ -15,7 +15,6 @@
  */
 package net.sf.jailer.ui.databrowser;
 
-import java.awt.Color;
 import java.awt.Window;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -24,6 +23,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
 
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
 
 /**
@@ -43,7 +43,7 @@ public class SbEDialog extends javax.swing.JDialog {
 		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
 		textLabel.setText(message);
 		textLabel2.setText(message2);
-		textLabel2.setForeground(Color.red);
+		textLabel2.setForeground(Colors.Color_red);
 		try {
 			messageLabel.setText(null);
 			   Icon errorIcon = UIManager.getIcon("OptionPane.informationIcon");

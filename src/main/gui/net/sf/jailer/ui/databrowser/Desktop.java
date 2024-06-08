@@ -116,6 +116,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.KnownIdentifierMap;
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.QueryBuilderDialog;
@@ -1579,7 +1580,7 @@ public abstract class Desktop extends JDesktopPane {
 				if (i > 0) {
 					String titelPlusI = title + " /" + i;
 					titles.put(title, i + 1);
-					titleHtml = "<html>" + UIUtil.toHTMLFragment(title, 0) + "<font color=\"#008000\">" + " /" + i + "</font></html>";
+					titleHtml = "<html>" + UIUtil.toHTMLFragment(title, 0) + "<font " + Colors.HTMLColor_008000 + ">" + " /" + i + "</font></html>";
 					number = i;
 					title = titelPlusI;
 				}
@@ -1682,7 +1683,7 @@ public abstract class Desktop extends JDesktopPane {
 			jl.setToolTipText(toolTip);
 			if (l.equals(suffix)) {
 				jl.setFont(jl.getFont().deriveFont(jl.getFont().getStyle() & ~Font.BOLD));
-				jl.setForeground(new Color(0, 96, 0));
+				jl.setForeground(Colors.Color_0_96_0);
 			} else {
 				jl.setFont(jl.getFont().deriveFont(jl.getFont().getStyle() | Font.BOLD));
 				jLabels.add(jl);
@@ -1697,11 +1698,11 @@ public abstract class Desktop extends JDesktopPane {
 				if (browserContentPane.rows != null) {
 					if (browserContentPane.rows.size() == 0) {
 						for (JLabel l: jLabels) {
-							l.setForeground(Color.GRAY);
+							l.setForeground(Colors.Color_gray);
 						}
 					} else {
 						for (JLabel l: jLabels) {
-							l.setForeground(Color.BLUE);
+							l.setForeground(Colors.Color_blue);
 						}
 					}
 				}
@@ -1762,25 +1763,25 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	protected Color getAssociationColor1(Association association) {
-		Color color = new java.awt.Color(0, 40, 255);
+		Color color = Colors.Color_0_40_255;
 		if (association.isIgnored()) {
-			color = new java.awt.Color(130, 130, 130);
+			color = Colors.Color_130_130_130;
 		} else if (association.isInsertDestinationBeforeSource()) {
-			color = new java.awt.Color(230, 80, 50);
+			color = Colors.Color_230_80_50;
 		} else if (association.isInsertSourceBeforeDestination()) {
-			color = new java.awt.Color(0, 230, 0);
+			color = Colors.Color_0_230_0;
 		}
 		return color;
 	}
 
 	private Color getAssociationColor2(Association association) {
-		Color color = new java.awt.Color(0, 30, 255);
+		Color color = Colors.Color_0_30_255;
 		if (association.isIgnored()) {
-			color = new java.awt.Color(150, 150, 150);
+			color = Colors.Color_150_150_150;
 		} else if (association.isInsertSourceBeforeDestination()) {
-			color = new java.awt.Color(70, 255, 70);
+			color = Colors.Color_70_255_70;
 		} else if (association.isInsertDestinationBeforeSource()) {
-			color = new java.awt.Color(245, 90, 60);
+			color = Colors.Color_245_90_60;
 		}
 		return color;
 	}
@@ -2340,8 +2341,8 @@ public abstract class Desktop extends JDesktopPane {
 										boolean intersect = link.intersect;
 										boolean dotted = link.dotted || toJoin.dotted;
 										newLinks.add(new Link(link.from, toJoin.to, link.sourceRowID, toJoin.destRowID, link.x1, link.y1, toJoin.x2, toJoin.y2,
-												UIUtil.plaf.isFlat? new Color(170, 200, 0) : Color.yellow.darker().darker(), 
-												UIUtil.plaf.isFlat? new Color(170, 200, 0) : Color.yellow.darker(), 
+												UIUtil.plaf.isFlat? Colors.Color_170_200_0 : Colors.Color_yellow.darker().darker(), 
+												UIUtil.plaf.isFlat? Colors.Color_170_200_0 : Colors.Color_yellow.darker(), 
 												dotted, intersect, link.inClosure && toJoin.inClosure, link.inTempClosure && toJoin.inTempClosure, link.notHAligned, link.restricted || toJoin.restricted));
 									}
 								}
@@ -2461,7 +2462,7 @@ public abstract class Desktop extends JDesktopPane {
 									lastLastY = lastY;
 									lastY = y;
 									lastInClosure = link.inClosure;
-									Color cl = pbg ? Color.white : link.color1; // light? link.color1 : link.color2;
+									Color cl = pbg ? Colors.Color_white : link.color1; // light? link.color1 : link.color2;
 									if (UIUtil.plaf != PLAF.NIMBUS) {
 										if (cl.getGreen() > cl.getBlue() && cl.getGreen() >= cl.getRed()) {
 //											if (link.restricted) {
@@ -2559,7 +2560,7 @@ public abstract class Desktop extends JDesktopPane {
 		float sop = 0;
 		if (doPaint) {
 			if (UIUtil.plaf == PLAF.NIMBUS) {
-				g2d.setColor(inTempClosure && !pbg? new Color(220, 220, 255) : color);
+				g2d.setColor(inTempClosure && !pbg? Colors.Color_220_220_255 : color);
 			} else if (UIUtil.plaf.isFlat) {
 				double f = 4;
 				if (fgColor.getGreen() > fgColor.getRed() + fgColor.getBlue()) {
@@ -2577,7 +2578,7 @@ public abstract class Desktop extends JDesktopPane {
 					so = 4;
 				}
 			} else {
-				g2d.setColor(inTempClosure && pbg? new Color(200, 100, 200) : color);
+				g2d.setColor(inTempClosure && pbg? Colors.Color_200_100_200 : color);
 			}
 			BasicStroke stroke = new BasicStroke(sop + (so > 0? so : (!intersect ? (pbg ? inClosure? 3 : 2 : 1) : (pbg ? 3 : 2))));
 			if (inClosure) {

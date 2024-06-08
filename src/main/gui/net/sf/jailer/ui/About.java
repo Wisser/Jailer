@@ -23,7 +23,6 @@ import java.util.stream.Stream;
 import javax.swing.ImageIcon;
 
 import net.sf.jailer.JailerVersion;
-import net.sf.jailer.ui.UIUtil.PLAF;
 
 /**
  * The "About" dialog.

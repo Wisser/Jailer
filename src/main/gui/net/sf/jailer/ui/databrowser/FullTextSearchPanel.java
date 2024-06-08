@@ -54,8 +54,8 @@ import javax.swing.event.TableColumnModelListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
-import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.sqlconsole.ColumnsTable;
 import net.sf.jailer.util.LogUtil;
 
@@ -395,10 +395,10 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 								i += offset;
 								i = Math.min(i, value.length());
 								if (i + searchTextUC.length() <= value.length()) {
-									markedValue = UIUtil.toHTMLFragment(value.substring(0, i), 0, false) + "<b><u><font color=\"#0000D0\">" + UIUtil.toHTMLFragment(value.substring(i, i + searchTextUC.length()), 0, false) + "</font></u></b>" + UIUtil.toHTMLFragment(value.substring(i + searchTextUC.length()), 0, false);
+									markedValue = UIUtil.toHTMLFragment(value.substring(0, i), 0, false) + "<b><u><font " + Colors.HTMLColor_0000D0 + ">" + UIUtil.toHTMLFragment(value.substring(i, i + searchTextUC.length()), 0, false) + "</font></u></b>" + UIUtil.toHTMLFragment(value.substring(i + searchTextUC.length()), 0, false);
 								}
 								if (markedValue == null) {
-									markedValue = "<b><u><font color=\"#0000D0\">" + UIUtil.toHTMLFragment(value, 0, false) + "</font></u></b>";
+									markedValue = "<b><u><font " + Colors.HTMLColor_0000D0 + ">" + UIUtil.toHTMLFragment(value, 0, false) + "</font></u></b>";
 								}
 								markedValue = "<html>" + markedValue + "</html>";
 								markedValues.put(value, markedValue);
@@ -461,7 +461,7 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 			nextButton.setEnabled(true);
 			prevButton.setEnabled(true);
 		} else {
-			searchField.setBackground(new Color(255, 220, 220));
+			searchField.setBackground(Colors.Color_255_220_220);
 			nextButton.setEnabled(false);
 			prevButton.setEnabled(false);
 		}
@@ -498,11 +498,11 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 				}
 			}
 			render.setToolTipText(toolTipText);
-			render.setBackground(new Color(190, 255, 180));
+			render.setBackground(Colors.Color_190_255_180);
 			
 			if (currentPosition != null && currentPosition == x + y * table.getColumnCount()) {
 				JPanel panel = new JPanel(null) {
-					Border border = new LineBorder(new Color(0, 176, 0), 1, true);
+					Border border = new LineBorder(Colors.Color_0_176_0, 1, true);
 					
 					@Override
 					public void paint(Graphics graphics) {

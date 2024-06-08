@@ -15,7 +15,6 @@
  */
 package net.sf.jailer.ui.syntaxtextarea;
 
-import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Frame;
@@ -61,6 +60,7 @@ import org.fife.ui.rtextarea.SearchContext;
 import org.fife.ui.rtextarea.SearchEngine;
 import org.fife.ui.rtextarea.SearchResult;
 
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.util.Pair;
@@ -257,7 +257,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 
 		setHighlightCurrentLine(true);
 		setFadeCurrentLineHighlight(true);
-		setCurrentLineHighlightColor(new Color(255, 255, 170));
+		setCurrentLineHighlightColor(Colors.Color_255_255_170);
 		
 		createPopupMenu();
 		updateMenuItemState();

@@ -111,19 +111,19 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		Test("Test (QA) database") {
 			@Override
 			public Color getBackground() {
-				return new Color(205, 255, 205);
+				return Colors.Color_205_255_205;
 			}
 		},
 		Staging("Staging database") {
 			@Override
 			public Color getBackground() {
-				return new Color(255, 255, 176);
+				return Colors.Color_255_255_176;
 			}
 		},
 		Production("Production database") {
 			@Override
 			public Color getBackground() {
-				return new Color(255, 205, 205);
+				return Colors.Color_255_205_205;
 			}
 		};
 		
@@ -492,7 +492,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 										.setBackground((row % 2 == 0) ? BG1
 												: BG2);
 							} else {
-								((JLabel) render).setBackground(new Color(160, 200, 255));
+								((JLabel) render).setBackground(Colors.Color_160_200_255);
 							}
 							RowSorter<?> rowSorter = connectionsTable.getRowSorter();
 							int selectedRowIndex = -1;
@@ -501,9 +501,9 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 							}
 							boolean inContext = isAssignedToDataModel(selectedRowIndex);
 							if (inContext) {
-								((JLabel) render).setForeground(Color.black);
+								((JLabel) render).setForeground(Colors.Color_black);
 							} else {
-								((JLabel) render).setForeground(Color.gray);
+								((JLabel) render).setForeground(Colors.Color_gray);
 							}
 							
 							Color bg = null;
@@ -516,7 +516,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 							if (connectionType != null && connectionType.getBackground() != null) {
 								bg = connectionType.getBackground();
 								if (isSelected) {
-									Border lb = new LineBorder(new Color(160, 200, 255), 2, false) {
+									Border lb = new LineBorder(Colors.Color_160_200_255, 2, false) {
 										@Override
 										public Insets getBorderInsets(Component c, Insets insets) {
 											return new Insets(0, 0, 0, 0);

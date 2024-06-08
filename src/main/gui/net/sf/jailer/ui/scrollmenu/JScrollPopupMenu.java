@@ -40,8 +40,8 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
-import net.sf.jailer.ui.UIUtil.PLAF;
 
 /**
  * http://stackoverflow.com/questions/9288350/adding-vertical-scroll-to-a-jpopupmenu
@@ -204,10 +204,10 @@ public class JScrollPopupMenu extends JPopupMenu {
 					i += offset;
 					i = Math.min(i, value.length());
 					if (i + searchTextUC.length() <= value.length()) {
-						markedValue = UIUtil.toHTMLFragment(value.substring(0, i), 0, false) + "<b><u><font color=\"#0000D0\">" + UIUtil.toHTMLFragment(value.substring(i, i + searchTextUC.length()), 0, false) + "</font></u></b>" + UIUtil.toHTMLFragment(value.substring(i + searchTextUC.length()), 0, false);
+						markedValue = UIUtil.toHTMLFragment(value.substring(0, i), 0, false) + "<b><u><font " + Colors.HTMLColor_0000D0 + ">" + UIUtil.toHTMLFragment(value.substring(i, i + searchTextUC.length()), 0, false) + "</font></u></b>" + UIUtil.toHTMLFragment(value.substring(i + searchTextUC.length()), 0, false);
 					}
 					if (markedValue == null) {
-						markedValue = "<b><u><font color=\"#0000D0\">" + UIUtil.toHTMLFragment(value, 0, false) + "</font></u></b>";
+						markedValue = "<b><u><font " + Colors.HTMLColor_0000D0 + ">" + UIUtil.toHTMLFragment(value, 0, false) + "</font></u></b>";
 					}
 					markedValue = "<html>" + markedValue + "</html>";
 					((JMenuItem) comp).setText(markedValue);

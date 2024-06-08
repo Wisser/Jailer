@@ -292,7 +292,7 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
-        jPanel1.setBorder(new javax.swing.border.LineBorder(java.awt.Color.lightGray, 1, true));
+        jPanel1.setBorder(new javax.swing.border.LineBorder(Colors.Color_lightgray, 1, true));
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         paramsPanel.setMinimumSize(new java.awt.Dimension(150, 0));

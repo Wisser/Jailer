@@ -84,7 +84,6 @@ import javax.swing.text.StyleConstants;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionType;
-import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.util.ConcurrentTaskControl;
 import net.sf.jailer.ui.util.HttpDownload;
 import net.sf.jailer.ui.util.LightBorderSmallButton;
@@ -182,7 +181,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 	 */
 	private Map<String, Pair<String, Long>> modelDetails;
 
-	final static Color RED = new Color(255, 230, 230);
+	final static Color RED = Colors.Color_255_230_230;
 
 	@SuppressWarnings("serial")
 	private void loadModelList(ExecutionContext executionContext) {
@@ -231,7 +230,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 					if (!dataModelAware) {
 						if ("".equals(dataModelComboBox.getSelectedItem())) {
 							dataModelComboBox.setBackground(RED);
-							jLabel5.setForeground(Color.red);
+							jLabel5.setForeground(Colors.Color_red);
 						} else {
 							jLabel5.setForeground(fg);
 							dataModelComboBox.setBackground(bg);
@@ -372,7 +371,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 					((DefaultStyledDocument) dbUrl.getDocument()).setCharacterAttributes(i, 1, set, true);
 				}
 			}
-			Color color = Color.RED;
+			Color color = Colors.Color_red;
 			Pattern pattern = Pattern.compile("\\<([^\\>\\<]*)\\>");
 			Matcher matcher = pattern.matcher(dbUrl.getText());
 			while (matcher.find()) {
@@ -531,7 +530,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 					if (!isSelected) {
 						Color b1 = ((ConnectionType) value).getBackground();
 						render.setBackground(b1 == null? dbg : b1);
-						render.setForeground(Color.black);
+						render.setForeground(Colors.Color_black);
 					}
 				}
 				return render;
@@ -572,7 +571,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		DefaultStyledDocument doc = new DefaultStyledDocument();
 		dbUrl.setDocument(doc);
 		Border nfBorder = user.getBorder();
-		Border fBorder = BorderFactory.createLineBorder(new Color(137, 176, 212));
+		Border fBorder = BorderFactory.createLineBorder(Colors.Color_137_176_212);
 		jScrollPane1.setBorder(nfBorder);
 		dbUrl.addKeyListener(new KeyListener() {
 			@Override
@@ -607,8 +606,8 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 				}
 			}
 		});
-		Border errFBorder = BorderFactory.createLineBorder(new Color(255, 100, 100));
-		Border errBorder = BorderFactory.createLineBorder(new Color(255, 50, 50));
+		Border errFBorder = BorderFactory.createLineBorder(Colors.Color_255_100_100);
+		Border errBorder = BorderFactory.createLineBorder(Colors.Color_255_50_50);
 		updateBorder = () -> {
 			if (UIUtil.plaf.isFlat) {
 				boolean ok = true;
@@ -1384,7 +1383,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 8, 0);
         jPanel1.add(jSeparator2, gridBagConstraints);
 
-        jtdsWarnLabel.setForeground(java.awt.Color.red);
+        jtdsWarnLabel.setForeground(Colors.Color_red);
         jtdsWarnLabel.setText("<html>Due to known problems with the jTDS JDBC driver, it is strongly recommended to use the original driver for SQL Server or Sybase.<html>");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;

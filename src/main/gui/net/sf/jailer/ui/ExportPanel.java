@@ -67,7 +67,6 @@ import org.fife.rsta.ui.EscapableDialog;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
-import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.util.CompoundIcon;
 import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Pair;
@@ -90,8 +89,8 @@ public class ExportPanel extends javax.swing.JPanel {
         okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
 		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
 		if (UIUtil.plaf.isFlat) {
-			selectionPanel.setBackground(Color.white);
-			jPanel3.setBackground(Color.white);
+			selectionPanel.setBackground(Colors.Color_white);
+			jPanel3.setBackground(Colors.Color_white);
 		}
     }
     
