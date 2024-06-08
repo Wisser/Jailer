@@ -1031,7 +1031,7 @@
                             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                               <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
                                 <LineBorder>
-                                  <Connection code="/* Renaming also in *.form! */ Colors.Color_204_204_204" type="code"/>
+                          	       <Color PropertyName="color" blue="cc" green="cc" red="cc" type="rgb"/>
                                 </LineBorder>
                               </Border>
                             </Property>
