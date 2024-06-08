@@ -1607,7 +1607,7 @@ public class UIUtil {
 										info = String.format("%1.1f", numDone.get() * 100d / total) + "%";
 										int errors = numErrors.get();
 										if (errors > 0) {
-											info += "&nbsp;<font " + Colors.HTMLColor_ff2222 + ">" + errors + "&nbsp;Error" + (errors == 1? "" : "s") + "</font>";
+											info += "&nbsp;<font color=" + Colors.HTMLColor_ff2222 + ">" + errors + "&nbsp;Error" + (errors == 1? "" : "s") + "</font>";
 										}
 										if (!initialized) {
 											concurrentTaskControl.master.cancelButton.setText("Stop");

@@ -2742,8 +2742,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				}
 			}
 		}
-		String iCol = "<font " + Colors.HTMLColor_0000B0 + ">";
-		String rCol = "<font " + Colors.HTMLColor_006000 + ">";
+		String iCol = "<font color=" + Colors.HTMLColor_0000B0 + ">";
+		String rCol = "<font color=" + Colors.HTMLColor_006000 + ">";
 		String ef = "</font>";
 //		assocStatsLabel.setForeground(Colors.Color_gray);
 		assocStatsLabel.setText("<html><nobr>" + iCol + ignored + ef + (restricted != 0? " + " + rCol + restricted + ef : "") + " / " + total +"<html>");

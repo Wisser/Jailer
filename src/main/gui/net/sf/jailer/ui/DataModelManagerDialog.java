@@ -951,31 +951,31 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				while (bgc.length() < 6) {
 					bgc = "0" + bgc;
 				}
-				bgc = "<font bgcolor=\"#" + bgc + "\" " + Colors.HTMLColor_000000 + ">" + connectionInfo.getConnectionType().displayName + "</font>";
+				bgc = "<font bgcolor=\"#" + bgc + "\" color=" + Colors.HTMLColor_000000 + ">" + connectionInfo.getConnectionType().displayName + "</font>";
 			}
 			
 			String v;
 			model.add(v = "<html><nobr>" + 
 					UIUtil.toHTMLFragment(UIUtil.toDateAsString(lastSession.date.getTime()), 0) + "&nbsp;-&nbsp;" +
 					(module.equals("S")?
-					"<font " + Colors.HTMLColor_0000ff + "><b>" +
-					(lastSession.bookmark != null? UIUtil.toHTMLFragment(new File(lastSession.bookmark).getName(), 0) : "</b><i><font " + Colors.HTMLColor_888888 + ">New&nbsp;Model</font></i><b>") + "</b>" + 
+					"<font color=" + Colors.HTMLColor_0000ff + "><b>" +
+					(lastSession.bookmark != null? UIUtil.toHTMLFragment(new File(lastSession.bookmark).getName(), 0) : "</b><i><font color=" + Colors.HTMLColor_888888 + ">New&nbsp;Model</font></i><b>") + "</b>" + 
 					"&nbsp;-&nbsp;</font>" : 
 					"") +
 					(module.equals("S")?
-					("<font " + Colors.HTMLColor_006600 + ">" +
+					("<font color=" + Colors.HTMLColor_006600 + ">" +
 					UIUtil.toHTMLFragment(((details != null? details.a : lastSession.datamodelFolder)), 0) + 
-					"</font>&nbsp;-&nbsp;<font " + Colors.HTMLColor_663300 + ">" +
-					(connectionInfo == null? "<i><font " + Colors.HTMLColor_888888 + ">offline</font></i>" : UIUtil.toHTMLFragment(connectionInfo.alias, 0) + "&nbsp;-&nbsp;<font " + Colors.HTMLColor_000000 + ">" + UIUtil.toHTMLFragment(((userName + " - ")), 0, false) + UIUtil.toHTML(connectionInfo.url, 0) + "</font>") + 
+					"</font>&nbsp;-&nbsp;<font color=" + Colors.HTMLColor_663300 + ">" +
+					(connectionInfo == null? "<i><font color=" + Colors.HTMLColor_888888 + ">offline</font></i>" : UIUtil.toHTMLFragment(connectionInfo.alias, 0) + "&nbsp;-&nbsp;<font color=" + Colors.HTMLColor_000000 + ">" + UIUtil.toHTMLFragment(((userName + " - ")), 0, false) + UIUtil.toHTML(connectionInfo.url, 0) + "</font>") + 
 					"</font></nobr></html>")
 					:
 					(
-					"<font " + Colors.HTMLColor_006600 + ">" +
-					(connectionInfo == null? "<i><font " + Colors.HTMLColor_888888 + ">offline</font></i>" : ("<b>" + UIUtil.toHTML(connectionInfo.alias, 0) + "</b>") + "&nbsp;-&nbsp;<font " + Colors.HTMLColor_000000 + ">" + 
-					"<font " + Colors.HTMLColor_0000ff + ">" +
+					"<font color=" + Colors.HTMLColor_006600 + ">" +
+					(connectionInfo == null? "<i><font color=" + Colors.HTMLColor_888888 + ">offline</font></i>" : ("<b>" + UIUtil.toHTML(connectionInfo.alias, 0) + "</b>") + "&nbsp;-&nbsp;<font color=" + Colors.HTMLColor_000000 + ">" + 
+					"<font color=" + Colors.HTMLColor_0000ff + ">" +
 					(lastSession.getContentInfo() != null? UIUtil.toHTMLFragment(lastSession.getContentInfo().replaceFirst("^\\d+ Table$", "$0s"), 0) + "&nbsp;-&nbsp;" : "") + 
 					"</font>" +
-					"<font " + Colors.HTMLColor_663300 + ">" +
+					"<font color=" + Colors.HTMLColor_663300 + ">" +
 					UIUtil.toHTMLFragment(((details != null? details.a : lastSession.datamodelFolder)), 0) + 
 					"</font>&nbsp;-&nbsp;" + UIUtil.toHTMLFragment(userName + " - " + connectionInfo.url, 0, false) + "</font>") + 
 					"</font>")					

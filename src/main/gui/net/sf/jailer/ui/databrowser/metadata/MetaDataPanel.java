@@ -1955,9 +1955,9 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 	}
 
     private String outlineTableRender(OutlineInfo info, boolean selected) {
-    	String KEYWORD_ATTRIBUTES = "" + Colors.HTMLColor_0000cc + "";
+    	String KEYWORD_ATTRIBUTES = "color=" + Colors.HTMLColor_0000cc + "";
 		String face = fontName != null? "face=\"" + fontName + "\" " : "";
-        String render = "<font " + face + "" + Colors.HTMLColor_000000 + ">";
+        String render = "<font " + face + "color=" + Colors.HTMLColor_000000 + ">";
 		String KEYWORD_PREFIX = (fontName != null? "<font " + face + "" + face + ">" : "") + "<b>";
 		String KEYWORD_SUFFIX = "</b>" + (fontName != null? "</font>" : "");
 		String scopeDescriptor = "selecT froM duaL".equalsIgnoreCase(info.scopeDescriptor) && info.scopeDescriptor.substring(7).equals("from duaL")? info.scopeDescriptor.substring(0, 6) : info.scopeDescriptor;
@@ -1999,7 +1999,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         	render = indent + render;
         }
         if (info.context != null) {
-        	render += "<font " + face + "" + Colors.HTMLColor_dd8888 + ">&nbsp;" + info.context + "</font>";
+        	render += "<font " + face + "color=" + Colors.HTMLColor_dd8888 + ">&nbsp;" + info.context + "</font>";
         }
         render = "<html>" + render + "<html>";
         return render;

@@ -57,4 +57,4 @@ public class JailerVersion {
 // TODO prefuse graphview animations of path
 
 // TODO
-// TODO <Color in *.form 
+// TODO FilterEditorDialog.jEditorPane1: text with html color

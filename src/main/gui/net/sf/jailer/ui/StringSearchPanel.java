@@ -673,15 +673,15 @@ public class StringSearchPanel extends javax.swing.JPanel {
 			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
 					boolean cellHasFocus) {
 				if (value.equals(showAllLabel)) {
-					return super.getListCellRendererComponent(list, "<html><font " + Colors.HTMLColor_ff0000 + ">" + value + "</font>", index, isSelected, cellHasFocus);
+					return super.getListCellRendererComponent(list, "<html><font color=" + Colors.HTMLColor_ff0000 + ">" + value + "</font>", index, isSelected, cellHasFocus);
 				}
 				Color bgColor = Colors.Color_white;
 				Color fgColor = Colors.Color_0_0_0;
-				String hlColor = "" + Colors.HTMLColor_050aff + "";
+				String hlColor = "color=" + Colors.HTMLColor_050aff + "";
 				if (isSelected) {
 					bgColor = Colors.Color_0_0_145;
 					fgColor = Colors.Color_white;
-					hlColor = "" + Colors.HTMLColor_ff9999 + "";
+					hlColor = "color=" + Colors.HTMLColor_ff9999 + "";
 				}
 				String item = value.toString();
 				item = UIUtil.indicateLeadingAndTrailingSpaces(item, !indicateLeadingAndTrailingSpaces);

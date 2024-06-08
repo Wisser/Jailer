@@ -639,11 +639,11 @@ public class TabContentPanel extends javax.swing.JPanel {
 							}
 							if (incHeader && ((rotate ^ columnNamesInFirstRow)? (x == 0) : (y == 0))) {
 								if (colored) {
-									sb.append(" bg" + Colors.HTMLColor_eeeeff + "");
+									sb.append(" bgcolor=" + Colors.HTMLColor_eeeeff + "");
 								}
 							} else {
 								if (colored) {
-									sb.append(rowNum % 2 == 0? "" : " bg" + Colors.HTMLColor_eeffee + "");
+									sb.append(rowNum % 2 == 0? "" : " bgcolor=" + Colors.HTMLColor_eeffee + "");
 								}
 							}
 							if (aligned) {

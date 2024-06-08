@@ -1580,7 +1580,7 @@ public abstract class Desktop extends JDesktopPane {
 				if (i > 0) {
 					String titelPlusI = title + " /" + i;
 					titles.put(title, i + 1);
-					titleHtml = "<html>" + UIUtil.toHTMLFragment(title, 0) + "<font " + Colors.HTMLColor_008000 + ">" + " /" + i + "</font></html>";
+					titleHtml = "<html>" + UIUtil.toHTMLFragment(title, 0) + "<font color=" + Colors.HTMLColor_008000 + ">" + " /" + i + "</font></html>";
 					number = i;
 					title = titelPlusI;
 				}

@@ -183,7 +183,7 @@ public class DesktopUndoManager {
 			if (i == 1) {
 				sb.append("<hr><b>");
 			} else {
-				sb.append("<font " + Colors.HTMLColor_707080 + ">");
+				sb.append("<font color=" + Colors.HTMLColor_707080 + ">");
 			}
 			int rest = stack.size() - i + 1;
 			if (i > 8 && rest > 2) {

@@ -1934,7 +1934,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 															sql = v == null || isNull? "null" : !isNumber? ("'" + (v.toString().replace("'", "''")) + "'") : v.toString();
 														}
 														String op = isNull? " is " : " = ";
-														String tooltip = "<html>Find rows where: <font " + Colors.HTMLColor_0000ff + ">" + colName + "</font>" + op + "<font " + Colors.HTMLColor_005500 + ">" + sql + "</font></html>";
+														String tooltip = "<html>Find rows where: <font color=" + Colors.HTMLColor_0000ff + ">" + colName + "</font>" + op + "<font color=" + Colors.HTMLColor_005500 + ">" + sql + "</font></html>";
 														colName = Quoting.staticUnquote(colName.replaceFirst("^[^\\.]*\\.", ""));
 														int max = 20;
 														if (colName.length() > max + 2) {
@@ -1944,7 +1944,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 														if (sql.length() > max + 2) {
 															sql = sql.substring(0, max) + "...";
 														}
-														JMenuItem item = new JMenuItem("<html>Find by: <font " + Colors.HTMLColor_0000ff + ">" + colName + "</font>" + op + "<font " + Colors.HTMLColor_005500 + ">" + sql + "</font></html>");
+														JMenuItem item = new JMenuItem("<html>Find by: <font color=" + Colors.HTMLColor_0000ff + ">" + colName + "</font>" + op + "<font color=" + Colors.HTMLColor_005500 + ">" + sql + "</font></html>");
 														item.setToolTipText(tooltip);
 														item.setIcon(UIUtil.scaleIcon(item, findColumnIcon1));
 														item.addActionListener(e2 -> {

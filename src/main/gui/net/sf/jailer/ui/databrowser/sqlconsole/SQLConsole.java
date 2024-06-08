@@ -1315,7 +1315,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						}
 	            		String type = column.toSQL("").substring(column.name.length()).trim();
 	            		if (tabPerIndex.isEmpty()) {
-	                		columnLabels[i] = "<html><nobr><b>" + columnLabel + "</b><br><font " + Colors.HTMLColor_808080 + ">" + type + "</font></html>";
+	                		columnLabels[i] = "<html><nobr><b>" + columnLabel + "</b><br><font color=" + Colors.HTMLColor_808080 + ">" + type + "</font></html>";
 	                	} else {
 	                		if (table != null) {
 	                			Integer ord = tableOrd.get(table);
@@ -1336,7 +1336,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                		} else {
 	                			columnLabel = UIUtil.toHTMLFragment(columnLabel, 128).replaceFirst("<br>$", "");
 	                		}
-	                		columnLabels[i] = "<html><nobr><font " + Colors.HTMLColor_0066ff + ">" + titel + "</font><br><b>" + columnLabel + "</b><br><font " + Colors.HTMLColor_808080 + ">" + type + "</font></html>";
+	                		columnLabels[i] = "<html><nobr><font color=" + Colors.HTMLColor_0066ff + ">" + titel + "</font><br><b>" + columnLabel + "</b><br><font color=" + Colors.HTMLColor_808080 + ">" + type + "</font></html>";
 	                	}
 	                }
 	                if (step == 0) {
@@ -2460,7 +2460,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
 		private String getText() {
 			if (rolledback) {
-				return "<html><font " + Colors.HTMLColor_dd0000 + ">" + (cancelled? "Cancelled" : (successState.failed.size() + " Error")) + ". Transaction rolled back.</font><html>";
+				return "<html><font color=" + Colors.HTMLColor_dd0000 + ">" + (cancelled? "Cancelled" : (successState.failed.size() + " Error")) + ". Transaction rolled back.</font><html>";
 			}
 			String text = "<html>";
             if (running) {
@@ -2475,7 +2475,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                boolean f = !successState.failed.isEmpty();
 	                int left = successState.numStatements - successState.succeeded.size() - successState.failed.size();
 	                if (left == 0 && numStatements == 1 && successState.failed.size() == 1) {
-	                	return "<html><font " + Colors.HTMLColor_dd0000 + ">Error!</font></html>";
+	                	return "<html><font color=" + Colors.HTMLColor_dd0000 + ">Error!</font></html>";
 	                } else {
 	                	int sfull = numStatements;
 	                	if (!f && running) {
@@ -2483,10 +2483,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                	}
 		                text += sfull + " " + (!f? "successful. " : ("statement" + (sfull > 1? "s. " : ". ")));
 		                if (left > 0) {
-		                	text += "<font " + Colors.HTMLColor_0000dd + ">" + left + " remaining. </font>";
+		                	text += "<font color=" + Colors.HTMLColor_0000dd + ">" + left + " remaining. </font>";
 		                }
 						if (f || cancelled) {
-		                	text += "<font " + Colors.HTMLColor_dd0000 + ">" + (cancelled? "Cancelled" : (successState.failed.size() + " failed")) + ". </font>";
+		                	text += "<font color=" + Colors.HTMLColor_dd0000 + ">" + (cancelled? "Cancelled" : (successState.failed.size() + " failed")) + ". </font>";
 		                }
 	                }
 	            }
@@ -2573,7 +2573,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			if ("statementLabel".equals(c.getName())) {
 				JLabel label = (JLabel) c;
 				String statement = label.getText();
-				Function<String, String> prefix = dbName -> "<html><nobr><font " + Colors.HTMLColor_ff0000 + ">loaded from " + UIUtil.toHTMLFragment(dbName, 0) + ": </font>";
+				Function<String, String> prefix = dbName -> "<html><nobr><font color=" + Colors.HTMLColor_ff0000 + ">loaded from " + UIUtil.toHTMLFragment(dbName, 0) + ": </font>";
 				if (!statement.startsWith("<html>")) {
 					label.setIcon(UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/wanr.png")));
 					label.setText(prefix.apply(prevDatabaseName) + UIUtil.toHTMLFragment(statement, 0) + "</html>");
