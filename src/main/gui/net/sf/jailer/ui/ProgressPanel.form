@@ -145,7 +145,7 @@
                 <Component class="javax.swing.JLabel" name="jLabel1">
                   <Properties>
                     <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                      <Connection code="Colors.Color_230_230_230" type="code"/>
+                      <Connection code="/* Renaming also in *.form! */ Colors.Color_230_230_230" type="code"/>
                     </Property>
                     <Property name="text" type="java.lang.String" value="                                                     "/>
                   </Properties>

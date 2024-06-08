@@ -125,7 +125,7 @@
               </FontInfo>
             </Property>
             <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="Colors.Color_0_102_0" type="code"/>
+              <Connection code="/* Renaming also in *.form! */ Colors.Color_0_102_0" type="code"/>
             </Property>
             <Property name="text" type="java.lang.String" value="Analyzing schema (might take a while)  "/>
           </Properties>
@@ -143,7 +143,7 @@
               </FontInfo>
             </Property>
             <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="Colors.Color_0_102_0" type="code"/>
+              <Connection code="/* Renaming also in *.form! */ Colors.Color_0_102_0" type="code"/>
             </Property>
             <Property name="text" type="java.lang.String" value="Running..."/>
           </Properties>
@@ -161,7 +161,7 @@
               </FontInfo>
             </Property>
             <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="Colors.Color_0_0_255" type="code"/>
+              <Connection code="/* Renaming also in *.form! */ Colors.Color_0_0_255" type="code"/>
             </Property>
             <Property name="text" type="java.lang.String" value="Cancelled"/>
           </Properties>

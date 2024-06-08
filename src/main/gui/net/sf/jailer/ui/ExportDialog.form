@@ -535,7 +535,7 @@
                     <Component class="javax.swing.JLabel" name="jLabel1">
                       <Properties>
                         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                          <Connection code="Colors.Color_128_128_128" type="code"/>
+                          <Connection code="/* Renaming also in *.form! */ Colors.Color_128_128_128" type="code"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="  (best for single-threaded performance)"/>
                       </Properties>
@@ -548,7 +548,7 @@
                     <Component class="javax.swing.JLabel" name="jLabel26">
                       <Properties>
                         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                          <Connection code="Colors.Color_128_128_128" type="code"/>
+                          <Connection code="/* Renaming also in *.form! */ Colors.Color_128_128_128" type="code"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="  (best for multi-threaded performance)"/>
                       </Properties>
@@ -561,7 +561,7 @@
                     <Component class="javax.swing.JLabel" name="jLabel27">
                       <Properties>
                         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                          <Connection code="Colors.Color_128_128_128" type="code"/>
+                          <Connection code="/* Renaming also in *.form! */ Colors.Color_128_128_128" type="code"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="  (no update-privilege required)"/>
                       </Properties>
@@ -1061,7 +1061,7 @@
                     <Component class="javax.swing.JLabel" name="iLHintLabel">
                       <Properties>
                         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                          <Connection code="Colors.Color_128_128_128" type="code"/>
+                          <Connection code="/* Renaming also in *.form! */ Colors.Color_128_128_128" type="code"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="  (for all collection and export transactions)"/>
                       </Properties>

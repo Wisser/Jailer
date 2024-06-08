@@ -258,7 +258,7 @@
                         <Container class="javax.swing.JPanel" name="jPanel1">
                           <Properties>
                             <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                              <Connection code="Colors.Color_255_255_255_150" type="code"/>
+                              <Connection code="/* Renaming also in *.form! */ Colors.Color_255_255_255_150" type="code"/>
                             </Property>
                           </Properties>
                           <Constraints>
@@ -312,7 +312,7 @@
                                       </FontInfo>
                                     </Property>
                                     <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                                      <Connection code="Colors.Color_16_16_141" type="code"/>
+                                      <Connection code="/* Renaming also in *.form! */ Colors.Color_16_16_141" type="code"/>
                                     </Property>
                                   </Properties>
                                   <Constraints>
@@ -329,7 +329,7 @@
                                       </FontInfo>
                                     </Property>
                                     <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                                      <Connection code="Colors.Color_16_16_141" type="code"/>
+                                      <Connection code="/* Renaming also in *.form! */ Colors.Color_16_16_141" type="code"/>
                                     </Property>
                                     <Property name="text" type="java.lang.String" value="loading...     "/>
                                   </Properties>
@@ -522,12 +522,12 @@
                                     <Container class="javax.swing.JPanel" name="singleRowViewContainterPanel">
                                       <Properties>
                                         <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                                          <Connection code="Colors.Color_255_255_255" type="code"/>
+                                          <Connection code="/* Renaming also in *.form! */ Colors.Color_255_255_255" type="code"/>
                                         </Property>
                                         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                                           <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
                                             <LineBorder roundedCorners="true">
-                                              <Connection code="Colors.Color_128_128_128" type="code"/>
+                                              <Connection code="/* Renaming also in *.form! */ Colors.Color_128_128_128" type="code"/>
                                             </LineBorder>
                                           </Border>
                                         </Property>
@@ -559,7 +559,7 @@
                             <Container class="javax.swing.JPanel" name="jPanel11">
                               <Properties>
                                 <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                                  <Connection code="Colors.Color_232_228_228" type="code"/>
+                                  <Connection code="/* Renaming also in *.form! */ Colors.Color_232_228_228" type="code"/>
                                 </Property>
                               </Properties>
                               <Constraints>
@@ -573,10 +573,10 @@
                                 <Component class="javax.swing.JLabel" name="jLabel7">
                                   <Properties>
                                     <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                                      <Connection code="Colors.Color_200_200_200" type="code"/>
+                                      <Connection code="/* Renaming also in *.form! */ Colors.Color_200_200_200" type="code"/>
                                     </Property>
                                     <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                                      <Connection code="Colors.Color_0_0_1" type="code"/>
+                                      <Connection code="/* Renaming also in *.form! */ Colors.Color_0_0_1" type="code"/>
                                     </Property>
                                     <Property name="text" type="java.lang.String" value=" Single Row Details "/>
                                   </Properties>
@@ -622,7 +622,7 @@
                 <Component class="javax.swing.JLabel" name="errorLabel">
                   <Properties>
                     <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                      <Connection code="Colors.Color_16_16_141" type="code"/>
+                      <Connection code="/* Renaming also in *.form! */ Colors.Color_16_16_141" type="code"/>
                     </Property>
                     <Property name="text" type="java.lang.String" value="Error"/>
                   </Properties>
@@ -689,7 +689,7 @@
                       </FontInfo>
                     </Property>
                     <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                      <Connection code="Colors.Color_16_16_141" type="code"/>
+                      <Connection code="/* Renaming also in *.form! */ Colors.Color_16_16_141" type="code"/>
                     </Property>
                     <Property name="text" type="java.lang.String" value="Cancelled"/>
                   </Properties>
@@ -720,7 +720,7 @@
                   </FontInfo>
                 </Property>
                 <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                  <Connection code="Colors.Color_16_16_141" type="code"/>
+                  <Connection code="/* Renaming also in *.form! */ Colors.Color_16_16_141" type="code"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="pending..."/>
               </Properties>
@@ -968,7 +968,7 @@
             <Container class="javax.swing.JPanel" name="relatedRowsPanel">
               <Properties>
                 <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                  <Connection code="Colors.Color_255_240_224" type="code"/>
+                  <Connection code="/* Renaming also in *.form! */ Colors.Color_255_240_224" type="code"/>
                 </Property>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="org.netbeans.modules.form.compat2.border.SoftBevelBorderInfo">
@@ -990,7 +990,7 @@
                 <Component class="javax.swing.JLabel" name="relatedRowsLabel">
                   <Properties>
                     <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                      <Connection code="Colors.Color_255_240_224" type="code"/>
+                      <Connection code="/* Renaming also in *.form! */ Colors.Color_255_240_224" type="code"/>
                     </Property>
                     <Property name="text" type="java.lang.String" value="Related Rows  "/>
                     <Property name="opaque" type="boolean" value="true"/>
@@ -1006,7 +1006,7 @@
             <Container class="javax.swing.JPanel" name="sqlPanel">
               <Properties>
                 <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                  <Connection code="Colors.Color_218_243_255" type="code"/>
+                  <Connection code="/* Renaming also in *.form! */ Colors.Color_218_243_255" type="code"/>
                 </Property>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="org.netbeans.modules.form.compat2.border.SoftBevelBorderInfo">
@@ -1028,7 +1028,7 @@
                 <Component class="javax.swing.JLabel" name="sqlLabel1">
                   <Properties>
                     <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                      <Connection code="Colors.Color_0_0_1" type="code"/>
+                      <Connection code="/* Renaming also in *.form! */ Colors.Color_0_0_1" type="code"/>
                     </Property>
                     <Property name="text" type="java.lang.String" value="Menu  "/>
                   </Properties>

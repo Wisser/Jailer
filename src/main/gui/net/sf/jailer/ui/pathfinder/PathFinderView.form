@@ -46,7 +46,7 @@
                   </Border>
                 </Property>
                 <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                  <Connection code="Colors.Color_255_255_255" type="code"/>
+                  <Connection code="/* Renaming also in *.form! */ Colors.Color_255_255_255" type="code"/>
                 </Property>
                 <Property name="opaque" type="boolean" value="false"/>
               </Properties>
@@ -70,7 +70,7 @@
                     <Container class="javax.swing.JPanel" name="pathContainerPanel">
                       <Properties>
                         <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                          <Connection code="Colors.Color_255_255_255" type="code"/>
+                          <Connection code="/* Renaming also in *.form! */ Colors.Color_255_255_255" type="code"/>
                         </Property>
                       </Properties>
 
@@ -120,7 +120,7 @@
                 <Component class="javax.swing.JLabel" name="jLabel2">
                   <Properties>
                     <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                      <Connection code="Colors.Color_128_128_128" type="code"/>
+                      <Connection code="/* Renaming also in *.form! */ Colors.Color_128_128_128" type="code"/>
                     </Property>
                     <Property name="text" type="java.lang.String" value="Open context menu (right mouse click on table) to define its direct successor."/>
                   </Properties>
