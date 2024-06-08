@@ -1600,7 +1600,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         layeredPane.add(inspectorHolder);
         inspectorHolder.setBounds(0, 0, 0, 0);
 
-        focusPanel.setForeground(/* Renaming also in *.form! */ Colors.Color_125_82_86);
+        focusPanel.setForeground(/* Renaming also in *.form! */ Colors.Color_86_82_125);
         focusPanel.setOpaque(false);
         focusPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -1648,7 +1648,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         focusPanel.add(leftButton, gridBagConstraints);
 
-        activateDesictionPendingButton.setBackground(/* Renaming also in *.form! */ Colors.Color_152_153_255);
+        activateDesictionPendingButton.setBackground(/* Renaming also in *.form! */ Colors.Color_255_153_152);
         activateDesictionPendingButton.setForeground(/* Renaming also in *.form! */ Colors.Color_1_0_0);
         activateDesictionPendingButton.setText("Migration pending");
         activateDesictionPendingButton.addActionListener(new java.awt.event.ActionListener() {
@@ -2114,7 +2114,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         legende.setLayout(new java.awt.GridBagLayout());
 
         dependsOn.setFont(dependsOn.getFont().deriveFont(dependsOn.getFont().getSize()+1f));
-        dependsOn.setForeground(/* Renaming also in *.form! */ Colors.Color_0_0_170);
+        dependsOn.setForeground(/* Renaming also in *.form! */ Colors.Color_170_0_0);
         dependsOn.setText(" Parent (depends on) ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -2128,7 +2128,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         legende.add(hasDependent, gridBagConstraints);
 
         associatedWith.setFont(associatedWith.getFont().deriveFont(associatedWith.getFont().getSize()+1f));
-        associatedWith.setForeground(/* Renaming also in *.form! */ Colors.Color_255_100_0);
+        associatedWith.setForeground(/* Renaming also in *.form! */ Colors.Color_0_100_255);
         associatedWith.setText("   associated with");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;

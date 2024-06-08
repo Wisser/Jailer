@@ -1736,7 +1736,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 
         jPanel3.setLayout(new java.awt.GridBagLayout());
 
-        jLabel3.setForeground(/* Renaming also in *.form! */ Colors.Color_0_0_255);
+        jLabel3.setForeground(/* Renaming also in *.form! */ Colors.Color_255_0_0);
         jLabel3.setText("Primary key column  ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1745,7 +1745,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 2, 2, 2);
         jPanel3.add(jLabel3, gridBagConstraints);
 
-        jLabel4.setForeground(/* Renaming also in *.form! */ Colors.Color_255_0_0);
+        jLabel4.setForeground(/* Renaming also in *.form! */ Colors.Color_0_0_255);
         jLabel4.setText("Column with derived filter");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;

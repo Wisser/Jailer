@@ -1422,7 +1422,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         jPanel2.add(statusPanel, gridBagConstraints);
 
-        popupTitelPanel.setBackground(/* Renaming also in *.form! */ Colors.Color_255_250_250);
+        popupTitelPanel.setBackground(/* Renaming also in *.form! */ Colors.Color_250_250_255);
         popupTitelPanel.setLayout(new java.awt.GridBagLayout());
 
         popupTabNameLabel.setFont(popupTabNameLabel.getFont().deriveFont(popupTabNameLabel.getFont().getStyle() | java.awt.Font.BOLD));

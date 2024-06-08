@@ -2642,7 +2642,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         legende.setLayout(new java.awt.GridBagLayout());
 
         dependsOn.setFont(dependsOn.getFont().deriveFont(dependsOn.getFont().getSize()+1f));
-        dependsOn.setForeground(/* Renaming also in *.form! */ Colors.Color_0_0_170);
+        dependsOn.setForeground(/* Renaming also in *.form! */ Colors.Color_170_0_0);
         dependsOn.setText(" Parent (depends on) ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -2656,7 +2656,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         legende.add(hasDependent, gridBagConstraints);
 
         associatedWith.setFont(associatedWith.getFont().deriveFont(associatedWith.getFont().getSize()+1f));
-        associatedWith.setForeground(/* Renaming also in *.form! */ Colors.Color_255_100_0);
+        associatedWith.setForeground(/* Renaming also in *.form! */ Colors.Color_0_100_255);
         associatedWith.setText("  associated with");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -3228,7 +3228,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         gridBagConstraints.weighty = 1.0;
         jLayeredPane2.add(jPanel1, gridBagConstraints);
 
-        updateInfoPanel.setBackground(/* Renaming also in *.form! */ Colors.Color_236_255_255);
+        updateInfoPanel.setBackground(/* Renaming also in *.form! */ Colors.Color_255_255_236);
         updateInfoPanel.setLayout(new java.awt.GridBagLayout());
 
         updateInfoLabel.setText("Release x available");

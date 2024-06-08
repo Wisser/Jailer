@@ -841,7 +841,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         jPanel13.setLayout(new java.awt.GridBagLayout());
 
         loadingCauseLabel.setFont(loadingCauseLabel.getFont().deriveFont(loadingCauseLabel.getFont().getSize()+3f));
-        loadingCauseLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_16_16_141);
+        loadingCauseLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_141_16_16);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -851,7 +851,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         jPanel13.add(loadingCauseLabel, gridBagConstraints);
 
         loadingLabel.setFont(loadingLabel.getFont().deriveFont(loadingLabel.getFont().getStyle() | java.awt.Font.BOLD, loadingLabel.getFont().getSize()+3));
-        loadingLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_16_16_141);
+        loadingLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_141_16_16);
         loadingLabel.setText("loading...     ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -889,7 +889,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         columnsPanel.setLayout(new java.awt.BorderLayout());
         columnsPanel.add(columnsScrollPane, java.awt.BorderLayout.CENTER);
 
-        columnsSortedStateLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_255_0_0);
+        columnsSortedStateLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_0_0_255);
         columnsSortedStateLabel.setText(" ");
         columnsPanel.add(columnsSortedStateLabel, java.awt.BorderLayout.NORTH);
 
@@ -979,7 +979,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
         textTabPanel.add(headerCheckBox, gridBagConstraints);
 
-        textSortedStateLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_255_0_0);
+        textSortedStateLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_0_0_255);
         textSortedStateLabel.setText("jLabel2");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

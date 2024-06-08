@@ -183,7 +183,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         ignore.setText("Disabled    ");
         jPanel1.add(ignore);
 
-        restrictedDependencyWarning.setForeground(/* Renaming also in *.form! */ Colors.Color_51_0_255);
+        restrictedDependencyWarning.setForeground(/* Renaming also in *.form! */ Colors.Color_255_0_51);
         restrictedDependencyWarning.setText("Restricted Dependency! ");
         jPanel1.add(restrictedDependencyWarning);
 
@@ -251,7 +251,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         jPanel10.add(jLabel5, gridBagConstraints);
 
-        fk20DisabledHintLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_0_0_255);
+        fk20DisabledHintLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_255_0_0);
         fk20DisabledHintLabel.setText("(Foreign key is not nullable)");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;

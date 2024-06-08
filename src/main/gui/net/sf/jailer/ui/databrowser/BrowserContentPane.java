@@ -6525,7 +6525,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         loadingPanel.setOpaque(false);
         loadingPanel.setLayout(new java.awt.GridBagLayout());
 
-        jPanel1.setBackground(Colors.Color_255_255_255_150);
+        jPanel1.setBackground(/* Renaming also in *.form! */ Colors.Color_255_255_255_150);
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         cancelLoadButton.setText("Cancel");
@@ -6553,7 +6553,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jPanel13.setLayout(new java.awt.GridBagLayout());
 
         loadingCauseLabel.setFont(loadingCauseLabel.getFont().deriveFont(loadingCauseLabel.getFont().getSize()+3f));
-        loadingCauseLabel.setForeground(Colors.Color_141_16_16);
+        loadingCauseLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_141_16_16);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -6563,7 +6563,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jPanel13.add(loadingCauseLabel, gridBagConstraints);
 
         loadingLabel.setFont(loadingLabel.getFont().deriveFont(loadingLabel.getFont().getStyle() | java.awt.Font.BOLD, loadingLabel.getFont().getSize()+3));
-        loadingLabel.setForeground(Colors.Color_141_16_16);
+        loadingLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_141_16_16);
         loadingLabel.setText("loading...     ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -6710,8 +6710,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         singleRowViewScrollContentPanel.setLayout(new java.awt.GridBagLayout());
 
-        singleRowViewContainterPanel.setBackground(Colors.Color_white);
-        singleRowViewContainterPanel.setBorder(new javax.swing.border.LineBorder(Colors.Color_gray, 1, true));
+        singleRowViewContainterPanel.setBackground(/* Renaming also in *.form! */ Colors.Color_255_255_255);
+        singleRowViewContainterPanel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.gray, 1, true));
         singleRowViewContainterPanel.setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -6738,11 +6738,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         singleRowViewScrollPaneContainer.add(singleRowViewScrollPane, gridBagConstraints);
 
-        jPanel11.setBackground(Colors.Color_228_228_232);
+        jPanel11.setBackground(/* Renaming also in *.form! */ Colors.Color_228_228_232);
         jPanel11.setLayout(new java.awt.GridBagLayout());
 
-        jLabel7.setBackground(Colors.Color_200_200_200);
-        jLabel7.setForeground(Colors.Color_1_0_0);
+        jLabel7.setBackground(/* Renaming also in *.form! */ Colors.Color_200_200_200);
+        jLabel7.setForeground(/* Renaming also in *.form! */ Colors.Color_0_0_1);
         jLabel7.setText(" Single Row Details ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -6801,7 +6801,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         jPanel5.setLayout(new java.awt.GridBagLayout());
 
-        errorLabel.setForeground(Colors.Color_141_16_16);
+        errorLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_141_16_16);
         errorLabel.setText("Error");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -6843,7 +6843,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jPanel4.setLayout(new java.awt.GridBagLayout());
 
         jLabel8.setFont(jLabel8.getFont().deriveFont(jLabel8.getFont().getStyle() | java.awt.Font.BOLD, jLabel8.getFont().getSize()+3));
-        jLabel8.setForeground(Colors.Color_141_16_16);
+        jLabel8.setForeground(/* Renaming also in *.form! */ Colors.Color_141_16_16);
         jLabel8.setText("Cancelled");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -6861,7 +6861,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jPanel8.setLayout(new java.awt.GridBagLayout());
 
         jLabel11.setFont(jLabel11.getFont().deriveFont(jLabel11.getFont().getStyle() | java.awt.Font.BOLD, jLabel11.getFont().getSize()+3));
-        jLabel11.setForeground(Colors.Color_141_16_16);
+        jLabel11.setForeground(/* Renaming also in *.form! */ Colors.Color_141_16_16);
         jLabel11.setText("pending...");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -7040,11 +7040,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         rrPanel.setLayout(new java.awt.GridBagLayout());
 
-        relatedRowsPanel.setBackground(Colors.Color_224_240_255);
+        relatedRowsPanel.setBackground(/* Renaming also in *.form! */ Colors.Color_224_240_255);
         relatedRowsPanel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         relatedRowsPanel.setLayout(new java.awt.GridBagLayout());
 
-        relatedRowsLabel.setBackground(Colors.Color_224_240_255);
+        relatedRowsLabel.setBackground(/* Renaming also in *.form! */ Colors.Color_224_240_255);
         relatedRowsLabel.setText("Related Rows  ");
         relatedRowsLabel.setOpaque(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -7066,11 +7066,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         rrPanel.add(relatedRowsPanel, gridBagConstraints);
 
-        sqlPanel.setBackground(Colors.Color_255_243_218);
+        sqlPanel.setBackground(/* Renaming also in *.form! */ Colors.Color_255_243_218);
         sqlPanel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         sqlPanel.setLayout(new java.awt.GridBagLayout());
 
-        sqlLabel1.setForeground(Colors.Color_1_0_0);
+        sqlLabel1.setForeground(/* Renaming also in *.form! */ Colors.Color_0_0_1);
         sqlLabel1.setText("Menu  ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(2, 3, 2, 3);

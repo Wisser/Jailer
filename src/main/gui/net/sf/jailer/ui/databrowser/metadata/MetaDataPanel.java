@@ -1716,7 +1716,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 
         waitingPanel.setBackground(/* Renaming also in *.form! */ Colors.Color_255_255_255);
 
-        jLabel5.setForeground(/* Renaming also in *.form! */ Colors.Color_0_0_255);
+        jLabel5.setForeground(/* Renaming also in *.form! */ Colors.Color_255_0_0);
         jLabel5.setText("creating...");
         waitingPanel.add(jLabel5);
 

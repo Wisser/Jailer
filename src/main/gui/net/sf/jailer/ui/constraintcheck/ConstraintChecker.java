@@ -568,7 +568,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
         jPanel6.add(childLabel, gridBagConstraints);
 
-        parentLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_0_0_95);
+        parentLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_95_0_0);
         parentLabel.setText("jLabel5");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -578,7 +578,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
         jPanel6.add(parentLabel, gridBagConstraints);
 
-        conditionLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_255_0_0);
+        conditionLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_0_0_255);
         conditionLabel.setText("jLabel5");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -588,7 +588,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
         jPanel6.add(conditionLabel, gridBagConstraints);
 
-        problemLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_0_0_255);
+        problemLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_255_0_0);
         problemLabel.setText("jLabel5");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -598,7 +598,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
         jPanel6.add(problemLabel, gridBagConstraints);
 
-        dummyLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_0_0_255);
+        dummyLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_255_0_0);
         dummyLabel.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;

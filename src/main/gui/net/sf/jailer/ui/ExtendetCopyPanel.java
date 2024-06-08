@@ -654,7 +654,7 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         jPanel3.add(jPanel4, gridBagConstraints);
 
         stopRowLabel.setFont(stopRowLabel.getFont().deriveFont((stopRowLabel.getFont().getStyle() | java.awt.Font.ITALIC)));
-        stopRowLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_0_0_255);
+        stopRowLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_255_0_0);
         stopRowLabel.setText("Preview ends here...");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -663,7 +663,7 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         jPanel3.add(stopRowLabel, gridBagConstraints);
 
         stopColumnLabel.setFont(stopColumnLabel.getFont().deriveFont((stopColumnLabel.getFont().getStyle() | java.awt.Font.ITALIC)));
-        stopColumnLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_0_0_255);
+        stopColumnLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_255_0_0);
         stopColumnLabel.setText("Preview ends here...");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -672,7 +672,7 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         jPanel3.add(stopColumnLabel, gridBagConstraints);
 
         stopBothLabel.setFont(stopBothLabel.getFont().deriveFont((stopBothLabel.getFont().getStyle() | java.awt.Font.ITALIC)));
-        stopBothLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_0_0_255);
+        stopBothLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_255_0_0);
         stopBothLabel.setText("Preview ends here...");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -692,7 +692,7 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         jPanel2.add(previewPanel, gridBagConstraints);
 
         jLabel2.setFont(jLabel2.getFont().deriveFont(jLabel2.getFont().getSize()+4f));
-        jLabel2.setForeground(/* Renaming also in *.form! */ Colors.Color_0_0_255);
+        jLabel2.setForeground(/* Renaming also in *.form! */ Colors.Color_255_0_0);
         jLabel2.setText("Preview");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;

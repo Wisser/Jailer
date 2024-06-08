@@ -1057,7 +1057,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 
         loadingPanel.setBackground(/* Renaming also in *.form! */ Colors.Color_255_255_255);
 
-        jLabel1.setForeground(/* Renaming also in *.form! */ Colors.Color_0_0_255);
+        jLabel1.setForeground(/* Renaming also in *.form! */ Colors.Color_255_0_0);
         jLabel1.setText("loading...");
         loadingPanel.add(jLabel1);
 
@@ -1208,10 +1208,10 @@ public class StringSearchPanel extends javax.swing.JPanel {
 
         bottomPanel.setLayout(new java.awt.GridBagLayout());
 
-        statusPanel.setBackground(/* Renaming also in *.form! */ Colors.Color_204_255_255);
+        statusPanel.setBackground(/* Renaming also in *.form! */ Colors.Color_255_255_204);
         statusPanel.setLayout(new java.awt.GridBagLayout());
 
-        statusLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_77_0_0);
+        statusLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_0_0_77);
         statusLabel.setText("jLabel3");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
