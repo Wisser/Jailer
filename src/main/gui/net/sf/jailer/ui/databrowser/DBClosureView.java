@@ -580,7 +580,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
                 CellInfo cellInfo = DBClosureView.this.cellInfo.get(value);
                 boolean onPath = false;
                 if (render instanceof JLabel) {
-                    ((JLabel) render).setForeground(Colors.Color_black);
+                    ((JLabel) render).setForeground(Colors.Color_0_0_0);
                     ((JLabel) render).setFont(normal);
                     String text = ((JLabel) render).getText();
                     if (!"".equals(text)) {

@@ -953,9 +953,9 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		
 		SimpleAttributeSet set = new SimpleAttributeSet();
         ((DefaultStyledDocument) cliArea.getDocument()).setCharacterAttributes(0, cliArea.getText().length(), set, true);
-		addStyle("\"\\<password\\>\"", Colors.Color_red);
-		addStyle("jailer\\.[^ ]+ ", Colors.Color_blue);
-		addStyle("export|delete|import", Colors.Color_blue);
+		addStyle("\"\\<password\\>\"", Colors.Color_255_0_0);
+		addStyle("jailer\\.[^ ]+ ", Colors.Color_0_0_255);
+		addStyle("export|delete|import", Colors.Color_0_0_255);
 	}
 
 	/**
@@ -2457,7 +2457,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
 		boolean err = false;
 		if (insert.getText().trim().length() == 0 && (!delete.isVisible() || delete.getText().trim().length() == 0)) {
-			exportLabel.setForeground(Colors.Color_red);
+			exportLabel.setForeground(Colors.Color_255_0_0);
 			err = true;
 		}
 		if (scriptFormat == ScriptFormat.INTRA_DATABASE) {
@@ -2465,7 +2465,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 				JLabel label = schemaMappingLabels.get(e.getKey());
 				if (label != null) {
 					if (e.getValue().getText().trim().length() == 0) {
-						label.setForeground(Colors.Color_red);
+						label.setForeground(Colors.Color_255_0_0);
 						err = true;
 					} else {
 						label.setForeground(fg);

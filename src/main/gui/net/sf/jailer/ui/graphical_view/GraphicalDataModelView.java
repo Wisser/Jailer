@@ -351,7 +351,7 @@ public class GraphicalDataModelView extends JPanel {
 		display.setDamageRedraw(false);
 		display.setSize(width, height);
 		display.pan(width / 2, height / 2);
-		display.setForeground(Colors.Color_gray);
+		display.setForeground(Colors.Color_128_128_128);
 
 		// main display controls
 		display.addControlListener(new FocusControl(1));
@@ -469,7 +469,7 @@ public class GraphicalDataModelView extends JPanel {
 		display.addControlListener(zoomToFitControl);
 		display.addControlListener(new ToolTipControl("tooltip"));
 
-		display.setForeground(Colors.Color_gray);
+		display.setForeground(Colors.Color_128_128_128);
 		display.setBackground(Colors.GraphicalDataViewBackground);
 
 		// now we run our action list

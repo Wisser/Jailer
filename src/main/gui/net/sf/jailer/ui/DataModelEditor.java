@@ -432,7 +432,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 				}
 				boolean fromModelFinder = tableTableRowsFromModelFinder.contains(tablesTable.getRowSorter().convertRowIndexToModel(row));
 				Component render = super.getTableCellRendererComponent(table, value, isSelected, false, row, column);
-				render.setForeground(Colors.Color_black);
+				render.setForeground(Colors.Color_0_0_0);
 				if (fromModelFinder || modifiedColumnTables.contains(value) && column == 0) {
 					render.setBackground(isSelected? BG_SELCOLOR : BG_COLOR);
 				} else {
@@ -441,7 +441,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 				if (tableTableRowsWithoutPK.contains(tablesTable.getRowSorter().convertRowIndexToModel(row))
 						||
 					tablesWithInvalidPK.contains(tablesTable.getRowSorter().convertRowIndexToModel(row))) {
-					render.setForeground(Colors.Color_red);
+					render.setForeground(Colors.Color_255_0_0);
 				}
 				if (render instanceof JLabel) {
 					if (!"".equals(value)) {
@@ -476,7 +476,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 				} else {
 					render.setBackground(isSelected? BG_SELCOLOR : (row % 2 == 0) ? BG1 : BG2);
 				}
-				render.setForeground(Colors.Color_black);
+				render.setForeground(Colors.Color_0_0_0);
 				if (render instanceof JLabel) {
 					if (column == 3) {
 						((JLabel) render).setToolTipText(typeTT);

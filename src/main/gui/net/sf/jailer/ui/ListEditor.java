@@ -163,7 +163,7 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 					if (color != null) {
 						render.setForeground(color);
 					} else {
-						render.setForeground(Colors.Color_black);
+						render.setForeground(Colors.Color_0_0_0);
 					}
 				}
 				return render;

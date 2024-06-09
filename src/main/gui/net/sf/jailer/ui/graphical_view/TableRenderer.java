@@ -628,7 +628,7 @@ public abstract class TableRenderer extends AbstractShapeRenderer {
 						a = a.substring(1);
 					}
 					if (a.startsWith("+")) {
-						g.setPaint(Colors.Color_red);
+						g.setPaint(Colors.Color_255_0_0);
 						a = a.substring(1);
 					}
 				}
@@ -637,7 +637,7 @@ public abstract class TableRenderer extends AbstractShapeRenderer {
 				} else {
 					drawString(g, fm, a, useInt, x, y, tw, Constants.LEFT);
 					if (b != null) {
-						g.setPaint(Colors.Color_gray);
+						g.setPaint(Colors.Color_128_128_128);
 						drawString(g, fm, b, useInt, x, y, tw, Constants.RIGHT);
 					}
 				}

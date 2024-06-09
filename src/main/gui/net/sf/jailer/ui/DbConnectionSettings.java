@@ -155,7 +155,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 				}
 				private void update() {
 					if (UIUtil.plaf.isFlat && pTextField[finalI].getText().startsWith("<") && pTextField[finalI].getText().endsWith(">")) {
-						pTextField[finalI].setForeground(Colors.Color_red);
+						pTextField[finalI].setForeground(Colors.Color_255_0_0);
 					} else {
 						pTextField[finalI].setForeground(fgColor);
 					}

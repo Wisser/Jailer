@@ -518,7 +518,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 				}
 				CellInfo cellInfo = ClosureView.this.cellInfo.get(value);
 				if (render instanceof JLabel) {
-					((JLabel) render).setForeground(Colors.Color_black);
+					((JLabel) render).setForeground(Colors.Color_0_0_0);
 					((JLabel) render).setFont(normal);
 					String text = ((JLabel) render).getText();
 					if (!"".equals(text)) {
@@ -1177,7 +1177,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 			if (distance % 2 == 0) {
 				bgColor = Colors.Color_240_255_255;
 			} else {
-				bgColor = Colors.Color_white;
+				bgColor = Colors.Color_255_255_255;
 			}
 			for (final String assocName: assocList) {
 				Association association = getDataModel().namedAssociations.get(assocName);
@@ -1258,7 +1258,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 				l = createLabel(y, null, assocName, bgc, " " + unrestrictedJoinCondition, true);
 				l.setOpaque(true);
 				l.setFont(nonbold);
-				l.setForeground(Colors.Color_gray);
+				l.setForeground(Colors.Color_128_128_128);
 				gridBagConstraints = new java.awt.GridBagConstraints();
 				gridBagConstraints.gridx = 4;
 				gridBagConstraints.gridy = y;
@@ -1281,7 +1281,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 				l = createLabel(y, null, null, bgColor, " no non-dependency association", true);
 				l.setOpaque(true);
 				l.setFont(nonbold);
-				l.setForeground(Colors.Color_gray);
+				l.setForeground(Colors.Color_128_128_128);
 				gridBagConstraints = new java.awt.GridBagConstraints();
 				gridBagConstraints.gridx = 1;
 				gridBagConstraints.gridy = y;

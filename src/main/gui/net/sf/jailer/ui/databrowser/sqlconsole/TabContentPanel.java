@@ -391,7 +391,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 		textArea.setEditable(false);
 		textArea.discardAllEdits();
 		if (UIUtil.plaf.isFlat) {
-			textArea.setBackground(Colors.Color_white);
+			textArea.setBackground(Colors.Color_255_255_255);
 		}
 		UIUtil.invokeLater(() -> textViewScrollPane.getViewport().setViewPosition(vPos));
 	}

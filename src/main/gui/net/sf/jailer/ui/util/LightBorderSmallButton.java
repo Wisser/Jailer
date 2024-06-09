@@ -53,7 +53,7 @@ public abstract class LightBorderSmallButton extends SmallButton {
 		if (isEnabled()) {
 			if (!UIUtil.plaf.isFlat) {
 				super.onMouseEntered();
-				getFrame().setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED, Colors.Color_light_gray, Colors.Color_gray));
+				getFrame().setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED, Colors.Color_192_192_192, Colors.Color_128_128_128));
 			} else if (!freezed) {
 				entered = true;
 				getFrame().setOpaque(true);

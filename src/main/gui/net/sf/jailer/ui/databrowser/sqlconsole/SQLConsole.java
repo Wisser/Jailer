@@ -463,7 +463,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         if (jScrollPane.getGutter() != null) {
         	jScrollPane.getGutter().setIconRowHeaderInheritsGutterBackground(true);
         	try {
-        		jScrollPane.getGutter().setCurrentLineNumberColor(Colors.Color_black);
+        		jScrollPane.getGutter().setCurrentLineNumberColor(Colors.Color_0_0_0);
         	} catch (Throwable t) {
         		LogUtil.warn(t);
         	}
@@ -2321,12 +2321,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                                 cancelButton.setEnabled(!isFailed && running);
                                 if (!isFailed) {
                                     statusLabel.setVisible(true);
-                                    statusLabel.setForeground(running? runningStatusLabelColor : Colors.Color_black);
+                                    statusLabel.setForeground(running? runningStatusLabelColor : Colors.Color_0_0_0);
                                     statusLabel.setText(getText());
                                 } else {
                                 	statusLabel.setVisible(true);
                                     if (theError instanceof CancellationException) {
-                                        statusLabel.setForeground(Colors.Color_red);
+                                        statusLabel.setForeground(Colors.Color_255_0_0);
                                         statusLabel.setText("Cancelled");
                                         removeLastErrorTab();
                                     } else if (theError instanceof SQLException) {
@@ -2355,7 +2355,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                                 }
                                 if (successState != null && (successState.mode == Mode.RETRY || numStatements > 0)) {
                                 	statusLabel.setVisible(true);
-                                    statusLabel.setForeground(running? runningStatusLabelColor : Colors.Color_black);
+                                    statusLabel.setForeground(running? runningStatusLabelColor : Colors.Color_0_0_0);
                                     statusLabel.setText(getText());
                                 }
                             }
@@ -2507,7 +2507,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
     private void showError(String errorMessage, String statement, int errorPosition) {
     	statusLabel.setVisible(true);
-    	statusLabel.setForeground(Colors.Color_red);
+    	statusLabel.setForeground(Colors.Color_255_0_0);
     	statusLabel.setText("Error");
 
     	removeLastErrorTab();
@@ -2837,7 +2837,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         statusLabel.setText("Canceling...");
-        statusLabel.setForeground(Colors.Color_red);
+        statusLabel.setForeground(Colors.Color_255_0_0);
     	CancellationHandler.cancel(this);
     	cancelButton.setEnabled(false);
     }//GEN-LAST:event_cancelButtonActionPerformed

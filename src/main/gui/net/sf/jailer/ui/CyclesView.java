@@ -245,7 +245,7 @@ public class CyclesView extends javax.swing.JDialog {
 					}	
 				}
 				if (render instanceof JLabel) {
-					((JLabel) render).setForeground(Colors.Color_black);
+					((JLabel) render).setForeground(Colors.Color_0_0_0);
 					((JLabel) render).setFont(normal);
 					((JLabel) render).setToolTipText("".equals(((JLabel) render).getText())? null : ((JLabel) render).getText());
 					if (selectedTable != null) {

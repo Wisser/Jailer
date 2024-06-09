@@ -480,11 +480,11 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 			final JComponent button;
     		if (node.table.equals(source) || node.table.equals(destination)) {
     			button = new JLabel(dataModel.getDisplayName(node.table));
-	    		button.setForeground(sourceClosure.contains(node.table)? Colors.Color_black : COLOR_NOT_IN_CLOSURE);
+	    		button.setForeground(sourceClosure.contains(node.table)? Colors.Color_0_0_0 : COLOR_NOT_IN_CLOSURE);
     		} else {
 	    		JToggleButton tButton = new JToggleButton(dataModel.getDisplayName(node.table));
 	    		tButton.setSelected(isSelected);
-	    		tButton.setForeground(sourceClosure.contains(node.table)? Colors.Color_black : COLOR_NOT_IN_CLOSURE);
+	    		tButton.setForeground(sourceClosure.contains(node.table)? Colors.Color_0_0_0 : COLOR_NOT_IN_CLOSURE);
 	    		final ArrayList<Table> nPathStations = new ArrayList<Table>(pathStations);
 	    		if (isSelected) {
 					nPathStations.remove(pathStationIndex);

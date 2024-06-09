@@ -308,7 +308,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 						statusLabel.setVisible(true);
 						if (numErrors > 0) {
 							statusLabel.setText(numErrors + " problems");
-							statusLabel.setForeground(Colors.Color_red);
+							statusLabel.setForeground(Colors.Color_255_0_0);
 						}
 					}
 				});
@@ -372,8 +372,8 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 		    	progressLabel.setText(numChecksDone + " of " + numChecks);
 		    	jProgressBar1.setValue(numChecksDone);
 		    	if (numErrors > 0) {
-		    		jProgressBar1.setForeground(Colors.Color_red);
-		    		progressLabel.setForeground(Colors.Color_red);
+		    		jProgressBar1.setForeground(Colors.Color_255_0_0);
+		    		progressLabel.setForeground(Colors.Color_255_0_0);
 		    	}
 		    	checksPane.append(checkQuery + ";\n");
 		    	if (numErrors == 1) {

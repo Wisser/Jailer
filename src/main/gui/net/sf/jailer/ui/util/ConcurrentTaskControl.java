@@ -209,7 +209,7 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
 		};
 		concurrentTaskControl.master = control;
 		
-		control.setBorder(BorderFactory.createLineBorder(Colors.Color_gray));
+		control.setBorder(BorderFactory.createLineBorder(Colors.Color_128_128_128));
 		dialog.getContentPane().add(control);
 		dialog.pack();
  		dialog.setLocation(windowAncestor.getX() + (windowAncestor.getWidth() - dialog.getWidth()) / 2, Math.max(0, windowAncestor.getY() + (windowAncestor.getHeight() - dialog.getHeight()) / 2));

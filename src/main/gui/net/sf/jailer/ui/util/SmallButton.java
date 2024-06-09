@@ -29,8 +29,8 @@ import net.sf.jailer.ui.UIUtil;
 public abstract class SmallButton extends JLabel {
 
 	private final boolean borderStyle;
-	private static final Color BORDER_LIGHT = Colors.Color_lightgray;
-	private static final Color BORDER_SHADOW = Colors.Color_gray;
+	private static final Color BORDER_LIGHT = Colors.Color_192_192_192;
+	private static final Color BORDER_SHADOW = Colors.Color_128_128_128;
 	private final Icon icon;
 	private final Icon iconOver;
 	protected boolean entered = false;

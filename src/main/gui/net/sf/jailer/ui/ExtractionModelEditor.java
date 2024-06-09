@@ -1200,7 +1200,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					if (!wcep.isVisible()) {
 						dialog.getContentPane().add(new JLabel("Condition editor not supported for DBMS \"" + (extractionModelFrame.theSession.dbms == null? null : extractionModelFrame.theSession.dbms.getId()) + "\"\n") {
 							{
-								setBorder(BorderFactory.createLineBorder(Colors.Color_red));
+								setBorder(BorderFactory.createLineBorder(Colors.Color_255_0_0));
 							}
 						});
 						whereConditionEditorPanel = null;
@@ -3078,7 +3078,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
 					if (node.getUserObject() instanceof Table) {
 						text = dataModel.getDisplayName(((Table) node.getUserObject()));
-						setTextColor(tree, Colors.Color_black);
+						setTextColor(tree, Colors.Color_0_0_0);
 					} else if (node.getUserObject() instanceof Association) {
 						Association association = (Association) node.getUserObject();
 						text = dataModel.getDisplayName(association.destination);
@@ -3104,7 +3104,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			private void setTextColor(JTree tree, Color color) {
 				setTextNonSelectionColor(color);
 				if (UIUtil.plaf.isFlat) {
-					setTextSelectionColor(tree.hasFocus()? Colors.Color_white : color);
+					setTextSelectionColor(tree.hasFocus()? Colors.Color_255_255_255 : color);
 				}
 			}
 			private static final long serialVersionUID = 2657584557290860355L;

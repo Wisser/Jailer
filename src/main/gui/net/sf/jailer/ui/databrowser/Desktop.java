@@ -1698,11 +1698,11 @@ public abstract class Desktop extends JDesktopPane {
 				if (browserContentPane.rows != null) {
 					if (browserContentPane.rows.size() == 0) {
 						for (JLabel l: jLabels) {
-							l.setForeground(Colors.Color_gray);
+							l.setForeground(Colors.Color_128_128_128);
 						}
 					} else {
 						for (JLabel l: jLabels) {
-							l.setForeground(Colors.Color_blue);
+							l.setForeground(Colors.Color_0_0_255);
 						}
 					}
 				}
@@ -2341,8 +2341,8 @@ public abstract class Desktop extends JDesktopPane {
 										boolean intersect = link.intersect;
 										boolean dotted = link.dotted || toJoin.dotted;
 										newLinks.add(new Link(link.from, toJoin.to, link.sourceRowID, toJoin.destRowID, link.x1, link.y1, toJoin.x2, toJoin.y2,
-												UIUtil.plaf.isFlat? Colors.Color_170_200_0 : Colors.Color_yellow.darker().darker(), 
-												UIUtil.plaf.isFlat? Colors.Color_170_200_0 : Colors.Color_yellow.darker(), 
+												UIUtil.plaf.isFlat? Colors.Color_170_200_0 : Colors.Color_255_255_0.darker().darker(), 
+												UIUtil.plaf.isFlat? Colors.Color_170_200_0 : Colors.Color_255_255_0.darker(), 
 												dotted, intersect, link.inClosure && toJoin.inClosure, link.inTempClosure && toJoin.inTempClosure, link.notHAligned, link.restricted || toJoin.restricted));
 									}
 								}
@@ -2462,7 +2462,7 @@ public abstract class Desktop extends JDesktopPane {
 									lastLastY = lastY;
 									lastY = y;
 									lastInClosure = link.inClosure;
-									Color cl = pbg ? Colors.Color_white : link.color1; // light? link.color1 : link.color2;
+									Color cl = pbg ? Colors.Color_255_255_255 : link.color1; // light? link.color1 : link.color2;
 									if (UIUtil.plaf != PLAF.NIMBUS) {
 										if (cl.getGreen() > cl.getBlue() && cl.getGreen() >= cl.getRed()) {
 //											if (link.restricted) {

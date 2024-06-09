@@ -154,7 +154,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		});
 		browserContentCellEditor.setLoading(false);
 		editModeToggleButton.setBackground(Colors.Color_255_206_206);
-		editModeToggleButton.setForeground(Colors.Color_black);
+		editModeToggleButton.setForeground(Colors.Color_0_0_0);
 		editModeToggleButton.setIcon(editdetails);
 		pinToggleButton.setIcon(pinIcon);
 		pinToggleButton.setText(null);
@@ -261,7 +261,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	private List<Color> labelColors = new ArrayList<Color>();
 	
 	public void setBorderColor(Color color) {
-		jScrollPane1.setBorder(BorderFactory.createEtchedBorder(color, Colors.Color_gray));
+		jScrollPane1.setBorder(BorderFactory.createEtchedBorder(color, Colors.Color_128_128_128));
 	}
 	
 	protected int currentRow = -1;
@@ -410,7 +410,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 					        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
 					        panel2 = new JPanel(new FlowLayout(0, 0, 0));
 					        panel2.setOpaque(true);
-					        panel2.setBackground(Colors.Color_green);
+					        panel2.setBackground(Colors.Color_0_255_0);
 					        panel2.add(tab);
 					        gridBagConstraints = new java.awt.GridBagConstraints();
 					        gridBagConstraints.gridx = 1;
@@ -499,7 +499,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 						case FLAT:
 						case FLATDARK:
 						case NIMBUS:
-							f.setBorder(BorderFactory.createLineBorder(isEditable? Colors.Color_255_242_240 : Colors.Color_white));
+							f.setBorder(BorderFactory.createLineBorder(isEditable? Colors.Color_255_242_240 : Colors.Color_255_255_255));
 							break;
 					}
 					f.addKeyListener(new KeyListener() {
@@ -605,7 +605,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 					}
 	//				f.setEnabled(v != null);
 					if (v == null) {
-						f.setForeground(Colors.Color_gray);
+						f.setForeground(Colors.Color_128_128_128);
 						f.setFont(italic);
 					}
 					f.setEditable(isEditable);
@@ -651,10 +651,10 @@ public abstract class DetailsView extends javax.swing.JPanel {
 						l1.setForeground(FG1);
 						l2.setForeground(FG1);
 					} else {
-						lCont.setForeground(Colors.Color_blue);
-						l.setForeground(Colors.Color_blue);
-						l1.setForeground(Colors.Color_blue);
-						l2.setForeground(Colors.Color_blue);
+						lCont.setForeground(Colors.Color_0_0_255);
+						l.setForeground(Colors.Color_0_0_255);
+						l1.setForeground(Colors.Color_0_0_255);
+						l2.setForeground(Colors.Color_0_0_255);
 					}
 					MouseListener ml = new MouseAdapter() {
 						@Override
@@ -692,7 +692,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 					f.setText(text.indexOf('\n') >= 0? UIUtil.toHTML(text, 0) : text);
 					f.setFont(v == null? italic : nonbold);
 					if (v == null) {
-						f.setForeground(Colors.Color_gray);
+						f.setForeground(Colors.Color_128_128_128);
 					}
 					content.add(f, gridBagConstraints);
 					l.setText(" " + l.getText() + "  ");
@@ -703,7 +703,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 					if (rowIdSupport.getPrimaryKey(table) != null && rowIdSupport.getPrimaryKey(table).getColumns().contains(c)) {
 						l.setForeground(FG1);
 					} else {
-						l.setForeground(Colors.Color_blue);
+						l.setForeground(Colors.Color_0_0_255);
 					}
 					labelColors.add(f.getBackground());
 					labels.add(f);
@@ -1149,7 +1149,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	public void prepareForNonModalUsage() {
 		closeButton.setVisible(false);
 
-		setBorder(BorderFactory.createLineBorder(Colors.Color_black));
+		setBorder(BorderFactory.createLineBorder(Colors.Color_0_0_0));
 		SizeGrip corner = new SizeGrip();
 		boolean isLeftToRight = getComponentOrientation().isLeftToRight();
 		

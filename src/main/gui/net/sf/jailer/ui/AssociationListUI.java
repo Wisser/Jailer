@@ -294,7 +294,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 	}
 
 	private static final Color GREEN = Colors.Color_0_130_0;
-	private static final Color RED = Colors.Color_red;
+	private static final Color RED = Colors.Color_255_0_0;
 
 	private static abstract class ColumnContentGetter {
 		public abstract String getContent(AssociationModel association);
@@ -462,7 +462,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 			for (int x = 0; x <= columnContentGetter.length; ++x) {
 				String text = x == 0? " " : columnContentGetter[x - 1].getDisplayName();
 				JLabel title = new JLabel(text + "  ");
-				title.setBackground(Colors.Color_white);
+				title.setBackground(Colors.Color_255_255_255);
 				title.setOpaque(true);
 				title.setFont(bold);
 				GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -476,7 +476,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 		int[] y = new int[] { 2 };
 		updateUI(roots, 0, y, new boolean[] { false }, new HashMap<Integer, Integer>(), new Node[5]);
 		JLabel l = new JLabel(" ");
-		l.setBackground(Colors.Color_white);
+		l.setBackground(Colors.Color_255_255_255);
 		l.setOpaque(true);
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 		gridBagConstraints.gridwidth = 5;
@@ -504,7 +504,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 			if (y[0] % 2 == 0) {
 				bgColor = Colors.Color_240_255_255;
 			} else {
-				bgColor = Colors.Color_white;
+				bgColor = Colors.Color_255_255_255;
 			}
 			if (!minLevelPerY.containsKey(y[0])) {
 				minLevelPerY.put(y[0], level);
@@ -522,7 +522,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 									lastFgColor.getGreen() + 2 * (255 - lastFgColor.getGreen()) / 3,
 									lastFgColor.getBlue() + 2 * (255 - lastFgColor.getBlue()) / 3);
 						} else {
-							lastFgColor = Colors.Color_lightgray;
+							lastFgColor = Colors.Color_192_192_192;
 						}
 					}
 					JComponent l = createLabel(node, y[0], shorten(lastText), null, false, false, bgColor, lastFgColor, false, false);
@@ -539,7 +539,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 			if (a.isReversed()) {
 				joinCondition = SqlUtil.reversRestrictionCondition(joinCondition);
 			}
-			JComponent l = createLabel(node, y[0], node.group, level >= 3? joinCondition : null, level < 3, groupStart[0], bgColor, level >= 3? Colors.Color_gray : node.fgColor, node.isSelected(), true);
+			JComponent l = createLabel(node, y[0], node.group, level >= 3? joinCondition : null, level < 3, groupStart[0], bgColor, level >= 3? Colors.Color_128_128_128 : node.fgColor, node.isSelected(), true);
 			lastRowContent[level] = node;
 			gridBagConstraints = new java.awt.GridBagConstraints();
 			gridBagConstraints.gridx = level + 1;
@@ -598,7 +598,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 		}
 	}
 
-	private final Color BGCOLOR_OF_SELECTED_ROW = Colors.Color_cyan;
+	private final Color BGCOLOR_OF_SELECTED_ROW = Colors.Color_0_255_255;
 	private Font font = new JLabel("normal").getFont();
 	private Font bold = font.deriveFont(font.getStyle() | Font.BOLD, font.getSize());
 	private Font nonbold = font.deriveFont(font.getStyle() & ~Font.BOLD, font.getSize());
@@ -612,7 +612,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 					if (!(graphics instanceof Graphics2D))
 						return;
 					Graphics2D g2d = (Graphics2D) graphics;
-					Color color = Colors.Color_gray;
+					Color color = Colors.Color_128_128_128;
 					g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 					g2d.setColor(color);
 					g2d.setStroke(new BasicStroke());

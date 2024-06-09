@@ -230,7 +230,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 					if (!dataModelAware) {
 						if ("".equals(dataModelComboBox.getSelectedItem())) {
 							dataModelComboBox.setBackground(RED);
-							jLabel5.setForeground(Colors.Color_red);
+							jLabel5.setForeground(Colors.Color_255_0_0);
 						} else {
 							jLabel5.setForeground(fg);
 							dataModelComboBox.setBackground(bg);
@@ -371,7 +371,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 					((DefaultStyledDocument) dbUrl.getDocument()).setCharacterAttributes(i, 1, set, true);
 				}
 			}
-			Color color = Colors.Color_red;
+			Color color = Colors.Color_255_0_0;
 			Pattern pattern = Pattern.compile("\\<([^\\>\\<]*)\\>");
 			Matcher matcher = pattern.matcher(dbUrl.getText());
 			while (matcher.find()) {
@@ -530,7 +530,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 					if (!isSelected) {
 						Color b1 = ((ConnectionType) value).getBackground();
 						render.setBackground(b1 == null? dbg : b1);
-						render.setForeground(Colors.Color_black);
+						render.setForeground(Colors.Color_0_0_0);
 					}
 				}
 				return render;

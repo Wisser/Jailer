@@ -215,7 +215,7 @@ public abstract class TableEditor extends javax.swing.JDialog {
 		@Override
 		protected Color getForegroundColor(ColumnModel element, int column) {
 			if (element.isPk && column == 0) {
-				return Colors.Color_red;
+				return Colors.Color_255_0_0;
 			}
 			return null;
 		}

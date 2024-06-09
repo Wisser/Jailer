@@ -100,7 +100,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 			if (c.name != null) {
 				renderConsumer.put(Quoting.staticUnquote(c.name), 
 						label -> {
-							label.setForeground(Colors.Color_blue);
+							label.setForeground(Colors.Color_0_0_255);
 							label.setIcon(emptyIcon);
 						}
 				);
@@ -111,7 +111,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 				if (c.name != null) {
 					renderConsumer.put(Quoting.staticUnquote(c.name), 
 							label -> {
-								label.setForeground(Colors.Color_red);
+								label.setForeground(Colors.Color_255_0_0);
 								label.setIcon(constraintPKIcon);
 							}
 					);
@@ -316,9 +316,9 @@ public class TableDetailsView extends javax.swing.JPanel {
 			        label = new JLabel();
 			        
 			        if (isPk) {
-			        	label.setForeground(Colors.Color_red);
+			        	label.setForeground(Colors.Color_255_0_0);
 			        } else if (fks.contains(column)) {
-			        	label.setForeground(Colors.Color_blue);
+			        	label.setForeground(Colors.Color_0_0_255);
 			        }
 			        
 			        label.setText(Quoting.staticUnquote(column.name));
@@ -345,7 +345,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 							}
 			        	};
 				        Object obj = columnValue.get(column);
-				        label.setForeground(obj == null? Colors.Color_gray : Colors.Color_black);
+				        label.setForeground(obj == null? Colors.Color_128_128_128 : Colors.Color_0_0_0);
 				        if (obj == null) {
 				        	label.setFont(italic);
 				        }
@@ -359,7 +359,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 				        panel.add(label, gridBagConstraints);
 			        } else {
 				        label = new JLabel();
-				        label.setForeground(Colors.Color_gray);
+				        label.setForeground(Colors.Color_128_128_128);
 				        label.setText(column.toSQL("").substring(column.name.length()).trim());
 				        gridBagConstraints = new java.awt.GridBagConstraints();
 				        gridBagConstraints.gridx = 2;
@@ -383,7 +383,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 				        
 				        if (hasConstraints) {
 					        label = new JLabel();
-					        label.setForeground(Colors.Color_gray);
+					        label.setForeground(Colors.Color_128_128_128);
 					        JPanel panelC = new JPanel();
 							if (y % 2 != 0) {
 								panelC.setOpaque(false);

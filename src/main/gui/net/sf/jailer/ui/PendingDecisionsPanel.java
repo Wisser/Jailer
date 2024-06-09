@@ -92,7 +92,7 @@ public abstract class PendingDecisionsPanel extends javax.swing.JPanel {
 					render = checkBox;
 				}
 				render.setBackground(isSelected ? BG_SELCOLOR : (row % 2 == 0) ? BG1 : BG2);
-				render.setForeground(Colors.Color_black);
+				render.setForeground(Colors.Color_0_0_0);
 				if (render instanceof JLabel) {
 					((JLabel) render).setToolTipText(UIUtil.toHTML(String.valueOf(value), 100));
 				}

@@ -100,7 +100,7 @@ public class SQLAutoCompletion extends AutoCompletion {
 					if (definition!=null) {
 						sb.append(" - ");
 						if (!selected) {
-							sb.append("<font color='").append(Util.getHexString(Colors.Color_gray)).append("'>");
+							sb.append("<font color='").append(Util.getHexString(Colors.Color_128_128_128)).append("'>");
 						}
 						sb.append(definition);
 						if (!selected) {

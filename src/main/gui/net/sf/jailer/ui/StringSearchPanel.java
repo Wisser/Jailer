@@ -675,12 +675,12 @@ public class StringSearchPanel extends javax.swing.JPanel {
 				if (value.equals(showAllLabel)) {
 					return super.getListCellRendererComponent(list, "<html><font color=" + Colors.HTMLColor_ff0000 + ">" + value + "</font>", index, isSelected, cellHasFocus);
 				}
-				Color bgColor = Colors.Color_white;
+				Color bgColor = Colors.Color_255_255_255;
 				Color fgColor = Colors.Color_0_0_0;
 				String hlColor = "color=" + Colors.HTMLColor_050aff + "";
 				if (isSelected) {
 					bgColor = Colors.Color_0_0_145;
-					fgColor = Colors.Color_white;
+					fgColor = Colors.Color_255_255_255;
 					hlColor = "color=" + Colors.HTMLColor_ff9999 + "";
 				}
 				String item = value.toString();
@@ -992,7 +992,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 							UIUtil.invokeLater(new Runnable() {
 								@Override
 								public void run() {
-									checkBox.setForeground(waitingState? Colors.Color_red : null);
+									checkBox.setForeground(waitingState? Colors.Color_255_0_0 : null);
 									stateChangeMode.set(true);
 									checkboxPerSchema.get(schema).setSelected(selected);
 									stateChangeMode.set(false);

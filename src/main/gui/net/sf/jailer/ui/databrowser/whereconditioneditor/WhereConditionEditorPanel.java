@@ -895,7 +895,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		}
 		BiFunction<JComponent, Integer, JComponent> wrap = (c, y) -> {
 			JPanel panel = new JPanel(new GridBagLayout());
-			c.setForeground(Colors.Color_black);
+			c.setForeground(Colors.Color_0_0_0);
 			panel.setBackground(y % 2 == 0? UIUtil.TABLE_BACKGROUND_COLOR_1 : UIUtil.TABLE_BACKGROUND_COLOR_2);
 			panel.setOpaque(true);
 			GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -938,7 +938,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	        
 			if (!inSQLConsole()) {
 				JLabel typeLabel = new JLabel();
-				typeLabel.setForeground(Colors.Color_gray);
+				typeLabel.setForeground(Colors.Color_128_128_128);
 		        typeLabel.setText(comparison.column.toSQL(null).substring(comparison.column.name.length()).trim() + " ");
 		        typeLabel.setToolTipText(typeLabel.getText());
 		        gridBagConstraints = new java.awt.GridBagConstraints();
@@ -967,7 +967,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	        gridBagConstraints.fill = GridBagConstraints.BOTH;
 	        searchFieldsPanel.add(wrap.apply(namePanel, y), gridBagConstraints);
 	        boolean isPk = table.primaryKey != null && table.primaryKey.getColumns().contains(comparison.column);
-			nameLabel.setForeground(isPk? Colors.Color_170_0_0 : Colors.Color_black);
+			nameLabel.setForeground(isPk? Colors.Color_170_0_0 : Colors.Color_0_0_0);
 			
 			SmallButton hideButton = new LightBorderSmallButton(UIUtil.scaleIcon(this, deleteIcon, 1.1)) {
 				@Override

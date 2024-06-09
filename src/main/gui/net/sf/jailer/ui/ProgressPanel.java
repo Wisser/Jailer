@@ -106,7 +106,7 @@ public class ProgressPanel extends javax.swing.JPanel {
 			if (y % 2 == 0) {
 				bgColor = Colors.Color_240_255_255;
 			} else {
-				bgColor = Colors.Color_white;
+				bgColor = Colors.Color_255_255_255;
 			}
 			JLabel l = createLabel(y, tableName, bgColor);
 			l.setText(" " + tableName + " ");
@@ -123,7 +123,7 @@ public class ProgressPanel extends javax.swing.JPanel {
 			if (y % 2 == 0) {
 				l.setBackground(Colors.Color_240_255_255);
 			} else {
-				l.setBackground(Colors.Color_white);
+				l.setBackground(Colors.Color_255_255_255);
 			}
 			l.setOpaque(true);
 			l.setFont(nonbold);
@@ -141,7 +141,7 @@ public class ProgressPanel extends javax.swing.JPanel {
 			if (y % 2 == 0) {
 				l.setBackground(Colors.Color_240_255_255);
 			} else {
-				l.setBackground(Colors.Color_white);
+				l.setBackground(Colors.Color_255_255_255);
 			}
 			l.setOpaque(true);
 			l.setFont(nonbold);
@@ -168,7 +168,7 @@ public class ProgressPanel extends javax.swing.JPanel {
 	}
 
 	private int currentlySelectedRow = -1;
-	private final Color BGCOLOR_OF_SELECTED_ROW = Colors.Color_cyan;
+	private final Color BGCOLOR_OF_SELECTED_ROW = Colors.Color_0_255_255;
 	private List<MouseListener> allMouseListener = new ArrayList<MouseListener>();
 
 	private JLabel createLabel(final int y, final String tableName, Color bgColor) {
@@ -485,7 +485,7 @@ public class ProgressPanel extends javax.swing.JPanel {
 	public void onCancel() {
 		inCancellingStep = true;
 		stepLabel.setText("cancelling...");
-		setStepLabelForeground(Colors.Color_red);
+		setStepLabelForeground(Colors.Color_255_0_0);
     }
 
 	public boolean inCancellingStep = false;
@@ -556,7 +556,7 @@ public class ProgressPanel extends javax.swing.JPanel {
 						stepLabel.setForeground(stepLabelColor);
 					}
 				} else {
-					stepLabel.setForeground(Colors.Color_red);
+					stepLabel.setForeground(Colors.Color_255_0_0);
 					isOn = true;
 					startTimer();
 				}

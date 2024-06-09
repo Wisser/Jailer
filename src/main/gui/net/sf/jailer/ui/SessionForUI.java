@@ -158,7 +158,7 @@ public class SessionForUI extends Session {
 		session.connectionDialog.setLocation(los.x + w.getWidth() / 2 - session.connectionDialog.getWidth() / 2, los.y + w.getHeight() / 2 - session.connectionDialog.getHeight() / 2);
         
 		Timer timer = new Timer(500, e -> {
-			session.connectingPanel.setBackground(Colors.Color_white.equals(session.connectingPanel.getBackground())? Colors.Color_255_230_230 : Colors.Color_white);
+			session.connectingPanel.setBackground(Colors.Color_255_255_255.equals(session.connectingPanel.getBackground())? Colors.Color_255_230_230 : Colors.Color_255_255_255);
         });
         timer.setRepeats(true);
         timer.setInitialDelay(timer.getDelay() * 3);
@@ -207,8 +207,8 @@ public class SessionForUI extends Session {
 		super(dataSource, dbms, isolationLevel);
 		this.shutDownImmediatelly = shutDownImmediatelly;
 		this.testOnly = testOnly;
-		connectingPanel.setBackground(Colors.Color_white);
-		connectingPanel.setBorder(BorderFactory.createLineBorder(Colors.Color_dark_gray));
+		connectingPanel.setBackground(Colors.Color_255_255_255);
+		connectingPanel.setBorder(BorderFactory.createLineBorder(Colors.Color_64_64_64));
 		
 //        jLabel1.setForeground(Colors.Color_red);
         jLabel1.setText("Connecting...");

@@ -501,9 +501,9 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 							}
 							boolean inContext = isAssignedToDataModel(selectedRowIndex);
 							if (inContext) {
-								((JLabel) render).setForeground(Colors.Color_black);
+								((JLabel) render).setForeground(Colors.Color_0_0_0);
 							} else {
-								((JLabel) render).setForeground(Colors.Color_gray);
+								((JLabel) render).setForeground(Colors.Color_128_128_128);
 							}
 							
 							Color bg = null;

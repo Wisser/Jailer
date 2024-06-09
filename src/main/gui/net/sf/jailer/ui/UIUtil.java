@@ -2207,7 +2207,7 @@ public class UIUtil {
                     UIManager.put( "ScrollBar.showButtons", true );
                     UIManager.put( "ScrollBar.width", 14 );
                     UIManager.put( "InternalFrame.borderMargins", new Insets(2,2,1,1));
-                    UIManager.put( "TableHeader.separatorColor", Colors.Color_lightgray);
+                    UIManager.put( "TableHeader.separatorColor", Colors.Color_192_192_192);
                     UIManager.put( "PasswordField.showRevealButton", true);
                     
                     UIManager.put( "Button.arc", 8 );
@@ -2254,7 +2254,7 @@ public class UIUtil {
 					}
 	
 					if (UIManager.get("InternalFrame:InternalFrameTitlePane[Enabled].textForeground") instanceof Color) {
-						UIManager.put("InternalFrame:InternalFrameTitlePane[Enabled].textForeground", Colors.Color_blue);
+						UIManager.put("InternalFrame:InternalFrameTitlePane[Enabled].textForeground", Colors.Color_0_0_255);
 					}
 					try {
 						UIManager.put("TitledBorder.border", new BorderUIResource((Border) UIManager.get("TitledBorder.border")) {
@@ -2468,7 +2468,7 @@ public class UIUtil {
 				if (c instanceof JComponent) {
 					((JComponent) c).setToolTipText(value.toString() + ": " + c.getClass().getSimpleName());
 					try {
-						((JComponent) c).setBorder(BorderFactory.createLineBorder(Colors.Color_gray));
+						((JComponent) c).setBorder(BorderFactory.createLineBorder(Colors.Color_128_128_128));
 					} catch (Exception e) {
 						// ignore
 					}

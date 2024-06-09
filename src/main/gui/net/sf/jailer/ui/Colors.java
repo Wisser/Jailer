@@ -72,7 +72,7 @@ public class Colors {
 	public static Color Color_115_217_255 = new Color(115, 217, 255);
 	public static Color Color_122_210_255_200 = new Color(122, 210, 255, 200);
 	public static Color Color_128_128_128 = new Color(128, 128, 128);
-	public static Color Color_130_130_130 = new java.awt.Color(130, 130, 130);
+public static Color Color_130_130_130 = new java.awt.Color(130, 130, 130);
 	public static Color Color_137_176_212 = new Color(137, 176, 212);
 	public static Color Color_140_0_0 = new Color(140, 0, 0);
 	public static Color Color_140_158_255 = new Color(140, 158, 255);
@@ -93,7 +93,6 @@ public class Colors {
 	public static Color Color_180_255_220 = new Color(180, 255, 220);
 	public static Color Color_190_210_255 = new Color(190, 210, 255);
 	public static Color Color_190_255_180 = new Color(190, 255, 180);
-	public static Color Color_192_192_192 = new Color(192, 192, 192);
 	public static Color Color_196_236_255 = new Color(196, 236, 255);
 	public static Color Color_1_0_0 = new Color(1, 0, 0);
 	public static Color Color_1_75_1 = new java.awt.Color(1, 75, 1);
@@ -133,7 +132,6 @@ public class Colors {
 	public static Color Color_248_255_248 = new Color(248, 255, 248);
 	public static Color Color_250_250_255 = new java.awt.Color(250, 250, 255);
 	public static Color Color_254_255_255 = new java.awt.Color(254, 255, 255);
-	public static Color Color_255_0_0 = new Color(255, 0, 0);
 	public static Color Color_255_0_0_0 = new Color(255, 0, 0, 0);
 	public static Color Color_255_0_0_10 = new Color(255, 0, 0, 10);
 	public static Color Color_255_0_0_120 = new Color(255, 0, 0, 120);
@@ -161,7 +159,6 @@ public class Colors {
 	public static Color Color_255_246_206 = new Color(255, 246, 206);
 	public static Color Color_255_249_200 = new Color(255, 249, 200);
 	public static Color Color_255_250_215 = new Color(255, 250, 215);
-	public static Color Color_255_255_0 = new Color(255, 255, 0);
 	public static Color Color_255_255_0_128 = new Color(255, 255, 0, 128);
 	public static Color Color_255_255_170 = new Color(255, 255, 170);
 	public static Color Color_255_255_176 = new Color(255, 255, 176);
@@ -174,7 +171,6 @@ public class Colors {
 	public static Color Color_255_255_238 = new Color(255, 255, 238);
 	public static Color Color_255_255_240 = new Color(255, 255, 240);
 	public static Color Color_255_255_250 = new Color(255, 255, 250);
-	public static Color Color_255_255_255 = new Color(255, 255, 255);
 	public static Color Color_255_255_255_150 = new Color(255,255,255,150);
 	public static Color Color_255_255_255_200 = new Color(255, 255, 255, 200);
 	public static Color Color_255_255_255_70 = new Color(255, 255, 255, 70);
@@ -187,17 +183,24 @@ public class Colors {
 	public static Color Color_86_82_125 = new java.awt.Color(86, 82, 125);
 	public static Color Color_95_0_0 = new java.awt.Color(95, 0, 0);
 	public static Color Color_96_64_0 = new Color(96, 64, 0);
-	public static Color Color_black = Color.BLACK;
-	public static Color Color_blue = Color.BLUE;
-	public static Color Color_cyan = Color.CYAN;
-	public static Color Color_dark_gray = Color.DARK_GRAY;
-	public static Color Color_gray = Color.gray;
-	public static Color Color_green = Color.GREEN;
-	public static Color Color_light_gray = Color.LIGHT_GRAY;
-	public static Color Color_lightgray = Color.lightGray;
-	public static Color Color_red = Color.RED;
-	public static Color Color_white = Color.white;
-	public static Color Color_yellow = Color.yellow;
+	
+//	Color_dark_gray  new Color(64, 64, 64)
+//	Color_gray Color_128_128_128 new Color(128, 128, 128)
+//	Color_green  new Color(0, 255, 0)
+//	Color_light_gray  new Color(192, 192, 192)
+//	Color_lightgray Color_192_192_192 new Color(192, 192, 192)
+//	Color_red  new Color(255, 0, 0)
+//	Color_white  new Color(255, 255, 255)
+//	Color_yellow  new Color(255, 255, 0)
+
+//	public static Color Color_0_0_0 = Color.BLACK;
+	public static Color Color_0_255_255 = new Color(0, 255, 255);
+	public static Color Color_64_64_64 = Color.DARK_GRAY;
+	public static Color Color_0_255_0 = Color.GREEN;
+	public static Color Color_192_192_192 = Color.LIGHT_GRAY;
+	public static Color Color_255_0_0 = Color.RED;
+	public static Color Color_255_255_255 = Color.white;
+	public static Color Color_255_255_0 = Color.yellow;
 	public static String HTMLColor_000000 = "\"#000000\"";
 	public static String HTMLColor_0000B0 = "\"#0000B0\"";
 	public static String HTMLColor_0000D0 = "\"#0000D0\"";
@@ -221,4 +224,25 @@ public class Colors {
 	public static String HTMLColor_ff0000 = "\"#ff0000\"";
 	public static String HTMLColor_ff2222 = "\"#ff2222\"";
 	public static String HTMLColor_ff9999 = "\"#ff9999\"";
+	
+	public static void main(String args[]) {
+		 System.out.println("Color_black" + " " + toName(Color.BLACK));
+		 System.out.println("Color_blue" + " " + toName(Color.BLUE));
+		 System.out.println("Color_cyan" + " " + toName(Color.CYAN));
+		 System.out.println("Color_dark_gray" + " " + toName(Color.DARK_GRAY));
+		 System.out.println("Color_gray" + " " + toName(Color.gray));
+		 System.out.println("Color_green" + " " + toName(Color.GREEN));
+		 System.out.println("Color_light_gray" + " " + toName(Color.LIGHT_GRAY));
+		 System.out.println("Color_lightgray" + " " + toName(Color.lightGray));
+		 System.out.println("Color_red" + " " + toName(Color.RED));
+		 System.out.println("Color_white" + " " + toName(Color.white));
+		 System.out.println("Color_yellow" + " " + toName(Color.yellow));
+
+	}
+
+	private static String toName(Color c) {
+		return "Color_" + c.getRed() + "_" + c.getGreen() + "_" + c.getBlue() + " " + "new Color(" + c.getRed() + ", " + c.getGreen() + ", " + c.getBlue() + ")";
+	}
+	
+
 }

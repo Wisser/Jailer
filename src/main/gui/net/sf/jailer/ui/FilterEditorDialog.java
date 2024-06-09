@@ -358,7 +358,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 
 		@Override
 		protected Color getForegroundColor(FilterTemplate element, int column) {
-			return element.isEnabled()? null : Colors.Color_light_gray;
+			return element.isEnabled()? null : Colors.Color_192_192_192;
 		}
 
 		@Override
@@ -439,9 +439,9 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 
 		@Override
 		protected Color getForegroundColor(FilterModel element, int column) {
-			return element.isPk? Colors.Color_red :
+			return element.isPk? Colors.Color_255_0_0 :
 				element.column.getFilter() != null && element.column.getFilter().isDerived()?
-						Colors.Color_blue : null;
+						Colors.Color_0_0_255 : null;
 		}
 
 		/**
@@ -888,7 +888,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 				if (selectedTable != null) {
 					label.setText(" T.");
 					label.setFont(nonBoldFont);
-					label.setForeground(Colors.Color_gray);
+					label.setForeground(Colors.Color_128_128_128);
 					gridBagConstraints = new java.awt.GridBagConstraints();
 					gridBagConstraints.gridx = 2;
 					gridBagConstraints.gridy = y;
@@ -918,10 +918,10 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 				}
 
 				if (isPK) {
-					label.setForeground(Colors.Color_red);
+					label.setForeground(Colors.Color_255_0_0);
 				}
 				if (c.getFilter() != null && c.getFilter().isDerived()) {
-					label.setForeground(Colors.Color_blue);
+					label.setForeground(Colors.Color_0_0_255);
 				}
 				columnPanel.add(label, java.awt.BorderLayout.WEST);
 				if (toolTip != null) {
@@ -936,7 +936,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 					typeLabel = typeLabel.substring(0, l) + "..";
 				}
 				label.setText(" " + typeLabel + " ");
-				label.setForeground(Colors.Color_gray);
+				label.setForeground(Colors.Color_128_128_128);
 				label.setFont(filter == null || selectedTable == null? nonBoldFont : boldFont);
 
 				JTextField typeField = new JTextField();
@@ -1032,13 +1032,13 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 
 					private void refresh() {
 						if (!hasFilter && textField.getText().trim().equals(Filter.OLD_VALUE_PROP)) {
-							textField.setForeground(Colors.Color_gray);
+							textField.setForeground(Colors.Color_128_128_128);
 						} else if (hasDerivedFilter && textField.getText().trim().equals(initialExpr.trim())) {
-							textField.setForeground(Colors.Color_blue);
+							textField.setForeground(Colors.Color_0_0_255);
 						} else if (finalIsPk) {
-							textField.setForeground(Colors.Color_red);
+							textField.setForeground(Colors.Color_255_0_0);
 						} else {
-							textField.setForeground(Colors.Color_black);
+							textField.setForeground(Colors.Color_0_0_0);
 						}
 						applyButton.setEnabled(needsSave());
 					}

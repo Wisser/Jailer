@@ -1730,10 +1730,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					((JLabel) render).setForeground(
 							renderRowAsPK || pkColumns.contains(convertedColumnIndex) || (pkColumnsConsole.contains(convertedColumnIndex) /* && !fkColumnsConsole.contains(convertedColumnIndex) */)? FG1 :
 								fkColumns.contains(convertedColumnIndex) || fkColumnsConsole.contains(convertedColumnIndex) ? FG2 :
-										Colors.Color_black);
+										Colors.Color_0_0_0);
 					boolean isNull = false;
 					if (((JLabel) render).getText() == UIUtil.NULL || ((JLabel) render).getText() == UNKNOWN) {
-						((JLabel) render).setForeground(Colors.Color_gray);
+						((JLabel) render).setForeground(Colors.Color_128_128_128);
 						((JLabel) render).setText(" null  ");
 						((JLabel) render).setFont(italic);
 						isNull = true;
@@ -3301,7 +3301,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				});
 				findPath.add(menuItem);
 				JLabel distLabel = new JLabel("\u25B4 " + distances.get(table));
-				distLabel.setForeground(Colors.Color_blue);
+				distLabel.setForeground(Colors.Color_0_0_255);
 				distLabel.setToolTipText("Distance to Table \"" + dataModel.getDisplayName(BrowserContentPane.this.table) + "\".");
 				findPath.add(distLabel);
 			});
@@ -3708,7 +3708,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						if (value instanceof DefaultMutableTreeNode) {
 							if (!(((DefaultMutableTreeNode) value).getUserObject() instanceof String)) {
 								if (result instanceof JLabel) {
-									((JLabel) result).setForeground(Colors.Color_red);
+									((JLabel) result).setForeground(Colors.Color_255_0_0);
 								}
 							}
 						}
@@ -4350,7 +4350,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								String cs = " " + (count.count < 0? "?" : (count.count > MAX_RC)? (">" + MAX_RC) : count.isExact? count.count : (">" + count.count)) + " ";
 								countLabel.setText(cs);
 								if (count.count == 0) {
-									countLabel.setForeground(Colors.Color_lightgray);
+									countLabel.setForeground(Colors.Color_192_192_192);
 								}
 								if (!fExcludeFromANEmpty) {
 									allNonEmptyItem.rowsCounted(count.count, itemAction);
@@ -5658,7 +5658,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 
 			//set the editor as default on every column
-			inplaceEditorTextField.setBorder(new LineBorder(Colors.Color_black) {
+			inplaceEditorTextField.setBorder(new LineBorder(Colors.Color_0_0_0) {
 				int spWidth = inplaceEditorTextField.getFontMetrics(inplaceEditorTextField.getFont()).stringWidth(" ");
 				public Insets getBorderInsets(Component c, Insets insets) {
 					Insets myInsets = super.getBorderInsets(c, insets);
@@ -6037,7 +6037,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				rowsCount.setText(rowsCount.getText() + " (limited)");
 			}
 			if (cle || !cleRelevant) {
-				rowsCount.setForeground(Colors.Color_red);
+				rowsCount.setForeground(Colors.Color_255_0_0);
 				bold = true;
 			} else {
 				rowsCount.setForeground(Colors.Color_140_0_0);
@@ -8182,7 +8182,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			if (c.name != null) {
 				renderConsumer.put(Quoting.staticUnquote(c.name), 
 						label -> {
-							label.setForeground(Colors.Color_blue);
+							label.setForeground(Colors.Color_0_0_255);
 							label.setIcon(emptyIcon);
 						}
 				);
@@ -8193,7 +8193,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				if (c.name != null) {
 					renderConsumer.put(Quoting.staticUnquote(c.name),
 							label -> {
-								label.setForeground(Colors.Color_red);
+								label.setForeground(Colors.Color_255_0_0);
 								label.setIcon(constraintPKIcon);
 							}
 					);

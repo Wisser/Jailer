@@ -43,7 +43,7 @@ public class SbEDialog extends javax.swing.JDialog {
 		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
 		textLabel.setText(message);
 		textLabel2.setText(message2);
-		textLabel2.setForeground(Colors.Color_red);
+		textLabel2.setForeground(Colors.Color_255_0_0);
 		try {
 			messageLabel.setText(null);
 			   Icon errorIcon = UIManager.getIcon("OptionPane.informationIcon");

@@ -280,7 +280,7 @@ public class DesktopOutline extends JPanel {
 			g2d.setPaint(paint);
 			g2d.setStroke(stroke);
 			g2d.fillRoundRect(sx, sy, sw, sh, 8, 8);
-			g2d.setColor(UIUtil.plaf.isFlat? UIUtil.FLAT_BORDER_COLOR : Colors.Color_light_gray);
+			g2d.setColor(UIUtil.plaf.isFlat? UIUtil.FLAT_BORDER_COLOR : Colors.Color_192_192_192);
 			g2d.drawRoundRect(gx, gy, gw + 1, gh, 2, 2);
 			
 			g2d.setStroke(new BasicStroke(1));
@@ -294,9 +294,9 @@ public class DesktopOutline extends JPanel {
 					}
 					if (parentBrowser != null && !parentBrowser.isHidden()) {
 						if (browser.association == null) {
-							g2d.setColor(Colors.Color_gray);
+							g2d.setColor(Colors.Color_128_128_128);
 						} else if (hiddenParent) {
-							g2d.setColor(Colors.Color_yellow.darker());
+							g2d.setColor(Colors.Color_255_255_0.darker());
 						} else {
 							g2d.setColor(desktop.getAssociationColor1(browser.association));
 						}
@@ -325,7 +325,7 @@ public class DesktopOutline extends JPanel {
 						g2d.setPaint(paint);
 						g2d.fillRoundRect(sx, sy, sw, sh, 8, 8);
 					}
-					g2d.setColor(Colors.Color_black);
+					g2d.setColor(Colors.Color_0_0_0);
 					Shape clip = g2d.getClip();
 					g2d.clipRect(sx, sy, sw, sh);
 					String title = browser.getTitleWONumber();

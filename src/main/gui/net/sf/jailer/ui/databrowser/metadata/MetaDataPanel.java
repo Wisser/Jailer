@@ -588,7 +588,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                     value = outlineTableRender((OutlineInfo) value, isSelected);
                 }
                 Component render = olRenderer.getListCellRendererComponent(list, value, index, false, cellHasFocus);
-                render.setBackground(isSelected? Colors.Color_240_240_255 : index == indexOfInfoAtCaret? Colors.Color_255_255_170 : Colors.Color_white);
+                render.setBackground(isSelected? Colors.Color_240_240_255 : index == indexOfInfoAtCaret? Colors.Color_255_255_170 : Colors.Color_255_255_255);
                 if (render instanceof JLabel) {
                 	((JLabel) render).setToolTipText(tooltip);
 
@@ -606,14 +606,14 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 									Color color = Colors.Color_140_158_255;
 									int ofs = 50;
 									GradientPaint paint = new GradientPaint(
-										x + ind - 20, 0, bg==null ? Colors.Color_white : bg,
+										x + ind - 20, 0, bg==null ? Colors.Color_255_255_255 : bg,
 										x + ind + ofs, 0, color);
 									g2d.setPaint(paint);
 									g2d.fillRect(x + ind - 20, 0, ofs + 20, 1);
 									if (ind + ofs < SEP_LENGTH) {
 										paint = new GradientPaint(
 												x + ind + ofs, 0, color,
-												x + SEP_LENGTH, 0, bg==null ? Colors.Color_white : bg);
+												x + SEP_LENGTH, 0, bg==null ? Colors.Color_255_255_255 : bg);
 										g2d.setPaint(paint);
 										g2d.fillRect(x + ind + ofs, 0, SEP_LENGTH, 1);
 									}
@@ -1130,7 +1130,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             	}
                 if (isJailerTable && !sel) {
                 	if (comp instanceof JLabel) {
-                    	((JLabel) comp).setForeground(Colors.Color_gray);
+                    	((JLabel) comp).setForeground(Colors.Color_128_128_128);
                 	}
                 }
                 if (image != null) {
@@ -1165,7 +1165,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 	}
                 }
                 if (UIUtil.plaf.isFlat) {
-					setTextSelectionColor(tree.hasFocus()? Colors.Color_white : null);
+					setTextSelectionColor(tree.hasFocus()? Colors.Color_255_255_255 : null);
 				}
                 
                 return comp;

@@ -81,7 +81,7 @@ public class NewDataModelDialog extends javax.swing.JDialog {
 	}
 
 	private boolean checkName() {
-		Color red = Colors.Color_red;
+		Color red = Colors.Color_255_0_0;
 		folderTextField.setText(folderName(nameTextField.getText()));
 		if (nameTextField.getText().trim().length() == 0) {
 			createButton.setEnabled(false);

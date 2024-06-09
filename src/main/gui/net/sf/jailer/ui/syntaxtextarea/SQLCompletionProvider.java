@@ -263,7 +263,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         private static final Color COLOR_SCHEMA = Colors.Color_145_50_0;
         private static final Color COLOR_TABLE = Colors.Color_0_40_90;
         private static final Color COLOR_COLUMN = Colors.Color_0_55_0;
-        private static final Color COLOR_KEYWORD = Colors.Color_blue;
+        private static final Color COLOR_KEYWORD = Colors.Color_0_0_255;
 
         public SQLCompletion(CompletionProvider provider, String inputText, String replacementText, String context, Color color, String tooltip) {
             super(provider, inputText, replacementText);
@@ -372,7 +372,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                                 } else if (a.isInsertSourceBeforeDestination()) {
                                     color = Colors.Color_0_100_0;
                                 } else {
-                                    color = Colors.Color_blue;
+                                    color = Colors.Color_0_0_255;
                                 }
                                 result.add(new SQLCompletion(SQLCompletionProvider.this, (endsWithOn? " " : "on ") + cond, (endsWithOn? "" : "on ") + cond + " ", a.getName(), color, cond));
                             }
@@ -416,7 +416,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                                         } else if (a.isInsertSourceBeforeDestination()) {
                                             color = Colors.Color_0_100_0;
                                         } else {
-                                            color = Colors.Color_blue;
+                                            color = Colors.Color_0_0_255;
                                         }
                                         result.add(new SQLCompletion(SQLCompletionProvider.this, Quoting.staticUnquote(qualifiedName) + " on " + cond, qualifiedName + " on " + cond + " ", a.getName(), color, cond));
                                     }
