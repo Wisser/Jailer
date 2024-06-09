@@ -183,17 +183,6 @@ public static Color Color_130_130_130 = new java.awt.Color(130, 130, 130);
 	public static Color Color_86_82_125 = new java.awt.Color(86, 82, 125);
 	public static Color Color_95_0_0 = new java.awt.Color(95, 0, 0);
 	public static Color Color_96_64_0 = new Color(96, 64, 0);
-	
-//	Color_dark_gray  new Color(64, 64, 64)
-//	Color_gray Color_128_128_128 new Color(128, 128, 128)
-//	Color_green  new Color(0, 255, 0)
-//	Color_light_gray  new Color(192, 192, 192)
-//	Color_lightgray Color_192_192_192 new Color(192, 192, 192)
-//	Color_red  new Color(255, 0, 0)
-//	Color_white  new Color(255, 255, 255)
-//	Color_yellow  new Color(255, 255, 0)
-
-//	public static Color Color_0_0_0 = Color.BLACK;
 	public static Color Color_0_255_255 = new Color(0, 255, 255);
 	public static Color Color_64_64_64 = Color.DARK_GRAY;
 	public static Color Color_0_255_0 = Color.GREEN;
@@ -226,23 +215,5 @@ public static Color Color_130_130_130 = new java.awt.Color(130, 130, 130);
 	public static String HTMLColor_ff9999 = "\"#ff9999\"";
 	
 	public static void main(String args[]) {
-		 System.out.println("Color_black" + " " + toName(Color.BLACK));
-		 System.out.println("Color_blue" + " " + toName(Color.BLUE));
-		 System.out.println("Color_cyan" + " " + toName(Color.CYAN));
-		 System.out.println("Color_dark_gray" + " " + toName(Color.DARK_GRAY));
-		 System.out.println("Color_gray" + " " + toName(Color.gray));
-		 System.out.println("Color_green" + " " + toName(Color.GREEN));
-		 System.out.println("Color_light_gray" + " " + toName(Color.LIGHT_GRAY));
-		 System.out.println("Color_lightgray" + " " + toName(Color.lightGray));
-		 System.out.println("Color_red" + " " + toName(Color.RED));
-		 System.out.println("Color_white" + " " + toName(Color.white));
-		 System.out.println("Color_yellow" + " " + toName(Color.yellow));
-
 	}
-
-	private static String toName(Color c) {
-		return "Color_" + c.getRed() + "_" + c.getGreen() + "_" + c.getBlue() + " " + "new Color(" + c.getRed() + ", " + c.getGreen() + ", " + c.getBlue() + ")";
-	}
-	
-
 }
