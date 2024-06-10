@@ -135,6 +135,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 
 import net.sf.jailer.ExecutionContext;
@@ -2156,6 +2157,8 @@ public class UIUtil {
 	}
 	
 	public static void initPLAF() {
+		FlatLaf.registerCustomDefaultsSource("net.sf.jailer.ui.resource");
+
 		Object plafSetting = UISettings.restore(UISettings.USE_NATIVE_PLAF);
 		plaf = PLAF.FLAT;
 		if (Boolean.FALSE.equals(plafSetting)) {
@@ -2196,7 +2199,9 @@ public class UIUtil {
 			case FLATDARK:
 			case FLAT:
 				try {
-					UIManager.put("ScrollPane.border", BorderFactory.createLineBorder(FLAT_BORDER_COLOR));
+					if (plaf != PLAF.FLATDARK) {
+						UIManager.put("ScrollPane.border", BorderFactory.createLineBorder(FLAT_BORDER_COLOR));
+					}
                     // UIManager.put("Component.arrowType", "triangle");
                     UIManager.put("SplitPane.dividerSize", 8);
                     UIManager.put("SplitPaneDivider.gripDotSize", 6);
@@ -2207,7 +2212,7 @@ public class UIUtil {
                     UIManager.put( "ScrollBar.showButtons", true );
                     UIManager.put( "ScrollBar.width", 14 );
                     UIManager.put( "InternalFrame.borderMargins", new Insets(2,2,1,1));
-                    UIManager.put( "TableHeader.separatorColor", Colors.Color_192_192_192);
+                    UIManager.put( "TableHeader.separatorColor", plaf == PLAF.FLATDARK? new Color(110, 113, 115) : Colors.Color_192_192_192);
                     UIManager.put( "PasswordField.showRevealButton", true);
                     
                     UIManager.put( "Button.arc", 8 );
@@ -2270,6 +2275,8 @@ public class UIUtil {
 				}
 				break;
 		}
+		
+		Colors.init();
 	}
 
 	private static boolean isMacOS = System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH).startsWith("mac");

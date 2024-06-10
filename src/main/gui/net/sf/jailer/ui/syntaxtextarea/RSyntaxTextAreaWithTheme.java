@@ -15,12 +15,14 @@
  */
 package net.sf.jailer.ui.syntaxtextarea;
 
+import java.awt.Color;
 import java.io.IOException;
 
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.Theme;
 import org.fife.ui.rtextarea.Gutter;
 
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.util.LogUtil;
@@ -45,25 +47,24 @@ public class RSyntaxTextAreaWithTheme extends RSyntaxTextArea {
 
 	public void setGutter(Gutter gutter) {
 		this.gutter = gutter;
+		Color clhc = getCurrentLineHighlightColor();
+		boolean flhc = getFadeCurrentLineHighlight();
 		initTheme();
+		if (flhc) {
+			setCurrentLineHighlightColor(clhc);
+			setFadeCurrentLineHighlight(flhc);
+		}
 	}
 
 	private void initTheme() {
 		try {
 			new Theme(this);
 			Theme t = Theme.load(getClass().getResourceAsStream(UIUtil.plaf == PLAF.FLATDARK?
-					"/org/fife/ui/rsyntaxtextarea/themes/dark.xml" : "/org/fife/ui/rsyntaxtextarea/themes/default.xml"));
+					"/net/sf/jailer/ui/resource/dark.xml" : "/org/fife/ui/rsyntaxtextarea/themes/default.xml"));
 			t.apply(this);
-			
-			// TODO
-			// TODO current line indicator with gradient (restore, it's gone after apply)
-			
-			// TODO
-			// TODO tool need to respect Colors.Color_red/red (AWT-Colors) too
-			
-			// TODO
-			// TODO update rsyntaxtree
-			
+			if (UIUtil.plaf == PLAF.FLATDARK) {
+				setBackground(Colors.GraphicalDataViewBackground);
+			}
 		} catch (IOException e1) {
 			LogUtil.warn(e1);
 		}
