@@ -30,6 +30,7 @@ import java.util.List;
 import javax.swing.Timer;
 
 import net.sf.jailer.ui.UIUtil.PLAF;
+import net.sf.jailer.ui.util.HSLColor;
 
 /**
  * PLaF aware manager of UI colors.
@@ -47,13 +48,22 @@ public class Colors {
 		Color_0_100_255.init(new Color(0, 100, 255), new Color(0, 176, 255));
 		Color_0_112_0.init(new Color(0, 112, 0), new Color(0, 215, 0));
 		Color_255_255_255.init(Color.white, new Color(50, 53, 57));
+		Color_255_255_170.init(new Color(255, 255, 170), new Color(20, 76, 20));
+		Color_240_240_255.init(new Color(240, 240, 255), new Color(50, 50, 170));
+		Color_242_242_255.init(new Color(242, 242, 255), Color_240_240_255.dark); // TODO
 		
 		// TODO
-		// TODO rsyntax: keywords blue, as in outline
-		// TODO in outline: farben nach keywords am Anfang dezenter
+		// TODO red for pk (and in general?) is too saturated
+		
+		// TODO
+		// TODO console, result-view-table, column-bg in case of join, redefine colors
 		
 		// TODO
 		// desktop background darker? as in SQLConsole?
+		
+		// TODO
+		// in !"darkLAF" mode (SysProp): use good heuristically chosen dark-defaults ?
+		// yes but in all modes. Blink in "darkLAF" mode (SysProp).
 		
 		HTMLColor_000000 = UIUtil.plaf != PLAF.FLATDARK? "\"#000000\"" : "\"#dddddd\"";
 		HTMLColor_006600 = UIUtil.plaf != PLAF.FLATDARK? "\"#006600\"" : "\"#00c000\"";
@@ -61,23 +71,25 @@ public class Colors {
 		HTMLColor_0000D0 = UIUtil.plaf != PLAF.FLATDARK? "\"#0000D0\"" : "\"#00B8FF\"";
 		HTMLColor_0000cc = UIUtil.plaf != PLAF.FLATDARK? "\"#0000CC\"" : "\"#00B8FF\"";
 		HTMLColor_0000dd = UIUtil.plaf != PLAF.FLATDARK? "\"#0000D0\"" : "\"#00B8FF\"";
-		HTMLColor_0000ff = UIUtil.plaf != PLAF.FLATDARK? "\"#0000ff\"" : "\"#9999ff\"";
-		HTMLColor_005500 = "\"#005500\"";
-		HTMLColor_006000 = UIUtil.plaf != PLAF.FLATDARK? "\"#006000\"" : "\"#99ff99\"";
-		HTMLColor_0066ff = "\"#0066ff\"";
-		HTMLColor_008000 = "\"#008000\"";
-		HTMLColor_050aff = "\"#050aff\"";
+		HTMLColor_0000ff = UIUtil.plaf != PLAF.FLATDARK? "\"#0000ff\"" : "\"#bbbbff\"";
+		HTMLColor_005500 = UIUtil.plaf != PLAF.FLATDARK? "\"#005500\"" : "\"#66ff66\"";
+		HTMLColor_006000 = UIUtil.plaf != PLAF.FLATDARK? "\"#006000\"" : "\"#77cc77\"";
+		HTMLColor_0066ff = UIUtil.plaf != PLAF.FLATDARK? "\"#0066ff\"" : "\"#bbbbff\"";
+		HTMLColor_008000 = UIUtil.plaf != PLAF.FLATDARK? "\"#008000\"" : "\"#44c044\"";
+		HTMLColor_050aff = UIUtil.plaf != PLAF.FLATDARK? "\"#050aff\"" : "\"#bbbbff\"";
 		HTMLColor_663300 = UIUtil.plaf != PLAF.FLATDARK? "\"#663300\"" : "\"#ff6600\"";
-		HTMLColor_707080 = "\"#707080\"";
-		HTMLColor_808080 = "\"#808080\"";
-		HTMLColor_888888 = "\"#888888\"";
-		HTMLColor_dd0000 = "\"#dd0000\"";
-		HTMLColor_dd8888 = "\"#dd8888\"";
-		HTMLColor_eeeeff = "\"#eeeeff\"";
-		HTMLColor_eeffee = "\"#eeffee\"";
-		HTMLColor_ff0000 = "\"#ff0000\"";
-		HTMLColor_ff2222 = "\"#ff2222\"";
-		HTMLColor_ff9999 = "\"#ff9999\"";
+		HTMLColor_707080 = UIUtil.plaf != PLAF.FLATDARK? "\"#707080\"" : "\"#9090a0\"";
+		HTMLColor_808080 = UIUtil.plaf != PLAF.FLATDARK? "\"#808080\"" : "\"#999999\"";
+		HTMLColor_888888 = UIUtil.plaf != PLAF.FLATDARK? "\"#888888\"" : "\"#a0a0a0\"";
+		HTMLColor_dd0000 = UIUtil.plaf != PLAF.FLATDARK? "\"#dd0000\"" : "\"#ff5555\"";
+		HTMLColor_dd8888 = UIUtil.plaf != PLAF.FLATDARK? "\"#dd8888\"" : "\"#D06000\"";
+		HTMLColor_eeeeff = UIUtil.plaf != PLAF.FLATDARK? "\"#eeeeff\"" : "\"#111177\"";
+		HTMLColor_eeffee = UIUtil.plaf != PLAF.FLATDARK? "\"#eeffee\"" : "\"#114411\""; // TODO
+		// TODO geen same as in content jtables
+		
+		HTMLColor_ff0000 = UIUtil.plaf != PLAF.FLATDARK? "\"#ff0000\"" : "\"#ee6666\"";
+		HTMLColor_ff2222 = UIUtil.plaf != PLAF.FLATDARK? "\"#ff2222\"" : "\"#ff4444\"";
+		HTMLColor_ff9999 = UIUtil.plaf != PLAF.FLATDARK? "\"#ff9999\"" : "\"#ff9999\"";
 
 		Color_0_0_0.init(new Color(0, 0, 0));
 		Color_0_0_0_0.init(new Color(0, 0, 0, 0));
@@ -181,10 +193,8 @@ public class Colors {
 		Color_232_232_255.init(new Color(232, 232, 255));   // like Color_235_235_255 ?
 		Color_235_235_255.init(new Color(235, 235, 255));
 		Color_238_255_238.init(new Color(238, 255, 238));
-		Color_240_240_255.init(new Color(240, 240, 255));    // like Color_242_242_255 ?
 		Color_240_255_255.init(new Color(240, 255, 255));
 		Color_242_242_242.init(new Color(242, 242, 242));
-		Color_242_242_255.init(new Color(242, 242, 255));
 		Color_245_0_0_60.init(new Color(245, 0, 0, 60));
 		Color_245_90_60.init(new Color(245, 90, 60));
 		Color_247_247_247.init(new Color(247, 247, 247));
@@ -220,7 +230,6 @@ public class Colors {
 		Color_255_249_200.init(new Color(255, 249, 200));
 		Color_255_250_215.init(new Color(255, 250, 215));
 		Color_255_255_0_128.init(new Color(255, 255, 0, 128));
-		Color_255_255_170.init(new Color(255, 255, 170));
 		Color_255_255_176.init(new Color(255, 255, 176));
 		Color_255_255_204.init(new Color(255, 255, 204));
 		Color_255_255_205.init(new Color(255, 255, 205));
@@ -251,22 +260,6 @@ public class Colors {
 		Color_255_255_0.init(new Color(255, 255, 0));
 	}
 
-	//select x, y from (
-	//Select
-	//     'Color_' || a.r || '_' || a.g || '_' || a.b || (case when a.i = 255 then '' else '_' || a.i end) x,
-	//     'Color_' || b.r || '_' || b.g || '_' || b.b || (case when b.i = 255 then '' else '_' || b.i end) y
-	//From
-	//     COLOR a,
-	//     COLOR b
-	//where
-	//     abs(a.r - b.r) < 8
-	//     and abs(a.g - b.g) < 8
-	//     and abs(a.b - b.b) < 8
-	//     and abs(a.i - b.i) < 8
-	//	and (a.r!=b.r or a.g!=b.g or a.b!=b.b or a.i!=b.i)
-	//)
-	//where x < y
-	
 	public static LAFAwareColor GraphicalDataViewBackground = new LAFAwareColor();
 	
 	public static LAFAwareColor Color_0_0_0 = new LAFAwareColor();
@@ -460,10 +453,12 @@ public class Colors {
 	
 	
 	private static boolean timerIsInitialized = false;
+	private static boolean inDarkLAFMode = false;
 	
 	public static void init() {
 		if (!timerIsInitialized) {
-			if ("true".equals(System.getProperty("darkLAF"))) {
+			inDarkLAFMode = "true".equals(System.getProperty("darkLAF"));
+			if (inDarkLAFMode) {
 				Timer timer = new Timer(1000, e -> init());
 				timer.setInitialDelay(1000);
 				timer.setRepeats(true);
@@ -471,7 +466,7 @@ public class Colors {
 				
 				timer = new Timer(10, e -> {
 					boolean repaint = false;
-					long t = System.currentTimeMillis() % 5000;
+					long t = System.currentTimeMillis() % 2000;
 					for (LAFAwareColor lc: colors) {
 						if (lc.blink) {
 							Color newColor;
@@ -530,7 +525,19 @@ public class Colors {
 		}
 		
 		public LAFAwareColor init(Color light) {
-			init(light, light);
+			HSLColor hslLight = new HSLColor(light);
+			Color luminanceAdjusted = hslLight.adjustLuminance(100 - hslLight.getLuminance());
+			
+			// TODO
+			// TODO improve "adjustLuminance" heuristic      !!
+			
+			init(light, luminanceAdjusted);
+			
+			// TODO
+			// TODO blink with or without "inDarkLAFMode"? !!!!! not without it. use luminanceAdjusted then.
+			
+			blink();
+			
 			return this;
 		}
 		
@@ -639,7 +646,3 @@ public class Colors {
 		}
 	}
 }
-
-
-// TODO
-// TODO frame-color in darkFlaf for JScrollView(?) etc. is too bright

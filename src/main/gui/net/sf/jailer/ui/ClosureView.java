@@ -80,6 +80,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.StringSearchPanel.AdditionalComponentFactory;
+import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.pathfinder.HistoryPanel;
 import net.sf.jailer.ui.pathfinder.PathFinder;
 import net.sf.jailer.ui.pathfinder.PathFinder.Result;
@@ -331,7 +332,11 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		closureTable.setSurrendersFocusOnKeystroke(true);
 		closureTable.getTableHeader().setReorderingAllowed(false);
 		if (UIUtil.plaf.isFlat) {
-			closureTable.getTableHeader().putClientProperty( "FlatLaf.style", "separatorColor: #fff; bottomSeparatorColor: #ccc" );
+			if (UIUtil.plaf == PLAF.FLAT) {
+				closureTable.getTableHeader().putClientProperty( "FlatLaf.style", "separatorColor: #fff; bottomSeparatorColor: #ccc" );
+        	} else {
+        		closureTable.getTableHeader().putClientProperty( "FlatLaf.style", "separatorColor: #46494B" );
+			}
 			try {
 				((DefaultTableCellRenderer) closureTable.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
 			} catch (Exception e) {
@@ -579,7 +584,11 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		neighborTable.getTableHeader().setReorderingAllowed(false);
 		neighborTable.getTableHeader().setToolTipText("<html>The degree of a table is the total number of adjacent tables<br>that can be reached directly with an enabled association.</html>");
 		if (UIUtil.plaf.isFlat) {
-			neighborTable.getTableHeader().putClientProperty( "FlatLaf.style", "separatorColor: #fff; bottomSeparatorColor: #ccc" );
+			if (UIUtil.plaf == PLAF.FLAT) {
+				neighborTable.getTableHeader().putClientProperty( "FlatLaf.style", "separatorColor: #fff; bottomSeparatorColor: #ccc" );
+        	} else {
+        		closureTable.getTableHeader().putClientProperty( "FlatLaf.style", "separatorColor: #46494B" );
+			}
 			try {
 				((DefaultTableCellRenderer) neighborTable.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
 			} catch (Exception e) {

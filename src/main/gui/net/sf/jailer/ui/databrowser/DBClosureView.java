@@ -79,6 +79,7 @@ import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.JComboBox2;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.StringSearchPanel.AdditionalComponentFactory;
+import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
@@ -545,7 +546,11 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         closureTable.setSurrendersFocusOnKeystroke(true);
         closureTable.getTableHeader().setReorderingAllowed(false);
         if (UIUtil.plaf.isFlat) {
-			closureTable.getTableHeader().putClientProperty( "FlatLaf.style", "separatorColor: #fff; bottomSeparatorColor: #ccc" );
+        	if (UIUtil.plaf == PLAF.FLAT) {
+        		closureTable.getTableHeader().putClientProperty( "FlatLaf.style", "separatorColor: #fff; bottomSeparatorColor: #ccc" );
+        	} else {
+        		closureTable.getTableHeader().putClientProperty( "FlatLaf.style", "separatorColor: #46494B" );
+        	}
 			try {
 				((DefaultTableCellRenderer) closureTable.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
 			} catch (Exception e) {

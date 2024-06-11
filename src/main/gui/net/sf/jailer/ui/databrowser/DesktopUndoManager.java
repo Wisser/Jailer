@@ -181,7 +181,7 @@ public class DesktopUndoManager {
 		for (int i = 1; i <= stack.size(); ++i) { 
 			State e = stack.get(stack.size() - i);
 			if (i == 1) {
-				sb.append("<hr><b>");
+				sb.append("<hr>");
 			} else {
 				sb.append("<font color=" + Colors.HTMLColor_707080 + ">");
 			}
@@ -193,7 +193,7 @@ public class DesktopUndoManager {
 			String desc = descriptionSupplier.apply(e);
 			sb.append(desc + (e.numMods > 1 && !desc.endsWith(" ")? " + " + (e.numMods - 1) + " more" : "") + "<br>");
 			if (i == 1) {
-				sb.append("</b>");
+				sb.append("");
 			} else {
 				sb.append("</font>");
 			}

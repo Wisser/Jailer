@@ -591,7 +591,10 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 render.setBackground(isSelected? Colors.Color_240_240_255 : index == indexOfInfoAtCaret? Colors.Color_255_255_170 : Colors.Color_255_255_255);
                 if (render instanceof JLabel) {
                 	((JLabel) render).setToolTipText(tooltip);
-
+                	if (UIUtil.plaf == PLAF.FLATDARK) {
+                		((JLabel) render).setBorder(null);
+                	}
+                	
                 	if (withSeparator) {
                 		final Border border = ((JLabel) render).getBorder() == null? new EmptyBorder(0, 0, 0, 0) : ((JLabel) render).getBorder();
 						final Color bg = ((JLabel) render).getBackground();

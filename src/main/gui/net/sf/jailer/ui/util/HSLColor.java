@@ -1,3 +1,12 @@
+/*
+ * From http://tips4java.wordpress.com/2009/07/05/hsl-color/
+ *
+ * License note on http://tips4java.wordpress.com/about/
+ *   "You are free to use and/or modify any or all code posted on the
+ *    Java Tips Weblog without restriction. A credit in the code comments
+ *    would be nice, but not in any way mandatory."
+ */
+
 package net.sf.jailer.ui.util;
 
 import java.awt.Color;
@@ -22,9 +31,9 @@ import java.awt.Color;
  */
 public class HSLColor
 {
-	private Color rgb;
-	private float[] hsl;
-	private float alpha;
+	private final Color rgb;
+	private final float[] hsl;
+	private final float alpha;
 
 	/**
 	 *  Create a HSLColor object using an RGB Color object.
@@ -67,7 +76,7 @@ public class HSLColor
 	}
 
 	/**
-	 *  Create a HSLColor object using an an array containing the
+	 *  Create a HSLColor object using an array containing the
 	 *  individual HSL values and with a default alpha value of 1.
 	 *
 	 *  @param hsl  array containing HSL values
@@ -78,7 +87,7 @@ public class HSLColor
 	}
 
 	/**
-	 *  Create a HSLColor object using an an array containing the
+	 *  Create a HSLColor object using an array containing the
 	 *  individual HSL values.
 	 *
 	 *  @param hsl  array containing HSL values
@@ -231,6 +240,7 @@ public class HSLColor
 		return hsl[1];
 	}
 
+	@Override
 	public String toString()
 	{
 		String toString =
@@ -277,10 +287,11 @@ public class HSLColor
 		//  Calculate the Luminance
 
 		float l = (max + min) / 2;
+//		System.out.println(max + " : " + min + " : " + l);
 
 		//  Calculate the Saturation
 
-		float s = 0;
+		float s;
 
 		if (max == min)
 			s = 0;
@@ -289,6 +300,7 @@ public class HSLColor
 		else
 			s = (max - min) / (2 - max - min);
 
+//		System.out.println(new HSLColor( new float[] {h, s * 100, l * 100} ));
 		return new float[] {h, s * 100, l * 100};
 	}
 
@@ -300,7 +312,7 @@ public class HSLColor
 	 *
 	 *  @param hsl an array containing the 3 HSL values
 	 *
-	 *  @returns the RGB Color object
+	 *  @return the RGB Color object
 	 */
 	public static Color toRGB(float[] hsl)
 	{
@@ -316,7 +328,7 @@ public class HSLColor
 	 *  @param hsl    an array containing the 3 HSL values
 	 *  @param alpha  the alpha value between 0 - 1
 	 *
-	 *  @returns the RGB Color object
+	 *  @return the RGB Color object
 	 */
 	public static Color toRGB(float[] hsl, float alpha)
 	{
@@ -330,7 +342,7 @@ public class HSLColor
 	 *  @param s Saturation is specified as a percentage in the range 1 - 100.
 	 *  @param l Lumanance is specified as a percentage in the range 1 - 100.
 	 *
-	 *  @returns the RGB Color object
+	 *  @return the RGB Color object
 	 */
 	public static Color toRGB(float h, float s, float l)
 	{
@@ -345,7 +357,7 @@ public class HSLColor
 	 *  @param l Lumanance is specified as a percentage in the range 1 - 100.
 	 *  @param alpha  the alpha value between 0 - 1
 	 *
-	 *  @returns the RGB Color object
+	 *  @return the RGB Color object
 	 */
 	public static Color toRGB(float h, float s, float l, float alpha)
 	{
@@ -374,7 +386,7 @@ public class HSLColor
 		s /= 100f;
 		l /= 100f;
 
-		float q = 0;
+		float q;
 
 		if (l < 0.5)
 			q = l * (1 + s);
