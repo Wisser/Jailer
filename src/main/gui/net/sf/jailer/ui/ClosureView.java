@@ -1176,7 +1176,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		int surplus = 0;
 
 		GridBagConstraints gridBagConstraints;
-		int distance = 0;
+		int distance = 1;
 		boolean limitExceeded = false;
 		final Table st = getSelectedTable();
 		boolean unlimited = noAssocLimitTableName != null && st != null && noAssocLimitTableName.equals(st.getName());

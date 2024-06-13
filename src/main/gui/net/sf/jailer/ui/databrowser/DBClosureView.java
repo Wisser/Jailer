@@ -521,19 +521,19 @@ public abstract class DBClosureView extends javax.swing.JDialog {
                             alpha = 100;
                             lineWidth = 3;
                         }
-                        Color color = new Color(0, 0, 245, alpha);
+                        Color color = new Color(0, 0, 245, alpha); // TODO
                         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
                         if (selectionInfo.ignored) {
                             BasicStroke stroke = new BasicStroke(lineWidth);
                             g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 2f, 6f },
                                 1.0f));
-                            color = new Color(0, 0, 0, alpha);
+                            color = new Color(0, 0, 0, alpha); // TODO
                         } else {
                             g2d.setStroke(new BasicStroke(lineWidth));
                         }
                         if (isDependency) {
-                            color = new Color(245, 0, 0, alpha);
+                            color = new Color(245, 0, 0, alpha); // TODO
                         }
                         g2d.setColor(color);
                         g2d.drawPolyline(x, y, 2);

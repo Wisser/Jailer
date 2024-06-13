@@ -1438,7 +1438,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								JTableHeader header = rowsTable.getTableHeader();
 								Rectangle hr = header.getHeaderRect(vi);
 								Color c = columnHeaderColors[i];
-								Color c1 = new Color(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha() * 2);
+								Color c1 = new Color(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha() * 2); // OK
 								Color c2 = new Color(c.getRed(), c.getGreen(), c.getBlue(), 0);
 								if (c.getAlpha() % 2 == 0) {
 									c = c1;
@@ -1744,9 +1744,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						render.setBackground(
 								UIUtil.plaf == PLAF.FLATDARK?
 										new Color(
-												Math.min((int)(background.getRed() * 1.0 + 83), 255), // TODO
-												Math.min((int)(background.getGreen() * 1.10 + 13), 255),
-												Math.min((int)(background.getBlue() * 1.10 + 13), 255),
+												Math.min((int)(background.getRed() * 1.0 + 0), 255), // OK
+												Math.min((int)(background.getGreen() * 1.00 + 43), 255),
+												Math.min((int)(background.getBlue() * 1.00 + 0), 255),
 												background.getAlpha())
 									:
 										new Color(

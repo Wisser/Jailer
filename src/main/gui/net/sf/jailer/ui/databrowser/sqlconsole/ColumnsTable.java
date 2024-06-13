@@ -377,7 +377,7 @@ public class ColumnsTable extends JTable {
 					if ("found".equals(render.getName())) {
 						Color background = render.getBackground();
 						render.setBackground(
-								new Color(
+								new Color( // TODO
 										Math.max((int)(background.getRed()), 0),
 										Math.max((int)(background.getGreen() * 0.90), 0),
 										Math.max((int)(background.getBlue() * 0.91), 0),

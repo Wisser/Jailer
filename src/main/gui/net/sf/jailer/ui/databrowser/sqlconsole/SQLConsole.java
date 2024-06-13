@@ -1264,7 +1264,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 final String columnLabelsFull[] = new String[columnCount];
                 final Color columnHeaderColors[] = new Color[columnCount];
                 int a = 10;
-                final Color hBG[] = new Color[] {
+                final Color hBG[] = new Color[] { // TODO
                    		new Color(0, 0, 255, a + 0),
                    		new Color(255, 60, 0, a + 8),
                 		new Color(255, 255, 0, (int)(a * 2.8f)),
@@ -2436,7 +2436,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	        				Color startColor = runningStatusLabelColor;
 	        				double x = Math.sin(2 * Math.PI * time / 15.0);
 							double f = (Math.pow(Math.abs(x), 0.5) * Math.signum(x) + 1) / 2;
-	        				Color c = new Color(mid(f, startColor.getRed(), 255), mid(f, startColor.getGreen(), 0), startColor.getBlue());
+	        				Color c = new Color(mid(f, startColor.getRed(), 255), mid(f, startColor.getGreen(), 0), startColor.getBlue()); // TODO
 	        				statusLabel.setForeground(c);
 						} else {
 							timer.stop();

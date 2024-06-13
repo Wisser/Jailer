@@ -56,7 +56,7 @@ public class Colors {
 		Color_242_242_255.init(new Color(242, 242, 255), Color_240_240_255.dark); // TODO
 		Color_192_192_192.init(new Color(192, 192, 192), new Color(62, 67, 76)).blink();;
 		Color_0_0_0_0.init(new Color(0, 0, 0, 0), new Color(0, 0, 0, 0));
-		Color_238_255_238.init(new Color(238, 255, 238), new Color(40, 45, 55)).blink(); // table-bg-1
+		Color_238_255_238.init(new Color(238, 255, 238), new Color(40, 45, 55)); // table-bg-1
 		Color_0_0_200_100.init(new Color(0, 0, 200, 100), new Color(148, 148, 209, 177)).blink();
 		
 		// TODO

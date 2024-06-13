@@ -164,7 +164,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		this.tabPropertyName = "DMMDPropTab" + module;
 		this.module = module;
 		initComponents(); UIUtil.initComponents(this);
-		
+        jPanel21.setBorder(javax.swing.BorderFactory.createLineBorder(Colors.Color_204_204_204));
+
 		dummyContent.setVisible(false);
 		disabledPanel.setVisible(false);
 		DbConnectionDetailsEditor.addNewDatamodelListener(() -> {
@@ -2570,7 +2571,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         jPanel11.add(jPanel12, gridBagConstraints);
 
-        jPanel21.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
         jPanel21.setLayout(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

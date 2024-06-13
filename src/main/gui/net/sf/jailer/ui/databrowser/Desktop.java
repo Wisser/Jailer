@@ -2466,14 +2466,14 @@ public abstract class Desktop extends JDesktopPane {
 									if (UIUtil.plaf != PLAF.NIMBUS) {
 										if (cl.getGreen() > cl.getBlue() && cl.getGreen() >= cl.getRed()) {
 //											if (link.restricted) {
-												cl = new Color(
+												cl = new Color( // TODO
 														(int) (cl.getRed()),
 														(int) (cl.getGreen() * 0.75f),
 														(0));
 //											}
 										} else {
 											double f = 1.1; // link.restricted? 1.7 : 1.1;
-											cl = new Color(
+											cl = new Color( // TODO
 													brighter(cl.getRed(), f),
 													brighter(cl.getGreen(), f),
 													brighter(cl.getBlue(), f));
@@ -2566,7 +2566,11 @@ public abstract class Desktop extends JDesktopPane {
 				if (fgColor.getGreen() > fgColor.getRed() + fgColor.getBlue()) {
 					f = 2.0;
 				}
-				g2d.setColor((inTempClosure) && pbg? new Color(
+				
+// TODO
+				// TODO auch bei light mehr kontrast
+				
+				g2d.setColor((inTempClosure) && pbg? new Color( // TODO
 						brighter(fgColor.getRed(), f ),
 						brighter(fgColor.getGreen(), f),
 						brighter(fgColor.getBlue(), f)) : color);

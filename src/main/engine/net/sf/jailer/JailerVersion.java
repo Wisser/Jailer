@@ -58,3 +58,9 @@ public class JailerVersion {
 
 // TODO
 // TODO FilterEditorDialog.jEditorPane1: text with html color
+
+// TODO
+// TODO click on "Database"-Metadata table list with opened "Desktop" should open BrCoPa in Desktop
+
+// TODO
+// TODO icons: black"-"plus" and "filter"-icon (GraphView) are too bright
