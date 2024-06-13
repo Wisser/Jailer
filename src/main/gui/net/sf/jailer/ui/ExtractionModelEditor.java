@@ -1013,14 +1013,14 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
-        restrictionConditionEditor.addOnPanel.add(restrictionEditor.columnsA, gridBagConstraints);
+//        restrictionConditionEditor.addOnPanel.add(restrictionEditor.columnsA, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
-        restrictionConditionEditor.addOnPanel.add(restrictionEditor.columnsB, gridBagConstraints);
+//        restrictionConditionEditor.addOnPanel.add(restrictionEditor.columnsB, gridBagConstraints);
 		restrictionConditionEditor.setTitle("Restriction");
 		openSubjectConditionEditor.setIcon(conditionEditorIcon);
 		openSubjectConditionEditor.setText(null);

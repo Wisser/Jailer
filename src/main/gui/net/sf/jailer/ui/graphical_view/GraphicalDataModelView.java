@@ -241,7 +241,7 @@ public class GraphicalDataModelView extends JPanel {
 		final ShapeRenderer sr = new ShapeRenderer() {
 			@Override
 			protected Shape getRawShape(VisualItem item) {
-				item.setFillColor(ColorLib.rgba(220,210,0,100));
+				item.setFillColor(Colors.Color_220_210_0_100.getRGB());
 				double x = item.getX();
 				if ( Double.isNaN(x) || Double.isInfinite(x) )
 					x = 0;

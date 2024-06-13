@@ -204,6 +204,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.insets = new java.awt.Insets(3, 0, 0, 0);
         jPanel7.add(jPanel8, gridBagConstraints);
 
@@ -219,6 +220,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridheight = 10;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(3, 0, 0, 0);
         jPanel7.add(jPanel9, gridBagConstraints);
 
         jPanel10.setOpaque(false);
@@ -282,7 +284,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 20, 0, 0);
         jPanel2.add(jPanel7, gridBagConstraints);
 
-        jPanel4.setBackground(/* Renaming also in *.form! */ Colors.Color_255_255_255);
+        jPanel4.setOpaque(false);
         jPanel4.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 4, 0));
 
         source.setFont(source.getFont().deriveFont(source.getFont().getStyle() | java.awt.Font.BOLD, source.getFont().getSize()+1));
@@ -317,7 +319,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel2.add(jPanel4, gridBagConstraints);
 
-        jPanel5.setBackground(/* Renaming also in *.form! */ Colors.Color_255_255_255);
+        jPanel5.setOpaque(false);
         jPanel5.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 4, 0));
 
         jLabel1.setText("on");

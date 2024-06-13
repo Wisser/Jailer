@@ -32,10 +32,10 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Cardinality;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.subsetting.ScriptFormat;
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
 import prefuse.Constants;
 import prefuse.render.EdgeRenderer;
-import prefuse.util.ColorLib;
 import prefuse.util.GraphicsLib;
 import prefuse.visual.EdgeItem;
 import prefuse.visual.VisualItem;
@@ -300,7 +300,7 @@ public class AssociationRenderer extends EdgeRenderer {
 			}
 		}
 		if (isSelected) {
-			item.setStrokeColor(ColorLib.rgb(0, 0, 0));
+			item.setStrokeColor(Colors.Color_0_0_0.getRGB());
 			stroke = item.getStroke();
 			if (stroke != null) {
 				BasicStroke itemStroke;

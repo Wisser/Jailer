@@ -24,6 +24,9 @@ import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.ColorModel;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,7 +46,7 @@ public class Colors {
 		colors.clear();
 		
 		GraphicalDataViewBackground.init(new Color(255, 255, 255), new Color(31, 39, 42));
-		Color_170_0_0.init(new Color(170, 0, 0), new Color(255, 70, 50));
+		Color_170_0_0.init(new Color(170, 0, 0), new Color(255, 100, 30));
 		Color_200_200_255.init(new Color(200, 200, 255), new Color(0, 0, 0));
 		Color_0_100_255.init(new Color(0, 100, 255), new Color(0, 176, 255));
 		Color_0_112_0.init(new Color(0, 112, 0), new Color(0, 215, 0));
@@ -51,6 +54,10 @@ public class Colors {
 		Color_255_255_170.init(new Color(255, 255, 170), new Color(20, 76, 20));
 		Color_240_240_255.init(new Color(240, 240, 255), new Color(50, 50, 170));
 		Color_242_242_255.init(new Color(242, 242, 255), Color_240_240_255.dark); // TODO
+		Color_192_192_192.init(new Color(192, 192, 192), new Color(62, 67, 76)).blink();;
+		Color_0_0_0_0.init(new Color(0, 0, 0, 0), new Color(0, 0, 0, 0));
+		Color_238_255_238.init(new Color(238, 255, 238), new Color(40, 45, 55)).blink(); // table-bg-1
+		Color_0_0_200_100.init(new Color(0, 0, 200, 100), new Color(148, 148, 209, 177)).blink();
 		
 		// TODO
 		// TODO red for pk (and in general?) is too saturated
@@ -59,11 +66,27 @@ public class Colors {
 		// TODO console, result-view-table, column-bg in case of join, redefine colors
 		
 		// TODO
-		// desktop background darker? as in SQLConsole?
+		// TODO block-color in BCPane brighter
+				
+		// TODO
+		// desktop background darker? as in SQLConsole? Same color as in Desktop-Outline?
+		
+		// TODO
+		// TODO BCPane "find columns": markierung deutlicher machen
+		
+		// TODO
+		// TODO "full text search": check occurrences render coloring
+		
+		// TODO
+		// icon "subject" (GrView): white border
 		
 		// TODO
 		// in !"darkLAF" mode (SysProp): use good heuristically chosen dark-defaults ?
 		// yes but in all modes. Blink in "darkLAF" mode (SysProp).
+		
+		
+		// TODO
+		// TODO count darkLaf-processes (s11)
 		
 		HTMLColor_000000 = UIUtil.plaf != PLAF.FLATDARK? "\"#000000\"" : "\"#dddddd\"";
 		HTMLColor_006600 = UIUtil.plaf != PLAF.FLATDARK? "\"#006600\"" : "\"#00c000\"";
@@ -92,8 +115,15 @@ public class Colors {
 		HTMLColor_ff9999 = UIUtil.plaf != PLAF.FLATDARK? "\"#ff9999\"" : "\"#ff9999\"";
 
 		Color_0_0_0.init(new Color(0, 0, 0));
-		Color_0_0_0_0.init(new Color(0, 0, 0, 0));
 		Color_0_0_0_60.init(new Color(0, 0, 0, 60));
+		Color_220_210_0_100.init(new Color(220, 210, 0, 100));
+		Color_170_50_50.init(new Color(170, 50, 50), new Color(255, 255, 50));
+		Color_255_235_20_75.init(new Color(255, 235, 20, 75), new Color(235, 235, 0, 85));
+		Color_255_0_0.init(new Color(255, 0, 0), new Color(255, 100, 0));
+		Color_0_255_255_150.init(new Color(0, 255, 255, 150), new Color(0, 255, 0, 50));
+
+		// TODO
+		// TODO check "tranparent" todos
 		
 		Color_0_0_1.init(new Color(0, 0, 1), Color_0_0_0.dark);
 		
@@ -102,14 +132,13 @@ public class Colors {
 		Color_0_0_150.init(new Color(0, 0, 150));
 		Color_0_0_180.init(new Color(0, 0, 180));
 		Color_0_0_200.init(new Color(0, 0, 200));
-		Color_0_0_200_100.init(new Color(0, 0, 200, 100));
-		Color_0_0_200_60.init(new Color(0, 0, 200, 60));
+		Color_0_0_200_60.init(new Color(0, 0, 200, 60));    // TODO tranparent
 		Color_0_0_205.init(new Color(0, 0, 205));
 		Color_0_0_220.init(new Color(0, 0, 220));
 		Color_0_0_225.init(new Color(0, 0, 225));
-		Color_0_0_245_60.init(new Color(0, 0, 245, 60));
+		Color_0_0_245_60.init(new Color(0, 0, 245, 60));    // TODO tranparent
 		Color_0_0_255.init(new Color(0, 0, 255));
-		Color_0_0_255_80.init(new Color(0, 0, 255, 80));
+		Color_0_0_255_80.init(new Color(0, 0, 255, 80));    // TODO tranparent
 		Color_0_0_62.init(new Color(0, 0, 62));
 		Color_0_0_77.init(new Color(0, 0, 77));
 		Color_0_100_0.init(new Color(0, 100, 0), Color_0_102_0);
@@ -122,23 +151,22 @@ public class Colors {
 		Color_0_200_0.init(new Color(0, 200, 0));
 		Color_0_200_255.init(new Color(0, 200, 255));
 		Color_0_230_0.init(new Color(0, 230, 0));
-		Color_0_255_0_50.init(new Color(0, 255, 0, 50));
-		Color_0_255_230_70.init(new Color(0, 255, 230, 70));
-		Color_0_255_255_150.init(new Color(0, 255, 255, 150));
+		Color_0_255_0_50.init(new Color(0, 255, 0, 50));    // TODO tranparent
+		Color_0_255_230_70.init(new Color(0, 255, 230, 70));    // TODO tranparent
 		Color_0_30_255.init(new Color(0, 30, 255));
 		Color_0_40_255.init(new Color(0, 40, 255));
 		Color_0_40_90.init(new Color(0, 40, 90));
 		Color_0_55_0.init(new Color(0, 55, 0));
 		Color_0_80_160.init(new Color(0, 80, 160));
 		Color_0_80_200.init(new Color(0, 80, 200));
-		Color_0_80_255_80.init(new Color(0, 80, 255, 80));
+		Color_0_80_255_80.init(new Color(0, 80, 255, 80));    // TODO tranparent
 		Color_0_96_0.init(new Color(0, 96, 0));
 		Color_100_0_0.init(new Color(100, 0, 0));
 		Color_100_100_100.init(new Color(100, 100, 100));
 		Color_100_110_210.init(new Color(100, 110, 210));
 		Color_115_0_0.init(new Color(115, 0, 0));
 		Color_115_217_255.init(new Color(115, 217, 255));
-		Color_122_210_255_200.init(new Color(122, 210, 255, 200));
+		Color_122_210_255_200.init(new Color(122, 210, 255, 200));    // TODO tranparent
 		Color_128_128_128.init(new Color(128, 128, 128));
 		
 		Color_130_130_130.init(new Color(130, 130, 130), Color_128_128_128.dark);
@@ -151,7 +179,7 @@ public class Colors {
 		Color_150_0_0.init(new Color(150, 0, 0));
 		Color_150_0_100.init(new Color(150, 0, 100));
 		Color_150_150_150.init(new Color(150, 150, 150));
-		Color_150_255_0_70.init(new Color(150, 255, 0, 70));
+		Color_150_255_0_70.init(new Color(150, 255, 0, 70));    // TODO tranparent
 		
 		Color_153_153_153.init(new Color(153, 153, 153), Color_150_150_150.dark);
 		
@@ -172,7 +200,7 @@ public class Colors {
 		Color_200_100_200.init(new Color(200, 100, 200));
 		Color_200_200_0.init(new Color(200, 200, 0));
 		Color_200_200_200.init(new Color(200, 200, 200));
-		Color_200_200_200_140.init(new Color(200, 200, 200, 140));
+		Color_200_200_200_140.init(new Color(200, 200, 200, 140));    // TODO tranparent
 		Color_200_255_180.init(new Color(200, 255, 180));
 		Color_204_204_204.init(new Color(204, 204, 204));
 		Color_204_255_178.init(new Color(204, 255, 178));
@@ -183,7 +211,7 @@ public class Colors {
 		Color_220_220_255.init(new Color(220, 220, 255));
 		Color_220_225_255.init(new Color(220, 225, 255));
 		Color_220_255_220.init(new Color(220, 255, 220));
-		Color_220_255_220_70.init(new Color(220, 255, 220, 70));
+		Color_220_255_220_70.init(new Color(220, 255, 220, 70));    // TODO tranparent
 		Color_224_224_224.init(new Color(224, 224, 224));
 		Color_224_240_255.init(new Color(224, 240, 255));
 		Color_228_228_232.init(new Color(228, 228, 232));
@@ -192,23 +220,21 @@ public class Colors {
 		Color_230_80_50.init(new Color(230, 80, 50));
 		Color_232_232_255.init(new Color(232, 232, 255));   // like Color_235_235_255 ?
 		Color_235_235_255.init(new Color(235, 235, 255));
-		Color_238_255_238.init(new Color(238, 255, 238));
 		Color_240_255_255.init(new Color(240, 255, 255));
 		Color_242_242_242.init(new Color(242, 242, 242));
-		Color_245_0_0_60.init(new Color(245, 0, 0, 60));
+		Color_245_0_0_60.init(new Color(245, 0, 0, 60));    // TODO tranparent
 		Color_245_90_60.init(new Color(245, 90, 60));
 		Color_247_247_247.init(new Color(247, 247, 247));
 		Color_248_252_255.init(new Color(248, 252, 255));   // like Color_250_250_255 ?
-		Color_248_255_248.init(new Color(248, 255, 248));
 		Color_250_250_255.init(new Color(250, 250, 255));
 		Color_254_255_255.init(new Color(254, 255, 255));
-		Color_255_0_0_0.init(new Color(255, 0, 0, 0));
-		Color_255_0_0_10.init(new Color(255, 0, 0, 10));
-		Color_255_0_0_120.init(new Color(255, 0, 0, 120));
-		Color_255_0_0_150.init(new Color(255, 0, 0, 150));
-		Color_255_0_0_20.init(new Color(255, 0, 0, 20));
-		Color_255_0_0_50.init(new Color(255, 0, 0, 50));
-		Color_255_0_0_60.init(new Color(255, 0, 0, 60));
+		Color_255_0_0_0.init(new Color(255, 0, 0, 0));    // TODO tranparent
+		Color_255_0_0_10.init(new Color(255, 0, 0, 10));    // TODO tranparent
+		Color_255_0_0_120.init(new Color(255, 0, 0, 120));    // TODO tranparent
+		Color_255_0_0_150.init(new Color(255, 0, 0, 150));    // TODO tranparent
+		Color_255_0_0_20.init(new Color(255, 0, 0, 20));    // TODO tranparent
+		Color_255_0_0_50.init(new Color(255, 0, 0, 50));    // TODO tranparent
+		Color_255_0_0_60.init(new Color(255, 0, 0, 60));    // TODO tranparent
 		Color_255_0_51.init(new Color(255, 0, 51));
 		Color_255_100_100.init(new Color(255, 100, 100));
 		Color_255_150_140.init(new Color(255, 150, 140));
@@ -229,7 +255,7 @@ public class Colors {
 		Color_255_246_206.init(new Color(255, 246, 206));
 		Color_255_249_200.init(new Color(255, 249, 200));
 		Color_255_250_215.init(new Color(255, 250, 215));
-		Color_255_255_0_128.init(new Color(255, 255, 0, 128));
+		Color_255_255_0_128.init(new Color(255, 255, 0, 128));    // TODO tranparent
 		Color_255_255_176.init(new Color(255, 255, 176));
 		Color_255_255_204.init(new Color(255, 255, 204));
 		Color_255_255_205.init(new Color(255, 255, 205));
@@ -240,23 +266,21 @@ public class Colors {
 		Color_255_255_238.init(new Color(255, 255, 238));  // like Color_255_255_240 ?
 		Color_255_255_240.init(new Color(255, 255, 240));
 		Color_255_255_250.init(new Color(255, 255, 250));
-		Color_255_255_255_150.init(new Color(255,255,255,150));
-		Color_255_255_255_200.init(new Color(255, 255, 255, 200));
-		Color_255_255_255_70.init(new Color(255, 255, 255, 70));
+		Color_255_255_255_150.init(new Color(255,255,255,150));    // TODO tranparent
+		Color_255_255_255_200.init(new Color(255, 255, 255, 200));    // TODO tranparent
+		Color_255_255_255_70.init(new Color(255, 255, 255, 70));    // TODO tranparent
 		Color_255_40_0.init(new Color(255, 40, 0));
 		Color_255_50_50.init(new Color(255, 50, 50));
 		Color_255_80_80.init(new Color(255, 80, 80));
 		Color_66_118_187.init(new Color(66, 118, 187));
 		Color_70_255_70.init(new Color(70, 255, 70));
-		Color_80_200_255_200.init(new Color(80, 200, 255, 200));
+		Color_80_200_255_200.init(new Color(80, 200, 255, 200));    // TODO tranparent
 		Color_86_82_125.init(new Color(86, 82, 125));
 		Color_95_0_0.init(new Color(95, 0, 0));
 		Color_96_64_0.init(new Color(96, 64, 0));
 		Color_0_255_255.init(new Color(0, 255, 255));
 		Color_64_64_64.init(new Color(64, 64, 64));
 		Color_0_255_0.init(new Color(0, 255, 0));
-		Color_192_192_192.init(new Color(192, 192, 192));
-		Color_255_0_0.init(new Color(255, 0, 0));
 		Color_255_255_0.init(new Color(255, 255, 0));
 	}
 
@@ -366,7 +390,6 @@ public class Colors {
 	public static LAFAwareColor Color_245_90_60 = new LAFAwareColor();
 	public static LAFAwareColor Color_247_247_247 = new LAFAwareColor();
 	public static LAFAwareColor Color_248_252_255 = new LAFAwareColor();
-	public static LAFAwareColor Color_248_255_248 = new LAFAwareColor();
 	public static LAFAwareColor Color_250_250_255 = new LAFAwareColor();
 	public static LAFAwareColor Color_254_255_255 = new LAFAwareColor();
 	public static LAFAwareColor Color_255_0_0_0 = new LAFAwareColor();
@@ -427,6 +450,10 @@ public class Colors {
 	public static LAFAwareColor Color_255_0_0 = new LAFAwareColor();
 	public static LAFAwareColor Color_255_255_255 = new LAFAwareColor();
 	public static LAFAwareColor Color_255_255_0 = new LAFAwareColor();
+	public static LAFAwareColor Color_220_210_0_100 = new LAFAwareColor();
+	public static LAFAwareColor Color_170_50_50 = new LAFAwareColor();
+	public static LAFAwareColor Color_255_235_20_75 = new LAFAwareColor();
+	
 	public static String HTMLColor_000000;
 	public static String HTMLColor_0000B0;
 	public static String HTMLColor_0000D0;
@@ -466,7 +493,7 @@ public class Colors {
 				
 				timer = new Timer(10, e -> {
 					boolean repaint = false;
-					long t = System.currentTimeMillis() % 2000;
+					long t = System.currentTimeMillis() % 4000;
 					for (LAFAwareColor lc: colors) {
 						if (lc.blink) {
 							Color newColor;
@@ -500,7 +527,37 @@ public class Colors {
 		for (Window w : Window.getWindows()) {
 			w.repaint();
 		}
+		
+		if (inDarkLAFMode) {
+			PrintWriter out;
+			try {
+				StringBuilder sb = new StringBuilder();
+				colors.forEach(c -> {
+					Color l = c.light;
+					Color d = c.dark;
+					sb.append(toHex(d.getRed()) + toHex(d.getGreen()) + toHex(d.getBlue())
+						+ " " + "Color_" + l.getRed() + "_" + l.getGreen() + "_" + l.getBlue() + (l.getAlpha() != 255? "_" + l.getAlpha() : "")
+						+ " dark: new Color(" + d.getRed() + ", " + d.getGreen() + ", " + d.getBlue() + (d.getAlpha() != 255? ", " + d.getAlpha() : "") + ")"
+					);
+					sb.append("\r\n");
+				});
+				if (!prefCMap.equals(sb.toString())) {
+					prefCMap = sb.toString();
+					out = new PrintWriter(new File("colormap.txt"));
+					out.print(prefCMap);
+					out.close();
+				}
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
+	
+	private static String toHex(int x) {
+		return (x < 16? "0" : "") + Integer.toHexString(x);
+	}
+	private static String prefCMap = "";
 	
 	private static List<LAFAwareColor> colors = new ArrayList<>();
 	
@@ -510,12 +567,14 @@ public class Colors {
 		private Color color;
 		private Color origColor;
 		private Color dark;
+		private Color light;
 		private boolean blink;
 
 		public LAFAwareColor init(Color light, Color dark) {
 			this.color = UIUtil.plaf == PLAF.FLATDARK? dark : light;
 			this.origColor = color;
 			this.dark = dark;
+			this.light = light;
 			this.blink = false;
 			if (dark == null) {
 				throw new NullPointerException();
@@ -525,18 +584,32 @@ public class Colors {
 		}
 		
 		public LAFAwareColor init(Color light) {
+			Color luminanceAdjusted;
 			HSLColor hslLight = new HSLColor(light);
-			Color luminanceAdjusted = hslLight.adjustLuminance(100 - hslLight.getLuminance());
+			float luminance = hslLight.getLuminance();
+			float limit = 7;
+			if (luminance < limit) {
+				luminanceAdjusted = Color.white;
+			} else {
+				luminanceAdjusted = hslLight.adjustLuminance(100 - (luminance - limit) * ((100 - limit) / 100));
+				hslLight = new HSLColor(luminanceAdjusted);
+				luminanceAdjusted = hslLight.adjustSaturation((float) (hslLight.getSaturation() * 0.4));
+			}
+			luminanceAdjusted = new Color(luminanceAdjusted.getRed(), luminanceAdjusted.getGreen(), luminanceAdjusted.getBlue(), light.getAlpha() + (255 - light.getAlpha()) / 2);
 			
-			// TODO
-			// TODO improve "adjustLuminance" heuristic      !!
+			boolean adjust = inDarkLAFMode;
 			
-			init(light, luminanceAdjusted);
+//			if (light.getAlpha() != 255) {
+//				adjust = false;
+//			}
+			
+//			adjust=false;
+			init(light, adjust? luminanceAdjusted : light);
 			
 			// TODO
 			// TODO blink with or without "inDarkLAFMode"? !!!!! not without it. use luminanceAdjusted then.
 			
-			blink();
+//			blink();
 			
 			return this;
 		}

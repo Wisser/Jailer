@@ -190,6 +190,7 @@ import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.SessionForUI;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.DBConditionEditor.RSyntaxTextArea;
 import net.sf.jailer.ui.databrowser.Desktop.FindClosureContext;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
@@ -1741,11 +1742,18 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					if (found) {
 						Color background = render.getBackground();
 						render.setBackground(
-								new Color(
-										Math.max((int)(background.getRed()), 0),
-										Math.max((int)(background.getGreen() * 0.90), 0),
-										Math.max((int)(background.getBlue() * 0.91), 0),
-										background.getAlpha()));
+								UIUtil.plaf == PLAF.FLATDARK?
+										new Color(
+												Math.min((int)(background.getRed() * 1.0 + 83), 255), // TODO
+												Math.min((int)(background.getGreen() * 1.10 + 13), 255),
+												Math.min((int)(background.getBlue() * 1.10 + 13), 255),
+												background.getAlpha())
+									:
+										new Color(
+											Math.max((int)(background.getRed()), 0),
+											Math.max((int)(background.getGreen() * 0.90), 0),
+											Math.max((int)(background.getBlue() * 0.91), 0),
+											background.getAlpha()));
 						render.setName("found");
 					}
 					try {

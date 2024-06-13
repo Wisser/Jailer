@@ -31,7 +31,6 @@ import java.awt.event.WindowFocusListener;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -44,12 +43,9 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
@@ -60,7 +56,6 @@ import org.fife.rsta.ui.EscapableDialog;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
-import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
@@ -223,46 +218,6 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 		} else {
 			paramsPanel.setVisible(false);
 		}
-	}
-	
-	/**
-	 * Opens a drop-down box which allows the user to select columns for restriction definitions.
-	 */
-	private void openColumnDropDownBox(JLabel label, String alias, Table table) {
-		JPopupMenu popup = new JScrollPopupMenu();
-		List<String> columns = new ArrayList<String>();
-		
-		for (Column c: table.getColumns()) {
-			columns.add(alias + "." + c.name);
-		}
-		if (addPseudoColumns) {
-			columns.add("");
-			columns.add(alias + ".$IS_SUBJECT");
-			columns.add(alias + ".$DISTANCE");
-			columns.add("$IN_DELETE_MODE");
-			columns.add("NOT $IN_DELETE_MODE");
-		}
-		
-		for (final String c: columns) {
-			if (c.equals("")) {
-				popup.add(new JSeparator());
-				continue;
-			}
-			JMenuItem m = new JMenuItem(c);
-			m.addActionListener(new ActionListener () {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					if (editorPane.isEnabled()) {
-						if (editorPane.isEditable()) {
-							editorPane.replaceSelection(c);
-						}
-					}
-				}
-			});
-			popup.add(m);
-		}
-		UIUtil.fit(popup);
-		popup.show(label, 0, label.getHeight());
 	}
 	
 	/** This method is called from within the constructor to

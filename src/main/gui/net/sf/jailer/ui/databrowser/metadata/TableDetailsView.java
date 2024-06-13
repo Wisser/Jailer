@@ -278,7 +278,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 					});
 				}
 				columnsPanel.removeAll();
-				java.awt.Color bgDarker = Colors.Color_248_255_248;
+				java.awt.Color bgDarker = UIUtil.TABLE_BACKGROUND_COLOR_1;
 				jPanel2.setBackground(UIUtil.TABLE_BACKGROUND_COLOR_2);
 				boolean hasConstraints = false;
 				for (Column column: columns) {

@@ -42,6 +42,7 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.UIUtil.PLAF;
 import prefuse.Constants;
 import prefuse.render.AbstractShapeRenderer;
 import prefuse.render.ImageFactory;
@@ -98,8 +99,6 @@ public abstract class TableRenderer extends AbstractShapeRenderer {
 	protected Dimension m_headerDim = new Dimension(); // text width / height of header
 	
 	private int m_color;
-	private int NOT_IN_CLOSURE_COLOR = ColorLib.rgb(170, 50, 50);
-	private int IN_CLOSURE_COLOR = ColorLib.rgb(0, 0, 0);
 	
 	// ------------------------------------------------------------------------
 	
@@ -166,7 +165,7 @@ public abstract class TableRenderer extends AbstractShapeRenderer {
 			textCacheVersion = model.version;
 			textCache.clear();
 		}
-		m_color = IN_CLOSURE_COLOR;
+		m_color = Colors.Color_0_0_0.getRGB();
 		if (item.canGetString(m_labelName) ) {
 			String tableName = item.getString(m_labelName);
 			Table table = model.getTable(tableName);
@@ -174,7 +173,7 @@ public abstract class TableRenderer extends AbstractShapeRenderer {
 				tableName = model.getDisplayName(table);
 			}
 			if (table != null && !graphicalDataModelView.modelEditor.getCurrentSubjectClosure().contains(table)) {
-				m_color = NOT_IN_CLOSURE_COLOR;
+				m_color = Colors.Color_170_50_50.getRGB();
 			}
 			if (table != null && graphicalDataModelView.showDetails(table)) {
 				if (textCache.containsKey(table.getName())) {
@@ -421,7 +420,7 @@ public abstract class TableRenderer extends AbstractShapeRenderer {
 	 */
 	@Override
 	public void render(Graphics2D g, VisualItem item) {
-		item.setTextColor(IN_CLOSURE_COLOR);
+		item.setTextColor(Colors.Color_0_0_0.getRGB());
 		
 		RectangularShape shape = (RectangularShape)getShape(item);
 		if ( shape == null ) return;
@@ -449,9 +448,9 @@ public abstract class TableRenderer extends AbstractShapeRenderer {
 						(animationstep % LENGTH) / 100.0f);
 					item.setStroke(itemStroke);
 				}
-				item.setStrokeColor(ColorLib.rgb(0, 0, 0));
+				item.setStrokeColor(Colors.Color_0_0_0.getRGB());
 			} else {
-				item.setStrokeColor(ColorLib.rgba(0, 0, 0, 0));
+				item.setStrokeColor(Colors.Color_0_0_0_0.getRGB());
 			}
 			int fillColor = item.getFillColor();
 			Integer pos = graphicalDataModelView.tablesOnPath.get(tableName);
@@ -460,11 +459,18 @@ public abstract class TableRenderer extends AbstractShapeRenderer {
 				double d = Math.sin((((System.currentTimeMillis() - (double) pos * 300.0) % PERIOD) / (double) PERIOD) * 2 * Math.PI);
 				d = Math.pow(d *= d, 2.2);
 				double f = isSelected || graphicalDataModelView.tablesOnPath.size() <= 3? 0.0 : 0.50 * d;
-				fillColor = ColorLib.rgba( // TODO
-						ColorLib.interp(76, 240, f),
-						ColorLib.interp(230, 120, f),
-						ColorLib.interp(255, 90, f),
-						65);
+				fillColor = UIUtil.plaf == PLAF.FLATDARK?
+						ColorLib.rgba(
+								ColorLib.interp(0, 210, f),
+								ColorLib.interp(110, 50, f),
+								ColorLib.interp(125, 0, f),
+								255)
+						:
+						ColorLib.rgba(
+								ColorLib.interp(76, 240, f),
+								ColorLib.interp(230, 120, f),
+								ColorLib.interp(255, 90, f),
+								65);
 			}
 			paint(g, item, fillColor, shape, itemStroke != null? itemStroke : new BasicStroke(isSelected? 1 : 0), isSelected? RENDER_TYPE_DRAW_AND_FILL : RENDER_TYPE_FILL);
 			if (table != null) {
@@ -552,7 +558,7 @@ public abstract class TableRenderer extends AbstractShapeRenderer {
 			
 			if (i == collapsedImage || i == collapsedRedImage) {
 				g.setFont(m_font3);
-				g.setPaint(ColorLib.getColor(i == collapsedImage? m_color : NOT_IN_CLOSURE_COLOR));
+				g.setPaint(ColorLib.getColor(i == collapsedImage? m_color : Colors.Color_170_50_50.getRGB()));
 				String tableName = item.getString("label");
 				Table table = model.getTable(tableName);
 				String count = "" + getCollapsedCount(table);
@@ -564,7 +570,7 @@ public abstract class TableRenderer extends AbstractShapeRenderer {
 		int textColor = m_color; // item.getTextColor();
 		if (ColorLib.alpha(textColor) > 0) {
 			g.setPaint(ColorLib.getColor(textColor));
-			if (m_color == NOT_IN_CLOSURE_COLOR) {
+			if (m_color == Colors.Color_170_50_50.getRGB()) {
 				g.setFont(m_font_nic);
 			} else {
 				g.setFont(m_font);
@@ -648,7 +654,7 @@ public abstract class TableRenderer extends AbstractShapeRenderer {
 					fm = DEFAULT_GRAPHICS.getFontMetrics(m_font2);
 					lh = fm.getHeight();
 				}
-				textColor = IN_CLOSURE_COLOR;
+				textColor = Colors.Color_0_0_0.getRGB();
 				f = false;
 			}
 			drawString(g, fm, text.substring(start), useInt, x, y, tw, Constants.LEFT);
@@ -1088,7 +1094,7 @@ public abstract class TableRenderer extends AbstractShapeRenderer {
 		if ( type == AbstractShapeRenderer.RENDER_TYPE_NONE )
 			return;
 		
-		Color fillColor = fillColorI == 0? new Color(255, 235, 20, 75) : ColorLib.getColor(fillColorI);
+		Color fillColor = fillColorI == 0? Colors.Color_255_235_20_75 : ColorLib.getColor(fillColorI);
 
 		// set up colors
 		Color strokeColor = ColorLib.getColor(item.getStrokeColor());

@@ -19,6 +19,7 @@ import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseWheelEvent;
@@ -163,8 +164,11 @@ public class NeighborhoodPanel extends javax.swing.JPanel {
     			}
     			JLabel jLabel = new JLabel("  " + dataModel.getDisplayName(t) + "  ");
     			JPanel jPanel = new JPanel();
-    			jLabel.addMouseWheelListener(mouseWheelListener);
-    			jLabel.addMouseListener(new MouseEventHandler(graphView.isTableVisible(t)? null : jPanel) {
+    			jPanel.setOpaque(true);
+    			JPanel inPanel = new JPanel(new GridBagLayout());
+    	        inPanel.setOpaque(false);
+    	        inPanel.addMouseWheelListener(mouseWheelListener);
+    	        inPanel.addMouseListener(new MouseEventHandler(graphView.isTableVisible(t)? null : jPanel) {
 					@Override
 					protected void onRightClick(MouseEvent e) {
 						if (t != null) {
@@ -215,10 +219,15 @@ public class NeighborhoodPanel extends javax.swing.JPanel {
     			}
     	        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
     	        gridBagConstraints.gridx = 1;
-    	        gridBagConstraints.gridy = y;
+    	        gridBagConstraints.gridy = 1;
     	        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
     	        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
-    	        jPanel1.add(jPanel, gridBagConstraints);
+    	        inPanel.add(jPanel, gridBagConstraints);
+    	        gridBagConstraints = new java.awt.GridBagConstraints();
+    	        gridBagConstraints.gridx = 1;
+    	        gridBagConstraints.gridy = y;
+    	        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+    	        jPanel1.add(inPanel, gridBagConstraints);
     		}
     		jPanel1.revalidate();
     		jPanel1.repaint();
@@ -287,6 +296,7 @@ public class NeighborhoodPanel extends javax.swing.JPanel {
         setOpaque(false);
         setLayout(new java.awt.GridBagLayout());
 
+        titlePanel.setOpaque(false);
         titlePanel.setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setText("Neighborhood of  ");
@@ -356,6 +366,8 @@ public class NeighborhoodPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 8);
         add(jPanel2, gridBagConstraints);
+
+        jPanel4.setOpaque(false);
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
