@@ -1763,25 +1763,25 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	protected Color getAssociationColor1(Association association) {
-		Color color = Colors.Color_0_40_255;
+		Color color = Colors.ColorAssoc_1_1;
 		if (association.isIgnored()) {
-			color = Colors.Color_130_130_130;
+			color = Colors.ColorAssoc_1_2;
 		} else if (association.isInsertDestinationBeforeSource()) {
-			color = Colors.Color_230_80_50;
+			color = Colors.ColorAssoc_1_3;
 		} else if (association.isInsertSourceBeforeDestination()) {
-			color = Colors.Color_0_230_0;
+			color = Colors.ColorAssoc_1_4;
 		}
 		return color;
 	}
 
 	private Color getAssociationColor2(Association association) {
-		Color color = Colors.Color_0_30_255;
+		Color color = Colors.ColorAssoc_2_1;
 		if (association.isIgnored()) {
-			color = Colors.Color_150_150_150;
+			color = Colors.ColorAssoc_2_2;
 		} else if (association.isInsertSourceBeforeDestination()) {
-			color = Colors.Color_70_255_70;
+			color = Colors.ColorAssoc_2_3;
 		} else if (association.isInsertDestinationBeforeSource()) {
-			color = Colors.Color_245_90_60;
+			color = Colors.ColorAssoc_2_4;
 		}
 		return color;
 	}
@@ -2472,7 +2472,7 @@ public abstract class Desktop extends JDesktopPane {
 														(0));
 //											}
 										} else {
-											double f = 1.1; // link.restricted? 1.7 : 1.1;
+											double f = UIUtil.plaf == PLAF.FLATDARK? 0.9 : 1.1; // link.restricted? 1.7 : 1.1;
 											cl = new Color( // TODO
 													brighter(cl.getRed(), f),
 													brighter(cl.getGreen(), f),
@@ -2562,15 +2562,11 @@ public abstract class Desktop extends JDesktopPane {
 			if (UIUtil.plaf == PLAF.NIMBUS) {
 				g2d.setColor(inTempClosure && !pbg? Colors.Color_220_220_255 : color);
 			} else if (UIUtil.plaf.isFlat) {
-				double f = 4;
+				double f = UIUtil.plaf == PLAF.FLATDARK? 0.6 : 3;
 				if (fgColor.getGreen() > fgColor.getRed() + fgColor.getBlue()) {
-					f = 2.0;
+					f = UIUtil.plaf == PLAF.FLATDARK? 0.6 : 1.5;
 				}
-				
-// TODO
-				// TODO auch bei light mehr kontrast
-				
-				g2d.setColor((inTempClosure) && pbg? new Color( // TODO
+				g2d.setColor((inTempClosure) && pbg? new Color(
 						brighter(fgColor.getRed(), f ),
 						brighter(fgColor.getGreen(), f),
 						brighter(fgColor.getBlue(), f)) : color);
@@ -2597,12 +2593,40 @@ public abstract class Desktop extends JDesktopPane {
 			}
 		}
 
-		if (notHAligned) {
+		if (notHAligned && doPaint) {
 			Color fg = g2d.getColor();
 			if (!pbg) {
 				Color mc = fgColorMap.get(fg);
+				
+				// TODO
+				// TODO
+				// TODO
+				// TODO
+				// TODO
+				// TODO
+				mc=null;
+				
 				if (mc == null) {
-					mc = new HSLColor(fg).adjustLuminance(fg.getBlue() > fg.getRed() && fg.getBlue() > fg.getGreen()? 80 : fg.getGreen() > 130 && fg.getRed() > 130 && fg.getBlue() < 8? 60 : fg.getGreen() > fg.getRed() && fg.getGreen() > fg.getBlue()? 47 : fg.getGreen() > 130 && fg.getBlue() > 130 && fg.getRed() < 30? 70 : 83);
+					HSLColor hslColor = new HSLColor(fg);
+					if (UIUtil.plaf == PLAF.FLATDARK) {
+						float l = hslColor.getLuminance();
+						float d = 14;
+						mc = hslColor
+								.adjustLuminance(fg.getBlue() > fg.getRed() && fg.getBlue() > fg.getGreen() ? Math.max(0, l - d)
+										: fg.getGreen() > 130 && fg.getRed() > 130 && fg.getBlue() < 8 ? Math.max(0, l - d)
+												: fg.getGreen() > fg.getRed() && fg.getGreen() > fg.getBlue() ? Math.max(0, l - d)
+														: fg.getGreen() > 130 && fg.getBlue() > 130 && fg.getRed() < 30
+																? Math.max(0, l - d)
+																: Math.max(0, l - d));
+					} else {
+						mc = hslColor
+								.adjustLuminance(fg.getBlue() > fg.getRed() && fg.getBlue() > fg.getGreen() ? 80
+										: fg.getGreen() > 130 && fg.getRed() > 130 && fg.getBlue() < 8 ? 60
+												: fg.getGreen() > fg.getRed() && fg.getGreen() > fg.getBlue() ? 47
+														: fg.getGreen() > 130 && fg.getBlue() > 130 && fg.getRed() < 30
+																? 70
+																: 83);
+					}
 					fgColorMap.put(fg, mc);
 				}
 				g2d.setColor(mc);

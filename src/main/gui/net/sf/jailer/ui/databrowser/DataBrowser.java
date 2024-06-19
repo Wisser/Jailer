@@ -6827,7 +6827,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	     		}
 	     		int x = visibleRect.width - value.getWidth() - 1;
 				int y = ry - visibleRect.y + value.getHeight() - 1;
-				g.setColor(Colors.Color_255_255_255);
+				g.setColor(Colors.Color_FlatTreeViewBG);
 				g.fillRect(x - 8, y - value.getHeight() + 2, visibleRect.width - x + 9 + ow, value.getHeight() + oh);
 				y -= value.getHeight() - oh;
 				g.translate(x, y);

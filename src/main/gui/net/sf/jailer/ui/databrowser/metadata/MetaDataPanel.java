@@ -588,7 +588,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                     value = outlineTableRender((OutlineInfo) value, isSelected);
                 }
                 Component render = olRenderer.getListCellRendererComponent(list, value, index, false, cellHasFocus);
-                render.setBackground(isSelected? Colors.Color_240_240_255 : index == indexOfInfoAtCaret? Colors.Color_255_255_170 : Colors.Color_255_255_255);
+                render.setBackground(isSelected? Colors.Color_240_240_255 : index == indexOfInfoAtCaret? Colors.consoleCurrentLineHighlightColor : Colors.Color_255_255_255);
                 if (render instanceof JLabel) {
                 	((JLabel) render).setToolTipText(tooltip);
                 	if (UIUtil.plaf == PLAF.FLATDARK) {
@@ -1167,9 +1167,6 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 		}
                 	}
                 }
-                if (UIUtil.plaf.isFlat) {
-					setTextSelectionColor(tree.hasFocus()? Colors.Color_255_255_255 : null);
-				}
                 
                 return comp;
             }
@@ -2193,7 +2190,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 						((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 								RenderingHints.VALUE_ANTIALIAS_OFF );
 					}
-					g.setColor(Colors.Color_255_255_255);
+					g.setColor(Colors.Color_FlatTreeViewBG);
 					g.fillRect(x - 8, y - value.getHeight() + 2, visibleRect.width - x + 9 + ow, value.getHeight() + oh);
 					y -= value.getHeight() - oh;
 					g.translate(x, y);

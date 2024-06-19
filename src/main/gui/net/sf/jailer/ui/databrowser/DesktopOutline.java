@@ -262,7 +262,7 @@ public class DesktopOutline extends JPanel {
 			int gw = snap((int) (sameWidthFriend.getWidth() - (offX + scale * x + 0.5) - 1), (int)(scale * width + 0.5), 32);
 			int gh = (int)(scale * height + 0.5);
 			GradientPaint paint = new GradientPaint(
-					0, 0, backgroundColor.brighter(),
+					0, 0, backgroundColor.brighter(),  // TODO
 					gw, gh, backgroundColor);
 			g2d.setPaint(paint);
 			g2d.fillRoundRect(gx, gy, gw, gh, 2, 2);
@@ -296,7 +296,7 @@ public class DesktopOutline extends JPanel {
 						if (browser.association == null) {
 							g2d.setColor(Colors.Color_128_128_128);
 						} else if (hiddenParent) {
-							g2d.setColor(Colors.Color_255_255_0.darker());
+							g2d.setColor(Colors.Color_255_255_0.darker()); // TODO
 						} else {
 							g2d.setColor(desktop.getAssociationColor1(browser.association));
 						}
@@ -320,7 +320,7 @@ public class DesktopOutline extends JPanel {
 					if (backgroundColor1 != null) {
 						g2d.setColor(backgroundColor1);
 						paint = new GradientPaint(
-								sx, sy, backgroundColor1.brighter(),
+								sx, sy, backgroundColor1.brighter(),  // TODO
 								sx + sw, sy + sh, backgroundColor1);
 						g2d.setPaint(paint);
 						g2d.fillRoundRect(sx, sy, sw, sh, 8, 8);
@@ -470,7 +470,7 @@ public class DesktopOutline extends JPanel {
 		if (backgroundColor != null) {
 			g.setColor(backgroundColor);
 			GradientPaint paint = new GradientPaint(
-					sx, sy, backgroundColor.brighter(),
+					sx, sy, backgroundColor.brighter(), // TODO
 					sx + sw, sy + sh, backgroundColor);
 			g.setPaint(paint);
 			g.fillRoundRect(sx, sy, sw, sh, 8, 8);

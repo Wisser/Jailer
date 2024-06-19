@@ -100,7 +100,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 			if (c.name != null) {
 				renderConsumer.put(Quoting.staticUnquote(c.name), 
 						label -> {
-							label.setForeground(Colors.Color_0_0_255);
+							label.setForeground(UIUtil.FG_FK);
 							label.setIcon(emptyIcon);
 						}
 				);
@@ -318,7 +318,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 			        if (isPk) {
 			        	label.setForeground(Colors.Color_255_0_0);
 			        } else if (fks.contains(column)) {
-			        	label.setForeground(Colors.Color_0_0_255);
+			        	label.setForeground(UIUtil.FG_FK);
 			        }
 			        
 			        label.setText(Quoting.staticUnquote(column.name));

@@ -31,6 +31,7 @@ import java.util.Map.Entry;
 import javax.swing.JInternalFrame;
 
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.UIUtil.PLAF;
 
 /**
  * Renders state changes of {@link JInternalFrame}s in {@link Desktop}.
@@ -39,7 +40,7 @@ import net.sf.jailer.ui.UIUtil;
  */
 public class DesktopIFrameStateChangeRenderer {
 	
-	private final double DURATION = 1500.0;
+	private final double DURATION = 800.0;
 	private List<JInternalFrame> atomicBlock = null;
 	
 	private class StateChange {
@@ -102,10 +103,10 @@ public class DesktopIFrameStateChangeRenderer {
 			}
 			
 			if (stateChange.iFrame.isVisible()) {
-				Color color = new Color(255, 255, 0, (int) (170 * (1 - factor))); // TODO
+				Color color = UIUtil.plaf == PLAF.FLATDARK? new Color(200, 145, 0, (int) (170 * (1 - factor))) : new Color(255, 205, 0, (int) (170 * (1 - factor)));
 				g2d.setColor(color);
 				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-				double width = stateChange.iFrame.getWidth() / 12 * ((factor - stateChange.factorOffset) / (1 - stateChange.factorOffset) + 0.1);
+				double width = stateChange.iFrame.getWidth() / 20 * ((factor - stateChange.factorOffset) / (1 - stateChange.factorOffset) + 0.1);
 				BasicStroke stroke = new BasicStroke((float) width, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 				g2d.setStroke(stroke);
 				

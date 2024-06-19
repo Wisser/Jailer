@@ -1516,7 +1516,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jPanel8 = new javax.swing.JPanel();
         jLabel7 = new javax.swing.JLabel();
         jPanel10 = new javax.swing.JPanel();
-        exportFormat = new JComboBox2();
+        exportFormat = new javax.swing.JComboBox();
         exportButton = new javax.swing.JButton();
         openXmlSettings = new javax.swing.JButton();
         jLabel10 = new javax.swing.JLabel();
@@ -1538,7 +1538,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        aggregationCombobox = new JComboBox2();
+        aggregationCombobox = new javax.swing.JComboBox();
         tagField = new javax.swing.JTextField();
         jPanel5 = new javax.swing.JPanel();
         xmlTagApply = new javax.swing.JButton();
@@ -1787,6 +1787,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel3.add(jPanel7, gridBagConstraints);
 
         jPanel8.setLayout(new java.awt.BorderLayout());
@@ -1799,6 +1800,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel3.add(jPanel8, gridBagConstraints);
 
         jPanel10.setLayout(new java.awt.GridBagLayout());
@@ -4015,7 +4017,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton activateDesictionPendingButton;
     private javax.swing.JButton additionalSubjectsButton;
-    private JComboBox2 aggregationCombobox;
+    private javax.swing.JComboBox aggregationCombobox;
     private javax.swing.JLabel assocStatsLabel;
     private javax.swing.JLabel associatedWith;
     javax.swing.JTextField condition;
@@ -4023,7 +4025,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JLabel dependsOn;
     private javax.swing.JPanel editorPanel;
     public javax.swing.JButton exportButton;
-    private JComboBox2 exportFormat;
+    private javax.swing.JComboBox exportFormat;
     private javax.swing.JPanel focusLabelPanel;
     javax.swing.JPanel focusPanel;
     private javax.swing.JPanel graphContainer;

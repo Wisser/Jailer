@@ -1308,14 +1308,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					int c = 0;
 					int all = 0;
 					for (boolean count: new boolean[] { true, false }) {
-						double lastPMIndex = -1;
+						int lastPMIndex = -1;
 						for (int i = 0; i < maxI; ++i) {
 							int mi = sorter == null? i : sorter.convertRowIndexToModel(i);
 							if (mi >= rows.size()) {
 								continue;
 							}
 							Row row = rows.get(mi);
-							double parentModelIndex = useInheritedBlockNumbers? row.getInheritedParentModelIndex() : row.getParentModelIndex();
+							int parentModelIndex = useInheritedBlockNumbers? row.getInheritedParentModelIndex() : row.getParentModelIndex();
 							++all;
 							if (parentModelIndex != lastPMIndex) {
 								lastPMIndex = parentModelIndex;

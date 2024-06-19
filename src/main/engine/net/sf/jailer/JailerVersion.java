@@ -57,10 +57,8 @@ public class JailerVersion {
 // TODO prefuse graphview animations of path
 
 // TODO
-// TODO FilterEditorDialog.jEditorPane1: text with html color
-
-// TODO
 // TODO click on "Database"-Metadata table list with opened "Desktop" should open BrCoPa in Desktop
 
-// TODO
-// TODO icons: black"-"plus" and "filter"-icon (GraphView) are too bright
+//TODO
+//TODO icons: black"-"plus" and "filter"-icon (GraphView) are too bright
+

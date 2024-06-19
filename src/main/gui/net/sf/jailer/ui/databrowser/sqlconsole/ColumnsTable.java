@@ -67,6 +67,7 @@ import javax.swing.table.TableModel;
 import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.ExtendetCopyPanel;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
 import net.sf.jailer.ui.databrowser.Row;
 import net.sf.jailer.util.LogUtil;
@@ -324,7 +325,7 @@ public class ColumnsTable extends JTable {
 				if (render instanceof JLabel) {
 					if (column == 0 && (inDesktop || "columnNames".equals(table.getName()))) {
 						((JLabel) render).setBackground(BGCOLUMNS);
-						if (ColumnsTable.this.inClosure && !inTempClosure()) {
+						if (ColumnsTable.this.inClosure || inTempClosure()) {
 							((JLabel) render).setBackground(row % 2 == 0? UIUtil.TABLE_BACKGROUND_COLOR_1_INCLOSURE : UIUtil.TABLE_BACKGROUND_COLOR_2_INCLOSURE);
 						}
 					} else if (ColumnsTable.this.inDesktop && !"final".equals(render.getName())) {
@@ -390,7 +391,7 @@ public class ColumnsTable extends JTable {
 				return render;
 			}
 			private Color blend(Color color1) {
-				int alpha = 14;
+				int alpha = UIUtil.plaf == PLAF.FLATDARK? 20 : 14;
 				Color color2 = Colors.Color_255_0_0;
 				float factor = alpha / 255f;
 				int red = (int) (color1.getRed() * (1 - factor) + color2.getRed() * factor);

@@ -50,9 +50,9 @@
 		<style token="LITERAL_NUMBER_DECIMAL_INT" fg="FFCD22" />
 		<style token="LITERAL_NUMBER_FLOAT" fg="FFCD22" />
 		<style token="LITERAL_NUMBER_HEXADECIMAL" fg="FFCD22" />
-		<style token="LITERAL_STRING_DOUBLE_QUOTE" fg="D07200" />
-		<style token="LITERAL_CHAR" fg="D07200" />
-		<style token="LITERAL_BACKQUOTE" fg="D07200" />
+		<style token="LITERAL_STRING_DOUBLE_QUOTE" fg="F09200" />
+		<style token="LITERAL_CHAR" fg="F09200" />
+		<style token="LITERAL_BACKQUOTE" fg="F09200" />
 		<style token="MARKUP_TAG_DELIMITER" fg="678CB1" />
 		<style token="MARKUP_TAG_NAME" fg="ABBFD3" bold="true" />
 		<style token="MARKUP_TAG_ATTRIBUTE" fg="B3B689" />

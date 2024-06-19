@@ -81,6 +81,7 @@ import javax.swing.event.ListSelectionListener;
 
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.metadata.MDSchema;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.util.MovePanel;
@@ -613,6 +614,11 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
 		
 		UIUtil.setTrailingComponent(searchTextField, okButton);
+		if (UIUtil.plaf.isFlat) {
+			searchTextField.putClientProperty("JTextField.placeholderText", infoLabel.getText());
+			infoLabel.setVisible(false);
+		}
+
 		
 		searchTextField.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
@@ -629,7 +635,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 			}
 			protected void update() {
 				updateList();
-				infoLabel.setVisible(searchTextField.getText().isEmpty());
+				infoLabel.setVisible(!UIUtil.plaf.isFlat && searchTextField.getText().isEmpty());
 			}
 		});
 		
@@ -783,6 +789,10 @@ public class StringSearchPanel extends javax.swing.JPanel {
 							}
 						}
 						panel.setOpaque(false);
+						if (UIUtil.plaf == PLAF.FLATDARK) {
+							panel.setOpaque(true);
+							panel.setBackground(new Color(50, 53, 57));
+						}
 						render.setMinimumSize(new Dimension(1, render.getMinimumSize().height));
 						render.setPreferredSize(new Dimension(1, render.getPreferredSize().height));
 						if (render instanceof JLabel) {
@@ -804,7 +814,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		searchTextField.setText("");
 		updateList();
     }
-
+    
     /**
      * Closes panel.
      */
