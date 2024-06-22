@@ -2129,6 +2129,8 @@ public class UIUtil {
 		hiddenWindows.clear();
 	}
 	
+	// TODO
+	// TODO offer only flat lafs (light, dark). Don't offer Nimbus and Native
 	public static enum PLAF {
 		FLAT("Flat", true), NIMBUS("Nimbus", false), NATIVE("Native", false), FLATDARK("FlatDark", true);
 		

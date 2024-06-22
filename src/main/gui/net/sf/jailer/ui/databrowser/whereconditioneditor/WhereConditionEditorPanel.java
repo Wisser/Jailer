@@ -2249,6 +2249,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			columnName = tableAlias + "." + columnName;
 			tabName += " " + tableAlias;
 		}
+
 		String sqlQuery;
 		String tableWithCondition = createTableWithCondition(condition, tabName, extJoin);
 		String cte = getCTE().trim();
@@ -2258,7 +2259,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		if (inSQLConsole()) {
 			sqlQuery = cte + "Select val, count(1) from (Select " + columnName + " val From " + tableWithCondition + ") Q group by val";
 		} else {
-			sqlQuery = cte + "Select " + columnName + ", count(1) from " + tableWithCondition + " group by " + columnName;
+			sqlQuery = cte + "Select " + columnName + ", " + (dontCount? "0" : "count(1)") + " from " + tableWithCondition + " group by " + columnName;
 		}
 		AbstractResultSetReader reader = new AbstractResultSetReader() {
 			@Override
@@ -2682,10 +2683,23 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     	constraintPKIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/constraint_pk.png"));
     	okIcon = UIUtil.readImage("/buttonok.png");
 	}
+	
+	private boolean dontCount = false;
+	
+	public void setDontCount(boolean dontCount) {
+		this.dontCount = dontCount;
+	}
+	
 	// TODO support properties
 	// TODO multi-value-select? (in clause?)
 
 	// TODO
+	// TODO multi-block "row-count" aggregation:
+	// TODO try reduce block-limit to 1. Test if rowcounts are always correct. 
+
+	// TODO
+	// TODO status quo: no row-counts visible if "distinct"-checkbox is selected (and visible)
+	// TODO that maybe doesn't work! Because multiple queries takes place if there are a lot of parents!
 	// TODO loadDistinctValues: counts "non-distinct"-rows: use "where exists(Select from B where <joinCond> and <B.Pk1=x or B.Pk=y ...>"
 	// TODO instead of "join"
 	// TODO ? only if "select distinct"-checkbox is selected? (yes. check caching!)

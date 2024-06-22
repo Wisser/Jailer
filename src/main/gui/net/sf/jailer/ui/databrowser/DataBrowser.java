@@ -5693,6 +5693,13 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		List<Row> parentRows = rowBrowser.browserContentPane.parentRows;
 		if (rowBrowser.browserContentPane.association != null && parentRows != null
 				&& !parentRows.isEmpty()) {
+			wcEditor.setDontCount(rowBrowser.browserContentPane.selectDistinctCheckBox.isVisible()
+					&& rowBrowser.browserContentPane.selectDistinctCheckBox.isEnabled()
+					&& rowBrowser.browserContentPane.selectDistinctCheckBox.isSelected());
+			
+			// TODO
+			// TODO ? dontCount if #parentRows > 50?
+	
 			String cond;
 			String unrestrictedJoinCondition = rowBrowser.browserContentPane.association
 					.getUnrestrictedJoinCondition();
@@ -6969,4 +6976,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 
 // TODO
 // TODO nach oeffnen aus extrModelEditor heraus: TableDetailsView links unten verdeckt (JSplitPane.dividerPos nicht korrekt)
+
+// TODO
+// TODO connection-tree on the left: gradient-painting of dev-test-prod-connections is ugly
 
