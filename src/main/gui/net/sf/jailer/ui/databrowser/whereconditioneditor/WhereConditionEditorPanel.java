@@ -2693,16 +2693,13 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	// TODO support properties
 	// TODO multi-value-select? (in clause?)
 
-	// TODO
-	// TODO multi-block "row-count" aggregation:
-	// TODO try reduce block-limit to 1. Test if rowcounts are always correct. 
-
-	// TODO
-	// TODO status quo: no row-counts visible if "distinct"-checkbox is selected (and visible)
-	// TODO that maybe doesn't work! Because multiple queries takes place if there are a lot of parents!
+	// TODO 1
 	// TODO loadDistinctValues: counts "non-distinct"-rows: use "where exists(Select from B where <joinCond> and <B.Pk1=x or B.Pk=y ...>"
 	// TODO instead of "join"
-	// TODO ? only if "select distinct"-checkbox is selected? (yes. check caching!)
+	// TODO multi-block "row-count" aggregation:
+	// TODO try reduce block-limit to 1. Test if rowcounts are always correct. 
+	// TODO status quo: no row-counts visible if "distinct"-checkbox is selected (and visible)
+	// TODO that maybe doesn't work! Because multiple queries takes place if there are a lot of parents!
 	// TODO ? use current solution as fallback in case of error?
 	// TODO example: instead of:
 //	Select

@@ -277,8 +277,7 @@ public class DesktopOutline extends JPanel {
 			g2d.setColor(inDesktopColor);
 			paint = new GradientPaint(
 						0, 0, UIUtil.plaf == PLAF.FLATDARK? new Color(30, 35, 44) : Colors.Color_255_255_255,
-						gw, gh, UIUtil.plaf == PLAF.FLATDARK? inDesktopColor.darker() : inDesktopColor);  // TODO
-			// TODO alles scharz?!
+						gw, gh, UIUtil.plaf == PLAF.FLATDARK? inDesktopColor.brighter().brighter() : inDesktopColor);
 			g2d.setPaint(paint);
 			g2d.setStroke(stroke);
 			g2d.fillRoundRect(sx, sy, sw, sh, 8, 8);
