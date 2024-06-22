@@ -45,56 +45,36 @@ public class Colors {
 	private static void initColors() {
 		colors.clear();
 		
+		Color_BrCoPa_TABLE_BG.init(new Color(0, 0, 0, 0), new Color(31, 39, 43));
+		Color_BrCoPa_StatusBG.init(new Color(0, 0, 0, 0), new Color(70, 73, 75));
 		GraphicalDataViewBackground.init(new Color(255, 255, 255), new Color(31, 39, 42));
-		Color_170_0_0.init(new Color(170, 0, 0), new Color(255, 140, 30));
+		Color_170_0_0.init(new Color(170, 0, 0), new Color(255, 120, 110));
 		Color_200_200_255.init(new Color(200, 200, 255), new Color(0, 0, 0));
 		Color_0_100_255.init(new Color(0, 100, 255), new Color(0, 176, 255));
 		Color_0_112_0.init(new Color(0, 112, 0), new Color(0, 215, 0));
 		Color_255_255_255.init(Color.white, new Color(45, 50, 56));
 		consoleCurrentLineHighlightColor.init(new Color(255, 255, 170), new Color(20, 66, 10));
 		Color_240_240_255.init(new Color(240, 240, 255), new Color(50, 50, 170));
-		Color_242_242_255.init(new Color(242, 242, 255), Color_240_240_255.dark); // TODO
-		Color_192_192_192.init(new Color(192, 192, 192), new Color(102, 107, 106)).blink();;
+		Color_242_242_255.init(new Color(242, 242, 255));
+		Color_192_192_192.init(new Color(192, 192, 192), new Color(102, 107, 106));
 		Color_0_0_0_0.init(new Color(0, 0, 0, 0), new Color(0, 0, 0, 0));
 		Color_238_255_238.init(new Color(238, 255, 238), new Color(30, 40, 60)); // table-bg-1
-		Color_0_0_200_100.init(new Color(0, 0, 200, 100), new Color(148, 148, 209, 177)).blink();
+		Color_0_0_200_100.init(new Color(0, 0, 200, 100), new Color(148, 148, 209, 177));
 		Color_FlatTreeViewBG.init(new Color(255, 255, 255), new Color(70, 73, 75));
 		Color_0_80_200.init(new Color(0, 80, 200), new Color(148, 172, 249));
 		Color_0_0_220.init(new Color(0, 0, 220), Color_0_100_255.dark);
 		Color_255_255_230.init(new Color(255, 255, 200), new Color(11, 44, 44));
 
 		// TODO
-		// TODO red for pk (and in general?) is too saturated
+		// TODO count darkLaf-processes (s11 or: "(b|B|s|s)d?")
 		
 		// TODO
-		// TODO console, result-view-table, column-bg in case of join, redefine colors
-		
-		// TODO
-		// TODO block-color in BCPane brighter
-				
-		// TODO
-		// desktop background darker? as in SQLConsole? Same color as in Desktop-Outline?
-		
-		// TODO
-		// TODO BCPane "find columns": markierung deutlicher machen
-		
-		// TODO
-		// TODO "full text search": check occurrences render coloring
-		
-		// TODO
-		// icon "subject" (GrView): white border
-		
-		// TODO
-		// pk color in table-details (DBrowser/Desktop) differs from other PK-colors (left-bottom corner)
-		// fk color in table-details too
-				
-		// TODO
-		// TODO count darkLaf-processes (s11)
+		// TODO ext. copy: "maximize"-button icon recoloring
 		
 		HTMLColor_000000 = UIUtil.plaf != PLAF.FLATDARK? "\"#000000\"" : "\"#dddddd\"";
 		HTMLColor_006600 = UIUtil.plaf != PLAF.FLATDARK? "\"#006600\"" : "\"#00c000\"";
 		HTMLColor_0000B0 = UIUtil.plaf != PLAF.FLATDARK? "\"#0000B0\"" : "\"#00B0FF\"";
-		HTMLColor_0000D0 = UIUtil.plaf != PLAF.FLATDARK? "\"#0000D0\"" : "\"#00B8FF\"";
+		HTMLColor_0000D0 = UIUtil.plaf != PLAF.FLATDARK? "\"#0000D0\"" : "\"#FFBB00\"";
 		HTMLColor_0000cc = UIUtil.plaf != PLAF.FLATDARK? "\"#0000CC\"" : "\"#00B8FF\"";
 		HTMLColor_0000dd = UIUtil.plaf != PLAF.FLATDARK? "\"#0000D0\"" : "\"#00B8FF\"";
 		HTMLColor_0000ff = UIUtil.plaf != PLAF.FLATDARK? "\"#0000ff\"" : "\"#bbbbff\"";
@@ -102,26 +82,25 @@ public class Colors {
 		HTMLColor_006000 = UIUtil.plaf != PLAF.FLATDARK? "\"#006000\"" : "\"#77cc77\"";
 		HTMLColor_0066ff = UIUtil.plaf != PLAF.FLATDARK? "\"#0066ff\"" : "\"#bbbbff\"";
 		HTMLColor_008000 = UIUtil.plaf != PLAF.FLATDARK? "\"#008000\"" : "\"#44c044\"";
-		HTMLColor_050aff = UIUtil.plaf != PLAF.FLATDARK? "\"#050aff\"" : "\"#bbbbff\"";
+		HTMLColor_050aff = UIUtil.plaf != PLAF.FLATDARK? "\"#050aff\"" : "\"#00caff\"";
 		HTMLColor_663300 = UIUtil.plaf != PLAF.FLATDARK? "\"#663300\"" : "\"#ff6600\"";
 		HTMLColor_707080 = UIUtil.plaf != PLAF.FLATDARK? "\"#707080\"" : "\"#9090a0\"";
 		HTMLColor_808080 = UIUtil.plaf != PLAF.FLATDARK? "\"#808080\"" : "\"#999999\"";
 		HTMLColor_888888 = UIUtil.plaf != PLAF.FLATDARK? "\"#888888\"" : "\"#a0a0a0\"";
 		HTMLColor_dd0000 = UIUtil.plaf != PLAF.FLATDARK? "\"#dd0000\"" : "\"#ff5555\"";
 		HTMLColor_dd8888 = UIUtil.plaf != PLAF.FLATDARK? "\"#dd8888\"" : "\"#D06000\"";
-		HTMLColor_eeeeff = UIUtil.plaf != PLAF.FLATDARK? "\"#eeeeff\"" : "\"#111177\"";
-		HTMLColor_eeffee = UIUtil.plaf != PLAF.FLATDARK? "\"#eeffee\"" : "\"#114411\""; // TODO
-		// TODO geen same as in content jtables
+		HTMLColor_eeeeff = UIUtil.plaf != PLAF.FLATDARK? "\"#eeeeff\"" : "\"#293E80\"";
+		HTMLColor_eeffee = UIUtil.plaf != PLAF.FLATDARK? "\"#eeffee\"" : "\"#204020\"";
 		
-		HTMLColor_ff0000 = UIUtil.plaf != PLAF.FLATDARK? "\"#ff0000\"" : "\"#ee6666\"";
+		HTMLColor_ff0000 = UIUtil.plaf != PLAF.FLATDARK? "\"#ff0000\"" : "\"#ff8888\"";
 		HTMLColor_ff2222 = UIUtil.plaf != PLAF.FLATDARK? "\"#ff2222\"" : "\"#ff4444\"";
-		HTMLColor_ff9999 = UIUtil.plaf != PLAF.FLATDARK? "\"#ff9999\"" : "\"#ff9999\"";
+		HTMLColor_ff9999 = UIUtil.plaf != PLAF.FLATDARK? "\"#ff9999\"" : "\"#ff2222\"";
 
 		Color_0_0_0.init(new Color(0, 0, 0));
 		Color_0_0_0_60.init(new Color(0, 0, 0, 60));
 		Color_220_210_0_100.init(new Color(220, 210, 0, 100));
 		Color_170_50_50.init(new Color(170, 50, 50), new Color(255, 255, 50));
-		Color_255_235_20_75.init(new Color(255, 235, 20, 75), new Color(235, 235, 0, 85));
+		Color_255_235_20_75.init(new Color(255, 235, 20, 75), new Color(80, 205, 80, 70));
 		Color_255_0_0.init(new Color(255, 0, 0), new Color(255, 100, 0));
 		Color_0_255_255_150.init(new Color(0, 255, 255, 150), new Color(0, 255, 0, 50));
 		Color_100_110_210.init(new Color(100, 110, 210), new Color(99, 125, 255));
@@ -130,32 +109,46 @@ public class Colors {
 		Color_255_0_0_60.init(new Color(255, 0, 0, 60), new Color(160, 43, 43, 117));
 		Color_255_0_0_10.init(new Color(255, 0, 0, 10), new Color(160, 43, 43, 40));
 
-		ColorAssoc_1_1.initSame(new Color(0, 40, 255));
+		ColorAssoc_1_1.init(new Color(0, 40, 255), new Color(40, 120, 225));
 		ColorAssoc_1_2.initSame(new Color(130, 130, 130));
-		ColorAssoc_1_3.initSame(new Color(230, 80, 50));
-		ColorAssoc_1_4.initSame(new Color(0, 230, 0));
-		ColorAssoc_2_1.initSame(new Color(0, 30, 255));
+		ColorAssoc_1_3.init(new Color(230, 80, 50), new Color(220, 90, 60));
+		ColorAssoc_1_4.init(new Color(0, 230, 0), new Color(0, 210, 0));
+		ColorAssoc_2_1.init(new Color(0, 30, 255), new Color(0, 30, 255));
 		ColorAssoc_2_2.initSame(new Color(150, 150, 150));
-		ColorAssoc_2_4.initSame(new Color(245, 90, 60));
+		ColorAssoc_2_3.init(new Color(70, 255, 70));
+		ColorAssoc_2_4.init(new Color(245, 90, 60), new Color(235, 100, 70));
+		Color_153_153_153.init(new Color(153, 153, 153), ColorAssoc_2_2.dark);
+		Color_170_200_0.init(new Color(170, 200, 0), new Color(110, 140, 0)); // link join
 	
+		Color_224_224_224.init(new Color(224, 224, 224), new Color(96, 96, 96));
+		Color_220_255_220.init(new Color(220, 255, 220), new Color(30, 61, 30));
+		Color_255_210_210.init(new Color(255, 210, 210), new Color(64, 33, 33));
+		Color_0_102_0.init(new Color(0, 102, 0), new Color(0, 200, 0));
+		Color_254_255_255.init(new Color(254, 255, 255), new Color(21, 21, 39));
+
+		Color_245_0_0_60.init(new Color(245, 0, 0, 60), new Color(255, 130, 110, 120));
+		Color_0_0_245_60.init(new Color(0, 225, 0, 120), new Color(140, 255, 140, 120));
+		Color_190_255_180.init(new Color(190, 255, 180), new Color(29, 67, 22));
+
+		Color_255_255_238.init(new Color(255, 255, 238), new Color(10, 40, 10));
+		Color_248_252_255.init(new Color(248, 252, 255), new Color(25, 38, 71));
+
 		// TODO
 		// TODO check "tranparent" todos
 		
 		Color_0_0_1.init(new Color(0, 0, 1), Color_0_0_0.dark);
 		
-		Color_0_102_0.init(new Color(0, 102, 0));
 		Color_0_0_145.init(new Color(0, 0, 145));
 		Color_0_0_150.init(new Color(0, 0, 150));
 		Color_0_0_180.init(new Color(0, 0, 180));
 		Color_0_0_200.init(new Color(0, 0, 200));
 		Color_0_0_205.init(new Color(0, 0, 205));
 		Color_0_0_225.init(new Color(0, 0, 225));
-		Color_0_0_245_60.init(new Color(0, 0, 245, 60));    // TODO tranparent
 		Color_0_0_255.init(new Color(0, 0, 255));
 		Color_0_0_255_80.init(new Color(0, 0, 255, 80));    // TODO tranparent
 		Color_0_0_62.init(new Color(0, 0, 62));
 		Color_0_0_77.init(new Color(0, 0, 77));
-		Color_0_100_0.init(new Color(0, 100, 0), Color_0_102_0);
+		Color_0_100_0.init(new Color(0, 100, 0), Color_0_102_0.dark);
 		Color_0_100_200.init(new Color(0, 100, 200));
 		
 		Color_0_105_0.init(new Color(0, 105, 0), Color_0_102_0.dark);
@@ -186,18 +179,14 @@ public class Colors {
 		Color_150_0_0.init(new Color(150, 0, 0));
 		Color_150_0_100.init(new Color(150, 0, 100));
 		Color_150_255_0_70.init(new Color(150, 255, 0, 70));    // TODO tranparent
-		
-		Color_153_153_153.init(new Color(153, 153, 153), ColorAssoc_2_2.dark);
-		
+				
 		Color_155_0_0.init(new Color(155, 0, 0));
 		Color_160_130_100.init(new Color(160, 130, 100));
 		Color_160_200_255.init(new Color(160, 200, 255), new Color(57, 94, 160));
 		Color_160_80_0.init(new Color(160, 80, 0));
-		Color_170_200_0.init(new Color(170, 200, 0));
 		Color_180_160_0.init(new Color(180, 160, 0));
 		Color_180_255_220.init(new Color(180, 255, 220));
 		Color_190_210_255.init(new Color(190, 210, 255));
-		Color_190_255_180.init(new Color(190, 255, 180));
 		Color_196_236_255.init(new Color(196, 236, 255));
 		
 		Color_1_0_0.init(new Color(1, 0, 0), Color_0_0_0.dark);
@@ -216,22 +205,17 @@ public class Colors {
 		Color_220_220_220.init(new Color(220, 220, 220));
 		Color_220_220_255.init(new Color(220, 220, 255));
 		Color_220_225_255.init(new Color(220, 225, 255));
-		Color_220_255_220.init(new Color(220, 255, 220));
 		Color_220_255_220_70.init(new Color(220, 255, 220, 70));    // TODO tranparent
-		Color_224_224_224.init(new Color(224, 224, 224));
 		Color_224_240_255.init(new Color(224, 240, 255));
 		Color_228_228_232.init(new Color(228, 228, 232));
 		Color_228_238_255.init(new Color(228, 238, 255));
 		Color_230_230_230.init(new Color(230, 230, 230));
-		Color_232_232_255.init(new Color(232, 232, 255));   // like Color_235_235_255 ?
+		Color_232_232_255.init(new Color(232, 232, 255));
 		Color_235_235_255.init(new Color(235, 235, 255));
 		Color_240_255_255.init(new Color(240, 255, 255));
 		Color_242_242_242.init(new Color(242, 242, 242));
-		Color_245_0_0_60.init(new Color(245, 0, 0, 60));    // TODO tranparent
 		Color_247_247_247.init(new Color(247, 247, 247));
-		Color_248_252_255.init(new Color(248, 252, 255));   // like Color_250_250_255 ?
 		Color_250_250_255.init(new Color(250, 250, 255));
-		Color_254_255_255.init(new Color(254, 255, 255));
 		Color_255_0_0_0.init(new Color(255, 0, 0, 0));    // TODO tranparent
 		Color_255_0_0_120.init(new Color(255, 0, 0, 120));    // TODO tranparent
 		Color_255_0_0_150.init(new Color(255, 0, 0, 150));    // TODO tranparent
@@ -245,13 +229,12 @@ public class Colors {
 		Color_255_205_205.init(new Color(255, 205, 205));
 		Color_255_206_206.init(new Color(255, 206, 206));
 		Color_255_210_180.init(new Color(255, 210, 180));
-		Color_255_210_210.init(new Color(255, 210, 210));
 		Color_255_220_220.init(new Color(255, 220, 220));
 		Color_255_230_200.init(new Color(255, 230, 200));
 		Color_255_230_220.init(new Color(255, 230, 220));
 		Color_255_230_230.init(new Color(255, 230, 230));
 		Color_255_236_236.init(new Color(255, 236, 236));
-		Color_255_240_240.init(new Color(255, 240, 240));  // like Color_255_242_240 ?
+		Color_255_240_240.init(new Color(255, 240, 240));
 		Color_255_242_240.init(new Color(255, 242, 240));
 		Color_255_243_218.init(new Color(255, 243, 218));
 		Color_255_246_206.init(new Color(255, 246, 206));
@@ -263,8 +246,7 @@ public class Colors {
 		Color_255_255_205.init(new Color(255, 255, 205));
 		Color_255_255_210.init(new Color(255, 255, 210));
 		Color_255_255_220.init(new Color(255, 255, 220));
-		Color_255_255_236.init(new Color(255, 255, 236));  // like Color_255_255_238 ?
-		Color_255_255_238.init(new Color(255, 255, 238));  // like Color_255_255_240 ?
+		Color_255_255_236.init(new Color(255, 255, 236));
 		Color_255_255_240.init(new Color(255, 255, 240));
 		Color_255_255_250.init(new Color(255, 255, 250));
 		Color_255_255_255_150.init(new Color(255,255,255,150));    // TODO tranparent
@@ -274,7 +256,6 @@ public class Colors {
 		Color_255_50_50.init(new Color(255, 50, 50));
 		Color_255_80_80.init(new Color(255, 80, 80));
 		Color_66_118_187.init(new Color(66, 118, 187));
-		ColorAssoc_2_3.init(new Color(70, 255, 70));
 		Color_80_200_255_200.init(new Color(80, 200, 255, 200));    // TODO tranparent
 		Color_86_82_125.init(new Color(86, 82, 125));
 		Color_95_0_0.init(new Color(95, 0, 0));
@@ -286,7 +267,9 @@ public class Colors {
 	}
 
 	public static LAFAwareColor GraphicalDataViewBackground = new LAFAwareColor();
-	
+	public static LAFAwareColor Color_BrCoPa_StatusBG = new LAFAwareColor();
+	public static LAFAwareColor Color_BrCoPa_TABLE_BG = new LAFAwareColor();
+
 	public static LAFAwareColor Color_0_0_0 = new LAFAwareColor();
 	public static LAFAwareColor Color_0_0_0_0 = new LAFAwareColor();
 	public static LAFAwareColor Color_0_0_0_60 = new LAFAwareColor();
@@ -550,7 +533,6 @@ public class Colors {
 					out.close();
 				}
 			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -609,17 +591,7 @@ public class Colors {
 			}
 			luminanceAdjusted = new Color(luminanceAdjusted.getRed(), luminanceAdjusted.getGreen(), luminanceAdjusted.getBlue(), light.getAlpha() + (255 - light.getAlpha()) / 2);
 			
-			boolean adjust = inDarkLAFMode;
-			
-//			if (light.getAlpha() != 255) {
-//				adjust = false;
-//			}
-			
-//			adjust=false;
-			init(light, adjust? luminanceAdjusted : light);
-			
-			// TODO
-			// TODO blink with or without "inDarkLAFMode"? !!!!! not without it. use luminanceAdjusted then.
+			init(light, luminanceAdjusted);
 			
 			blink();
 			

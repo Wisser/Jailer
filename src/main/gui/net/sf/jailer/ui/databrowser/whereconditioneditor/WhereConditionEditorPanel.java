@@ -2685,5 +2685,40 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	// TODO support properties
 	// TODO multi-value-select? (in clause?)
 
+	// TODO
+	// TODO loadDistinctValues: counts "non-distinct"-rows: use "where exists(Select from B where <joinCond> and <B.Pk1=x or B.Pk=y ...>"
+	// TODO instead of "join"
+	// TODO ? only if "select distinct"-checkbox is selected? (yes. check caching!)
+	// TODO ? use current solution as fallback in case of error?
+	// TODO example: instead of:
+//	Select
+//	    A.HIREDATE,
+//	    count(1)
+//	from
+//	    EMPLOYEE A
+//	    join PROJECT_PARTICIPATION B on (B.EMPNO = A.EMPNO)
+//	    and (
+//	         (B.PROJECTNO = 1001)
+//	         or (B.PROJECTNO = 1002)
+//	         or (B.PROJECTNO = 1003)
+//	         or (B.PROJECTNO = 1004)
+//	    )
+//	group by
+//	    A.HIREDATE
+	// TODO use:
+//	Select
+//	    A.HIREDATE,
+//	    count(1)
+//	from
+//	    EMPLOYEE A
+//	    Where exists(select 1 from PROJECT_PARTICIPATION B Where (B.EMPNO = A.EMPNO)
+//	    and (
+//	         (B.PROJECTNO = 1001)
+//	         or (B.PROJECTNO = 1002)
+//	         or (B.PROJECTNO = 1003)
+//	         or (B.PROJECTNO = 1004)
+//	    ))
+//	group by
+//	    A.HIREDATE
 }
 

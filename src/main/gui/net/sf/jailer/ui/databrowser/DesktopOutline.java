@@ -48,6 +48,7 @@ import javax.swing.JSeparator;
 
 import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 
 /**
@@ -262,7 +263,7 @@ public class DesktopOutline extends JPanel {
 			int gw = snap((int) (sameWidthFriend.getWidth() - (offX + scale * x + 0.5) - 1), (int)(scale * width + 0.5), 32);
 			int gh = (int)(scale * height + 0.5);
 			GradientPaint paint = new GradientPaint(
-					0, 0, backgroundColor.brighter(),  // TODO
+					0, 0, UIUtil.plaf == PLAF.FLATDARK? backgroundColor.brighter() :  backgroundColor.darker(),
 					gw, gh, backgroundColor);
 			g2d.setPaint(paint);
 			g2d.fillRoundRect(gx, gy, gw, gh, 2, 2);
@@ -275,7 +276,7 @@ public class DesktopOutline extends JPanel {
 			Color inDesktopColor = Colors.Color_242_242_255;
 			g2d.setColor(inDesktopColor);
 			paint = new GradientPaint(
-						0, 0, Colors.Color_255_255_255,
+						0, 0, UIUtil.plaf == PLAF.FLATDARK? new Color(30, 35, 44) : Colors.Color_255_255_255,
 						gw, gh, inDesktopColor);
 			g2d.setPaint(paint);
 			g2d.setStroke(stroke);
@@ -296,7 +297,7 @@ public class DesktopOutline extends JPanel {
 						if (browser.association == null) {
 							g2d.setColor(Colors.Color_128_128_128);
 						} else if (hiddenParent) {
-							g2d.setColor(Colors.Color_255_255_0.darker()); // TODO
+							g2d.setColor(UIUtil.plaf == PLAF.FLATDARK? Colors.Color_255_255_0.brighter() : Colors.Color_255_255_0.darker());
 						} else {
 							g2d.setColor(desktop.getAssociationColor1(browser.association));
 						}
@@ -320,7 +321,7 @@ public class DesktopOutline extends JPanel {
 					if (backgroundColor1 != null) {
 						g2d.setColor(backgroundColor1);
 						paint = new GradientPaint(
-								sx, sy, backgroundColor1.brighter(),  // TODO
+								sx, sy, UIUtil.plaf == PLAF.FLATDARK? backgroundColor1.darker() : backgroundColor1.brighter(),
 								sx + sw, sy + sh, backgroundColor1);
 						g2d.setPaint(paint);
 						g2d.fillRoundRect(sx, sy, sw, sh, 8, 8);
@@ -388,7 +389,7 @@ public class DesktopOutline extends JPanel {
 						if (browser.internalFrame.isSelected()) {
 							paintRect(g2d, rectangle.x, rectangle.y, rectangle.width, rectangle.height, Colors.Color_0_100_255, null, new BasicStroke(2));
 						} else {
-							paintRect(g2d, rectangle.x, rectangle.y, rectangle.width, rectangle.height, Colors.Color_0_100_255.brighter(), null, new BasicStroke(1));
+							paintRect(g2d, rectangle.x, rectangle.y, rectangle.width, rectangle.height, UIUtil.plaf == PLAF.FLATDARK? Colors.Color_0_100_255.darker() : Colors.Color_0_100_255.brighter(), null, new BasicStroke(1));
 						}
 					}
 				}
@@ -470,7 +471,7 @@ public class DesktopOutline extends JPanel {
 		if (backgroundColor != null) {
 			g.setColor(backgroundColor);
 			GradientPaint paint = new GradientPaint(
-					sx, sy, backgroundColor.brighter(), // TODO
+					sx, sy, UIUtil.plaf == PLAF.FLATDARK? backgroundColor.darker() : backgroundColor.brighter(),
 					sx + sw, sy + sh, backgroundColor);
 			g.setPaint(paint);
 			g.fillRoundRect(sx, sy, sw, sh, 8, 8);

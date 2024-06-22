@@ -515,25 +515,29 @@ public abstract class DBClosureView extends javax.swing.JDialog {
                         r = closureTable.getCellRect(posInfo.row, posInfo.column, false);
                         x[1] = ((int) r.getCenterX());
                         y[1] = ((int) r.getCenterY());
-                        int alpha = 60;
+                        int alpha = UIUtil.plaf == PLAF.FLATDARK? 80 : 60;
                         int lineWidth = 1;
                         if (mainPathAsSet.contains(selectionInfo) && mainPathAsSet.contains(parent)) {
-                            alpha = 100;
+                            alpha = UIUtil.plaf == PLAF.FLATDARK? 130 : 100;
                             lineWidth = 3;
                         }
-                        Color color = new Color(0, 0, 245, alpha); // TODO
+                        
+                        Color color = Colors.Color_0_0_245_60;
+                        color = new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
                         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
                         if (selectionInfo.ignored) {
                             BasicStroke stroke = new BasicStroke(lineWidth);
                             g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 2f, 6f },
                                 1.0f));
-                            color = new Color(0, 0, 0, alpha); // TODO
+                            color = Colors.Color_0_0_0;
+                            color = new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
                         } else {
                             g2d.setStroke(new BasicStroke(lineWidth));
                         }
                         if (isDependency) {
-                            color = new Color(245, 0, 0, alpha); // TODO
+                        	color = Colors.Color_245_0_0_60;
+                            color = new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
                         }
                         g2d.setColor(color);
                         g2d.drawPolyline(x, y, 2);

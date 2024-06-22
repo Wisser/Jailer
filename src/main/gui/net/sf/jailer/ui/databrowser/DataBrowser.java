@@ -3761,7 +3761,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         jMenu3.add(animationStepTimeMenu);
         jMenu3.add(jSeparator20);
 
-        plafMenu.setText("Look and Feel");
+        plafMenu.setText("Look and Feel (Theme)");
         jMenu3.add(plafMenu);
 
         menuBar.add(jMenu3);
@@ -6966,3 +6966,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	}
 
 }
+
+// TODO
+// TODO nach oeffnen aus extrModelEditor heraus: TableDetailsView links unten verdeckt (JSplitPane.dividerPos nicht korrekt)
+

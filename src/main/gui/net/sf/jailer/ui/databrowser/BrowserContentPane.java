@@ -981,6 +981,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		if (UIUtil.plaf.isFlat) {
 			removeConditionButton.setBackground(Colors.Color_220_220_255);
 		}
+		
+		if (UIUtil.plaf == PLAF.FLATDARK) {
+			statusPanel.setBackground(Colors.Color_BrCoPa_StatusBG);
+			sortColumnsPanel.setBackground(statusPanel.getBackground());
+			hAlignButtonPanel.setBackground(statusPanel.getBackground());
+			findColumnsPanel.setBackground(statusPanel.getBackground());
+		}
 
 		cancelLoadButton.setIcon(UIUtil.scaleIcon(cancelLoadButton, cancelIcon));
 
@@ -1479,7 +1486,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		rowsTableScrollPane.setWheelScrollingEnabled(false);
         rowsTableScrollPane.setViewportView(rowsTable);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
+		if (UIUtil.plaf == PLAF.FLATDARK) {
+			rowsTable.setBackground(Colors.Color_BrCoPa_TABLE_BG);
+		}
+
+		gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -6445,6 +6456,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         statusPanel.add(sortColumnsCheckBox, gridBagConstraints);
 
+        rowsCount.setBackground(null);
         rowsCount.setText("jLabel3");
         rowsCount.setOpaque(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -8190,7 +8202,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			if (c.name != null) {
 				renderConsumer.put(Quoting.staticUnquote(c.name), 
 						label -> {
-							label.setForeground(Colors.Color_0_0_255);
+							label.setForeground(UIUtil.FG_FK);
 							label.setIcon(emptyIcon);
 						}
 				);
@@ -8201,7 +8213,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				if (c.name != null) {
 					renderConsumer.put(Quoting.staticUnquote(c.name),
 							label -> {
-								label.setForeground(Colors.Color_255_0_0);
+								label.setForeground(UIUtil.FG_PK);
 								label.setIcon(constraintPKIcon);
 							}
 					);

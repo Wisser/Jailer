@@ -1064,7 +1064,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
         jMenu5.add(jMenu4);
         jMenu5.add(jSeparator6);
 
-        plafMenu.setText("Look and Feel");
+        plafMenu.setText("Look and Feel (Theme)");
         jMenu5.add(plafMenu);
 
         jMenuBar2.add(jMenu5);

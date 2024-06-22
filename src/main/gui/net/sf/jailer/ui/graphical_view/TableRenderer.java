@@ -461,9 +461,9 @@ public abstract class TableRenderer extends AbstractShapeRenderer {
 				double f = isSelected || graphicalDataModelView.tablesOnPath.size() <= 3? 0.0 : 0.50 * d;
 				fillColor = UIUtil.plaf == PLAF.FLATDARK?
 						ColorLib.rgba(
-								ColorLib.interp(0, 210, f),
-								ColorLib.interp(110, 50, f),
-								ColorLib.interp(125, 0, f),
+								ColorLib.interp(0, 110, f),
+								ColorLib.interp(80, 40, f),
+								ColorLib.interp(105, 90, f),
 								255)
 						:
 						ColorLib.rgba(

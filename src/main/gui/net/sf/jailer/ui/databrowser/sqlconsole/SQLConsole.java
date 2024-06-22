@@ -158,6 +158,7 @@ import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.SessionForUI;
 import net.sf.jailer.ui.StringSearchPanel.StringSearchDialog;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.associationproposer.AssociationProposerView;
 import net.sf.jailer.ui.databrowser.BrowserContentCellEditor;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
@@ -1264,11 +1265,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 final String columnLabelsFull[] = new String[columnCount];
                 final Color columnHeaderColors[] = new Color[columnCount];
                 int a = 10;
-                final Color hBG[] = new Color[] { // TODO
+                final Color hBG[] = new Color[] {
                    		new Color(0, 0, 255, a + 0),
-                   		new Color(255, 60, 0, a + 8),
-                		new Color(255, 255, 0, (int)(a * 2.8f)),
                 		new Color(0, 255, 0, a),
+                   		new Color(255, 60, 0, a + 8),
+                		new Color(255, 255, 0, UIUtil.plaf == PLAF.FLATDARK? a + 12 : (int)(a * 2.8f)),
                 };
                 Map<String, Integer> labelCount = new HashMap<String, Integer>();
                 Map<String, Integer> labelCounter = new HashMap<String, Integer>();
@@ -2436,7 +2437,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	        				Color startColor = runningStatusLabelColor;
 	        				double x = Math.sin(2 * Math.PI * time / 15.0);
 							double f = (Math.pow(Math.abs(x), 0.5) * Math.signum(x) + 1) / 2;
-	        				Color c = new Color(mid(f, startColor.getRed(), 255), mid(f, startColor.getGreen(), 0), startColor.getBlue()); // TODO
+	        				Color c = UIUtil.plaf == PLAF.FLATDARK?
+	        						new Color(mid(f, startColor.getRed(), 255), mid(f, startColor.getGreen(), 0), mid(f, startColor.getBlue(), 0))
+	        						:
+	        						new Color(mid(f, startColor.getRed(), 255), mid(f, startColor.getGreen(), 0), startColor.getBlue());
 	        				statusLabel.setForeground(c);
 						} else {
 							timer.stop();

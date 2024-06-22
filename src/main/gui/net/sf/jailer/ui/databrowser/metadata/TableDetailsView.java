@@ -111,7 +111,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 				if (c.name != null) {
 					renderConsumer.put(Quoting.staticUnquote(c.name), 
 							label -> {
-								label.setForeground(Colors.Color_255_0_0);
+								label.setForeground(UIUtil.FG_PK);
 								label.setIcon(constraintPKIcon);
 							}
 					);
@@ -316,7 +316,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 			        label = new JLabel();
 			        
 			        if (isPk) {
-			        	label.setForeground(Colors.Color_255_0_0);
+			        	label.setForeground(UIUtil.FG_PK);
 			        } else if (fks.contains(column)) {
 			        	label.setForeground(UIUtil.FG_FK);
 			        }

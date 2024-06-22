@@ -48,15 +48,6 @@ public class JailerVersion {
 
 
 // TODO
-// TODO prefuse:
-// TODO ? keine Änderung wegen "ColorManager"-Tool an src/gui/prefuse/ zulassen
-// TOTO falls Änderung an prefuse nötig wg. dynamischer Color-s: prefuse adoptieren (net.sf.jailer.gui.util.prefus).
-// TODO Besser alle Farben von aussen setzen, wenn möglich.
-
-// TODO
-// TODO prefuse graphview animations of path
-
-// TODO
 // TODO click on "Database"-Metadata table list with opened "Desktop" should open BrCoPa in Desktop
 
 //TODO

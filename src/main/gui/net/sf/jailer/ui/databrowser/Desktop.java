@@ -2466,14 +2466,14 @@ public abstract class Desktop extends JDesktopPane {
 									if (UIUtil.plaf != PLAF.NIMBUS) {
 										if (cl.getGreen() > cl.getBlue() && cl.getGreen() >= cl.getRed()) {
 //											if (link.restricted) {
-												cl = new Color( // TODO
+												cl = new Color(
 														(int) (cl.getRed()),
 														(int) (cl.getGreen() * 0.75f),
 														(0));
 //											}
 										} else {
 											double f = UIUtil.plaf == PLAF.FLATDARK? 0.9 : 1.1; // link.restricted? 1.7 : 1.1;
-											cl = new Color( // TODO
+											cl = new Color(
 													brighter(cl.getRed(), f),
 													brighter(cl.getGreen(), f),
 													brighter(cl.getBlue(), f));
@@ -2562,9 +2562,14 @@ public abstract class Desktop extends JDesktopPane {
 			if (UIUtil.plaf == PLAF.NIMBUS) {
 				g2d.setColor(inTempClosure && !pbg? Colors.Color_220_220_255 : color);
 			} else if (UIUtil.plaf.isFlat) {
-				double f = UIUtil.plaf == PLAF.FLATDARK? 0.6 : 3;
+				double f = UIUtil.plaf == PLAF.FLATDARK? 0.5 : 3;
 				if (fgColor.getGreen() > fgColor.getRed() + fgColor.getBlue()) {
-					f = UIUtil.plaf == PLAF.FLATDARK? 0.6 : 1.5;
+					f = UIUtil.plaf == PLAF.FLATDARK? 0.5 : 1.5;
+				}
+				if (fgColor.getBlue() > fgColor.getRed() + fgColor.getGreen()) {
+					if (UIUtil.plaf == PLAF.FLATDARK) {
+						f = 0.7;
+					}
 				}
 				g2d.setColor((inTempClosure) && pbg? new Color(
 						brighter(fgColor.getRed(), f ),
@@ -2597,15 +2602,6 @@ public abstract class Desktop extends JDesktopPane {
 			Color fg = g2d.getColor();
 			if (!pbg) {
 				Color mc = fgColorMap.get(fg);
-				
-				// TODO
-				// TODO
-				// TODO
-				// TODO
-				// TODO
-				// TODO
-				mc=null;
-				
 				if (mc == null) {
 					HSLColor hslColor = new HSLColor(fg);
 					if (UIUtil.plaf == PLAF.FLATDARK) {

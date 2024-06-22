@@ -111,6 +111,9 @@
                         </Component>
                         <Component class="javax.swing.JLabel" name="rowsCount">
                           <Properties>
+                            <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                              <Connection code="null" type="code"/>
+                            </Property>
                             <Property name="text" type="java.lang.String" value="jLabel3"/>
                             <Property name="opaque" type="boolean" value="true"/>
                           </Properties>

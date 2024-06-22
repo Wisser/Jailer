@@ -2636,13 +2636,18 @@ public class UIUtil {
 							if (resetBorder != null && proxy == null) {
 								resetBorder.run();
 							}
+							Border currentTTBorder;
+							indicatorComponent.setBorder(currentTTBorder = new ToolTipBorder(origBorder));
 							resetBorder = () -> {
-								indicatorComponent.setBorder(origBorder);
+								if (indicatorComponent.getBorder() == currentTTBorder) {
+									indicatorComponent.setBorder(origBorder);
+								}
 								resetBorder = null;
 							};
-							indicatorComponent.setBorder(new ToolTipBorder(origBorder));
 							Runnable reset = () -> {
-								indicatorComponent.setBorder(origBorder);
+								if (indicatorComponent.getBorder() == currentTTBorder) {
+									indicatorComponent.setBorder(origBorder);
+								}
 							};
 							if (timer != null) {
 								timer.stop();
