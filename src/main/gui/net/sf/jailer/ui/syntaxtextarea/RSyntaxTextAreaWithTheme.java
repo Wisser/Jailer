@@ -56,7 +56,7 @@ public class RSyntaxTextAreaWithTheme extends RSyntaxTextArea {
 		}
 	}
 
-	private void initTheme() {
+	public void initTheme() {
 		try {
 			new Theme(this);
 			Theme t = Theme.load(getClass().getResourceAsStream(UIUtil.plaf == PLAF.FLATDARK?

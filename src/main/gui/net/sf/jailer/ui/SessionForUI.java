@@ -68,7 +68,16 @@ public class SessionForUI extends Session {
 		final SessionForUI session = new SessionForUI(dataSource, dbms, isolationLevel, shutDownImmediatelly, testOnly);
 		final AtomicReference<Connection> con = new AtomicReference<Connection>();
 		final AtomicReference<Throwable> exception = new AtomicReference<Throwable>();
-		session.connectionDialog = new JDialog(w, "Connecting");
+		Window owner = w;
+		if (!w.isShowing()) {
+			for (Window vw: Window.getWindows()) {
+				if (vw.isShowing() && vw.isFocused()) {
+					owner = vw;
+					break;
+				}
+			}
+		}
+		session.connectionDialog = new JDialog(owner, "Connecting");
 		session.connectionDialog.setUndecorated(true);
 		session.connectionDialog.setModal(true);
 		Thread thread = new Thread(new Runnable() {
@@ -120,8 +129,8 @@ public class SessionForUI extends Session {
 		thread.setDaemon(true);
 		thread.start();
 		Point p;
-		if (w.isShowing()) {
-			p = w.getLocationOnScreen();
+		if (owner.isShowing()) {
+			p = owner.getLocationOnScreen();
 		} else {
 			p = new Point(0, 0);
 		}
@@ -155,7 +164,7 @@ public class SessionForUI extends Session {
 		
 		session.connectionDialog.getContentPane().add(session.connectingPanel);
 		session.connectionDialog.pack();
-		session.connectionDialog.setLocation(los.x + w.getWidth() / 2 - session.connectionDialog.getWidth() / 2, los.y + w.getHeight() / 2 - session.connectionDialog.getHeight() / 2);
+		session.connectionDialog.setLocation(los.x + owner.getWidth() / 2 - session.connectionDialog.getWidth() / 2, los.y + owner.getHeight() / 2 - session.connectionDialog.getHeight() / 2);
         
 		Timer timer = new Timer(500, e -> {
 			session.connectingPanel.setBackground(Colors.Color_255_255_255.equals(session.connectingPanel.getBackground())? Colors.Color_255_230_230 : Colors.Color_255_255_255);

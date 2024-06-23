@@ -3127,7 +3127,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
 		public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
 			Graphics2D g2d = (Graphics2D) g;
-			g2d.setPaint(new GradientPaint(x, y, color != null? color : Colors.Color_0_0_255, x + width, y, color != null? color : UIUtil.plaf == PLAF.FLATDARK? Colors.Color_0_255_0.brighter() : Colors.Color_0_255_0.darker())); // TODO
+			g2d.setPaint(new GradientPaint(x, y, color != null? color : Colors.Color_0_0_255, x + width, y, color != null? color : UIUtil.plaf == PLAF.FLATDARK? Colors.Color_0_255_0.brighter() : Colors.Color_0_255_0.darker()));
 
 			Area border = new Area(new Rectangle(x, y, width, height));
 			border.subtract(new Area(new Rectangle(x + margin.left, y + margin.top, width - margin.left - margin.right,

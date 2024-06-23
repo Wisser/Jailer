@@ -30,6 +30,9 @@
       <SubComponents>
         <Component class="javax.swing.JTextField" name="searchField">
           <Properties>
+            <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="Colors.Color_255_255_255" type="code"/>
+            </Property>
             <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;Search criteria.&lt;br&gt;&lt;br&gt;&#xa;Search for items that contain the search criteria as:&lt;br&gt;&#xa;&lt;table&gt;&#xa;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Prefix&lt;/b&gt;&lt;/td&gt;&lt;td&gt;if it starts with a space&lt;/td&gt;&lt;/tr&gt;&#xa;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Suffix&lt;/b&gt;&lt;/td&gt;&lt;td&gt;if it ends with a space&lt;/td&gt;&lt;/tr&gt;&#xa;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Substring&lt;/b&gt;&lt;/td&gt;&lt;td&gt;else&lt;/td&gt;&lt;/tr&gt;&#xa;&lt;/table&gt;&#xa;&lt;br&gt;&#xa;(&lt;b&gt;*&lt;/b&gt; = any string, &lt;b&gt;?&lt;/b&gt; = any character)&#xa;&lt;/html&gt;"/>
           </Properties>
         </Component>

@@ -54,7 +54,7 @@ import net.sf.jailer.ui.util.UISettings;
  */
 public class NeighborhoodPanel extends javax.swing.JPanel {
 
-    private static final Color WHITE = Colors.Color_255_255_255_200;
+    private static final Color WHITE = Colors.Color_NeigbBG;
     private static final Color SELECTED_COLOR = Colors.Color_0_255_255_150;
     
     private int length = 2;

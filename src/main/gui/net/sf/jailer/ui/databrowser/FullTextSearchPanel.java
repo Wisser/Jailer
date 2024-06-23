@@ -640,6 +640,7 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 
         jToolBar1.setRollover(true);
 
+        searchField.setBackground(Colors.Color_255_255_255);
         searchField.setToolTipText("<html>Search criteria.<br><br>\nSearch for items that contain the search criteria as:<br>\n<table>\n<tr><td><b>Prefix</b></td><td>if it starts with a space</td></tr>\n<tr><td><b>Suffix</b></td><td>if it ends with a space</td></tr>\n<tr><td><b>Substring</b></td><td>else</td></tr>\n</table>\n<br>\n(<b>*</b> = any string, <b>?</b> = any character)\n</html>");
         jToolBar1.add(searchField);
 

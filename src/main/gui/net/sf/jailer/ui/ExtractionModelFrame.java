@@ -2421,7 +2421,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 		java.awt.EventQueue.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				UIUtil.initPLAF();
+				UIUtil.readAndInitPLAF();
 
 				String file = null;
 				try {

@@ -124,6 +124,7 @@ import javax.swing.Timer;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
@@ -1668,10 +1669,7 @@ public class UIUtil {
 	 */
 	public static void initPLAFMenuItem(final JMenu plafMenu, final Component parentComponent) {
 		ButtonGroup buttonGroup = new ButtonGroup();
-		for (PLAF p: PLAF.values()) {
-			if (p == PLAF.NIMBUS) {
-				continue;
-			}
+		for (PLAF p: UIUtil.availablePlafs) {
 			JRadioButtonMenuItem item = new JRadioButtonMenuItem();
 			buttonGroup.add(item);
 			if (p == plaf) {
@@ -1682,7 +1680,10 @@ public class UIUtil {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					UISettings.store(UISettings.USE_NATIVE_PLAF, p.name());
-					JOptionPane.showMessageDialog(parentComponent, "The \"look and feel\" has been changed.\n(Will be effective after restart)", "Look&Feel", JOptionPane.INFORMATION_MESSAGE);
+					plaf = p;
+					p.install();
+					initPLAF();
+//					JOptionPane.showMessageDialog(parentComponent, "The \"look and feel\" has been changed.\n(Will be effective after restart)", "Look&Feel", JOptionPane.INFORMATION_MESSAGE);
 				}
 			});
 			plafMenu.add(item);
@@ -2129,10 +2130,35 @@ public class UIUtil {
 		hiddenWindows.clear();
 	}
 	
-	// TODO
-	// TODO offer only flat lafs (light, dark). Don't offer Nimbus and Native
 	public static enum PLAF {
-		FLAT("Flat", true), NIMBUS("Nimbus", false), NATIVE("Native", false), FLATDARK("FlatDark", true);
+		FLAT("Light Theme", true) {
+			public void install() {
+				FlatLightLaf.setup();
+				try {
+					javax.swing.UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatLightLaf());
+				} catch (UnsupportedLookAndFeelException e) {
+					throw new RuntimeException(e);
+				}
+                com.formdev.flatlaf.FlatLaf.updateUI();
+			}
+		},
+		NIMBUS("Nimbus", false) {
+			public void install() {
+			}
+		}, NATIVE("Native", false) {
+			public void install() {
+			}
+		}, FLATDARK("Dark Theme", true) {
+			public void install() {
+				FlatDarkLaf.setup();
+				try {
+					javax.swing.UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatDarkLaf());
+				} catch (UnsupportedLookAndFeelException e) {
+					throw new RuntimeException(e);
+				}
+                com.formdev.flatlaf.FlatLaf.updateUI();
+			}
+		};
 		
 		PLAF(String description, boolean isFlat) {
 			this.description = description;
@@ -2140,7 +2166,9 @@ public class UIUtil {
 		}
 		public final String description;
 		public final boolean isFlat;
+		abstract public void install();
 	};
+	public static PLAF[] availablePlafs = new PLAF[] { PLAF.FLAT, PLAF.FLATDARK };
 	
 	public static PLAF plaf = PLAF.NATIVE;
 	
@@ -2158,7 +2186,7 @@ public class UIUtil {
 		UISettings.store("OLD_PLAF", plaf.name());
 	}
 	
-	public static void initPLAF() {
+	public static void readAndInitPLAF() {
 		FlatLaf.registerCustomDefaultsSource("net.sf.jailer.ui.resource");
 
 		Object plafSetting = UISettings.restore(UISettings.USE_NATIVE_PLAF);
@@ -2166,15 +2194,18 @@ public class UIUtil {
 		if (Boolean.FALSE.equals(plafSetting)) {
 			plaf = PLAF.FLAT;
 			UISettings.store(UISettings.USE_NATIVE_PLAF, plaf.name());
-		} else if (Boolean.TRUE.equals(plafSetting)) {
-			plaf = PLAF.NATIVE;
-			UISettings.store(UISettings.USE_NATIVE_PLAF, plaf.name());
+//		} else if (Boolean.TRUE.equals(plafSetting)) {
+//			plaf = PLAF.NATIVE;
+//			UISettings.store(UISettings.USE_NATIVE_PLAF, plaf.name());
 		} else if (plafSetting instanceof PLAF) {
 			plaf = (PLAF) plafSetting;
 			UISettings.store(UISettings.USE_NATIVE_PLAF, plaf.name());
 		} else if (plafSetting instanceof String) {
 			try {
 				plaf = PLAF.valueOf((String) plafSetting);
+				if (!plaf.isFlat) {
+					plaf = PLAF.FLAT;
+				}
 			} catch (Exception e) {
 				// ignore
 			}
@@ -2184,7 +2215,7 @@ public class UIUtil {
 			// TODO
 			// TODO remove
 			if (System.getProperty("darkLAF").equalsIgnoreCase("true")) {
-				plaf = PLAF.FLATDARK;
+//				plaf = PLAF.FLATDARK;
 			}
 		} catch (Exception e) {
 			// ignore
@@ -2193,7 +2224,10 @@ public class UIUtil {
 		if (plaf == PLAF.NIMBUS) {
 			plaf = PLAF.FLAT;
 		}
-
+		initPLAF();
+	}
+	
+	public static void initPLAF() {
 		switch (plaf) {
 			case NATIVE:
 				// nothing to do
