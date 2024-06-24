@@ -1385,13 +1385,6 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 
 }
 
-
-// TODO
-// TODO check references of this SmallButton
-
-//TODO
-//TODO pathfinderview: icon "exclude all" is too saturated
-
 //TODO
 //TODO lupenstiel in dark nicht gut zu sehen
 

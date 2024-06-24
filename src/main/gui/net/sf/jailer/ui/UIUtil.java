@@ -1700,21 +1700,6 @@ public class UIUtil {
 			});
 			plafMenu.add(item);
 		}
-		
-		if (plafMenu.getComponentCount() < 5) {
-			// TODO
-			Container p = plafMenu.getParent();
-			if (p instanceof JPopupMenu) {
-				for (int i = 0; i < ((JPopupMenu) p).getComponentCount(); ++i) {
-					Component comp = ((JPopupMenu) p).getComponent(i);
-					if (comp == plafMenu) {
-						for (int pmi = 0; pmi < plafMenu.getComponentCount(); ++pmi) {
-							((JPopupMenu) p).add(plafMenu.getComponent(pmi), i + pmi);
-						}
-					}
-				}
-			}
-		}
 	}
 
 	public static String format(long number) {
