@@ -1384,3 +1384,17 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     private static final long serialVersionUID = 1L;
 
 }
+
+
+// TODO
+// TODO check references of this SmallButton
+
+//TODO
+//TODO pathfinderview: icon "exclude all" is too saturated
+
+//TODO
+//TODO lupenstiel in dark nicht gut zu sehen
+
+//TODO
+//TODO DMMD: green for EMEditor: brighter?
+

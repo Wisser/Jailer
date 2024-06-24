@@ -481,6 +481,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
         renderHtml1 = new javax.swing.JMenuItem();
         consistencyCheckMenuItem = new javax.swing.JMenuItem();
         jMenu5 = new javax.swing.JMenu();
+        plafMenu = new javax.swing.JMenu();
+        jSeparator6 = new javax.swing.JPopupMenu.Separator();
         horizontalLayoutMenuItem = new javax.swing.JCheckBoxMenuItem();
         jMenu4 = new javax.swing.JMenu();
         steptime10 = new javax.swing.JRadioButtonMenuItem();
@@ -491,8 +493,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
         steptime100 = new javax.swing.JRadioButtonMenuItem();
         steptime200 = new javax.swing.JRadioButtonMenuItem();
         steptime300 = new javax.swing.JRadioButtonMenuItem();
-        jSeparator6 = new javax.swing.JPopupMenu.Separator();
-        plafMenu = new javax.swing.JMenu();
         jMenu2 = new javax.swing.JMenu();
         helpContent = new javax.swing.JMenuItem();
         tutorial = new javax.swing.JMenuItem();
@@ -977,6 +977,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 
         jMenu5.setText("Settings");
 
+        plafMenu.setText("Theme (Look and Feel)");
+        jMenu5.add(plafMenu);
+        jMenu5.add(jSeparator6);
+
         horizontalLayoutMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_I, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         horizontalLayoutMenuItem.setSelected(true);
         horizontalLayoutMenuItem.setText("Horizontal layout");
@@ -1062,10 +1066,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
         jMenu4.add(steptime300);
 
         jMenu5.add(jMenu4);
-        jMenu5.add(jSeparator6);
-
-        plafMenu.setText("Themes (Look and Feel)");
-        jMenu5.add(plafMenu);
 
         jMenuBar2.add(jMenu5);
 

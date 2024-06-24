@@ -2491,6 +2491,8 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         jSeparator6 = new javax.swing.JPopupMenu.Separator();
         view = new javax.swing.JMenu();
         jMenu3 = new javax.swing.JMenu();
+        plafMenu = new javax.swing.JMenu();
+        jSeparator20 = new javax.swing.JPopupMenu.Separator();
         autoLayoutMenuItem = new javax.swing.JCheckBoxMenuItem();
         zoomWithMouseWheelMenuItem = new javax.swing.JCheckBoxMenuItem();
         jSeparator16 = new javax.swing.JPopupMenu.Separator();
@@ -2503,8 +2505,6 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         steptime100 = new javax.swing.JRadioButtonMenuItem();
         steptime200 = new javax.swing.JRadioButtonMenuItem();
         steptime300 = new javax.swing.JRadioButtonMenuItem();
-        jSeparator20 = new javax.swing.JPopupMenu.Separator();
-        plafMenu = new javax.swing.JMenu();
         helpMenu = new javax.swing.JMenu();
         jMenuItem4 = new javax.swing.JMenuItem();
         helpForum = new javax.swing.JMenuItem();
@@ -3697,6 +3697,10 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 
         jMenu3.setText("Settings");
 
+        plafMenu.setText("Theme (Look and Feel)");
+        jMenu3.add(plafMenu);
+        jMenu3.add(jSeparator20);
+
         autoLayoutMenuItem.setSelected(true);
         autoLayoutMenuItem.setText("Automatic layout adjustment");
         jMenu3.add(autoLayoutMenuItem);
@@ -3787,10 +3791,6 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         animationStepTimeMenu.add(steptime300);
 
         jMenu3.add(animationStepTimeMenu);
-        jMenu3.add(jSeparator20);
-
-        plafMenu.setText("Themes (Look and Feel)");
-        jMenu3.add(plafMenu);
 
         menuBar.add(jMenu3);
 

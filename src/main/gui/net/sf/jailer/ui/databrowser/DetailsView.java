@@ -1219,7 +1219,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
         maximizeButton.setText(null);
         maximizeButton.setIcon(UIUtil.plaf == PLAF.FLATDARK? maximizeDarkIcon : maximizeIcon);
         
-        SmallButton closeButton = new SmallButton(closeIcon, closeOverIcon, false) {
+        SmallButton closeButton = new SmallButton(UIUtil.plaf == PLAF.FLATDARK? closeDarkIcon : closeIcon, closeOverIcon, false) {
 			@Override
 			protected void onClick(MouseEvent e) {
 				Window windowAncestor = SwingUtilities.getWindowAncestor(DetailsView.this);
@@ -1282,6 +1282,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	private static ImageIcon editdetails;
 	private static ImageIcon pinIcon;
 	private static ImageIcon closeIcon;
+	private static ImageIcon closeDarkIcon;
 	private static ImageIcon closeOverIcon;
 	private static ImageIcon maximizeIcon;
 	private static ImageIcon maximizeDarkIcon;
@@ -1291,11 +1292,12 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		// load images
 		editdetails = UIUtil.readImage("/editdetails.png");
 		pinIcon = UIUtil.readImage("/pin.png");
-		maximizeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/maximizec.png"));
+		maximizeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/maximize.png"));
 		unmaximizeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/unmaximize.png"));
-		maximizeDarkIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/maximizec_dark.png"));
+		maximizeDarkIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/maximize_dark.png"));
 		unmaximizeDarkIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/unmaximize_dark.png"));
         closeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/close.png"), 1.55);
+        closeDarkIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/closedark.png"), 1.55);
         closeOverIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/close_over.png"), 1.55);
 	}
 

@@ -25,8 +25,10 @@ import javax.swing.SwingUtilities;
 
 import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.UIUtil.PLAF;
+import net.sf.jailer.ui.UIUtil.PlafAware;
 
-public abstract class SmallButton extends JLabel {
+public abstract class SmallButton extends JLabel implements PlafAware {
 
 	private final boolean borderStyle;
 	private static final Color BORDER_LIGHT = Colors.Color_192_192_192;
@@ -89,20 +91,43 @@ public abstract class SmallButton extends JLabel {
 		});
 	}
 
+	@Override
+	public void onNewPlaf() {
+		onMouseExited();
+	}
+
 	protected abstract void onClick(MouseEvent e);
 
 	protected void onMouseExited() {
 		entered = false;
+		Icon theIcon = lafIcon();
+		setIcon(theIcon);
 		if (silent) {
 			return;
 		}
 		if (iconOver != null) {
-			setIcon(icon);
+			setIcon(theIcon);
 		} else if (borderStyle) {
 			setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED, BORDER_LIGHT, BORDER_SHADOW));
 		} else {
 			setEnabled(false);
 		}
+	}
+
+	private Icon lafIcon() {
+		if (icon == closeIcon && UIUtil.plaf == PLAF.FLATDARK) {
+			return closeDarkIcon;
+		}
+		if (icon == close16Icon && UIUtil.plaf == PLAF.FLATDARK) {
+			return close16darkIcon;
+		}
+		if (icon == closeDarkIcon && UIUtil.plaf != PLAF.FLATDARK) {
+			return closeIcon;
+		}
+		if (icon == close16darkIcon && UIUtil.plaf != PLAF.FLATDARK) {
+			return close16Icon;
+		}
+		return icon;
 	}
 
 	protected void onMouseEntered() {
@@ -119,4 +144,17 @@ public abstract class SmallButton extends JLabel {
 		}
 	}
 	
+	private Icon closeIcon;
+	private Icon close16Icon;
+	private Icon close16darkIcon;
+	private Icon closeDarkIcon;
+	private Icon closeOverIcon;
+	
+	{
+		closeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/close.png"), 1.4);
+		closeDarkIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/closedark.png"), 1.4);
+    	close16Icon = UIUtil.readImage("/Close-16-1.png");
+    	close16darkIcon = UIUtil.readImage("/Close-16-1dark.png");
+		closeOverIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/close_over.png"), 1.4);
+	}
 }

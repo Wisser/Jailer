@@ -444,7 +444,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 				@Override
 				protected void onModification(JComponent component) {
 					boolean defaultValue = component == sortedCheckBox;
-					Color bg = Colors.Color_255_255_210;
+					Color bg = Colors.Color_ExportDialogModifiedPropertiesBackGround;
 					for (JCheckBox comp: new JCheckBox[] {
 							unicode,
 							sortedCheckBox,
@@ -770,7 +770,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	@SuppressWarnings({ "unchecked" })
 	private void initTargetDBMS(Session session) {
 		resetTargetButton.setVisible(false);
-		resetTargetButton.setBackground(Colors.Color_255_255_210);
+		resetTargetButton.setBackground(Colors.Color_ExportDialogModifiedPropertiesBackGround);
 		resetTargetButton.setIcon(resetIcon);
 		if (scriptFormat == ScriptFormat.SQL) {
 			DefaultComboBoxModel<DBMS> aModel = new DefaultComboBoxModel<DBMS>(DBMS.values());

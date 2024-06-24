@@ -133,6 +133,9 @@ public class Colors {
 
 		Color_NeigbBG.init(new Color(255, 255, 255, 200), new Color(31, 39, 42));
 		
+		Color_ExportDialogModifiedPropertiesBackGround.init(new Color(255, 255, 180), new Color(90, 90, 0));
+
+		
 		// TODO
 		// TODO check "tranparent" todos
 		
@@ -244,7 +247,6 @@ public class Colors {
 		Color_255_255_176.init(new Color(255, 255, 176));
 		Color_255_255_204.init(new Color(255, 255, 204));
 		Color_255_255_205.init(new Color(255, 255, 205));
-		Color_255_255_210.init(new Color(255, 255, 210));
 		Color_255_255_220.init(new Color(255, 255, 220));
 		Color_255_255_236.init(new Color(255, 255, 236));
 		Color_255_255_240.init(new Color(255, 255, 240));
@@ -408,7 +410,7 @@ public class Colors {
 	public static LAFAwareColor Color_255_255_176 = new LAFAwareColor();
 	public static LAFAwareColor Color_255_255_204 = new LAFAwareColor();
 	public static LAFAwareColor Color_255_255_205 = new LAFAwareColor();
-	public static LAFAwareColor Color_255_255_210 = new LAFAwareColor();
+	public static LAFAwareColor Color_ExportDialogModifiedPropertiesBackGround = new LAFAwareColor();
 	public static LAFAwareColor Color_255_255_220 = new LAFAwareColor();
 	public static LAFAwareColor Color_255_255_230 = new LAFAwareColor();
 	public static LAFAwareColor Color_255_255_236 = new LAFAwareColor();

@@ -544,6 +544,13 @@
             <Property name="text" type="java.lang.String" value="Settings"/>
           </Properties>
           <SubComponents>
+            <Menu class="javax.swing.JMenu" name="plafMenu">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Theme (Look and Feel)"/>
+              </Properties>
+            </Menu>
+            <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator20">
+            </MenuItem>
             <MenuItem class="javax.swing.JCheckBoxMenuItem" name="autoLayoutMenuItem">
               <Properties>
                 <Property name="selected" type="boolean" value="true"/>
@@ -659,13 +666,6 @@
                   </Events>
                 </MenuItem>
               </SubComponents>
-            </Menu>
-            <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator20">
-            </MenuItem>
-            <Menu class="javax.swing.JMenu" name="plafMenu">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Themes (Look and Feel)"/>
-              </Properties>
             </Menu>
           </SubComponents>
         </Menu>
