@@ -263,7 +263,7 @@ public class DesktopOutline extends JPanel {
 			int gw = snap((int) (sameWidthFriend.getWidth() - (offX + scale * x + 0.5) - 1), (int)(scale * width + 0.5), 32);
 			int gh = (int)(scale * height + 0.5);
 			GradientPaint paint = new GradientPaint(
-					0, 0, UIUtil.plaf == PLAF.FLATDARK? backgroundColor.brighter() :  backgroundColor.darker(),
+					0, 0, UIUtil.plaf == PLAF.FLATDARK? backgroundColor.darker() :  backgroundColor.brighter(),
 					gw, gh, backgroundColor);
 			g2d.setPaint(paint);
 			g2d.fillRoundRect(gx, gy, gw, gh, 2, 2);

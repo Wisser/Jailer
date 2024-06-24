@@ -3173,10 +3173,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
 }
 
-
-// TODO
-// TODO hint if state != 0 that an installation via jailer_version.jar is needed for CLI
-
 // TODO 1 test: cycle in aggregations
 // TODO 1 user option: include (or not) any non-subject top-level object
 

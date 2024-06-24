@@ -45,7 +45,3 @@ public class JailerVersion {
 	}
 
 }
-
-//TODO
-//TODO icons: black"-"plus" and "filter"-icon (GraphView) are too bright
-

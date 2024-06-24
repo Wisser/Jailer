@@ -2551,6 +2551,7 @@ public abstract class Desktop extends JDesktopPane {
 	long lastAnimationStepTime = 0;
 	final long STEP_DELAY = 50;
 	private Map<Color, Color> fgColorMap = new HashMap<Color, Color>();
+	private PLAF fgColorMapPlaf = null;
 
 	private void paintLink(Point2D start, Point2D end, Color color, Color fgColor, Graphics2D g2d, RowBrowser tableBrowser,
 			boolean pbg, boolean intersect, boolean dotted, boolean restricted, double midPos, boolean light,
@@ -2601,6 +2602,10 @@ public abstract class Desktop extends JDesktopPane {
 		if (notHAligned && doPaint) {
 			Color fg = g2d.getColor();
 			if (!pbg) {
+				if (UIUtil.plaf != fgColorMapPlaf) {
+					fgColorMap.clear();
+				}
+				fgColorMapPlaf = UIUtil.plaf;
 				Color mc = fgColorMap.get(fg);
 				if (mc == null) {
 					HSLColor hslColor = new HSLColor(fg);

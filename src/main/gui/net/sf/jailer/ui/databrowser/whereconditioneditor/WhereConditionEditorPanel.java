@@ -97,6 +97,7 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.BrowserContentCellEditor;
 import net.sf.jailer.ui.databrowser.DBConditionEditor;
 import net.sf.jailer.ui.databrowser.Desktop;
@@ -436,7 +437,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.anchor = GridBagConstraints.EAST;
-        popupTitelPanel.add(new SmallButton(closeIcon, closeOverIcon, true) {
+        popupTitelPanel.add(new SmallButton(UIUtil.plaf == PLAF.FLATDARK? closeDarkIcon : closeIcon, closeOverIcon, true) {
 			@Override
 			protected void onClick(MouseEvent e) {
 				Window window = SwingUtilities.getWindowAncestor(this);
@@ -2663,6 +2664,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	private static ImageIcon nullIcon;
 	private static ImageIcon resetIcon;
 	private static ImageIcon closeIcon;
+	private static ImageIcon closeDarkIcon;
 	private static ImageIcon closeOverIcon;
 	private static ImageIcon constraintPKIcon;
     private static ImageIcon okIcon;
@@ -2679,6 +2681,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         warnIcon = UIUtil.readImage("/wanr.png");
         resetIcon = UIUtil.readImage("/reset.png");
         closeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/close.png"), 1.4);
+        closeDarkIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/closedark.png"), 1.4);
         closeOverIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/close_over.png"), 1.4);
     	constraintPKIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/constraint_pk.png"));
     	okIcon = UIUtil.readImage("/buttonok.png");

@@ -591,7 +591,7 @@
             </MenuItem>
             <Menu class="javax.swing.JMenu" name="plafMenu">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Look and Feel (Theme)"/>
+                <Property name="text" type="java.lang.String" value="Themes (Look and Feel)"/>
               </Properties>
             </Menu>
           </SubComponents>

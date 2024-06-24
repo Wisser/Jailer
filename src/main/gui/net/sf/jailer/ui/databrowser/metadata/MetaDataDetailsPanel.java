@@ -78,7 +78,7 @@ import net.sf.jailer.util.Pair;
  *
  * @author Ralf Wisser
  */
-public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
+public abstract class MetaDataDetailsPanel extends javax.swing.JPanel implements UIUtil.PlafAware {
 
 	/**
 	 * The logger.
@@ -158,6 +158,11 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 		detailsViews.clear();
 		tableDetailsViews.clear();
 		tableDetailsViewsAll.clear();
+	}
+
+	@Override
+	public void onNewPlaf() {
+		reset();
 	}
 
 	public void showMetaDataDetails(MDGeneric mdOther, ExecutionContext executionContext) {

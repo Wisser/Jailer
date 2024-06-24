@@ -351,6 +351,7 @@ public class GraphicalDataModelView extends JPanel {
 		display.setDamageRedraw(false);
 		display.setSize(width, height);
 		display.pan(width / 2, height / 2);
+		display.zoom(new Point2D.Double(width / 2, height / 2), 1.3);
 		display.setForeground(Colors.Color_128_128_128);
 
 		// main display controls

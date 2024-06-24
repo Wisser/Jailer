@@ -72,6 +72,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
+import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.sqlconsole.TabContentPanel;
 import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Pair;
@@ -496,7 +497,7 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 	private ExtendetCopyPanel(boolean columnNamesInFirstRow) {
         initComponents(); UIUtil.initComponents(this);
         jToolBar1.setFloatable(false);
-        maximizeButton.setIcon(maximizeIcon);
+        maximizeButton.setIcon(UIUtil.plaf == PLAF.FLATDARK? maximizeDarkIcon : maximizeIcon);
         selectAllButton.setIcon(selectIcon);
         copyButton.setIcon(copyIcon);
         closeCloseButton.setIcon(cancelIcon);
@@ -847,7 +848,7 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         			dialog.setSize(oldSize);
         			oldLoc = null;
         			oldSize = null;
-        	        maximizeButton.setIcon(maximizeIcon);
+        	        maximizeButton.setIcon(UIUtil.plaf == PLAF.FLATDARK? maximizeDarkIcon : maximizeIcon);
         		} else {
         			oldLoc = dialog.getLocation();
         			oldSize = dialog.getSize();
@@ -859,7 +860,7 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
  	        		insets.right += b;
 					dialog.setLocation(owner.getLocation().x + insets.left, owner.getLocation().y + insets.top - 1);
 	        		dialog.setSize(owner.getSize().width - insets.left - insets.right + 1, owner.getSize().height - insets.top - insets.bottom);
-	                maximizeButton.setIcon(unmaximizeIcon);
+	                maximizeButton.setIcon(UIUtil.plaf == PLAF.FLATDARK? unmaximizeDarkIcon : unmaximizeIcon);
         		}
         	}
         }
@@ -1011,7 +1012,9 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
     
 	private static ImageIcon maximizeIcon;
+	private static ImageIcon maximizeDarkIcon;
 	private static ImageIcon unmaximizeIcon;
+	private static ImageIcon unmaximizeDarkIcon;
 	private static ImageIcon selectIcon;
 	private static ImageIcon copyIcon;
 	private static ImageIcon cancelIcon;
@@ -1021,6 +1024,8 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 		// load images
 		maximizeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/maximizec.png"));
 		unmaximizeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/unmaximize.png"));
+		maximizeDarkIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/maximizec_dark.png"));
+		unmaximizeDarkIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/unmaximize_dark.png"));
 		selectIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/select.png"));
         copyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/copy.png"));
         copyCloseIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/copyclose.png"));

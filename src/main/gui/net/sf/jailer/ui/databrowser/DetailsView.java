@@ -78,6 +78,7 @@ import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
 import net.sf.jailer.ui.databrowser.sqlconsole.TabContentPanel;
 import net.sf.jailer.ui.util.MovePanel;
@@ -1080,7 +1081,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
         			dialog.setSize(oldSize);
         			oldLoc = null;
         			oldSize = null;
-        	        maximizeButton.setIcon(maximizeIcon);
+        	        maximizeButton.setIcon(UIUtil.plaf == PLAF.FLATDARK? maximizeDarkIcon : maximizeIcon);
         	        if (oldIsPinned ^ pinToggleButton.isSelected()) {
         	        	pinToggleButton.doClick();
         	        }
@@ -1094,7 +1095,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	        		final Insets insets = owner.getInsets();
 					dialog.setLocation(owner.getLocation().x + insets.left, owner.getLocation().y + insets.top - 1);
 	        		dialog.setSize(owner.getSize().width - insets.left - insets.right + 1, owner.getSize().height - insets.top - insets.bottom);
-	                maximizeButton.setIcon(unmaximizeIcon);
+	                maximizeButton.setIcon(UIUtil.plaf == PLAF.FLATDARK? unmaximizeDarkIcon : unmaximizeIcon);
         		}
         	}
         }
@@ -1216,7 +1217,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
         jPanel3.add(movePanel, gridBagConstraints);
         
         maximizeButton.setText(null);
-        maximizeButton.setIcon(maximizeIcon);
+        maximizeButton.setIcon(UIUtil.plaf == PLAF.FLATDARK? maximizeDarkIcon : maximizeIcon);
         
         SmallButton closeButton = new SmallButton(closeIcon, closeOverIcon, false) {
 			@Override
@@ -1283,13 +1284,17 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	private static ImageIcon closeIcon;
 	private static ImageIcon closeOverIcon;
 	private static ImageIcon maximizeIcon;
+	private static ImageIcon maximizeDarkIcon;
 	private static ImageIcon unmaximizeIcon;
+	private static ImageIcon unmaximizeDarkIcon;
 	static {
 		// load images
 		editdetails = UIUtil.readImage("/editdetails.png");
 		pinIcon = UIUtil.readImage("/pin.png");
-		maximizeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/maximize.png"));
+		maximizeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/maximizec.png"));
 		unmaximizeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/unmaximize.png"));
+		maximizeDarkIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/maximizec_dark.png"));
+		unmaximizeDarkIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/unmaximize_dark.png"));
         closeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/close.png"), 1.55);
         closeOverIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/close_over.png"), 1.55);
 	}

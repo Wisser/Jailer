@@ -181,7 +181,7 @@ import net.sf.jsqlparser.parser.CCJSqlParser;
  */
 public class UIUtil {
 
-    /**
+	/**
      * The logger.
      */
     private static final Logger _log = LoggerFactory.getLogger(UIUtil.class);
@@ -1662,6 +1662,9 @@ public class UIUtil {
 	
 	public static boolean validatePrimaryKeysPending = false;
 
+	private abstract static class PlafAwareJRadioButtonMenuItem extends JRadioButtonMenuItem implements PlafAware {
+	}
+	
 	/**
 	 * Initializes the "Native L&F" menu items.
 	 *
@@ -1670,7 +1673,14 @@ public class UIUtil {
 	public static void initPLAFMenuItem(final JMenu plafMenu, final Component parentComponent) {
 		ButtonGroup buttonGroup = new ButtonGroup();
 		for (PLAF p: UIUtil.availablePlafs) {
-			JRadioButtonMenuItem item = new JRadioButtonMenuItem();
+			JRadioButtonMenuItem item = new PlafAwareJRadioButtonMenuItem() {
+				@Override
+				public void onNewPlaf() {
+					if (plaf == p) {
+						setSelected(true);
+					}
+				}
+			};
 			buttonGroup.add(item);
 			if (p == plaf) {
 				item.setSelected(true);
@@ -1679,11 +1689,13 @@ public class UIUtil {
 			item.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					UISettings.store(UISettings.USE_NATIVE_PLAF, p.name());
-					plaf = p;
-					p.install();
-					initPLAF();
-//					JOptionPane.showMessageDialog(parentComponent, "The \"look and feel\" has been changed.\n(Will be effective after restart)", "Look&Feel", JOptionPane.INFORMATION_MESSAGE);
+					invokeLater(() -> {
+						UISettings.store(UISettings.USE_NATIVE_PLAF, p.name());
+						plaf = p;
+						p.install();
+						initPLAF();
+	//					JOptionPane.showMessageDialog(parentComponent, "The \"look and feel\" has been changed.\n(Will be effective after restart)", "Look&Feel", JOptionPane.INFORMATION_MESSAGE);
+					});
 				}
 			});
 			plafMenu.add(item);
@@ -2186,6 +2198,10 @@ public class UIUtil {
 		UISettings.store("OLD_PLAF", plaf.name());
 	}
 	
+    public interface PlafAware {
+    	void onNewPlaf();
+	}
+
 	public static void readAndInitPLAF() {
 		FlatLaf.registerCustomDefaultsSource("net.sf.jailer.ui.resource");
 
@@ -2211,21 +2227,13 @@ public class UIUtil {
 			}
 		}
 		
-		try {
-			// TODO
-			// TODO remove
-			if (System.getProperty("darkLAF").equalsIgnoreCase("true")) {
-//				plaf = PLAF.FLATDARK;
-			}
-		} catch (Exception e) {
-			// ignore
-		}
-		
 		if (plaf == PLAF.NIMBUS) {
 			plaf = PLAF.FLAT;
 		}
 		initPLAF();
 	}
+	
+	private static boolean flatLafInitialized = false;
 	
 	public static void initPLAF() {
 		switch (plaf) {
@@ -2261,10 +2269,13 @@ public class UIUtil {
                     
 //                    UIManager.put( "TextArea.background", Colors.Color_white);
                     
-                    if (plaf == PLAF.FLATDARK) {
-                    	FlatDarkLaf.setup();
-                    } else {
-                    	FlatLightLaf.setup();
+                    if (!flatLafInitialized) {
+	                    if (plaf == PLAF.FLATDARK) {
+	                    	FlatDarkLaf.setup();
+	                    } else {
+	                    	FlatLightLaf.setup();
+	                    }
+	                    flatLafInitialized = true;
                     }
 					break;
 				} catch (Exception x) {

@@ -35,6 +35,7 @@ import javax.swing.JMenuItem;
 import javax.swing.Timer;
 
 import net.sf.jailer.ui.UIUtil.PLAF;
+import net.sf.jailer.ui.UIUtil.PlafAware;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithTheme;
 import net.sf.jailer.ui.util.HSLColor;
 
@@ -68,9 +69,6 @@ public class Colors {
 		Color_0_0_220.init(new Color(0, 0, 220), Color_0_100_255.dark);
 		Color_255_255_230.init(new Color(255, 255, 200), new Color(11, 44, 44));
 
-		// TODO
-		// TODO ext. copy: "maximize"-button icon recoloring
-		
 		HTMLColor_000000 = UIUtil.plaf != PLAF.FLATDARK? "\"#000000\"" : "\"#dddddd\"";
 		HTMLColor_006600 = UIUtil.plaf != PLAF.FLATDARK? "\"#006600\"" : "\"#00c000\"";
 		HTMLColor_0000B0 = UIUtil.plaf != PLAF.FLATDARK? "\"#0000B0\"" : "\"#00B0FF\"";
@@ -515,7 +513,9 @@ public class Colors {
 		for (Window w : Window.getWindows()) {
 			w.repaint();
 			UIUtil.traverse(w, null, c-> null, (c, o) -> null, (t, c) -> {
-				if (c instanceof RSyntaxTextAreaWithTheme) {
+				if (c instanceof PlafAware) {
+					((PlafAware) c).onNewPlaf();
+				} else if (c instanceof RSyntaxTextAreaWithTheme) {
 					((RSyntaxTextAreaWithTheme) c).initTheme();
 				}
 			});
