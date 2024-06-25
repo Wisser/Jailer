@@ -1385,9 +1385,3 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 
 }
 
-//TODO
-//TODO lupenstiel in dark nicht gut zu sehen
-
-//TODO
-//TODO DMMD: green for EMEditor: brighter?
-

@@ -3149,8 +3149,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		okIcon = UIUtil.readImage("/buttonok.png");
         cancelIcon = UIUtil.readImage("/buttoncancel.png");
         histIcon = UIUtil.readImage("/history.png");
-		modulBrowserImg = UIUtil.scaleIcon(UIUtil.readImage("/modul_browser.png"), MODULE_IMAGE_SCALE_FACTOR);
-		modulSubsetterImg = UIUtil.scaleIcon(UIUtil.readImage("/modul_subsetter.png"), MODULE_IMAGE_SCALE_FACTOR);
+		modulBrowserImg = UIUtil.scaleIcon(UIUtil.readImage(UIUtil.plaf == PLAF.FLATDARK? "/modul_browser_dark.png" : "/modul_browser.png"), MODULE_IMAGE_SCALE_FACTOR);
+		modulSubsetterImg = UIUtil.scaleIcon(UIUtil.readImage(UIUtil.plaf == PLAF.FLATDARK? "/modul_subsetter_dark.png" : "/modul_subsetter.png"), MODULE_IMAGE_SCALE_FACTOR);
 		blueDotImg = UIUtil.readImage("/bluedotb.gif");
 		yellowDotImg = UIUtil.readImage("/yellowdot.gif");
 		loadIcon = UIUtil.readImage("/load2.png");

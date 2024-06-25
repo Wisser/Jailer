@@ -632,7 +632,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
                             ((JLabel) render).setForeground(Colors.Color_0_80_160);
                         }
                         if (getVisibleTables().containsKey(t)) {
-                        	((JLabel) render).setForeground(Colors.Color_0_0_225);
+                        	((JLabel) render).setForeground(UIUtil.plaf == PLAF.FLATDARK? UIUtil.FG_FK : Colors.Color_0_0_225);
                         }
                     }
                 }

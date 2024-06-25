@@ -76,6 +76,7 @@ public class Colors {
 		HTMLColor_0000cc = UIUtil.plaf != PLAF.FLATDARK? "\"#0000CC\"" : "\"#00B8FF\"";
 		HTMLColor_0000dd = UIUtil.plaf != PLAF.FLATDARK? "\"#0000D0\"" : "\"#00B8FF\"";
 		HTMLColor_0000ff = UIUtil.plaf != PLAF.FLATDARK? "\"#0000ff\"" : "\"#bbbbff\"";
+		HTMLColor_fg_fk = UIUtil.plaf != PLAF.FLATDARK? HTMLColor_0000ff : "\"#00aeff\"";
 		HTMLColor_005500 = UIUtil.plaf != PLAF.FLATDARK? "\"#005500\"" : "\"#66ff66\"";
 		HTMLColor_006000 = UIUtil.plaf != PLAF.FLATDARK? "\"#006000\"" : "\"#77cc77\"";
 		HTMLColor_0066ff = UIUtil.plaf != PLAF.FLATDARK? "\"#0066ff\"" : "\"#bbbbff\"";
@@ -128,15 +129,15 @@ public class Colors {
 		Color_0_0_245_60.init(new Color(0, 225, 0, 120), new Color(140, 255, 140, 120));
 		Color_190_255_180.init(new Color(190, 255, 180), new Color(29, 67, 22));
 
-		Color_255_255_238.init(new Color(255, 255, 238), new Color(10, 40, 10));
-		Color_248_252_255.init(new Color(248, 252, 255), new Color(25, 38, 71));
+		Color_255_255_238.init(new Color(255, 255, 238), new Color(0, 12, 50));
+		Color_248_252_255.init(new Color(248, 252, 255), new Color(0, 30, 0));
 
 		Color_NeigbBG.init(new Color(255, 255, 255, 200), new Color(31, 39, 42));
 		
 		Color_ExportDialogModifiedPropertiesBackGround.init(new Color(255, 255, 180), new Color(90, 90, 0));
 
+		Color_255_255_205.init(new Color(255, 255, 205),  new Color(80, 70, 0));
 		
-		// TODO
 		// TODO check "tranparent" todos
 		
 		Color_0_0_1.init(new Color(0, 0, 1), Color_0_0_0.dark);
@@ -246,7 +247,6 @@ public class Colors {
 		Color_255_255_0_128.init(new Color(255, 255, 0, 128));    // TODO tranparent
 		Color_255_255_176.init(new Color(255, 255, 176));
 		Color_255_255_204.init(new Color(255, 255, 204));
-		Color_255_255_205.init(new Color(255, 255, 205));
 		Color_255_255_220.init(new Color(255, 255, 220));
 		Color_255_255_236.init(new Color(255, 255, 236));
 		Color_255_255_240.init(new Color(255, 255, 240));
@@ -448,6 +448,7 @@ public class Colors {
 	public static String HTMLColor_0000cc;
 	public static String HTMLColor_0000dd;
 	public static String HTMLColor_0000ff;
+	public static String HTMLColor_fg_fk;
 	public static String HTMLColor_005500;
 	public static String HTMLColor_006000;
 	public static String HTMLColor_006600;

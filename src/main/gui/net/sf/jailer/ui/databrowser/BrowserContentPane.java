@@ -104,6 +104,7 @@ import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -191,6 +192,7 @@ import net.sf.jailer.ui.SessionForUI;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.UIUtil.PLAF;
+import net.sf.jailer.ui.UIUtil.PlafAware;
 import net.sf.jailer.ui.databrowser.DBConditionEditor.RSyntaxTextArea;
 import net.sf.jailer.ui.databrowser.Desktop.FindClosureContext;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
@@ -224,7 +226,7 @@ import net.sf.jailer.util.SqlUtil;
  * @author Ralf Wisser
  */
 @SuppressWarnings("serial")
-public abstract class BrowserContentPane extends javax.swing.JPanel {
+public abstract class BrowserContentPane extends javax.swing.JPanel implements PlafAware {
 
 	private final class RowTableRowSorter extends TableRowSorter<TableModel> {
 		private final int defaultSortColumn;
@@ -973,7 +975,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 
 		initComponents(); UIUtil.initComponents(this);
-		origCondBG = andCondition.getBackground();
 		
 		jToolBar1.setFloatable(false);
 		jToolBar2.setFloatable(false);
@@ -1146,38 +1147,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         jPanel7.add(andCondition, gridBagConstraints);
 
-		UIUtil.setLeadingComponent(andCondition, conditionEditorButton);
-		if (UIUtil.plaf.isFlat &&  andCondition.getEditor() != null && (andCondition.getEditor().getEditorComponent() instanceof JTextField)) {
-			JTextField f = ((JTextField) andCondition.getEditor().getEditorComponent());
-			JButton clearButton = new JButton();
-			clearButton.setText(null);
-			clearButton.setIcon(clearIcon);
-			UIUtil.setTrailingComponent(f, clearButton);
-			clearButton.setEnabled(!f.getText().isEmpty());
-			clearButton.addActionListener(e -> {
-				setAndCondition("", true);
-				reloadRows();
-				onConditionChange(getAndConditionText());
-			});
-			clearButton.setToolTipText("Clear Condition");
-			f.getDocument().addDocumentListener(new DocumentListener() {
-				@Override
-				public void removeUpdate(DocumentEvent e) {
-					update();
-				}
-				@Override
-				public void insertUpdate(DocumentEvent e) {
-					update();
-				}
-				@Override
-				public void changedUpdate(DocumentEvent e) {
-					update();
-				}
-				private void update() {
-					clearButton.setEnabled(!f.getText().isEmpty());
-				}
-			});
-		}
+		initConditionEditor();
 		
 		setPendingState(false, false);
 
@@ -1953,7 +1923,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 															sql = v == null || isNull? "null" : !isNumber? ("'" + (v.toString().replace("'", "''")) + "'") : v.toString();
 														}
 														String op = isNull? " is " : " = ";
-														String tooltip = "<html>Find rows where: <font color=" + Colors.HTMLColor_0000ff + ">" + colName + "</font>" + op + "<font color=" + Colors.HTMLColor_005500 + ">" + sql + "</font></html>";
+														String tooltip = "<html>Find rows where: <font color=" + Colors.HTMLColor_fg_fk + ">" + colName + "</font>" + op + "<font color=" + Colors.HTMLColor_005500 + ">" + sql + "</font></html>";
 														colName = Quoting.staticUnquote(colName.replaceFirst("^[^\\.]*\\.", ""));
 														int max = 20;
 														if (colName.length() > max + 2) {
@@ -1963,7 +1933,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 														if (sql.length() > max + 2) {
 															sql = sql.substring(0, max) + "...";
 														}
-														JMenuItem item = new JMenuItem("<html>Find by: <font color=" + Colors.HTMLColor_0000ff + ">" + colName + "</font>" + op + "<font color=" + Colors.HTMLColor_005500 + ">" + sql + "</font></html>");
+														JMenuItem item = new JMenuItem("<html>Find by: <font color=" + Colors.HTMLColor_fg_fk + ">" + colName + "</font>" + op + "<font color=" + Colors.HTMLColor_005500 + ">" + sql + "</font></html>");
 														item.setToolTipText(tooltip);
 														item.setIcon(UIUtil.scaleIcon(item, findColumnIcon1));
 														item.addActionListener(e2 -> {
@@ -2220,7 +2190,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		sqlLabel1.setFont(derivedFont);
 		loadButton.setFont(derivedFont);
 		relatedRowsPanel.setToolTipText("Navigate to a neighbor table.");
-		Color rRowsBGColor = relatedRowsPanel.getBackground();
+		UIUtil.initToolTip(relatedRowsPanel, relatedRowsLabel);
+        Color rRowsBGColor = relatedRowsPanel.getBackground();
 		if (UIUtil.plaf.isFlat) {
 			relatedRowsPanel.setBorder(null);
 		}
@@ -2526,6 +2497,41 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		suppressReload = false;
 		if (reload) {
 			reloadRows();
+		}
+	}
+
+	private void initConditionEditor() {
+		UIUtil.setLeadingComponent(andCondition, conditionEditorButton);
+		if (UIUtil.plaf.isFlat &&  andCondition.getEditor() != null && (andCondition.getEditor().getEditorComponent() instanceof JTextField)) {
+			JTextField f = ((JTextField) andCondition.getEditor().getEditorComponent());
+			JButton clearButton = new JButton();
+			clearButton.setText(null);
+			clearButton.setIcon(clearIcon);
+			UIUtil.setTrailingComponent(f, clearButton);
+			clearButton.setEnabled(!f.getText().isEmpty());
+			clearButton.addActionListener(e -> {
+				setAndCondition("", true);
+				reloadRows();
+				onConditionChange(getAndConditionText());
+			});
+			clearButton.setToolTipText("Clear Condition");
+			f.getDocument().addDocumentListener(new DocumentListener() {
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					update();
+				}
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					update();
+				}
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					update();
+				}
+				private void update() {
+					clearButton.setEnabled(!f.getText().isEmpty());
+				}
+			});
 		}
 	}
 
@@ -5391,7 +5397,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 	private boolean dontPaintSortIcon = false;
-	private Color origCondBG;
 	private boolean tableColumnsInitialized = false;
 	
 	private void doUpdateTableModel(int limit, boolean limitExceeded, boolean closureLimitExceeded) {
@@ -5422,7 +5427,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		
 		if (UIUtil.plaf.isFlat) {
 			JTextField f = ((JTextField) andCondition.getEditor().getEditorComponent());
-			andCondition.setBackground(f.getText().trim().isEmpty()? origCondBG : Colors.Color_255_255_205);
+			andCondition.setBackground(f.getText().trim().isEmpty()? new JComboBox<>().getBackground() : Colors.Color_255_255_205);
 		}
 
 		Rectangle tablePosition;
@@ -8474,6 +8479,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			andConditionEditor.dispose();
 			andConditionEditor = null;
 		}
+	}
+
+	@Override
+	public void onNewPlaf() {
+		initConditionEditor();
 	}
 
 	protected Set<Integer> filteredColumns;

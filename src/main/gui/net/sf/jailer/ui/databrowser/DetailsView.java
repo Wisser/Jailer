@@ -257,7 +257,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	private static final Font italic = font.deriveFont(font.getStyle() & ~Font.BOLD | Font.ITALIC, font.getSize()); 
 	private static final Color BG1 = UIUtil.TABLE_BACKGROUND_COLOR_1;
 	private static final Color BG2 = UIUtil.TABLE_BACKGROUND_COLOR_2;
-	public static final Color FG1 = Colors.Color_155_0_0;
+	public static final Color FG1 = UIUtil.FG_PK;
 	private List<JLabel> labels = new ArrayList<JLabel>();
 	private List<Color> labelColors = new ArrayList<Color>();
 	
@@ -480,6 +480,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 				}
 				
 				Object finalV = v;
+				Color color_0_0_255 = UIUtil.plaf == PLAF.FLATDARK? UIUtil.FG_FK : Colors.Color_0_0_255;
 				if (selectableFields) {
 					JTextComponent f;
 					if (v != null && v.toString().contains("\n")) {
@@ -652,10 +653,10 @@ public abstract class DetailsView extends javax.swing.JPanel {
 						l1.setForeground(FG1);
 						l2.setForeground(FG1);
 					} else {
-						lCont.setForeground(Colors.Color_0_0_255);
-						l.setForeground(Colors.Color_0_0_255);
-						l1.setForeground(Colors.Color_0_0_255);
-						l2.setForeground(Colors.Color_0_0_255);
+						lCont.setForeground(color_0_0_255);
+						l.setForeground(color_0_0_255);
+						l1.setForeground(color_0_0_255);
+						l2.setForeground(color_0_0_255);
 					}
 					MouseListener ml = new MouseAdapter() {
 						@Override
@@ -704,7 +705,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 					if (rowIdSupport.getPrimaryKey(table) != null && rowIdSupport.getPrimaryKey(table).getColumns().contains(c)) {
 						l.setForeground(FG1);
 					} else {
-						l.setForeground(Colors.Color_0_0_255);
+						l.setForeground(color_0_0_255);
 					}
 					labelColors.add(f.getBackground());
 					labels.add(f);
