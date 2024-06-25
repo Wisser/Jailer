@@ -717,8 +717,5 @@ public class Colors {
 
 
 //TODO
-//TODO img: no-delete (GraphView) is ugly
-
-//TODO
 //TODO connectiondialog: red-bg (empty mand.field) is ugly
 
