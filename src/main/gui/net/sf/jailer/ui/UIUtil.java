@@ -2039,21 +2039,25 @@ public class UIUtil {
 		}
 		return lines;
 	}
+	
+	public static String getDbmsLogoBase() {
+		return plaf == PLAF.FLATDARK? "/dbmslogodark/" : "/dbmslogo/";
+	}
 
 	public static String getDBMSLogoURL(String theUrl) {
 		String url = theUrl.toLowerCase();
 		if (!url.matches("jdbc:.+")) {
-			return urlOrSmallIconUrl("/dbmslogo/other.png");
+			return urlOrSmallIconUrl(UIUtil.getDbmsLogoBase() + "other.png");
 		}
 		Optional<Line> result = loadDriverList(null).stream().filter(line -> {
 			String prefix = line.cells.get(1).replaceFirst("[</\\[@].*$", "");
 			return !prefix.isEmpty() && url.startsWith(prefix);
 		}).findFirst();
 		if (result.isPresent()) {
-			String logoUrl = "/dbmslogo/" + result.get().cells.get(6);
+			String logoUrl = UIUtil.getDbmsLogoBase() + result.get().cells.get(6);
 			return urlOrSmallIconUrl(logoUrl);
 		}
-		return urlOrSmallIconUrl("/dbmslogo/other.png");
+		return urlOrSmallIconUrl(UIUtil.getDbmsLogoBase() + "other.png");
 	}
 
 	public static String urlOrSmallIconUrl(String logoUrl) {

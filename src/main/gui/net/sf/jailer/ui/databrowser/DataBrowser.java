@@ -108,6 +108,7 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JToggleButton;
+import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
@@ -172,6 +173,7 @@ import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.StringSearchPanel.StringSearchDialog;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.UIUtil.PLAF;
+import net.sf.jailer.ui.UIUtil.PlafAware;
 import net.sf.jailer.ui.UIUtil.ResultConsumer;
 import net.sf.jailer.ui.associationproposer.AssociationProposerView;
 import net.sf.jailer.ui.commandline.CommandLineInstance;
@@ -215,7 +217,7 @@ import net.sf.jailer.util.SqlUtil;
  *
  * @author Ralf Wisser
  */
-public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeChangeListener {
+public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeChangeListener, PlafAware {
 
 	/**
 	 * The desktop.
@@ -2176,7 +2178,6 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 
 	private String currentDatabaseName;
 
-	private Color origTBBG, origSNPBG, origCSBG, origL2BG;
 	private boolean origL2Op;
 	private boolean origKnown = false;
 
@@ -2192,10 +2193,10 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		Color bg = connectionType != null ? connectionType.getBackground() : null;
 		if (bg == null) {
 			jToolBar1.setToolTipText(null);
-			jToolBar1.setBackground(origTBBG);
-			schemaNamePanel.setBackground(origSNPBG);
-			connectivityState.setBackground(origCSBG);
-			legende2.setBackground(origL2BG);
+			jToolBar1.setBackground(new JToolBar().getBackground());
+			schemaNamePanel.setBackground(new JPanel().getBackground());
+			connectivityState.setBackground(new JLabel().getBackground());
+			legende2.setBackground(new JPanel().getBackground());
 			legende2.setOpaque(origL2Op);
 		} else {
 			jToolBar1.setToolTipText(connectionType.displayName);
@@ -2231,10 +2232,10 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 
 		if (!origKnown) {
 			origKnown = true;
-			origTBBG = jToolBar1.getBackground();
-			origSNPBG = schemaNamePanel.getBackground();
-			origCSBG = connectivityState.getBackground();
-			origL2BG = legende2.getBackground();
+//			origTBBG = jToolBar1.getBackground();
+//			origSNPBG = schemaNamePanel.getBackground();
+//			origCSBG = connectivityState.getBackground();
+//			origL2BG = legende2.getBackground();
 			origL2Op = legende2.isOpaque();
 		}
 		onConnectionTypeChange();
@@ -6970,6 +6971,11 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		} finally {
 			UIUtil.resetWaitCursor(this);
 		}
+	}
+
+	@Override
+	public void onNewPlaf() {
+		updateStatusBar();
 	}
 
 	private ImageIcon tableIcon;

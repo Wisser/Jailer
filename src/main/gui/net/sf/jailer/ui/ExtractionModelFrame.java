@@ -86,6 +86,7 @@ import net.sf.jailer.subsetting.SubsettingEngine;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionType;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionTypeChangeListener;
+import net.sf.jailer.ui.UIUtil.PlafAware;
 import net.sf.jailer.ui.UIUtil.ResultConsumer;
 import net.sf.jailer.ui.associationproposer.AssociationProposerView;
 import net.sf.jailer.ui.commandline.CommandLineInstance;
@@ -106,7 +107,7 @@ import net.sf.jailer.util.PrintUtil;
  *
  * @author Ralf Wisser
  */
-public class ExtractionModelFrame extends javax.swing.JFrame implements ConnectionTypeChangeListener {
+public class ExtractionModelFrame extends javax.swing.JFrame implements ConnectionTypeChangeListener, PlafAware {
 
 	/**
 	 * The embedded editor.
@@ -2631,6 +2632,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 				return true;
 			}
         });
+	}
+
+	@Override
+	public void onNewPlaf() {
+		updateMenuItems();
 	}
 	
     // Variables declaration - do not modify//GEN-BEGIN:variables

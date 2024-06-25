@@ -223,7 +223,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 						}
 					};
 					tb.setFont(FONT_BIG);
-					tb.setIcon(UIUtil.scaleIcon(UIUtil.readImage("/dbmslogo/" + line.cells.get(6), false), 0.5));
+					tb.setIcon(UIUtil.scaleIcon(UIUtil.readImage(UIUtil.getDbmsLogoBase() + line.cells.get(6), false), 0.5));
 					tb.setVerticalTextPosition(SwingConstants.BOTTOM);
 				    tb.setHorizontalTextPosition(SwingConstants.CENTER);
 					tbs.add(tb);

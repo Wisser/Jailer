@@ -177,7 +177,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 						value instanceof DBMS ? ((DBMS) value).getDisplayName() : value, index, isSelected,
 						cellHasFocus);
 				if (render instanceof JLabel && value instanceof DBMS) {
-					String logoUrl = "/dbmslogo/" + ((DBMS) value).getIcon();
+					String logoUrl = UIUtil.getDbmsLogoBase() + ((DBMS) value).getIcon();
 					logoUrl = UIUtil.urlOrSmallIconUrl(logoUrl);
 					if (logoUrl == null) {
 						((JLabel) render).setIcon(null);
