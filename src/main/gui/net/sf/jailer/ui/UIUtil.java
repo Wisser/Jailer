@@ -1109,6 +1109,8 @@ public class UIUtil {
    				+ ")|(" +
    				Pattern.quote("invalid username/password") + ".*DriverShim"
    				+ ")|(" +
+   				Pattern.quote("RowLimitExceededException")
+   				+ ")|(" +
    				Pattern.quote("logon denied") + ".*DriverShim"
    				+ ")|(" +
    				Pattern.quote("too many terms in compound SELECT") + ".*JDBCMetaDataBasedModelElementFinder.getColumns"
