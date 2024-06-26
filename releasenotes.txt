@@ -1,5 +1,5 @@
 16.3
-  - 
+  - A dark UI theme has been introduced that improves readability in low light environments.
 
 16.2
   - An error has been corrected that caused the quoting character of the
