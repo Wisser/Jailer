@@ -137,6 +137,8 @@ public class Colors {
 		Color_255_255_205.init(new Color(255, 255, 205),  new Color(80, 70, 0));
 		Color_255_230_230.init(new Color(255, 210, 210), new Color(85, 28, 28));
 
+		Color_0_0_255.init(new Color(0, 0, 255), Color_0_0_220.dark);
+
 		// TODO check "tranparent" todos
 		
 		Color_0_0_1.init(new Color(0, 0, 1), Color_0_0_0.dark);
@@ -147,7 +149,6 @@ public class Colors {
 		Color_0_0_200.init(new Color(0, 0, 200));
 		Color_0_0_205.init(new Color(0, 0, 205));
 		Color_0_0_225.init(new Color(0, 0, 225));
-		Color_0_0_255.init(new Color(0, 0, 255));
 		Color_0_0_255_80.init(new Color(0, 0, 255, 80));    // TODO tranparent
 		Color_0_0_62.init(new Color(0, 0, 62));
 		Color_0_0_77.init(new Color(0, 0, 77));
@@ -471,7 +472,7 @@ public class Colors {
 	
 	public static void init() {
 		if (!timerIsInitialized) {
-//			inDarkLAFMode = "true".equals(System.getProperty("darkLAF")); // TODO remove
+			inDarkLAFMode = "true".equals(System.getProperty("darkLAF")); // TODO remove
 			if (inDarkLAFMode) {
 				Timer timer = new Timer(1000, e -> init());
 				timer.setInitialDelay(1000);
