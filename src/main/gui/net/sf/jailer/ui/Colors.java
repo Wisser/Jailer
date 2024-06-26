@@ -21,7 +21,6 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Window;
 import java.awt.color.ColorSpace;
-import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.ColorModel;
@@ -31,7 +30,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JMenuItem;
 import javax.swing.Timer;
 
 import net.sf.jailer.ui.UIUtil.PLAF;
@@ -137,7 +135,8 @@ public class Colors {
 		Color_ExportDialogModifiedPropertiesBackGround.init(new Color(255, 255, 180), new Color(90, 90, 0));
 
 		Color_255_255_205.init(new Color(255, 255, 205),  new Color(80, 70, 0));
-		
+		Color_255_230_230.init(new Color(255, 210, 210), new Color(85, 28, 28));
+
 		// TODO check "tranparent" todos
 		
 		Color_0_0_1.init(new Color(0, 0, 1), Color_0_0_0.dark);
@@ -236,7 +235,6 @@ public class Colors {
 		Color_255_220_220.init(new Color(255, 220, 220));
 		Color_255_230_200.init(new Color(255, 230, 200));
 		Color_255_230_220.init(new Color(255, 230, 220));
-		Color_255_230_230.init(new Color(255, 230, 230));
 		Color_255_236_236.init(new Color(255, 236, 236));
 		Color_255_240_240.init(new Color(255, 240, 240));
 		Color_255_242_240.init(new Color(255, 242, 240));
@@ -473,7 +471,7 @@ public class Colors {
 	
 	public static void init() {
 		if (!timerIsInitialized) {
-			inDarkLAFMode = "true".equals(System.getProperty("darkLAF")); // TODO
+//			inDarkLAFMode = "true".equals(System.getProperty("darkLAF")); // TODO remove
 			if (inDarkLAFMode) {
 				Timer timer = new Timer(1000, e -> init());
 				timer.setInitialDelay(1000);
@@ -714,8 +712,4 @@ public class Colors {
 		}
 	}
 }
-
-
-//TODO
-//TODO connectiondialog: red-bg (empty mand.field) is ugly
 

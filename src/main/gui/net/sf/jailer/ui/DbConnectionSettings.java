@@ -462,11 +462,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 		boolean enabled = false;
 		boolean selected = true;
 		Color red;
-		if (pTextFieldBGColor != null && pTextFieldBGColor.getRed() + pTextFieldBGColor.getBlue() + pTextFieldBGColor.getGreen() < (256 * 3) / 2) {
-			red = Colors.Color_150_0_0;
-		} else {
-			red = DbConnectionDetailsEditor.RED;
-		}
+		red = DbConnectionDetailsEditor.RED;
 		for (int i = 0; i < pTextField.length; ++i) {
 			if (defaultButton[i].isVisible()) {
 				enabled |= defaultButton[i].isEnabled();
