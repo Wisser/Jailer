@@ -67,7 +67,7 @@ Thanks to the JDBC technology used, any DMBS is in principle supported. For best
 
 Use the installation file "Jailer-database-tools-n.n.n.msi" (for Windows) or "jailer-database-tools_n.n.n-x64.deb" (for Linux).
 
-Unless you want to use your own Java installation. Then unzip the file "jailer_n.n.n.zip". See also <a href="https://wisser.github.io/Jailer/faq.html#multiuser">https://wisser.github.io/Jailer/faq.html#multiuser</a>
+Unless you want to use your own Java installation. Or also if you want to use the command line interface (CLI). In this cases unzip the file "jailer_n.n.n.zip". See also <a href="https://wisser.github.io/Jailer/faq.html#multiuser">https://wisser.github.io/Jailer/faq.html#multiuser</a>
 
 To start the tool from the unpacked zip:
 
