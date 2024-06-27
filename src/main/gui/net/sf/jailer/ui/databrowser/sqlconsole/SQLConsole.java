@@ -4433,14 +4433,19 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		}
 	}
 	
+	private static boolean conTypeHadBG = false;
+	
 	public void updateConnectionType(ConnectionType connectionType) {
 		Color bg = connectionType == null? null : connectionType.getBackground();
 		if (bg == null) {
-			jToolBar1.setBackground(new JToolBar().getBackground());
-			jPanel5.setBackground(new JPanel().getBackground());
-			jToolBar1.setToolTipText(null);
-			jPanel5.setToolTipText(null);
+			if (conTypeHadBG) {
+				jToolBar1.setBackground(new JToolBar().getBackground());
+				jPanel5.setBackground(new JPanel().getBackground());
+				jToolBar1.setToolTipText(null);
+				jPanel5.setToolTipText(null);
+			}
 		} else {
+			conTypeHadBG = true;
 			jToolBar1.setBackground(bg);
 			jPanel5.setBackground(bg);
 			jToolBar1.setToolTipText(connectionType.displayName);

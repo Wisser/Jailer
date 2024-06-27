@@ -2180,7 +2180,8 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 
 	private boolean origL2Op;
 	private boolean origKnown = false;
-
+	private static boolean conTypeHadBG = false;
+	
 	private ConnectionInfo lastConnectionInfo = null;
 
 	@Override
@@ -2192,13 +2193,16 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		}
 		Color bg = connectionType != null ? connectionType.getBackground() : null;
 		if (bg == null) {
-			jToolBar1.setToolTipText(null);
-			jToolBar1.setBackground(new JToolBar().getBackground());
-			schemaNamePanel.setBackground(new JPanel().getBackground());
-			connectivityState.setBackground(new JLabel().getBackground());
-			legende2.setBackground(new JPanel().getBackground());
-			legende2.setOpaque(origL2Op);
+			if (conTypeHadBG) {
+				jToolBar1.setToolTipText(null);
+				jToolBar1.setBackground(new JToolBar().getBackground());
+				schemaNamePanel.setBackground(new JPanel().getBackground());
+				connectivityState.setBackground(new JLabel().getBackground());
+				legende2.setBackground(new JPanel().getBackground());
+				legende2.setOpaque(origL2Op);
+			}
 		} else {
+			conTypeHadBG = true;
 			jToolBar1.setToolTipText(connectionType.displayName);
 			jToolBar1.setBackground(bg);
 			schemaNamePanel.setBackground(bg);
