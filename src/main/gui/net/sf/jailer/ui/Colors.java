@@ -50,7 +50,7 @@ public class Colors {
 		Color_BrCoPa_TABLE_BG.init(new Color(0, 0, 0, 0), new Color(31, 39, 43));
 		Color_BrCoPa_StatusBG.init(new Color(0, 0, 0, 0), new Color(70, 73, 75));
 		GraphicalDataViewBackground.init(new Color(255, 255, 255), new Color(31, 39, 42));
-		Color_170_0_0.init(new Color(170, 0, 0), new Color(255, 120, 110));
+		Color_170_0_0.init(new Color(170, 0, 0), new Color(255, 130, 120));
 		Color_200_200_255.init(new Color(200, 200, 255), new Color(0, 0, 0));
 		Color_0_100_255.init(new Color(0, 100, 255), new Color(0, 176, 255));
 		Color_0_112_0.init(new Color(0, 112, 0), new Color(0, 215, 0));
