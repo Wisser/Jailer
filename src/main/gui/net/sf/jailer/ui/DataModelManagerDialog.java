@@ -2540,7 +2540,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         jPanel10.setBackground(/* Renaming also in *.form! */ Colors.Color_255_255_255);
         jPanel10.setLayout(new java.awt.GridBagLayout());
 
-        restoreButton.setFont(restoreButton.getFont().deriveFont(restoreButton.getFont().getSize()+5f));
+        restoreButton.setFont(restoreButton.getFont().deriveFont(restoreButton.getFont().getSize()+4f));
         restoreButton.setText("Restore");
         restoreButton.setFocusCycleRoot(true);
         gridBagConstraints = new java.awt.GridBagConstraints();

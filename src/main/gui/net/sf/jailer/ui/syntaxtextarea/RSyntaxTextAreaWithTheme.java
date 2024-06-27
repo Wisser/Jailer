@@ -34,6 +34,14 @@ import net.sf.jailer.util.LogUtil;
  */
 @SuppressWarnings("serial")
 public class RSyntaxTextAreaWithTheme extends RSyntaxTextArea {
+	
+	private Color currentLineHighlightColor;
+
+	@Override
+	public void setCurrentLineHighlightColor(Color color) {
+		currentLineHighlightColor = color;
+		super.setCurrentLineHighlightColor(color);
+	}
 
 	public RSyntaxTextAreaWithTheme() {
 		initTheme();
@@ -47,7 +55,7 @@ public class RSyntaxTextAreaWithTheme extends RSyntaxTextArea {
 
 	public void setGutter(Gutter gutter) {
 		this.gutter = gutter;
-		Color clhc = getCurrentLineHighlightColor();
+		Color clhc = currentLineHighlightColor;
 		boolean flhc = getFadeCurrentLineHighlight();
 		initTheme();
 		if (flhc) {
@@ -58,7 +66,7 @@ public class RSyntaxTextAreaWithTheme extends RSyntaxTextArea {
 
 	public void initTheme() {
 		try {
-			Color clhc = getCurrentLineHighlightColor();
+			Color clhc = currentLineHighlightColor;
 			boolean flhc = getFadeCurrentLineHighlight();
 			new Theme(this);
 			Theme t = Theme.load(getClass().getResourceAsStream(UIUtil.plaf == PLAF.FLATDARK?

@@ -81,6 +81,7 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.StringSearchPanel.AdditionalComponentFactory;
 import net.sf.jailer.ui.UIUtil.PLAF;
+import net.sf.jailer.ui.UIUtil.PlafAware;
 import net.sf.jailer.ui.pathfinder.HistoryPanel;
 import net.sf.jailer.ui.pathfinder.PathFinder;
 import net.sf.jailer.ui.pathfinder.PathFinder.Result;
@@ -95,7 +96,7 @@ import net.sf.jailer.util.SqlUtil;
  *
  * @author Ralf Wisser
  */
-public abstract class ClosureView extends javax.swing.JDialog {
+public abstract class ClosureView extends javax.swing.JDialog implements PlafAware {
 
 	/**
 	 * Number of tables in a closure-table's line.
@@ -331,18 +332,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		closureTable.setShowGrid(false);
 		closureTable.setSurrendersFocusOnKeystroke(true);
 		closureTable.getTableHeader().setReorderingAllowed(false);
-		if (UIUtil.plaf.isFlat) {
-			if (UIUtil.plaf == PLAF.FLAT) {
-				closureTable.getTableHeader().putClientProperty( "FlatLaf.style", "separatorColor: #fff; bottomSeparatorColor: #ccc" );
-        	} else {
-        		closureTable.getTableHeader().putClientProperty( "FlatLaf.style", "separatorColor: #46494B" );
-			}
-			try {
-				((DefaultTableCellRenderer) closureTable.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
-			} catch (Exception e) {
-				// ignore
-			}
-		}
+		onNewPlaf();
 		jScrollPane1.setViewportView(closureTable);
 
 		MouseListener ml = new MouseListener() {
@@ -620,6 +610,22 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		setLocation(100, 100);
 		UIUtil.setDialogSize(this, 500, 500);
 		setAlwaysOnTop(true);
+	}
+
+	@Override
+	public void onNewPlaf() {
+		if (UIUtil.plaf.isFlat) {
+			if (UIUtil.plaf == PLAF.FLAT) {
+				closureTable.getTableHeader().putClientProperty( "FlatLaf.style", "separatorColor: #fff; bottomSeparatorColor: #ccc" );
+        	} else {
+        		closureTable.getTableHeader().putClientProperty( "FlatLaf.style", "separatorColor: #46494B" );
+			}
+			try {
+				((DefaultTableCellRenderer) closureTable.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
+			} catch (Exception e) {
+				// ignore
+			}
+		}
 	}
 
 	protected String toolTip(String tableName, CellInfo theCellInfo) {

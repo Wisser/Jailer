@@ -472,7 +472,7 @@ public class Colors {
 	
 	public static void init() {
 		if (!timerIsInitialized) {
-			inDarkLAFMode = "true".equals(System.getProperty("darkLAF")); // TODO remove
+//			inDarkLAFMode = "true".equals(System.getProperty("darkLAF")); // TODO remove
 			if (inDarkLAFMode) {
 				Timer timer = new Timer(1000, e -> init());
 				timer.setInitialDelay(1000);
@@ -512,16 +512,23 @@ public class Colors {
 		}
 		
 		initColors();
-		for (Window w : Window.getWindows()) {
-			w.repaint();
-			UIUtil.traverse(w, null, c-> null, (c, o) -> null, (t, c) -> {
-				if (c instanceof PlafAware) {
-					((PlafAware) c).onNewPlaf();
-				} else if (c instanceof RSyntaxTextAreaWithTheme) {
-					((RSyntaxTextAreaWithTheme) c).initTheme();
+		UIUtil.invokeLater(() -> {
+			for (Window w : Window.getWindows()) {
+				UIUtil.traverse(w, null, c-> null, (c, o) -> null, (t, c) -> {
+					if (c instanceof PlafAware) {
+						((PlafAware) c).onNewPlaf();
+					} else if (c instanceof RSyntaxTextAreaWithTheme) {
+						((RSyntaxTextAreaWithTheme) c).initTheme();
+					}
+				});
+				w.repaint();
+			}
+			UIUtil.invokeLater(() -> {
+				for (Window w : Window.getWindows()) {
+					w.repaint();
 				}
 			});
-		}
+		});
 		
 		if (inDarkLAFMode) {
 			PrintWriter out;
