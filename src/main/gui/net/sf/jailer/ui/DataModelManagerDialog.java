@@ -209,7 +209,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				"Select a layout.");
 		UIUtil.replace(infoBarLabeRecUsedlBookmark, infoBarRecUsedBookmark);
 
-		restoreButton.setIcon(UIUtil.scaleIcon(restoreButton, histIcon, 1.15));
+		restoreButton.setIcon(UIUtil.scaleIcon(restoreButton, histIcon, 1.16));
 		okButton.setIcon(UIUtil.scaleIcon(jmOkButton, okIcon));
 		jmOkButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
 		jButton2.setIcon(UIUtil.scaleIcon(jButton2, cancelIcon));
@@ -2540,7 +2540,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         jPanel10.setBackground(/* Renaming also in *.form! */ Colors.Color_255_255_255);
         jPanel10.setLayout(new java.awt.GridBagLayout());
 
-        restoreButton.setFont(restoreButton.getFont().deriveFont(restoreButton.getFont().getSize()+4f));
+        restoreButton.setFont(restoreButton.getFont().deriveFont(restoreButton.getFont().getSize()+5f));
         restoreButton.setText("Restore");
         restoreButton.setFocusCycleRoot(true);
         gridBagConstraints = new java.awt.GridBagConstraints();

@@ -58,12 +58,18 @@ public class RSyntaxTextAreaWithTheme extends RSyntaxTextArea {
 
 	public void initTheme() {
 		try {
+			Color clhc = getCurrentLineHighlightColor();
+			boolean flhc = getFadeCurrentLineHighlight();
 			new Theme(this);
 			Theme t = Theme.load(getClass().getResourceAsStream(UIUtil.plaf == PLAF.FLATDARK?
 					"/net/sf/jailer/ui/resource/dark.xml" : "/org/fife/ui/rsyntaxtextarea/themes/default.xml"));
 			t.apply(this);
 			if (UIUtil.plaf == PLAF.FLATDARK) {
 				setBackground(Colors.GraphicalDataViewBackground);
+			}
+			if (flhc) {
+				setCurrentLineHighlightColor(clhc);
+				setFadeCurrentLineHighlight(flhc);
 			}
 		} catch (IOException e1) {
 			LogUtil.warn(e1);

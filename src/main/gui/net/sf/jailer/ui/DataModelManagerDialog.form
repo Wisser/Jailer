@@ -1005,7 +1005,7 @@
                                   <Properties>
                                     <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
                                       <FontInfo relative="true">
-                                        <Font component="restoreButton" property="font" relativeSize="true" size="4"/>
+                                        <Font component="restoreButton" property="font" relativeSize="true" size="5"/>
                                       </FontInfo>
                                     </Property>
                                     <Property name="text" type="java.lang.String" value="Restore"/>
