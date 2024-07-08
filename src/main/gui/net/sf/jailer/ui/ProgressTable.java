@@ -675,7 +675,7 @@ public class ProgressTable extends JTable {
 				++l;
 			}
 		}
-		Color bg = (l % 2 == 0) ? BG1 : BG2;
+		Color bg = (l % 2 != 0) ? BG1 : BG2;
 		while (!row.isEmpty()) {
 			Object[] rowO = new Object[MAX_TABLES_PER_LINE + 1];
 			boolean rowIsEmpty = true;

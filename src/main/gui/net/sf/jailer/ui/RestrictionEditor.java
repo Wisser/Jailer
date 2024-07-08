@@ -183,7 +183,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         ignore.setText("Disabled    ");
         jPanel1.add(ignore);
 
-        restrictedDependencyWarning.setForeground(/* Renaming also in *.form! */ Colors.Color_255_0_51);
+        restrictedDependencyWarning.setForeground(/* Renaming also in *.form! */ Colors.Color_255_0_0);
         restrictedDependencyWarning.setText("Restricted Dependency! ");
         jPanel1.add(restrictedDependencyWarning);
 

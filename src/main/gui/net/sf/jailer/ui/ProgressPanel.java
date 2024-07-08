@@ -104,9 +104,9 @@ public class ProgressPanel extends javax.swing.JPanel {
 		for (String tableName: rowsPerTable.keySet()) {
 			Color bgColor;
 			if (y % 2 == 0) {
-				bgColor = Colors.Color_240_255_255;
+				bgColor = UIUtil.TABLE_BACKGROUND_COLOR_1;
 			} else {
-				bgColor = Colors.Color_255_255_255;
+				bgColor = UIUtil.TABLE_BACKGROUND_COLOR_2;
 			}
 			JLabel l = createLabel(y, tableName, bgColor);
 			l.setText(" " + tableName + " ");
@@ -120,11 +120,7 @@ public class ProgressPanel extends javax.swing.JPanel {
 			rowsPerTablePanel.add(l, gridBagConstraints);
 
 			l = new JLabel("" + UIUtil.format(rowsPerTable.get(tableName)) + "  ");
-			if (y % 2 == 0) {
-				l.setBackground(Colors.Color_240_255_255);
-			} else {
-				l.setBackground(Colors.Color_255_255_255);
-			}
+			l.setBackground(bgColor);
 			l.setOpaque(true);
 			l.setFont(nonbold);
 			l.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);

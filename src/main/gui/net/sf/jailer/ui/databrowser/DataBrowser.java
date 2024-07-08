@@ -6980,6 +6980,18 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	@Override
 	public void onNewPlaf() {
 		updateStatusBar();
+		UIUtil.invokeLater(() -> {
+			try {
+				if (desktop != null) {
+					File tmpFile = Configuration.getInstance().createTempFile();
+					desktop.storeSession(tmpFile.toString());
+					desktop.restoreSession(null, this, tmpFile.toString(), true);
+					tmpFile.delete();
+				}
+			} catch (Exception e) {
+				UIUtil.showException(this, "Error", e, session);
+			}
+		});
 	}
 
 	private ImageIcon tableIcon;

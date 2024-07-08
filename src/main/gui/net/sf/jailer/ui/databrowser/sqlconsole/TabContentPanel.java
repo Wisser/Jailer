@@ -639,11 +639,11 @@ public class TabContentPanel extends javax.swing.JPanel {
 							}
 							if (incHeader && ((rotate ^ columnNamesInFirstRow)? (x == 0) : (y == 0))) {
 								if (colored) {
-									sb.append(" bgcolor=" + Colors.HTMLColor_eeeeff + "");
+									sb.append(" bgcolor=\"#eeeeff\"");
 								}
 							} else {
 								if (colored) {
-									sb.append(rowNum % 2 == 0? "" : " bgcolor=" + Colors.HTMLColor_eeffee + "");
+									sb.append(rowNum % 2 == 0? "" : " bgcolor=\"#eeffee\"");
 								}
 							}
 							if (aligned) {
@@ -708,7 +708,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 			}
 		}
 		if (html) {
-			sb.append("</body></table></html>");
+			sb.append("</table></body></html>");
 		} else if (cellsRendered == 1) {
 			sb = new StringBuilder(sb.toString().trim());
 		}

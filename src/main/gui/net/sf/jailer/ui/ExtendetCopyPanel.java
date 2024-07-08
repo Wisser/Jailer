@@ -633,9 +633,10 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         plainPanel.setLayout(new java.awt.BorderLayout());
         previewPanel.add(plainPanel, "plain");
 
-        jPanel3.setBackground(/* Renaming also in *.form! */ Colors.Color_255_255_255);
+        jPanel3.setBackground(java.awt.Color.white);
         jPanel3.setLayout(new java.awt.GridBagLayout());
 
+        formattedContentLabel.setForeground(new java.awt.Color(0, 0, 1));
         formattedContentLabel.setText("jLabel2");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1035,3 +1036,4 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 	// TODO offer other flavors: JSON, XML, ...
 	
 }
+

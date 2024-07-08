@@ -214,7 +214,8 @@ public class DataModel {
 	 */
 	public static class XmlSettings {
 		public String datePattern = "yyyy-MM-dd";
-		public String timestampPattern = "yyyy-MM-dd-HH.mm.ss";
+		public String timestampPattern = "yyyy-MM-dd-HH.mm.ss"; // TODO
+		// TODO ISO-8601
 		public String rootTag = "rowset";
 	}
 

@@ -489,7 +489,26 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
         scaledCancelIcon = UIUtil.scaleIcon(this, cancelIcon);
         cancelButton.setIcon(scaledCancelIcon);
-
+        cancelInStautusbarButton.setIcon(scaledCancelIcon);
+        
+        cancelButton.addPropertyChangeListener("enabled", e -> {
+        	if (cancelButton.isEnabled()) {
+        		Timer timer = new Timer(500, ev -> {
+        			cancelInStautusbarButton.setVisible(cancelButton.isEnabled());
+        		});
+        		timer.setRepeats(false);
+        		timer.start();
+        	} else {
+        		cancelInStautusbarButton.setVisible(false);
+        	}
+        });
+        cancelInStautusbarButton.setVisible(false);
+		cancelInStautusbarButton.addActionListener(e -> {
+			if (cancelButton.isEnabled()) {
+				cancelButton.doClick(0);
+			}
+		});
+       
         scaledExplainIcon = UIUtil.scaleIcon(this, explainIcon);
         explainButton.setIcon(scaledExplainIcon);
 
@@ -1773,6 +1792,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                        updateResultUI();
 	                        JPanel tp;
 							jTabbedPane1.setTabComponentAt(jTabbedPane1.indexOfComponent(rTabContainer), tp = getTitlePanel(jTabbedPane1, rTabContainer, tabContentPanel, title, rb));
+							tp.setToolTipText(tabContentPanel.statementLabel.getToolTipText());
+							tabContentPanel.statementLabel.addPropertyChangeListener("text", e -> tp.setToolTipText(tabContentPanel.statementLabel.getToolTipText()));
 							rowBrowserPerRTabContainer.put(rTabContainer, rb);
 							rowBrowserPerRTabContainer.put(tp, rb);
 	                        
@@ -2627,6 +2648,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         dummyLabel = new javax.swing.JLabel();
         continueButton = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
+        cancelInStautusbarButton = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jLabel2 = new javax.swing.JLabel();
@@ -2793,6 +2815,16 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         jPanel6.add(jPanel4, gridBagConstraints);
 
+        cancelInStautusbarButton.setText("Cancel");
+        cancelInStautusbarButton.setToolTipText("Cancel");
+        cancelInStautusbarButton.setFocusable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
+        jPanel6.add(cancelInStautusbarButton, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -2860,6 +2892,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
+    private javax.swing.JButton cancelInStautusbarButton;
     private javax.swing.JButton clearButton;
     private javax.swing.JPanel consoleContainerPanel;
     private javax.swing.JButton continueButton;
