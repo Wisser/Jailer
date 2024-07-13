@@ -466,7 +466,6 @@ public class Colors {
 	public static String HTMLColor_ff2222;
 	public static String HTMLColor_ff9999;
 	
-	
 	private static boolean timerIsInitialized = false;
 	private static boolean inDarkLAFMode = false;
 	
@@ -718,6 +717,11 @@ public class Colors {
 		public int getTransparency() {
 			return color.getTransparency();
 		}
+	}	
+	
+	static {
+		initColors();
 	}
+
 }
 
