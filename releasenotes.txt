@@ -1,3 +1,6 @@
+16.3.2
+  - Error messages were lost for errors that occur immediately on startup. (As the colour scheme of the new dark UI theme was initialized too late for this)
+
 16.3.1
   - Minor improvements to the color scheme of the new dark UI theme.
 
