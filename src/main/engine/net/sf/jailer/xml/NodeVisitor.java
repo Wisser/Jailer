@@ -51,8 +51,9 @@ public interface NodeVisitor {
 	 * Visits association element (namespace http://jailer.sf.net/association).
 	 * 
 	 * @param associationName the association name 
+	 * @param name element/field name
 	 */
-	void visitAssociationElement(String associationName);
+	void visitAssociationElement(String associationName, String name);
 
 	/**
 	 * Visits comment.

@@ -2830,7 +2830,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		args.add("-format");
 		args.add(scriptFormat.toString());
 		if (ScriptFormat.XML.equals(scriptFormat)) {
-			args.add("-xml");
 			args.add("-xml-root");
 			args.add(dataModel.getXmlSettings().rootTag);
 			args.add("-xml-date");
@@ -2838,13 +2837,26 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			args.add("-xml-timestamp");
 			args.add(dataModel.getXmlSettings().timestampPattern);
 		} else if (scriptFormat.isObjectNotation()) {
-			args.add(dataModel.getXmlSettings().rootTag);
 			args.add("-date-format");
 			args.add(dataModel.getXmlSettings().datePattern);
 			args.add("-timestamp-format");
 			args.add(dataModel.getXmlSettings().timestampPattern);
 		}
-
+		if (scriptFormat.isObjectNotation()) {
+			if (dataModel.getXmlSettings().singleRoot) {
+				args.add("-single-root");
+			}
+			if (dataModel.getXmlSettings().includeNonAggregated) {
+				args.add("-include-non-aggregated");
+			}
+			if (dataModel.getXmlSettings().ignoreNonAggregated) {
+				args.add("-ignore-non-aggregated");
+			}
+			if (dataModel.getXmlSettings().disallowNonAggregated) {
+				args.add("-disallow-non-aggregated");
+			}
+		}
+		
 		targetSchemaSet.clear();
 		StringBuilder schemaMapping = new StringBuilder();
 		for (String schema: schemaMappingFields.keySet()) {

@@ -34,26 +34,47 @@ public class CommandLine {
 	@Option(name="-UTF8",usage="use UTF-8 encoding")
 	public boolean uTF8 = false;
 
-	@Option(name="-format",usage="export file format: SQL, XML, DBUNIT_FLAT_XML, INTRA_DATABASE or LIQUIBASE_XML")
-	public String format = "SQL";
-
 	@Option(name="-target-dbms", usage="target-DBMS: ORACLE, MSSQL, DB2, MySQL, POSTGRESQL, SYBASE, SQLITE, HSQL or H2", metaVar="<DBMS>")
 	public String targetDBMS = null;
+
+	@Option(name="-format",usage="export file format: SQL, JSON, YAML, XML, DBUNIT_FLAT_XML, INTRA_DATABASE or LIQUIBASE_XML")
+	public String format = "SQL";
+
+	@Option(name="-date-format",usage="pattern for dates in JSON/YAML/XML and LIQUIBASE_XML export file",metaVar="pattern")
+	public String xmlDatePattern;
+
+	@Option(name="-time-format",usage="pattern for times in JSON/YAML/XML and LIQUIBASE_XML export file",metaVar="pattern")
+	public String xmlTimePattern;
+
+	@Option(name="-timestamp-format",usage="pattern for time-stamps in JSON/YAML/XML and LIQUIBASE_XML export file",metaVar="pattern")
+	public String xmlTimeStampPattern;
+	
+	@Option(name="-single-root",usage="allow only a single root/subject object to be written out into JSON/YAML/XML export file")
+	public boolean singleRoot;
+
+	@Option(name="-include-non-aggregated",usage="write out all objects that are not aggregated in any other object at root level into JSON/YAML/XML export file")
+	public boolean includeNonAggregated = true;
+	
+	@Option(name="-ignore-non-aggregated",usage="don't write out any object that are not aggregated in any other object into JSON/YAML/XML export file")
+	public boolean ignoreNonAggregated;
+	
+	@Option(name="-disallow-non-aggregated",usage="raise an error if there are objects that are not aggregated into any other object in JSON/YAML/XML export file")
+	public boolean disallowNonAggregated;
+	
+	@Option(name="-xml-root",usage="root tag of XML export file",metaVar="tag-name")
+	public String xmlRootTag = "root";
 
 	@Option(name="-xml",usage="export entities into XML file (deprecated, use -format XML instead)")
 	public boolean _asXml = false;
 
-	@Option(name="-xml-root",usage="root tag of XML export file",metaVar="tag-name")
-	public String xmlRootTag = "entities";
+	@Option(name="-xml-date",usage="(deprecated, use -date-format instead)",metaVar="pattern")
+	public String datePattern = "yyyy-MM-dd";
 
-	@Option(name="-xml-date",usage="pattern for dates in XML and LIQUIBASE_XML export file",metaVar="pattern")
-	public String xmlDatePattern = "yyyy-MM-dd";
+	@Option(name="-xml-time",usage="(deprecated, use -time-format instead)",metaVar="pattern")
+	public String timePattern = "HH.mm.ss";
 
-	@Option(name="-xml-time",usage="pattern for times in XML and LIQUIBASE_XML export file",metaVar="pattern")
-	public String xmlTimePattern = "HH.mm.ss";
-
-	@Option(name="-xml-timestamp",usage="pattern for time-stamps in XML and LIQUIBASE_XML export file",metaVar="pattern")
-	public String xmlTimeStampPattern = "yyyy-MM-dd-HH.mm.ss";
+	@Option(name="-xml-timestamp",usage="(deprecated, use -timestamp-format instead)",metaVar="pattern")
+	public String timeStampPattern = "yyyy-MM-dd-HH.mm.ss";
 
 	@Option(name="-e",usage="name of the export-script file (compressed if it ends with '.zip' or '.gz')", metaVar="export-script")
 	public String exportScriptFileName = null;

@@ -391,6 +391,17 @@ public class ExtractionModel {
 			dataModel.getXmlSettings().datePattern = cells.get(0);
 			dataModel.getXmlSettings().timestampPattern = cells.get(1);
 			dataModel.getXmlSettings().rootTag = cells.get(2);
+			if (cells.get(3).isEmpty()) {
+				dataModel.getXmlSettings().singleRoot = cells.get(2).isEmpty();
+				dataModel.getXmlSettings().includeNonAggregated = true;
+				dataModel.getXmlSettings().ignoreNonAggregated = false;
+				dataModel.getXmlSettings().disallowNonAggregated = false;
+			} else {
+				dataModel.getXmlSettings().singleRoot = Boolean.parseBoolean(cells.get(3));
+				dataModel.getXmlSettings().includeNonAggregated = Boolean.parseBoolean(cells.get(4));
+				dataModel.getXmlSettings().ignoreNonAggregated = Boolean.parseBoolean(cells.get(5));
+				dataModel.getXmlSettings().disallowNonAggregated = Boolean.parseBoolean(cells.get(6));
+			}
 		}
 
 		// read version

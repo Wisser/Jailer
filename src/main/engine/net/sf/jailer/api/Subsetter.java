@@ -386,6 +386,62 @@ public class Subsetter {
 	}
 
 	/**
+	 * @return allow only a single root/subject object to be written out into JSON/YAML/XML export file
+	 */
+	public boolean isSingleRoot() {
+		return executionContext.isSingleRoot();
+	}
+
+	/**
+	 * @param singleRoot allow only a single root/subject object to be written out into JSON/YAML/XML export file
+	 */
+	public void setSingleRoot(boolean singleRoot) {
+		executionContext.setSingleRoot(singleRoot);
+	}
+
+	/**
+	 * @return allow only a single root/subject object to be written out into JSON/YAML/XML export file
+	 */
+	public boolean isDisallowNonAggregated() {
+		return executionContext.isDisallowNonAggregated();
+	}
+
+	/**
+	 * @param disallowNonAggregated allow only a single root/subject object to be written out into JSON/YAML/XML export file
+	 */
+	public void setDisallowNonAggregated(boolean disallowNonAggregated) {
+		executionContext.setDisallowNonAggregated(disallowNonAggregated);
+	}
+
+	/**
+	 * @return write out all objects that are not aggregated in any other object at root level into JSON/YAML/XML export file
+	 */
+	public boolean isIncludeNonAggregated() {
+		return executionContext.isIncludeNonAggregated();
+	}
+
+	/**
+	 * @param includeNonAggregated write out all objects that are not aggregated in any other object at root level into JSON/YAML/XML export file
+	 */
+	public void setIncludeNonAggregated(boolean includeNonAggregated) {
+		executionContext.setIncludeNonAggregated(includeNonAggregated);
+	}
+
+	/**
+	 * @return don't write out any object that are not aggregated in any other object into JSON/YAML/XML export file
+	 */
+	public boolean isIgnoreNonAggregated() {
+		return executionContext.isIgnoreNonAggregated();
+	}
+
+	/**
+	 * @param ignoreNonAggregated don't write out any object that are not aggregated in any other object into JSON/YAML/XML export file
+	 */
+	public void setIgnoreNonAggregated(boolean ignoreNonAggregated) {
+		executionContext.setIgnoreNonAggregated(ignoreNonAggregated);
+	}
+
+	/**
 	 * Gets number of parallel threads (default is 1) to be used.
 	 *
 	 * @return number of threads (default is 1)

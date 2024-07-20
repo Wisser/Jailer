@@ -354,6 +354,37 @@ public class Table extends ModelElement implements Comparable<Table> {
 	 */
 	public void setXmlTemplate(String xmlTemplate) {
 		this.xmlTemplate = xmlTemplate;
+		
+		if (xmlTemplate != null) {
+			Document template;
+			try {
+				template = XmlUtil.parse(xmlTemplate);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+			
+			XmlUtil.visitDocumentNodes(template, new NodeVisitor() {
+				@Override
+				public void visitAssociationElement(String associationName, String name) {
+					if (name != null) {
+						associations.stream().filter(a -> associationName.equals(a.getName())).findAny().ifPresent(a -> a.setAggregationTagName(XmlUtil.asElementName(name)));
+					}
+				}
+				@Override
+				public void visitElementEnd(String elementName, boolean isRoot) {
+				}
+				@Override
+				public void visitText(String text) {
+				}
+				@Override
+				public void visitComment(String comment) {
+				}
+				@Override
+				public void visitElementStart(String elementName, boolean isRoot,
+						String[] attributeNames, String[] attributeValues) {
+				}
+			});
+		}
 	}
 
 	/**
@@ -368,13 +399,23 @@ public class Table extends ModelElement implements Comparable<Table> {
 	 */
 	public Document getXmlTemplateAsDocument(Quoting quoting) throws ParserConfigurationException, SAXException, IOException {
 		return getXmlTemplateAsDocument(xmlTemplate, quoting);
+		// TODO
+		// TODO quoting:
+		// TODO 	status quo: null if in GUI
+		// TODO 	should use " as quot-char in GUI
+		// TODO     whatabout MySQL/MariaBD? Requoting? How?
+		// TODO default-quoting("/caseIns.) + heuristic re-quoting in XmlRowWriter: if content like 'SQL:T."xy"' -> 'SQL:T.<requote('"xy"')
+		
+		// TODO
+		// TODO (in ColumnMappinfDialog?)
+		// TODO if template equals default-template when "ok"-button is clicked: remove template-def in extraction-model.csv (if it is saved afterwards)
 	}
 
 	/**
 	 * Gets default template for XML exports as DOM.
 	 */
 	public Document getDefaultXmlTemplate(Quoting quoting) throws ParserConfigurationException, SAXException, IOException {
-		return getXmlTemplateAsDocument(quoting);
+		return createInitialXmlTemplate(quoting);
 	}
 
 	/**
@@ -394,7 +435,7 @@ public class Table extends ModelElement implements Comparable<Table> {
 		final Set<String> mappedAssociations = new HashSet<String>();
 		XmlUtil.visitDocumentNodes(template, new NodeVisitor() {
 			@Override
-			public void visitAssociationElement(String associationName) {
+			public void visitAssociationElement(String associationName, String name) {
 				mappedAssociations.add(associationName);
 			}
 			@Override
@@ -415,9 +456,11 @@ public class Table extends ModelElement implements Comparable<Table> {
 		// add associations:
 		for (Association a: associations) {
 			if (a.getAggregationSchema() != AggregationSchema.NONE && !mappedAssociations.contains(a.getName())) {
-				Comment comment= template.createComment("associated " + a.destination.getUnqualifiedName() + (Cardinality.MANY_TO_ONE.equals(a.getCardinality()) || Cardinality.ONE_TO_ONE.equals(a.getCardinality())? " row" : " rows"));
+				Comment comment= template.createComment("associated " + a.destination.getUnqualifiedName() + (Cardinality.MANY_TO_ONE.equals(a.getCardinality()) || Cardinality.ONE_TO_ONE.equals(a.getCardinality())? " row" : " rows")
+						+ ". Attribute \"name\" is element name (XML) or field name (JSON/YAML) in the result file.");
 				template.getChildNodes().item(0).appendChild(comment);
 				Element associationElement = template.createElementNS(XmlUtil.NS_URI, XmlUtil.ASSOCIATION_TAG);
+				associationElement.setAttribute("name", a.getAggregationTagName());
 				associationElement.setPrefix(XmlUtil.NS_PREFIX);
 				associationElement.appendChild(template.createTextNode(a.getName()));
 				template.getChildNodes().item(0).appendChild(associationElement);
@@ -488,7 +531,7 @@ public class Table extends ModelElement implements Comparable<Table> {
 			}
 			Element columnElement = template.createElement(XmlUtil.asElementName(column.name.toLowerCase(Locale.ENGLISH)));
 			String quotedName = quoting != null? quoting.requote(column.name) : column.name;
-			if (!isPK) {
+			if (!isPK && column.isNullable) {
 				columnElement.setAttribute(XmlUtil.NS_PREFIX + ":if-not-null", XmlUtil.SQL_PREFIX + "T." + quotedName);
 			}
 			columnElement.setTextContent(XmlUtil.SQL_PREFIX + "T." + quotedName);

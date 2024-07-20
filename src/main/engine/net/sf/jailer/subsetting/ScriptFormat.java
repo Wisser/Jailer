@@ -25,41 +25,47 @@ public enum ScriptFormat {
 	/**
 	 * SQL DML.
 	 */
-	SQL("SQL", "SQL Export", ".sql", false),
+	SQL("SQL", "SQL Export", ".sql", false, false),
 
 	/**
 	 * Intra database export.
 	 */
-	INTRA_DATABASE("Schema in same database", "Intra Database Export - Receipt File", ".txt", false),
+	INTRA_DATABASE("Schema in same database", "Intra Database Export - Receipt File", ".txt", false, true),
 	
+	/**
+	 * Template based JSON.
+	 */
+	JSON("JSON", "JSON Export", ".json", true, false),
+
+	/**
+	 * Template based YAML.
+	 */
+	YAML("YAML", "YAML Export", ".yaml", true, false),
+
+	/**
+	 * Template based XML.
+	 */
+	XML("XML", "XML Export", ".xml", true, true),
+
 	/**
 	 * DbUnit's FlatXmlDataSet format.
 	 */
-	DBUNIT_FLAT_XML("DbUnit flat dataset", "DbUnit flat dataset Export", ".xml", false),
+	DBUNIT_FLAT_XML("DbUnit flat dataset", "DbUnit flat dataset Export", ".xml", false, false),
 	
 	
-	LIQUIBASE_XML("Liquibase", "Liquibase Export", ".xml", false),
-
-	/**
-	 * Template based XML.
-	 */
-	XML("XML", "XML Export", ".xml", true);
-
-	/**
-	 * Template based XML.
-	 */
-//	JSON("JSON", "JSON Export", ".json", true);
+	LIQUIBASE_XML("Liquibase", "Liquibase Export", ".xml", false, false);
 
 	/**
 	 * Constructor.
 	 * 
 	 * @param displayName human readable name
 	 */
-	private ScriptFormat(String displayName, String fileChooserTitle, String fileExtension, boolean isObjectNotation) {
+	private ScriptFormat(String displayName, String fileChooserTitle, String fileExtension, boolean isObjectNotation, boolean separatorFollowed) {
 		this.displayName = displayName;
 		this.fileChooserTitle = fileChooserTitle;
 		this.fileExtension = fileExtension;
 		this.isObjectNotation = isObjectNotation;
+		this.separatorFollowed = separatorFollowed;
 	}
 
 	/**
@@ -88,6 +94,11 @@ public enum ScriptFormat {
 	 * Is object notation format? (XML, jSON, YAML, ...)
 	 */
 	private final boolean isObjectNotation;
+	
+	/**
+	 * Is followed by separator in drop-down-list?
+	 */
+	public final boolean separatorFollowed;
 	
 	/**
 	 * Is object notation format) (XML, jSON, YAML, ...)

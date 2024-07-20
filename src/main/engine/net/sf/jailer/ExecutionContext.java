@@ -93,6 +93,10 @@ public class ExecutionContext {
 		this.upkDomain = other.upkDomain;
 		this.currentConnectionAlias = other.currentConnectionAlias;
 		this.limit = other.limit;
+		this.singleRoot = other.singleRoot;
+		this.includeNonAggregated = other.includeNonAggregated;
+		this.ignoreNonAggregated = other.ignoreNonAggregated;
+		this.disallowNonAggregated = other.disallowNonAggregated;
 // don't share progressListenerRegistry, was: this.progressListenerRegistry = other.progressListenerRegistry;
 	}
 
@@ -153,7 +157,7 @@ public class ExecutionContext {
 	 * @return root tag of XML export file
 	 */
 	public String getXmlRootTag() {
-		return xmlRootTag;
+		return xmlRootTag.isEmpty()? "root" : xmlRootTag;
 	}
 
 	/**
@@ -924,6 +928,74 @@ public class ExecutionContext {
 	// maximum allowed number of exported rows. If this limit is exceeded, the export aborts with an error.
 	private Long limit;
 	
+	// allow only a single root/subject object to be written out into JSON/YAML/XML export file
+	private boolean singleRoot;
+
+	/**
+	 * @return allow only a single root/subject object to be written out into JSON/YAML/XML export file
+	 */
+	public boolean isSingleRoot() {
+		return singleRoot;
+	}
+
+	/**
+	 * @param singleRoot allow only a single root/subject object to be written out into JSON/YAML/XML export file
+	 */
+	public void setSingleRoot(boolean singleRoot) {
+		this.singleRoot = singleRoot;
+	}
+
+	/**
+	 * @return allow only a single root/subject object to be written out into JSON/YAML/XML export file
+	 */
+	public boolean isDisallowNonAggregated() {
+		return disallowNonAggregated;
+	}
+
+	/**
+	 * @param disallowNonAggregated allow only a single root/subject object to be written out into JSON/YAML/XML export file
+	 */
+	public void setDisallowNonAggregated(boolean disallowNonAggregated) {
+		this.disallowNonAggregated = disallowNonAggregated;
+	}
+
+	// write out all objects that are not aggregated in any other object at root level into JSON/YAML/XML export file
+	private boolean includeNonAggregated = true;
+	
+	/**
+	 * @return write out all objects that are not aggregated in any other object at root level into JSON/YAML/XML export file
+	 */
+	public boolean isIncludeNonAggregated() {
+		return includeNonAggregated;
+	}
+
+	/**
+	 * @param includeNonAggregated write out all objects that are not aggregated in any other object at root level into JSON/YAML/XML export file
+	 */
+	public void setIncludeNonAggregated(boolean includeNonAggregated) {
+		this.includeNonAggregated = includeNonAggregated;
+	}
+
+	// don't write out any object that are not aggregated in any other object into JSON/YAML/XML export file
+	private boolean ignoreNonAggregated;
+	
+	/**
+	 * @return don't write out any object that are not aggregated in any other object into JSON/YAML/XML export file
+	 */
+	public boolean isIgnoreNonAggregated() {
+		return ignoreNonAggregated;
+	}
+
+	/**
+	 * @param ignoreNonAggregated don't write out any object that are not aggregated in any other object into JSON/YAML/XML export file
+	 */
+	public void setIgnoreNonAggregated(boolean ignoreNonAggregated) {
+		this.ignoreNonAggregated = ignoreNonAggregated;
+	}
+
+	// raise an error if there are objects that are not aggregated into any other object in JSON/YAML/XML export file
+	private boolean disallowNonAggregated;
+
 	// the folder where the local database will be stored. Default temp folder is used if this is not specified.
 	private String localDatabaseStorage = null;
 
@@ -1032,9 +1104,15 @@ public class ExecutionContext {
 		targetDBMS = commandLine.targetDBMS == null? null : DBMS.forDBMS(commandLine.targetDBMS);
 		_asXml = commandLine._asXml;
 		xmlRootTag = commandLine.xmlRootTag;
-		xmlDatePattern = commandLine.xmlDatePattern;
-		xmlTimePattern = commandLine.xmlTimePattern;
-		xmlTimeStampPattern = commandLine.xmlTimeStampPattern;
+		xmlDatePattern = commandLine.datePattern != null? commandLine.datePattern : commandLine.xmlDatePattern;
+		xmlTimePattern = commandLine.timePattern != null? commandLine.timePattern : commandLine.xmlTimePattern;
+		xmlTimeStampPattern = commandLine.timeStampPattern != null? commandLine.timeStampPattern : commandLine.xmlTimeStampPattern;
+		
+		singleRoot = commandLine.singleRoot;
+		includeNonAggregated = commandLine.includeNonAggregated;
+		ignoreNonAggregated = commandLine.ignoreNonAggregated;
+		disallowNonAggregated = commandLine.disallowNonAggregated;
+		
 		qualifyNames = commandLine.qualifyNames;
 		analyseAlias = commandLine.analyseAlias;
 		analyseSynonym = commandLine.analyseSynonym;

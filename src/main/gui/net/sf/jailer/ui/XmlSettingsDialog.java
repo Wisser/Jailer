@@ -21,10 +21,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.subsetting.ScriptFormat;
 
 /**
  * Dialog for XML settings.
@@ -38,6 +40,16 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
 		super(parent, true);
 		initComponents(); UIUtil.initComponents(this);
 		setModal(true);
+		
+		ButtonGroup buttonGroup = new ButtonGroup();
+		buttonGroup.add(singleRoot);
+		buttonGroup.add(multipleRoots);
+
+		buttonGroup = new ButtonGroup();
+		buttonGroup.add(include);
+		buttonGroup.add(ignore);
+		buttonGroup.add(disallow);
+		
 		UIUtil.setInitialWindowLocation(this, parent, 100, 150);
 		Ok.setIcon(UIUtil.scaleIcon(Ok, okIcon));
 		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
@@ -66,16 +78,25 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
 	 * Edits the XML settings of a data model.
 	 * 
 	 * @param dataModel the data model
+	 * @param scriptFormat 
 	 * @return <code>true</code> iff settings are changed
 	 */
-	public boolean edit(DataModel dataModel) {
+	public boolean edit(DataModel dataModel, ScriptFormat scriptFormat) {
 		DataModel.XmlSettings xmlSettings = dataModel.getXmlSettings();
 		
 		datePattern.getEditor().setItem(xmlSettings.datePattern);
 		timestampPattern.getEditor().setItem(xmlSettings.timestampPattern);
 		rootTag.setText(xmlSettings.rootTag);
-		noRootTag.setSelected("".equals(xmlSettings.rootTag));
-		rootTag.setEditable(!"".equals(xmlSettings.rootTag));
+		
+		rootTag.setVisible(scriptFormat == ScriptFormat.XML);
+		xmlRootTagLabel.setVisible(scriptFormat == ScriptFormat.XML);
+		
+		multipleRoots.setSelected(!xmlSettings.singleRoot);
+		singleRoot.setSelected(xmlSettings.singleRoot);
+		ignore.setSelected(xmlSettings.ignoreNonAggregated);
+		include.setSelected(xmlSettings.includeNonAggregated);
+		disallow.setSelected(xmlSettings.disallowNonAggregated);
+		rootTag.setEditable(!xmlSettings.singleRoot);
 		updateExamples();
 		
 		okClicked = false;
@@ -85,8 +106,8 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
 			String newDatePattern = datePattern.getEditor().getItem().toString();
 			String newTimestampPattern = timestampPattern.getEditor().getItem().toString();
 			String newRootTag = rootTag.getText().trim();
-			if (noRootTag.isSelected()) {
-				newRootTag = "";
+			if (newRootTag.isEmpty()) {
+				newRootTag = "root";
 			}
 			if (!newDatePattern.equals(xmlSettings.datePattern)) {
 				xmlSettings.datePattern = newDatePattern;
@@ -98,6 +119,22 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
 			}
 			if (!newRootTag.equals(xmlSettings.rootTag)) {
 				xmlSettings.rootTag = newRootTag;
+				change = true;
+			}
+			if (singleRoot.isSelected() != xmlSettings.singleRoot) {
+				xmlSettings.singleRoot = singleRoot.isSelected();
+				change = true;
+			}
+			if (ignore.isSelected() != xmlSettings.ignoreNonAggregated) {
+				xmlSettings.ignoreNonAggregated = ignore.isSelected();
+				change = true;
+			}
+			if (include.isSelected() != xmlSettings.includeNonAggregated) {
+				xmlSettings.includeNonAggregated = include.isSelected();
+				change = true;
+			}
+			if (disallow.isSelected() != xmlSettings.disallowNonAggregated) {
+				xmlSettings.disallowNonAggregated = disallow.isSelected();
 				change = true;
 			}
 			return change;
@@ -183,16 +220,23 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
+        xmlRootTagLabel = new javax.swing.JLabel();
         datePattern = new javax.swing.JComboBox();
         timestampPattern = new javax.swing.JComboBox();
         rootTag = new javax.swing.JTextField();
         dateExample = new javax.swing.JLabel();
         timestampExample = new javax.swing.JLabel();
-        noRootTag = new javax.swing.JCheckBox();
+        multipleRoots = new javax.swing.JCheckBox();
         jPanel2 = new javax.swing.JPanel();
         Ok = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
+        xmlRootTagLabel1 = new javax.swing.JLabel();
+        singleRoot = new javax.swing.JCheckBox();
+        include = new javax.swing.JCheckBox();
+        xmlRootTagLabel2 = new javax.swing.JLabel();
+        xmlRootTagLabel3 = new javax.swing.JLabel();
+        ignore = new javax.swing.JCheckBox();
+        disallow = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("XML Settings");
@@ -213,7 +257,7 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         jPanel3.add(jLabel1, gridBagConstraints);
 
-        jLabel2.setText("Timestamp pattern ");
+        jLabel2.setText("Timestamp pattern  ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = 10;
@@ -221,13 +265,13 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         jPanel3.add(jLabel2, gridBagConstraints);
 
-        jLabel3.setText("Root tag");
+        xmlRootTagLabel.setText("Root tag (XML)");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = 15;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        jPanel3.add(jLabel3, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
+        jPanel3.add(xmlRootTagLabel, gridBagConstraints);
 
         datePattern.setEditable(true);
         datePattern.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Eintrag 1", "Eintrag 2", "Eintrag 3", "Eintrag 4" }));
@@ -272,6 +316,7 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
         jPanel3.add(timestampPattern, gridBagConstraints);
 
         rootTag.setText("jTextField1");
+        rootTag.setToolTipText("Name of the top-level element in the XML export file. Only relevant if “Multiple Objects (Array)” is selected.");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 10;
         gridBagConstraints.gridy = 15;
@@ -279,7 +324,7 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
         jPanel3.add(rootTag, gridBagConstraints);
 
         dateExample.setText("jLabel4");
@@ -298,17 +343,19 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 8);
         jPanel3.add(timestampExample, gridBagConstraints);
 
-        noRootTag.setText("no root tag");
-        noRootTag.addItemListener(new java.awt.event.ItemListener() {
+        multipleRoots.setText("Single Object");
+        multipleRoots.setToolTipText("<html>Writes a single root/subject object with all its aggregated sub-objects. <br>The export process fails if more than one such object exists.</html>");
+        multipleRoots.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                noRootTagItemStateChanged(evt);
+                multipleRootsItemStateChanged(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 10;
         gridBagConstraints.gridy = 20;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        jPanel3.add(noRootTag, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
+        jPanel3.add(multipleRoots, gridBagConstraints);
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
@@ -348,6 +395,82 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 2, 0);
         jPanel3.add(jPanel2, gridBagConstraints);
 
+        xmlRootTagLabel1.setText("Root content");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 20;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
+        jPanel3.add(xmlRootTagLabel1, gridBagConstraints);
+
+        singleRoot.setText("Multiple Objects (Array)");
+        singleRoot.setToolTipText("<html>Writes an array/collection of all root/subject objects with all their aggregated sub-objects.</html>");
+        singleRoot.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                singleRootItemStateChanged(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 10;
+        gridBagConstraints.gridy = 22;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        jPanel3.add(singleRoot, gridBagConstraints);
+
+        include.setText("Include");
+        include.setToolTipText("Write out all objects that are not aggregated in any other object at root level.");
+        include.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                includeItemStateChanged(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 10;
+        gridBagConstraints.gridy = 24;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
+        jPanel3.add(include, gridBagConstraints);
+
+        xmlRootTagLabel2.setText("objects");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 25;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel3.add(xmlRootTagLabel2, gridBagConstraints);
+
+        xmlRootTagLabel3.setText("Non-aggregated ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 24;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
+        jPanel3.add(xmlRootTagLabel3, gridBagConstraints);
+
+        ignore.setText("Ignore");
+        ignore.setToolTipText("Ignore all objects that are not aggregated in any other object.");
+        ignore.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                ignoreItemStateChanged(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 10;
+        gridBagConstraints.gridy = 25;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        jPanel3.add(ignore, gridBagConstraints);
+
+        disallow.setText("Disallow");
+        disallow.setToolTipText("Raise an error if there are objects that are not aggregated into any other object.");
+        disallow.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                disallowItemStateChanged(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 10;
+        gridBagConstraints.gridy = 26;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        jPanel3.add(disallow, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -381,29 +504,52 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
 		setVisible(false);
 	}//GEN-LAST:event_OkActionPerformed
 
-	private void noRootTagItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_noRootTagItemStateChanged
-		rootTag.setEditable(!noRootTag.isSelected());
-	}//GEN-LAST:event_noRootTagItemStateChanged
-
 	private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
 		dispose();
 	}//GEN-LAST:event_cancelButtonActionPerformed
+
+    private void multipleRootsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_multipleRootsItemStateChanged
+        rootTag.setEditable(!multipleRoots.isSelected());
+    }//GEN-LAST:event_multipleRootsItemStateChanged
+
+    private void singleRootItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_singleRootItemStateChanged
+        // TODO add your handling code here:
+    }//GEN-LAST:event_singleRootItemStateChanged
+
+    private void includeItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_includeItemStateChanged
+        // TODO add your handling code here:
+    }//GEN-LAST:event_includeItemStateChanged
+
+    private void ignoreItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_ignoreItemStateChanged
+        // TODO add your handling code here:
+    }//GEN-LAST:event_ignoreItemStateChanged
+
+    private void disallowItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_disallowItemStateChanged
+        // TODO add your handling code here:
+    }//GEN-LAST:event_disallowItemStateChanged
 	
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Ok;
     private javax.swing.JButton cancelButton;
     private javax.swing.JLabel dateExample;
     private javax.swing.JComboBox datePattern;
+    private javax.swing.JCheckBox disallow;
+    private javax.swing.JCheckBox ignore;
+    private javax.swing.JCheckBox include;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JCheckBox noRootTag;
+    private javax.swing.JCheckBox multipleRoots;
     private javax.swing.JTextField rootTag;
+    private javax.swing.JCheckBox singleRoot;
     private javax.swing.JLabel timestampExample;
     private javax.swing.JComboBox timestampPattern;
+    private javax.swing.JLabel xmlRootTagLabel;
+    private javax.swing.JLabel xmlRootTagLabel1;
+    private javax.swing.JLabel xmlRootTagLabel2;
+    private javax.swing.JLabel xmlRootTagLabel3;
     // End of variables declaration//GEN-END:variables
 	
 	private static ImageIcon okIcon;

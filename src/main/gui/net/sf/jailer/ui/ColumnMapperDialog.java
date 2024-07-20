@@ -82,7 +82,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 				 try {
 					 if (table != null) {
 						 table = dataModel.getTableByDisplayName((String) tableCombobox.getSelectedItem());
-						 mappingField.setText(XmlUtil.build(table.getXmlTemplateAsDocument(null)));
+						 setMappingFieldText(XmlUtil.build(table.getXmlTemplateAsDocument(null)));
 						 mappingField.discardAllEdits();
 					 }
 				 } catch (Exception ex) {
@@ -115,14 +115,14 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 					Math.max(0, parent.getY() + parent.getHeight() / 2 - h / 2));
 		invalidate();
 		try {
-			mappingField.setText(XmlUtil.build(table.getXmlTemplateAsDocument(null)));
+			setMappingFieldText(XmlUtil.build(table.getXmlTemplateAsDocument(null)));
 			initialTemplate = mappingField.getText();
 		} catch (Exception e) {
 			try {
 				// try again with default template,
 				// there was a bug in Jailer 3.0 which causes corruption of XML templates
 				// on windows platform
-				mappingField.setText(XmlUtil.build(table.getDefaultXmlTemplate(null)));
+				setMappingFieldText(XmlUtil.build(table.getDefaultXmlTemplate(null)));
 			} catch (Exception e2) {
 				UIUtil.showException(parent, "Error", e);
 				return false;
@@ -252,9 +252,10 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 
 	private void resetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetButtonActionPerformed
 		try {
-			Document doc = table.getDefaultXmlTemplate(null);
-			mappingField.setText(XmlUtil.build(doc));
-			mappingField.discardAllEdits();
+			mappingField.beginAtomicEdit();
+			setMappingFieldText(XmlUtil.build(table.getXmlTemplateAsDocument(null)));
+			mappingField.endAtomicEdit();
+			mappingField.grabFocus();
 		} catch (Exception e) {
 			UIUtil.showException(parent, "Syntax Error", e);
 		}
@@ -263,8 +264,10 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 	private void formatButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_formatButtonActionPerformed
 		try {
 			Document doc = XmlUtil.parse(mappingField.getText());
-			mappingField.setText(XmlUtil.build(doc));
-			mappingField.discardAllEdits();
+			mappingField.beginAtomicEdit();
+			setMappingFieldText(XmlUtil.build(doc));
+			mappingField.endAtomicEdit();
+			mappingField.grabFocus();
 		} catch (Exception e) {
 			UIUtil.showException(parent, "Syntax Error", e, UIUtil.EXCEPTION_CONTEXT_USER_ERROR);
 		}
@@ -278,7 +281,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 	private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
 		try {
 			Document doc = XmlUtil.parse(mappingField.getText());
-			mappingField.setText(XmlUtil.build(doc));
+			setMappingFieldText(XmlUtil.build(doc));
 			if (!initialTemplate.equals(mappingField.getText())) {
 				table.setXmlTemplate(mappingField.getText());
 				ok = true;
@@ -291,7 +294,12 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 		}
 	}//GEN-LAST:event_okButtonActionPerformed
 	
-    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private void setMappingFieldText(String text) {
+		mappingField.setText(text.replace("\r", ""));
+		mappingField.setCaretPosition(0);
+	}
+
+	// Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
     private javax.swing.JButton formatButton;
     private javax.swing.JLabel jLabel1;
@@ -317,3 +325,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
     
 	private static final long serialVersionUID = -5437578641818236294L;
 }
+
+// TODO 
+// TODO no timer. "auto update" checkbox + "update" button in dialog. + stale-indication. initially check checkbox iff template is small (heuristically, maybe if size < 10000 char?)
+// TODO was: show sketch. use timer for preventing lags bcof expensive sketch creation (1000+ column templates f.e.)

@@ -132,6 +132,12 @@ public class RestrictionEditor extends javax.swing.JPanel {
         jPanel5 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         joinCondition = new javax.swing.JLabel();
+        xPanel = new javax.swing.JPanel();
+        xMappingLabel = new javax.swing.JLabel();
+        xAggregateCheckBox = new javax.swing.JCheckBox();
+        xMappingButton = new javax.swing.JButton();
+        aggTypejLabel = new javax.swing.JLabel();
+        aggTypePanel = new javax.swing.JPanel();
         jPanel6 = new javax.swing.JPanel();
 
         joinCondition2.setEditable(false);
@@ -160,7 +166,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         jPanel3.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 44;
         gridBagConstraints.gridwidth = 10;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
@@ -180,11 +186,15 @@ public class RestrictionEditor extends javax.swing.JPanel {
         jPanel1.setOpaque(false);
         jPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
 
+        ignore.setBackground(Colors.Color_NeigbBG);
         ignore.setText("Disabled    ");
+        ignore.setOpaque(true);
         jPanel1.add(ignore);
 
+        restrictedDependencyWarning.setBackground(Colors.Color_NeigbBG);
         restrictedDependencyWarning.setForeground(/* Renaming also in *.form! */ Colors.Color_255_0_0);
         restrictedDependencyWarning.setText("Restricted Dependency! ");
+        restrictedDependencyWarning.setOpaque(true);
         jPanel1.add(restrictedDependencyWarning);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -198,7 +208,9 @@ public class RestrictionEditor extends javax.swing.JPanel {
         jPanel8.setOpaque(false);
         jPanel8.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
 
+        restricted.setBackground(Colors.Color_NeigbBG);
         restricted.setText("Enabled. Restricted by   ");
+        restricted.setOpaque(true);
         jPanel8.add(restricted);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -227,8 +239,10 @@ public class RestrictionEditor extends javax.swing.JPanel {
         jPanel10.setOpaque(false);
         jPanel10.setLayout(new java.awt.GridBagLayout());
 
+        fkToNullCheckBox.setBackground(Colors.Color_NeigbBG);
         fkToNullCheckBox.setText("Set foreign key columns to null ");
         fkToNullCheckBox.setToolTipText("<html><i>on Export</i>: Set all foreign keys to null to which the row with the corresponding primary key is not exported. <br><hr>\n<i>on Delete</i>: Set all foreign keys in the rows that cannot be deleted to null when the row with the corresponding primary key is deleted.</html>");
+        fkToNullCheckBox.setOpaque(true);
         fkToNullCheckBox.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentShown(java.awt.event.ComponentEvent evt) {
                 fkToNullCheckBoxComponentShown(evt);
@@ -254,8 +268,10 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         jPanel10.add(jLabel5, gridBagConstraints);
 
+        fk20DisabledHintLabel.setBackground(Colors.Color_NeigbBG);
         fk20DisabledHintLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_255_0_0);
         fk20DisabledHintLabel.setText("(Foreign key is not nullable)");
+        fk20DisabledHintLabel.setOpaque(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
@@ -288,29 +304,43 @@ public class RestrictionEditor extends javax.swing.JPanel {
         jPanel4.setOpaque(false);
         jPanel4.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 4, 0));
 
+        source.setBackground(Colors.Color_NeigbBG);
         source.setFont(source.getFont().deriveFont(source.getFont().getStyle() | java.awt.Font.BOLD, source.getFont().getSize()+1));
         source.setText("jLabel3");
+        source.setOpaque(true);
         jPanel4.add(source);
 
+        jLabel2.setBackground(Colors.Color_NeigbBG);
         jLabel2.setText("A");
+        jLabel2.setOpaque(true);
         jPanel4.add(jLabel2);
 
+        type.setBackground(Colors.Color_NeigbBG);
         type.setFont(type.getFont().deriveFont(type.getFont().getSize()+1f));
         type.setText("jLabel3");
+        type.setOpaque(true);
         jPanel4.add(type);
 
+        cardinality.setBackground(Colors.Color_NeigbBG);
         cardinality.setFont(cardinality.getFont().deriveFont(cardinality.getFont().getSize()+1f));
         cardinality.setText("jLabel3");
+        cardinality.setOpaque(true);
         jPanel4.add(cardinality);
 
+        destination.setBackground(Colors.Color_NeigbBG);
         destination.setFont(destination.getFont().deriveFont(destination.getFont().getStyle() | java.awt.Font.BOLD, destination.getFont().getSize()+1));
         destination.setText("jLabel3");
+        destination.setOpaque(true);
         jPanel4.add(destination);
 
+        jLabel3.setBackground(Colors.Color_NeigbBG);
         jLabel3.setText("B");
+        jLabel3.setOpaque(true);
         jPanel4.add(jLabel3);
 
+        jLabel6.setBackground(Colors.Color_NeigbBG);
         jLabel6.setText("as");
+        jLabel6.setOpaque(true);
         jPanel4.add(jLabel6);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -323,11 +353,14 @@ public class RestrictionEditor extends javax.swing.JPanel {
         jPanel5.setOpaque(false);
         jPanel5.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 4, 0));
 
+        jLabel1.setBackground(Colors.Color_NeigbBG);
         jLabel1.setText("on");
         jPanel5.add(jLabel1);
 
+        joinCondition.setBackground(Colors.Color_NeigbBG);
         joinCondition.setFont(joinCondition.getFont().deriveFont(joinCondition.getFont().getSize()+1f));
         joinCondition.setText("jLabel5");
+        joinCondition.setOpaque(true);
         jPanel5.add(joinCondition);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -337,6 +370,65 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 18, 0, 0);
         jPanel2.add(jPanel5, gridBagConstraints);
+
+        xPanel.setOpaque(false);
+        xPanel.setLayout(new java.awt.GridBagLayout());
+
+        xMappingLabel.setBackground(Colors.Color_NeigbBG);
+        xMappingLabel.setFont(xMappingLabel.getFont().deriveFont(xMappingLabel.getFont().getStyle() | java.awt.Font.BOLD, xMappingLabel.getFont().getSize()+1));
+        xMappingLabel.setText(" ? Mapping");
+        xMappingLabel.setOpaque(true);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 12;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        xPanel.add(xMappingLabel, gridBagConstraints);
+
+        xAggregateCheckBox.setBackground(Colors.Color_NeigbBG);
+        xAggregateCheckBox.setText("Aggregate");
+        xAggregateCheckBox.setOpaque(true);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 20, 6, 0);
+        xPanel.add(xAggregateCheckBox, gridBagConstraints);
+
+        xMappingButton.setText("Column Mapping");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 40, 0, 0);
+        xPanel.add(xMappingButton, gridBagConstraints);
+
+        aggTypejLabel.setText(" as ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 20, 8, 4);
+        xPanel.add(aggTypejLabel, gridBagConstraints);
+
+        aggTypePanel.setOpaque(false);
+        aggTypePanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
+        xPanel.add(aggTypePanel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 40;
+        gridBagConstraints.gridwidth = 20;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(16, 0, 8, 0);
+        jPanel2.add(xPanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -372,6 +464,8 @@ public class RestrictionEditor extends javax.swing.JPanel {
     }//GEN-LAST:event_fkToNullCheckBoxComponentShown
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    public javax.swing.JPanel aggTypePanel;
+    public javax.swing.JLabel aggTypejLabel;
     public javax.swing.JButton apply;
     public javax.swing.JLabel cardinality;
     javax.swing.JLabel columnsA;
@@ -387,7 +481,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel10;
+    public javax.swing.JPanel jPanel10;
     public javax.swing.JPanel jPanel11;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -405,6 +499,10 @@ public class RestrictionEditor extends javax.swing.JPanel {
     public javax.swing.JTextField restriction;
     public javax.swing.JLabel source;
     public javax.swing.JLabel type;
+    public javax.swing.JCheckBox xAggregateCheckBox;
+    public javax.swing.JButton xMappingButton;
+    public javax.swing.JLabel xMappingLabel;
+    public javax.swing.JPanel xPanel;
     // End of variables declaration//GEN-END:variables
 	
 	private static final long serialVersionUID = -6735468124049608700L;

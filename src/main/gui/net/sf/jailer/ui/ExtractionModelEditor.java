@@ -63,6 +63,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -70,6 +71,9 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -108,8 +112,11 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import org.apache.commons.lang3.stream.Streams;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+
+import com.fasterxml.jackson.annotation.JsonTypeInfo.None;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.BasicDataSource;
@@ -129,6 +136,8 @@ import net.sf.jailer.extractionmodel.SubjectLimitDefinition;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.ui.StringSearchPanel.StringSearchDialog;
+import net.sf.jailer.ui.UIUtil.PLAF;
+import net.sf.jailer.ui.UIUtil.PlafAware;
 import net.sf.jailer.ui.commandline.CommandLineInstance;
 import net.sf.jailer.ui.databrowser.BrowserContentCellEditor;
 import net.sf.jailer.ui.databrowser.whereconditioneditor.WhereConditionEditorPanel;
@@ -153,7 +162,7 @@ import net.sf.jailer.util.SqlUtil;
  *
  * @author Ralf Wisser
  */
-public class ExtractionModelEditor extends javax.swing.JPanel {
+public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAware {
 
 	/**
 	 * Editor for single restriction.
@@ -703,6 +712,15 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		}
 		// condition.setFont(UIUtil.getSQLEditorFont());
 		restrictionEditor.restriction.setFont(UIUtil.getSQLEditorFont());
+		restrictionEditor.xMappingButton.addActionListener(e -> {
+			if (currentAssociation != null) {
+				openColumnMapper(currentAssociation.destination);
+			}
+		});
+		restrictionEditor.xAggregateCheckBox.addActionListener(e -> {
+			onXAggregateCheckboxAction(currentAssociation, restrictionEditor.xAggregateCheckBox);
+			initAggregationCombobox();
+		});
 		
 		if (UIUtil.plaf.isFlat) {
 			sm.setVisible(false);
@@ -915,9 +933,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			}
 		});
 
-		needsSave = saveNeedsSave;
-		extractionModelFrame.updateTitle(needsSave);
-
 		try {
 			if (dataModel != null) {
 				ScriptFormat f = ScriptFormat.valueOf(dataModel.getExportModus());
@@ -929,14 +944,30 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			// ignore
 		}
 
-		DefaultComboBoxModel formatComboBoxModel = new DefaultComboBoxModel(ScriptFormat.values());
-
+		DefaultComboBoxModel formatComboBoxModel = new DefaultComboBoxModel();
+		Streams.of(ScriptFormat.values()).forEach(sf -> {
+			formatComboBoxModel.addElement(sf);
+			if (sf.separatorFollowed) {
+				formatComboBoxModel.addElement(null);
+			}
+		});
+		
 		exportFormat.setModel(formatComboBoxModel);
 		exportFormat.setRenderer(new DefaultListCellRenderer() {
 			ListCellRenderer renderer = exportFormat.getRenderer();
 			@Override
 			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-				return renderer.getListCellRendererComponent(list, ((ScriptFormat) value).getDisplayName(), index, isSelected, cellHasFocus);
+				if (value == null && index > 0) {
+					JSeparator sep = new JSeparator(JSeparator.HORIZONTAL);
+					if (UIUtil.plaf == PLAF.FLATDARK) {
+						sep.setForeground(Color.LIGHT_GRAY);
+					}
+					return sep;
+				}
+				if (value == null) {
+					value = scriptFormat;
+				}
+				return renderer.getListCellRendererComponent(list, value == null? "" : ((ScriptFormat) value).getDisplayName(), index, isSelected, cellHasFocus);
 			}
 			private static final long serialVersionUID = 2393022320508863837L;
 		});
@@ -948,6 +979,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		connectivityState.setText(connectionState);
 		connectivityState.setToolTipText(connectionStateToolTip);
 		connectivityState.setIcon(dbmsLogo);
+
+		needsSave = saveNeedsSave;
+		extractionModelFrame.updateTitle(needsSave);
 
 		if (dataModel != null) {
 			String modelname = "Data Model \"" + dataModel.getName() + "\"";
@@ -1096,6 +1130,15 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		updateLeftButton();
 		updateAdditionalSubjectsButton();
 		UIUtil.invokeLater(() -> checkShowIgnored(null));
+	}
+
+	public void onXAggregateCheckboxAction(Association association, AbstractButton checkBox) {
+		if (association != null) {
+			AggregationSchema aggregationSchema = checkBox.isSelected()? AggregationSchema.IMPLICIT_LIST : AggregationSchema.NONE;
+			if ((association.reversalAssociation.getAggregationSchema() == AggregationSchema.NONE) != (aggregationSchema == AggregationSchema.NONE)) {
+				setAggregationSchema(association.reversalAssociation, aggregationSchema);
+			}
+		}
 	}
 
 	private WhereConditionEditorPanel whereConditionEditorPanel;
@@ -1415,7 +1458,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			editorPanel.add(panel2);
 			((GridLayout) editorPanel.getLayout()).setVgap(1);
 			((GridLayout) editorPanel.getLayout()).setColumns(1);
-			if (scriptFormat.isObjectNotation()) {
+			if (false && scriptFormat.isObjectNotation()) { // TODO
 				gridBagConstraints = new java.awt.GridBagConstraints();
 				gridBagConstraints.gridx = 0;
 				gridBagConstraints.gridy = 3;
@@ -1808,7 +1851,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         exportFormat.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         exportFormat.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                onExportModusChanged(evt);
+            	if (exportFormat.getSelectedItem() == null) {
+            		UIUtil.invokeLater(() -> exportFormat.setSelectedItem(scriptFormat));
+            	} else {
+            		onExportModusChanged(evt);
+            	}
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -2243,7 +2290,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		if (xmlSettingsDialog == null) {
 			 xmlSettingsDialog = new XmlSettingsDialog(extractionModelFrame);
 		}
-		if (xmlSettingsDialog.edit(dataModel)) {
+		if (xmlSettingsDialog.edit(dataModel, scriptFormat)) {
 			markDirty();
 		}
 	}//GEN-LAST:event_openXmlSettingsActionPerformed
@@ -2259,14 +2306,21 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		}
 	}//GEN-LAST:event_aggregationComboboxActionPerformed
 
-	private void setAggregationSchema(final Association association, AggregationSchema aggregationSchema) {
-		final AggregationSchema old = currentAssociation.getAggregationSchema();
-		currentAssociation.setAggregationSchema(aggregationSchema);
+	private void setAggregationSchema(Association association, AggregationSchema aggregationSchema) {
+		AggregationSchema old = association.getAggregationSchema();
+		AggregationSchema revOld = association.reversalAssociation.getAggregationSchema();
+		if (revOld != AggregationSchema.NONE && aggregationSchema != AggregationSchema.NONE) {
+			association.reversalAssociation.setAggregationSchema(AggregationSchema.NONE);
+		}
+		association.setAggregationSchema(aggregationSchema);
 		markDirty();
 		updateSketch();
 		undoManager.push(new CompensationAction(1, "changed aggregation", "changed aggregation", dataModel.getDisplayName(association.destination)) {
 			@Override
 			public void run() {
+				if (revOld != AggregationSchema.NONE && aggregationSchema != AggregationSchema.NONE) {
+					association.reversalAssociation.setAggregationSchema(revOld);
+				}
 				setAggregationSchema(association, old);
 			}
 		});
@@ -2464,6 +2518,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		currentAssociation = association;
 		currentNode = node;
 		initialRestrictionCondition = null;
+		
+		int maxLen = 70;
+		
 		initXmlMappingEditor(association);
 		initRestrictedDependencyWarningField();
 		if (association != null) {
@@ -2588,19 +2645,95 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			if (association.reversed) {
 				joinCondition = SqlUtil.reversRestrictionCondition(joinCondition);
 			}
-			boolean singleCondition = true;
 			String shortJC = joinCondition;
-			if (shortJC.length() > 50) {
-				shortJC = shortJC.substring(0, 50) + "...";
+			if (shortJC.length() > maxLen) {
+				shortJC = shortJC.substring(0, maxLen) + "...";
 			}
 			restrictionEditor.joinCondition.setText(shortJC);
 			restrictionEditor.joinCondition.setToolTipText(joinCondition);
 			restrictionEditor.resetBGColor();
 		}
+		
+		if (scriptFormat.isObjectNotation() && currentAssociation != null) {
+			initAggregationCombobox();
+			
+			restrictionEditor.xMappingLabel.setText(" " + scriptFormat + " Mapping");
+			initXAggregationCheckbox(restrictionEditor.xAggregateCheckBox, currentAssociation, restrictionEditor.xAggregateCheckBox.isSelected(), maxLen);
+			restrictionEditor.xMappingButton.setText(createXMappingButtonText(currentAssociation.destination, false));
+		} else {
+			restrictionEditor.jPanel10.setVisible(true);
+			restrictionEditor.xPanel.setVisible(false);
+			restrictionEditor.aggTypePanel.setVisible(false);
+			restrictionEditor.aggTypejLabel.setVisible(false);
+		}
+		
 		graphView.setSelection(association);
 		restrictionEditor.apply.setEnabled(false);
 	}
 
+	private void initAggregationCombobox() {
+		restrictionEditor.jPanel10.setVisible(false);
+		restrictionEditor.xPanel.setVisible(true);
+		
+		if (scriptFormat == ScriptFormat.XML) {
+			restrictionEditor.aggTypePanel.setVisible(true);
+			restrictionEditor.aggTypejLabel.setVisible(true);
+			restrictionEditor.aggTypePanel.removeAll();
+			JComboBox cb = new JComboBox<>();
+			DefaultComboBoxModel model = new DefaultComboBoxModel();
+			if (currentAssociation.reversalAssociation.getAggregationSchema() == AggregationSchema.NONE) {
+				model.addElement(currentAssociation.reversalAssociation.getAggregationSchema());
+				cb.setEnabled(false);
+			} else {
+				model.addElement(AggregationSchema.IMPLICIT_LIST);
+				model.addElement(AggregationSchema.EXPLICIT_LIST);
+				model.addElement(AggregationSchema.FLAT);
+				cb.setEnabled(true);
+			}
+			cb.setModel(model);
+			cb.setSelectedItem(currentAssociation.reversalAssociation.getAggregationSchema());
+			cb.addActionListener(e -> {
+				if (currentAssociation != null) {
+					if (currentAssociation.reversalAssociation.getAggregationSchema() != cb.getSelectedItem()) {
+						final AggregationSchema selectedItem = (AggregationSchema) cb.getSelectedItem();
+						setAggregationSchema(currentAssociation.reversalAssociation, selectedItem);
+					}
+				}
+			});
+			restrictionEditor.aggTypePanel.add(cb);
+		} else {
+			restrictionEditor.aggTypePanel.setVisible(false);
+			restrictionEditor.aggTypejLabel.setVisible(false);
+		}
+	}
+
+	public void initXAggregationCheckbox(AbstractButton checkBox, Association association, boolean isSelected, int maxLen) {
+		String hex = createRestrEditorTableForgroundColor();
+		
+		String tooltip =  "Aggregate {" + dataModel.getDisplayName(association.source) + "} into {" + dataModel.getDisplayName(association.destination) + "}";
+		String text = tooltip;
+		if (text.length() > maxLen) {
+			text = text.substring(0, maxLen) + "...";
+		}
+		text = "<html>" + text.replace("{", "<b><font color=" + hex + ">").replace("}", "</font></b>") + "</html>";
+		checkBox.setToolTipText("<html><nobr>" + tooltip.replace("{", "<b><font color=" + hex + ">").replace("}", "</font></b>") + "</html>");
+		checkBox.setSelected(association.reversalAssociation.getAggregationSchema() != AggregationSchema.NONE);
+		checkBox.setText(text);
+	}
+
+	private String createRestrEditorTableForgroundColor() {
+		String hex = Integer.toHexString(associatedWith.getForeground().getRGB() & 0xffffff);
+		if (hex.length() < 6) {
+		    hex = "0" + hex;
+		}
+		hex = "#" + hex;
+		return hex;
+	}
+	
+	public String createXMappingButtonText(Table table, boolean withType) {
+		return "<html><nobr>Column Mapping" + (withType? " (" + scriptFormat + ")" : "") + " for <b><font color=" + createRestrEditorTableForgroundColor() + ">" + dataModel.getDisplayName(table) + "</font></b></html>";
+	}
+	
 	private void initRestrictedDependencyWarningField() {
 		boolean restrictedDep = currentAssociation != null && !scriptFormat.isObjectNotation() && currentAssociation.isInsertDestinationBeforeSource() && currentAssociation.getRestrictionCondition() != null;
 
@@ -2712,7 +2845,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		}
 	}
 
-	private void updateView() {
+	@Override
+	public void onNewPlaf() {
+		updateView();
+	}
+	
+	public void updateView() {
 		tree.repaint();
 		graphView.display.invalidate();
 		restrictionsTable.setModel(restrictionTableModel());
@@ -2955,9 +3093,14 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		if (f != null) {
 			scriptFormat = f;
 			dataModel.setExportModus(scriptFormat.toString());
+			if (evt != null) {
+				markDirty();
+			}
 		}
 		setOrientation(isHorizontalLayout);
 		openXmlSettings.setVisible(scriptFormat.isObjectNotation());
+		initRestrictionEditor(currentAssociation, currentNode);
+		openXmlSettings.setText(scriptFormat + " Settings");
 		validate();
 	}//GEN-LAST:event_onExportModusChanged
 
@@ -3781,6 +3924,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 */
 	public void openColumnMapper(Table table) {
 		String old = table.getXmlTemplate();
+		columnMapperDialog.setTitle(scriptFormat + " Column Mapping");
 		if (columnMapperDialog.edit(dataModel, table)) {
 			String template = table.getXmlTemplate();
 			table.setXmlTemplate(old);
@@ -4122,7 +4266,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	}
 
 	private static final long serialVersionUID = -5640822484296649670L;
-	
+
 	// TODO 1
 	// TODO icons for popup menu items
 

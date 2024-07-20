@@ -216,7 +216,11 @@ public class DataModel {
 		public String datePattern = "yyyy-MM-dd";
 		public String timestampPattern = "yyyy-MM-dd-HH.mm.ss"; // TODO
 		// TODO ISO-8601
-		public String rootTag = "rowset";
+		public String rootTag = "root";
+		public boolean singleRoot;
+		public boolean includeNonAggregated = true;
+		public boolean ignoreNonAggregated;
+		public boolean disallowNonAggregated;
 	}
 
 	/**
@@ -1014,6 +1018,27 @@ public class DataModel {
 			return "";
 		}
 	}
+	
+	private static class SortedWriter implements AutoCloseable {
+		private final PrintWriter out;
+		private final List<String> lines = new ArrayList<>();
+		
+		SortedWriter(PrintWriter out) {
+			this.out = out;
+		}
+		
+		void println(String line) {
+			lines.add(line);
+		}
+		
+		@Override
+		public void close() throws Exception {
+			lines.sort(String::compareTo);
+			for (String line: lines) {
+				out.println(line);
+			}
+		}
+	}
 
 	/**
 	 * Saves the data model.
@@ -1041,13 +1066,17 @@ public class DataModel {
 		out.println();
 		out.println(CsvFile.BLOCK_INDICATOR + "additional subjects");
 		out.println("# subject; condition; limit; limit-order");
-		for (AdditionalSubject as: additionalSubjects) {
-			out.println(
-					CsvFile.encodeCell("" + as.getSubject().getName()) + "; " +
-					CsvFile.encodeCell(as.getCondition()) + "; " +
-					CsvFile.encodeCell(as.getSubjectLimitDefinition().limit == null? "" : as.getSubjectLimitDefinition().limit.toString()) + "; " +
-					CsvFile.encodeCell(as.getSubjectLimitDefinition().orderBy == null? "" : as.getSubjectLimitDefinition().orderBy)
-					);
+		try (SortedWriter sOut = new SortedWriter(out)) {
+			for (AdditionalSubject as: additionalSubjects) {
+				sOut.println(
+						CsvFile.encodeCell("" + as.getSubject().getName()) + "; " +
+						CsvFile.encodeCell(as.getCondition()) + "; " +
+						CsvFile.encodeCell(as.getSubjectLimitDefinition().limit == null? "" : as.getSubjectLimitDefinition().limit.toString()) + "; " +
+						CsvFile.encodeCell(as.getSubjectLimitDefinition().orderBy == null? "" : as.getSubjectLimitDefinition().orderBy)
+						);
+			}
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 		saveXmlMapping(out);
 		out.println();
@@ -1062,13 +1091,21 @@ public class DataModel {
 		out.println(CsvFile.BLOCK_INDICATOR + "xml settings");
 		out.println(CsvFile.encodeCell(getXmlSettings().datePattern) + ";" +
 				CsvFile.encodeCell(getXmlSettings().timestampPattern) + ";" +
-				CsvFile.encodeCell(getXmlSettings().rootTag));
+				CsvFile.encodeCell(getXmlSettings().rootTag) + ";" +
+				CsvFile.encodeCell("" + getXmlSettings().singleRoot) + ";" +
+				CsvFile.encodeCell("" + getXmlSettings().includeNonAggregated) + ";" +
+				CsvFile.encodeCell("" + getXmlSettings().ignoreNonAggregated) + ";" +
+				CsvFile.encodeCell("" + getXmlSettings().disallowNonAggregated));
 		out.println(CsvFile.BLOCK_INDICATOR + "xml column mapping");
-		for (Table table: getTables()) {
-			String xmlMapping = table.getXmlTemplate();
-			if (xmlMapping != null) {
-				out.println(CsvFile.encodeCell(table.getName()) + "; " + CsvFile.encodeCell(xmlMapping));
+		try (SortedWriter sOut = new SortedWriter(out)) {
+			for (Table table: getTables()) {
+				String xmlMapping = table.getXmlTemplate();
+				if (xmlMapping != null) {
+					sOut.println(CsvFile.encodeCell(table.getName()) + "; " + CsvFile.encodeCell(xmlMapping));
+				}
 			}
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 		out.println(CsvFile.BLOCK_INDICATOR + "upserts");
 		for (Table table: getTables()) {
@@ -1077,10 +1114,14 @@ public class DataModel {
 			}
 		}
 		out.println(CsvFile.BLOCK_INDICATOR + "exclude from deletion");
-		for (Table table: getTables()) {
-			if (table.excludeFromDeletion != null) {
-				out.println(CsvFile.encodeCell(table.getName()) + "; " + CsvFile.encodeCell(table.excludeFromDeletion.toString()));
+		try (SortedWriter sOut = new SortedWriter(out)) {
+			for (Table table: getTables()) {
+				if (table.excludeFromDeletion != null) {
+					sOut.println(CsvFile.encodeCell(table.getName()) + "; " + CsvFile.encodeCell(table.excludeFromDeletion.toString()));
+				}
 			}
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 		saveFilters(out);
 		saveFilterTemplates(out);
@@ -1116,13 +1157,19 @@ public class DataModel {
 	private void saveXmlMapping(PrintWriter out) {
 		out.println();
 		out.println(CsvFile.BLOCK_INDICATOR + "xml-mapping");
-		for (Table table: getTables()) {
-			for (Association a: table.associations) {
-				String name = a.getName();
-				String tag = a.getAggregationTagName();
-				String aggregation = a.getAggregationSchema().name();
-				out.println(CsvFile.encodeCell(name) + ";" + CsvFile.encodeCell(tag) + ";" + CsvFile.encodeCell(aggregation));
+		try (SortedWriter sOut = new SortedWriter(out)) {
+			for (Table table: getTables()) {
+				for (Association a: table.associations) {
+					if (a.getAggregationSchema() != AggregationSchema.NONE) {
+						String name = a.getName();
+						String tag = a.getAggregationTagName();
+						String aggregation = a.getAggregationSchema().name();
+						sOut.println(CsvFile.encodeCell(name) + ";" + CsvFile.encodeCell(tag) + ";" + CsvFile.encodeCell(aggregation));
+					}
+				}
 			}
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -1135,13 +1182,17 @@ public class DataModel {
 	private void saveRestrictions(PrintWriter out, List<RestrictionDefinition> restrictionDefinitions) {
 		out.println();
 		out.println("# association; ; restriction-condition");
-		for (RestrictionDefinition rd: restrictionDefinitions) {
-			String condition = rd.isIgnored? "ignore" : rd.condition;
-			if (rd.name == null || rd.name.trim().length() == 0) {
-				out.println(CsvFile.encodeCell(rd.from.getName()) + "; " + CsvFile.encodeCell(rd.to.getName()) + "; " + CsvFile.encodeCell(condition));
-			} else {
-				out.println(CsvFile.encodeCell(rd.name) + "; ; " + CsvFile.encodeCell(condition));
+		try (SortedWriter sOut = new SortedWriter(out)) {
+			for (RestrictionDefinition rd: restrictionDefinitions) {
+				String condition = rd.isIgnored? "ignore" : rd.condition;
+				if (rd.name == null || rd.name.trim().length() == 0) {
+					sOut.println(CsvFile.encodeCell(rd.from.getName()) + "; " + CsvFile.encodeCell(rd.to.getName()) + "; " + CsvFile.encodeCell(condition));
+				} else {
+					sOut.println(CsvFile.encodeCell(rd.name) + "; ; " + CsvFile.encodeCell(condition));
+				}
 			}
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -1164,17 +1215,20 @@ public class DataModel {
 	private void saveFilters(PrintWriter out) {
 		out.println();
 		out.println(CsvFile.BLOCK_INDICATOR + "filters");
-		for (Table table: getTables()) {
-			for (Column c: table.getColumns()) {
-				if (c.getFilter() != null && !c.getFilter().isDerived()) {
-					out.println(CsvFile.encodeCell(table.getName()) + ";" + CsvFile.encodeCell(c.name) + ";" + CsvFile.encodeCell(c.getFilter().getExpression())
-					+ ";" + CsvFile.encodeCell(c.getFilter().isApplyAtExport()? "Export" : "Import")
-					+ ";" + CsvFile.encodeCell(c.getFilter().getType() == null? "" : c.getFilter().getType()));
+		try (SortedWriter sOut = new SortedWriter(out)) {
+			for (Table table: getTables()) {
+				for (Column c: table.getColumns()) {
+					if (c.getFilter() != null && !c.getFilter().isDerived()) {
+						sOut.println(CsvFile.encodeCell(table.getName()) + ";" + CsvFile.encodeCell(c.name) + ";" + CsvFile.encodeCell(c.getFilter().getExpression())
+						+ ";" + CsvFile.encodeCell(c.getFilter().isApplyAtExport()? "Export" : "Import")
+						+ ";" + CsvFile.encodeCell(c.getFilter().getType() == null? "" : c.getFilter().getType()));
+					}
 				}
 			}
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 	}
-
 
 	/**
 	 * Saves filter templates.
@@ -1184,7 +1238,9 @@ public class DataModel {
 	private void saveFilterTemplates(PrintWriter out) {
 		out.println();
 		out.println(CsvFile.BLOCK_INDICATOR + "filter templates");
-		for (FilterTemplate template: getFilterTemplates()) {
+		List<FilterTemplate> sortedTemplates = new ArrayList<>(getFilterTemplates());
+		sortedTemplates.sort((a, b) -> a.getName().compareTo(b.getName()));
+		for (FilterTemplate template: sortedTemplates) {
 			out.println("T;"
 					+ CsvFile.encodeCell(template.getName()) + ";"
 					+ CsvFile.encodeCell(template.getExpression()) + ";"

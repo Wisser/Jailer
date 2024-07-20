@@ -44,6 +44,7 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
+import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.Quoting;
 
@@ -98,7 +99,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 	 * Maps clear text SQL-types to {@link java.sql.Types}.
 	 */
 	private Map<Table, Map<String, Integer>> typeCache = new HashMap<Table, Map<String,Integer>>();
-
+	
 	/**
 	 * Current session;
 	 */
@@ -126,12 +127,13 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 	 * @param rootTag root tag name
 	 * @param datePattern pattern for dates
 	 * @param timestampPattern pattern for time-stamps
+	 * @param scriptFormat 
 	 * @throws SQLException
 	 */
 	public XmlExportTransformer(OutputStream out, String commentHeader,
 			EntityGraph entityGraph, Set<Table> totalProgress, Set<Table> cyclicAggregatedTables,
-			String rootTag, String datePattern, String timestampPattern, Session session, Charset charset, ExecutionContext executionContext) throws TransformerConfigurationException, SAXException, SQLException {
-		this.xmlRowWriter = new XmlRowWriter(out, commentHeader, rootTag, datePattern, timestampPattern, charset);
+			String rootTag, String datePattern, String timestampPattern, Session session, ScriptFormat scriptFormat, Charset charset, ExecutionContext executionContext) throws TransformerConfigurationException, SAXException, SQLException {
+		this.xmlRowWriter = new XmlRowWriter(out, commentHeader, rootTag, datePattern, timestampPattern, scriptFormat, charset);
 		this.entityGraph = entityGraph;
 		this.totalProgress = totalProgress;
 		this.cyclicAggregatedTables = cyclicAggregatedTables;
@@ -200,7 +202,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 
 		XmlUtil.visitDocumentNodes(tableMapping.template, xmlRowWriter.new XmlWritingNodeVisitor(resultSet, getMetaData(resultSet), table, association, session) {
 			@Override
-			public void visitAssociationElement(String associationName) {
+			public void visitAssociationElement(String associationName, String name) {
 				final Association sa = finalAssociationMap.get(associationName);
 				if (sa != null) {
 					if (totalProgress.contains(sa.destination)) {
@@ -347,15 +349,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 		try {
 			tableMapping.template = table.getXmlTemplateAsDocument(quoting);
 		} catch (Exception e) {
-			// try again with default template,
-			// there was a bug in Jailer 3.0 which causes corruption of XML templates
-			// in windows platform
-			_log.warn("can't parse XML template for table " + table.getName() + ", using defaults", e);
-			try {
-				tableMapping.template = table.getDefaultXmlTemplate(quoting);
-			} catch (ParserConfigurationException e1) {
-				throw new RuntimeException(e1);
-			}
+			throw new RuntimeException(e);
 		}
 
 		final StringBuilder sb = new StringBuilder();
@@ -383,7 +377,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 				}
 			}
 			@Override
-			public void visitAssociationElement(String associationName) {
+			public void visitAssociationElement(String associationName, String name) {
 			}
 			@Override
 			public void visitComment(String comment) {

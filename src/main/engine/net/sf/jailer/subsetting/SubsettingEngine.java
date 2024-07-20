@@ -1139,8 +1139,9 @@ public class SubsettingEngine {
 	 *            the name of the xml-file to write the data to
 	 * @param progress
 	 *            set of tables to account for extraction
+	 * @param scriptFormat 
 	 */
-	private void writeEntitiesAsXml(String xmlFile, final Set<Table> progress, final Set<Table> subjects, Session session) throws IOException, CancellationException, SQLException, SAXException {
+	private void writeEntitiesAsXml(String xmlFile, final Set<Table> progress, final Set<Table> subjects, Session session, ScriptFormat scriptFormat) throws IOException, CancellationException, SQLException, SAXException {
 		_log.info("writing file '" + xmlFile + "'...");
 
 		OutputStream outputStream = new FileOutputStream(new File(xmlFile));
@@ -1223,7 +1224,7 @@ public class SubsettingEngine {
 		try {
 			reader = new XmlExportTransformer(outputStream, commentHeader.toString(), entityGraph, progress, cyclicAggregatedTables,
 					executionContext.getXmlRootTag(), executionContext.getXmlDatePattern(),
-					executionContext.getXmlTimeStampPattern(), entityGraph.getTargetSession(), charset, executionContext);
+					executionContext.getXmlTimeStampPattern(), entityGraph.getTargetSession(), scriptFormat, charset, executionContext);
 		} catch (TransformerConfigurationException e) {
 			throw new RuntimeException(e);
 		}
@@ -1645,8 +1646,8 @@ public class SubsettingEngine {
 							restrictedDependenciesForExport = new HashMap<Table, List<Association>>();
 							restrictedDependenciesEntityGraph = null;
 						}
-						if (ScriptFormat.XML.equals(scriptFormat)) {
-							writeEntitiesAsXml(scriptFile, totalProgress, subjects, session);
+						if (scriptFormat.isObjectNotation()) {
+							writeEntitiesAsXml(scriptFile, totalProgress, subjects, session, scriptFormat);
 						} else {
 							writeEntities(scriptFile, ScriptType.INSERT, totalProgress, session, "exporting rows", startTimestamp, afterCollectionTimestamp, null, () -> {
 								if (restrictedDependenciesEntityGraph != null) {

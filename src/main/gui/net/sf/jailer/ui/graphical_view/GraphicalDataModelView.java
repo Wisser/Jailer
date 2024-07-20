@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -52,6 +53,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
@@ -852,14 +854,16 @@ public class GraphicalDataModelView extends JPanel {
 				toggleShowDetails(table);
 			}
 		});
-		JMenuItem mapColumns = new JMenuItem("XML Column Mapping");
-		mapColumns.addActionListener(new ActionListener () {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				modelEditor.openColumnMapper(table);
-			}
-		});
-		mapColumns.setEnabled(modelEditor.scriptFormat.isObjectNotation());
+		JMenuItem mapColumns = null;
+		if (modelEditor.scriptFormat.isObjectNotation()) {
+			mapColumns = new JMenuItem(modelEditor.createXMappingButtonText(table, true));
+			mapColumns.addActionListener(new ActionListener () {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					modelEditor.openColumnMapper(table);
+				}
+			});
+		}
 
 		JMenuItem restrictAll = new JMenuItem("Disable Associations");
 		restrictAll.addActionListener(new ActionListener () {
@@ -933,7 +937,6 @@ public class GraphicalDataModelView extends JPanel {
 			popup.add(restrictAll);
 			popup.add(removeRestrictions);
 			popup.add(filterEditor);
-			popup.add(mapColumns);
 		}
 		popup.add(new JSeparator());
 //		popup.add(shortestPath);
@@ -1053,6 +1056,11 @@ public class GraphicalDataModelView extends JPanel {
 			}
 		}
 
+		if (withModifications && mapColumns != null){
+			popup.add(new JSeparator());
+			popup.add(mapColumns);
+		}
+		
 		return popup;
 	}
 
@@ -1134,10 +1142,11 @@ public class GraphicalDataModelView extends JPanel {
 		if (withModifications) {
 			popup.add(disable);
 			popup.add(enable);
-			if (modelEditor.pendingDecisionsPanel != null && modelEditor.pendingDecisionsPanel.origDecisionPending.contains(association.reversalAssociation.getName())) {
+			if (modelEditor.pendingDecisionsPanel != null && modelEditor.pendingDecisionsPanel.isActivated()) {
 				popup.add(new JSeparator());
 				JCheckBoxMenuItem check = new JCheckBoxMenuItem("Checked");
 				check.setSelected(modelEditor.pendingDecisionsPanel.isChecked(association));
+				check.setEnabled(modelEditor.pendingDecisionsPanel.origDecisionPending.contains(association.reversalAssociation.getName()));
 				check.addActionListener(new ActionListener () {
 					@Override
 					public void actionPerformed(ActionEvent e) {
@@ -1150,6 +1159,23 @@ public class GraphicalDataModelView extends JPanel {
 				});
 				popup.add(check);
 			}
+			popup.add(new JSeparator());
+		}
+		if (modelEditor.scriptFormat != null && modelEditor.scriptFormat.isObjectNotation()) {
+			if (!withModifications) {
+				popup.add(new JSeparator());
+			}
+			JCheckBoxMenuItem check = new JCheckBoxMenuItem();
+			check.setSelected(association.reversalAssociation.getAggregationSchema() != AggregationSchema.NONE);
+			modelEditor.initXAggregationCheckbox(check, association, check.isSelected(), 70);
+			check.addActionListener(e -> {
+				modelEditor.onXAggregateCheckboxAction(association, check);
+				modelEditor.updateView();
+			});
+			popup.add(check);
+			JMenuItem aggregationMapping = new JMenuItem(modelEditor.createXMappingButtonText(association.destination, true));
+			popup.add(aggregationMapping);
+			aggregationMapping.addActionListener(e -> modelEditor.openColumnMapper(association.destination));
 			popup.add(new JSeparator());
 		}
 		popup.add(zoomToFit);

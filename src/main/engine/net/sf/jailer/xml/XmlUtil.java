@@ -18,12 +18,18 @@ package net.sf.jailer.xml;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.Writer;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.charset.Charset;
+import java.util.Map;
+import java.util.Stack;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -33,6 +39,7 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.collections4.map.HashedMap;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
@@ -41,10 +48,16 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
+import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+
 import net.sf.jailer.util.PrintUtil;
+import net.sf.jailer.xml.XmlRowWriter.ObjectFormatTransformer;
 
 /**
  * XML parsing and building.
@@ -52,6 +65,261 @@ import net.sf.jailer.util.PrintUtil;
  * @author Ralf Wisser
  */
 public class XmlUtil {
+
+	private static class JSONTransformerHandler implements TransformerHandler, ObjectFormatTransformer {
+		private final Writer out;
+		private final JsonGenerator jGenerator;
+		Stack<Character> states = new Stack<>();
+
+		private JSONTransformerHandler(Writer out, JsonGenerator jGenerator) {
+			this.out = out;
+			this.jGenerator = jGenerator;
+		}
+
+		@Override
+		public void setDocumentLocator(Locator locator) {
+		}
+
+		@Override
+		public void startDocument() throws SAXException {
+			try {
+				jGenerator.writeStartObject();
+				states.push('{');
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		@Override
+		public void endDocument() throws SAXException {
+			try {
+				jGenerator.writeEndObject();
+				states.pop();
+				jGenerator.flush();
+			} catch (IOException e) {
+				try {
+					jGenerator.flush();out.close();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				throw new RuntimeException(e);
+			}
+		}
+
+		@Override
+		public void startPrefixMapping(String prefix, String uri) throws SAXException {
+		}
+
+		@Override
+		public void endPrefixMapping(String prefix) throws SAXException {
+		}
+
+		@Override
+		public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
+			try {
+				if (states.peek() == '=') {
+					states.pop();
+					states.push('{');
+					jGenerator.writeStartObject();
+					states.push('=');
+					jGenerator.writeFieldName(qName);
+				} else if (states.peek() == '[') {
+					jGenerator.writeArrayFieldStart(qName);
+					states.push('-');
+				} else if (states.peek() == '-') {
+					jGenerator.writeStartObject();
+					states.push('{');
+				} else {
+					states.push('=');
+					jGenerator.writeFieldName(qName);
+				}
+			} catch (IOException e) {
+				try {
+					jGenerator.flush();out.close();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				throw new RuntimeException(e);
+			}
+		}
+
+		@Override
+		public void endElement(String uri, String localName, String qName) throws SAXException {
+			try {
+				Character pop = states.pop();
+				if (pop == '=') {
+					jGenerator.writeNull();
+				}
+				if (pop == '{') {
+					jGenerator.writeEndObject();
+				}
+				if (pop == '-') {
+					jGenerator.writeEndArray();
+				}
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		
+		private Map<String, Object> constants = new HashedMap<>();
+
+		@Override
+		public void characters(char[] ch, int start, int length) throws SAXException {
+			try {
+				if (states.peek() == '=') {
+					String constant = new String(ch, start, length).trim();
+					Object content = constants.get(constant);
+					if (content == null) {
+						if (constant.isEmpty()) {
+							content = null;
+						} else if (constant.equalsIgnoreCase("true")) {
+							content = true;
+						} else if (constant.equalsIgnoreCase("false")) {
+							content = false;
+						} else {
+							try {
+								content = Long.parseLong(constant);
+							} catch (NumberFormatException e) {
+								try {
+									content = Double.parseDouble(constant);
+								} catch (NumberFormatException e2) {
+									try {
+										content = new BigDecimal(constant);
+									} catch (NumberFormatException e3) {
+										content = constant;
+									}
+								}
+							}
+						}
+						constants.put(constant, content);
+					}
+					writeContent(content);
+					states.pop();
+					states.push('?');
+				}
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		@Override
+		public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
+		}
+
+		@Override
+		public void processingInstruction(String target, String data) throws SAXException {
+		}
+
+		@Override
+		public void skippedEntity(String name) throws SAXException {
+		}
+
+		@Override
+		public void startDTD(String name, String publicId, String systemId) throws SAXException {
+		}
+
+		@Override
+		public void endDTD() throws SAXException {
+		}
+
+		@Override
+		public void startEntity(String name) throws SAXException {
+		}
+
+		@Override
+		public void endEntity(String name) throws SAXException {
+		}
+
+		@Override
+		public void startCDATA() throws SAXException {
+		}
+
+		@Override
+		public void endCDATA() throws SAXException {
+		}
+
+		@Override
+		public void comment(char[] ch, int start, int length) throws SAXException {
+		}
+
+		@Override
+		public void notationDecl(String name, String publicId, String systemId) throws SAXException {
+		}
+
+		@Override
+		public void unparsedEntityDecl(String name, String publicId, String systemId, String notationName)
+				throws SAXException {
+		}
+
+		@Override
+		public void setResult(Result result) throws IllegalArgumentException {
+		}
+
+		@Override
+		public void setSystemId(String systemID) {
+		}
+
+		@Override
+		public String getSystemId() {
+			return null;
+		}
+
+		@Override
+		public Transformer getTransformer() {
+			return null;
+		}
+
+		@Override
+		public void content(Object content) {
+			try {
+				if (states.peek() == '=') {
+					writeContent(content);
+					states.pop();
+					states.push('?');
+				}
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		private void writeContent(Object content) throws IOException {
+			if (content == null) {
+				jGenerator.writeNull();
+			} else if (content instanceof byte[]) {
+				jGenerator.writeBinary((byte[]) content);
+			} else if (content instanceof Boolean) {
+				jGenerator.writeBoolean((Boolean) content);
+			} else if (content instanceof BigDecimal) {
+				jGenerator.writeNumber((BigDecimal) content);
+			} else if (content instanceof BigInteger) {
+				jGenerator.writeNumber((BigInteger) content);
+			} else if (content instanceof Double) {
+				jGenerator.writeNumber((Double) content);
+			} else if (content instanceof Float) {
+				jGenerator.writeNumber((Float) content);
+			} else if (content instanceof Integer) {
+				jGenerator.writeNumber((Integer) content);
+			} else if (content instanceof Long) {
+				jGenerator.writeNumber((Long) content);
+			} else if (content instanceof Short) {
+				jGenerator.writeNumber((Short) content);
+			} else {
+				jGenerator.writeString(content.toString());
+			}
+		}
+
+		@Override
+		public void startArray() {
+			states.push('[');
+		}
+
+		@Override
+		public void endArray() {
+			states.pop();
+		}
+	}
 
 	/**
 	 * Jailer namespace URI.
@@ -205,7 +473,9 @@ public class XmlUtil {
 			visitor.visitComment((((Comment) node).getTextContent()));
 		} else if (node instanceof Element) {
 			if (NS_URI.equals(node.getNamespaceURI()) && ASSOCIATION_TAG.equals(node.getLocalName()) && node.getTextContent() != null) {
-				visitor.visitAssociationElement(((Element) node).getTextContent().trim());
+				Attr nameAttr = ((Element) node).getAttributeNode("name");
+				String name = nameAttr == null? null : nameAttr.getValue();
+				visitor.visitAssociationElement(((Element) node).getTextContent().trim(), name);
 			} else {
 				Element e = (Element) node;
 				NamedNodeMap attr = e.getAttributes();
@@ -266,6 +536,39 @@ public class XmlUtil {
 			transformerHandler.startElement("", "", rootTag, null);
 		}
 		return transformerHandler;
+	}
+
+	public static TransformerHandler createJSONTransformerHandler(String commentHeader, String rootTag,
+			StreamResult streamResult, Charset charset) {
+		
+		Writer out = streamResult.getWriter();
+		JsonFactory jfactory = new JsonFactory();
+		JsonGenerator jGenerator;
+		try {
+			jGenerator = jfactory
+			  .createGenerator(out);
+			jGenerator.useDefaultPrettyPrinter();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		
+		// TODO
+		// TODO c|blob: size-limit (editable). As watch-dog (error if exceeded) (show path of field on error)
+		
+		// TODO
+		// TODO count XML/JSON/YMAML exports (s16-19) 
+		
+		// TODO
+		// TODO ? default in XML/JSON/... Settings: dont allow arrays. max straenge. dann in der Fehlermeldung auf Mögl. Array zuzulassen aufmerksam machen?
+		// TODO ? gute gruende, das gegenteil zu machen. im fehlerfall nur warnen.
+		TransformerHandler th = new JSONTransformerHandler(out, jGenerator);
+		try {
+			th.startDocument();
+		} catch (SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return th;
 	}
 
 }

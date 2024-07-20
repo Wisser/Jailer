@@ -20,6 +20,7 @@ import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Stores and restores graph layout.
@@ -320,12 +321,12 @@ public class LayoutStorage {
 	/**
 	 * Stores positions per root-table (local).
 	 */
-	private Map<String, Map<String, double[]>> tablePositions = Collections.synchronizedMap(new HashMap<String, Map<String,double[]>>());
+	private Map<String, Map<String, double[]>> tablePositions = Collections.synchronizedMap(new TreeMap<String, Map<String,double[]>>());
 
 	/**
 	 * Stores positions per root-table (global).
 	 */
-	private Map<String, Map<String, double[]>> globalTablePositions = Collections.synchronizedMap(new HashMap<String, Map<String,double[]>>());
+	private Map<String, Map<String, double[]>> globalTablePositions = Collections.synchronizedMap(new TreeMap<String, Map<String,double[]>>());
 
 	public void setTempStorage(Map<String, double[]> tmp) {
 		tempPosistions = tmp;

@@ -131,6 +131,10 @@ public abstract class PendingDecisionsPanel extends javax.swing.JPanel {
 	private boolean updatePending = false;
 	private boolean ignoreSelection = false;
 	
+	public boolean isActivated() {
+		return activated;
+	}
+
 	void updateView() {
 		if (updatePending) {
 			return;

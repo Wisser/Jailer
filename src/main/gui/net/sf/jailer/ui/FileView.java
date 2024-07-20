@@ -68,6 +68,8 @@ public class FileView extends javax.swing.JFrame {
 		this.owner = owner;
 		this.withSyntaxHighlighting = false;
 		this.isXml = false;
+		this.isJson = false;
+		this.isYaml = false;
 		initialize();
 	}
 
@@ -81,6 +83,8 @@ public class FileView extends javax.swing.JFrame {
 		this.owner = owner;
 		this.withSyntaxHighlighting = withSyntaxHighlighting;
 		this.isXml = file.toLowerCase().endsWith(".xml");
+		this.isJson = file.toLowerCase().endsWith(".json");
+		this.isYaml = file.toLowerCase().endsWith(".yaml");
 		
 		File f = new File(file);
 		if (f.exists() && f.length() > 65L*1024L*1024L / (file.toLowerCase().endsWith(".zip") || file.toLowerCase().endsWith(".gz")? 5 : 1)) {
@@ -109,6 +113,8 @@ public class FileView extends javax.swing.JFrame {
 
 	private final boolean withSyntaxHighlighting;
 	private final boolean isXml;
+	private final boolean isJson;
+	private final boolean isYaml;
 	private final Window owner;
 	private static int gCount = 0;
 	
@@ -223,6 +229,12 @@ public class FileView extends javax.swing.JFrame {
 			if (withSyntaxHighlighting) {
 				if (isXml) {
 					rSyntaxTextAreaWithSQLSyntaxStyle.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_XML);
+				}
+				if (isJson) {
+					rSyntaxTextAreaWithSQLSyntaxStyle.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JSON_WITH_COMMENTS);
+				}
+				if (isYaml) {
+					rSyntaxTextAreaWithSQLSyntaxStyle.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_YAML);
 				}
 			} else {
 				rSyntaxTextAreaWithSQLSyntaxStyle.setSyntaxEditingStyle(null);

@@ -23,6 +23,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.util.Pair;
@@ -431,12 +432,10 @@ public class Association extends ModelElement {
 	 */
 	public String getAggregationTagName() {
 		String tag;
+		Set<String> otherNames = null;
 		if (aggregationTagName == null) {
-			if (name.startsWith("inverse-")) {
-				tag = destination.getUnqualifiedName().toLowerCase(Locale.ENGLISH);
-			} else {
-				tag = name.toLowerCase(Locale.ENGLISH);
-			}
+			otherNames = source.associations.stream().map(a -> a.aggregationTagName).filter(t -> t != null).collect(Collectors.toSet());
+			tag = destination.getUnqualifiedName().toLowerCase(Locale.ENGLISH);
 		} else {
 			tag = aggregationTagName;
 		}
@@ -448,7 +447,17 @@ public class Association extends ModelElement {
 				sb.append(c);
 			}
 		}
-		return sb.toString();
+		aggregationTagName = sb.toString();
+		if (otherNames != null) {
+			for (int i = 1; ; ++i) {
+				tag = aggregationTagName + (i == 1? "" : "-" + i);
+				if (!otherNames.contains(tag)) {
+					aggregationTagName = tag;
+					break;
+				}
+			}
+		}
+		return aggregationTagName;
 	}
 
 	/**
