@@ -16,15 +16,15 @@
 package net.sf.jailer.subsetting;
 
 /**
- * Thrown if row limit is exceeded.
+ * Thrown if something goes wrong when exporting to an XML/JSON/YAML file.
  * 
  * @author Ralf Wisser
  */
-public class RowLimitExceededException extends RuntimeException {
+public class ObjectNotationOutputException extends RuntimeException {
 	
-	private static final long serialVersionUID = 2860150928554329986L;
+	private static final long serialVersionUID = -3712636626146836549L;
 
-	public RowLimitExceededException(String message) {
+	public ObjectNotationOutputException(String message) {
 		super(message);
 	}
 	

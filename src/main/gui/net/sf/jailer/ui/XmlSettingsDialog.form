@@ -147,13 +147,14 @@
             </Constraint>
           </Constraints>
         </Component>
-        <Component class="javax.swing.JCheckBox" name="multipleRoots">
+        <Component class="javax.swing.JCheckBox" name="singleRoot">
           <Properties>
             <Property name="text" type="java.lang.String" value="Single Object"/>
             <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;Writes a single root/subject object with all its aggregated sub-objects. &lt;br&gt;The export process fails if more than one such object exists.&lt;/html&gt;"/>
           </Properties>
           <Events>
-            <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="multipleRootsItemStateChanged"/>
+            <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="singleRootItemStateChanged"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="singleRootActionPerformed"/>
           </Events>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -208,13 +209,13 @@
             </Constraint>
           </Constraints>
         </Component>
-        <Component class="javax.swing.JCheckBox" name="singleRoot">
+        <Component class="javax.swing.JCheckBox" name="multipleRoots">
           <Properties>
             <Property name="text" type="java.lang.String" value="Multiple Objects (Array)"/>
             <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;Writes an array/collection of all root/subject objects with all their aggregated sub-objects.&lt;/html&gt;"/>
           </Properties>
           <Events>
-            <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="singleRootItemStateChanged"/>
+            <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="multipleRootsItemStateChanged"/>
           </Events>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">

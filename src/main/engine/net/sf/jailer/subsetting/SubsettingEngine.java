@@ -1228,6 +1228,21 @@ public class SubsettingEngine {
 		} catch (TransformerConfigurationException e) {
 			throw new RuntimeException(e);
 		}
+		
+		sortedTables.sort(new Comparator<Table>() {
+			@Override
+			public int compare(Table t1, Table t2) {
+				boolean s1 = subjects.contains(t1);
+				boolean s2 = subjects.contains(t2);
+				if (s1 && !s2) {
+					return -1;
+				}
+				if (!s1 && s2) {
+					return 1;
+				}
+				return 0;
+			}
+		});
 
 		for (Table table: sortedTables) {
 			entityGraph.markRoots(table);
@@ -1235,6 +1250,10 @@ public class SubsettingEngine {
 		for (Table table: sortedTables) {
 			_log.info("exporting table " + datamodel.getDisplayName(table));
 			reader.setTable(table);
+			reader.setTableIsSubject(subjects.contains(table));
+			if (executionContext.isIgnoreNonAggregated() && !subjects.contains(table)) {
+				continue;
+			}
 			entityGraph.readMarkedEntities(table, reader, reader.getTableMapping(table).selectionSchema, reader.getTableMapping(table).originalPKAliasPrefix, true);
 		}
 		reader.endDocument();
@@ -1697,7 +1716,7 @@ public class SubsettingEngine {
 					datamodel.transpose();
 				}
 
-				if (scriptFile != null && scriptFormat != ScriptFormat.XML && exportStatistic.getTotal() != exportedCount) {
+				if (scriptFile != null && !scriptFormat.isObjectNotation() && exportStatistic.getTotal() != exportedCount) {
 					String message =
 								"The number of rows collected (" + exportStatistic.getTotal() + ") differs from that of the exported ones (" + exportedCount + ").\n" +
 								"This may have been caused by an invalid primary key definition.\nPlease note that each primary key must be unique.\n" +

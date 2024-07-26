@@ -42,8 +42,8 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
 		setModal(true);
 		
 		ButtonGroup buttonGroup = new ButtonGroup();
-		buttonGroup.add(singleRoot);
 		buttonGroup.add(multipleRoots);
+		buttonGroup.add(singleRoot);
 
 		buttonGroup = new ButtonGroup();
 		buttonGroup.add(include);
@@ -91,8 +91,8 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
 		rootTag.setVisible(scriptFormat == ScriptFormat.XML);
 		xmlRootTagLabel.setVisible(scriptFormat == ScriptFormat.XML);
 		
-		multipleRoots.setSelected(!xmlSettings.singleRoot);
 		singleRoot.setSelected(xmlSettings.singleRoot);
+		multipleRoots.setSelected(!xmlSettings.singleRoot);
 		ignore.setSelected(xmlSettings.ignoreNonAggregated);
 		include.setSelected(xmlSettings.includeNonAggregated);
 		disallow.setSelected(xmlSettings.disallowNonAggregated);
@@ -226,12 +226,12 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
         rootTag = new javax.swing.JTextField();
         dateExample = new javax.swing.JLabel();
         timestampExample = new javax.swing.JLabel();
-        multipleRoots = new javax.swing.JCheckBox();
+        singleRoot = new javax.swing.JCheckBox();
         jPanel2 = new javax.swing.JPanel();
         Ok = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
         xmlRootTagLabel1 = new javax.swing.JLabel();
-        singleRoot = new javax.swing.JCheckBox();
+        multipleRoots = new javax.swing.JCheckBox();
         include = new javax.swing.JCheckBox();
         xmlRootTagLabel2 = new javax.swing.JLabel();
         xmlRootTagLabel3 = new javax.swing.JLabel();
@@ -343,11 +343,16 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 8);
         jPanel3.add(timestampExample, gridBagConstraints);
 
-        multipleRoots.setText("Single Object");
-        multipleRoots.setToolTipText("<html>Writes a single root/subject object with all its aggregated sub-objects. <br>The export process fails if more than one such object exists.</html>");
-        multipleRoots.addItemListener(new java.awt.event.ItemListener() {
+        singleRoot.setText("Single Object");
+        singleRoot.setToolTipText("<html>Writes a single root/subject object with all its aggregated sub-objects. <br>The export process fails if more than one such object exists.</html>");
+        singleRoot.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                multipleRootsItemStateChanged(evt);
+                singleRootItemStateChanged(evt);
+            }
+        });
+        singleRoot.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                singleRootActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -355,7 +360,7 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 20;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
-        jPanel3.add(multipleRoots, gridBagConstraints);
+        jPanel3.add(singleRoot, gridBagConstraints);
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
@@ -403,18 +408,18 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
         jPanel3.add(xmlRootTagLabel1, gridBagConstraints);
 
-        singleRoot.setText("Multiple Objects (Array)");
-        singleRoot.setToolTipText("<html>Writes an array/collection of all root/subject objects with all their aggregated sub-objects.</html>");
-        singleRoot.addItemListener(new java.awt.event.ItemListener() {
+        multipleRoots.setText("Multiple Objects (Array)");
+        multipleRoots.setToolTipText("<html>Writes an array/collection of all root/subject objects with all their aggregated sub-objects.</html>");
+        multipleRoots.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                singleRootItemStateChanged(evt);
+                multipleRootsItemStateChanged(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 10;
         gridBagConstraints.gridy = 22;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        jPanel3.add(singleRoot, gridBagConstraints);
+        jPanel3.add(multipleRoots, gridBagConstraints);
 
         include.setText("Include");
         include.setToolTipText("Write out all objects that are not aggregated in any other object at root level.");
@@ -508,13 +513,13 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
 		dispose();
 	}//GEN-LAST:event_cancelButtonActionPerformed
 
-    private void multipleRootsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_multipleRootsItemStateChanged
-        rootTag.setEditable(!multipleRoots.isSelected());
-    }//GEN-LAST:event_multipleRootsItemStateChanged
-
     private void singleRootItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_singleRootItemStateChanged
-        // TODO add your handling code here:
+        rootTag.setEditable(!multipleRoots.isSelected());
     }//GEN-LAST:event_singleRootItemStateChanged
+
+    private void multipleRootsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_multipleRootsItemStateChanged
+    	 rootTag.setEditable(!multipleRoots.isSelected());
+    }//GEN-LAST:event_multipleRootsItemStateChanged
 
     private void includeItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_includeItemStateChanged
         // TODO add your handling code here:
@@ -527,6 +532,10 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
     private void disallowItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_disallowItemStateChanged
         // TODO add your handling code here:
     }//GEN-LAST:event_disallowItemStateChanged
+
+    private void singleRootActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_singleRootActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_singleRootActionPerformed
 	
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Ok;

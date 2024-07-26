@@ -44,6 +44,7 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
+import net.sf.jailer.subsetting.ObjectNotationOutputException;
 import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.Quoting;
@@ -59,7 +60,12 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 	 * The table to read from.
 	 */
 	private Table table;
-
+	
+	/**
+	 * <code>true</code> iff table is subject.
+	 */
+	private boolean tableIsSubject;
+	
 	/**
 	 * For writing rows as xml.
 	 */
@@ -114,9 +120,13 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 	 * {@link RowIdSupport}.
 	 */
 	private final RowIdSupport rowIdSupport;
+	
+	private final ExecutionContext executionContext;
 
 	private final Quoting quoting;
-
+	
+	private ScriptFormat scriptFormat;
+	
 	/**
 	 * Constructor.
 	 *
@@ -133,21 +143,33 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 	public XmlExportTransformer(OutputStream out, String commentHeader,
 			EntityGraph entityGraph, Set<Table> totalProgress, Set<Table> cyclicAggregatedTables,
 			String rootTag, String datePattern, String timestampPattern, Session session, ScriptFormat scriptFormat, Charset charset, ExecutionContext executionContext) throws TransformerConfigurationException, SAXException, SQLException {
-		this.xmlRowWriter = new XmlRowWriter(out, commentHeader, rootTag, datePattern, timestampPattern, scriptFormat, charset);
+		this.xmlRowWriter = new XmlRowWriter(out, commentHeader, rootTag, datePattern, timestampPattern, scriptFormat, charset, executionContext);
 		this.entityGraph = entityGraph;
+		this.scriptFormat = scriptFormat;
 		this.totalProgress = totalProgress;
 		this.cyclicAggregatedTables = cyclicAggregatedTables;
 		this.session = session;
 		this.quoting = Quoting.getQuoting(session);
 		this.rowIdSupport = new RowIdSupport(entityGraph.getDatamodel(), session.dbms, executionContext);
+		this.executionContext = executionContext;
 	}
 
+	private int rootCount = 0;
+	
 	/**
 	 * Reads result-set and writes into export-script.
 	 */
 	@Override
 	public void readCurrentRow(ResultSet resultSet) throws SQLException {
 		try {
+			if (executionContext.isDisallowNonAggregated() && !tableIsSubject) {
+				throw new ObjectNotationOutputException("Non-aggregated objects (\"" + table.getName() + "\") are disallowed at root level.\n(" + scriptFormat + ")");
+			}
+			if (++rootCount > 1) {
+				if (executionContext.isSingleRoot()) {
+					throw new ObjectNotationOutputException("Multiple root objects are not allowed. (\"" + table.getName() + "\")\n(" + scriptFormat + ")");
+				}
+			}
 			writeEntity(table, null, resultSet, new ArrayList<String>(), getCellContentConverter(resultSet, session, session.dbms));
 		} catch (SAXException e) {
 			throw new RuntimeException(e);
@@ -225,7 +247,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 								}
 							};
 							try {
-								xmlRowWriter.startList(sa);
+								xmlRowWriter.startList(sa, name);
 								entityGraph.readDependentEntities(sa.destination, sa, resultSet, getMetaData(resultSet), reader, getTypeCache(sa.destination), getTableMapping(sa.destination).selectionSchema, getTableMapping(sa.destination).originalPKAliasPrefix);
 								if (cyclicAggregatedTables.contains(sa.destination)) {
 									entityGraph.markDependentEntitiesAsTraversed(sa, resultSet, getMetaData(resultSet), getTypeCache(sa.destination));
@@ -263,6 +285,13 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 	 */
 	public void setTable(Table table) {
 		this.table = table;
+	}
+
+	/**
+	 * @param tableIsSubject <code>true</code> iff table is subject
+	 */
+	public void setTableIsSubject(boolean tableIsSubject) {
+		this.tableIsSubject = tableIsSubject;
 	}
 
 	/**

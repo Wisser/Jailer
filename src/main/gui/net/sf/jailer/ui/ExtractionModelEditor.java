@@ -48,6 +48,7 @@ import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -71,8 +72,6 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -112,12 +111,6 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import org.apache.commons.lang3.stream.Streams;
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
-import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
-
-import com.fasterxml.jackson.annotation.JsonTypeInfo.None;
-
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.database.Session;
@@ -146,7 +139,6 @@ import net.sf.jailer.ui.graphical_view.GraphicalDataModelView;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
-import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithTheme;
 import net.sf.jailer.ui.syntaxtextarea.SQLCompletionProvider;
 import net.sf.jailer.ui.undo.CompensationAction;
 import net.sf.jailer.ui.undo.UndoManager;
@@ -300,7 +292,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 				return dataModel.getParameters(condition.getText(), extractionModel.additionalSubjects);
 			}
 		};
-		columnMapperDialog = new ColumnMapperDialog(extractionModelFrame, parametersGetter);
+		columnMapperDialog = new ColumnMapperDialog(extractionModelFrame, parametersGetter, executionContext);
 		boolean isNew;
 		if (extractionModelFile == null || !new File(extractionModelFile).exists()) {
 			needsSave = extractionModelFile != null;
@@ -945,7 +937,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 		}
 
 		DefaultComboBoxModel formatComboBoxModel = new DefaultComboBoxModel();
-		Streams.of(ScriptFormat.values()).forEach(sf -> {
+		Arrays.stream(ScriptFormat.values()).forEach(sf -> {
 			formatComboBoxModel.addElement(sf);
 			if (sf.separatorFollowed) {
 				formatComboBoxModel.addElement(null);
@@ -1459,14 +1451,38 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 			((GridLayout) editorPanel.getLayout()).setVgap(1);
 			((GridLayout) editorPanel.getLayout()).setColumns(1);
 			if (false && scriptFormat.isObjectNotation()) { // TODO
-				gridBagConstraints = new java.awt.GridBagConstraints();
+				
+				JPanel sketchPanel = new JPanel();
+				sketchPanel.setLayout(new java.awt.GridBagLayout());
+
+				jLabel12.setFont(jLabel12.getFont().deriveFont(jLabel12.getFont().getStyle() | java.awt.Font.BOLD));
+		        jLabel12.setText(" " + scriptFormat + " Sketches");
+		        gridBagConstraints = new java.awt.GridBagConstraints();
+		        gridBagConstraints.gridx = 0;
+		        gridBagConstraints.gridy = 0;
+		        gridBagConstraints.gridwidth = 5;
+		        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		        gridBagConstraints.insets = new java.awt.Insets(8, 0, 4, 0);
+		        sketchPanel.add(jLabel12, gridBagConstraints);
+
+		        gridBagConstraints = new java.awt.GridBagConstraints();
+		        gridBagConstraints.gridx = 1;
+		        gridBagConstraints.gridy = 11;
+		        gridBagConstraints.gridwidth = 2;
+		        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		        gridBagConstraints.weightx = 1.0;
+		        gridBagConstraints.weighty = 1.0;
+		        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
+		        sketchPanel.add(sketchTabbedPane, gridBagConstraints);
+
+		        gridBagConstraints = new java.awt.GridBagConstraints();
 				gridBagConstraints.gridx = 0;
 				gridBagConstraints.gridy = 3;
 				gridBagConstraints.weightx = 1;
 				gridBagConstraints.weighty = 0.6;
 				gridBagConstraints.fill = GridBagConstraints.BOTH;
 				gridBagConstraints.insets = new Insets(0, 0, 0, 0);
-				panel2.add(xmlMappingPanel, gridBagConstraints);
+				panel2.add(sketchPanel, gridBagConstraints);
 //				editorPanel.add(xmlMappingPanel);
 				((GridLayout) editorPanel.getLayout()).setRows(1);
 			} else {
@@ -1559,7 +1575,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
         jPanel8 = new javax.swing.JPanel();
         jLabel7 = new javax.swing.JLabel();
         jPanel10 = new javax.swing.JPanel();
-        exportFormat = new javax.swing.JComboBox();
+        exportFormat = new JComboBox2();
         exportButton = new javax.swing.JButton();
         openXmlSettings = new javax.swing.JButton();
         jLabel10 = new javax.swing.JLabel();
@@ -1581,7 +1597,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        aggregationCombobox = new javax.swing.JComboBox();
+        aggregationCombobox = new JComboBox2();
         tagField = new javax.swing.JTextField();
         jPanel5 = new javax.swing.JPanel();
         xmlTagApply = new javax.swing.JButton();
@@ -1714,7 +1730,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 
         layeredPane.setLayer(focusPanel, javax.swing.JLayeredPane.PALETTE_LAYER);
         layeredPane.add(focusPanel);
-        focusPanel.setBounds(0, 0, 359, 32);
+        focusPanel.setBounds(0, 0, 345, 32);
 
         rightBorderPanel.setOpaque(false);
         rightBorderPanel.setLayout(new java.awt.GridBagLayout());
@@ -1851,11 +1867,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
         exportFormat.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         exportFormat.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
-            	if (exportFormat.getSelectedItem() == null) {
-            		UIUtil.invokeLater(() -> exportFormat.setSelectedItem(scriptFormat));
-            	} else {
-            		onExportModusChanged(evt);
-            	}
+                onExportModusChanged(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1960,7 +1972,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
         gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 6, 0);
         jPanel3.add(jPanel16, gridBagConstraints);
 
         jPanel17.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 5, 8));
@@ -2976,46 +2988,23 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 	 * Updates the XML sketch component.
 	 */
 	private void updateSketch() {
-		try {
-			sketchTabbedPane.removeAll();
-
-			if (currentAssociation != null) {
-				addSketchTab(currentAssociation.source);
-				if (currentAssociation.source != currentAssociation.destination) {
-					addSketchTab(currentAssociation.destination);
-				}
-				sketchTabbedPane.setSelectedIndex(0);
-			} else {
-				if (root != null) {
-					addSketchTab(root);
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * Adds a tab to the sketch-tabbedpane for a given table.
-	 *
-	 * @param table the table
-	 */
-	private void addSketchTab(Table table) throws Exception {
-		JScrollPane tab = new JScrollPane();
-		RSyntaxTextArea xmlSketch = new RSyntaxTextAreaWithTheme();
-
-		xmlSketch.setEditable(false);
-		tab.setViewportView(xmlSketch);
-		xmlSketch.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_XML);
-		xmlSketch.setCodeFoldingEnabled(true);
-
-		String tabName = null;
-		String sketch = "";
-		tabName = dataModel.getDisplayName(table);
-		sketch = XmlSketchBuilder.buildSketch(table, 1);
-		xmlSketch.setText(sketch);
-		xmlSketch.setCaretPosition(0);
-		sketchTabbedPane.addTab(tabName, tab);
+//		try {
+//			sketchTabbedPane.removeAll();
+//
+//			if (currentAssociation != null) {
+//				addSketchTab(currentAssociation.source);
+//				if (currentAssociation.source != currentAssociation.destination) {
+//					addSketchTab(currentAssociation.destination);
+//				}
+//				sketchTabbedPane.setSelectedIndex(0);
+//			} else {
+//				if (root != null) {
+//					addSketchTab(root);
+//				}
+//			}
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
 	}
 
 	/**
@@ -3925,7 +3914,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 	public void openColumnMapper(Table table) {
 		String old = table.getXmlTemplate();
 		columnMapperDialog.setTitle(scriptFormat + " Column Mapping");
-		if (columnMapperDialog.edit(dataModel, table)) {
+		if (columnMapperDialog.edit(dataModel, table, scriptFormat)) {
 			String template = table.getXmlTemplate();
 			table.setXmlTemplate(old);
 			changeXmlTemplate(table, template);
@@ -4161,7 +4150,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton activateDesictionPendingButton;
     private javax.swing.JButton additionalSubjectsButton;
-    private javax.swing.JComboBox aggregationCombobox;
+    private JComboBox2 aggregationCombobox;
     private javax.swing.JLabel assocStatsLabel;
     private javax.swing.JLabel associatedWith;
     javax.swing.JTextField condition;
@@ -4169,7 +4158,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
     private javax.swing.JLabel dependsOn;
     private javax.swing.JPanel editorPanel;
     public javax.swing.JButton exportButton;
-    private javax.swing.JComboBox exportFormat;
+    private JComboBox2 exportFormat;
     private javax.swing.JPanel focusLabelPanel;
     javax.swing.JPanel focusPanel;
     private javax.swing.JPanel graphContainer;

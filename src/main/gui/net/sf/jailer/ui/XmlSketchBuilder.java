@@ -15,7 +15,11 @@
  */
 package net.sf.jailer.ui;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -31,11 +35,15 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Cardinality;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.subsetting.ScriptFormat;
+import net.sf.jailer.xml.XmlRowWriter;
 import net.sf.jailer.xml.XmlUtil;
+import net.sf.jailer.xml.XmlUtil.ObjectNotationTransformerHandler;
 
 /**
  * Builds XML sketches.
@@ -50,19 +58,53 @@ public class XmlSketchBuilder {
 	 * @param table the table
 	 * @return xml sketch for table 
 	 */
-	public static String buildSketch(Table table, int depth) throws Exception {
+	public static String buildSketch(Table table, int depth, ScriptFormat scriptFormat, ExecutionContext executionContext) throws Exception {
 		if (table == null) {
 			return "";
 		}
 		Document sketch = table.getXmlTemplateAsDocument(null);
 		if (sketch.getChildNodes().getLength() > 0 && sketch.getChildNodes().item(0) instanceof Element) {
-			insertAssociationSketch(sketch.getChildNodes().item(0), table, sketch, depth);
+			insertAssociationSketch(sketch.getChildNodes().item(0), table, sketch, scriptFormat, depth);
 		}
-		return XmlUtil.buildOmitDeclaration(sketch);
+		String result = XmlUtil.buildOmitDeclaration(sketch);
+		if (scriptFormat != ScriptFormat.XML) {
+			OutputStream out = new ByteArrayOutputStream();
+			ObjectNotationTransformerHandler th = XmlUtil.createObjectNotationTransformerHandler("", "", new OutputStreamWriter(out, Charset.defaultCharset()), true, scriptFormat, executionContext);
+			XmlRowWriter xmlRowWriter = new XmlRowWriter(out, null, null, null, null, scriptFormat, Charset.defaultCharset(), th, executionContext);
+			XmlUtil.visitDocumentNodes(XmlUtil.parse(result), xmlRowWriter.new XmlWritingNodeVisitor(null, null, table, null, null) {
+				@Override
+				protected Object toContent(String text, boolean returnNull) {
+					return "...";
+				}
+				@Override
+				public void visitAssociationElement(String associationName, String name) {
+					if (name != null) {
+						table.associations.stream().filter(a -> associationName.equals(a.getName())).findAny()
+								.ifPresent(a -> {
+									th.associationSketch(a, associationName, name);
+								});
+					}
+				}
+			});
+			th.endDocument();
+			result = out.toString();
+		}
+		return result;
 	}
 	
-	private static void insertAssociationSketch(Node node, Table table, Document doc, int depth) throws DOMException, ParserConfigurationException, SAXException, IOException {
+	private static void insertAssociationSketch(Node node, Table table, Document doc, ScriptFormat scriptFormat, int depth) throws DOMException, ParserConfigurationException, SAXException, IOException {
 		NodeList children = node.getChildNodes();
+		if (node instanceof Element) {
+			Node a0 = ((Element) node).getAttributes().item(0);
+			if (a0 != null && a0.getNodeName() != null && a0.getNodeName().startsWith("j:")) {
+				((Element) node).removeAttribute(a0.getNodeName());
+			}
+			Node ch = ((Element) node).getFirstChild();
+			if (ch != null && ch.getTextContent().trim().startsWith("SQL:")) {
+				((Element) node).removeChild(ch);
+				((Element) node).appendChild(doc.createTextNode("..."));
+			}
+		}
 		int i = 0;
 		while (i < children.getLength()) {
 			if (children.item(i) instanceof Element) {
@@ -77,17 +119,22 @@ public class XmlSketchBuilder {
 							}
 						}
 					}
-					  if (association != null && depth < 3) {
-						  Node[] ae = insertAssociationSketch(association, doc, depth + 1);
+					if (association != null && depth < 5) {
+						Node[] ae = insertAssociationSketch(association, doc, scriptFormat, depth + 1);
 						if (ae != null) {
 							for (Node n: ae) {
 								node.insertBefore(doc.importNode(n, true), e);
 								++i;
 							}
 						}
-					  }
-					  node.removeChild(e);
+					}
+					if (scriptFormat == ScriptFormat.XML) {
+						node.removeChild(e);
+					} else {
+						++i;
+					}
 				} else {
+					insertAssociationSketch(e, table, doc, scriptFormat, depth + 1);
 					++i;
 				}
 			} else {
@@ -96,37 +143,39 @@ public class XmlSketchBuilder {
 		}
 	}
 
-	private static Node[] insertAssociationSketch(Association association, Document doc, int depth) throws ParserConfigurationException, SAXException, IOException {
-		if (association.getAggregationSchema() == AggregationSchema.EXPLICIT_LIST) {
-			Element e1 = doc.createElement(association.getAggregationTagName());
-			Element e2 = doc.createElement(association.destination.getUnqualifiedName().toLowerCase(Locale.ENGLISH));
-			e1.appendChild(e2);
-			if (association.getCardinality() != Cardinality.MANY_TO_ONE && association.getCardinality() != Cardinality.ONE_TO_ONE) {
-				e1.appendChild(doc.createComment("..."));
+	private static Node[] insertAssociationSketch(Association association, Document doc, ScriptFormat scriptFormat, int depth) throws ParserConfigurationException, SAXException, IOException {
+		if (scriptFormat == ScriptFormat.XML) {
+			if (association.getAggregationSchema() == AggregationSchema.EXPLICIT_LIST) {
+				Element e1 = doc.createElement(association.getAggregationTagName());
+				Element e2 = doc.createElement(association.destination.getUnqualifiedName().toLowerCase(Locale.ENGLISH));
+				e1.appendChild(e2);
+	//			if (association.getCardinality() != Cardinality.MANY_TO_ONE && association.getCardinality() != Cardinality.ONE_TO_ONE) {
+					e1.appendChild(doc.createTextNode("..."));
+	//			}
+				return new Node[] { e1 };
 			}
-			return new Node[] { e1 };
-		}
-		else if (association.getAggregationSchema() == AggregationSchema.IMPLICIT_LIST) {
-			Element e1 = doc.createElement(association.getAggregationTagName());
-			if (association.getCardinality() != Cardinality.MANY_TO_ONE && association.getCardinality() != Cardinality.ONE_TO_ONE) {
-				Node c = doc.createComment("...");
-				return new Node[] { e1, c };
+			else if (association.getAggregationSchema() == AggregationSchema.IMPLICIT_LIST) {
+				Element e1 = doc.createElement(association.getAggregationTagName());
+	//			if (association.getCardinality() != Cardinality.MANY_TO_ONE && association.getCardinality() != Cardinality.ONE_TO_ONE) {
+				e1.appendChild(doc.createTextNode("..."));
+					return new Node[] { e1 };
+	//			}
+	//			return new Node[] { e1 };
+			} else if (association.getAggregationSchema() == AggregationSchema.FLAT) {
+				Document sketch = association.destination.getXmlTemplateAsDocument(null);
+				List<Node> nodes = new ArrayList<Node>();
+				if (sketch.getChildNodes().getLength() > 0 && sketch.getChildNodes().item(0) instanceof Element) {
+					insertAssociationSketch(sketch.getChildNodes().item(0), association.destination, sketch, scriptFormat, depth + 1);
+				}
+				NodeList children = sketch.getChildNodes().item(0).getChildNodes();
+				for (int i = 0; i < children.getLength(); ++i) {
+					nodes.add(children.item(i));
+				}
+	//			if (association.getCardinality() != Cardinality.MANY_TO_ONE && association.getCardinality() != Cardinality.ONE_TO_ONE) {
+	//				nodes.add(sketch.createTextNode("..."));
+	//			}
+				return nodes.toArray(new Node[nodes.size()]);
 			}
-			return new Node[] { e1 };
-		} else if (association.getAggregationSchema() == AggregationSchema.FLAT) {
-			Document sketch = association.destination.getXmlTemplateAsDocument(null);
-			List<Node> nodes = new ArrayList<Node>();
-			if (sketch.getChildNodes().getLength() > 0 && sketch.getChildNodes().item(0) instanceof Element) {
-				insertAssociationSketch(sketch.getChildNodes().item(0), association.destination, sketch, depth + 1);
-			}
-			NodeList children = sketch.getChildNodes().item(0).getChildNodes();
-			for (int i = 0; i < children.getLength(); ++i) {
-				nodes.add(children.item(i));
-			}
-			if (association.getCardinality() != Cardinality.MANY_TO_ONE && association.getCardinality() != Cardinality.ONE_TO_ONE) {
-				nodes.add(sketch.createComment("..."));
-			}
-			return nodes.toArray(new Node[nodes.size()]);
 		}
 		return null;
 	}

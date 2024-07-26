@@ -434,7 +434,9 @@ public class Association extends ModelElement {
 		String tag;
 		Set<String> otherNames = null;
 		if (aggregationTagName == null) {
-			otherNames = source.associations.stream().map(a -> a.aggregationTagName).filter(t -> t != null).collect(Collectors.toSet());
+			otherNames = new HashSet<>();
+			otherNames.addAll(source.associations.stream().map(a -> a.aggregationTagName).filter(t -> t != null).collect(Collectors.toSet()));
+			otherNames.addAll(source.getColumns().stream().map(c -> c.name.toLowerCase()).collect(Collectors.toSet()));
 			tag = destination.getUnqualifiedName().toLowerCase(Locale.ENGLISH);
 		} else {
 			tag = aggregationTagName;

@@ -30,6 +30,7 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Stack;
 
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.sax.TransformerHandler;
@@ -38,6 +39,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.AggregationSchema;
@@ -50,7 +52,7 @@ import net.sf.jailer.util.SqlUtil;
 
 
 /**
- * Writes rows into XML file.
+ * Writes rows into XML/JSON/YAML file.
  * 
  * @author Ralf Wisser
  */
@@ -86,6 +88,13 @@ public class XmlRowWriter {
 	 */
 	private final Map<Table, Map<String, Integer>> typeCachesForStringKey = new HashMap<Table, Map<String,Integer>>();
 	
+	protected boolean forSketch = false;
+	
+	/**
+	 * Execution context.
+	 */
+	private final ExecutionContext executionContext;
+	
 	/**
 	 * Constructor.
 	 * 
@@ -95,41 +104,72 @@ public class XmlRowWriter {
 	 * @param datePattern pattern for dates
 	 * @param timestampPattern pattern for time-stamps
 	 * @param scriptFormat 
+	 * @param executionContext 
 	 */
-	public XmlRowWriter(OutputStream out, String commentHeader, String rootTag, String datePattern, String timestampPattern, ScriptFormat scriptFormat, Charset charset) throws SAXException, TransformerConfigurationException {
+	public XmlRowWriter(OutputStream out, String commentHeader, String rootTag, String datePattern, String timestampPattern, ScriptFormat scriptFormat, Charset charset, ExecutionContext executionContext) throws SAXException, TransformerConfigurationException {
 		this.rootTag = rootTag;
-		this.datePattern = new SimpleDateFormat(datePattern, Locale.ENGLISH);
-		this.timestampPattern = new SimpleDateFormat(timestampPattern, Locale.ENGLISH);
+		this.executionContext = executionContext;
+		this.datePattern = datePattern == null? new SimpleDateFormat() : new SimpleDateFormat(datePattern, Locale.ENGLISH);
+		this.timestampPattern = timestampPattern == null? new SimpleDateFormat() : new SimpleDateFormat(timestampPattern, Locale.ENGLISH);
 		StreamResult streamResult = new StreamResult(new OutputStreamWriter(out, charset));
 		transformerHandler = scriptFormat == ScriptFormat.JSON
-				? XmlUtil.createJSONTransformerHandler(commentHeader, rootTag, streamResult, charset)
-				: XmlUtil.createTransformerHandler(commentHeader, rootTag, streamResult, charset);
+				? XmlUtil.createObjectNotationTransformerHandler(commentHeader, executionContext.isSingleRoot()? "" : rootTag, streamResult.getWriter(), false, scriptFormat, executionContext)
+				: XmlUtil.createTransformerHandler(commentHeader, executionContext.isSingleRoot()? "" : rootTag, streamResult, charset);
+	}
+	
+	/**
+	 * Constructor.
+	 * 
+	 * @param out output stream to write the xml into
+	 * @param commentHeader comment at top of document
+	 * @param rootTag root tag name
+	 * @param datePattern pattern for dates
+	 * @param timestampPattern pattern for time-stamps
+	 * @param scriptFormat 
+	 * @param executionContext 
+	 */
+	public XmlRowWriter(OutputStream out, String commentHeader, String rootTag, String datePattern, String timestampPattern, ScriptFormat scriptFormat, Charset charset, TransformerHandler transformerHandler, ExecutionContext executionContext) throws SAXException, TransformerConfigurationException {
+		this.rootTag = rootTag;
+		this.executionContext = executionContext;
+		this.datePattern = datePattern == null? new SimpleDateFormat() : new SimpleDateFormat(datePattern, Locale.ENGLISH);
+		this.timestampPattern = timestampPattern == null? new SimpleDateFormat() : new SimpleDateFormat(timestampPattern, Locale.ENGLISH);
+		forSketch = true;
+		this.transformerHandler = transformerHandler;
 	}
 
 	/**
 	 * Closes the writer.
 	 */
 	public void close() throws SAXException {
-		// TODO
-		// TODO rootTag is never empty. multipleObject attribute
-		if (rootTag.length() > 0 && !(transformerHandler instanceof ObjectFormatTransformer)) {
+		if (!executionContext.isSingleRoot() && !(transformerHandler instanceof ObjectFormatTransformer)) {
 			transformerHandler.endElement("", "", rootTag);
 		}
 		transformerHandler.endDocument();
 	}
-
+	
+	private Map<Association, Stack<String>> associationTempAggregationTagName = new HashMap<>();
+	
 	/**
 	 * Writes start element for a list of rows.
 	 * 
 	 * @param association association describing the list
+	 * @param name 
 	 */
-	public void startList(Association association) throws SAXException {
+	public void startList(Association association, String name) throws SAXException {
+		if (association != null) {
+			Stack<String> stack = associationTempAggregationTagName.get(association);
+			if (stack == null) {
+				stack = new Stack<>();
+				associationTempAggregationTagName.put(association, stack);
+			}
+			stack.push(name);
+		}
 		if (association != null && getAggregationSchema(association) == AggregationSchema.EXPLICIT_LIST) {
 			if (ifLevel == 0) {
 				if (transformerHandler instanceof ObjectFormatTransformer) {
 					((ObjectFormatTransformer) transformerHandler).startArray();
 				}
-				transformerHandler.startElement(null, null, association.getAggregationTagName(), null);
+				transformerHandler.startElement(null, null, name != null? name : association.getAggregationTagName(), null);
 			}
 		}
 	}
@@ -146,6 +186,12 @@ public class XmlRowWriter {
 				if (transformerHandler instanceof ObjectFormatTransformer) {
 					((ObjectFormatTransformer) transformerHandler).endArray();
 				}
+			}
+		}
+		if (association != null) {
+			Stack<String> stack = associationTempAggregationTagName.get(association);
+			if (stack != null && !stack.isEmpty()) {
+				stack.pop();
 			}
 		}
 	}
@@ -200,6 +246,8 @@ public class XmlRowWriter {
 		 */
 		protected final CellContentConverter cellContentConverter;
 		
+		private String lastElementName;
+
 		/**
 		 * Constructor.
 		 * 
@@ -211,7 +259,7 @@ public class XmlRowWriter {
 			this.table = table;
 			this.association = association;
 			this.session = session;
-			this.cellContentConverter =  new CellContentConverter(resultSetMetaData, session, session.dbms);
+			this.cellContentConverter = session == null? null : new CellContentConverter(resultSetMetaData, session, session.dbms);
 		}
 
 		/**
@@ -221,7 +269,7 @@ public class XmlRowWriter {
 		 * @param returnNull if <code>true</code>, return null instead of empty string if sql-result is null
 		 * @return the xml to write out
 		 */
-		private Object toContent(String text, boolean returnNull) {
+		protected Object toContent(String text, boolean returnNull) {
 			if (text != null && text.startsWith(XmlUtil.SQL_PREFIX)) {
 				String columnName = "C" + nr++;
 				int type;
@@ -231,45 +279,52 @@ public class XmlRowWriter {
 						typeCache = new HashMap<String, Integer>();
 						typeCachesForStringKey.put(table, typeCache);
 					}
-					type = SqlUtil.getColumnType(resultSet, resultSetMetaData, columnName, typeCache);
-					if ((type == Types.BLOB || type == Types.CLOB|| type == Types.NCLOB) && !DBMS.SQLITE.equals(session.dbms)) {
-						Object object = resultSet.getObject(columnName);
-						if (returnNull && (object == null || resultSet.wasNull())) {
-							return null;
-						}
-						if (object instanceof Blob) {
-							Blob blob = (Blob) object;
-							byte[] blobValue = blob.getBytes(1, (int) blob.length());
-							return Base64.encodeBytes(blobValue);
-						}
+					try {
+						type = SqlUtil.getColumnType(resultSet, resultSetMetaData, columnName, typeCache);
+						if ((type == Types.BLOB || type == Types.CLOB || type == Types.NCLOB)
+								&& !DBMS.SQLITE.equals(session.dbms)) {
+							Object object = resultSet.getObject(columnName);
+							if (returnNull && (object == null || resultSet.wasNull())) {
+								return null;
+							}
+							if (object instanceof Blob) {
+								Blob blob = (Blob) object;
+								byte[] blobValue = blob.getBytes(1, (int) blob.length());
+								return Base64.encodeBytes(blobValue);
+							}
 
-						if (object instanceof Clob) {
-							Clob clobValue = (Clob) object;
-							int length = (int) clobValue.length();
-							if (length > 0) {
-								return clobValue.getSubString(1, length);
+							if (object instanceof Clob) {
+								Clob clobValue = (Clob) object;
+								int length = (int) clobValue.length();
+								if (length > 0) {
+									return clobValue.getSubString(1, length);
+								}
+								return "";
 							}
-							return "";
-						}
-					} else {
-						Object o = cellContentConverter.getObject(resultSet, columnName);
-						if (returnNull && (o == null || resultSet.wasNull())) {
-							return null;
-						}
-						if (o != null) {
-							Object value;
-							
-							if (o instanceof Timestamp) {
-								value = timestampPattern.format((Timestamp) o);
-							} else if (o instanceof Date) {
-								value = datePattern.format((Date) o);
-							} else {
-								value = o;
+						} else {
+							Object o = cellContentConverter.getObject(resultSet, columnName);
+							if (returnNull && (o == null || resultSet.wasNull())) {
+								return null;
 							}
-							return value;
+							if (o != null) {
+								Object value;
+
+								if (o instanceof Timestamp) {
+									value = timestampPattern.format((Timestamp) o);
+								} else if (o instanceof Date) {
+									value = datePattern.format((Date) o);
+								} else {
+									value = o;
+								}
+								return value;
+							}
 						}
+						return null;
+					} catch (OutOfMemoryError e) {
+						throw new OutOfMemoryError("Out of Memory. \nNot enough memory to read field "
+								+ (table == null ? "" : ("\"" + table.getName() + "\".")) + " \"" + lastElementName
+								+ "\"");
 					}
-					return null;
 				} catch (SQLException e) {
 					throw new RuntimeException(e);
 				}
@@ -280,7 +335,7 @@ public class XmlRowWriter {
 		@Override
 		public void visitComment(String comment) {
 			try {
-				if (ifLevel == 0) {
+				if (ifLevel == 0 && forSketch) {
 					transformerHandler.comment(comment.toCharArray(), 0, comment.length());
 				}
 			} catch (SAXException e) {
@@ -308,6 +363,7 @@ public class XmlRowWriter {
 		
 		@Override
 		public void visitElementStart(String elementName, boolean isRoot, String[] aNames, String[] aValues) {
+			lastElementName = elementName;
 			if (ifLevel > 0) {
 				++ifLevel;
 			}
@@ -332,8 +388,6 @@ public class XmlRowWriter {
 						} else if (!aNames[i].equals(jailerNamespaceDeclaration)) {
 							Object content = toContent(aValues[i], false);
 							attr.addAttribute("", "", aNames[i], "CDATA", content == null? "" : content.toString());
-							// TODO
-							// TODO if instanceof ObjectFormatTransformer then startElement(); content(); endElement();
 						}
 					}
 				}
@@ -342,7 +396,19 @@ public class XmlRowWriter {
 						++ifLevel;
 					} else {
 						if (!isRoot || association == null || getAggregationSchema(association) != AggregationSchema.FLAT) {
-							String tagName = isRoot && association != null && getAggregationSchema(association) != AggregationSchema.EXPLICIT_LIST? association.getAggregationTagName() : elementName;
+							String tagName;
+							if (isRoot && association != null && getAggregationSchema(association) != AggregationSchema.EXPLICIT_LIST) {
+								tagName = null;
+								Stack<String> stack = associationTempAggregationTagName.get(association);
+								if (stack != null && !stack.isEmpty()) {
+									tagName = stack.peek();
+								}
+								if (tagName == null) {
+									tagName = association.getAggregationTagName();
+								}
+							} else {
+								tagName = elementName;
+							}
 							transformerHandler.startElement("", "", tagName, attr);
 						}
 					}
@@ -376,20 +442,13 @@ public class XmlRowWriter {
 
 
 // TODO
-// TODO Sketch also in JSON
-// TODO no Sketch-view in ExMoEd, only in template-editor
-// TODO "Sketch" dann in "Template"-Dialog (fuer beide Tabellen der Asoziation?)
-
-// TODO
-// TODO template-editor (GUI):
-// TODO add sketch view (JScrollPane)
-// TODO make it bigger
-
-// TODO
 // TODO docu about "j:if-not-null"/"j:is-null" in template dialog
 
-// TODO
-// TODO warn if "singleObject" and "incudeNonAggr" and later exists. "dont warn again" button (transient)
+// TODO 1
+// TODO JSON/YAML/XML
+// TODO "unformatted" export. in XMLSettingsDialog+CLI+SubesstingEngine(Facade)
 
+// TODO
+// TODO new maven dep, testen
 
 

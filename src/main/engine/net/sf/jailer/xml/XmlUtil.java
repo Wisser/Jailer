@@ -22,6 +22,7 @@ import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
@@ -39,7 +40,6 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.commons.collections4.map.HashedMap;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
@@ -53,9 +53,9 @@ import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
-
+import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.datamodel.Association;
+import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.xml.XmlRowWriter.ObjectFormatTransformer;
 
@@ -65,15 +65,41 @@ import net.sf.jailer.xml.XmlRowWriter.ObjectFormatTransformer;
  * @author Ralf Wisser
  */
 public class XmlUtil {
+	
+	public static interface ObjectNotationWriter {
+		public void writeStartObject() throws IOException;
+		public void writeStartArray() throws IOException;
+		public void writeEndObject() throws IOException;
+		public void writeEndArray() throws IOException;
+		public void flush() throws IOException;
+		public void writeFieldName(String qName) throws IOException;
+		public void writeArrayFieldStart(String qName) throws IOException;
+		public void writeNull() throws IOException;
+		public void writeBinary(byte[] content) throws IOException;
+		public void writeBoolean(Boolean content) throws IOException;
+		public void writeNumber(BigInteger content) throws IOException;
+		public void writeNumber(BigDecimal content) throws IOException;
+		public void writeNumber(Double content) throws IOException;
+		public void writeNumber(Float content) throws IOException;
+		public void writeNumber(Integer content) throws IOException;
+		public void writeNumber(Long content) throws IOException;
+		public void writeNumber(Short content) throws IOException;
+		public void writeString(String string) throws IOException;
+		public void writeComment(String comment) throws IOException;
+	}
 
-	private static class JSONTransformerHandler implements TransformerHandler, ObjectFormatTransformer {
+	public static class ObjectNotationTransformerHandler implements TransformerHandler, ObjectFormatTransformer {
 		private final Writer out;
-		private final JsonGenerator jGenerator;
+		private final ObjectNotationWriter jGenerator;
+		private final ExecutionContext executionContext;
+		private final boolean forSketch;
 		Stack<Character> states = new Stack<>();
-
-		private JSONTransformerHandler(Writer out, JsonGenerator jGenerator) {
+		
+		private ObjectNotationTransformerHandler(Writer out, ObjectNotationWriter jGenerator, boolean forSketch, ExecutionContext executionContext) {
 			this.out = out;
 			this.jGenerator = jGenerator;
+			this.forSketch = forSketch;
+			this.executionContext = executionContext;
 		}
 
 		@Override
@@ -83,8 +109,13 @@ public class XmlUtil {
 		@Override
 		public void startDocument() throws SAXException {
 			try {
-				jGenerator.writeStartObject();
-				states.push('{');
+				if (forSketch || executionContext.isSingleRoot()) {
+					jGenerator.writeStartObject();
+					states.push('R');
+				} else {
+					jGenerator.writeStartArray();
+					states.push('M');
+				}
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
@@ -93,8 +124,12 @@ public class XmlUtil {
 		@Override
 		public void endDocument() throws SAXException {
 			try {
-				jGenerator.writeEndObject();
-				states.pop();
+				Character c = states.pop();
+				if (c == 'R') {
+					jGenerator.writeEndObject();
+				} else if (c == 'M') {
+					jGenerator.writeEndArray();
+				}
 				jGenerator.flush();
 			} catch (IOException e) {
 				try {
@@ -124,12 +159,17 @@ public class XmlUtil {
 					jGenerator.writeStartObject();
 					states.push('=');
 					jGenerator.writeFieldName(qName);
+				} else if (states.peek() == 'M') {
+					jGenerator.writeStartObject();
+					states.push('m');
 				} else if (states.peek() == '[') {
 					jGenerator.writeArrayFieldStart(qName);
 					states.push('-');
 				} else if (states.peek() == '-') {
 					jGenerator.writeStartObject();
 					states.push('{');
+				} else if (states.peek() == 'R') {
+					states.push('r');
 				} else {
 					states.push('=');
 					jGenerator.writeFieldName(qName);
@@ -155,6 +195,9 @@ public class XmlUtil {
 				if (pop == '{') {
 					jGenerator.writeEndObject();
 				}
+				if (pop == 'm') {
+					jGenerator.writeEndObject();
+				}
 				if (pop == '-') {
 					jGenerator.writeEndArray();
 				}
@@ -163,7 +206,7 @@ public class XmlUtil {
 			}
 		}
 		
-		private Map<String, Object> constants = new HashedMap<>();
+		private Map<String, Object> constants = new HashMap<>();
 
 		@Override
 		public void characters(char[] ch, int start, int length) throws SAXException {
@@ -242,6 +285,14 @@ public class XmlUtil {
 
 		@Override
 		public void comment(char[] ch, int start, int length) throws SAXException {
+			try {
+				String comment = new String(ch, start, length).trim();
+				if (!comment.isEmpty()) {
+					jGenerator.writeComment(comment);
+				}
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 		}
 
 		@Override
@@ -312,12 +363,56 @@ public class XmlUtil {
 
 		@Override
 		public void startArray() {
-			states.push('[');
+			try {
+				if (states.peek() == '=') {
+					jGenerator.writeStartObject();
+					states.push('[');
+				} else {
+					states.push('[');
+				}
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 		}
 
 		@Override
 		public void endArray() {
-			states.pop();
+			try {
+				states.pop();
+				if (states.peek() == '=') {
+					jGenerator.writeEndObject();
+					states.pop();
+					states.push('?');
+				}
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		public void associationSketch(Association a, String associationName, String name) {
+			try {
+				if (states.peek() != '=') {
+					jGenerator.writeFieldName(name);
+				} else {
+					jGenerator.writeStartObject();
+					states.pop();
+					states.push('?');
+					associationSketch(a, associationName, name);
+					jGenerator.writeEndObject();
+					return;
+				}
+				boolean isArray = !a.isInsertDestinationBeforeSource();
+				
+				if (isArray) {
+					jGenerator.writeStartArray();
+					jGenerator.writeEndArray();
+				} else {
+					jGenerator.writeStartObject();
+					jGenerator.writeEndObject();
+				}
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 		}
 	}
 
@@ -538,35 +633,38 @@ public class XmlUtil {
 		return transformerHandler;
 	}
 
-	public static TransformerHandler createJSONTransformerHandler(String commentHeader, String rootTag,
-			StreamResult streamResult, Charset charset) {
+	public static ObjectNotationTransformerHandler createObjectNotationTransformerHandler(String commentHeader, String rootTag,
+			Writer out, boolean forSketch, ScriptFormat scriptFormat, ExecutionContext executionContext) {
 		
-		Writer out = streamResult.getWriter();
-		JsonFactory jfactory = new JsonFactory();
-		JsonGenerator jGenerator;
+		ObjectNotationWriter jGenerator;
 		try {
-			jGenerator = jfactory
-			  .createGenerator(out);
-			jGenerator.useDefaultPrettyPrinter();
+			if (scriptFormat == ScriptFormat.JSON) {
+				jGenerator = new JSONWriter(out);
+			} else if (scriptFormat == ScriptFormat.YAML) {
+				// TODO
+				jGenerator = new YAMLWriter(out);
+			} else {
+				throw new RuntimeException("unknown script format: " + scriptFormat);
+			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 		
 		// TODO
-		// TODO c|blob: size-limit (editable). As watch-dog (error if exceeded) (show path of field on error)
-		
-		// TODO
 		// TODO count XML/JSON/YMAML exports (s16-19) 
-		
-		// TODO
-		// TODO ? default in XML/JSON/... Settings: dont allow arrays. max straenge. dann in der Fehlermeldung auf Mögl. Array zuzulassen aufmerksam machen?
-		// TODO ? gute gruende, das gegenteil zu machen. im fehlerfall nur warnen.
-		TransformerHandler th = new JSONTransformerHandler(out, jGenerator);
+
+		ObjectNotationTransformerHandler th = new ObjectNotationTransformerHandler(out, jGenerator, forSketch, executionContext);
 		try {
 			th.startDocument();
-		} catch (SAXException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			if (commentHeader != null && !commentHeader.isEmpty()) {
+				// TODO
+				// TODO nicht bei JSON, noch testen
+				if (!(jGenerator instanceof JSONWriter)) {
+					jGenerator.writeComment(commentHeader);
+				}
+			}
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 		return th;
 	}

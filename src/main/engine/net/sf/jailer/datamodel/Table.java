@@ -405,10 +405,6 @@ public class Table extends ModelElement implements Comparable<Table> {
 		// TODO 	should use " as quot-char in GUI
 		// TODO     whatabout MySQL/MariaBD? Requoting? How?
 		// TODO default-quoting("/caseIns.) + heuristic re-quoting in XmlRowWriter: if content like 'SQL:T."xy"' -> 'SQL:T.<requote('"xy"')
-		
-		// TODO
-		// TODO (in ColumnMappinfDialog?)
-		// TODO if template equals default-template when "ok"-button is clicked: remove template-def in extraction-model.csv (if it is saved afterwards)
 	}
 
 	/**
@@ -421,7 +417,7 @@ public class Table extends ModelElement implements Comparable<Table> {
 	/**
 	 * Gets template for XML exports as DOM.
 	 */
-	private Document getXmlTemplateAsDocument(String xmlTemplate, Quoting quoting) throws ParserConfigurationException, SAXException, IOException {
+	public Document getXmlTemplateAsDocument(String xmlTemplate, Quoting quoting) throws ParserConfigurationException, SAXException, IOException {
 		Document template;
 		if (xmlTemplate == null) {
 			template = createInitialXmlTemplate(quoting);

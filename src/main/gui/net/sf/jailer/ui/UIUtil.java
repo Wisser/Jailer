@@ -152,6 +152,7 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ddl.DDLCreator;
 import net.sf.jailer.progress.ProgressListener;
+import net.sf.jailer.subsetting.ObjectNotationOutputException;
 import net.sf.jailer.subsetting.RowLimitExceededException;
 import net.sf.jailer.ui.databrowser.DetailsView;
 import net.sf.jailer.ui.databrowser.Row;
@@ -864,7 +865,7 @@ public class UIUtil {
     	if (t instanceof DataModel.NoPrimaryKeyException || t instanceof CycleFinder.CycleFoundException) {
             context = EXCEPTION_CONTEXT_USER_ERROR;
         }
-    	if (t instanceof RowLimitExceededException) {
+    	if (t instanceof RowLimitExceededException || t instanceof ObjectNotationOutputException) {
             context = EXCEPTION_CONTEXT_USER_WARNING;
         }
     	if (t instanceof SqlException) {
