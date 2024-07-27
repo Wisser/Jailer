@@ -109,6 +109,7 @@ public class XmlSketchBuilder {
 		while (i < children.getLength()) {
 			if (children.item(i) instanceof Element) {
 				Node e = children.item(i);
+				Node name = e.getAttributes().getNamedItem("name");
 				if (XmlUtil.NS_URI.equals(e.getNamespaceURI()) && XmlUtil.ASSOCIATION_TAG.equals(e.getLocalName()) && e.getTextContent() != null) {
 					Association association = null;
 					for (Association a: table.associations) {
@@ -120,7 +121,7 @@ public class XmlSketchBuilder {
 						}
 					}
 					if (association != null && depth < 5) {
-						Node[] ae = insertAssociationSketch(association, doc, scriptFormat, depth + 1);
+						Node[] ae = insertAssociationSketch(name == null? null: name.getTextContent().trim(), association, doc, scriptFormat, depth + 1);
 						if (ae != null) {
 							for (Node n: ae) {
 								node.insertBefore(doc.importNode(n, true), e);
@@ -143,10 +144,10 @@ public class XmlSketchBuilder {
 		}
 	}
 
-	private static Node[] insertAssociationSketch(Association association, Document doc, ScriptFormat scriptFormat, int depth) throws ParserConfigurationException, SAXException, IOException {
+	private static Node[] insertAssociationSketch(String name, Association association, Document doc, ScriptFormat scriptFormat, int depth) throws ParserConfigurationException, SAXException, IOException {
 		if (scriptFormat == ScriptFormat.XML) {
 			if (association.getAggregationSchema() == AggregationSchema.EXPLICIT_LIST) {
-				Element e1 = doc.createElement(association.getAggregationTagName());
+				Element e1 = doc.createElement(name != null? name : association.getAggregationTagName());
 				Element e2 = doc.createElement(association.destination.getUnqualifiedName().toLowerCase(Locale.ENGLISH));
 				e1.appendChild(e2);
 	//			if (association.getCardinality() != Cardinality.MANY_TO_ONE && association.getCardinality() != Cardinality.ONE_TO_ONE) {
@@ -155,7 +156,7 @@ public class XmlSketchBuilder {
 				return new Node[] { e1 };
 			}
 			else if (association.getAggregationSchema() == AggregationSchema.IMPLICIT_LIST) {
-				Element e1 = doc.createElement(association.getAggregationTagName());
+				Element e1 = doc.createElement(name != null? name : association.getAggregationTagName());
 	//			if (association.getCardinality() != Cardinality.MANY_TO_ONE && association.getCardinality() != Cardinality.ONE_TO_ONE) {
 				e1.appendChild(doc.createTextNode("..."));
 					return new Node[] { e1 };

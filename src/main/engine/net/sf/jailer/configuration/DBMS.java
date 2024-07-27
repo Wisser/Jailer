@@ -784,18 +784,27 @@ public class DBMS {
 
 		StringBuilder qvalue = new StringBuilder();
 		int l = string.length();
+		boolean resultIsComplex = false;
 
 		for (int i = 0; i < l; ++i) {
 			char c = string.charAt(i);
 			String es = charToEscapeSequence.get(c);
 			if (es != null) {
-				if (prefix != null && es.startsWith("'") && es.endsWith("'") && es.length() > 2) {
+				boolean isComplex = es.startsWith("'") && es.endsWith("'") && es.length() > 2;
+				if (isComplex) {
+					resultIsComplex = true;
+				}
+				if (prefix != null && isComplex) {
 					es = es.substring(0, es.length() - 1) + prefix + "'";
 				}
 				qvalue.append(es);
 			} else {
 				qvalue.append(c);
 			}
+		}
+		if (resultIsComplex) {
+			return "(" + qvalue + ")"; // TODO
+			// TODO test, nur pg
 		}
 		return qvalue.toString();
 	}

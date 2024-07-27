@@ -26,6 +26,8 @@ import java.util.regex.Pattern;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JScrollPane;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
@@ -114,11 +116,34 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 						 setMappingFieldText(XmlUtil.build(table.getXmlTemplateAsDocument(null)));
 						 mappingField.discardAllEdits();
 						 updateSketch(table);
+						 updateSketchUpdateButtons();
 					 }
 				 } catch (Exception ex) {
 					UIUtil.showException(ColumnMapperDialog.this.parent, "Error", ex);
 				 }
 			 }
+		});
+		
+		mappingField.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				update();
+			}
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				update();
+			}
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				update();
+			}
+			private void update() {
+				if (sketchUpdateCheckbox.isSelected()) {
+					updateSketch(table);
+				} else {
+					xmlSketch.setEnabled(false);
+				}
+			}
 		});
 	}
 
@@ -141,16 +166,17 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 		tableCombobox.setModel(new DefaultComboBoxModel(tableNames));
 		tableCombobox.setMaximumRowCount(40);
 		tableCombobox.setSelectedItem(dataModel.getDisplayName(table));
+		tableCombobox.setEnabled(false);
 		int w = 1200, h = 600;
 		setSize(w, h);
 		setLocation(Math.max(0, parent.getX() + parent.getWidth() / 2 - w / 2),
 					Math.max(0, parent.getY() + parent.getHeight() / 2 - h / 2));
 		jSplitPane1.setDividerLocation((int) (w * 0.66));
 		invalidate();
-		updateSketch(table);
 		try {
 			setMappingFieldText(XmlUtil.build(table.getXmlTemplateAsDocument(null)));
 			initialTemplate = mappingField.getText();
+			updateSketch(table);
 		} catch (Exception e) {
 			try {
 				// try again with default template,
@@ -162,10 +188,23 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 				return false;
 			}
 		}
+		
+		updateSketchUpdateButtons();
+		
 		mappingField.discardAllEdits();
 		ok = false;
 		setVisible(true);
 		return ok;
+	}
+
+	private void updateSketchUpdateButtons() {
+		if (mappingField.getText().length() < 40000) {
+			sketchUpdateCheckbox.setSelected(true);
+			sketchUpdateButton.setEnabled(false);
+		} else {
+			sketchUpdateCheckbox.setSelected(false);
+			sketchUpdateButton.setEnabled(true);
+		}
 	}
 	
 	private RSyntaxTextArea xmlSketch;
@@ -176,8 +215,13 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 	 * @param table the table
 	 */
 	private void updateSketch(Table table) {
+		if (mappingField.getText().isEmpty()) {
+			return;
+		}
 		String sketch = "";
+		String oldTemplate = table.getXmlTemplate();
 		try {
+			table.setXmlTemplateInternal(mappingField.getText());
 			sketch = XmlSketchBuilder.buildSketch(table, 1, scriptFormat, executionContext);
 			if (scriptFormat == ScriptFormat.JSON) {
 				Pattern pattern = Pattern.compile("\"j\\:comment\"\\s*\\:\\s*\"(.*)/j\\:comment\"(?:\\,)?");
@@ -197,6 +241,8 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 		} catch (Exception e) {
 			e.printStackTrace();
 			sketch = e.getMessage();
+		} finally {
+			table.setXmlTemplateInternal(oldTemplate);
 		}
 		if (scriptFormat == ScriptFormat.XML) {
 			xmlSketch.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_XML);
@@ -207,8 +253,9 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 		if (scriptFormat == ScriptFormat.YAML) {
 			xmlSketch.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_YAML);
 		}
-		Container sParent = xmlSketch.getParent();
+		Container sParent = xmlSketch.getParent(); // TODO
 		xmlSketch.setText(sketch);
+		xmlSketch.setEnabled(true);
 	}
 	
 	/** This method is called from within the constructor to
@@ -228,13 +275,16 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
         jPanel4 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         paramPanel = new javax.swing.JPanel();
-        jPanel5 = new javax.swing.JPanel();
-        jLabel3 = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         formatButton = new javax.swing.JButton();
         resetButton = new javax.swing.JButton();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
+        jPanel5 = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
+        jPanel6 = new javax.swing.JPanel();
+        sketchUpdateButton = new javax.swing.JButton();
+        sketchUpdateCheckbox = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("XML Column Mapping");
@@ -279,35 +329,6 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 20;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         jPanel4.add(paramPanel, gridBagConstraints);
-
-        jSplitPane1.setLeftComponent(jPanel4);
-
-        jPanel5.setLayout(new java.awt.GridBagLayout());
-
-        jLabel3.setText("Sketch");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
-        jPanel5.add(jLabel3, gridBagConstraints);
-
-        jSplitPane1.setRightComponent(jPanel5);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel1.add(jSplitPane1, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel3.add(jPanel1, gridBagConstraints);
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
@@ -358,7 +379,68 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
-        jPanel3.add(jPanel2, gridBagConstraints);
+        jPanel4.add(jPanel2, gridBagConstraints);
+
+        jSplitPane1.setLeftComponent(jPanel4);
+
+        jPanel5.setLayout(new java.awt.GridBagLayout());
+
+        jLabel3.setText("Sketch");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
+        jPanel5.add(jLabel3, gridBagConstraints);
+
+        jPanel6.setLayout(new java.awt.GridBagLayout());
+
+        sketchUpdateButton.setText("Update");
+        sketchUpdateButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sketchUpdateButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
+        jPanel6.add(sketchUpdateButton, gridBagConstraints);
+
+        sketchUpdateCheckbox.setText("Automatic Update");
+        sketchUpdateCheckbox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sketchUpdateCheckboxActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        jPanel6.add(sketchUpdateCheckbox, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 30;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        jPanel5.add(jPanel6, gridBagConstraints);
+
+        jSplitPane1.setRightComponent(jPanel5);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel1.add(jSplitPane1, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel3.add(jPanel1, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -412,6 +494,15 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 			UIUtil.showException(parent, "Syntax Error", e, UIUtil.EXCEPTION_CONTEXT_USER_ERROR);
 		}
 	}//GEN-LAST:event_okButtonActionPerformed
+
+    private void sketchUpdateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sketchUpdateButtonActionPerformed
+    	updateSketch(table);
+    }//GEN-LAST:event_sketchUpdateButtonActionPerformed
+
+    private void sketchUpdateCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sketchUpdateCheckboxActionPerformed
+    	updateSketch(table);
+    	sketchUpdateButton.setEnabled(!sketchUpdateCheckbox.isSelected());
+    }//GEN-LAST:event_sketchUpdateCheckboxActionPerformed
 	
     private void setMappingFieldText(String text) {
 		mappingField.setText(text.replace("\r", ""));
@@ -429,10 +520,13 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JButton okButton;
     private javax.swing.JPanel paramPanel;
     private javax.swing.JButton resetButton;
+    private javax.swing.JButton sketchUpdateButton;
+    private javax.swing.JCheckBox sketchUpdateCheckbox;
     private JComboBox2 tableCombobox;
     // End of variables declaration//GEN-END:variables
 
@@ -451,6 +545,9 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 }
 
 // TODO
+// TODO Sketch positioning, error at pos(0, 0), others stable
+
+// TODO
 // TODO parameter panel:
 // TODO docu? grundsaetzlich, as link to docu?
 
@@ -462,7 +559,6 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 // TODO !!! 2.3.230 !!!
 // TODO find work-around
 // TODO symptom: all tables are empty but still exists
-// TODO f.e.: copy demo-db before connecting. Check if demo-db is valid ("select count(*) from Employee" > 0, same with sakila)
 
 // TODO 
 // TODO no timer. "auto update" checkbox + "update" button in dialog. + stale-indication. initially check checkbox iff template is small (heuristically, maybe if size < 10000 char?)

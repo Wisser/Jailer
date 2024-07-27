@@ -348,6 +348,13 @@ public class Table extends ModelElement implements Comparable<Table> {
 		
 		return closure;
 	}
+
+	/**
+	 * Sets template for XML exports (for internal uses/GUI only).
+	 */
+	public void setXmlTemplateInternal(String xmlTemplate) {
+		this.xmlTemplate = xmlTemplate;
+	}
 	
 	/**
 	 * Sets template for XML exports.

@@ -31,6 +31,7 @@ import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.database.WorkingTableScope;
+import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.subsetting.ExportStatistic;
 import net.sf.jailer.subsetting.InconsistentSubsettingResultException;
 import net.sf.jailer.subsetting.ScriptFormat;
@@ -83,6 +84,7 @@ public class Subsetter {
 		setDataModelURL(dataModel);
 		setExtractionModelURL(extractionModel);
 		setScriptFormat(scriptFormat);
+		initObjectNotationArguments();
 	}
 
 	/**
@@ -111,6 +113,25 @@ public class Subsetter {
 			throw new RuntimeException(e);
 		}
 		setScriptFormat(scriptFormat);
+		initObjectNotationArguments();
+	}
+
+	private void initObjectNotationArguments() {
+		if (getScriptFormat().isObjectNotation()) {
+			ExtractionModel extractionModel;
+			try {
+				extractionModel = new ExtractionModel(extractionModelURL, executionContext.getSourceSchemaMapping(), executionContext.getParameters(), executionContext, true);
+				executionContext.setXmlDatePattern(extractionModel.dataModel.getXmlSettings().datePattern);
+				executionContext.setXmlTimeStampPattern(extractionModel.dataModel.getXmlSettings().timestampPattern);
+				executionContext.setXmlRootTag(extractionModel.dataModel.getXmlSettings().rootTag);
+				executionContext.setSingleRoot(extractionModel.dataModel.getXmlSettings().singleRoot);
+				executionContext.setDisallowNonAggregated(extractionModel.dataModel.getXmlSettings().disallowNonAggregated);
+				executionContext.setIgnoreNonAggregated(extractionModel.dataModel.getXmlSettings().ignoreNonAggregated);
+				executionContext.setIncludeNonAggregated(extractionModel.dataModel.getXmlSettings().includeNonAggregated);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
 	}
 
 	/**
@@ -411,6 +432,10 @@ public class Subsetter {
 	 */
 	public void setDisallowNonAggregated(boolean disallowNonAggregated) {
 		executionContext.setDisallowNonAggregated(disallowNonAggregated);
+		if (disallowNonAggregated) {
+			executionContext.setIncludeNonAggregated(false);
+			executionContext.setIgnoreNonAggregated(false);
+		}
 	}
 
 	/**
@@ -425,6 +450,10 @@ public class Subsetter {
 	 */
 	public void setIncludeNonAggregated(boolean includeNonAggregated) {
 		executionContext.setIncludeNonAggregated(includeNonAggregated);
+		if (includeNonAggregated) {
+			executionContext.setDisallowNonAggregated(false);
+			executionContext.setIgnoreNonAggregated(false);
+		}
 	}
 
 	/**
@@ -439,6 +468,10 @@ public class Subsetter {
 	 */
 	public void setIgnoreNonAggregated(boolean ignoreNonAggregated) {
 		executionContext.setIgnoreNonAggregated(ignoreNonAggregated);
+		if (ignoreNonAggregated) {
+			executionContext.setDisallowNonAggregated(false);
+			executionContext.setIncludeNonAggregated(false);
+		}
 	}
 
 	/**
