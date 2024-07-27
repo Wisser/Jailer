@@ -517,3 +517,7 @@ public class DesktopOutline extends JPanel {
 	}
 
 }
+
+// TODO
+// TODO umbruch table name: indicate it (f.e. with "down then left arrow" symbol (UTF)). UTF problematic?!
+

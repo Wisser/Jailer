@@ -555,11 +555,15 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 // TODO doku: "tutorial"/"preparation": too(ooooo) old!
 
 // TODO
-// TODO H2, Demo DB, somtimes tables get empty- (H2-Bug?)
+// TODO update docu
+// TODO add some template examples
+
+// TODO
+// TODO H2, Demo DB, sometimes tables get empty- (H2-Bug?)
 // TODO !!! 2.3.230 !!!
 // TODO find work-around
 // TODO symptom: all tables are empty but still exists
 
 // TODO 
-// TODO no timer. "auto update" checkbox + "update" button in dialog. + stale-indication. initially check checkbox iff template is small (heuristically, maybe if size < 10000 char?)
+// TODO sketch: stale-indication. initially check checkbox iff template is small (heuristically, maybe if size < 10000 char?)
 // TODO was: show sketch. use timer for preventing lags bcof expensive sketch creation (1000+ column templates f.e.)

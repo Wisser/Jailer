@@ -4489,6 +4489,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	public boolean isTempFileBased() {
 		return tempFileBased;
 	}
+	
+	// TODO 
+	// TODO PG anecdote: error "position 50": pos 50 is not visually marked (makrOccurence?)
 
 	// TODO 2
 	// TODO ordering per column: break down to SQL?
