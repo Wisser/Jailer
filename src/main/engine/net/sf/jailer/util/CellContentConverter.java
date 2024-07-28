@@ -136,18 +136,33 @@ public class CellContentConverter {
 		if (content instanceof NCharWrapper) {
 			String ncharPrefix = targetConfiguration.getNcharPrefix();
 			String value = content.toString();
-			String literal = (ncharPrefix != null? ncharPrefix : "") + "'" + targetConfiguration.convertToStringLiteral(value, ncharPrefix) + "'";
+			boolean[] mustBeParenthesized = new boolean[1];
+			String literal = (ncharPrefix != null? ncharPrefix : "") + "'" + targetConfiguration.convertToStringLiteral(value, ncharPrefix, mustBeParenthesized) + "'";
 			literal = targetConfiguration.postProcessStringLiteral(literal, value, ncharPrefix);
+			if (mustBeParenthesized[0]) {
+				return "(" + literal + ")";
+			}
 			return literal;
 		}
 		if (content instanceof String) {
-			return targetConfiguration.postProcessStringLiteral("'" + targetConfiguration.convertToStringLiteral((String) content) + "'", (String) content, null);
+			boolean[] mustBeParenthesized = new boolean[1];
+			String literal = targetConfiguration.postProcessStringLiteral("'" + targetConfiguration.convertToStringLiteral((String) content, mustBeParenthesized) + "'", (String) content, null);
+			if (mustBeParenthesized[0]) {
+				return "(" + literal + ")";
+			} else {
+				return literal;
+			}
 		}
 		if (content instanceof PObjectWrapper) {
 			if (((PObjectWrapper) content).getValue() == null) {
 				return "null";
 			}
-			return "'" + targetConfiguration.convertToStringLiteral(content.toString()) + "'::" + ((PObjectWrapper) content).getType();
+			boolean[] mustBeParenthesized = new boolean[1];
+			String literal = "'" + targetConfiguration.convertToStringLiteral(content.toString(), mustBeParenthesized) + "'";
+			if (mustBeParenthesized[0]) {
+				literal = "(" + literal + ")";
+			}
+			return literal + "::" + ((PObjectWrapper) content).getType();
 		}
 		if (content instanceof byte[]) {
 			byte[] data = (byte[]) content;
@@ -185,7 +200,13 @@ public class CellContentConverter {
 						return "B'" + content + "'";
 					}
 					String val = content.toString();
-					return targetConfiguration.postProcessStringLiteral("'" + targetConfiguration.convertToStringLiteral(val) + "'", val, null);
+					boolean[] mustBeParenthesized = new boolean[1];
+					String convertedLiteral = targetConfiguration.convertToStringLiteral(val, mustBeParenthesized);
+					convertedLiteral = targetConfiguration.postProcessStringLiteral("'" + convertedLiteral + "'", val, null);
+					if (mustBeParenthesized[0]) {
+						convertedLiteral = "(" + convertedLiteral + ")";
+					}
+					return convertedLiteral;
 				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
@@ -255,7 +276,13 @@ public class CellContentConverter {
 		public String getExpression() {
 			String expression = pattern.replace("$1", "$\n1").replace("$2", type);
 			if (pattern.contains("'$1'")) {
-				expression = expression.replace("$\n1", value == null? "null" : targetConfiguration.convertToStringLiteral(String.valueOf(value)));
+				boolean[] mustBeParenthesized = new boolean[1];
+				CharSequence replacement = value == null? "null" : targetConfiguration.convertToStringLiteral(String.valueOf(value), mustBeParenthesized);
+				if (mustBeParenthesized[0]) {
+					expression = expression.replace("'$\n1'", "('" + replacement + "')");
+				} else {
+					expression = expression.replace("$\n1", replacement);
+				}
 			} else {
 				expression = expression.replace("$\n1", value == null? "null" : String.valueOf(value));
 			}
@@ -738,9 +765,9 @@ public class CellContentConverter {
 					return null;
 				}
 				if (lob instanceof NClob) {
-					return toClob.replace("%s",targetConfiguration.convertToStringLiteral(line.toString(), targetConfiguration.getNcharPrefix()));
+					return toClob.replace("%s",targetConfiguration.convertToStringLiteral(line.toString(), targetConfiguration.getNcharPrefix(), null));
 				} else {
-					return toClob.replace("%s",targetConfiguration.convertToStringLiteral(line.toString()));
+					return toClob.replace("%s",targetConfiguration.convertToStringLiteral(line.toString(), null));
 				}
 			}
 			if (lob instanceof Blob) {
@@ -767,7 +794,7 @@ public class CellContentConverter {
 				if (maxBlobLength != null && hex.length() > maxBlobLength) {
 					return null;
 				}
-				return targetConfiguration.getToBlob().replace("%s", targetConfiguration.convertToStringLiteral(hex.toString()));
+				return targetConfiguration.getToBlob().replace("%s", targetConfiguration.convertToStringLiteral(hex.toString(), null));
 			}
 		} catch (SQLException | IOException e) {
 			return null;

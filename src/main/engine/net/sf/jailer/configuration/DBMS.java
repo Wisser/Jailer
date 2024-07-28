@@ -757,10 +757,11 @@ public class DBMS {
 	 * Converts a string to a string literal according to the {@link #getStringLiteralEscapeSequences()}.
 	 *
 	 * @param string the string to convert
+	 * @param boolean[] mustBeParenthesized 1-element array. Contains <code>true</code> after call iff result is complex expression.
 	 * @return the string literal
 	 */
-	public String convertToStringLiteral(String string) {
-		return convertToStringLiteral(string, null);
+	public String convertToStringLiteral(String string, boolean[] mustBeParenthesized) {
+		return convertToStringLiteral(string, null, mustBeParenthesized);
 	}
 	
 	/**
@@ -768,9 +769,10 @@ public class DBMS {
 	 *
 	 * @param string the string to convert
 	 * @param prefix literal prefix (optional)
+	 * @param boolean[] mustBeParenthesized 1-element array. Contains <code>true</code> after call iff result is complex expression.
 	 * @return the string literal
 	 */
-	public String convertToStringLiteral(String string, String prefix) {
+	public String convertToStringLiteral(String string, String prefix, boolean[] mustBeParenthesized) {
 		boolean esc = false;
 		for (char c: keysOfCharToEscapeSequence) {
 			if (string.indexOf(c) >= 0) {
@@ -802,9 +804,10 @@ public class DBMS {
 				qvalue.append(c);
 			}
 		}
-		if (resultIsComplex) {
-			return "(" + qvalue + ")"; // TODO
+		if (mustBeParenthesized != null && mustBeParenthesized.length > 0) {
+			// TODO 
 			// TODO test, nur pg
+			mustBeParenthesized[0] = resultIsComplex;
 		}
 		return qvalue.toString();
 	}
@@ -817,9 +820,10 @@ public class DBMS {
 	 * @return literal
 	 */
 	public String postProcessStringLiteral(String literal, String value, String prefix) {
+		// TODO 1 check. this doesn't make sense. (f.e. what about the "'"?)
 		if (supportsCStyleBackslashEscapes && prefix == null && literal.startsWith("'") && literal.endsWith("'")) {
 			if (value.contains("\n") || value.contains("\r") || value.contains("\t")) {
-				return "E'" + convertToStringLiteral(value.replace("\\", "\\\\").replace("\r", "\\r").replace("\n", "\\n").replace("\t", "\\t")) + "'";
+				return "E'" + convertToStringLiteral(value.replace("\\", "\\\\").replace("\r", "\\r").replace("\n", "\\n").replace("\t", "\\t"), new boolean[1]) + "'";
 			}
 		}
 		return literal;

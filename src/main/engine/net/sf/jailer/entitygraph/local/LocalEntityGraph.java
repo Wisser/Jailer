@@ -148,7 +148,14 @@ public class LocalEntityGraph extends EntityGraph {
 			}
 			if (allUPK || isUPKColumn(columnNames[i - 1])) {
 				String ncharPrefix = localDBMSConfiguration.getNcharPrefix();
-				String literal = (ncharPrefix != null? ncharPrefix : "") + "'" + localDBMSConfiguration.convertToStringLiteral(value, ncharPrefix) + "'";
+				boolean[] mustBeParenthesized = new boolean[1];
+				String convertedLiteral = localDBMSConfiguration.convertToStringLiteral(value, ncharPrefix, mustBeParenthesized);
+				String literal;
+				if (mustBeParenthesized[0]) {
+					literal = "(" + (ncharPrefix != null? ncharPrefix : "") + "'" + convertedLiteral + "')";
+				} else {
+					literal = (ncharPrefix != null? ncharPrefix : "") + "'" + convertedLiteral + "'";
+				}
 				value = localDBMSConfiguration.postProcessStringLiteral(literal, value, ncharPrefix);
 			}
 			return value;
