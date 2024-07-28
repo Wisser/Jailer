@@ -804,9 +804,7 @@ public class DBMS {
 				qvalue.append(c);
 			}
 		}
-		if (mustBeParenthesized != null && mustBeParenthesized.length > 0) {
-			// TODO 
-			// TODO test, nur pg
+		if (mustBeParenthesized != null && mustBeParenthesized.length > 0 && ("POSTGRESQL".equals(id) || "POSTGRESQL".equals(familyId))) {
 			mustBeParenthesized[0] = resultIsComplex;
 		}
 		return qvalue.toString();
