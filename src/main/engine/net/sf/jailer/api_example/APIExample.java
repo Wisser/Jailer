@@ -49,8 +49,8 @@ public class APIExample {
 			null,
 			new File(baseFolder, "datamodel/Demo-Scott"),
 			new File(baseFolder, "extractionmodel/Demo-Scott.jm"),
-			ScriptFormat.JSON);
-	// TODO
+			ScriptFormat.SQL);
+	
 	// The importer
 	private static Importer importer =
 		new Importer(
