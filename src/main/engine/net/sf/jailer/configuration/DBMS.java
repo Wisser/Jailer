@@ -804,8 +804,12 @@ public class DBMS {
 				qvalue.append(c);
 			}
 		}
-		if (mustBeParenthesized != null && mustBeParenthesized.length > 0 && ("POSTGRESQL".equals(id) || "POSTGRESQL".equals(familyId))) {
-			mustBeParenthesized[0] = resultIsComplex;
+		if (mustBeParenthesized != null && mustBeParenthesized.length > 0) {
+			if (resultIsComplex && ("POSTGRESQL".equals(id) || "POSTGRESQL".equals(familyId))) {
+				mustBeParenthesized[0] = true;
+			} else {
+				mustBeParenthesized[0] = false;
+			}
 		}
 		return qvalue.toString();
 	}
