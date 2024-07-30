@@ -19,6 +19,7 @@ import java.awt.Dialog;
 import java.awt.Point;
 import java.awt.Window;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -87,6 +88,22 @@ public class SessionForUI extends Session {
 				CancellationHandler.reset(null);
 				try {
 					Connection newCon = session.connectionFactory.getConnection();
+					try {
+						if (session.dbUrl.matches("jdbc:h2:.*demo-scott-h2")) {
+							session.executeQuery("", new ResultSetReader() {
+								@Override
+								public void readCurrentRow(ResultSet resultSet) throws SQLException {
+									// TODO
+									
+								}
+								@Override
+								public void close() throws SQLException {
+								}
+							});
+						}
+					} catch (Throwable t) {
+						// ignore
+					}
 					if (testOnly) {
 						newCon.close();
 					} else {
