@@ -205,6 +205,12 @@ public class GraphicalDataModelView extends JPanel {
 		this.model = model;
 		this.modelEditor = modelEditor;
 		this.root = subject;
+		
+		UIUtil.invokeLater(() -> {
+			if (subject != null && modelEditor.getCurrentSelection() == null) {
+				modelEditor.select(subject);
+			}
+		});
 
 		tableRenderer = new TableRenderer(model, this) {
 			@Override

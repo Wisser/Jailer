@@ -1674,7 +1674,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
         columnMappingButtonHolder.setOpaque(false);
         columnMappingButtonHolder.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(0, 40, 14, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 48, 12, 0);
         cmbPanel.add(columnMappingButtonHolder, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1684,7 +1684,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 
         layeredPane.setLayer(inspectorHolder, javax.swing.JLayeredPane.PALETTE_LAYER);
         layeredPane.add(inspectorHolder);
-        inspectorHolder.setBounds(0, 0, 40, 20);
+        inspectorHolder.setBounds(0, 0, 44, 10);
 
         focusPanel.setForeground(/* Renaming also in *.form! */ Colors.Color_86_82_125);
         focusPanel.setOpaque(false);
@@ -1757,7 +1757,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 
         layeredPane.setLayer(focusPanel, javax.swing.JLayeredPane.PALETTE_LAYER);
         layeredPane.add(focusPanel);
-        focusPanel.setBounds(0, 0, 345, 32);
+        focusPanel.setBounds(0, 0, 287, 33);
 
         rightBorderPanel.setOpaque(false);
         rightBorderPanel.setLayout(new java.awt.GridBagLayout());
@@ -2507,10 +2507,14 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 		}
 	}//GEN-LAST:event_treeValueChanged
 
-	private Table currentTable;
+	Table currentTable;
 	Association currentAssociation;
 	private DefaultMutableTreeNode currentNode;
 	private String initialRestrictionCondition = null;
+	
+	public ModelElement getCurrentSelection() {
+		return currentAssociation != null? currentAssociation : currentTable;
+	}
 
 	/**
 	 * Opens a drop-down box which allows the user to select columns for restriction definitions.
