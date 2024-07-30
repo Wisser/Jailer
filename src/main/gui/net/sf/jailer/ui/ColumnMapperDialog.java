@@ -15,8 +15,9 @@
  */
 package net.sf.jailer.ui;
 
-import java.awt.Container;
+import java.awt.Color;
 import java.awt.GridBagConstraints;
+import java.awt.Point;
 import java.awt.event.ActionListener;
 import java.util.Collections;
 import java.util.Vector;
@@ -83,11 +84,11 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 		jPanel4.add(jScrollPane2, gridBagConstraints);
 		jScrollPane2.setViewportView(mappingField);
 		
-		JScrollPane tab = new JScrollPane();
+		xmlSketchScrollPane = new JScrollPane();
 		xmlSketch = new RSyntaxTextAreaWithTheme();
 		
 		xmlSketch.setEditable(false);
-		tab.setViewportView(xmlSketch);
+		xmlSketchScrollPane.setViewportView(xmlSketch);
 		xmlSketch.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_XML);
 		xmlSketch.setCodeFoldingEnabled(true);
 
@@ -101,7 +102,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        jPanel5.add(tab, gridBagConstraints);
+        jLayeredPane1.add(xmlSketchScrollPane, gridBagConstraints);
         
         AutoCompletion.enable(tableCombobox);
 		
@@ -141,7 +142,8 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 				if (sketchUpdateCheckbox.isSelected()) {
 					updateSketch(table);
 				} else {
-					xmlSketch.setEnabled(false);
+					stale = false;
+					updateStaleRender();
 				}
 			}
 		});
@@ -158,6 +160,9 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 		this.dataModel = dataModel;
 		this.scriptFormat = scriptFormat;
 		parameterSelector.updateParameters();
+		
+		stdBg = new RSyntaxTextArea().getBackground();
+		
 		Vector<String> tableNames = new Vector<String>();
 		for (Table t: dataModel.getTables()) {
 			tableNames.add(dataModel.getDisplayName(t));
@@ -166,7 +171,9 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 		tableCombobox.setModel(new DefaultComboBoxModel(tableNames));
 		tableCombobox.setMaximumRowCount(40);
 		tableCombobox.setSelectedItem(dataModel.getDisplayName(table));
-		tableCombobox.setEnabled(false);
+		tableCombobox.setVisible(false);
+		jLabel1.setVisible(false);
+		tableLabel.setText(dataModel.getDisplayName(table));
 		int w = 1200, h = 600;
 		setSize(w, h);
 		setLocation(Math.max(0, parent.getX() + parent.getWidth() / 2 - w / 2),
@@ -207,6 +214,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 		}
 	}
 	
+	private JScrollPane xmlSketchScrollPane;
 	private RSyntaxTextArea xmlSketch;
 	
 	/**
@@ -223,24 +231,24 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 		try {
 			table.setXmlTemplateInternal(mappingField.getText());
 			sketch = XmlSketchBuilder.buildSketch(table, 1, scriptFormat, executionContext);
-			if (scriptFormat == ScriptFormat.JSON) {
-				Pattern pattern = Pattern.compile("\"j\\:comment\"\\s*\\:\\s*\"(.*)/j\\:comment\"(?:\\,)?");
+			if (scriptFormat != ScriptFormat.XML) {
+				Pattern pattern = Pattern.compile("\"?j\\:comment\"?\\s*\\:\\s*\"(.*?)/j\\:comment\"(?:\\,)?(?:\\:)?");
 				Matcher matcher = pattern.matcher(sketch);
 				boolean result = matcher.find();
 				StringBuffer sb = new StringBuffer();
 				if (result) {
 					do {
 						String comment = matcher.group(1);
-						matcher.appendReplacement(sb, "// " + Matcher.quoteReplacement(comment.replace("\\\"", "\f").replace("\"", "").replace("\f", "\"")));
+						matcher.appendReplacement(sb, (scriptFormat == ScriptFormat.YAML? "# " : "// ") + Matcher.quoteReplacement(comment.replace("\\\"", "\f").replace("\"", "").replace("\f", "\"")));
 						result = matcher.find();
 					} while (result);
 				}
 				matcher.appendTail(sb);
 				sketch = sb.toString();
 			}
+			stale = false;
 		} catch (Exception e) {
-			e.printStackTrace();
-			sketch = e.getMessage();
+			stale = true;
 		} finally {
 			table.setXmlTemplateInternal(oldTemplate);
 		}
@@ -253,10 +261,25 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 		if (scriptFormat == ScriptFormat.YAML) {
 			xmlSketch.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_YAML);
 		}
-		Container sParent = xmlSketch.getParent(); // TODO
-		xmlSketch.setText(sketch);
-		xmlSketch.setEnabled(true);
+		
+		xmlSketch.setCurrentLineHighlightColor(new Color(0, 0, 0, 0));
+		if (stale) {
+			updateStaleRender();
+		} else {
+			Point pos = xmlSketchScrollPane.getViewport().getViewPosition();
+			xmlSketch.setBackground(stdBg);
+			xmlSketch.setText(sketch);
+			xmlSketch.setEnabled(true);
+			UIUtil.invokeLater(() -> xmlSketchScrollPane.getViewport().setViewPosition(pos));
+		}
 	}
+	
+	private void updateStaleRender() {
+		xmlSketch.setBackground(Colors.Color_224_224_224);
+	}
+	
+	private boolean stale = false;
+	private Color stdBg;
 	
 	/** This method is called from within the constructor to
 	 * initialize the form.
@@ -285,6 +308,9 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
         jPanel6 = new javax.swing.JPanel();
         sketchUpdateButton = new javax.swing.JButton();
         sketchUpdateCheckbox = new javax.swing.JCheckBox();
+        jPanel7 = new javax.swing.JPanel();
+        jLayeredPane1 = new javax.swing.JLayeredPane();
+        tableLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("XML Column Mapping");
@@ -299,7 +325,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 8, 0);
         jPanel1.add(jLabel1, gridBagConstraints);
 
         tableCombobox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Eintrag 1", "Eintrag 2", "Eintrag 3", "Eintrag 4" }));
@@ -307,7 +333,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 8, 0);
         jPanel1.add(tableCombobox, gridBagConstraints);
 
         jSplitPane1.setDividerLocation(300);
@@ -425,6 +451,24 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         jPanel5.add(jPanel6, gridBagConstraints);
 
+        jPanel7.setLayout(new java.awt.GridBagLayout());
+
+        jLayeredPane1.setLayout(new java.awt.GridBagLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel7.add(jLayeredPane1, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        jPanel5.add(jPanel7, gridBagConstraints);
+
         jSplitPane1.setRightComponent(jPanel5);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -435,6 +479,15 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         jPanel1.add(jSplitPane1, gridBagConstraints);
+
+        tableLabel.setFont(tableLabel.getFont().deriveFont(tableLabel.getFont().getStyle() | java.awt.Font.BOLD));
+        tableLabel.setText(" Table ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 8, 0);
+        jPanel1.add(tableLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -515,12 +568,14 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLayeredPane jLayeredPane1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
+    private javax.swing.JPanel jPanel7;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JButton okButton;
     private javax.swing.JPanel paramPanel;
@@ -528,6 +583,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
     private javax.swing.JButton sketchUpdateButton;
     private javax.swing.JCheckBox sketchUpdateCheckbox;
     private JComboBox2 tableCombobox;
+    private javax.swing.JLabel tableLabel;
     // End of variables declaration//GEN-END:variables
 
     private final RSyntaxTextArea mappingField;
@@ -545,9 +601,6 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 }
 
 // TODO
-// TODO Sketch positioning, error at pos(0, 0), others stable
-
-// TODO
 // TODO parameter panel:
 // TODO docu? grundsaetzlich, as link to docu?
 
@@ -557,13 +610,3 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 // TODO
 // TODO update docu
 // TODO add some template examples
-
-// TODO
-// TODO H2, Demo DB, sometimes tables get empty- (H2-Bug?)
-// TODO !!! 2.3.230 !!!
-// TODO find work-around
-// TODO symptom: all tables are empty but still exists
-
-// TODO 
-// TODO sketch: stale-indication. initially check checkbox iff template is small (heuristically, maybe if size < 10000 char?)
-// TODO was: show sketch. use timer for preventing lags bcof expensive sketch creation (1000+ column templates f.e.)

@@ -214,13 +214,13 @@ public class DataModel {
 	 */
 	public static class XmlSettings {
 		public String datePattern = "yyyy-MM-dd";
-		public String timestampPattern = "yyyy-MM-dd-HH.mm.ss"; // TODO
-		// TODO ISO-8601
+		public String timestampPattern = "yyyy-MM-dd'T'HH:mm:ss";
 		public String rootTag = "root";
 		public boolean singleRoot;
 		public boolean includeNonAggregated = true;
 		public boolean ignoreNonAggregated;
 		public boolean disallowNonAggregated;
+		public boolean unformatted;
 	}
 
 	/**
@@ -1095,7 +1095,8 @@ public class DataModel {
 				CsvFile.encodeCell("" + getXmlSettings().singleRoot) + ";" +
 				CsvFile.encodeCell("" + getXmlSettings().includeNonAggregated) + ";" +
 				CsvFile.encodeCell("" + getXmlSettings().ignoreNonAggregated) + ";" +
-				CsvFile.encodeCell("" + getXmlSettings().disallowNonAggregated));
+				CsvFile.encodeCell("" + getXmlSettings().disallowNonAggregated) + ";" +
+				CsvFile.encodeCell("" + getXmlSettings().unformatted));
 		out.println(CsvFile.BLOCK_INDICATOR + "xml column mapping");
 		try (SortedWriter sOut = new SortedWriter(out)) {
 			for (Table table: getTables()) {

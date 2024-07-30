@@ -64,6 +64,7 @@ public class ExecutionContext {
 		this.xmlDatePattern = other.xmlDatePattern;
 		this.xmlTimePattern = other.xmlTimePattern;
 		this.xmlTimeStampPattern = other.xmlTimeStampPattern;
+		this.unformatted = other.unformatted;
 		this.qualifyNames = other.qualifyNames;
 		this.analyseAlias = other.analyseAlias;
 		this.analyseSynonym = other.analyseSynonym;
@@ -853,6 +854,23 @@ public class ExecutionContext {
 	// pattern for time-stamps in XML and LIQUIBASE_XML export file
 	private String xmlTimeStampPattern = "yyyy-MM-dd-HH.mm.ss";
 
+	// don't format JSON/YAML/XML export files
+	private boolean unformatted;
+
+	/**
+	 * @return <code>true</code>: don't format JSON/YAML/XML export files
+	 */
+	public boolean isUnformatted() {
+		return unformatted;
+	}
+
+	/**
+	 * @param unformatted <code>true</code>: don't format JSON/YAML/XML export files
+	 */
+	public void setUnformatted(boolean unformatted) {
+		this.unformatted = unformatted;
+	}
+
 	// add schema prefix to table names after analysing the DB
 	private boolean qualifyNames = false;
 
@@ -1104,9 +1122,11 @@ public class ExecutionContext {
 		targetDBMS = commandLine.targetDBMS == null? null : DBMS.forDBMS(commandLine.targetDBMS);
 		_asXml = commandLine._asXml;
 		xmlRootTag = commandLine.xmlRootTag;
-		xmlDatePattern = commandLine.datePattern != null? commandLine.datePattern : commandLine.xmlDatePattern;
-		xmlTimePattern = commandLine.timePattern != null? commandLine.timePattern : commandLine.xmlTimePattern;
-		xmlTimeStampPattern = commandLine.timeStampPattern != null? commandLine.timeStampPattern : commandLine.xmlTimeStampPattern;
+		xmlDatePattern = commandLine.xmlDatePattern != null? commandLine.xmlDatePattern : commandLine.datePattern;
+		xmlTimePattern = commandLine.xmlTimePattern != null? commandLine.xmlTimePattern : commandLine.timePattern;
+		xmlTimeStampPattern = commandLine.xmlTimeStampPattern != null? commandLine.xmlTimeStampPattern : commandLine.timeStampPattern;
+		
+		unformatted = commandLine.unformatted;
 		
 		singleRoot = commandLine.singleRoot;
 		includeNonAggregated = commandLine.includeNonAggregated;

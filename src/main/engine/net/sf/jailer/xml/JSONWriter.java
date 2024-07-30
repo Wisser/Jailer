@@ -33,10 +33,12 @@ import net.sf.jailer.xml.XmlUtil.ObjectNotationWriter;
 public class JSONWriter implements ObjectNotationWriter {
 	private final JsonGenerator jGen;
 	
-	public JSONWriter(Writer out) throws IOException {
+	public JSONWriter(Writer out, boolean unformatted) throws IOException {
 		JsonFactory jfactory = new JsonFactory();
 		this.jGen = jfactory.createGenerator(out);
-		this.jGen.useDefaultPrettyPrinter();
+		if (!unformatted) {
+			this.jGen.useDefaultPrettyPrinter();
+		}
 	}
 
 	@Override
@@ -134,9 +136,12 @@ public class JSONWriter implements ObjectNotationWriter {
 		try {
 			jGen.writeStringField("j:comment", comment + " /j:comment");
 		} catch (Exception e) {
-			e.printStackTrace();
 			// ignore
 		}
+	}
+
+	@Override
+	public void close() {
 	}
 	
 }

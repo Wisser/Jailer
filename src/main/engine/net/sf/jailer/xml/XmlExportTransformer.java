@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerConfigurationException;
@@ -396,13 +397,19 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 		}
 		XmlUtil.visitDocumentNodes(tableMapping.template, new NodeVisitor() {
 			int nr = 0;
-
+			String reIdentifier = "((?:[\"][^\"]+[\"])|(?:[`][^`]+[`]))";
+			Pattern pattern = Pattern.compile("T\\." + reIdentifier);
+			
 			private void appendSchema(String text) {
 				if (text != null && text.startsWith(XmlUtil.SQL_PREFIX)) {
 					if (sb.length() > 0) {
 						sb.append(", ");
 					}
-					sb.append(text.substring(XmlUtil.SQL_PREFIX.length()) + " as C" + nr++);
+					String sql = text.substring(XmlUtil.SQL_PREFIX.length());
+					if (quoting.getQuote() != null && pattern.matcher(sql).matches()) {
+						sql = sql.replace("\"", quoting.getQuote()).replace("`", quoting.getQuote());
+					}
+					sb.append(sql + " as C" + nr++);
 				}
 			}
 			@Override

@@ -123,6 +123,7 @@ public class Subsetter {
 				extractionModel = new ExtractionModel(extractionModelURL, executionContext.getSourceSchemaMapping(), executionContext.getParameters(), executionContext, true);
 				executionContext.setXmlDatePattern(extractionModel.dataModel.getXmlSettings().datePattern);
 				executionContext.setXmlTimeStampPattern(extractionModel.dataModel.getXmlSettings().timestampPattern);
+				executionContext.setUnformatted(extractionModel.dataModel.getXmlSettings().unformatted);
 				executionContext.setXmlRootTag(extractionModel.dataModel.getXmlSettings().rootTag);
 				executionContext.setSingleRoot(extractionModel.dataModel.getXmlSettings().singleRoot);
 				executionContext.setDisallowNonAggregated(extractionModel.dataModel.getXmlSettings().disallowNonAggregated);
@@ -404,6 +405,20 @@ public class Subsetter {
 	 */
 	public void setXmlTimeStampPattern(String xmlTimeStampPattern) {
 		executionContext.setXmlTimeStampPattern(xmlTimeStampPattern);
+	}
+
+	/**
+	 * @return <code>true</code>: don't format JSON/YAML/XML export files
+	 */
+	public boolean isUnformatted() {
+		return executionContext.isUnformatted();
+	}
+
+	/**
+	 * @param unformatted <code>true</code>: don't format JSON/YAML/XML export files
+	 */
+	public void setUnformatted(boolean unformatted) {
+		executionContext.setUnformatted(unformatted);
 	}
 
 	/**

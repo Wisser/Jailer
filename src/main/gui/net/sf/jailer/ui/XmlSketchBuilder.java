@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -69,7 +70,7 @@ public class XmlSketchBuilder {
 		String result = XmlUtil.buildOmitDeclaration(sketch);
 		if (scriptFormat != ScriptFormat.XML) {
 			OutputStream out = new ByteArrayOutputStream();
-			ObjectNotationTransformerHandler th = XmlUtil.createObjectNotationTransformerHandler("", "", new OutputStreamWriter(out, Charset.defaultCharset()), true, scriptFormat, executionContext);
+			ObjectNotationTransformerHandler th = XmlUtil.createObjectNotationTransformerHandler("", "", new OutputStreamWriter(out, Charset.defaultCharset()), true, scriptFormat, new SimpleDateFormat(), new SimpleDateFormat(), executionContext);
 			XmlRowWriter xmlRowWriter = new XmlRowWriter(out, null, null, null, null, scriptFormat, Charset.defaultCharset(), th, executionContext);
 			XmlUtil.visitDocumentNodes(XmlUtil.parse(result), xmlRowWriter.new XmlWritingNodeVisitor(null, null, table, null, null) {
 				@Override

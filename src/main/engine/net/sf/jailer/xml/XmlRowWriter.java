@@ -95,6 +95,9 @@ public class XmlRowWriter {
 	 */
 	private final ExecutionContext executionContext;
 	
+	private final ScriptFormat scriptFormat;
+	
+	
 	/**
 	 * Constructor.
 	 * 
@@ -111,10 +114,11 @@ public class XmlRowWriter {
 		this.executionContext = executionContext;
 		this.datePattern = datePattern == null? new SimpleDateFormat() : new SimpleDateFormat(datePattern, Locale.ENGLISH);
 		this.timestampPattern = timestampPattern == null? new SimpleDateFormat() : new SimpleDateFormat(timestampPattern, Locale.ENGLISH);
+		this.scriptFormat = scriptFormat;
 		StreamResult streamResult = new StreamResult(new OutputStreamWriter(out, charset));
-		transformerHandler = scriptFormat == ScriptFormat.JSON
-				? XmlUtil.createObjectNotationTransformerHandler(commentHeader, executionContext.isSingleRoot()? "" : rootTag, streamResult.getWriter(), false, scriptFormat, executionContext)
-				: XmlUtil.createTransformerHandler(commentHeader, executionContext.isSingleRoot()? "" : rootTag, streamResult, charset);
+		transformerHandler = scriptFormat != ScriptFormat.XML
+				? XmlUtil.createObjectNotationTransformerHandler(commentHeader, executionContext.isSingleRoot()? "" : rootTag, streamResult.getWriter(), false, scriptFormat, this.datePattern, this.timestampPattern, executionContext)
+				: XmlUtil.createTransformerHandler(commentHeader, executionContext.isSingleRoot()? "" : rootTag, streamResult, charset, executionContext);
 	}
 	
 	/**
@@ -123,7 +127,7 @@ public class XmlRowWriter {
 	 * @param out output stream to write the xml into
 	 * @param commentHeader comment at top of document
 	 * @param rootTag root tag name
-	 * @param datePattern pattern for dates
+	 * @param datePattern patt;ern for dates
 	 * @param timestampPattern pattern for time-stamps
 	 * @param scriptFormat 
 	 * @param executionContext 
@@ -134,6 +138,7 @@ public class XmlRowWriter {
 		this.datePattern = datePattern == null? new SimpleDateFormat() : new SimpleDateFormat(datePattern, Locale.ENGLISH);
 		this.timestampPattern = timestampPattern == null? new SimpleDateFormat() : new SimpleDateFormat(timestampPattern, Locale.ENGLISH);
 		forSketch = true;
+		this.scriptFormat = scriptFormat;
 		this.transformerHandler = transformerHandler;
 	}
 
@@ -290,6 +295,9 @@ public class XmlRowWriter {
 							if (object instanceof Blob) {
 								Blob blob = (Blob) object;
 								byte[] blobValue = blob.getBytes(1, (int) blob.length());
+								if (scriptFormat != ScriptFormat.XML) {
+									return blobValue;
+								}
 								return Base64.encodeBytes(blobValue);
 							}
 
@@ -421,10 +429,14 @@ public class XmlRowWriter {
 		@Override
 		public void visitText(String text) {
 			Object value = toContent(text, false);
-			text = value == null? "" : value.toString();
 			try {
 				if (ifLevel == 0) {
-					transformerHandler.characters(text.toCharArray(), 0, text.length());
+					if (transformerHandler instanceof ObjectFormatTransformer) {
+						((ObjectFormatTransformer) transformerHandler).content(value);
+					} else {
+						text = value == null? "" : value.toString();
+						transformerHandler.characters(text.toCharArray(), 0, text.length());
+					}
 				}
 			} catch (SAXException e) {
 				throw new RuntimeException(e);
@@ -440,13 +452,8 @@ public class XmlRowWriter {
 
 }
 
-
 // TODO
 // TODO docu about "j:if-not-null"/"j:is-null" in template dialog
-
-// TODO
-// TODO JSON/YAML/XML
-// TODO "unformatted" export. in XMLSettingsDialog+CLI+SubesstingEngine(Facade)
 
 // TODO
 // TODO new maven dep, testen

@@ -22,6 +22,9 @@ import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
@@ -56,6 +59,7 @@ import org.xml.sax.SAXException;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.subsetting.ScriptFormat;
+import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.xml.XmlRowWriter.ObjectFormatTransformer;
 
@@ -65,27 +69,47 @@ import net.sf.jailer.xml.XmlRowWriter.ObjectFormatTransformer;
  * @author Ralf Wisser
  */
 public class XmlUtil {
-	
+
 	public static interface ObjectNotationWriter {
 		public void writeStartObject() throws IOException;
+
 		public void writeStartArray() throws IOException;
+
 		public void writeEndObject() throws IOException;
+
 		public void writeEndArray() throws IOException;
+
 		public void flush() throws IOException;
+
 		public void writeFieldName(String qName) throws IOException;
+
 		public void writeArrayFieldStart(String qName) throws IOException;
+
 		public void writeNull() throws IOException;
+
 		public void writeBinary(byte[] content) throws IOException;
+
 		public void writeBoolean(Boolean content) throws IOException;
+
 		public void writeNumber(BigInteger content) throws IOException;
+
 		public void writeNumber(BigDecimal content) throws IOException;
+
 		public void writeNumber(Double content) throws IOException;
+
 		public void writeNumber(Float content) throws IOException;
+
 		public void writeNumber(Integer content) throws IOException;
+
 		public void writeNumber(Long content) throws IOException;
+
 		public void writeNumber(Short content) throws IOException;
+
 		public void writeString(String string) throws IOException;
+
 		public void writeComment(String comment) throws IOException;
+
+		public void close() throws IOException;
 	}
 
 	public static class ObjectNotationTransformerHandler implements TransformerHandler, ObjectFormatTransformer {
@@ -93,12 +117,17 @@ public class XmlUtil {
 		private final ObjectNotationWriter jGenerator;
 		private final ExecutionContext executionContext;
 		private final boolean forSketch;
+		private final SimpleDateFormat datePattern;
+		private final SimpleDateFormat timestampPattern;
 		Stack<Character> states = new Stack<>();
-		
-		private ObjectNotationTransformerHandler(Writer out, ObjectNotationWriter jGenerator, boolean forSketch, ExecutionContext executionContext) {
+
+		private ObjectNotationTransformerHandler(Writer out, ObjectNotationWriter jGenerator, boolean forSketch,
+				SimpleDateFormat datePattern2, SimpleDateFormat timestampPattern2, ExecutionContext executionContext) {
 			this.out = out;
 			this.jGenerator = jGenerator;
 			this.forSketch = forSketch;
+			this.datePattern = datePattern2;
+			this.timestampPattern = timestampPattern2;
 			this.executionContext = executionContext;
 		}
 
@@ -131,9 +160,11 @@ public class XmlUtil {
 					jGenerator.writeEndArray();
 				}
 				jGenerator.flush();
+				jGenerator.close();
 			} catch (IOException e) {
 				try {
-					jGenerator.flush();out.close();
+					jGenerator.flush();
+					out.close();
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -176,7 +207,8 @@ public class XmlUtil {
 				}
 			} catch (IOException e) {
 				try {
-					jGenerator.flush();out.close();
+					jGenerator.flush();
+					out.close();
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -205,7 +237,7 @@ public class XmlUtil {
 				throw new RuntimeException(e);
 			}
 		}
-		
+
 		private Map<String, Object> constants = new HashMap<>();
 
 		@Override
@@ -288,7 +320,9 @@ public class XmlUtil {
 			try {
 				String comment = new String(ch, start, length).trim();
 				if (!comment.isEmpty()) {
-					jGenerator.writeComment(comment);
+					if (!((!states.isEmpty() && states.peek() == '='))) {
+						jGenerator.writeComment(comment);
+					}
 				}
 			} catch (IOException e) {
 				throw new RuntimeException(e);
@@ -356,6 +390,10 @@ public class XmlUtil {
 				jGenerator.writeNumber((Long) content);
 			} else if (content instanceof Short) {
 				jGenerator.writeNumber((Short) content);
+			} else if (content instanceof Timestamp) {
+				jGenerator.writeString(timestampPattern.format((Timestamp) content));
+			} else if (content instanceof Date) {
+				jGenerator.writeString(datePattern.format((Date) content));
 			} else {
 				jGenerator.writeString(content.toString());
 			}
@@ -402,7 +440,7 @@ public class XmlUtil {
 					return;
 				}
 				boolean isArray = !a.isInsertDestinationBeforeSource();
-				
+
 				if (isArray) {
 					jGenerator.writeStartArray();
 					jGenerator.writeEndArray();
@@ -435,7 +473,7 @@ public class XmlUtil {
 	 * Prefix for SQL expressions.
 	 */
 	public static final String SQL_PREFIX = "SQL:";
-	
+
 	/**
 	 * Parses a XML document.
 	 * 
@@ -465,7 +503,7 @@ public class XmlUtil {
 			}
 		}
 	}
-	
+
 	/**
 	 * Identity transformer for building XML strings.
 	 */
@@ -475,14 +513,14 @@ public class XmlUtil {
 	 * Identity transformer for building XML strings without XML declaration.
 	 */
 	private static Transformer transformerWODecl;
-	
+
 	/**
-	   * Generates a XML string from DOM without XML declaration.
-	   * 
-	   * @param xmlDocument the DOM 
-	   * @return XML string
-	   */
-	  public static synchronized String buildOmitDeclaration(Document xmlDocument) throws TransformerException {
+	 * Generates a XML string from DOM without XML declaration.
+	 * 
+	 * @param xmlDocument the DOM
+	 * @return XML string
+	 */
+	public static synchronized String buildOmitDeclaration(Document xmlDocument) throws TransformerException {
 		if (transformerWODecl == null) {
 			TransformerFactory xformFactory = TransformerFactory.newInstance();
 			try {
@@ -498,7 +536,7 @@ public class XmlUtil {
 		transformerWODecl.transform(new DOMSource(xmlDocument), new StreamResult(out));
 		return out.getBuffer().toString();
 	}
-	  
+
 	/**
 	 * Generates a XML string from DOM.
 	 * 
@@ -534,7 +572,8 @@ public class XmlUtil {
 			}
 		}
 		String elementName = sb.toString();
-		if (elementName.length() == 0 || (!Character.isUpperCase(elementName.charAt(0)) && !Character.isLowerCase(elementName.charAt(0)))) {
+		if (elementName.length() == 0
+				|| (!Character.isUpperCase(elementName.charAt(0)) && !Character.isLowerCase(elementName.charAt(0)))) {
 			return "e" + elementName;
 		}
 		return elementName;
@@ -544,18 +583,18 @@ public class XmlUtil {
 	 * Visits the nodes of {@link Document}.
 	 * 
 	 * @param document the document
-	 * @param visitor the visitor
+	 * @param visitor  the visitor
 	 */
 	public static void visitDocumentNodes(Document document, NodeVisitor visitor) {
 		if (document.getChildNodes().getLength() > 0) {
 			visitNodes(document.getChildNodes().item(0), true, visitor);
 		}
 	}
-	
+
 	/**
 	 * Recursively visits nodes.
 	 * 
-	 * @param node the root
+	 * @param node    the root
 	 * @param visitor the visitor
 	 */
 	private static void visitNodes(Node node, boolean nodeIsRoot, NodeVisitor visitor) {
@@ -567,9 +606,10 @@ public class XmlUtil {
 		} else if (node instanceof Comment) {
 			visitor.visitComment((((Comment) node).getTextContent()));
 		} else if (node instanceof Element) {
-			if (NS_URI.equals(node.getNamespaceURI()) && ASSOCIATION_TAG.equals(node.getLocalName()) && node.getTextContent() != null) {
+			if (NS_URI.equals(node.getNamespaceURI()) && ASSOCIATION_TAG.equals(node.getLocalName())
+					&& node.getTextContent() != null) {
 				Attr nameAttr = ((Element) node).getAttributeNode("name");
-				String name = nameAttr == null? null : nameAttr.getValue();
+				String name = nameAttr == null ? null : nameAttr.getValue();
 				visitor.visitAssociationElement(((Element) node).getTextContent().trim(), name);
 			} else {
 				Element e = (Element) node;
@@ -594,22 +634,23 @@ public class XmlUtil {
 			}
 		}
 	}
-	
+
 	/**
 	 * Creates a {@link TransformerHandler}.
 	 * 
-	 * @param commentHeader the comment header
-	 * @param rootTag the root tag
-	 * @param streamResult stream result
+	 * @param commentHeader    the comment header
+	 * @param rootTag          the root tag
+	 * @param streamResult     stream result
+	 * @param executionContext
 	 */
 	public static TransformerHandler createTransformerHandler(String commentHeader, String rootTag,
-			StreamResult streamResult, Charset charset)
-			throws SAXException {
+			StreamResult streamResult, Charset charset, ExecutionContext executionContext) throws SAXException {
 		SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
 		try {
 			tf.setAttribute("indent-number", 2);
 		} catch (Exception e) {
-			// ignore, workaround for JDK 1.5 bug, see http://forum.java.sun.com/thread.jspa?threadID=562510
+			// ignore, workaround for JDK 1.5 bug, see
+			// http://forum.java.sun.com/thread.jspa?threadID=562510
 		}
 		TransformerHandler transformerHandler;
 		try {
@@ -620,10 +661,13 @@ public class XmlUtil {
 		Transformer serializer = transformerHandler.getTransformer();
 		serializer.setOutputProperty(OutputKeys.ENCODING, charset.name());
 		serializer.setOutputProperty(OutputKeys.METHOD, "xml");
-		serializer.setOutputProperty(OutputKeys.INDENT, "yes");
+		if (!executionContext.isUnformatted()) {
+			serializer.setOutputProperty(OutputKeys.INDENT, "yes");
+		}
 		transformerHandler.setResult(streamResult);
 		transformerHandler.startDocument();
-		commentHeader = (PrintUtil.LINE_SEPARATOR + commentHeader).replaceAll("\\r?\\n--", PrintUtil.LINE_SEPARATOR + " ");
+		commentHeader = (PrintUtil.LINE_SEPARATOR + commentHeader).replaceAll("\\r?\\n--",
+				PrintUtil.LINE_SEPARATOR + " ");
 		transformerHandler.characters("\n".toCharArray(), 0, 1);
 		transformerHandler.comment(commentHeader.toCharArray(), 0, commentHeader.toCharArray().length);
 		transformerHandler.characters("\n".toCharArray(), 0, 1);
@@ -633,15 +677,15 @@ public class XmlUtil {
 		return transformerHandler;
 	}
 
-	public static ObjectNotationTransformerHandler createObjectNotationTransformerHandler(String commentHeader, String rootTag,
-			Writer out, boolean forSketch, ScriptFormat scriptFormat, ExecutionContext executionContext) {
-		
+	public static ObjectNotationTransformerHandler createObjectNotationTransformerHandler(String commentHeader,
+			String rootTag, Writer out, boolean forSketch, ScriptFormat scriptFormat, SimpleDateFormat datePattern,
+			SimpleDateFormat timestampPattern, ExecutionContext executionContext) {
+
 		ObjectNotationWriter jGenerator;
 		try {
 			if (scriptFormat == ScriptFormat.JSON) {
-				jGenerator = new JSONWriter(out);
+				jGenerator = new JSONWriter(out, executionContext.isUnformatted());
 			} else if (scriptFormat == ScriptFormat.YAML) {
-				// TODO
 				jGenerator = new YAMLWriter(out);
 			} else {
 				throw new RuntimeException("unknown script format: " + scriptFormat);
@@ -649,18 +693,18 @@ public class XmlUtil {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-		
-		// TODO
-		// TODO count XML/JSON/YMAML exports (s16-19) 
 
-		ObjectNotationTransformerHandler th = new ObjectNotationTransformerHandler(out, jGenerator, forSketch, executionContext);
+		ObjectNotationTransformerHandler th = new ObjectNotationTransformerHandler(out, jGenerator, forSketch,
+				datePattern, timestampPattern, executionContext);
 		try {
 			th.startDocument();
 			if (commentHeader != null && !commentHeader.isEmpty()) {
-				// TODO
-				// TODO nicht bei JSON, noch testen
-				if (!(jGenerator instanceof JSONWriter)) {
-					jGenerator.writeComment(commentHeader);
+				if (scriptFormat == ScriptFormat.YAML) {
+					out.write(((PrintUtil.LINE_SEPARATOR + commentHeader)
+							.replaceAll("\\r?\\n--", PrintUtil.LINE_SEPARATOR + "# ")
+							.replaceAll("\\r?\\n\\r?\\n", PrintUtil.LINE_SEPARATOR + "# " + PrintUtil.LINE_SEPARATOR)
+							.trim())
+							+ UIUtil.LINE_SEPARATOR);
 				}
 			}
 		} catch (Exception e) {
@@ -670,10 +714,3 @@ public class XmlUtil {
 	}
 
 }
-
-// TODO
-// TODO 2.2.224 H2 old, new is 2.3.?
-// TODO check if old H2 is still necessary and how scripts have to be adjusted
-// TODO in doubt include H2 2.2.224
-
-

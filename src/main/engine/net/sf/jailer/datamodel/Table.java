@@ -406,12 +406,6 @@ public class Table extends ModelElement implements Comparable<Table> {
 	 */
 	public Document getXmlTemplateAsDocument(Quoting quoting) throws ParserConfigurationException, SAXException, IOException {
 		return getXmlTemplateAsDocument(xmlTemplate, quoting);
-		// TODO
-		// TODO quoting:
-		// TODO 	status quo: null if in GUI
-		// TODO 	should use " as quot-char in GUI
-		// TODO     whatabout MySQL/MariaBD? Requoting? How?
-		// TODO default-quoting("/caseIns.) + heuristic re-quoting in XmlRowWriter: if content like 'SQL:T."xy"' -> 'SQL:T.<requote('"xy"')
 	}
 
 	/**

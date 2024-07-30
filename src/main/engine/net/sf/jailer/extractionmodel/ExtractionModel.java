@@ -401,6 +401,7 @@ public class ExtractionModel {
 				dataModel.getXmlSettings().includeNonAggregated = Boolean.parseBoolean(cells.get(4));
 				dataModel.getXmlSettings().ignoreNonAggregated = Boolean.parseBoolean(cells.get(5));
 				dataModel.getXmlSettings().disallowNonAggregated = Boolean.parseBoolean(cells.get(6));
+				dataModel.getXmlSettings().unformatted = Boolean.parseBoolean(cells.get(7));
 			}
 		}
 

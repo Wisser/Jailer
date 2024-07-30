@@ -2273,6 +2273,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     protected abstract void openDataModelEditor(boolean merge);
 
     private boolean dataHasChanged = false;
+    private boolean grbFcsPending = false;
 
     public synchronized void setDataHasChanged(boolean b) {
         dataHasChanged = b;
@@ -2324,7 +2325,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         Color pendingColor = Colors.Color_235_235_255;
         Color runningColor = Colors.Color_255_249_200;
         Color runningStatusLabelColor = Colors.Color_0_100_0;
-
+ 
         private synchronized void updateView(boolean force) {
             if (force || !updatingStatus.get()) {
                 updatingStatus.set(true);
@@ -2360,7 +2361,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                                                 int col = errorPosition - editorPane.getLineStartOffset(errorLine) + 1;
                                                 pos = "Error at line " + (errorLine + 1) + ", column " + col + ": ";
                                             }
-                                           setCaretPosition(errorPosition);
+                                            setCaretPosition(errorPosition);
+                                            if (!grbFcsPending) {
+                                            	grbFcsPending = true;
+                                            	UIUtil.invokeLater(2, () -> {
+                                            		SQLConsole.this.grabFocus();
+                                            		grbFcsPending = false;
+                                            	});
+                                            }
                                         } catch (BadLocationException e) {
                                         }
                                         if (errorLine >= 0) {
@@ -4489,9 +4497,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	public boolean isTempFileBased() {
 		return tempFileBased;
 	}
-	
-	// TODO 
-	// TODO PG anecdote: error "position 50": pos 50 is not visually marked (makrOccurence?)
 
 	// TODO 2
 	// TODO ordering per column: break down to SQL?

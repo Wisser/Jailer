@@ -2855,6 +2855,9 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			if (dataModel.getXmlSettings().disallowNonAggregated) {
 				args.add("-disallow-non-aggregated");
 			}
+			if (dataModel.getXmlSettings().unformatted) {
+				args.add("-unformatted");
+			}
 		}
 		
 		targetSchemaSet.clear();

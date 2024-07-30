@@ -1505,6 +1505,16 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 							}
 							session.shutDown();
 							if (exportDialog.isOk()) {
+								if (exportDialog.scriptFormat == ScriptFormat.XML) {
+									UISettings.s16++;
+								}
+								if (exportDialog.scriptFormat == ScriptFormat.JSON) {
+									UISettings.s17++;
+								}
+								if (exportDialog.scriptFormat == ScriptFormat.YAML) {
+									UISettings.s18++;
+								}
+								
 								exportDialog.fillCLIArgs(args);
 								final List<String> ddlArgs = new ArrayList<String>();
 								ddlArgs.add("create-ddl");

@@ -686,14 +686,14 @@ public class SubsettingEngine {
 		}
 		if (scriptType == ScriptType.INSERT && ScriptFormat.DBUNIT_FLAT_XML.equals(executionContext.getScriptFormat())) {
 			StreamResult streamResult = new StreamResult(new OutputStreamWriter(outputStream, charset)); // lgtm [java/output-resource-leak]
-			transformerHandler = XmlUtil.createTransformerHandler(commentHeader.toString(), "dataset", streamResult, charset);
+			transformerHandler = XmlUtil.createTransformerHandler(commentHeader.toString(), "dataset", streamResult, charset, executionContext);
 		} else if(scriptType == ScriptType.INSERT && ScriptFormat.LIQUIBASE_XML.equals(executionContext.getScriptFormat())){
 			StreamResult streamResult = new StreamResult(
 					new OutputStreamWriter(outputStream, // lgtm [java/output-resource-leak]
 							charset));
 
 
-			transformerHandler = XmlUtil.createTransformerHandler(commentHeader.toString(), "", streamResult, charset);	//root tag removed to add namespaces
+			transformerHandler = XmlUtil.createTransformerHandler(commentHeader.toString(), "", streamResult, charset, executionContext);	//root tag removed to add namespaces
 
 			AttributesImpl attrdatabaseChangeLog = new AttributesImpl();
 			attrdatabaseChangeLog.addAttribute("", "", "xmlns:xsi", "", "http://www.w3.org/2001/XMLSchema-instance");

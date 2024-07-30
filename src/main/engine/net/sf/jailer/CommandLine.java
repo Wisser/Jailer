@@ -49,6 +49,9 @@ public class CommandLine {
 	@Option(name="-timestamp-format",usage="pattern for time-stamps in JSON/YAML/XML and LIQUIBASE_XML export file",metaVar="pattern")
 	public String xmlTimeStampPattern;
 	
+	@Option(name="-unformatted",usage="don't format JSON/YAML/XML export files")
+	public boolean unformatted;
+
 	@Option(name="-single-root",usage="allow only a single root/subject object to be written out into JSON/YAML/XML export file")
 	public boolean singleRoot;
 

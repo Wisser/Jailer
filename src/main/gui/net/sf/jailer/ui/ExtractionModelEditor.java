@@ -823,6 +823,16 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 		gridBagConstraints.weightx = 1.0;
 		gridBagConstraints.weighty = 1.0;
 		inspectorHolder.add(restrictionEditor, gridBagConstraints);
+		
+		openColumnMappingButton = new JButton();
+		openColumnMappingButton.addActionListener(e -> {
+			if (currentTable != null) {
+				openColumnMapper(currentTable);
+			}
+		});
+		openColumnMappingButton.setVisible(false);
+		
+		columnMappingButtonHolder.add(openColumnMappingButton);
 		// inspectorHolder.setMinimumSize(inspectorHolder.getPreferredSize());
 		restrictionEditor.restriction.getDocument().addDocumentListener(new DocumentListener() {
 
@@ -892,7 +902,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 //				onJump();
 //			}
 //		});
-		initRestrictionEditor(null, null);
+		initRestrictionEditor(null, null, null);
 		if (extractionModel.subject != null) {
 			subjectTable.setSelectedItem(null);
 			if (dataModel != null) {
@@ -1548,6 +1558,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
         graphContainer = new javax.swing.JPanel();
         undoViewHolder = new javax.swing.JPanel();
         inspectorHolder = new javax.swing.JPanel();
+        cmbPanel = new javax.swing.JPanel();
+        columnMappingButtonHolder = new javax.swing.JPanel();
         focusPanel = new javax.swing.JPanel();
         focusLabelPanel = new javax.swing.JPanel();
         jLabel9 = new javax.swing.JLabel();
@@ -1655,9 +1667,24 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 
         inspectorHolder.setOpaque(false);
         inspectorHolder.setLayout(new java.awt.GridBagLayout());
+
+        cmbPanel.setOpaque(false);
+        cmbPanel.setLayout(new java.awt.GridBagLayout());
+
+        columnMappingButtonHolder.setOpaque(false);
+        columnMappingButtonHolder.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(0, 40, 14, 0);
+        cmbPanel.add(columnMappingButtonHolder, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        inspectorHolder.add(cmbPanel, gridBagConstraints);
+
         layeredPane.setLayer(inspectorHolder, javax.swing.JLayeredPane.PALETTE_LAYER);
         layeredPane.add(inspectorHolder);
-        inspectorHolder.setBounds(0, 0, 0, 0);
+        inspectorHolder.setBounds(0, 0, 40, 20);
 
         focusPanel.setForeground(/* Renaming also in *.form! */ Colors.Color_86_82_125);
         focusPanel.setOpaque(false);
@@ -2451,15 +2478,15 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 				DefaultMutableTreeNode node = ((DefaultMutableTreeNode) evt.getNewLeadSelectionPath().getLastPathComponent());
 				Object selection = node.getUserObject();
 				if (selection instanceof Association) {
-					initRestrictionEditor((Association) selection, node);
+					initRestrictionEditor(null, (Association) selection, node);
 					updateNeighborHolderPanel(((Association) selection).destination);
 				}
 				if (selection instanceof Table) {
-					initRestrictionEditor(null, null);
+					initRestrictionEditor((Table) selection, null, null);
 					updateNeighborHolderPanel((Table) selection);
 				}
 			} else {
-				initRestrictionEditor(null, null);
+				initRestrictionEditor(null, null, null);
 				updateNeighborHolderPanel(null);
 			}
 		} finally {
@@ -2480,6 +2507,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 		}
 	}//GEN-LAST:event_treeValueChanged
 
+	private Table currentTable;
 	Association currentAssociation;
 	private DefaultMutableTreeNode currentNode;
 	private String initialRestrictionCondition = null;
@@ -2526,10 +2554,18 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 	 * @param association the association on which a restriction can be edited
 	 * @param node selected tree node
 	 */
-	private void initRestrictionEditor(final Association association, DefaultMutableTreeNode node) {
+	private void initRestrictionEditor(Table table, final Association association, DefaultMutableTreeNode node) {
+		currentTable = table;
 		currentAssociation = association;
 		currentNode = node;
 		initialRestrictionCondition = null;
+		
+		if (!scriptFormat.isObjectNotation() || currentAssociation != null || table == null) {
+			openColumnMappingButton.setVisible(false);
+		} else {
+			openColumnMappingButton.setVisible(true);
+			openColumnMappingButton.setText(createXMappingButtonText(table, false));
+		}
 		
 		int maxLen = 70;
 		
@@ -2867,7 +2903,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 		graphView.display.invalidate();
 		restrictionsTable.setModel(restrictionTableModel());
 		String saveInitialRestrictionCondition = initialRestrictionCondition;
-		initRestrictionEditor(currentAssociation, currentNode);
+		initRestrictionEditor(currentTable, currentAssociation, currentNode);
 		initialRestrictionCondition = saveInitialRestrictionCondition;
 		closureView.refresh();
 		closureBorderView.refresh();
@@ -2915,7 +2951,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 	public void afterAddRestriction() {
 		updateAssocStats();
 		markDirty();
-		initRestrictionEditor(currentAssociation, currentNode);
+		initRestrictionEditor(currentTable, currentAssociation, currentNode);
 		graphView.resetExpandedState();
 		tree.repaint();
 		graphView.display.invalidate();
@@ -3088,7 +3124,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 		}
 		setOrientation(isHorizontalLayout);
 		openXmlSettings.setVisible(scriptFormat.isObjectNotation());
-		initRestrictionEditor(currentAssociation, currentNode);
+		initRestrictionEditor(currentTable, currentAssociation, currentNode);
 		openXmlSettings.setText(scriptFormat + " Settings");
 		validate();
 	}//GEN-LAST:event_onExportModusChanged
@@ -4153,6 +4189,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
     private JComboBox2 aggregationCombobox;
     private javax.swing.JLabel assocStatsLabel;
     private javax.swing.JLabel associatedWith;
+    private javax.swing.JPanel cmbPanel;
+    private javax.swing.JPanel columnMappingButtonHolder;
     javax.swing.JTextField condition;
     public javax.swing.JLabel connectivityState;
     private javax.swing.JLabel dependsOn;
@@ -4231,7 +4269,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
     // End of variables declaration//GEN-END:variables
 
     JComboBox2 subjectTable;
-
+    private JButton openColumnMappingButton;
     Container restrDepsView;
 
 	private Icon dropDownIcon;
@@ -4260,3 +4298,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 	// TODO icons for popup menu items
 
 }
+
+
+// TODO
+// TODO xml/yaml: table without assoc selected -> show "column mapping" button

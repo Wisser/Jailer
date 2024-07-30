@@ -316,6 +316,15 @@ public class Quoting {
 		return false;
 	}
 
+	/**
+	 * Gets the quote character, null if quoting is not supported.
+	 * 
+	 * @return the quote character, null if quoting is not supported
+	 */
+	public String getQuote() {
+		return quote;
+	}
+
 	public static boolean isPotentialIdentifierQuote(char c) {
 		return c == '"' || c == '\u00B4' || c == '`';
 	}

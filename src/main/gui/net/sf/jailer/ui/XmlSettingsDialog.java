@@ -91,6 +91,9 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
 		rootTag.setVisible(scriptFormat == ScriptFormat.XML);
 		xmlRootTagLabel.setVisible(scriptFormat == ScriptFormat.XML);
 		
+		unformattedCheckbox.setSelected(xmlSettings.unformatted);
+		unformattedCheckbox.setVisible(scriptFormat != ScriptFormat.YAML);
+		
 		singleRoot.setSelected(xmlSettings.singleRoot);
 		multipleRoots.setSelected(!xmlSettings.singleRoot);
 		ignore.setSelected(xmlSettings.ignoreNonAggregated);
@@ -137,6 +140,10 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
 				xmlSettings.disallowNonAggregated = disallow.isSelected();
 				change = true;
 			}
+			if (unformattedCheckbox.isSelected() != xmlSettings.unformatted) {
+				xmlSettings.unformatted = unformattedCheckbox.isSelected();
+				change = true;
+			}
 			return change;
 		}
 		return false;
@@ -172,6 +179,8 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
 		"yyyy-MMM-dd", "dd MMM yy", "dd-MMM-yy", "MM d, yy" };
 
 	private static String[] timePatternOptions = new String[] {
+		"yyyy-MM-dd'T'HH:mm:ss",
+		"yyyy-MM-dd'T'HH:mm:ss.SSS",
 		"dd/MM/yyyy HH:mm:ss", "dd.MM.yyyy HH:mm:ss",
 		"dd.MM.yyyy. HH.mm.ss", 
 		"dd.MM.yyyy H:mm:ss",
@@ -237,6 +246,7 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
         xmlRootTagLabel3 = new javax.swing.JLabel();
         ignore = new javax.swing.JCheckBox();
         disallow = new javax.swing.JCheckBox();
+        unformattedCheckbox = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("XML Settings");
@@ -476,6 +486,20 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel3.add(disallow, gridBagConstraints);
 
+        unformattedCheckbox.setText("Unformatted");
+        unformattedCheckbox.setToolTipText("If selected, output the result without formatting/indentation (compact).");
+        unformattedCheckbox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                unformattedCheckboxItemStateChanged(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 10;
+        gridBagConstraints.gridy = 18;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
+        jPanel3.add(unformattedCheckbox, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -536,6 +560,10 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
     private void singleRootActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_singleRootActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_singleRootActionPerformed
+
+    private void unformattedCheckboxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_unformattedCheckboxItemStateChanged
+        // TODO add your handling code here:
+    }//GEN-LAST:event_unformattedCheckboxItemStateChanged
 	
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Ok;
@@ -555,6 +583,7 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
     private javax.swing.JCheckBox singleRoot;
     private javax.swing.JLabel timestampExample;
     private javax.swing.JComboBox timestampPattern;
+    private javax.swing.JCheckBox unformattedCheckbox;
     private javax.swing.JLabel xmlRootTagLabel;
     private javax.swing.JLabel xmlRootTagLabel1;
     private javax.swing.JLabel xmlRootTagLabel2;
@@ -572,3 +601,4 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
 
 	private static final long serialVersionUID = -2752715206964965549L;
 }
+
