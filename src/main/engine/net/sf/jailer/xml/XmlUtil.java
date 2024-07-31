@@ -59,7 +59,6 @@ import org.xml.sax.SAXException;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.subsetting.ScriptFormat;
-import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.xml.XmlRowWriter.ObjectFormatTransformer;
 
@@ -704,7 +703,7 @@ public class XmlUtil {
 							.replaceAll("\\r?\\n--", PrintUtil.LINE_SEPARATOR + "# ")
 							.replaceAll("\\r?\\n\\r?\\n", PrintUtil.LINE_SEPARATOR + "# " + PrintUtil.LINE_SEPARATOR)
 							.trim())
-							+ UIUtil.LINE_SEPARATOR);
+							+ PrintUtil.LINE_SEPARATOR);
 				}
 			}
 		} catch (Exception e) {
