@@ -25,7 +25,7 @@ public class JailerVersion {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "16.3.2.1";
+	public static final String VERSION = "16.4";
 
 	/**
 	 * The Jailer working tables version.
@@ -45,17 +45,3 @@ public class JailerVersion {
 	}
 
 }
-
-
-// TODO
-// TODO check "demo-scott" after connect, warn if tables are empty
-
-//Select 1 where not exists(select 1 From DEPARTMENT)
-//and not exists(select 1 From EMPLOYEE)
-//and not exists(select 1 From PROJECT)
-//and not exists(select 1 From PROJECT_PARTICIPATION)
-//and not exists(select 1 From ROLE);
-
-
-// TODO
-// TODO extMODed: initial "initRestEd" with inital selection (table or assoc)

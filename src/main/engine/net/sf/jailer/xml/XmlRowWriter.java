@@ -454,8 +454,3 @@ public class XmlRowWriter {
 
 // TODO
 // TODO docu about "j:if-not-null"/"j:is-null" in template dialog
-
-// TODO
-// TODO new maven dep, testen
-
-

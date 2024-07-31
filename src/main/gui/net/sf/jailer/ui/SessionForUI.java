@@ -39,6 +39,7 @@ import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.util.CancellationHandler;
+import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Quoting;
 
 /**
@@ -90,11 +91,11 @@ public class SessionForUI extends Session {
 					Connection newCon = session.connectionFactory.getConnection();
 					try {
 						if (session.dbUrl.matches("jdbc:h2:.*demo-scott-h2")) {
-							session.executeQuery("", new ResultSetReader() {
+							session.executeQuery("Select 1 where not exists(select 1 From DEPARTMENT) and not exists(select 1 From EMPLOYEE) and not exists(select 1 From PROJECT) and not exists(select 1 From PROJECT_PARTICIPATION) and not exists(select 1 From SALARYGRADE) and not exists(select 1 From ROLE)"
+									, new ResultSetReader() {
 								@Override
 								public void readCurrentRow(ResultSet resultSet) throws SQLException {
-									// TODO
-									
+									LogUtil.warn(new RuntimeException("empty demo db. " + session.dbUrl));
 								}
 								@Override
 								public void close() throws SQLException {

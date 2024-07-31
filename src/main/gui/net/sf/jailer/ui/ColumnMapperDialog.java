@@ -19,6 +19,7 @@ import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.Point;
 import java.awt.event.ActionListener;
+import java.net.URI;
 import java.util.Collections;
 import java.util.Vector;
 import java.util.regex.Matcher;
@@ -70,6 +71,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 
 		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
 		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
+		helpButton.setIcon(UIUtil.scaleIcon(helpButton, helpIcon));
 		
 		JScrollPane jScrollPane2 = new JScrollPane();
 		jScrollPane2.setViewportView(mappingField);
@@ -161,7 +163,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 		this.scriptFormat = scriptFormat;
 		parameterSelector.updateParameters();
 		
-		stdBg = new RSyntaxTextArea().getBackground();
+		stdBg = new RSyntaxTextAreaWithTheme().getBackground();
 		
 		Vector<String> tableNames = new Vector<String>();
 		for (Table t: dataModel.getTables()) {
@@ -301,6 +303,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
         jPanel2 = new javax.swing.JPanel();
         formatButton = new javax.swing.JButton();
         resetButton = new javax.swing.JButton();
+        helpButton = new javax.swing.JButton();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
         jPanel5 = new javax.swing.JPanel();
@@ -376,9 +379,20 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
         jPanel2.add(resetButton, gridBagConstraints);
+
+        helpButton.setText("Help");
+        helpButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                helpButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 2);
+        jPanel2.add(helpButton, gridBagConstraints);
 
         okButton.setText("Ok");
         okButton.addActionListener(new java.awt.event.ActionListener() {
@@ -556,6 +570,14 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
     	updateSketch(table);
     	sketchUpdateButton.setEnabled(!sketchUpdateCheckbox.isSelected());
     }//GEN-LAST:event_sketchUpdateCheckboxActionPerformed
+
+    private void helpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpButtonActionPerformed
+    	try {
+			BrowserLauncher.openURL(new URI("https://wisser.github.io/Jailer/exporting-xml.html"), this);
+		} catch (Exception e) {
+			UIUtil.showException(this, "Error", e);
+		}
+    }//GEN-LAST:event_helpButtonActionPerformed
 	
     private void setMappingFieldText(String text) {
 		mappingField.setText(text.replace("\r", ""));
@@ -565,6 +587,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
     private javax.swing.JButton formatButton;
+    private javax.swing.JButton helpButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -590,11 +613,13 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
     
     private static ImageIcon okIcon;
 	private static ImageIcon cancelIcon;
+	private static ImageIcon helpIcon;
 	
     static {
         // load images
         okIcon = UIUtil.readImage("/buttonok.png");
         cancelIcon = UIUtil.readImage("/buttoncancel.png");
+        helpIcon = UIUtil.readImage("/help.png");
 	}
     
 	private static final long serialVersionUID = -5437578641818236294L;

@@ -1460,44 +1460,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 			editorPanel.add(panel2);
 			((GridLayout) editorPanel.getLayout()).setVgap(1);
 			((GridLayout) editorPanel.getLayout()).setColumns(1);
-			if (false && scriptFormat.isObjectNotation()) { // TODO
-				
-				JPanel sketchPanel = new JPanel();
-				sketchPanel.setLayout(new java.awt.GridBagLayout());
-
-				jLabel12.setFont(jLabel12.getFont().deriveFont(jLabel12.getFont().getStyle() | java.awt.Font.BOLD));
-		        jLabel12.setText(" " + scriptFormat + " Sketches");
-		        gridBagConstraints = new java.awt.GridBagConstraints();
-		        gridBagConstraints.gridx = 0;
-		        gridBagConstraints.gridy = 0;
-		        gridBagConstraints.gridwidth = 5;
-		        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		        gridBagConstraints.insets = new java.awt.Insets(8, 0, 4, 0);
-		        sketchPanel.add(jLabel12, gridBagConstraints);
-
-		        gridBagConstraints = new java.awt.GridBagConstraints();
-		        gridBagConstraints.gridx = 1;
-		        gridBagConstraints.gridy = 11;
-		        gridBagConstraints.gridwidth = 2;
-		        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-		        gridBagConstraints.weightx = 1.0;
-		        gridBagConstraints.weighty = 1.0;
-		        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
-		        sketchPanel.add(sketchTabbedPane, gridBagConstraints);
-
-		        gridBagConstraints = new java.awt.GridBagConstraints();
-				gridBagConstraints.gridx = 0;
-				gridBagConstraints.gridy = 3;
-				gridBagConstraints.weightx = 1;
-				gridBagConstraints.weighty = 0.6;
-				gridBagConstraints.fill = GridBagConstraints.BOTH;
-				gridBagConstraints.insets = new Insets(0, 0, 0, 0);
-				panel2.add(sketchPanel, gridBagConstraints);
-//				editorPanel.add(xmlMappingPanel);
-				((GridLayout) editorPanel.getLayout()).setRows(1);
-			} else {
-				((GridLayout) editorPanel.getLayout()).setRows(1);
-			}
+			((GridLayout) editorPanel.getLayout()).setRows(1);
 		}
 	}
 
@@ -4302,7 +4265,3 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 	// TODO icons for popup menu items
 
 }
-
-
-// TODO
-// TODO xml/yaml: table without assoc selected -> show "column mapping" button
