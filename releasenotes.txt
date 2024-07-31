@@ -1,3 +1,10 @@
+16.4
+  - Data can now also be exported as structured JSON and YAML files.
+  - Fix for Issue 116: "Saving the model files should be sorted"
+    https://github.com/Wisser/Jailer/issues/116
+  - Fix for Issue 117: "Missing parantheses causes problems with HSTOREs containing newlines"
+    https://github.com/Wisser/Jailer/issues/117
+
 16.3.2
   - Error messages were lost for errors that occur immediately on startup. (As the colour scheme of the new dark UI theme was initialized too late for this)
 
