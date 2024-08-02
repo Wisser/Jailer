@@ -45,6 +45,7 @@ Thanks to the JDBC technology used, any DMBS is in principle supported. For best
 
 ## News
 
+ - 2024-07-04    Data can now also be exported as structured JSON and YAML files.
  - 2024-06-26    A dark UI theme has been introduced that improves readability in low light environments.
  - 2024-04-18    DDL scripts for creating database objects can now be generated thanks to an integration of the [Liquibase](https://www.liquibase.com) tool. This makes it possible to create subset databases from scratch using only on-board means.
  - 2023-02-03    Thanks to deep analysis of statements, the SQL console can now relate the result of queries to the source tables and display them accordingly. In addition, this technique also allows filter conditions to be dynamically added to arbitrary SQL queries.
