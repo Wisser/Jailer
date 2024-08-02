@@ -231,18 +231,18 @@
             table describes the XML (JSON/YAML) represenation of each exported row:<br />
 
             <ul>
-              <li>Expression starting with <span style="font-style: italic;"><font color="#0000bb">SQL:</font></span>
+              <li><p>Expression starting with <span style="font-style: italic;"><font color="#0000bb">SQL:</font></span>
               will be replaced by the value of the SQL expression thereafter.
               <span style="font-style: italic;"><font color="#0000bb">T</font></span> is the alias for the row. Note
-              that even scalar subqueries are allowed here.</li>
+              that even scalar subqueries are allowed here.</p></li>
 
-              <li><span style="font-style: italic;"><font color="#0000bb">j:assoc</font></span> elements will be
-              replaced by the representation of the associated rows.<br /></li>
+              <li><p><span style="font-style: italic;"><font color="#0000bb">j:assoc</font></span> elements will be
+              replaced by the representation of the associated rows.</p></li>
               
-              <li>An <span style="font-style: italic;"><font color="#0000bb">j:if-not-null</font></span> attribute determines whether an element should be written. <br>
+              <li><p>An <span style="font-style: italic;"><font color="#0000bb">j:if-not-null</font></span> attribute determines whether an element should should occur in the result. <br>
               The attribute value is an SQL expression (analogous to the expressions after <span style="font-style: italic;"><font color="#0000bb">SQL:</font></span>).<br>
               If it evaluates to <span style="font-style: italic;"><font color="#0000bb">null</font></span>, the element is omitted. The <span style="font-style: italic;"><font color="#0000bb">j:if-null</font></span> attributes work in the opposite way.
-              </li>
+             </p> </li>
             </ul>In addition, parameters can be used here, to which values can then be assigned in the "Export Data" dialog or via CLI.<br /><br />
             We change the mapping in the following way:<br />
 
