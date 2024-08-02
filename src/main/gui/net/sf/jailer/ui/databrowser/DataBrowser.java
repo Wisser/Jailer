@@ -3987,9 +3987,13 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 			desktop.storeSession(tmpFile.toString());
 			DataBrowser newBrowser = openNewDataBrowser(datamodel.get(), dbConnectionDialog, false, executionContext,
 					null);
-			newBrowser.desktop.restoreSession(null, newBrowser, tmpFile.toString(), true);
+			if (newBrowser.session != null) {
+				newBrowser.desktop.restoreSession(null, newBrowser, tmpFile.toString(), true);
+			}
 			tmpFile.delete();
-			return newBrowser;
+			if (newBrowser.session != null) {
+				return newBrowser;
+			}
 		} catch (Exception e) {
 			UIUtil.showException(this, "Error", e, session);
 		}
