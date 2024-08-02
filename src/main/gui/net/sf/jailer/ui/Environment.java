@@ -136,9 +136,9 @@ public class Environment {
 				copyIfNotExists("bookmark");
 				copyIfNotExists("extractionmodel");
 				copyIfNotExists("layout");
-				copyIfNotExists("demo-scott-h2.mv.db");
-				copyIfNotExists("demo-sakila-h2.mv.db");
-				copyIfNotExists("demo-scott-h2-subset.mv.db");
+				copyIfNotExists("demo-scott.mv.db");
+				copyIfNotExists("demo-sakila.mv.db");
+				copyIfNotExists("demo-scott-subset.mv.db");
 				copyIfNotExists("example");
 				copyIfNotExists("render");
 

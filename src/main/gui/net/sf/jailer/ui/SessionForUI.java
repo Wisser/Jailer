@@ -90,7 +90,7 @@ public class SessionForUI extends Session {
 				try {
 					Connection newCon = session.connectionFactory.getConnection();
 					try {
-						if (session.dbUrl.matches("jdbc:h2:.*demo-scott-h2")) {
+						if (session.dbUrl.matches("jdbc:h2:.*demo-scott")) {
 							session.executeQuery("Select 1 where not exists(select 1 From DEPARTMENT) and not exists(select 1 From EMPLOYEE) and not exists(select 1 From PROJECT) and not exists(select 1 From PROJECT_PARTICIPATION) and not exists(select 1 From SALARYGRADE) and not exists(select 1 From ROLE)"
 									, new ResultSetReader() {
 								@Override
