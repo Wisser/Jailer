@@ -1,3 +1,7 @@
+16.4.1
+  - The documentation has been updated.
+  - An error that occurred after a connection attempt fails in a new data browser has been fixed.
+
 16.4
   - Data can now also be exported as structured JSON and YAML files.
   - Fix for Issue 116: "Saving the model files should be sorted"
