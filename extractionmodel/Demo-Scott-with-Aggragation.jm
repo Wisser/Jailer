@@ -1,0 +1,60 @@
+# subject; condition; limit; limit-order
+EMPLOYEE; T.NAME='SCOTT'; ; 
+
+# association; ; restriction-condition
+inverse-BOSS; ; ignore
+inverse-DEPARTMENT; ; ignore
+inverse-PROJECT; ; ignore
+inverse-ROLE; ; ignore
+inverse-SALARY; ; ignore
+
+#! block additional subjects
+# subject; condition; limit; limit-order
+
+#! block xml-mapping
+DEPARTMENT;department;IMPLICIT_LIST
+PROJECT;project;IMPLICIT_LIST
+ROLE;role;IMPLICIT_LIST
+SALARY;salary_grade;IMPLICIT_LIST
+inverse-BOSS;employee;IMPLICIT_LIST
+inverse-EMPLOYEE;participations;EXPLICIT_LIST
+
+#! block datamodelfolder
+Demo-Scott
+
+#! block export modus
+JSON
+
+#! block xml settings
+yyyy-MM-dd;yyyy-MM-dd-HH.mm.ss;entities;false;true;false;false;false
+#! block xml column mapping
+#! block upserts
+#! block exclude from deletion
+
+#! block filters
+
+#! block filter templates
+
+#! block layout
+EMPLOYEE; ROLE; 107.4111348302336; 90.36657518763403; 1.0
+EMPLOYEE; BOSS#; -41.745963805266626; -69.9528069883284; 1.0
+EMPLOYEE; PROJECT; 270.71401723489475; -4.019052749278217; 1.0
+EMPLOYEE; $ZOOMBOX; 0.0; 0.0; 1.0
+EMPLOYEE; EMPLOYEE; -85.64236262694305; -2.2029728159258752; 1.0
+EMPLOYEE; BONUS; -177.91060377315253; -64.48735854019623; 1.0
+EMPLOYEE; DEPARTMENT; -38.34457182130592; 95.1431476735292; 1.0
+EMPLOYEE; SALARYGRADE; -174.31384969615323; 96.71389881557332; 1.0
+EMPLOYEE; PROJECT_PARTICIPATION; 106.20831216593035; -3.732194262449468; 1.0
+
+#! block known
+# known association; decision pending
+BONUS; 
+BOSS; 
+DEPARTMENT; 
+EMPLOYEE; 
+PROJECT; 
+ROLE; 
+SALARY; 
+
+#! block version
+16.4.0.1
