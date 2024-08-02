@@ -1,7 +1,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   
-  <title>Jailer - XML Export</title>
+  <title>Jailer - JSON/YAML/XML Export</title>
   <meta http-equiv="Content-Type" content="text/html; charset=us-ascii" />
   <meta name="description" content="Data Export Tool" />
   <link rel="shortcut icon" href="favicon.ico" />
@@ -97,7 +97,7 @@
                 <ul>
                   <li><a href="subset-by-example.html" target="_self" class=
                   "llink">Subset&nbsp;By&nbsp;Example</a> </li>
-				  <li><a href="exporting-xml.html" target="_self" class="llinkA">XML Export</a> </li>
+				  <li><a href="exporting-xml.html" target="_self" class="llinkA">JSON/YAML/XML Export</a> </li>
                 </ul>
             </ul>
 
@@ -124,8 +124,9 @@
                   <tr>
                     <td class="content" height="520" valign="top" width="100%">
                       
-                      This tutorial shows you how to export data to XML and how to define
-                      the structure of the XML document.<br />
+                      This tutorial shows you how to export data into XML files and how to define
+                      the structure of the documents.<br />
+                      The export to JSON or YAML files works in the same way.
                       <br />
 
                       <h4>Objective</h4>Exporting all the data related to the employee
@@ -135,10 +136,9 @@
                       <h4>Step 1. Switch to XML-mode.<br /></h4>
 
                       <p>Load the model <big><span style=
-                      "font-family: monospace;">Demo-Scott.jm</span></big> and switch to XML mode. An additional panel named
-                      "XML Mapping" will appear.<br /></p>
+                      "font-family: monospace;">Demo-Scott.jm</span></big> and switch to XML mode.<br /></p>
 
-                      <p><img alt="" src="xmlt1.gif" /><br /></p>
+                      <p><img alt="" src="xmlt1.png" /><br /></p>
 
                       <p><br /></p>
 
@@ -165,16 +165,11 @@
 </pre>
                       </div>
 
-                      <h4>Step 3. Defining the XML structure</h4>
+                      <h4>Step 3. Defining the structure</h4>
 
-                      <p>In the "XML Mapping" panel you can define the aggregation-type
-                      for each association. If the aggregation-type an association from
-                      table A to B is not 'none', than the XML representation of entities
-                      from table B will be embedded into the XML representation of the
-                      associated entities from table A.<br /></p>
+                      <p>You can now specify for each association whether it is an aggregation. If an association from table A to B is an aggregation, the XML (JSON/YAML) representations of the entities from table B are embedded into the XML representation of the associated entities from table A.<br /></p>
 
-                      <p>Set the aggregation-type to 'implicit list' for the
-                      associations:<br /></p>
+                      <p>Define the following associations as aggregations (as 'implicit list'):<br /></p>
 
                       <ul>
                         <li>BOSS (from EMPLOYEE to EMPLOYEE)</li>
@@ -184,13 +179,12 @@
                         <li>from EMPLOYEE to SALARYGRADE. Change the tag name to
                         <span style="font-style: italic;">salary_grade</span>.<br />
                         <br /></li>
-                      </ul>set the aggregation-type to 'explicit list' with
-                      'participations' as tag for the association:<br />
+                      </ul>Define the following associations as aggregations (as 'explicit list'):<br />
 
                       <ul>
                         <li>from EMPLOYEE to PROJECT_PARTICIPATION<br />
                         <br /></li>
-                      </ul>and set the aggregation-type to 'flat' for the associations:
+                      </ul>and the following associations as 'flat' aggregations:
 
                       <ul>
                         <li>from EMPLOYEE to PROJECT_PARTICIPATION</li>
@@ -199,7 +193,7 @@
 
                         <li>from PROJECT_PARTICIPATION to ROLE<br /></li>
                       </ul><br />
-                      <img alt="" src="xmlt2.gif" /><br />
+                      <img alt="" src="xmlt2.png" /><br />
 
                       <p><br />
                       Export data into a file <a href="scott-2.xml"><img style=
@@ -230,31 +224,36 @@
             allows you to define how columns will be mapped to XML elements or
             attributes. By default each column is mapped to an element with the same
             name. You can open the dialog using the "<span style=
-            "font-style: italic;">map column</span>" button or via the context menu of a
+            "font-style: italic;">Column Mapping ...</span>" button or via the context menu of a
             table.<br />
             <br />
             The <span style="font-style: italic;">column mapping template</span> of a
-            table describes the XML represenation of each exported row:<br />
+            table describes the XML (JSON/YAML) represenation of each exported row:<br />
 
             <ul>
-              <li>Expression starting with <span style="font-style: italic;">SQL:</span>
+              <li>Expression starting with <span style="font-style: italic;"><font color="#0000bb">SQL:</font></span>
               will be replaced by the value of the SQL expression thereafter.
-              <span style="font-style: italic;">T</span> is the alias for the row. Note
+              <span style="font-style: italic;"><font color="#0000bb">T</font></span> is the alias for the row. Note
               that even scalar subqueries are allowed here.</li>
 
-              <li><span style="font-style: italic;">j:assoc</span> elements will be
-              replaced by the XML representation of the associated rows.<br /></li>
-            </ul><br />
+              <li><span style="font-style: italic;"><font color="#0000bb">j:assoc</font></span> elements will be
+              replaced by the representation of the associated rows.<br /></li>
+              
+              <li>An <span style="font-style: italic;"><font color="#0000bb">j:if-not-null</font></span> attribute determines whether an element should be written. <br>
+              The attribute value is an SQL expression (analogous to the expressions after <span style="font-style: italic;"><font color="#0000bb">SQL:</font></span>).<br>
+              If it evaluates to <span style="font-style: italic;"><font color="#0000bb">null</font></span>, the element is omitted. The <span style="font-style: italic;"><font color="#0000bb">j:if-null</font></span> attributes work in the opposite way.
+              </li>
+            </ul>In addition, parameters can be used here, to which values can then be assigned in the "Export Data" dialog or via CLI.<br /><br />
             We change the mapping in the following way:<br />
 
             <ol>
               <li>Foreign keys should not appear in the XML document as they are
               redundant.<br /></li>
 
-              <li>Map primary keys to attributes rather than elements.</li>
+              <li>Map primary keys to attributes rather than elements. (Attributes are not supported in JSON or YAML files!)</li>
 
               <li>Some elements of ROLE and PROJECT should be renamed. Their names are
-              not unique due to the flat embedment into PROJECT_PARTICIPATION:<br />
+              not unique due to the flat embedding into PROJECT_PARTICIPATION:<br />
 
                 <ul>
                   <li>Rename the ROLE-tag <span style=
@@ -275,9 +274,9 @@
                 </ul>
               </li>
             </ol><br />
-            Open the mapping dialog for table EMPLYOEE:<br />
+            Open the Column Mapping dialog for table EMPLYOEE:<br />
             <br />
-            <img alt="" src="xmlt3.gif" /><br />
+            <img alt="" src="xmlt3.png" /><br />
             <br />
             Remove the elements <span style="font-style: italic;">'empno',</span>
             <span style="font-style: italic;">'boss'</span> and <span style=
@@ -332,12 +331,11 @@
             Do the following:<br />
 
             <ul>
-              <li>set the aggregation-type of association 'BOSS' to 'none'.</li>
+              <li>Define the 'BOSS' to 'BOSS' association on the "parent" (red) side to become an aggregation. (The aggregation on the opposite side is then automatically removed).<br>
+              </li>
+              <li>Use the "Column Mapping for EMPLOYEE" dialog to set the name of the 'inverse-BOSS' association to 'subordinates'.</li>
 
-              <li>set the aggregation-type of association 'inverse-BOSS' to 'explicit
-              list', set tag name to 'subordinates'.</li>
-
-              <li>remove restriction from 'inverse-BOSS' association.<br /></li>
+              <li>remove the restriction from 'inverse-BOSS' association (the "child" side).<br /></li>
 
               <li>set where-condition to T.NAME='KING'.</li>
             </ul>Export data into a file <a href="scott-4.xml"><img style=

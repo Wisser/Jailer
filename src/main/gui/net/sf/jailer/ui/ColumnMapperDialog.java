@@ -624,14 +624,3 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
     
 	private static final long serialVersionUID = -5437578641818236294L;
 }
-
-// TODO
-// TODO parameter panel:
-// TODO docu? grundsaetzlich, as link to docu?
-
-// TODO
-// TODO doku: "tutorial"/"preparation": too(ooooo) old!
-
-// TODO
-// TODO update docu
-// TODO add some template examples
