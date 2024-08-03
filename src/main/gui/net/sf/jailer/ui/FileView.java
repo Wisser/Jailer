@@ -84,7 +84,7 @@ public class FileView extends javax.swing.JFrame {
 		this.withSyntaxHighlighting = withSyntaxHighlighting;
 		this.isXml = file.toLowerCase().endsWith(".xml");
 		this.isJson = file.toLowerCase().endsWith(".json");
-		this.isYaml = file.toLowerCase().endsWith(".yaml");
+		this.isYaml = file.toLowerCase().endsWith(".yaml") || file.toLowerCase().endsWith(".yml");
 		
 		File f = new File(file);
 		if (f.exists() && f.length() > 65L*1024L*1024L / (file.toLowerCase().endsWith(".zip") || file.toLowerCase().endsWith(".gz")? 5 : 1)) {
