@@ -20,7 +20,7 @@ https://user-images.githubusercontent.com/861721/142761281-299bddc4-eea7-4f26-8c
  - Exports consistent and referentially intact row-sets from your productive database
    and imports the data into your development and test environment.
  - Improves database performance by removing and archiving obsolete data without violating integrity.
- - Generates topologically sorted SQL-DML, hierarchically structured XML and DbUnit datasets.
+ - Generates topologically sorted SQL-DML, hierarchically structured JSON, YAML, XML and DbUnit datasets.
  - Data Browsing. Navigate bidirectionally through the database by following foreign-key-based or user-defined relationships.
  - SQL Console with code completion, syntax highlighting and database metadata visualization.
  - A demo database is included with which you can get a first impression without any configuration effort.
