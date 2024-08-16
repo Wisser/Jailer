@@ -2579,10 +2579,34 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		        		return;
 		        	}
 		        	TableColumn theColumn = header.getColumnModel().getColumn(column);
+		        	String nullContraint = null;
+		        	int i = theColumn.getModelIndex();
+	        		Table tab = getResultSetTypeForColumn(i);
+		        	if (tab != null && tab.getName() != null) {
+		        		if (i >= 0 && i < tab.getColumns().size()) {
+		        			Column col = tab.getColumns().get(i);
+		        			if (col != null && col.name != null) {
+								nullContraint = col.isNullable? "nullable" : "not null";
+			        			if (tab.getName() != null && tab.getName().toUpperCase().equals(tab.getName())) {
+			        				nullContraint = nullContraint.toUpperCase();
+			        			}
+		        			}
+		        		}
+		        	}
 		        	if (alternativeColumnLabelsFull != null && alternativeColumnLabelsFull.length > theColumn.getModelIndex()) {
 			        	header.setToolTipText(alternativeColumnLabelsFull[theColumn.getModelIndex()]);
 		        	} else {
 		        		header.setToolTipText(theColumn.getHeaderValue() == null? "" : (theColumn.getHeaderValue().toString()));
+		        	}
+		        	if (nullContraint != null && header.getToolTipText() != null && !header.getToolTipText().isEmpty()) {
+		        		String ttt = header.getToolTipText();
+		        		if (ttt.startsWith("<html")) {
+		        			ttt = ttt.replace("</html>",  "<font color=" + Colors.HTMLColor_808080 + "> <i>" + nullContraint + "</i></font></html>");
+		        			header.setToolTipText(ttt);
+		        		} else {
+		        			ttt = "<html>" + UIUtil.toHTMLFragment(ttt, 0) + "<hr>" + "<font color=" + Colors.HTMLColor_808080 + "> <i>" + nullContraint + "</i></font></html>";
+		        			header.setToolTipText(ttt);
+		        		}
 		        	}
 		        	currentSearchButtonColumnIndex = column;
 		        	if (getWhereClauseEditorBaseTable() != null && browserContentCellEditor.getColumnTypes().length > modelIndex && browserContentCellEditor.isEditable(getWhereClauseEditorBaseTable(), modelIndex, null)) {
