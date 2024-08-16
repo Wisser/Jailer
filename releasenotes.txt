@@ -1,3 +1,6 @@
+16.4.2
+  - Slight improvements to the user interface.
+
 16.4.1
   - The documentation has been updated.
   - An error that occurred after a connection attempt fails in a new data browser has been fixed.
