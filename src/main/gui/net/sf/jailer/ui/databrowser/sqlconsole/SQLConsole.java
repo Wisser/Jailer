@@ -1790,7 +1790,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         if (origTabContentPanel == null) {
 	                        jTabbedPane1.add(rTabContainer);
 	                        updateResultUI();
-	                        JPanel tp;
+	                        TitelPanel tp;
 							jTabbedPane1.setTabComponentAt(jTabbedPane1.indexOfComponent(rTabContainer), tp = getTitlePanel(jTabbedPane1, rTabContainer, tabContentPanel, title, rb));
 							tp.setToolTipText(tabContentPanel.statementLabel.getToolTipText());
 							tabContentPanel.statementLabel.addPropertyChangeListener("text", e -> tp.setToolTipText(tabContentPanel.statementLabel.getToolTipText()));
@@ -3694,14 +3694,17 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     	public final JComponent rTabContainer;
     	public final TabContentPanel tabContentPanel;
     	public final ResultContentPane rb;
-
+    	private final JLabel titleLbl;
+    	private final JTabbedPane tabbedPane;
+    	
     	public TitelPanel(final JTabbedPane tabbedPane, final JComponent rTabContainer, TabContentPanel tabContentPanel, String title, ResultContentPane rb) {
     		super(new FlowLayout(FlowLayout.LEFT, 0, 0));
+    		this.tabbedPane = tabbedPane;
     		this.rTabContainer = rTabContainer;
     		this.tabContentPanel = tabContentPanel;
     		this.rb = rb;
     		setOpaque(false);
-    		JLabel titleLbl = new JLabel(title);
+    		titleLbl = new JLabel(title);
     		titleLbl.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
     		add(titleLbl);
     		SmallButton closeButton = new SmallButton(closeIcon) {
@@ -3719,9 +3722,18 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     		};
     		add(closeButton);
     	}
+
+		@Override
+		public void setToolTipText(String text) {
+			for (int i = 0; i < tabbedPane.getTabCount(); ++i) {
+				if (tabbedPane.getTabComponentAt(i) == this) {
+					tabbedPane.setToolTipTextAt(i, text);
+				}
+			}
+		}
     }
     
-    private JPanel getTitlePanel(final JTabbedPane tabbedPane, final JComponent rTabContainer, TabContentPanel tabContentPanel, String title, ResultContentPane rb) {
+    private TitelPanel getTitlePanel(final JTabbedPane tabbedPane, final JComponent rTabContainer, TabContentPanel tabContentPanel, String title, ResultContentPane rb) {
         return new TitelPanel(tabbedPane, rTabContainer, tabContentPanel, title, rb);
     }
 

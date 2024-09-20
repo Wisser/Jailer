@@ -78,12 +78,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.Set;
+import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Vector;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.swing.AbstractButton;
@@ -115,8 +117,6 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-import javax.swing.UIManager;
-import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.WindowConstants;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
@@ -197,6 +197,7 @@ import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithTheme;
 import net.sf.jailer.ui.util.AnimationController;
 import net.sf.jailer.ui.util.CompoundIcon;
 import net.sf.jailer.ui.util.CompoundIcon.Axis;
@@ -375,6 +376,8 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		UIUtil.initComponents(this);
 		jToolBar1.setFloatable(false);
 		jToolBar2.setFloatable(false);
+		
+		initWorkbenchTabbedPane();
 
 		initMenu();
 		initNavTree();
@@ -549,22 +552,27 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 			UISettings.dmStats(datamodel);
 		}
 		initRowLimitButtons();
-		workbenchTabbedPane.setTabComponentAt(0, new JLabel("Desktop", desktopIcon, JLabel.LEFT));
-		workbenchTabbedPane.setTabComponentAt(1, new JLabel("SQL Console ", sqlConsoleIcon, JLabel.LEFT));
-		JLabel newConsoleLabel = new JLabel(addSqlConsoleIcon);
+		workbenchTabbedPaneSetTabComponentAt(0, () -> new JLabel("Desktop", desktopIcon, JLabel.LEFT));
+		workbenchTabbedPaneSetTabComponentAt(1, () -> new JLabel("SQL Console ", sqlConsoleIcon, JLabel.LEFT));
 		int tabIndex = workbenchTabbedPane.getTabCount() - 1;
-		workbenchTabbedPane.setTabComponentAt(tabIndex, newConsoleLabel);
+		workbenchTabbedPaneSetTabComponentAt(tabIndex, () -> new JLabel(addSqlConsoleIcon));
 		String toolTipText = "New SQL Console";
-		workbenchTabbedPane.setToolTipTextAt(tabIndex, toolTipText);
+		workbenchTabbedPaneSetToolTipTextAt(tabIndex, toolTipText);
 //		newConsoleLabel.setToolTipText(toolTipText);
 
 		tableTreesTabbedPane.setTabComponentAt(0, new JLabel("Navigation", navigationIcon, JLabel.LEFT));
 		tableTreesTabbedPane.setTabComponentAt(1, new JLabel("Database", databaseIcon, JLabel.LEFT));
+		
+		navTabToggleButton.setText(null);
+		navTabToggleButton.setIcon(navigationIcon);
+		dbTabToggleButton.setText(null);
+		dbTabToggleButton.setIcon(databaseIcon);
 
 		tableTreesTabbedPane.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
-				if (createMetaDataPanel != null && tableTreesTabbedPane.getSelectedComponent() == tablesCardPanel) {
+				updateTableTreesTabbedPane(workbenchTabbedPane.getSelectedIndex());
+				if (createMetaDataPanel != null && tableTreesTabbedPane.getSelectedIndex() == 1) {
 					UIUtil.invokeLater(10, new Runnable() {
 						@Override
 						public void run() {
@@ -1021,10 +1029,11 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 
 			@Override
 			protected SQLConsole getSqlConsole(boolean switchToConsole) {
+				SQLConsole content = getCurrentSQLConsole();
 				if (switchToConsole) {
-					workbenchTabbedPane.setSelectedComponent(getCurrentSQLConsole());
+					setSelectedWorkbenchTab(content);
 				}
-				return getCurrentSQLConsole();
+				return content;
 			}
 
 			@Override
@@ -1052,7 +1061,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 
 			@Override
 			protected boolean isDesktopVisible() {
-				return workbenchTabbedPane.getSelectedComponent() == desktopSplitPane;
+				return getSelectedWorkbenchTab() == desktopSplitPane;
 			}
 
 			@Override
@@ -2040,7 +2049,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
 					try {
-						Component sc = workbenchTabbedPane.getSelectedComponent();
+						Component sc = getSelectedWorkbenchTab();
 						if (sc instanceof SQLConsole) {
 							SQLConsole sqlConsole = (SQLConsole) sc;
 							sqlConsole.setRowLimit(limit);
@@ -2331,6 +2340,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         jLabel26 = new javax.swing.JLabel();
         buttonGroupStepTime = new javax.swing.ButtonGroup();
         jLayeredPane2 = new javax.swing.JLayeredPane();
+        jPanel5 = new javax.swing.JPanel();
         modelNavigationSplitSizerPanel = new javax.swing.JPanel();
         modelNavigationPanel = new javax.swing.JPanel();
         modelNavigationGapPanel = new javax.swing.JPanel();
@@ -2355,8 +2365,10 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         legende2 = new javax.swing.JPanel();
         connectivityState = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
-        jSplitPane1 = new javax.swing.JSplitPane();
-        jPanel5 = new javax.swing.JPanel();
+        globalTabbedPane = new javax.swing.JTabbedPane();
+        jPanel3 = new javax.swing.JPanel();
+        rootSplitPane = new javax.swing.JSplitPane();
+        workbenchTabbedPanePanel = new javax.swing.JPanel();
         workbenchTabbedPane = new javax.swing.JTabbedPane();
         desktopSplitPane = new javax.swing.JSplitPane();
         jPanel4 = new javax.swing.JPanel();
@@ -2390,14 +2402,22 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         addSQLConsoleTab = new javax.swing.JPanel();
         controlPanel = new javax.swing.JPanel();
         jSplitPane4 = new javax.swing.JSplitPane();
+        tableTreesTabbedPanePanel = new javax.swing.JPanel();
         tableTreesTabbedPane = new javax.swing.JTabbedPane();
+        navigationPanelPanel = new javax.swing.JPanel();
         navigationPanel = new javax.swing.JPanel();
         outLinePanel = new javax.swing.JPanel();
         jToolBar2 = new javax.swing.JToolBar();
         openTableButton = new javax.swing.JButton();
+        navDbTabHolderPanel = new javax.swing.JPanel();
+        navDbTabToolBar = new javax.swing.JToolBar();
+        tabSeparator = new javax.swing.JToolBar.Separator();
+        navTabToggleButton = new javax.swing.JToggleButton();
+        dbTabToggleButton = new javax.swing.JToggleButton();
         navTreeLayeredPane = new javax.swing.JLayeredPane();
         navigationTreeScrollPane = new javax.swing.JScrollPane();
         navigationTree = new javax.swing.JTree();
+        tablesCardPanelPanel = new javax.swing.JPanel();
         tablesCardPanel = new javax.swing.JPanel();
         tablesPanel = new javax.swing.JPanel();
         jPanel6 = new javax.swing.JPanel();
@@ -2424,6 +2444,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         jLabel20 = new javax.swing.JLabel();
         jLabel21 = new javax.swing.JLabel();
         jLabel22 = new javax.swing.JLabel();
+        jPanel8 = new javax.swing.JPanel();
         updateInfoPanel = new javax.swing.JPanel();
         updateInfoLabel = new javax.swing.JLabel();
         downloadButton = new javax.swing.JButton();
@@ -2500,6 +2521,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         jSeparator20 = new javax.swing.JPopupMenu.Separator();
         autoLayoutMenuItem = new javax.swing.JCheckBoxMenuItem();
         zoomWithMouseWheelMenuItem = new javax.swing.JCheckBoxMenuItem();
+        legacyLegacyMenuNavigationMenuItem = new javax.swing.JCheckBoxMenuItem();
         jSeparator16 = new javax.swing.JPopupMenu.Separator();
         animationStepTimeMenu = new javax.swing.JMenu();
         steptime10 = new javax.swing.JRadioButtonMenuItem();
@@ -2557,6 +2579,14 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         dataModelPanel.add(jLabel26, java.awt.BorderLayout.CENTER);
 
         jLayeredPane2.setLayout(new java.awt.GridBagLayout());
+
+        jPanel5.setLayout(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 20, 0, 0);
+        jLayeredPane2.add(jPanel5, gridBagConstraints);
 
         modelNavigationSplitSizerPanel.setMinimumSize(new java.awt.Dimension(8, 0));
         modelNavigationSplitSizerPanel.setPreferredSize(new java.awt.Dimension(8, 0));
@@ -2769,10 +2799,20 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        jSplitPane1.setDividerLocation(340);
-        jSplitPane1.setOneTouchExpandable(true);
+        globalTabbedPane.addTab("tab1", jPanel3);
 
-        jPanel5.setLayout(new java.awt.GridBagLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel2.add(globalTabbedPane, gridBagConstraints);
+
+        rootSplitPane.setDividerLocation(340);
+        rootSplitPane.setOneTouchExpandable(true);
+
+        workbenchTabbedPanePanel.setLayout(new java.awt.GridBagLayout());
 
         workbenchTabbedPane.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
@@ -2994,15 +3034,19 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        jPanel5.add(workbenchTabbedPane, gridBagConstraints);
+        workbenchTabbedPanePanel.add(workbenchTabbedPane, gridBagConstraints);
 
-        jSplitPane1.setRightComponent(jPanel5);
+        rootSplitPane.setRightComponent(workbenchTabbedPanePanel);
 
         controlPanel.setLayout(new java.awt.GridBagLayout());
 
         jSplitPane4.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane4.setResizeWeight(1.0);
         jSplitPane4.setOneTouchExpandable(true);
+
+        tableTreesTabbedPanePanel.setLayout(new java.awt.GridBagLayout());
+
+        navigationPanelPanel.setLayout(new java.awt.GridBagLayout());
 
         navigationPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -3035,6 +3079,45 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         navigationPanel.add(jToolBar2, gridBagConstraints);
 
+        navDbTabHolderPanel.setName("navDbTabHolderPanel"); // NOI18N
+        navDbTabHolderPanel.setVerifyInputWhenFocusTarget(false);
+        navDbTabHolderPanel.setLayout(new javax.swing.BoxLayout(navDbTabHolderPanel, javax.swing.BoxLayout.LINE_AXIS));
+
+        navDbTabToolBar.setRollover(true);
+        navDbTabToolBar.add(tabSeparator);
+
+        navTabToggleButton.setText("jToggleButton1");
+        navTabToggleButton.setToolTipText("Desktop overview");
+        navTabToggleButton.setFocusable(false);
+        navTabToggleButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        navTabToggleButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        navTabToggleButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                navTabToggleButtonActionPerformed(evt);
+            }
+        });
+        navDbTabToolBar.add(navTabToggleButton);
+
+        dbTabToggleButton.setText("jToggleButton1");
+        dbTabToggleButton.setToolTipText("Database overview");
+        dbTabToggleButton.setFocusable(false);
+        dbTabToggleButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        dbTabToggleButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        dbTabToggleButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dbTabToggleButtonActionPerformed(evt);
+            }
+        });
+        navDbTabToolBar.add(dbTabToggleButton);
+
+        navDbTabHolderPanel.add(navDbTabToolBar);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        navigationPanel.add(navDbTabHolderPanel, gridBagConstraints);
+
         navTreeLayeredPane.setLayout(new java.awt.GridBagLayout());
 
         navigationTree.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -3062,7 +3145,15 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         gridBagConstraints.weighty = 1.0;
         navigationPanel.add(navTreeLayeredPane, gridBagConstraints);
 
-        tableTreesTabbedPane.addTab("Navigation", navigationPanel);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        navigationPanelPanel.add(navigationPanel, gridBagConstraints);
+
+        tableTreesTabbedPane.addTab("Navigation", navigationPanelPanel);
+
+        tablesCardPanelPanel.setLayout(new java.awt.GridBagLayout());
 
         tablesCardPanel.setLayout(new java.awt.CardLayout());
 
@@ -3100,9 +3191,21 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 
         tablesCardPanel.add(jPanel6, "loading");
 
-        tableTreesTabbedPane.addTab("Database", tablesCardPanel);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        tablesCardPanelPanel.add(tablesCardPanel, gridBagConstraints);
 
-        jSplitPane4.setLeftComponent(tableTreesTabbedPane);
+        tableTreesTabbedPane.addTab("Database", tablesCardPanelPanel);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        tableTreesTabbedPanePanel.add(tableTreesTabbedPane, gridBagConstraints);
+
+        jSplitPane4.setLeftComponent(tableTreesTabbedPanePanel);
 
         jPanel7.setLayout(new java.awt.GridBagLayout());
 
@@ -3235,7 +3338,10 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         gridBagConstraints.weighty = 1.0;
         controlPanel.add(jSplitPane4, gridBagConstraints);
 
-        jSplitPane1.setLeftComponent(controlPanel);
+        jPanel8.setLayout(new java.awt.GridBagLayout());
+        controlPanel.add(jPanel8, new java.awt.GridBagConstraints());
+
+        rootSplitPane.setLeftComponent(controlPanel);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -3243,7 +3349,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        jPanel2.add(jSplitPane1, gridBagConstraints);
+        jPanel2.add(rootSplitPane, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -3719,6 +3825,16 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
             }
         });
         jMenu3.add(zoomWithMouseWheelMenuItem);
+
+        legacyLegacyMenuNavigationMenuItem.setSelected(true);
+        legacyLegacyMenuNavigationMenuItem.setText("Legacy menu navigation");
+        legacyLegacyMenuNavigationMenuItem.setToolTipText("Use the old menu navigation.");
+        legacyLegacyMenuNavigationMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                legacyLegacyMenuNavigationMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu3.add(legacyLegacyMenuNavigationMenuItem);
         jMenu3.add(jSeparator16);
 
         animationStepTimeMenu.setText("Animation step time");
@@ -3840,6 +3956,12 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void legacyLegacyMenuNavigationMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_legacyLegacyMenuNavigationMenuItemActionPerformed
+		useGlobalTabbedPane = !legacyLegacyMenuNavigationMenuItem.isSelected();
+		UISettings.store("legacyLegacyMenuNavigation", !useGlobalTabbedPane);
+		updateTabbedPane(workbenchTabbedPane.getSelectedIndex());
+    }//GEN-LAST:event_legacyLegacyMenuNavigationMenuItemActionPerformed
 
 	private void zoomWithMouseWheelMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_zoomWithMouseWheelMenuItemActionPerformed
 		boolean zoom = zoomWithMouseWheelMenuItem.isSelected();
@@ -4087,7 +4209,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 
 	private void workbenchTabbedPaneStateChanged(javax.swing.event.ChangeEvent evt) {// GEN-FIRST:event_workbenchTabbedPaneStateChanged
 		if (initialized) {
-			if (workbenchTabbedPane.getSelectedComponent() == addSQLConsoleTab) {
+			if (getSelectedWorkbenchTab() == addSQLConsoleTab) {
 				if (!ignoreTabChangeEvent) {
 					try {
 						createNewSQLConsole(getMetaDataSource(session));
@@ -4095,7 +4217,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 						UIUtil.showException(this, "Error", e);
 					}
 				}
-			} else if (!(workbenchTabbedPane.getSelectedComponent() instanceof SQLConsole)) {
+			} else if (!(getSelectedWorkbenchTab() instanceof SQLConsole)) {
 				for (SQLConsole sqlConsole : sqlConsoles) {
 					if (sqlConsole.getDataHasChanged()) {
 						try {
@@ -4106,14 +4228,14 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 						sqlConsole.setDataHasChanged(false);
 					}
 				}
-				tableTreesTabbedPane.setSelectedComponent(navigationPanel);
+				tableTreesTabbedPane.setSelectedIndex(0);
 				if (itemPerLimit.get(rowLimitStore) != null) {
 					itemPerLimit.get(rowLimitStore).setSelected(true);
 				}
 			} else {
 				SQLConsole sqlConsole = getCurrentSQLConsole();
 				if (sqlConsole != null) {
-					tableTreesTabbedPane.setSelectedComponent(tablesCardPanel);
+					tableTreesTabbedPane.setSelectedIndex(1);
 					sqlConsole.grabFocus();
 					sqlConsole.update();
 					if (itemPerLimit.get(sqlConsole.getRowLimit()) != null) {
@@ -4133,7 +4255,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		new ConstraintChecker(this, datamodel.get(), true, session) {
 			@Override
 			protected void openTableBrowser(Table source, String where) {
-				workbenchTabbedPane.setSelectedComponent(desktopSplitPane);
+				setSelectedWorkbenchTab(desktopSplitPane);
 				desktop.addTableBrowser(null, null, source, null,
 						UIUtil.toSingleLineSQL(new BasicFormatterImpl().format(where)), null, true);
 			}
@@ -4700,6 +4822,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
     private javax.swing.JMenuItem dataImport;
     private javax.swing.JMenuItem dataModelEditorjMenuItem;
     private javax.swing.JPanel dataModelPanel;
+    private javax.swing.JToggleButton dbTabToggleButton;
     private javax.swing.JLabel dependsOn;
     private javax.swing.JSplitPane desktopSplitPane;
     private javax.swing.JButton downloadButton;
@@ -4710,6 +4833,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
     private javax.swing.JMenuItem exportDataMenuItem;
     private javax.swing.JMenuItem exportMenuItem;
     private javax.swing.JMenuItem generateDDLMenuItem;
+    private javax.swing.JTabbedPane globalTabbedPane;
     private javax.swing.JMenuItem goBackItem;
     private javax.swing.JMenuItem goForwardItem;
     private javax.swing.JLabel hasDependent;
@@ -4750,10 +4874,12 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel11;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
+    private javax.swing.JPanel jPanel8;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
@@ -4782,7 +4908,6 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
     private javax.swing.JPopupMenu.Separator jSeparator7;
     private javax.swing.JPopupMenu.Separator jSeparator8;
     private javax.swing.JPopupMenu.Separator jSeparator9;
-    private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane4;
     private javax.swing.JTable jTable1;
     private javax.swing.JToolBar jToolBar1;
@@ -4792,6 +4917,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
     private javax.swing.JRadioButtonMenuItem largeLayoutRadioButtonMenuItem;
     private javax.swing.JPanel layeredPaneContent;
     private javax.swing.JMenuItem layoutMenuItem;
+    private javax.swing.JCheckBoxMenuItem legacyLegacyMenuNavigationMenuItem;
     private javax.swing.JPanel legende;
     private javax.swing.JPanel legende1;
     private javax.swing.JPanel legende2;
@@ -4810,8 +4936,12 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
     private javax.swing.JPanel modelNavigationSplitSizerPanel;
     private javax.swing.JTree modelNavigationTree;
     private javax.swing.JLabel modelPath;
+    private javax.swing.JPanel navDbTabHolderPanel;
+    private javax.swing.JToolBar navDbTabToolBar;
+    private javax.swing.JToggleButton navTabToggleButton;
     private javax.swing.JLayeredPane navTreeLayeredPane;
     private javax.swing.JPanel navigationPanel;
+    private javax.swing.JPanel navigationPanelPanel;
     private javax.swing.JTree navigationTree;
     private javax.swing.JScrollPane navigationTreeScrollPane;
     private javax.swing.JMenuItem newBrowserjMenuItem;
@@ -4824,6 +4954,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
     private javax.swing.JButton refreshButton;
     private javax.swing.JMenuItem renderHtml;
     private javax.swing.JMenuItem restoreSessionItem;
+    private javax.swing.JSplitPane rootSplitPane;
     private javax.swing.JMenu rowLimitMenu;
     private javax.swing.JMenuItem saveScriptAsMenuItem;
     private javax.swing.JMenuItem saveScriptMenuItem;
@@ -4844,8 +4975,11 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
     private javax.swing.JRadioButtonMenuItem steptime50;
     private javax.swing.JRadioButtonMenuItem steptime75;
     private javax.swing.JMenuItem storeSessionItem;
+    private javax.swing.JToolBar.Separator tabSeparator;
     private javax.swing.JTabbedPane tableTreesTabbedPane;
+    private javax.swing.JPanel tableTreesTabbedPanePanel;
     private javax.swing.JPanel tablesCardPanel;
+    private javax.swing.JPanel tablesCardPanelPanel;
     private javax.swing.JPanel tablesPanel;
     private javax.swing.JButton tbBackButton;
     private javax.swing.JButton tbClearButton;
@@ -4866,6 +5000,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
     private javax.swing.JPanel updateInfoPanel;
     private javax.swing.JMenu view;
     private javax.swing.JTabbedPane workbenchTabbedPane;
+    private javax.swing.JPanel workbenchTabbedPanePanel;
     private javax.swing.JMenuItem zoomInMenuItem;
     private javax.swing.JMenuItem zoomOutMenuItem;
     private javax.swing.JCheckBoxMenuItem zoomWithMouseWheelMenuItem;
@@ -4903,7 +5038,6 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 
 	private void askForDataModel() {
 		try {
-			forceRepaint();
 			if (datamodel.get().getTables().isEmpty()) {
 				switch (JOptionPane.showOptionDialog(this,
 						"Data model \""
@@ -4920,7 +5054,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 					forceRepaint();
 					break;
 				case 2:
-					workbenchTabbedPane.setSelectedComponent(getCurrentSQLConsole());
+					setSelectedWorkbenchTab(getCurrentSQLConsole());
 					break;
 				}
 			}
@@ -4931,9 +5065,9 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 
 	private void forceRepaint() {
 		UIUtil.invokeLater(12, () -> {
-			jSplitPane1.setDividerLocation(jSplitPane1.getDividerLocation() + 1);
+			rootSplitPane.setDividerLocation(rootSplitPane.getDividerLocation() + 1);
 			UIUtil.invokeLater(() -> {
-				jSplitPane1.setDividerLocation(jSplitPane1.getDividerLocation() - 1);
+				rootSplitPane.setDividerLocation(rootSplitPane.getDividerLocation() - 1);
 			});
 		});
 	}
@@ -5152,7 +5286,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 						dataModelViewFrame.select(table);
 					} else {
 						Table toSelect = null;
-						if (lastFocusTable != null && tableTreesTabbedPane.getSelectedComponent() == tablesCardPanel) {
+						if (lastFocusTable != null && tableTreesTabbedPane.getSelectedIndex() == 1) {
 							toSelect = datamodel.get().getTable(lastFocusTable.getName());
 						}
 						if (toSelect == null) {
@@ -5929,7 +6063,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 			try {
 				if (sqlConsoles.isEmpty()) {
 					createNewSQLConsole(metaDataSource);
-					workbenchTabbedPane.setSelectedComponent(desktopSplitPane);
+					setSelectedWorkbenchTab(desktopSplitPane);
 				} else {
 					for (SQLConsole sqlConsole : sqlConsoles) {
 						sqlConsole.reset(session, metaDataSource);
@@ -5957,7 +6091,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 							@Override
 							protected void open(Table table) {
 								if (!selectNavTreeNode(navigationTree.getModel().getRoot(), table)) {
-									if (workbenchTabbedPane.getSelectedComponent() != getCurrentSQLConsole()) {
+									if (getSelectedWorkbenchTab() != getCurrentSQLConsole()) {
 										desktop.addTableBrowser(null, null, table, null, "", null, true);
 									}
 								}
@@ -5979,8 +6113,8 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 									}
 									sql = "Select * From " + (schemaName == null || schemaName.length() == 0 ? ""
 											: quoting.quote(schemaName) + ".") + quoting.quote(tableName);
-									if (workbenchTabbedPane.getSelectedComponent() == getCurrentSQLConsole()) {
-										workbenchTabbedPane.setSelectedComponent(getCurrentSQLConsole());
+									if (getSelectedWorkbenchTab() == getCurrentSQLConsole()) {
+										setSelectedWorkbenchTab(getCurrentSQLConsole());
 										getCurrentSQLConsole().grabFocus();
 										getCurrentSQLConsole().appendStatement(sql, true);
 									}
@@ -6047,8 +6181,8 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 											+ (schemaName == null ? "" : quoting.quote(schemaName) + ".")
 											+ quoting.quote(tableName);
 									if (!selectNavTreeNode(navigationTree.getModel().getRoot(), mdTable)
-											|| workbenchTabbedPane.getSelectedComponent() == getCurrentSQLConsole()) {
-										workbenchTabbedPane.setSelectedComponent(getCurrentSQLConsole());
+											|| getSelectedWorkbenchTab() == getCurrentSQLConsole()) {
+										setSelectedWorkbenchTab(getCurrentSQLConsole());
 										getCurrentSQLConsole().grabFocus();
 										getCurrentSQLConsole().appendStatement(sql, true);
 									}
@@ -6060,7 +6194,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 							@Override
 							protected void appendScript(String script, boolean execute) {
 								try {
-									workbenchTabbedPane.setSelectedComponent(getCurrentSQLConsole());
+									setSelectedWorkbenchTab(getCurrentSQLConsole());
 									getCurrentSQLConsole().grabFocus();
 									UIUtil.invokeLater(8,
 											() -> getCurrentSQLConsole().appendStatement(script, execute));
@@ -6146,9 +6280,6 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 					createMetaDataPanel = null;
 				}
 			};
-			if (tableTreesTabbedPane.getSelectedComponent() == tablesPanel) {
-				createMetaDataPanel.run();
-			}
 		} finally {
 			UIUtil.resetWaitCursor(this);
 		}
@@ -6236,40 +6367,52 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	private int sqlConsoleNr = 0;
 
 	private SQLConsole createNewSQLConsole(MetaDataSource metaDataSource) throws SQLException {
+		SQLConsoleWithTitle sqlConsole = createNewSQLConsole(metaDataSource, null);
+		createNewSQLConsole(metaDataSource, sqlConsole);
+		return sqlConsole;
+	}
+	
+	private SQLConsoleWithTitle createNewSQLConsole(MetaDataSource metaDataSource, SQLConsoleWithTitle alreadyCreatedSqlConsole) throws SQLException {
 		final JLabel titleLbl = new JLabel(sqlConsoleIcon);
 		String tabName = "SQL Console";
-		++sqlConsoleNr;
+		if (alreadyCreatedSqlConsole == null) {
+			++sqlConsoleNr;
+		}
 		String title = tabName + (sqlConsoleNr > 1 ? " (" + sqlConsoleNr + ")" : "") + " ";
 		ConnectionInfo connection = lastConnectionInfo != null ? lastConnectionInfo
 				: dbConnectionDialog != null ? dbConnectionDialog.currentConnection : null;
 		ConnectionType connectionType = connection != null ? connection.getConnectionType() : null;
 
-		final SQLConsoleWithTitle sqlConsole = new SQLConsoleWithTitle(session, metaDataSource, datamodel,
+		final SQLConsoleWithTitle sqlConsole = alreadyCreatedSqlConsole != null? alreadyCreatedSqlConsole : new SQLConsoleWithTitle(session, metaDataSource, datamodel,
 				executionContext, title, titleLbl, connectionType);
 		titleLbl.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
-				workbenchTabbedPane.setSelectedComponent(sqlConsole);
+				setSelectedWorkbenchTab(sqlConsole);
 			}
 
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				workbenchTabbedPane.setSelectedComponent(sqlConsole);
+				setSelectedWorkbenchTab(sqlConsole);
 			}
 		});
-		;
-		initDnD(sqlConsole.getEditorPane());
-		sqlConsoles.add(sqlConsole);
+		
+		if (alreadyCreatedSqlConsole == null) {
+			initDnD(sqlConsole.getEditorPane());
+			sqlConsoles.add(sqlConsole);
+		}
 
 		try {
 			ignoreTabChangeEvent = true;
 			for (int i = 0; i < workbenchTabbedPane.getTabCount(); ++i) {
-				if (workbenchTabbedPane.getComponentAt(i) == consoleDummyPanel) {
-					workbenchTabbedPane.removeTabAt(i);
+				if (workbenchTabbedPaneGetComponentAt(i) == consoleDummyPanel) {
+					workbenchTabbedPaneRemoveTabAt(i);
 					break;
 				}
 			}
-			workbenchTabbedPane.insertTab(title, null, sqlConsole, null, sqlConsoles.size());
+			if (alreadyCreatedSqlConsole == null) {
+				workbenchTabbedPaneInsertTab(title, null, sqlConsole, null, sqlConsoles.size());
+			}
 			JPanel titelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 			titelPanel.setOpaque(false);
 			titleLbl.setText(title);
@@ -6279,32 +6422,41 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 				@Override
 				protected void onClick(MouseEvent e) {
 					if (closeSQLConsole(sqlConsole, true)) {
-						workbenchTabbedPane.setSelectedComponent(desktopSplitPane);
+						setSelectedWorkbenchTab(desktopSplitPane);
 					}
 				}
 			};
 			titelPanel.add(closeButton);
 			if (sqlConsoles.size() > 1) {
-				workbenchTabbedPane.setTabComponentAt(workbenchTabbedPane.indexOfComponent(sqlConsole), titelPanel);
+				if (alreadyCreatedSqlConsole == null) {
+					workbenchTabbedPane.setTabComponentAt(workbenchTabbedPaneIndexOfComponent(sqlConsole), titelPanel);
+				} else {
+					globalTabbedPane.setTabComponentAt(workbenchTabbedPaneIndexOfComponent(sqlConsole), titelPanel);
+				}
 			} else {
-				workbenchTabbedPane.setTabComponentAt(workbenchTabbedPane.indexOfComponent(sqlConsole), titleLbl);
+				if (alreadyCreatedSqlConsole == null) {
+					workbenchTabbedPane.setTabComponentAt(workbenchTabbedPaneIndexOfComponent(sqlConsole), titleLbl);
+				} else {
+					globalTabbedPane.setTabComponentAt(workbenchTabbedPaneIndexOfComponent(sqlConsole), titleLbl);
+				}
 			}
 		} finally {
 			ignoreTabChangeEvent = false;
 		}
-		workbenchTabbedPane.setSelectedComponent(sqlConsole);
+		setSelectedWorkbenchTab(sqlConsole);
 		if (sqlConsoles.size() == 1) {
 			SQLConsoleWithTitle console0 = sqlConsoles.get(0);
-			workbenchTabbedPane.addChangeListener(new javax.swing.event.ChangeListener() {
-				boolean loaded = false;
+			(alreadyCreatedSqlConsole == null ? globalTabbedPane : workbenchTabbedPane)
+					.addChangeListener(new javax.swing.event.ChangeListener() {
+						boolean loaded = false;
 
-				public void stateChanged(javax.swing.event.ChangeEvent evt) {
-					if (!loaded && workbenchTabbedPane.getSelectedComponent() == console0) {
-						loaded = true;
-						UIUtil.invokeLater(4, () -> console0.loadContent());
-					}
-				}
-			});
+						public void stateChanged(javax.swing.event.ChangeEvent evt) {
+							if (!loaded && getSelectedWorkbenchTab() == console0) {
+								loaded = true;
+								UIUtil.invokeLater(4, () -> console0.loadContent());
+							}
+						}
+					});
 		}
 		return sqlConsole;
 	}
@@ -6312,7 +6464,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	private boolean closeAllSQLConsoles() {
 		List<SQLConsoleWithTitle> toClose = new ArrayList<SQLConsoleWithTitle>(sqlConsoles);
 		for (SQLConsoleWithTitle sqlConsole : toClose) {
-			workbenchTabbedPane.setSelectedComponent(sqlConsole);
+			setSelectedWorkbenchTab(sqlConsole);
 			if (sqlConsole.getFile() != null && sqlConsole.isDirty() && !sqlConsole.isTempFileBased()) {
 				if (!closeSQLConsole(sqlConsole, true)) {
 					return false;
@@ -6321,7 +6473,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		}
 		toClose = new ArrayList<SQLConsoleWithTitle>(sqlConsoles);
 		for (SQLConsoleWithTitle sqlConsole : toClose) {
-			workbenchTabbedPane.setSelectedComponent(sqlConsole);
+			setSelectedWorkbenchTab(sqlConsole);
 			if (!closeSQLConsole(sqlConsole, false)) {
 				return false;
 			}
@@ -6345,7 +6497,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		try {
 			sqlConsole.close();
 			ignoreTabChangeEvent = true;
-			workbenchTabbedPane.remove(sqlConsole);
+			workbenchTabbedPaneRemove(sqlConsole);
 			sqlConsoles.remove(sqlConsole);
 		} finally {
 			ignoreTabChangeEvent = false;
@@ -6355,7 +6507,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 
 	private void updateLoadSaveScriptMenuItemsState() {
 		SQLConsole sqlConsole = null;
-		Component sc = workbenchTabbedPane.getSelectedComponent();
+		Component sc = getSelectedWorkbenchTab();
 		if (sc instanceof SQLConsole) {
 			sqlConsole = (SQLConsole) sc;
 		}
@@ -6618,7 +6770,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	private List<SQLConsoleWithTitle> sqlConsoles = new ArrayList<SQLConsoleWithTitle>();
 
 	private SQLConsole getCurrentSQLConsole() {
-		Component sc = workbenchTabbedPane.getSelectedComponent();
+		Component sc = getSelectedWorkbenchTab();
 		if (sc instanceof SQLConsole) {
 			return (SQLConsole) sc;
 		}
@@ -6638,7 +6790,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	}
 
 	private void switchToDesktop() {
-		workbenchTabbedPane.setSelectedComponent(desktopSplitPane);
+		setSelectedWorkbenchTab(desktopSplitPane);
 	}
 
 	private void initDnD(Component target) {
@@ -6963,6 +7115,218 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 			TreeNode nextElement = e.nextElement();
 			trav(m, nextElement, path.pathByAddingChild(nextElement), metaDataSource, rowCounters);
 		}
+	}
+
+	// TODO
+	
+	private boolean useGlobalTabbedPane = true;
+	private List<Runnable> undoGlobalSetup;
+	
+	private void updateTabbedPane(int selectedIndex) {
+		if (useGlobalTabbedPane) {
+			globalTabbedPane.setVisible(true);
+			if (undoGlobalSetup != null) {
+				undoGlobalSetup.forEach(r -> r.run());
+			}
+			undoGlobalSetup = new ArrayList<>();
+			Container parent = rootSplitPane.getParent();
+			GridBagConstraints layoutContraint = ((GridBagLayout) parent.getLayout()).getConstraints(rootSplitPane);
+			undoGlobalSetup.add(() -> {
+				parent.add(rootSplitPane, layoutContraint);
+			});
+			((WorkbenchTabShim) globalTabbedPane.getComponentAt(selectedIndex)).restoreContent(rootSplitPane);
+			undoGlobalSetup.add(replaceTabbedPane(tableTreesTabbedPanePanel, new JLabel()));
+			undoGlobalSetup.add(replaceTabbedPane(navigationPanelPanel, new JLabel()));
+			undoGlobalSetup.add(replaceTabbedPane(tablesCardPanelPanel, new JLabel()));
+			undoGlobalSetup.add(replaceTabbedPane(workbenchTabbedPanePanel, (JComponent) workbenchTabbedPaneGetComponentAt(selectedIndex)));
+			updateTableTreesTabbedPane(selectedIndex);
+		} else {
+			if (undoGlobalSetup != null) {
+				undoGlobalSetup.forEach(r -> r.run());
+				undoGlobalSetup = null;
+			}
+			for (int i = workbenchTabbedPane.getTabCount() - 1; i >= 0; --i) {
+				((WorkbenchTabShim) workbenchTabbedPane.getComponentAt(i)).restoreContent();
+			}
+			globalTabbedPane.setVisible(false);
+			navDbTabToolBar.setVisible(false);
+		}
+	}
+	
+	private void updateTableTreesTabbedPane(int selectedIndex) {
+		if (useGlobalTabbedPane) {
+			navDbTabToolBar.setVisible(selectedIndex == 0);
+			navTabToggleButton.setSelected(tableTreesTabbedPane.getSelectedIndex() == 0);
+			dbTabToggleButton.setSelected(tableTreesTabbedPane.getSelectedIndex() == 1);
+			JComponent newContent = tableTreesTabbedPane.getSelectedIndex() == 0? navigationPanel : tablesCardPanel;
+			UIUtil.traverse(newContent, null, c-> null, (c, o) -> null, (t, c) -> {
+				if ("navDbTabHolderPanel".equals(c.getName())) {
+					((JPanel) c).add(navDbTabToolBar);
+				}
+			});
+			replaceTabbedPane(tableTreesTabbedPanePanel, newContent);
+			UIUtil.invokeLater(12, () -> {
+				jSplitPane4.setDividerLocation(jSplitPane4.getDividerLocation() + 1);
+				UIUtil.invokeLater(() -> {
+					jSplitPane4.setDividerLocation(jSplitPane4.getDividerLocation() - 1);
+				});
+			});
+		}
+	}
+
+    private void dbTabToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dbTabToggleButtonActionPerformed
+    	tableTreesTabbedPane.setSelectedIndex(1);
+    	dbTabToggleButton.setSelected(true);
+    }//GEN-LAST:event_dbTabToggleButtonActionPerformed
+
+    private void navTabToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_navTabToggleButtonActionPerformed
+    	tableTreesTabbedPane.setSelectedIndex(0);
+    	navTabToggleButton.setSelected(true);
+    }//GEN-LAST:event_navTabToggleButtonActionPerformed
+
+	private Runnable replaceTabbedPane(JPanel panel, JComponent newContent) {
+		Component content = panel.getComponents()[0];
+		Object layoutContraints = ((GridBagLayout) panel.getLayout()).getConstraints(content);
+		panel.remove(content);
+		panel.add(newContent, layoutContraints);
+		return () -> {
+			panel.remove(newContent);
+			panel.add(content, layoutContraints);
+		};
+	}
+
+	private static class WorkbenchTabShim extends JPanel {
+		final JComponent content;
+		
+		WorkbenchTabShim(JComponent content) {
+			super(new BorderLayout(0, 0));
+			this.content = content;
+			restoreContent();
+		}
+
+		void restoreContent() {
+			restoreContent(content);
+		}
+		
+		void restoreContent(JComponent content) {
+			removeAll();
+			add(content, BorderLayout.CENTER);
+		}
+	};
+	
+	private void initWorkbenchTabbedPane() {
+		List<Runnable> doIt = new ArrayList<>();
+		for (int i = 0; i < workbenchTabbedPane.getTabCount(); ++i) {
+			String title = workbenchTabbedPane.getTitleAt(i);
+			Component component = workbenchTabbedPane.getComponentAt(i);
+			doIt.add(() -> {
+				workbenchTabbedPane.addTab(title, new WorkbenchTabShim((JComponent) component));
+				globalTabbedPane.addTab(title, new WorkbenchTabShim((JComponent) component));
+			});
+		}
+		workbenchTabbedPane.removeAll();
+		globalTabbedPane.removeAll();
+		doIt.forEach(r -> r.run());
+		
+		workbenchTabbedPane.setSelectedIndex(0);
+		globalTabbedPane.setSelectedIndex(0);
+		
+		workbenchTabbedPane.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				int selectedIndex = workbenchTabbedPane.getSelectedIndex();
+				if (getWorkbenchTab(selectedIndex) != addSQLConsoleTab) {
+					if (globalTabbedPane.getSelectedIndex() != selectedIndex) {
+						updateTabbedPane(selectedIndex);
+						globalTabbedPane.setSelectedIndex(selectedIndex);
+					}
+				}
+			}
+		});
+
+		globalTabbedPane.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				int selectedIndex = globalTabbedPane.getSelectedIndex();
+				updateTabbedPane(selectedIndex);
+				if (selectedIndex != workbenchTabbedPane.getSelectedIndex()) {
+					UIUtil.invokeLater(() -> {
+						workbenchTabbedPane.setSelectedIndex(selectedIndex);
+					});
+				}
+			}
+		});
+	
+		useGlobalTabbedPane = !Boolean.TRUE.equals(UISettings.restore("legacyLegacyMenuNavigation"));
+		legacyLegacyMenuNavigationMenuItem.setSelected(!useGlobalTabbedPane);
+		updateTabbedPane(workbenchTabbedPane.getSelectedIndex());
+	}
+	
+	private int workbenchTabbedPaneIndexOfComponent(JComponent content) {
+		for (int i = workbenchTabbedPane.getTabCount() - 1; i >= 0; --i) {
+			if (((WorkbenchTabShim) workbenchTabbedPane.getComponentAt(i)).content == content) {
+				return i;
+			}
+		}
+		throw new RuntimeException(); // TODO
+	}
+
+	private Component workbenchTabbedPaneGetComponentAt(int i) {
+		return ((WorkbenchTabShim) workbenchTabbedPane.getComponentAt(i)).content; // TODO
+	}
+
+	private void workbenchTabbedPaneRemoveTabAt(int i) {
+		workbenchTabbedPane.removeTabAt(i);
+		globalTabbedPane.removeTabAt(i);
+	}
+
+	private void workbenchTabbedPaneSetToolTipTextAt(int tabIndex, String toolTipText) {
+		workbenchTabbedPane.setToolTipTextAt(tabIndex, toolTipText);
+		globalTabbedPane.setToolTipTextAt(tabIndex, toolTipText);
+	}
+
+	private void workbenchTabbedPaneSetTabComponentAt(int i, Supplier<JComponent> title) {
+		workbenchTabbedPane.setTabComponentAt(i, title.get());
+		globalTabbedPane.setTabComponentAt(i, title.get());
+	}
+
+	private void workbenchTabbedPaneInsertTab(String title, Icon icon, Component component, String tip, int index) {
+		workbenchTabbedPane.insertTab(title, icon, new WorkbenchTabShim((JComponent) component), tip, index);
+		globalTabbedPane.insertTab(title, icon, new WorkbenchTabShim((JComponent) component), tip, index);
+	}
+
+	private Component getSelectedWorkbenchTab() {
+		Component comp = workbenchTabbedPane.getSelectedComponent();
+		if (comp instanceof WorkbenchTabShim) {
+			return ((WorkbenchTabShim) comp).content;
+		} else {
+			throw new RuntimeException(); // TODO
+		}
+	}
+
+	private Component getWorkbenchTab(int index) {
+		Component comp = workbenchTabbedPane.getComponentAt(index);
+		if (comp instanceof WorkbenchTabShim) {
+			return ((WorkbenchTabShim) comp).content;
+		} else {
+			throw new RuntimeException(); // TODO
+		}
+	}
+
+	private void workbenchTabbedPaneRemove(SQLConsole sqlConsole) {
+		int i = workbenchTabbedPaneIndexOfComponent(sqlConsole);
+		workbenchTabbedPane.remove(i); // TODO
+		globalTabbedPane.remove(i); // TODO
+	}
+
+	private void setSelectedWorkbenchTab(JComponent content) {
+		for (int i = workbenchTabbedPane.getTabCount() - 1; i >= 0; --i) {
+			if (((WorkbenchTabShim) workbenchTabbedPane.getComponentAt(i)).content == content) {
+				workbenchTabbedPane.setSelectedIndex(i);
+				return;
+			}
+		}
+		throw new RuntimeException(); // TODO
 	}
 
 	@Override

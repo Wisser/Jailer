@@ -1884,6 +1884,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 								UIUtil.fit(popup);
 								UIUtil.showPopup(e.getComponent(), e.getX(), e.getY(), popup);
 							} else {
+								int fri = ri;
+								if (ri >= 0 && ((rowsTable.getSelectedRowCount() == 1 && rowsTable.getSelectedColumnCount() == 1)
+										|| (!Arrays.stream(rowsTable.getSelectedRows()).anyMatch(sr -> sr == fri)))) {
+									rowsTable.getSelectionModel().clearSelection();
+									rowsTable.setRowSelectionInterval(ri, ri);
+									rowsTable.setColumnSelectionInterval(0, 0);
+								}
+								
 								Set<Integer> selectedRowsIndexes = new TreeSet<>();
 								try {
 									for (int si: rowsTable.getSelectedRows()) {
@@ -3078,6 +3086,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		}
 
 		if (withSingleRow) {
+			JMenuItem sel = null;
 			JMenuItem det = new JMenuItem("Details");
 			det.setIcon(detailsIcon);
 			det.setEnabled(row != null);
@@ -3122,6 +3131,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 					});
 				} else {
 					JMenuItem sr = new JMenuItem(toSelect.size() <= 1? "Select Row" : ("Select Rows (" + toSelect.size() + ")"));
+					sel = sr;
 					sr.setIcon(selectIcon);
 					sr.setEnabled(row != null && rows != null && rows.size() > 0 && !row.rowId.isEmpty());
 					popup.insert(sr, 0);
@@ -3169,6 +3179,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 					JMenu script;
 					if (getQueryBuilderDialog() == null) {
 						popup.removeAll();
+						if (sel != null) {
+//							popup.add(sel);
+						}
 						popup.add(det);
 						popup.add(new JSeparator());
 						script = new JMenu("Create SQL");
@@ -7966,7 +7979,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 //		if (currentCond.length() > 0) {
 //			cond = "(" + cond + ") and (" + currentCond + ")";
 //		}
-		andCondition.setSelectedItem(cond);
+		if (getQueryBuilderDialog() != null) { // !SQL Console
+			andCondition.setSelectedItem(cond);
+		} else {
+			WhereConditionEditorPanel wcep = getWhereConditionEditorPanel(BrowserContentPane.this.getRowBrowser());
+			if (wcep != null) {
+				wcep.parseCondition(cond);
+			}
+		}
 	}
 
 	protected void deselectIfNeededWithoutReload() {

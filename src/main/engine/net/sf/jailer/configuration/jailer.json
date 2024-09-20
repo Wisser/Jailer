@@ -60,7 +60,8 @@
 				"scriptFileName": "script/oracle/gatherStatistics.sql"
 			},
 			"jdbcProperties": {
-				"CatalogOptions": "0"
+				"CatalogOptions": "0",
+				"defaultRowPrefetch": "5010"
 			},
 			"stringLiteralEscapeSequences": {
 				"\\n": "' || chr(10) || '",

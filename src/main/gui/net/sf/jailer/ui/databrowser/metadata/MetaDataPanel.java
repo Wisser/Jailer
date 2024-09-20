@@ -750,7 +750,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         tablesComboBox.setVisible(false);
         refreshButton1.setVisible(false);
         searchButton.setText("Open Table");
-        searchButton.setIcon(tableIcon);
+        searchButton.setIcon(addTableIcon);
 
         metaDataTree.addKeyListener(new KeyListener() {
             @Override
@@ -1698,6 +1698,8 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         jPanel1 = new javax.swing.JPanel();
         refreshButton1 = new javax.swing.JButton();
         jToolBar1 = new javax.swing.JToolBar();
+        navDbTabHolderPanel = new javax.swing.JPanel();
+        jPanel4 = new javax.swing.JPanel();
         jToolBar2 = new javax.swing.JToolBar();
         refreshButton = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
@@ -1752,12 +1754,27 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 
         jToolBar1.setRollover(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
         jPanel1.add(jToolBar1, gridBagConstraints);
+
+        navDbTabHolderPanel.setName("navDbTabHolderPanel"); // NOI18N
+        navDbTabHolderPanel.setLayout(new javax.swing.BoxLayout(navDbTabHolderPanel, javax.swing.BoxLayout.LINE_AXIS));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel1.add(navDbTabHolderPanel, gridBagConstraints);
+
+        jPanel4.setLayout(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.weightx = 1.0;
+        jPanel1.add(jPanel4, gridBagConstraints);
 
         jToolBar2.setRollover(true);
 
@@ -2086,10 +2103,12 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JToolBar jToolBar2;
     private javax.swing.JTree metaDataTree;
+    private javax.swing.JPanel navDbTabHolderPanel;
     private javax.swing.JLabel outlineLabel;
     private javax.swing.JList outlineList;
     private javax.swing.JScrollPane outlineScrollPane;
@@ -2230,6 +2249,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     static ImageIcon viewIcon;
     static ImageIcon viewsIcon;
     static ImageIcon tableIcon;
+    static ImageIcon addTableIcon;
     static ImageIcon tablesIcon;
     static ImageIcon synonymIcon;
     static ImageIcon synonymsIcon;
@@ -2273,6 +2293,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         viewsIcon = UIUtil.readImage("/views.png");
         tablesIcon = UIUtil.readImage("/tables.png");
         tableIcon = UIUtil.readImage("/table.png");
+        addTableIcon = UIUtil.readImage("/addtable.png");
         databaseIcon = UIUtil.readImage("/database.png");
         schemaIcon = UIUtil.readImage("/schema.png");
         resetIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/reset.png"));
