@@ -12,6 +12,9 @@ cd ..
 mv $1.co/Jailer/* jailer
 cd jailer
 
+echo 2
+pwd
+
 sed "s/stateOffset = 100/stateOffset = 0/g" src/main/gui/net/sf/jailer/ui/Environment.java --in-place
 ant all &> ~/anterrtext
 sed "s/stateOffset = 0/stateOffset = 100/g" src/main/gui/net/sf/jailer/ui/Environment.java --in-place
@@ -29,6 +32,10 @@ rm -rf C:/tmp/jailer/admin
 
 sed s/%VERSION%/$1/g admin/Jailer.nsi > admin/tmp.nsi
 cd admin
+
+pwd
+
+
 # makensis tmp.nsi
 cd ..
 rm admin/tmp.nsi
@@ -37,6 +44,9 @@ mv admin/*nstall* ..
 
 dos2unix *.sh
 chmod a+x *.sh
+
+echo 1
+pwd
 
 zip -r docs/admin.zip admin
 rm -rf admin

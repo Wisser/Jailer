@@ -1,6 +1,6 @@
 set version=%1
 
-set PATH=C:\Program Files\Java\jdk-15\bin;%PATH%
+set PATH=C:\Program Files\Java\jdk-23\bin;%PATH%
 
 del /S /Q c:\tmp\_
 del /S /Q c:\tmp\jre%version%
@@ -80,6 +80,8 @@ echo "" > .singleuser
 
 jlink --add-options="-Xmx4000m" --add-modules java.se --output jre%version% 
 jpackage --name "Jailer Database Tools" --input . --main-jar jailer.jar --type msi --icon jailer.ico --win-menu --win-menu-group Jailer --vendor Wisser --app-version %version% --win-upgrade-uuid d636b4ee-6f10-451e-bf57-c89656780e22 --runtime-image jre%version%
+
+pause
 
 move *.msi C:\Users\ralfw\tmp\"Jailer-database-tools-%version%.msi"
 move *.msi c:\tmp\"Jailer-database-tools-%version%.msi"
