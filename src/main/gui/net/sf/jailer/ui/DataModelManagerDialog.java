@@ -197,7 +197,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				"\n \n \n",
 				"Select a database to work with.");
 
-		infoBarBookmark = new DMMDInfoBar("Desktop Layout",
+		infoBarBookmark = new DMMDInfoBar("Navigation Layout",
 				"Select a layout to open.\n" +
 				"\n \n \n",
 				"Select a layout.");

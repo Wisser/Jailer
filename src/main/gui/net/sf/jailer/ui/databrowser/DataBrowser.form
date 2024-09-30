@@ -304,7 +304,7 @@
             <Menu class="javax.swing.JMenu" name="rowLimitMenu">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Row Limit"/>
-                <Property name="toolTipText" type="java.lang.String" value="Desktop Row Limit"/>
+                <Property name="toolTipText" type="java.lang.String" value="Maximum number of rows to be displayed in a single table browser"/>
               </Properties>
             </Menu>
             <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator3">
@@ -337,7 +337,7 @@
                 <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
                   <KeyStroke key="Ctrl+B"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Add Desktop Layout"/>
+                <Property name="text" type="java.lang.String" value="Save Current Layout"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addBookmarkMenuItemActionPerformed"/>
@@ -345,7 +345,7 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="editBookmarkMenuItem">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Edit Desktop Layouts"/>
+                <Property name="text" type="java.lang.String" value="Edit Layout"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editBookmarkMenuItemActionPerformed"/>
@@ -1560,7 +1560,7 @@
                                               </Properties>
                                               <Constraints>
                                                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-                                                  <GridBagConstraints gridX="4" gridY="1" gridWidth="1" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="0" insetsRight="0" anchor="17" weightX="0.0" weightY="0.0"/>
+                                                  <GridBagConstraints gridX="4" gridY="1" gridWidth="1" gridHeight="1" fill="1" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="0" insetsRight="0" anchor="17" weightX="0.0" weightY="0.0"/>
                                                 </Constraint>
                                               </Constraints>
 
@@ -1578,7 +1578,7 @@
                                                     <Component class="javax.swing.JToggleButton" name="navTabToggleButton">
                                                       <Properties>
                                                         <Property name="text" type="java.lang.String" value="jToggleButton1"/>
-                                                        <Property name="toolTipText" type="java.lang.String" value="Desktop overview"/>
+                                                        <Property name="toolTipText" type="java.lang.String" value="Navigation Overview"/>
                                                         <Property name="focusable" type="boolean" value="false"/>
                                                         <Property name="horizontalTextPosition" type="int" value="0"/>
                                                         <Property name="verticalTextPosition" type="int" value="3"/>
@@ -1590,7 +1590,7 @@
                                                     <Component class="javax.swing.JToggleButton" name="dbTabToggleButton">
                                                       <Properties>
                                                         <Property name="text" type="java.lang.String" value="jToggleButton1"/>
-                                                        <Property name="toolTipText" type="java.lang.String" value="Database overview"/>
+                                                        <Property name="toolTipText" type="java.lang.String" value="Database Overview"/>
                                                         <Property name="focusable" type="boolean" value="false"/>
                                                         <Property name="horizontalTextPosition" type="int" value="0"/>
                                                         <Property name="verticalTextPosition" type="int" value="3"/>

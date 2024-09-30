@@ -552,7 +552,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 			UISettings.dmStats(datamodel);
 		}
 		initRowLimitButtons();
-		workbenchTabbedPaneSetTabComponentAt(0, () -> new JLabel("Desktop", desktopIcon, JLabel.LEFT));
+		workbenchTabbedPaneSetTabComponentAt(0, () -> new JLabel("Navigation", desktopIcon, JLabel.LEFT));
 		workbenchTabbedPaneSetTabComponentAt(1, () -> new JLabel("SQL Console ", sqlConsoleIcon, JLabel.LEFT));
 		int tabIndex = workbenchTabbedPane.getTabCount() - 1;
 		workbenchTabbedPaneSetTabComponentAt(tabIndex, () -> new JLabel(addSqlConsoleIcon));
@@ -3087,7 +3087,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         navDbTabToolBar.add(tabSeparator);
 
         navTabToggleButton.setText("jToggleButton1");
-        navTabToggleButton.setToolTipText("Desktop overview");
+        navTabToggleButton.setToolTipText("Navigation Overview");
         navTabToggleButton.setFocusable(false);
         navTabToggleButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         navTabToggleButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -3099,7 +3099,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         navDbTabToolBar.add(navTabToggleButton);
 
         dbTabToggleButton.setText("jToggleButton1");
-        dbTabToggleButton.setToolTipText("Database overview");
+        dbTabToggleButton.setToolTipText("Database Overview");
         dbTabToggleButton.setFocusable(false);
         dbTabToggleButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         dbTabToggleButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -3115,6 +3115,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         navigationPanel.add(navDbTabHolderPanel, gridBagConstraints);
 
@@ -3617,7 +3618,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         jviewMenu.setText("View");
 
         rowLimitMenu.setText("Row Limit");
-        rowLimitMenu.setToolTipText("Desktop Row Limit");
+        rowLimitMenu.setToolTipText("Maximum number of rows to be displayed in a single table browser");
         jviewMenu.add(rowLimitMenu);
         jviewMenu.add(jSeparator3);
 
@@ -3634,7 +3635,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         bookmarkMenu.setText("Layout");
 
         addBookmarkMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_B, java.awt.event.InputEvent.CTRL_DOWN_MASK));
-        addBookmarkMenuItem.setText("Add Desktop Layout");
+        addBookmarkMenuItem.setText("Save Current Layout");
         addBookmarkMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addBookmarkMenuItemActionPerformed(evt);
@@ -3642,7 +3643,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         });
         bookmarkMenu.add(addBookmarkMenuItem);
 
-        editBookmarkMenuItem.setText("Edit Desktop Layouts");
+        editBookmarkMenuItem.setText("Edit Layout");
         editBookmarkMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editBookmarkMenuItemActionPerformed(evt);
@@ -7116,8 +7117,6 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 			trav(m, nextElement, path.pathByAddingChild(nextElement), metaDataSource, rowCounters);
 		}
 	}
-
-	// TODO
 	
 	private boolean useGlobalTabbedPane = true;
 	private List<Runnable> undoGlobalSetup;
@@ -7268,11 +7267,11 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 				return i;
 			}
 		}
-		throw new RuntimeException(); // TODO
+		throw new RuntimeException();
 	}
 
 	private Component workbenchTabbedPaneGetComponentAt(int i) {
-		return ((WorkbenchTabShim) workbenchTabbedPane.getComponentAt(i)).content; // TODO
+		return ((WorkbenchTabShim) workbenchTabbedPane.getComponentAt(i)).content;
 	}
 
 	private void workbenchTabbedPaneRemoveTabAt(int i) {
@@ -7300,7 +7299,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		if (comp instanceof WorkbenchTabShim) {
 			return ((WorkbenchTabShim) comp).content;
 		} else {
-			throw new RuntimeException(); // TODO
+			throw new RuntimeException();
 		}
 	}
 
@@ -7309,14 +7308,14 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		if (comp instanceof WorkbenchTabShim) {
 			return ((WorkbenchTabShim) comp).content;
 		} else {
-			throw new RuntimeException(); // TODO
+			throw new RuntimeException();
 		}
 	}
 
 	private void workbenchTabbedPaneRemove(SQLConsole sqlConsole) {
 		int i = workbenchTabbedPaneIndexOfComponent(sqlConsole);
-		workbenchTabbedPane.remove(i); // TODO
-		globalTabbedPane.remove(i); // TODO
+		workbenchTabbedPane.remove(i);
+		globalTabbedPane.remove(i);
 	}
 
 	private void setSelectedWorkbenchTab(JComponent content) {
@@ -7326,7 +7325,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 				return;
 			}
 		}
-		throw new RuntimeException(); // TODO
+		throw new RuntimeException();
 	}
 
 	@Override

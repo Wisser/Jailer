@@ -40,6 +40,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
@@ -125,6 +126,11 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 		closeButton.addKeyListener(keyListener);
 		
 		searchField.getDocument().addDocumentListener(new DocumentListener() {
+			long lastFTSearchDuration = -1;
+			long lastFTSearchTimeEnd = -1;
+			boolean slowMode;
+			long numCells;
+			Timer timer = null;
 			@Override
 			public void removeUpdate(DocumentEvent e) {
 				update();
@@ -138,8 +144,32 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 				update();
 			}
 			private void update() {
+				int numC = table.getColumnCount() * table.getModel().getRowCount();
+				if (numC != numCells) {
+					numCells = numC;
+					slowMode = numCells > 500 * 80;
+				}
+				if (lastFTSearchDuration >=500) {
+					slowMode = true;
+				}
+				updateLater(slowMode? 500 : 200);
+			}
+			private void updateLater(int delay) {
+				if (timer != null) {
+					timer.stop();
+					timer = null;
+				}
+				timer = new Timer(delay, e -> updateFullTextSearchPanel());
+				timer.setRepeats(false);
+				timer.start();
+			}
+			
+			private void updateFullTextSearchPanel() {
+				long lastFTSearchTimeStart = System.currentTimeMillis();
 				FullTextSearchPanel.this.update(searchField.getText(), true);
 				scrollToCurrentPosition();
+				lastFTSearchTimeEnd = System.currentTimeMillis();
+				lastFTSearchDuration = lastFTSearchTimeEnd - lastFTSearchTimeStart;
 			}
 		});
 		
@@ -291,11 +321,20 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 		updateErrorState();
 	}
 
+	private Pattern whitSpacePattern = Pattern.compile("\\s|\\h");
+	private String lastText = null;
+	private String lastTextReplaced = null;
 	private Pattern extSTPattern = null;
 	private String extSTText = null;
 	
 	private String extendedSearchText(String text, String item) {
-		text = text.replaceAll("\\s|\\h", " ");
+		if (text == lastText && text != null) {
+			text = lastTextReplaced;
+		} else {
+			lastText = text;
+			text = whitSpacePattern.matcher(text).replaceAll(" ");
+			lastTextReplaced = text;
+		}
 		String searchText = text.toUpperCase(Locale.ENGLISH);
 		if (!searchText.contains("*") && !searchText.contains("?")) {
 			return searchText.trim();
