@@ -1,3 +1,7 @@
+16.4.3
+  - Menu navigation in the data browser has been simplified.
+  - The full-text search performance has been significantly improved for large amounts of data.
+
 16.4.2
   - Slight improvements to the user interface.
 
