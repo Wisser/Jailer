@@ -2,8 +2,8 @@ set version=%1
 
 set PATH=C:\Program Files\Java\jdk-23\bin;%PATH%
 
-del /S /Q c:\tmp\_
-del /S /Q c:\tmp\jre%version%
+rmdir /S /Q c:\tmp\_
+rmdir /S /Q c:\tmp\jre%version%
 mkdir c:\tmp\_
 cd ..
 
