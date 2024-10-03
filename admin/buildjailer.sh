@@ -5,6 +5,4 @@ pwd
 
 cd git/Jailer/admin
 dos2unix *.sh
-sh jbuild.sh $1 > buildprotokoll.txt
-
-read -n 1 -s
+bash jbuild.sh $1 > buildprotokoll.txt
