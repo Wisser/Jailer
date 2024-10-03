@@ -83,3 +83,5 @@ jpackage --name "Jailer Database Tools" --input . --main-jar jailer.jar --type m
 
 move *.msi C:\Users\ralfw\tmp\"Jailer-database-tools-%version%.msi"
 move *.msi c:\tmp\"Jailer-database-tools-%version%.msi"
+
+pause
