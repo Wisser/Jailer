@@ -78,9 +78,20 @@ for file in ~/tmp/_/jdbc_lib/*; do
 done
 
 cd ~/tmp/_ 
-echo "" > .singleuser 
 
-/home/ralf/jdk-23_linux-x64_bin/jdk-23/bin/jlink --add-options="-Xmx4000m" --add-modules java.se --output ../jre$1  
-/home/ralf/jdk-23_linux-x64_bin/jdk-23/bin/jpackage --name "Jailer Database Tools" --linux-package-name jailer-database-tools --arguments "-jpack" --input . --main-jar jailer.jar  --icon jailer.png --vendor Wisser --app-version "$1" --runtime-image ../jre$1 
+jlink --add-options="-Xmx4000m" --add-modules java.se --output ../jre$1  
 
-cp *.deb /mnt/c/Users/ralfw/tmp/jailer-database-tools_$1-x64.deb
+echo "rpm" > .singleuser 
+jpackage --name "Jailer Database Tools" --linux-package-name jailer-database-tools --arguments "-jpack" --type rpm --input . --main-jar jailer.jar  --icon jailer.png --vendor Wisser --app-version "$1" --runtime-image ../jre$1 
+mv *.rpm /mnt/c/Users/ralfw/tmp/jailer-database-tools_$1-x64.rpm
+
+echo "deb" > .singleuser 
+
+
+echo "rpm" > .singleuser 
+
+
+
+
+jpackage --name "Jailer Database Tools" --linux-package-name jailer-database-tools --arguments "-jpack" --type deb --input . --main-jar jailer.jar  --icon jailer.png --vendor Wisser --app-version "$1" --runtime-image ../jre$1 
+mv *.deb /mnt/c/Users/ralfw/tmp/jailer-database-tools_$1-x64.deb

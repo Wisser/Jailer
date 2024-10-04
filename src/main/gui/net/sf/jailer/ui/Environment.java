@@ -19,8 +19,10 @@ import java.awt.AWTEvent;
 import java.awt.EventQueue;
 import java.awt.IllegalComponentStateException;
 import java.awt.Toolkit;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -247,7 +249,25 @@ public class Environment {
 		if (toBeLogged != null) {
 			LogUtil.warn(toBeLogged);
 		}
+		state += rpmOffset();
 		return args;
+	}
+
+	private static int rpmOffset() {
+		int offset = 0;
+		File file = new File(".singleuser");
+		if (file.exists()) {
+			try {
+				BufferedReader in = new BufferedReader(new FileReader(file));
+				if ("rpm".equalsIgnoreCase(in.readLine().trim())) {
+					offset = 900;
+				}
+				in.close();
+			} catch (Throwable t) {
+				LogUtil.warn(t);
+			}
+		}
+		return offset;
 	}
 
 	private static File applicationBase = null;
