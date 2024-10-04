@@ -228,6 +228,7 @@ public class Environment {
 				// + 4 no longer used
 				+ (!testCreateTempFile() ? 8 : 0)
 				+ (isJPacked() ? 1000 : 0)
+				+ rpmOffset()
 				+ stateOffset;
 		AWTWatchdog.start();
 		LogUtil.setWarn(new LogUtil.Warn() {
