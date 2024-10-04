@@ -263,6 +263,10 @@ public class Environment {
 					offset = 900;
 				}
 				in.close();
+				
+				JOptionPane.showConfirmDialog(null, offset, "rpmOffset", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE)				; // tODO
+				
+				
 			} catch (Throwable t) {
 				LogUtil.warn(t);
 			}
