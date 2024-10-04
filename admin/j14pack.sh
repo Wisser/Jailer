@@ -81,6 +81,7 @@ cd ~/tmp/_
 echo "" > .singleuser 
 
 jlink --add-options="-Xmx4000m" --add-modules java.se --output ../jre$1  
+jpackage --name "Jailer Database Tools" --linux-package-name jailer-database-tools --arguments "-jpack" --type rpm --input . --main-jar jailer.jar  --icon jailer.png --vendor Wisser --app-version "$1" --runtime-image ../jre$1 
 jpackage --name "Jailer Database Tools" --linux-package-name jailer-database-tools --arguments "-jpack" --type deb --input . --main-jar jailer.jar  --icon jailer.png --vendor Wisser --app-version "$1" --runtime-image ../jre$1 
 
 cp *.deb /mnt/c/Users/ralfw/tmp/jailer-database-tools_$1-x64.deb
