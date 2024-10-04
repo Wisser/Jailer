@@ -86,5 +86,12 @@ jpackage --name "Jailer Database Tools" --linux-package-name jailer-database-too
 mv *.rpm /mnt/c/Users/ralfw/tmp/jailer-database-tools_$1-x64.rpm
 
 echo "deb" > .singleuser 
+
+
+echo "rpm" > .singleuser 
+
+
+
+
 jpackage --name "Jailer Database Tools" --linux-package-name jailer-database-tools --arguments "-jpack" --type deb --input . --main-jar jailer.jar  --icon jailer.png --vendor Wisser --app-version "$1" --runtime-image ../jre$1 
 mv *.deb /mnt/c/Users/ralfw/tmp/jailer-database-tools_$1-x64.deb
