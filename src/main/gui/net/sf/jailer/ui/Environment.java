@@ -19,10 +19,8 @@ import java.awt.AWTEvent;
 import java.awt.EventQueue;
 import java.awt.IllegalComponentStateException;
 import java.awt.Toolkit;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -84,7 +82,12 @@ public class Environment {
 		File jPackApp = null;
 		if (args != null) {
 			List<String> aList = new ArrayList<String>(Arrays.asList(args));
-			if (aList.remove("-jpack")) {
+			boolean remove = aList.remove("-jpack");
+			if (aList.remove("-jpackrpm")) {
+				remove = true;
+				rpm = true;
+			}
+			if (remove) {
 				args = aList.toArray(new String[0]);
 				jpack = true;
 				URL url = Environment.class.getProtectionDomain().getCodeSource().getLocation();
@@ -252,24 +255,13 @@ public class Environment {
 		state += rpmOffset();
 		return args;
 	}
+	
+	private static boolean rpm;
 
 	private static int rpmOffset() {
 		int offset = 0;
-		File file = new File(".singleuser");
-		if (file.exists()) {
-			try {
-				BufferedReader in = new BufferedReader(new FileReader(file));
-				if ("rpm".equalsIgnoreCase(in.readLine().trim())) {
-					offset = 900;
-				}
-				in.close();
-				
-				JOptionPane.showConfirmDialog(null, offset, "rpmOffset", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE)				; // tODO
-				
-				
-			} catch (Throwable t) {
-				LogUtil.warn(t);
-			}
+		if (rpm) {
+			offset = 900;
 		}
 		return offset;
 	}
