@@ -261,7 +261,7 @@ public class Environment {
 	private static int rpmOffset() {
 		int offset = 0;
 		if (rpm) {
-			offset = 40;
+			offset = -600;
 		}
 		return offset;
 	}
