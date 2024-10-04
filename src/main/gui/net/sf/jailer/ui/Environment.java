@@ -253,8 +253,6 @@ public class Environment {
 			LogUtil.warn(toBeLogged);
 		}
 		state += rpmOffset();
-		JOptionPane.showMessageDialog(null, "env! " + rpm + state, "Error", JOptionPane.ERROR_MESSAGE);
-//TODO
 		return args;
 	}
 	
