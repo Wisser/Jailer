@@ -83,10 +83,15 @@ public class Environment {
 		if (args != null) {
 			List<String> aList = new ArrayList<String>(Arrays.asList(args));
 			boolean remove = aList.remove("-jpack");
-			if (aList.remove("-jpackrpm")) {
+			
+    		JOptionPane.showMessageDialog(null, "env! " + aList, "Error", JOptionPane.ERROR_MESSAGE);
+// TODO
+    		if (aList.remove("-jpackrpm")) {
 				remove = true;
 				rpm = true;
 			}
+    		JOptionPane.showMessageDialog(null, "env! " + rpm, "Error", JOptionPane.ERROR_MESSAGE);
+// TODO
 			if (remove) {
 				args = aList.toArray(new String[0]);
 				jpack = true;
