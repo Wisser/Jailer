@@ -17,6 +17,7 @@ import java.util.Date;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.Timer;
 
 import net.sf.jailer.JailerVersion;
@@ -90,6 +91,12 @@ public class UpdateInfoManager {
 							+ (stat0 != null? "&s=" + stat0 : "")
 							+ ("&c=" + uimCnt)
 							+ UISettings.restoreStats();
+					
+					
+					// TODO
+	        		JOptionPane.showMessageDialog(null, param, "Error", JOptionPane.ERROR_MESSAGE);
+
+					
 					String inputLine = null;
 					for (int i = 0; i < versionURL.length; ++i) {
 						try {
