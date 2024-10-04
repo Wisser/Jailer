@@ -46,3 +46,11 @@ public class JailerUI {
 	}
 
 }
+
+
+// TODO 
+// TODO EMail Passwort
+
+// TODO
+// TODO Doku: CLI only available with jailer<n>.zip
+
