@@ -84,18 +84,13 @@ public class UpdateInfoManager {
 					startShutdownHook();
 					String param = "?r=" + URLEncoder.encode(System.getProperty("os.arch"), "UTF-8")
 							+ "&jversion=" + URLEncoder.encode(System.getProperty("java.version") + "/" + System.getProperty("java.vm.vendor") + "/" + System.getProperty("java.vm.name") + "/" + System.getProperty("os.name"), "UTF-8") + "/(" + Environment.state + ")"
-							+ "&modul=" + URLEncoder.encode((DataModelManagerDialog.lastSessionRestored? modul.toLowerCase() : modul) + (UIUtil.subModule != 0? UIUtil.subModule : "") + (UIUtil.plaf == PLAF.FLATDARK? "d" : ""), "UTF-8")
+							+ "&modul=" + URLEncoder.encode((DataModelManagerDialog.lastSessionRestored? modul.toLowerCase() : modul) + (UIUtil.subModule != 0? UIUtil.subModule : "") + (UIUtil.plaf == PLAF.FLATDARK? "d" : "") + (Environment.rpm? "r" : ""), "UTF-8")
 							+ "&ts=" + URLEncoder.encode(new Date().toString(), "UTF-8")
 							+ "&uuid=" + URLEncoder.encode(uuid.toString(), "UTF-8")
 							+ "&version=" + URLEncoder.encode(JailerVersion.VERSION, "UTF-8")
 							+ (stat0 != null? "&s=" + stat0 : "")
 							+ ("&c=" + uimCnt)
 							+ UISettings.restoreStats();
-					
-					
-					// TODO
-	        		JOptionPane.showMessageDialog(null, param, "Error", JOptionPane.ERROR_MESSAGE);
-
 					
 					String inputLine = null;
 					for (int i = 0; i < versionURL.length; ++i) {

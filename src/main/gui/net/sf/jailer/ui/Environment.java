@@ -233,7 +233,6 @@ public class Environment {
 				// + 4 no longer used
 				+ (!testCreateTempFile() ? 8 : 0)
 				+ (isJPacked() ? 1000 : 0)
-				+ rpmOffset()
 				+ stateOffset;
 		AWTWatchdog.start();
 		LogUtil.setWarn(new LogUtil.Warn() {
@@ -252,19 +251,10 @@ public class Environment {
 		if (toBeLogged != null) {
 			LogUtil.warn(toBeLogged);
 		}
-		state += rpmOffset();
 		return args;
 	}
 	
-	private static boolean rpm;
-
-	private static int rpmOffset() {
-		int offset = 0;
-		if (rpm) {
-			offset = -100;
-		}
-		return offset;
-	}
+	public static boolean rpm;
 
 	private static File applicationBase = null;
 
