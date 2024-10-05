@@ -17,7 +17,6 @@ import java.util.Date;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.Timer;
 
 import net.sf.jailer.JailerVersion;
