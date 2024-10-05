@@ -1,4 +1,4 @@
-16.4.3
+16.5
   - Menu navigation in the data browser has been simplified.
   - The full-text search performance has been significantly improved for large amounts of data.
 
