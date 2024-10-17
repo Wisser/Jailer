@@ -2503,7 +2503,7 @@ public abstract class Desktop extends JDesktopPane {
 										@Override
 										public void run() {
 											paintLink(start, end, color, link.color2, g2d, tableBrowser, pbg, link.intersect,
-													link.dotted, link.restricted,
+													link.dotted, link.restricted, linksToRender.size(),
 												linksToRender.size() == 1 ? 0.5 : (ir + 1) * 1.0 / linksToRender.size(),
 												finalLight, followMe,
 												link.sourceRowID, link.inClosure, link.inTempClosure, link.notHAligned, inClosureRootPath,
@@ -2554,7 +2554,7 @@ public abstract class Desktop extends JDesktopPane {
 	private PLAF fgColorMapPlaf = null;
 
 	private void paintLink(Point2D start, Point2D end, Color color, Color fgColor, Graphics2D g2d, RowBrowser tableBrowser,
-			boolean pbg, boolean intersect, boolean dotted, boolean restricted, double midPos, boolean light,
+			boolean pbg, boolean intersect, boolean dotted, boolean restricted, int numLinks, double midPos, boolean light,
 			Map<String, Point2D.Double> followMe, String sourceRowID, boolean inClosure, boolean inTempClosure, boolean notHAligned, boolean inClosureRootPath,
 			boolean isToParentLink, boolean doPaint) {
 		int so = 0;
@@ -2596,6 +2596,16 @@ public abstract class Desktop extends JDesktopPane {
 						1.0f) : restricted? new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 22f, 2.5f },
 								1.0f) 
 						: stroke);
+			}
+			
+			if (tableBrowser.parent != null) {
+				int dist = Math.abs(tableBrowser.internalFrame.getY() - tableBrowser.parent.internalFrame.getY()) / tableBrowser.internalFrame.getHeight();
+				if (!rowsClosure.hAlignedPath.contains(tableBrowser.browserContentPane) && !inClosure && !notHAligned && numLinks >= 5 && dist > 0 && !dotted && !inClosure && !tableBrowser.internalFrame.isSelected()) {
+					stroke = (BasicStroke) g2d.getStroke();
+					g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), dist == 1? new float[] { 1f, 1.75f } : new float[] { 1f, 2.1f }, 
+							stroke.getDashPhase()));
+				}
+				
 			}
 		}
 
