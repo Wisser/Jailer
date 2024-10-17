@@ -1,3 +1,8 @@
+16.5.1
+  - The color scheme of the links in the data browser is now controlled heuristically
+    so that the links that are currently of interest are highlighted.
+    Others then fade into the background.
+
 16.5
   - Menu navigation in the data browser has been simplified.
   - The full-text search performance has been significantly improved for large amounts of data.
