@@ -50,6 +50,7 @@ import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
+import net.sf.jailer.ui.util.HSLColor;
 
 /**
  * Desktop outline.
@@ -60,16 +61,14 @@ import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 public class DesktopOutline extends JPanel {
 
 	private final JComponent sameWidthFriend;
-	private final JPanel controlPanel;
 	private final Desktop desktop;
 	private final JScrollPane scrollPane;
 	private Point draggingStart = null;
 	private Point draggingViewPosition = null;
-	public Rectangle visibleRectInOutline = null;
+	private Rectangle visibleRectInOutline = null;
 	
-	public DesktopOutline(JComponent sameWidthFriend, JPanel controlPanel, JScrollPane scrollPane, Desktop desktop, Consumer<RowBrowser> doubleClickAction) {
+	public DesktopOutline(JComponent sameWidthFriend, JScrollPane scrollPane, Desktop desktop, Consumer<RowBrowser> doubleClickAction) {
 		this.sameWidthFriend = sameWidthFriend;
-		this.controlPanel = controlPanel;
 		this.scrollPane = scrollPane;
 		this.desktop = desktop;
 		setOpaque(false);
@@ -313,6 +312,10 @@ public class DesktopOutline extends JPanel {
 					Color backgroundColor1 = Colors.Color_160_200_255;
 					if (onPath.contains(browser)) {
 						backgroundColor1 = Colors.Color_180_255_220;
+					}
+					if (browser.browserContentPane.rows.isEmpty() && !onPath.contains(browser)) {
+						HSLColor hslColor = new HSLColor(backgroundColor1);
+						backgroundColor1 = new Color(hslColor.adjustSaturation(Math.max(0, hslColor.getSaturation() - (UIUtil.plaf == PLAF.FLATDARK? 30f : 50f))).getRGB());
 					}
 					sx = (int)(offX + scale * (double) rectangle.x + 0.5);
 					sy = (int)(offY + scale * (double) rectangle.y + 0.5);

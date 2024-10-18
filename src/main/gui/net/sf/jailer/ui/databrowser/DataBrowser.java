@@ -1220,7 +1220,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 			}
 		});
 
-		desktopOutline = new DesktopOutline(navigationPanel, controlPanel, jScrollPane1, desktop, tableBrowser -> {
+		desktopOutline = new DesktopOutline(navigationPanel, jScrollPane1, desktop, tableBrowser -> {
 			if (anchorManager.isApplicable(tableBrowser)) {
 				anchorManager.layout(tableBrowser);
 				UISettings.s14 += 1000;

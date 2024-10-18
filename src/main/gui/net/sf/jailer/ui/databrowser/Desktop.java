@@ -2559,6 +2559,8 @@ public abstract class Desktop extends JDesktopPane {
 			boolean isToParentLink, boolean doPaint) {
 		int so = 0;
 		float sop = 0;
+		float pseudoHAlignFactor = 0f;
+		
 		if (doPaint) {
 			if (UIUtil.plaf == PLAF.NIMBUS) {
 				g2d.setColor(inTempClosure && !pbg? Colors.Color_220_220_255 : color);
@@ -2598,18 +2600,24 @@ public abstract class Desktop extends JDesktopPane {
 						: stroke);
 			}
 			
+			// TODO
+			
+//			if ((System.currentTimeMillis() / 4000) % 2 == 0)
+			
 			if (tableBrowser.parent != null) {
 				int dist = Math.abs(tableBrowser.internalFrame.getY() - tableBrowser.parent.internalFrame.getY()) / tableBrowser.internalFrame.getHeight();
+				
 				if (!rowsClosure.hAlignedPath.contains(tableBrowser.browserContentPane) && !inClosure && !notHAligned && numLinks >= 5 && dist > 0 && !dotted && !inClosure && !tableBrowser.internalFrame.isSelected()) {
-					stroke = (BasicStroke) g2d.getStroke();
-					g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), dist == 1? new float[] { 1f, 1.75f } : new float[] { 1f, 2.1f }, 
-							stroke.getDashPhase()));
+//					stroke = (BasicStroke) g2d.getStroke();
+//					g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), dist == 1? new float[] { 1f, 1.75f } : new float[] { 1f, 2.1f }, 
+//							stroke.getDashPhase())); TODO
+					pseudoHAlignFactor = dist == 1? 0.6f : 1f;
 				}
 				
 			}
 		}
 
-		if (notHAligned && doPaint) {
+		if ((pseudoHAlignFactor != 0f || notHAligned) && doPaint) {
 			Color fg = g2d.getColor();
 			if (!pbg) {
 				if (UIUtil.plaf != fgColorMapPlaf) {
@@ -2617,6 +2625,13 @@ public abstract class Desktop extends JDesktopPane {
 				}
 				fgColorMapPlaf = UIUtil.plaf;
 				Color mc = fgColorMap.get(fg);
+				
+//				mc = null; // TODO
+				// TODO
+				// TODO
+				// TODO
+				// TODO
+				
 				if (mc == null) {
 					HSLColor hslColor = new HSLColor(fg);
 					if (UIUtil.plaf == PLAF.FLATDARK) {
@@ -2639,6 +2654,13 @@ public abstract class Desktop extends JDesktopPane {
 																: 83);
 					}
 					fgColorMap.put(fg, mc);
+				}
+				if (pseudoHAlignFactor > 0f) {
+					float invPseudoHAlignFactor = 1f - pseudoHAlignFactor;
+					mc = new Color(
+							(int) (mc.getRed() * pseudoHAlignFactor + fg.getRed() * invPseudoHAlignFactor),
+							(int) (mc.getGreen() * pseudoHAlignFactor + fg.getGreen() * invPseudoHAlignFactor),
+							(int) (mc.getBlue() * pseudoHAlignFactor + fg.getBlue() * invPseudoHAlignFactor));
 				}
 				g2d.setColor(mc);
 			}

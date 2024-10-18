@@ -629,10 +629,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
                             ((DropTableChange) change).setCascadeConstraints(true);
                             ((DropTableChange) change).setCatalogName(tCat);
                             ((DropTableChange) change).setSchemaName(tSchem);
-                        } else if (change instanceof DropAllCommandStep) {
-                        	((DropAllForeignKeyConstraintsChange) change).setBaseTableCatalogName(tCat);
-                            ((DropAllForeignKeyConstraintsChange) change).setBaseTableSchemaName(tSchem);
-                        } else if (change instanceof DropForeignKeyConstraintChange) {
+                       } else if (change instanceof DropForeignKeyConstraintChange) {
                         	((DropForeignKeyConstraintChange) change).setBaseTableCatalogName(tCat);
                             ((DropForeignKeyConstraintChange) change).setBaseTableSchemaName(tSchem);
                         } else if (change instanceof DropIndexChange) {
