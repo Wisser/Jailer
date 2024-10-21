@@ -2419,7 +2419,7 @@ public abstract class Desktop extends JDesktopPane {
 				}
 
 				final int MAX_PRIO = 5;
-				for (int prio = rowsClosure.hAlignedPath.isEmpty()? 2 : 0; prio <= MAX_PRIO; ++prio) {
+				for (int prio = rowsClosure.hAlignedPath.isEmpty()? 1 : 0; prio <= MAX_PRIO; ++prio) {
 					for (final boolean pbg : new Boolean[] { true, false }) {
 						for (final RowBrowser tableBrowser : rbSourceToLinks.keySet()) {
 							if (!tableBrowser.isHidden()) {
@@ -2484,20 +2484,26 @@ public abstract class Desktop extends JDesktopPane {
 									final Point2D end = new Point2D.Double(link.x1, link.y1);
 									final int ir = dir > 0? i : linksToRender.size() - 1 - i;
 									final boolean finalLight = light;
+									boolean sameY = tableBrowser.parent != null && Math.abs(tableBrowser.internalFrame.getY() - tableBrowser.parent.internalFrame.getY()) < 32;
 									int linkPrio = 0;
 									if (link.notHAligned) {
 										if (link.inClosure) {
 											linkPrio += 1;
 										}
 									} else {
-										linkPrio = 2;
+										linkPrio = 1;
 										if (pathToSelectedRowBrowser.contains(tableBrowser)) {
-											linkPrio += 2;
-										}
-										if (link.inClosure) {
-											linkPrio += 1;
+											linkPrio += 3;
+										} else {
+											if (link.inClosure) {
+												linkPrio += 2;
+											}
+											if (sameY) {
+												linkPrio += 1;
+											}
 										}
 									}
+									
 									final boolean doPaint = linkPrio == prio;
 									Runnable task = new Runnable() {
 										@Override
@@ -2599,18 +2605,10 @@ public abstract class Desktop extends JDesktopPane {
 								1.0f) 
 						: stroke);
 			}
-			
-			// TODO
-			
-//			if ((System.currentTimeMillis() / 4000) % 2 == 0)
-			
 			if (tableBrowser.parent != null) {
 				int dist = Math.abs(tableBrowser.internalFrame.getY() - tableBrowser.parent.internalFrame.getY()) / tableBrowser.internalFrame.getHeight();
 				
 				if (!rowsClosure.hAlignedPath.contains(tableBrowser.browserContentPane) && !inClosure && !notHAligned && numLinks >= 5 && dist > 0 && !dotted && !inClosure && !tableBrowser.internalFrame.isSelected()) {
-//					stroke = (BasicStroke) g2d.getStroke();
-//					g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), dist == 1? new float[] { 1f, 1.75f } : new float[] { 1f, 2.1f }, 
-//							stroke.getDashPhase())); TODO
 					pseudoHAlignFactor = dist == 1? 0.6f : 1f;
 				}
 				
@@ -2625,12 +2623,6 @@ public abstract class Desktop extends JDesktopPane {
 				}
 				fgColorMapPlaf = UIUtil.plaf;
 				Color mc = fgColorMap.get(fg);
-				
-//				mc = null; // TODO
-				// TODO
-				// TODO
-				// TODO
-				// TODO
 				
 				if (mc == null) {
 					HSLColor hslColor = new HSLColor(fg);
