@@ -2487,7 +2487,7 @@ public abstract class Desktop extends JDesktopPane {
 									boolean sameY = tableBrowser.parent != null && Math.abs(tableBrowser.internalFrame.getY() - tableBrowser.parent.internalFrame.getY()) < 32;
 									int linkPrio = 0;
 									if (link.notHAligned) {
-										if (link.inClosure) {
+										if (link.inClosure || sameY) {
 											linkPrio += 1;
 										}
 									} else {
