@@ -4183,7 +4183,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			String path = file.getPath();
 			Charset encoding = SqlUtil.retrieveEncoding(path);
 			InputStream inputStream = new FileInputStream(file);
-			BufferedReader in;
+			BufferedReader in = null;
 			if (path.toLowerCase(Locale.ENGLISH).endsWith(".gz")) {
 				in = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream), encoding));
 			} else if (path.toLowerCase(Locale.ENGLISH).endsWith(".zip")){
@@ -4195,13 +4195,20 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			}
 			
 			StringBuilder sb = new StringBuilder();
-			int c;
-	        while ((c = in.read()) != -1) {
-	        	if (c != '\r') {
-	        		sb.append((char) c);
-	        	}
-	        }
-	        in.close();
+			try {
+				int c;
+		        while ((c = in.read()) != -1) {
+		        	if (c != '\r') {
+		        		sb.append((char) c);
+		        	}
+		        }
+			} finally {
+				try {
+					in.close();
+				} catch (Throwable t) {
+					LogUtil.warn(t);
+				}
+			}
 	        editorPane.setText(sb.toString());
 	        dirty = false;
 	        transactionalBox.setSelected(true);

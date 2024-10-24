@@ -261,23 +261,32 @@ public class PrintUtil {
 		sb = new StringBuilder(65536);
 		Charset encoding = SqlUtil.retrieveEncoding(file);
 		InputStream inputStream = new FileInputStream(file);
-		BufferedReader reader;
-		if (file.toLowerCase(Locale.ENGLISH).endsWith(".gz")) {
-			reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream), encoding));
-		} else if (file.toLowerCase(Locale.ENGLISH).endsWith(".zip")){
-			ZipInputStream zis = new ZipInputStream(inputStream); // lgtm [java/input-resource-leak]
-			zis.getNextEntry();
-			reader = new BufferedReader(new InputStreamReader(zis, encoding));
-		} else {
-			reader = new BufferedReader(new InputStreamReader(inputStream, encoding));
-		}
-		String line = null;
-		while ((line = reader.readLine()) != null) {
-			if (!ignoreComments || (line.trim().length() > 0 && !line.startsWith("#"))) {
-				sb.append(line + "\n");
+		BufferedReader reader = null;
+		try {
+			if (file.toLowerCase(Locale.ENGLISH).endsWith(".gz")) {
+				reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream), encoding));
+			} else if (file.toLowerCase(Locale.ENGLISH).endsWith(".zip")){
+				ZipInputStream zis = new ZipInputStream(inputStream); // lgtm [java/input-resource-leak]
+				zis.getNextEntry();
+				reader = new BufferedReader(new InputStreamReader(zis, encoding));
+			} else {
+				reader = new BufferedReader(new InputStreamReader(inputStream, encoding));
+			}
+			String line = null;
+			while ((line = reader.readLine()) != null) {
+				if (!ignoreComments || (line.trim().length() > 0 && !line.startsWith("#"))) {
+					sb.append(line + "\n");
+				}
+			}
+		} finally {
+			if (reader != null) {
+				try {
+					reader.close();
+				} catch (Throwable t) {
+					LogUtil.warn(t);
+				}
 			}
 		}
-		reader.close();
 		return sb.toString();
 	}
 
