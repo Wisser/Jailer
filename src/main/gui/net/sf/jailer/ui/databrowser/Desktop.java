@@ -1440,6 +1440,11 @@ public abstract class Desktop extends JDesktopPane {
 			protected WhereConditionEditorPanel getWhereConditionEditorPanel(RowBrowser rowBrowser) {
 				return Desktop.this.getWhereConditionEditorPanel(rowBrowser);
 			}
+
+			@Override
+			protected void updateHAlignedPath() {
+				Desktop.this.updateHAlignedPath(tableBrowser);
+			}
 		};
 		browserContentPane.addUserAction(new UserAction(
 				"Align Horizontally",
@@ -2485,6 +2490,10 @@ public abstract class Desktop extends JDesktopPane {
 									final int ir = dir > 0? i : linksToRender.size() - 1 - i;
 									final boolean finalLight = light;
 									boolean sameY = tableBrowser.parent != null && Math.abs(tableBrowser.internalFrame.getY() - tableBrowser.parent.internalFrame.getY()) < 32;
+									
+									if (rowsClosure.tempClosureOrigin == tableBrowser.browserContentPane) {
+										sameY = true;									}
+									
 									int linkPrio = 0;
 									if (link.notHAligned) {
 										if (link.inClosure || sameY) {
@@ -4534,6 +4543,10 @@ public abstract class Desktop extends JDesktopPane {
 		updateMenuPendingTimer.setRepeats(false);
 		updateMenuPendingTimer.start();
 		
+		updateHAlignedPath(tableBrowser);
+	}
+	
+	private void updateHAlignedPath(final RowBrowser tableBrowser) {
 		if (!noArrangeLayoutOnNewTableBrowserWithAnchor) {
 			if (anchorManager.isApplicable(tableBrowser) || rowsClosure.hAlignedPathOnSelection) {
 				checkHAlignedPath();

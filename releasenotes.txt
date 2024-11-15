@@ -1,3 +1,7 @@
+16.5.2
+  - The desktop overview view has been improved.
+  - Some JDBC drivers were updated.
+
 16.5.1
   - The color scheme of the links in the data browser is now controlled heuristically
     so that the links that are currently of interest are highlighted.

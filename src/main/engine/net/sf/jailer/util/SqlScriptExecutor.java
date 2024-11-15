@@ -134,6 +134,9 @@ public class SqlScriptExecutor {
 			session.rollbackAll();
 			throw e;
 		} catch (SQLException e) {
+			if (e instanceof SqlException) {
+				((SqlException) e).setFormatted(true);
+			}
 			session.rollbackAll();
 			throw e;
 		} catch (Throwable e) {

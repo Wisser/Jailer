@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.ui;
 
+import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -57,6 +58,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
@@ -497,15 +500,39 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		moduleDataBrowserPanel.setBackground(bgBrowser);
 		moduleSubsetterPanel.setBackground(bgSubsetter);
 		
-		Border emtypBorderD = new ToolSelectionBorder(1, 0, 0, 1, bgBrowser);
-		Border emtypBorderS = new ToolSelectionBorder(1, 1, 0, 0, bgSubsetter);
-		Border dataBrowsepBorder = new ToolSelectionBorder(1, 0, 0, 1, null);
-		Border subsetterBorder = new ToolSelectionBorder(1, 1, 0, 0, null);
+		AtomicInteger selectedModule = new AtomicInteger(0);
+
+		Border emtypBorderD = new ToolSelectionBorder(1, 0, 0, 1, bgBrowser, () -> selectedModule.get() == 1);
+		Border emtypBorderS = new ToolSelectionBorder(1, 1, 0, 0, bgSubsetter, () -> selectedModule.get() == 2);
+		Border dataBrowsepBorder = new ToolSelectionBorder(1, 0, 0, 1, null, () -> selectedModule.get() == 1);
+		Border subsetterBorder = new ToolSelectionBorder(1, 1, 0, 0, null, () -> selectedModule.get() == 2);
+		
+		Function<Integer, JPanel> pF = i -> new JPanel(new BorderLayout()) {
+			@Override
+			public void paint(Graphics g) {
+				super.paint(g);
+				Graphics2D g2d = (Graphics2D) g;
+
+				if (selectedModule.get() == i && !(i == 1 && moduleDataBrowserFramePanel1.isOpaque() || i == 2 && moduleSubsetterFramePanel.isOpaque())) {
+					g2d.setColor(UIUtil.plaf == PLAF.FLATDARK? Colors.Color_255_255_255_70 : Colors.Color_255_255_255_150);
+					Area border = new Area(new Rectangle(0, 0, getWidth(), getHeight()));
+					g2d.fill(border);
+				}
+			}
+		};
+		JPanel p = pF.apply(1);
+		p.setOpaque(false);
+		moduleDataBrowserPanel.getParent().add(p, ((GridBagLayout) moduleDataBrowserPanel.getParent().getLayout()).getConstraints(moduleDataBrowserPanel));
+		p.add(moduleDataBrowserPanel);
+		
+		p = pF.apply(2);
+		p.setOpaque(false);
+		moduleSubsetterPanel.getParent().add(p, ((GridBagLayout) moduleSubsetterPanel.getParent().getLayout()).getConstraints(moduleSubsetterPanel));
+		p.add(moduleSubsetterPanel);
 		
 		moduleDataBrowserPanel.setBorder(emtypBorderD);
 		moduleSubsetterPanel.setBorder(emtypBorderS);
 		
-		AtomicInteger selectedModule = new AtomicInteger(0);
 		JButton deselButton = new JButton("Help", UIUtil.scaleIcon(yellowdotLabel, helpImg));
 		helpLabel.setText(null);
 		helpLabel.setIcon(UIUtil.scaleIcon(helpImg, 0.4));
@@ -3120,20 +3147,31 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	private class ToolSelectionBorder implements Border {
 		private Insets margin;
 		private Color color;
+		private Supplier<Boolean> isSelected;
 
-		public ToolSelectionBorder(int top, int left, int bottom, int right, Color color) {
+		public ToolSelectionBorder(int top, int left, int bottom, int right, Color color, Supplier<Boolean> isSelected) {
 			this.color = color;
-			margin = new Insets(top, left, bottom, right);
+			this.isSelected = isSelected;
+			margin = new Insets(top, left, bottom + 1, right);
 		}
-
+		
 		public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
 			Graphics2D g2d = (Graphics2D) g;
 			g2d.setPaint(new GradientPaint(x, y, color != null? color : Colors.Color_0_0_255, x + width, y, color != null? color : UIUtil.plaf == PLAF.FLATDARK? Colors.Color_0_255_0.brighter() : Colors.Color_0_255_0.darker()));
 
 			Area border = new Area(new Rectangle(x, y, width, height));
 			border.subtract(new Area(new Rectangle(x + margin.left, y + margin.top, width - margin.left - margin.right,
-					height - margin.top - margin.bottom)));
+					height - margin.top - margin.bottom + 1)));
 			g2d.fill(border);
+			
+			if (color != null) {
+				g2d.setPaint(new GradientPaint(x, y, Colors.Color_0_0_255, x + width, y, UIUtil.plaf == PLAF.FLATDARK? Colors.Color_0_255_0.brighter() : Colors.Color_0_255_0.darker()));
+
+				border = new Area(new Rectangle(x, y, width, height));
+				border.subtract(new Area(new Rectangle(x, y, width,
+						height - 1)));
+				g2d.fill(border);
+			}
 		}
 
 		public Insets getBorderInsets(Component c) {

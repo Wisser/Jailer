@@ -887,6 +887,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		boolean hAlignedPathOnSelection = false;
 
 		Set<Row> tempClosure = new HashSet<Row>();
+		public BrowserContentPane tempClosureOrigin;
 	}
 
 	final RowsClosure rowsClosure;
@@ -7498,7 +7499,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	protected double getAnimationFactor() {
 		return 1f;
 	}
-
+	protected void updateHAlignedPath() {
+	}
+	
 	private boolean fullTextSearchPanelWasOpened = false;
 
 	void onMaximumPropertyChange(boolean maximum) {
@@ -8386,11 +8389,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		}
 
 		private void updateClosure(Row row) {
+			rowsClosure.tempClosureOrigin = row == null? null : BrowserContentPane.this;
 			if (currentRow != row) {
 				currentRow = row;
 				rowsClosure.tempClosure.clear();
 				if (currentRow != null) {
 					findTempClosure(currentRow);
+					updateHAlignedPath();
+				} else {
+					getTableBrowser().stream().filter(tb -> tb.internalFrame.isSelected()).findFirst().ifPresent(tb -> tb.browserContentPane.updateHAlignedPath());
 				}
 				onRedraw();
 				AnimationController.activateAnimation(SwingUtilities.getWindowAncestor(BrowserContentPane.this));

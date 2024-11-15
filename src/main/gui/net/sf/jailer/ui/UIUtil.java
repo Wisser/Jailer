@@ -1086,7 +1086,13 @@ public class UIUtil {
     
 	private static Pattern blacklist = Pattern.compile(
     		"(" +
-    			Pattern.quote("PSQLException:") + ".*Connection refused" + ".*DriverShim"
+    			"Connection refused" + ".*DriverShim"
+   				+ ")|(" +
+   				Pattern.quote("UnknownHostException") + ".*DriverShim"
+   				+ ")|(" +
+   				Pattern.quote("ORA-17868") + ".*DriverShim"
+   				+ ")|(" +
+   				Pattern.quote("c.relispartition") + ".*DriverShim"
    				+ ")|(" +
     			Pattern.quote("SQLException: ORA-28001") + ".*DriverShim"
    				+ ")|(" +
@@ -1097,6 +1103,8 @@ public class UIUtil {
    				"database .* does not exist" + ".*DriverShim"
    				+ ")|(" +
    				Pattern.quote("authentication failed") + ".*DriverShim"
+   				+ ")|(" +
+   				Pattern.quote("Access denied") + ".*DriverShim"
    				+ ")|(" +
    				Pattern.quote("Login failed") + ".*DriverShim"
    				+ ")|(" +

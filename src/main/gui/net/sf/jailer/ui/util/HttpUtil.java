@@ -38,7 +38,6 @@ public class HttpUtil {
 				return "403";
 			}
 		} catch (Throwable e) {
-			e.printStackTrace();
 			// fall through
 		}
 	    try {
@@ -57,7 +56,7 @@ public class HttpUtil {
 		return result.toString();
 	}
 
-	public static int get(final String url, final StringBuilder result) throws MalformedURLException, IOException {
+	private static int get(final String url, final StringBuilder result) throws MalformedURLException, IOException {
 		URL theUrl;
 		theUrl = new URL(url);
 		URLConnection con = theUrl.openConnection();
@@ -89,7 +88,7 @@ public class HttpUtil {
 			get(args[0] + "&withproxy=1", result);
 			System.out.println(result);
 		} catch (Throwable e) {
-			e.printStackTrace();
+			// ignore
 		}
 	}
 
