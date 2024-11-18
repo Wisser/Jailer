@@ -515,7 +515,11 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
 				if (selectedModule.get() == i && !(i == 1 && moduleDataBrowserFramePanel1.isOpaque() || i == 2 && moduleSubsetterFramePanel.isOpaque())) {
 					g2d.setColor(UIUtil.plaf == PLAF.FLATDARK? Colors.Color_255_255_255_70 : Colors.Color_255_255_255_150);
-					Area border = new Area(new Rectangle(0, 0, getWidth(), getHeight()));
+					int y = titelSubsetterLabel.getY() + titelSubsetterLabel.getHeight();
+					Area border = new Area(new Rectangle(0, y, getWidth(), getHeight() - y));
+					g2d.fill(border);
+					g2d.setColor(UIUtil.plaf != PLAF.FLATDARK? new Color(255, 255, 255, 90) : new Color(0, 0, 0, 90));
+					border = new Area(new Rectangle(0, 0, getWidth(), y));
 					g2d.fill(border);
 				}
 			}
@@ -3196,4 +3200,3 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		helpImg = UIUtil.readImage("/explain.png");
 	}
 }
-
