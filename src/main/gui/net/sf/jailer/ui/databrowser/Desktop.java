@@ -2640,7 +2640,7 @@ public abstract class Desktop extends JDesktopPane {
 						float d = 14;
 						mc = hslColor
 								.adjustLuminance(fg.getBlue() > fg.getRed() && fg.getBlue() > fg.getGreen() ? Math.max(0, l - d)
-										: fg.getGreen() > 130 && fg.getRed() > 130 && fg.getBlue() < 8 ? Math.max(0, l - d)
+										: fg.getGreen() > 130 && fg.getRed() > 130 && fg.getBlue() < 8 ? 30
 												: fg.getGreen() > fg.getRed() && fg.getGreen() > fg.getBlue() ? Math.max(0, l - d)
 														: fg.getGreen() > 130 && fg.getBlue() > 130 && fg.getRed() < 30
 																? Math.max(0, l - d)

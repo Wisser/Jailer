@@ -8397,7 +8397,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 					findTempClosure(currentRow);
 					updateHAlignedPath();
 				} else {
-					getTableBrowser().stream().filter(tb -> tb.internalFrame.isSelected()).findFirst().ifPresent(tb -> tb.browserContentPane.updateHAlignedPath());
+					List<RowBrowser> tableBrowser = getTableBrowser();
+					if (tableBrowser != null) {
+						tableBrowser.stream().filter(tb -> tb.internalFrame.isSelected()).findFirst().ifPresent(tb -> tb.browserContentPane.updateHAlignedPath());
+					}
 				}
 				onRedraw();
 				AnimationController.activateAnimation(SwingUtilities.getWindowAncestor(BrowserContentPane.this));
