@@ -2632,7 +2632,7 @@ public abstract class Desktop extends JDesktopPane {
 				}
 				fgColorMapPlaf = UIUtil.plaf;
 				Color mc = fgColorMap.get(fg);
-				
+
 				if (mc == null) {
 					HSLColor hslColor = new HSLColor(fg);
 					if (UIUtil.plaf == PLAF.FLATDARK) {
@@ -2648,7 +2648,7 @@ public abstract class Desktop extends JDesktopPane {
 					} else {
 						mc = hslColor
 								.adjustLuminance(fg.getBlue() > fg.getRed() && fg.getBlue() > fg.getGreen() ? 80
-										: fg.getGreen() > 130 && fg.getRed() > 130 && fg.getBlue() < 8 ? 60
+										: fg.getGreen() > 130 && fg.getRed() > 130 && fg.getBlue() < 8 ? 40
 												: fg.getGreen() > fg.getRed() && fg.getGreen() > fg.getBlue() ? 46
 														: fg.getGreen() > 130 && fg.getBlue() > 130 && fg.getRed() < 30
 																? 70
