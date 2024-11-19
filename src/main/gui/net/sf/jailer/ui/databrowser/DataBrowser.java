@@ -3635,7 +3635,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         bookmarkMenu.setText("Layout");
 
         addBookmarkMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_B, java.awt.event.InputEvent.CTRL_DOWN_MASK));
-        addBookmarkMenuItem.setText("Save Current Layout");
+        addBookmarkMenuItem.setText("Capture Layout");
         addBookmarkMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addBookmarkMenuItemActionPerformed(evt);
@@ -3643,7 +3643,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         });
         bookmarkMenu.add(addBookmarkMenuItem);
 
-        editBookmarkMenuItem.setText("Edit Layout");
+        editBookmarkMenuItem.setText("Edit Layouts");
         editBookmarkMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editBookmarkMenuItemActionPerformed(evt);

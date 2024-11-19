@@ -115,8 +115,8 @@ public class Colors {
 		ColorAssoc_2_3.init(new Color(70, 255, 70));
 		ColorAssoc_2_4.init(new Color(245, 90, 60), new Color(235, 100, 70));
 		Color_153_153_153.init(new Color(153, 153, 153), ColorAssoc_2_2.dark);
-		Color_170_200_0.init(new Color(130, 130, 0), new Color(140, 150, 0)); // link join
-	
+		Color_170_200_0.init(new Color(100, 130, 0), new Color(140, 150, 0)); // link join
+
 		Color_224_224_224.init(new Color(224, 224, 224), new Color(96, 96, 96));
 		Color_220_255_220.init(new Color(220, 255, 220), new Color(30, 61, 30));
 		Color_255_210_210.init(new Color(255, 210, 210), new Color(64, 33, 33));
@@ -140,8 +140,6 @@ public class Colors {
 		Color_0_0_255.init(new Color(0, 0, 255), Color_0_0_220.dark);
 		Color_0_80_255_80.init(new Color(0, 80, 255, 80), new Color(190, 200, 255, 100));
 		Color_255_0_0_120.init(new Color(255, 0, 0, 120), new Color(240, 58, 58, 140));
-
-		// TODO check "tranparent" todos
 		
 		Color_0_0_1.init(new Color(0, 0, 1), Color_0_0_0.dark);
 		
@@ -151,7 +149,7 @@ public class Colors {
 		Color_0_0_200.init(new Color(0, 0, 200));
 		Color_0_0_205.init(new Color(0, 0, 205));
 		Color_0_0_225.init(new Color(0, 0, 225));
-		Color_0_0_255_80.init(new Color(0, 0, 255, 80));    // TODO tranparent
+		Color_0_0_255_80.init(new Color(0, 0, 255, 80));    // tranparent
 		Color_0_0_62.init(new Color(0, 0, 62));
 		Color_0_0_77.init(new Color(0, 0, 77));
 		Color_0_100_0.init(new Color(0, 100, 0), Color_0_102_0.dark);
@@ -163,7 +161,7 @@ public class Colors {
 		Color_0_176_0.init(new Color(0, 176, 0));
 		Color_0_200_0.init(new Color(0, 200, 0));
 		Color_0_200_255.init(new Color(0, 200, 255));
-		Color_0_255_230_70.init(new Color(0, 255, 230, 70));    // TODO tranparent
+		Color_0_255_230_70.init(new Color(0, 255, 230, 70));    // tranparent
 		Color_0_40_90.init(new Color(0, 40, 90));
 		Color_0_55_0.init(new Color(0, 55, 0));
 		Color_0_80_160.init(new Color(0, 80, 160));
@@ -172,7 +170,7 @@ public class Colors {
 		Color_100_100_100.init(new Color(100, 100, 100));
 		Color_115_0_0.init(new Color(115, 0, 0));
 		Color_115_217_255.init(new Color(115, 217, 255));
-		Color_122_210_255_200.init(new Color(122, 210, 255, 200));    // TODO tranparent
+		Color_122_210_255_200.init(new Color(122, 210, 255, 200));    // tranparent
 		Color_128_128_128.init(new Color(128, 128, 128));
 		
 		
@@ -183,7 +181,7 @@ public class Colors {
 		Color_145_50_0.init(new Color(145, 50, 0));
 		Color_150_0_0.init(new Color(150, 0, 0));
 		Color_150_0_100.init(new Color(150, 0, 100));
-		Color_150_255_0_70.init(new Color(150, 255, 0, 70));    // TODO tranparent
+		Color_150_255_0_70.init(new Color(150, 255, 0, 70));    // tranparent
 				
 		Color_155_0_0.init(new Color(155, 0, 0));
 		Color_160_130_100.init(new Color(160, 130, 100));
@@ -200,7 +198,7 @@ public class Colors {
 		Color_200_100_200.init(new Color(200, 100, 200));
 		Color_200_200_0.init(new Color(200, 200, 0));
 		Color_200_200_200.init(new Color(200, 200, 200));
-		Color_200_200_200_140.init(new Color(200, 200, 200, 140));    // TODO tranparent
+		Color_200_200_200_140.init(new Color(200, 200, 200, 140));    // tranparent
 		Color_200_255_180.init(new Color(200, 255, 180));
 		Color_204_204_204.init(new Color(204, 204, 204));
 		Color_204_255_178.init(new Color(204, 255, 178));
@@ -210,7 +208,7 @@ public class Colors {
 		Color_220_220_220.init(new Color(220, 220, 220));
 		Color_220_220_255.init(new Color(220, 220, 255));
 		Color_220_225_255.init(new Color(220, 225, 255));
-		Color_220_255_220_70.init(new Color(220, 255, 220, 70));    // TODO tranparent
+		Color_220_255_220_70.init(new Color(220, 255, 220, 70));    // tranparent
 		Color_224_240_255.init(new Color(224, 240, 255));
 		Color_228_228_232.init(new Color(228, 228, 232));
 		Color_228_238_255.init(new Color(228, 238, 255));
@@ -221,10 +219,10 @@ public class Colors {
 		Color_242_242_242.init(new Color(242, 242, 242));
 		Color_247_247_247.init(new Color(247, 247, 247));
 		Color_250_250_255.init(new Color(250, 250, 255));
-		Color_255_0_0_0.init(new Color(255, 0, 0, 0));    // TODO tranparent
-		Color_255_0_0_150.init(new Color(255, 0, 0, 150));    // TODO tranparent
-		Color_255_0_0_20.init(new Color(255, 0, 0, 20));    // TODO tranparent
-		Color_255_0_0_50.init(new Color(255, 0, 0, 50));    // TODO tranparent
+		Color_255_0_0_0.init(new Color(255, 0, 0, 0));    // tranparent
+		Color_255_0_0_150.init(new Color(255, 0, 0, 150));    // tranparent
+		Color_255_0_0_20.init(new Color(255, 0, 0, 20));    // tranparent
+		Color_255_0_0_50.init(new Color(255, 0, 0, 50));    // tranparent
 		Color_255_0_51.init(new Color(255, 0, 51));
 		Color_255_100_100.init(new Color(255, 100, 100));
 		Color_255_150_140.init(new Color(255, 150, 140));
@@ -243,21 +241,21 @@ public class Colors {
 		Color_255_246_206.init(new Color(255, 246, 206));
 		Color_255_249_200.init(new Color(255, 249, 200));
 		Color_255_250_215.init(new Color(255, 250, 215));
-		Color_255_255_0_128.init(new Color(255, 255, 0, 128));    // TODO tranparent
+		Color_255_255_0_128.init(new Color(255, 255, 0, 128));    // tranparent
 		Color_255_255_176.init(new Color(255, 255, 176));
 		Color_255_255_204.init(new Color(255, 255, 204));
 		Color_255_255_220.init(new Color(255, 255, 220));
 		Color_255_255_236.init(new Color(255, 255, 236));
 		Color_255_255_240.init(new Color(255, 255, 240));
 		Color_255_255_250.init(new Color(255, 255, 250));
-		Color_255_255_255_150.init(new Color(255,255,255,150));    // TODO tranparent
-		Color_255_255_255_200.init(new Color(255, 255, 255, 200));    // TODO tranparent
-		Color_255_255_255_70.init(new Color(255, 255, 255, 70));    // TODO tranparent
+		Color_255_255_255_150.init(new Color(255,255,255,150));    // tranparent
+		Color_255_255_255_200.init(new Color(255, 255, 255, 200));    // tranparent
+		Color_255_255_255_70.init(new Color(255, 255, 255, 70));    // tranparent
 		Color_255_40_0.init(new Color(255, 40, 0));
 		Color_255_50_50.init(new Color(255, 50, 50));
 		Color_255_80_80.init(new Color(255, 80, 80));
 		Color_66_118_187.init(new Color(66, 118, 187));
-		Color_80_200_255_200.init(new Color(80, 200, 255, 200));    // TODO tranparent
+		Color_80_200_255_200.init(new Color(80, 200, 255, 200));    // tranparent
 		Color_86_82_125.init(new Color(86, 82, 125));
 		Color_95_0_0.init(new Color(95, 0, 0));
 		Color_96_64_0.init(new Color(96, 64, 0));
@@ -472,8 +470,9 @@ public class Colors {
 	public static void init() {
 		if (!timerIsInitialized) {
 //			inDarkLAFMode = "true".equals(System.getProperty("darkLAF")); // TODO remove
+			
 			if (inDarkLAFMode) {
-				Timer timer = new Timer(1000, e -> init());
+				Timer timer = new Timer(1000, e -> initColors());
 				timer.setInitialDelay(1000);
 				timer.setRepeats(true);
 				timer.start();

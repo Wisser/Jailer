@@ -337,7 +337,7 @@
                 <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
                   <KeyStroke key="Ctrl+B"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Save Current Layout"/>
+                <Property name="text" type="java.lang.String" value="Capture Layout"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addBookmarkMenuItemActionPerformed"/>
@@ -345,7 +345,7 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="editBookmarkMenuItem">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Edit Layout"/>
+                <Property name="text" type="java.lang.String" value="Edit Layouts"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editBookmarkMenuItemActionPerformed"/>
