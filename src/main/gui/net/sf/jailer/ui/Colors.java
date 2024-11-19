@@ -115,7 +115,7 @@ public class Colors {
 		ColorAssoc_2_3.init(new Color(70, 255, 70));
 		ColorAssoc_2_4.init(new Color(245, 90, 60), new Color(235, 100, 70));
 		Color_153_153_153.init(new Color(153, 153, 153), ColorAssoc_2_2.dark);
-		Color_170_200_0.init(new Color(120, 140, 0), new Color(150, 160, 0)); // link join
+		Color_170_200_0.init(new Color(130, 140, 0), new Color(150, 160, 0)); // link join
 
 		Color_224_224_224.init(new Color(224, 224, 224), new Color(96, 96, 96));
 		Color_220_255_220.init(new Color(220, 255, 220), new Color(30, 61, 30));

@@ -2582,7 +2582,7 @@ public abstract class Desktop extends JDesktopPane {
 			} else if (UIUtil.plaf.isFlat) {
 				double f = UIUtil.plaf == PLAF.FLATDARK? 0.5 : 3;
 				if (fgColor.getBlue() < 4 && fgColor.getGreen() > 99 && fgColor.getRed() > 99) {
-					f = UIUtil.plaf == PLAF.FLATDARK? 0.4 : 1.4;
+					f = UIUtil.plaf == PLAF.FLATDARK? 0.4 : 1.8;
 				} else {
 					if (fgColor.getGreen() > fgColor.getRed() + fgColor.getBlue()) {
 						f = UIUtil.plaf == PLAF.FLATDARK? 0.6 : 1.5;
