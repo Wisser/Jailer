@@ -2581,12 +2581,16 @@ public abstract class Desktop extends JDesktopPane {
 				g2d.setColor(inTempClosure && !pbg? Colors.Color_220_220_255 : color);
 			} else if (UIUtil.plaf.isFlat) {
 				double f = UIUtil.plaf == PLAF.FLATDARK? 0.5 : 3;
-				if (fgColor.getGreen() > fgColor.getRed() + fgColor.getBlue()) {
-					f = UIUtil.plaf == PLAF.FLATDARK? 0.6 : 1.5;
-				}
-				if (fgColor.getBlue() > fgColor.getRed() + fgColor.getGreen()) {
-					if (UIUtil.plaf == PLAF.FLATDARK) {
-						f = 0.7;
+				if (fgColor.getBlue() < 4 && fgColor.getGreen() > 99 && fgColor.getRed() > 99) {
+					f = UIUtil.plaf == PLAF.FLATDARK? 0.4 : 1.4;
+				} else {
+					if (fgColor.getGreen() > fgColor.getRed() + fgColor.getBlue()) {
+						f = UIUtil.plaf == PLAF.FLATDARK? 0.6 : 1.5;
+					}
+					if (fgColor.getBlue() > fgColor.getRed() + fgColor.getGreen()) {
+						if (UIUtil.plaf == PLAF.FLATDARK) {
+							f = 0.7;
+						}
 					}
 				}
 				g2d.setColor((inTempClosure) && pbg? new Color(
@@ -2632,7 +2636,6 @@ public abstract class Desktop extends JDesktopPane {
 				}
 				fgColorMapPlaf = UIUtil.plaf;
 				Color mc = fgColorMap.get(fg);
-
 				if (mc == null) {
 					HSLColor hslColor = new HSLColor(fg);
 					if (UIUtil.plaf == PLAF.FLATDARK) {
@@ -2648,7 +2651,7 @@ public abstract class Desktop extends JDesktopPane {
 					} else {
 						mc = hslColor
 								.adjustLuminance(fg.getBlue() > fg.getRed() && fg.getBlue() > fg.getGreen() ? 80
-										: fg.getGreen() > 130 && fg.getRed() > 130 && fg.getBlue() < 8 ? 40
+										: fg.getGreen() > 99 && fg.getRed() > 99 && fg.getBlue() < 8 ? 40
 												: fg.getGreen() > fg.getRed() && fg.getGreen() > fg.getBlue() ? 46
 														: fg.getGreen() > 130 && fg.getBlue() > 130 && fg.getRed() < 30
 																? 70
