@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.datamodel.Column;
+import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.CellContentConverter.PObjectWrapper;
@@ -578,7 +579,7 @@ public class BrowserContentCellEditor {
 		this.inDetailsView = inDetailsView;
 	}
 
-	public static BrowserContentCellEditor forTable(Table table, Session session) throws SQLException {
+	public static BrowserContentCellEditor forTable(Table table, RowIdSupport rowIdSupport, Session session) throws SQLException {
 		String key = "browserContentCellEditor-" + table.getName();
 		BrowserContentCellEditor browserContentCellEditor[] = new BrowserContentCellEditor[] {
 				(BrowserContentCellEditor) session.getSessionProperty(BrowserContentCellEditor.class, key) };
@@ -602,8 +603,9 @@ public class BrowserContentCellEditor {
 					// nothing to do
 				}
 			};
+			List<Column> columns = rowIdSupport != null? rowIdSupport.getColumns(table, session, false) : table.getColumns();
 			String sqlQuery = "Select "
-					+ (table.getColumns().stream().map(c -> c.name).collect(Collectors.joining(", "))) + " From "
+					+ (columns.stream().map(c -> c.name).collect(Collectors.joining(", "))) + " From "
 					+ table.getName() + " Where 1=0";
 			session.executeQuery(sqlQuery, reader, null, null, 1);
 			session.setSessionProperty(BrowserContentCellEditor.class, key, browserContentCellEditor[0]);

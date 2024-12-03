@@ -519,7 +519,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			}
 			if (exception != null && (browserContentCellEditor == null || browserContentCellEditor.getColumnTypes().length == 0)) {
 				try {
-					browserContentCellEditor = BrowserContentCellEditor.forTable(table, session);
+					browserContentCellEditor = BrowserContentCellEditor.forTable(table, rowIdSupport, session);
 					onContentCellEditorCreated(browserContentCellEditor);
 				} catch (Throwable t) {
 					// ignore
@@ -5710,7 +5710,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 					tableContentViewFilter.filter(rowData, columnNameMap);
 				}
 				for (int i = 0; i < columns.size(); ++i) {
-					TableModelItem item = new TableModelItem(row.getParentModelIndex(), row.getInheritedParentModelIndex(), rowData[i], columnTypes == null? 0: columnTypes[i]);
+					TableModelItem item = new TableModelItem(row.getParentModelIndex(), row.getInheritedParentModelIndex(), rowData[i],
+							columnTypes == null || columnTypes.length >= i? 
+									0: columnTypes[i]);
 					rowData[i] = item;
 				}
 				dtm.addRow(rowData);

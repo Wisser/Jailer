@@ -4630,4 +4630,10 @@ public abstract class Desktop extends JDesktopPane {
 	
 	// TODO display names for associations? (using unique fk-column list?)
 	
+	// TODO
+	// TODO joined-links: bg too decent. (light laf)
+	
+	// TODO
+	// TODO !hAlign-color-vs-hAlign-Color adjustment (espe. green)
+	
 }

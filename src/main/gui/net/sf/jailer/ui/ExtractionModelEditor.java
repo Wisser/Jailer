@@ -1318,7 +1318,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 			public void run() throws Throwable {
 				Object obj;
 				try {
-					obj = BrowserContentCellEditor.forTable(table, extractionModelFrame.theSession);
+					obj = BrowserContentCellEditor.forTable(table, null, extractionModelFrame.theSession);
 				} catch (SQLException e) {
 					obj = e;
 				}
