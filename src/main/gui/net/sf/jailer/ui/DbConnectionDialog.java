@@ -342,7 +342,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		}
 	}
 	
-	public boolean connectSilent(ConnectionInfo ci) {
+	public boolean connectSilent(ConnectionInfo ci, Runnable[] afterConnectAction) {
 		if (connectionsTable.getModel().getRowCount() > 0) {
 			int cRI = -1;
 			for (int i = 0; i < connectionList.size(); ++i) {
@@ -376,7 +376,11 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 				}
 				onConnect(currentConnection);
 				if (dataModelChanger != null) {
-					dataModelChanger.afterConnect(currentConnection);
+					if (afterConnectAction != null) {
+						afterConnectAction[0] = () -> dataModelChanger.afterConnect(currentConnection);
+					} else {
+						dataModelChanger.afterConnect(currentConnection);
+					}
 				}
 				if (currentConnection.alias != null && !"".equals(currentConnection.alias)) {
 					UISettings.addRecentConnectionAliases(currentConnection.alias);

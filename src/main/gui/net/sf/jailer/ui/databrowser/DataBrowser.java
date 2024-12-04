@@ -1783,13 +1783,23 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 
 			private void connect(DataBrowser dataBrowser, Object o) {
 				ConnectionInfo oldCurrentConnectionInfo = currentConnectionInfo;
-				if (dataBrowser.dbConnectionDialog.connectSilent((ConnectionInfo) o)) {
+				Runnable[] afterConnectAction = new Runnable[1];
+				if (dataBrowser.dbConnectionDialog.connectSilent((ConnectionInfo) o, afterConnectAction)) {
 					try {
-						if (!dataBrowser.setConnection(dataBrowser.dbConnectionDialog)) {
+						boolean ok;
+						BrowserContentPane.suppressReloadStatic = true;
+						try {
+							ok = dataBrowser.setConnection(dataBrowser.dbConnectionDialog);
+						} finally {
+							BrowserContentPane.suppressReloadStatic = false;
+						}
+						if (!ok) {
 							if (oldCurrentConnectionInfo != null) {
-								dataBrowser.dbConnectionDialog.connectSilent(oldCurrentConnectionInfo);
+								dataBrowser.dbConnectionDialog.connectSilent(oldCurrentConnectionInfo, null);
 								updateModelNavigation();
 							}
+						} else {
+							afterConnectAction[0].run();
 						}
 					} catch (Exception ex) {
 						UIUtil.showException(dataBrowser, "Error", ex);
@@ -1954,12 +1964,9 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 					if (new File(sessionFile).exists()) {
 						afterReconnectAction = () -> {
 							try {
-								BrowserContentPane.suppressReloadStatic = true;
 								desktop.restoreSession(null, DataBrowser.this, sessionFile, true);
 							} catch (Exception e) {
 								LogUtil.warn(e);
-							} finally {
-								BrowserContentPane.suppressReloadStatic = false;
 							}
 						};
 					}
@@ -4269,11 +4276,19 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 				dbConnectionDialog.select(lastConnectionInfo);
 			}
 			if (dbConnectionDialog.connect("Reconnect", true)) {
+				BrowserContentPane.suppressReloadStatic = true; // TODO
 				try {
 					setConnection(dbConnectionDialog);
 				} catch (Exception e) {
 					UIUtil.showException(this, "Error", e, session);
+				} finally {
+					BrowserContentPane.suppressReloadStatic = false;
 				}
+				UIUtil.invokeLater(() -> {
+					for (RowBrowser rb : desktop.getRootBrowsers(false)) {
+						rb.browserContentPane.reloadRows();
+					}
+				});
 			}
 		}
 	}// GEN-LAST:event_reconnectMenuItemActionPerformed
