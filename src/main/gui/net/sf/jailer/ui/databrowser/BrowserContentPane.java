@@ -782,7 +782,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	/**
 	 * {@link RowIdSupport} for data model.
 	 */
-	private final RowIdSupport rowIdSupport;
+	RowIdSupport rowIdSupport;
 
 	/**
 	 * {@link Association} with parent row, or <code>null</code>.

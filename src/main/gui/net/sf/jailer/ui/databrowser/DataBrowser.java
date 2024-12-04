@@ -140,6 +140,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKeyFactory;
+import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.ModelBuilder;
@@ -2181,6 +2182,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 					}
 					for (RowBrowser rb : desktop.getBrowsers()) {
 						rb.browserContentPane.session = session;
+						rb.browserContentPane.rowIdSupport = new RowIdSupport(datamodel.get(), session.dbms, executionContext);;
 						rb.browserContentPane.rows.clear();
 					}
 					for (RowBrowser rb : desktop.getRootBrowsers(false)) {
@@ -4275,20 +4277,25 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 			if (lastConnectionInfo != null) {
 				dbConnectionDialog.select(lastConnectionInfo);
 			}
-			if (dbConnectionDialog.connect("Reconnect", true)) {
-				BrowserContentPane.suppressReloadStatic = true; // TODO
-				try {
-					setConnection(dbConnectionDialog);
-				} catch (Exception e) {
-					UIUtil.showException(this, "Error", e, session);
-				} finally {
-					BrowserContentPane.suppressReloadStatic = false;
-				}
-				UIUtil.invokeLater(() -> {
-					for (RowBrowser rb : desktop.getRootBrowsers(false)) {
-						rb.browserContentPane.reloadRows();
+			BrowserContentPane.suppressReloadStatic = true;
+			try {
+				if (dbConnectionDialog.connect("Reconnect", true)) {
+					try {
+						BrowserContentPane.suppressReloadStatic = true;
+						setConnection(dbConnectionDialog);
+					} catch (Exception e) {
+						UIUtil.showException(this, "Error", e, session);
+					} finally {
+						BrowserContentPane.suppressReloadStatic = false;
 					}
-				});
+					UIUtil.invokeLater(() -> {
+						for (RowBrowser rb : desktop.getRootBrowsers(false)) {
+							rb.browserContentPane.reloadRows();
+						}
+					});
+				}
+			} finally {
+				BrowserContentPane.suppressReloadStatic = false;
 			}
 		}
 	}// GEN-LAST:event_reconnectMenuItemActionPerformed
