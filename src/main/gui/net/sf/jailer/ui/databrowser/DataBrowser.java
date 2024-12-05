@@ -2181,9 +2181,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 								.forEach(sqlConsole -> sqlConsole.onReconnect(prevDatabaseName, currentDatabaseName));
 					}
 					for (RowBrowser rb : desktop.getBrowsers()) {
-						rb.browserContentPane.session = session;
-						rb.browserContentPane.rowIdSupport = new RowIdSupport(datamodel.get(), session.dbms, executionContext);;
-						rb.browserContentPane.rows.clear();
+						rb.browserContentPane.reset(session, datamodel.get());
 					}
 					for (RowBrowser rb : desktop.getRootBrowsers(false)) {
 						rb.browserContentPane.reloadRows();
@@ -4174,8 +4172,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 									if (desktop != null) {
 										desktop.updateMenu();
 										for (RowBrowser rb : desktop.getBrowsers()) {
-											rb.browserContentPane.session = session;
-											rb.browserContentPane.rows.clear();
+											rb.browserContentPane.reset(session);
 										}
 										for (RowBrowser rb : desktop.getRootBrowsers(false)) {
 											rb.browserContentPane.reloadRows();
@@ -6397,6 +6394,12 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	
 	private SQLConsoleWithTitle createNewSQLConsole(MetaDataSource metaDataSource, SQLConsoleWithTitle alreadyCreatedSqlConsole) throws SQLException {
 		final JLabel titleLbl = new JLabel(sqlConsoleIcon);
+		if (alreadyCreatedSqlConsole != null) {
+			alreadyCreatedSqlConsole.titleLbl.addPropertyChangeListener("text", e -> {
+				titleLbl.setText(alreadyCreatedSqlConsole.titleLbl.getText());
+				titleLbl.setToolTipText(alreadyCreatedSqlConsole.titleLbl.getToolTipText());
+			});
+		}
 		String tabName = "SQL Console";
 		if (alreadyCreatedSqlConsole == null) {
 			++sqlConsoleNr;

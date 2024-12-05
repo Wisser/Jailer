@@ -782,7 +782,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	/**
 	 * {@link RowIdSupport} for data model.
 	 */
-	RowIdSupport rowIdSupport;
+	private RowIdSupport rowIdSupport;
 
 	/**
 	 * {@link Association} with parent row, or <code>null</code>.
@@ -855,7 +855,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	/**
 	 * DB session.
 	 */
-	Session session;
+	private Session session;
 
 	private int currentRowSelection = -1;
 
@@ -8525,6 +8525,18 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	}
 
 	private int currentEditState;
+
+	public void reset(Session session, DataModel dataModel) {
+		this.session = session;
+		this.rowIdSupport = new RowIdSupport(dataModel, session.dbms, executionContext);;
+		this.rows.clear();
+	}
+
+	public void reset(Session session) {
+		this.session = session;
+		this.rowIdSupport = new RowIdSupport(dataModel, session.dbms, executionContext);;
+		this.rows.clear();
+	}
 
 	public void destroy() {
 		if (rows != null) {
