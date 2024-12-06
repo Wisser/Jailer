@@ -1,3 +1,6 @@
+16.5.3
+  - Fix: the file name was not displayed in the titles of the SQL console tabs.
+
 16.5.2
   - The desktop overview view has been improved.
   - Some JDBC drivers were updated.

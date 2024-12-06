@@ -519,7 +519,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			}
 			if (exception != null && (browserContentCellEditor == null || browserContentCellEditor.getColumnTypes().length == 0)) {
 				try {
-					browserContentCellEditor = BrowserContentCellEditor.forTable(table, session);
+					browserContentCellEditor = BrowserContentCellEditor.forTable(table, rowIdSupport, session);
 					onContentCellEditorCreated(browserContentCellEditor);
 				} catch (Throwable t) {
 					// ignore
@@ -782,7 +782,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	/**
 	 * {@link RowIdSupport} for data model.
 	 */
-	private final RowIdSupport rowIdSupport;
+	private RowIdSupport rowIdSupport;
 
 	/**
 	 * {@link Association} with parent row, or <code>null</code>.
@@ -855,7 +855,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	/**
 	 * DB session.
 	 */
-	Session session;
+	private Session session;
 
 	private int currentRowSelection = -1;
 
@@ -5710,7 +5710,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 					tableContentViewFilter.filter(rowData, columnNameMap);
 				}
 				for (int i = 0; i < columns.size(); ++i) {
-					TableModelItem item = new TableModelItem(row.getParentModelIndex(), row.getInheritedParentModelIndex(), rowData[i], columnTypes == null? 0: columnTypes[i]);
+					TableModelItem item = new TableModelItem(row.getParentModelIndex(), row.getInheritedParentModelIndex(), rowData[i],
+							columnTypes == null || columnTypes.length >= i? 
+									0: columnTypes[i]);
 					rowData[i] = item;
 				}
 				dtm.addRow(rowData);
@@ -8523,6 +8525,18 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	}
 
 	private int currentEditState;
+
+	public void reset(Session session, DataModel dataModel) {
+		this.session = session;
+		this.rowIdSupport = new RowIdSupport(dataModel, session.dbms, executionContext);;
+		this.rows.clear();
+	}
+
+	public void reset(Session session) {
+		this.session = session;
+		this.rowIdSupport = new RowIdSupport(dataModel, session.dbms, executionContext);;
+		this.rows.clear();
+	}
 
 	public void destroy() {
 		if (rows != null) {

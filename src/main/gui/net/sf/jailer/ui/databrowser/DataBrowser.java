@@ -140,6 +140,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKeyFactory;
+import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.ModelBuilder;
@@ -1783,13 +1784,23 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 
 			private void connect(DataBrowser dataBrowser, Object o) {
 				ConnectionInfo oldCurrentConnectionInfo = currentConnectionInfo;
-				if (dataBrowser.dbConnectionDialog.connectSilent((ConnectionInfo) o)) {
+				Runnable[] afterConnectAction = new Runnable[1];
+				if (dataBrowser.dbConnectionDialog.connectSilent((ConnectionInfo) o, afterConnectAction)) {
 					try {
-						if (!dataBrowser.setConnection(dataBrowser.dbConnectionDialog)) {
+						boolean ok;
+						BrowserContentPane.suppressReloadStatic = true;
+						try {
+							ok = dataBrowser.setConnection(dataBrowser.dbConnectionDialog);
+						} finally {
+							BrowserContentPane.suppressReloadStatic = false;
+						}
+						if (!ok) {
 							if (oldCurrentConnectionInfo != null) {
-								dataBrowser.dbConnectionDialog.connectSilent(oldCurrentConnectionInfo);
+								dataBrowser.dbConnectionDialog.connectSilent(oldCurrentConnectionInfo, null);
 								updateModelNavigation();
 							}
+						} else {
+							afterConnectAction[0].run();
 						}
 					} catch (Exception ex) {
 						UIUtil.showException(dataBrowser, "Error", ex);
@@ -1954,12 +1965,9 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 					if (new File(sessionFile).exists()) {
 						afterReconnectAction = () -> {
 							try {
-								BrowserContentPane.suppressReloadStatic = true;
 								desktop.restoreSession(null, DataBrowser.this, sessionFile, true);
 							} catch (Exception e) {
 								LogUtil.warn(e);
-							} finally {
-								BrowserContentPane.suppressReloadStatic = false;
 							}
 						};
 					}
@@ -2173,8 +2181,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 								.forEach(sqlConsole -> sqlConsole.onReconnect(prevDatabaseName, currentDatabaseName));
 					}
 					for (RowBrowser rb : desktop.getBrowsers()) {
-						rb.browserContentPane.session = session;
-						rb.browserContentPane.rows.clear();
+						rb.browserContentPane.reset(session, datamodel.get());
 					}
 					for (RowBrowser rb : desktop.getRootBrowsers(false)) {
 						rb.browserContentPane.reloadRows();
@@ -4165,8 +4172,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 									if (desktop != null) {
 										desktop.updateMenu();
 										for (RowBrowser rb : desktop.getBrowsers()) {
-											rb.browserContentPane.session = session;
-											rb.browserContentPane.rows.clear();
+											rb.browserContentPane.reset(session);
 										}
 										for (RowBrowser rb : desktop.getRootBrowsers(false)) {
 											rb.browserContentPane.reloadRows();
@@ -4268,12 +4274,25 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 			if (lastConnectionInfo != null) {
 				dbConnectionDialog.select(lastConnectionInfo);
 			}
-			if (dbConnectionDialog.connect("Reconnect", true)) {
-				try {
-					setConnection(dbConnectionDialog);
-				} catch (Exception e) {
-					UIUtil.showException(this, "Error", e, session);
+			BrowserContentPane.suppressReloadStatic = true;
+			try {
+				if (dbConnectionDialog.connect("Reconnect", true)) {
+					try {
+						BrowserContentPane.suppressReloadStatic = true;
+						setConnection(dbConnectionDialog);
+					} catch (Exception e) {
+						UIUtil.showException(this, "Error", e, session);
+					} finally {
+						BrowserContentPane.suppressReloadStatic = false;
+					}
+					UIUtil.invokeLater(() -> {
+						for (RowBrowser rb : desktop.getRootBrowsers(false)) {
+							rb.browserContentPane.reloadRows();
+						}
+					});
 				}
+			} finally {
+				BrowserContentPane.suppressReloadStatic = false;
 			}
 		}
 	}// GEN-LAST:event_reconnectMenuItemActionPerformed
@@ -6375,6 +6394,12 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	
 	private SQLConsoleWithTitle createNewSQLConsole(MetaDataSource metaDataSource, SQLConsoleWithTitle alreadyCreatedSqlConsole) throws SQLException {
 		final JLabel titleLbl = new JLabel(sqlConsoleIcon);
+		if (alreadyCreatedSqlConsole != null) {
+			alreadyCreatedSqlConsole.titleLbl.addPropertyChangeListener("text", e -> {
+				titleLbl.setText(alreadyCreatedSqlConsole.titleLbl.getText());
+				titleLbl.setToolTipText(alreadyCreatedSqlConsole.titleLbl.getToolTipText());
+			});
+		}
 		String tabName = "SQL Console";
 		if (alreadyCreatedSqlConsole == null) {
 			++sqlConsoleNr;
