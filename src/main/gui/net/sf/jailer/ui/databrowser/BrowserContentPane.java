@@ -1716,7 +1716,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 										Colors.Color_0_0_0);
 					boolean isNull = false;
 					if (((JLabel) render).getText() == UIUtil.NULL || ((JLabel) render).getText() == UNKNOWN) {
-						((JLabel) render).setForeground(Colors.Color_128_128_128);
+						((JLabel) render).setForeground(Colors.Color_153_153_153);
 						((JLabel) render).setText(" null  ");
 						((JLabel) render).setFont(italic);
 						isNull = true;

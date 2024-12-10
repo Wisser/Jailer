@@ -345,7 +345,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 							}
 			        	};
 				        Object obj = columnValue.get(column);
-				        label.setForeground(obj == null? Colors.Color_128_128_128 : Colors.Color_0_0_0);
+				        label.setForeground(obj == null? Colors.Color_153_153_153 : Colors.Color_0_0_0);
 				        if (obj == null) {
 				        	label.setFont(italic);
 				        }
