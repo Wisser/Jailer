@@ -282,7 +282,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 				jPanel2.setBackground(UIUtil.TABLE_BACKGROUND_COLOR_2);
 				boolean hasConstraints = false;
 				for (Column column: columns) {
-					hasConstraints = hasConstraints || !column.isNullable  || column.isVirtual ||  column.isIdentityColumn;
+					hasConstraints = hasConstraints || !column.isNullable  || column.isVirtual || column.isIdentityColumn;
 				}
 				rows.clear();
 				for (Column column: columns) {
@@ -349,7 +349,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 				        if (obj == null) {
 				        	label.setFont(italic);
 				        }
-						label.setText(String.valueOf(obj));
+						label.setText(String.valueOf(obj) + "  ");
 				        gridBagConstraints = new java.awt.GridBagConstraints();
 				        gridBagConstraints.gridx = 2;
 				        gridBagConstraints.gridy = y;
