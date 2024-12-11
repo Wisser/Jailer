@@ -1,3 +1,6 @@
+16.5.4
+  - Fix: switching the UI theme caused temporary rendering glitches.
+
 16.5.3
   - Fix: the file name was not displayed in the titles of the SQL console tabs.
 
