@@ -7369,6 +7369,13 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		}
 	}
 
+	public boolean switchTmpToLegacy(boolean set) {
+		boolean result = useGlobalTabbedPane;
+		useGlobalTabbedPane = !set;
+		updateTabbedPane(workbenchTabbedPane.getSelectedIndex());
+		return result;
+	}
+
 	@Override
 	public void onNewPlaf() {
 		updateStatusBar();

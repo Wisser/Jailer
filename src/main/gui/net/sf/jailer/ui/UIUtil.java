@@ -154,6 +154,7 @@ import net.sf.jailer.ddl.DDLCreator;
 import net.sf.jailer.progress.ProgressListener;
 import net.sf.jailer.subsetting.ObjectNotationOutputException;
 import net.sf.jailer.subsetting.RowLimitExceededException;
+import net.sf.jailer.ui.databrowser.DataBrowser;
 import net.sf.jailer.ui.databrowser.DetailsView;
 import net.sf.jailer.ui.databrowser.Row;
 import net.sf.jailer.ui.scrollmenu.JScrollC2PopupMenu;
@@ -2160,6 +2161,14 @@ public class UIUtil {
 	public static enum PLAF {
 		FLAT("Light Theme", true) {
 			public void install() {
+				List<DataBrowser> toSwitchBack = new ArrayList<>();
+				for (Window w : Window.getWindows()) {
+					if (w instanceof DataBrowser) {
+						if (((DataBrowser) w).switchTmpToLegacy(true)) {
+							toSwitchBack.add((DataBrowser) w);
+						}
+					}
+				}
 				FlatLightLaf.setup();
 				try {
 					javax.swing.UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatLightLaf());
@@ -2167,6 +2176,7 @@ public class UIUtil {
 					throw new RuntimeException(e);
 				}
                 com.formdev.flatlaf.FlatLaf.updateUI();
+                toSwitchBack.forEach(w -> w.switchTmpToLegacy(false));
 			}
 		},
 		NIMBUS("Nimbus", false) {
@@ -2177,6 +2187,14 @@ public class UIUtil {
 			}
 		}, FLATDARK("Dark Theme", true) {
 			public void install() {
+				List<DataBrowser> toSwitchBack = new ArrayList<>();
+				for (Window w : Window.getWindows()) {
+					if (w instanceof DataBrowser) {
+						if (((DataBrowser) w).switchTmpToLegacy(true)) {
+							toSwitchBack.add((DataBrowser) w);
+						}
+					}
+				}
 				FlatDarkLaf.setup();
 				try {
 					javax.swing.UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatDarkLaf());
@@ -2184,6 +2202,7 @@ public class UIUtil {
 					throw new RuntimeException(e);
 				}
                 com.formdev.flatlaf.FlatLaf.updateUI();
+                toSwitchBack.forEach(w -> w.switchTmpToLegacy(false));
 			}
 		};
 		

@@ -34,6 +34,7 @@ import javax.swing.Timer;
 
 import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.UIUtil.PlafAware;
+import net.sf.jailer.ui.databrowser.DataBrowser;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithTheme;
 import net.sf.jailer.ui.util.HSLColor;
 
@@ -512,6 +513,10 @@ public class Colors {
 		initColors();
 		UIUtil.invokeLater(() -> {
 			for (Window w : Window.getWindows()) {
+				boolean switchBack = false;
+				if (w instanceof DataBrowser && ((DataBrowser) w).switchTmpToLegacy(true)) {
+					switchBack = true;
+				}
 				UIUtil.traverse(w, null, c-> null, (c, o) -> null, (t, c) -> {
 					if (c instanceof PlafAware) {
 						((PlafAware) c).onNewPlaf();
@@ -520,6 +525,9 @@ public class Colors {
 					}
 				});
 				w.repaint();
+				if (switchBack) {
+					((DataBrowser) w).switchTmpToLegacy(false);
+				}
 			}
 			UIUtil.invokeLater(() -> {
 				for (Window w : Window.getWindows()) {
