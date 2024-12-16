@@ -77,8 +77,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
+import java.util.Objects;
 import java.util.Set;
-import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -118,7 +118,6 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.WindowConstants;
-import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputAdapter;
@@ -140,7 +139,6 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKeyFactory;
-import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.ModelBuilder;
@@ -198,7 +196,6 @@ import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
-import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithTheme;
 import net.sf.jailer.ui.util.AnimationController;
 import net.sf.jailer.ui.util.CompoundIcon;
 import net.sf.jailer.ui.util.CompoundIcon.Axis;
@@ -1784,11 +1781,12 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 
 			private void connect(DataBrowser dataBrowser, Object o) {
 				ConnectionInfo oldCurrentConnectionInfo = currentConnectionInfo;
+				String oldDataModelFolder = currentConnectionInfo.dataModelFolder;
 				Runnable[] afterConnectAction = new Runnable[1];
 				if (dataBrowser.dbConnectionDialog.connectSilent((ConnectionInfo) o, afterConnectAction)) {
 					try {
 						boolean ok;
-						BrowserContentPane.suppressReloadStatic = true;
+						BrowserContentPane.suppressReloadStatic = dataBrowser.dbConnectionDialog.currentConnection != null && !Objects.equals(dataBrowser.dbConnectionDialog.currentConnection.dataModelFolder, oldDataModelFolder);
 						try {
 							ok = dataBrowser.setConnection(dataBrowser.dbConnectionDialog);
 						} finally {
@@ -1909,15 +1907,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 			}
 		}
 
-		if (!current.isEmpty()) {
-			modelNavigationTree.setSelectionPath(new TreePath(current.get(0).getPath()));
-			UIUtil.invokeLater(() -> {
-				Rectangle b = modelNavigationTree.getPathBounds(new TreePath(current.get(0).getPath()));
-				if (b != null) {
-					modelNavigationTree.scrollRectToVisible(new Rectangle(0, b.y, 1, b.height));
-				}
-			});
-		}
+		modelNavigationTree.clearSelection();
 	}
 
 	private DataModelChanger createDataModelChanger() {
