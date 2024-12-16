@@ -1,3 +1,6 @@
+16.5.5
+  - Fix: after changing the database connection in the data browser, in some cases the the displayed data was not refreshed.
+
 16.5.4
   - Fix: switching the UI theme caused temporary rendering glitches.
 
