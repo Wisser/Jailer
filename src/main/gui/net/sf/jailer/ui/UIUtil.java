@@ -1093,7 +1093,7 @@ public class UIUtil {
    				+ ")|(" +
    				Pattern.quote("ORA-17868") + ".*DriverShim"
    				+ ")|(" +
-   				Pattern.quote("c.relispartition") + ".*DriverShim"
+   				Pattern.quote("c.relispartition") + ".*" + Pattern.quote("JDBCMetaDataBasedModelElementFinder.findPartitions")
    				+ ")|(" +
     			Pattern.quote("SQLException: ORA-28001") + ".*DriverShim"
    				+ ")|(" +
