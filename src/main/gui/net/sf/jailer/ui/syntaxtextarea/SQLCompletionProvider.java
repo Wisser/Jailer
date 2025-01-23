@@ -888,11 +888,11 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         return sb.toString();
     }
 
-    public Map<String, TABLE> findAliases(String statement, int caretPos, String origStatement, Map<String, TABLE> aliasesOnTopLevel, Set<String> cteAliases, List<OutlineInfo> outlineInfos) {
+    public Map<String, TABLE> findAliases(final String sqlStatement, int caretPos, final String origStatement, Map<String, TABLE> aliasesOnTopLevel, Set<String> cteAliases, List<OutlineInfo> outlineInfos) {
         final int MAX_OUTLINE_INFOS = 500;
         Map<String, String> scopeDescriptionPerLastKeyword = new HashMap<String, String>();
         
-        statement = prepareStatementForAliasAnalysis(statement);
+        final String statement = prepareStatementForAliasAnalysis(sqlStatement);
         
         scopeDescriptionPerLastKeyword.put("select", "Select");
         scopeDescriptionPerLastKeyword.put("from", "From");
@@ -1063,7 +1063,10 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 	                            info.withSeparator = !firstCTE;
 	                            outlineInfos.add(info);
                 			} else {
-	                			String rest = origStatement.substring(matcher.end());
+	                			String rest = "";
+	                			if (matcher.end() < origStatement.length()) {
+	                				rest = origStatement.substring(matcher.end());
+	                			}
 	                			final List<String> cols = parseCTEColumns(rest);
 								TABLE mdTable = createAndMemorizeDummyTable(getDefaultSchema(metaDataSource), identifier, cols);
 	                			if (mdTable != null) {
@@ -1093,7 +1096,10 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                             tokenPosStack.push(matcher.start());
                         } else if (outlineInfos == null && keyword.equals("(") && caretLevel != null && caretLevel == level && !afterFirstSetOperator) {
                         	String rest;
-                        	String oRest = origStatement.substring(keyWordStart);
+                        	String oRest = "";
+                        	if (keyWordStart < origStatement.length()) {
+	                			origStatement.substring(keyWordStart);
+                        	}
                         	if (lastTmpTable != null) {
                         		rest = "(" + oRest;
                         	} else {

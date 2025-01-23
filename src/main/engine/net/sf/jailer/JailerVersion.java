@@ -45,3 +45,6 @@ public class JailerVersion {
 	}
 
 }
+
+// TODO
+// TODO history (DMMD): rarely used. - rename label of button: "restore last (Session)" iff selected session is last one. Or: ?
