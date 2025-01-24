@@ -1,7 +1,7 @@
 package net.sf.jailer.ui.databrowser.whereconditioneditor;
 
 /*
- * Copyright 2007 - 2024 Ralf Wisser.
+ * Copyright 2007 - 2025 Ralf Wisser.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
