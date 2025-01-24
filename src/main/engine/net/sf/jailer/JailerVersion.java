@@ -25,7 +25,7 @@ public class JailerVersion {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "16.5.5.1";
+	public static final String VERSION = "16.5.6";
 
 	/**
 	 * The Jailer working tables version.
@@ -45,6 +45,3 @@ public class JailerVersion {
 	}
 
 }
-
-// TODO
-// TODO history (DMMD): rarely used. - rename label of button: "restore last (Session)" iff selected session is last one. Or: ?
