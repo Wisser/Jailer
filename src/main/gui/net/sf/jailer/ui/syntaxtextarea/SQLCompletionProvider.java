@@ -888,12 +888,12 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         return sb.toString();
     }
 
-    public Map<String, TABLE> findAliases(final String sqlStatement, int caretPos, final String origStatement, Map<String, TABLE> aliasesOnTopLevel, Set<String> cteAliases, List<OutlineInfo> outlineInfos) {
+    public Map<String, TABLE> findAliases(final String sqlStatement, int caretPos, final String origStatementUP, Map<String, TABLE> aliasesOnTopLevel, Set<String> cteAliases, List<OutlineInfo> outlineInfos) {
         final int MAX_OUTLINE_INFOS = 500;
         Map<String, String> scopeDescriptionPerLastKeyword = new HashMap<String, String>();
         
         final String statement = prepareStatementForAliasAnalysis(sqlStatement);
-        
+        final String origStatement = prepareStatementForAliasAnalysis(origStatementUP);
         scopeDescriptionPerLastKeyword.put("select", "Select");
         scopeDescriptionPerLastKeyword.put("from", "From");
         scopeDescriptionPerLastKeyword.put("with", "With");
@@ -1098,7 +1098,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                         	String rest;
                         	String oRest = "";
                         	if (keyWordStart < origStatement.length()) {
-	                			origStatement.substring(keyWordStart);
+                        		oRest = origStatement.substring(keyWordStart);
                         	}
                         	if (lastTmpTable != null) {
                         		rest = "(" + oRest;

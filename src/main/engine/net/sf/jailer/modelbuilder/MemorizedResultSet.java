@@ -1407,7 +1407,7 @@ public class MemorizedResultSet implements ResultSet {
 
 		@Override
 		public int getColumnType(int column) {
-			return 0;
+			return types[column - 1];
 		}
 
 		@Override
