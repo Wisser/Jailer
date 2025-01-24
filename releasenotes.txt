@@ -1,3 +1,6 @@
+16.5.6
+  - Code completion did not work reliably when substitution variables were used.
+
 16.5.5
   - Fix: after changing the database connection in the data browser, in some cases the the displayed data was not refreshed.
 
