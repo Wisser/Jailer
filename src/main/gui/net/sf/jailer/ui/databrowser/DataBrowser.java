@@ -79,6 +79,7 @@ import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.Set;
+import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -6964,11 +6965,21 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 			bookmark.setContent(sb.toString());
 
 			RowBrowser root = null;
+			int rootSize = 0;
 			for (RowBrowser tb : desktop.tableBrowsers) {
 				if (tb.browserContentPane != null && tb.browserContentPane.getParentBrowser() == null
 						&& tb.internalFrame != null) {
-					if (root == null || root.internalFrame.getY() > tb.internalFrame.getY()) {
+					int size = 0;
+					Stack<RowBrowser> stack = new Stack<>();
+					tb.browserContentPane.getChildBrowsers().forEach(b -> stack.push(b));
+					while (!stack.isEmpty()) {
+						RowBrowser b = stack.pop();
+						++size;
+						b.browserContentPane.getChildBrowsers().forEach(cb -> stack.push(cb));
+					}
+					if (root == null || (rootSize == size && root.internalFrame.getY() > tb.internalFrame.getY()) || rootSize < size) {
 						root = tb;
+						rootSize = size;
 					}
 				}
 			}

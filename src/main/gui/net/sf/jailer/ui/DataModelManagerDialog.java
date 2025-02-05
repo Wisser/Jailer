@@ -2956,6 +2956,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			CommandLineInstance.getInstance().rawschemamapping = bookmark.rawSchemaMapping;
 			if (ci != null) {
 				CommandLineInstance.getInstance().alias = ci.alias;
+				CommandLineInstance.getInstance().datamodelFolder = ci.dataModelFolder;
 				CommandLineInstance.getInstance().driver = ci.driverClass;
 				CommandLineInstance.getInstance().jdbcjar = ci.jar1;
 				CommandLineInstance.getInstance().jdbcjar2 = ci.jar2;

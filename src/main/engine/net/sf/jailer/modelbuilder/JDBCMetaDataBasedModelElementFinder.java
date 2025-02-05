@@ -1585,7 +1585,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		if (sqlType == null || sqlType.trim().length() == 0) {
 			sqlType = SqlUtil.SQL_TYPE.get(type);
 			if (sqlType == null) {
-				sqlType = "(?unknown type)";
+				sqlType = type != 0? "(?unknown type)" : "";
 			}
 		}
 		if (TYPES_WITH_LENGTH.contains(sqlType.toUpperCase(Locale.ENGLISH)) || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR || type == Types.BINARY || type == Types.VARBINARY) {
