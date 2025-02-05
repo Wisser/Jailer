@@ -1,5 +1,8 @@
-16.5.6
+16.5.7
   - Code completion did not work reliably when substitution variables were used.
+  - Fixed a bug that caused problems with date/time stamp columns in the SQL console.
+  
+16.5.6 (Removed because of a bug in the SQL console)
 
 16.5.5
   - Fix: after changing the database connection in the data browser, in some cases the the displayed data was not refreshed.
