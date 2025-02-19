@@ -2128,7 +2128,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		synchronized (this) {
 			Long ts = (Long) session.getSessionProperty(getClass(), DISTINCTEXISTINGVALUESTSKEY);
 			cache = (Map<Pair<String, String>, LinkedHashMap<String, Integer>>) session.getSessionProperty(getClass(), DISTINCTEXISTINGVALUESCACHEKEY);
-			if (cache == null || ts == null || ts < Session.lastUpdateTS || ts < System.currentTimeMillis() - 10 * (1000 * 60 * 60) /* 10 h */) {
+			if (cache == null || ts == null || ts < Session.lastUpdateTS || ts < System.currentTimeMillis() - (4 * (1000) /* 4 s */)) {
 				cache = new LRUCache<Pair<String,String>, LinkedHashMap<String, Integer>>(SIZE_DISTINCTEXISTINGVALUESCACHE);
 				session.setSessionProperty(getClass(), DISTINCTEXISTINGVALUESCACHEKEY, cache);
 				session.setSessionProperty(getClass(), DISTINCTEXISTINGVALUESTSKEY, System.currentTimeMillis());
