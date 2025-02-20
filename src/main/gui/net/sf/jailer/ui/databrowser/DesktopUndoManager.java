@@ -167,6 +167,13 @@ public class DesktopUndoManager {
 		updateUI();
 	}
 
+	public void pop() {
+		if (!undoStack.isEmpty()) {
+			undoStack.pop();
+			updateUI();
+		}
+	}
+	
 	void updateUI() {
 		undoButton.setEnabled(!undoStack.isEmpty());
 		undoMenuItem.setEnabled(!undoStack.isEmpty());

@@ -86,6 +86,7 @@ import java.util.Vector;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -121,6 +122,8 @@ import javax.swing.Timer;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.InternalFrameAdapter;
+import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
@@ -5578,16 +5581,23 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 
 			@Override
 			protected void expandTablePath(List<Table> path) {
+				RowBrowser initiallySelected = null;
+				Set<RowBrowser> initialBrowser = new HashSet<>();
 				RowBrowser rootRB = null;
 				for (RowBrowser rb : desktop.getBrowsers()) {
-					if (rb.internalFrame == desktop.getSelectedFrame() && !rb.isHidden()) {
-						rootRB = rb;
+					initialBrowser.add(rb);
+					if (rb.internalFrame == desktop.getSelectedFrame()) {
+						initiallySelected = rb;
+						if (!rb.isHidden()) {
+							rootRB = rb;
+						}
 					}
 				}
 				if (rootRB != null && (rootRB.browserContentPane.table == null
 						|| !rootRB.browserContentPane.table.equals(path.get(path.size() - 1)))) {
 					rootRB = null;
 				}
+				RowBrowser initiallySelectedBrowser = initiallySelected;
 				int i;
 				i = path.size() - 1;
 				Map<Table, RowBrowser> visTables = getVisibleTables();
@@ -5658,45 +5668,67 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 					}
 				}
 
-				Association[] associations = openAssociationPathPanel(path.subList(0, i + 1));
-				if (associations != null) {
-					try {
-						Desktop.noArrangeLayoutOnNewTableBrowser = true;
-						desktop.getiFrameStateChangeRenderer().startAtomic();
-						disableBorderBrowserUpdates = true;
-						suppressUpdateClosureBrowser = true;
-						while (i > 0) {
-							Table table = path.get(i);
-							RowBrowser rb;
-							if (nextRb != null && nextRb.association != null
-									&& nextRb.association.destination.equals(table)) {
-								rb = nextRb;
-							} else {
-								rb = getVisibleTables().get(table);
+				RowBrowser nextRbF = nextRb;
+				int iF = i;
+				openAssociationPathPanel(path.subList(0, i + 1),
+						associations -> {
+							if (associations != null) {
+								RowBrowser nextRbI = nextRbF;
+								// TODO
+								// TODO test: select initiallySelected?
+								try {
+									Desktop.noArrangeLayoutOnNewTableBrowser = true;
+									desktop.getiFrameStateChangeRenderer().startAtomic();
+									disableBorderBrowserUpdates = true;
+									suppressUpdateClosureBrowser = true;
+									int ii = iF;
+									while (ii > 0) {
+										Table table = path.get(ii);
+										RowBrowser rb;
+										if (nextRbI != null && nextRbI.association != null
+												&& nextRbI.association.destination.equals(table)) {
+											rb = nextRbI;
+										} else {
+											rb = getVisibleTables().get(table);
+										}
+										Association association = associations[ii - 1];
+										if (association != null) {
+											nextRbI = rb.browserContentPane.navigateTo(association, null);
+											visibleTables = null;
+										} else {
+											break;
+										}
+										--ii;
+									}
+									suppressUpdateClosureBrowser = false;
+			
+									closureRoot.internalFrame.setSelected(true);
+								} catch (Exception e) {
+									// ignore
+								} finally {
+									Desktop.noArrangeLayoutOnNewTableBrowser = false;
+									disableBorderBrowserUpdates = false;
+									suppressUpdateClosureBrowser = false;
+									desktop.getiFrameStateChangeRenderer().endAtomic();
+									desktop.catchUpLastArrangeLayoutOnNewTableBrowser();
+								}
+								closureView.find(getDataModel().getDisplayName(path.get(0)));
 							}
-							Association association = associations[i - 1];
-							if (association != null) {
-								nextRb = rb.browserContentPane.navigateTo(association, null);
-								visibleTables = null;
-							} else {
-								break;
+						},
+						() -> {
+							desktopUndoManager.pop();
+							HashSet<RowBrowser> toClose = new HashSet<>(desktop.getBrowsers());
+							toClose.removeAll(initialBrowser);
+							desktop.closeAll(toClose);
+							if (initiallySelectedBrowser != null) {
+								try {
+									initiallySelectedBrowser.internalFrame.setSelected(true);
+								} catch (PropertyVetoException e) {
+									// ignore
+								}
 							}
-							--i;
-						}
-						suppressUpdateClosureBrowser = false;
-
-						closureRoot.internalFrame.setSelected(true);
-					} catch (Exception e) {
-						// ignore
-					} finally {
-						Desktop.noArrangeLayoutOnNewTableBrowser = false;
-						disableBorderBrowserUpdates = false;
-						suppressUpdateClosureBrowser = false;
-						desktop.getiFrameStateChangeRenderer().endAtomic();
-						desktop.catchUpLastArrangeLayoutOnNewTableBrowser();
-					}
-					closureView.find(getDataModel().getDisplayName(path.get(0)));
-				}
+							UIUtil.invokeLater(100, () -> desktopUndoManager.pop());
+						}, initialBrowser);
 			}
 
 			@Override
@@ -5717,31 +5749,44 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 				}
 			}
 
-			private Association[] openAssociationPathPanel(List<Table> path) {
+			private void openAssociationPathPanel(List<Table> path, Consumer<Association[]> openPath, Runnable closePath, Set<RowBrowser> initialBrowser) {
 				if (path.isEmpty()) {
-					return null;
+					return;
 				}
 				try {
 					final AssociationPathPanel assocPanel = new AssociationPathPanel(getDataModel(), path,
 							dependsOn.getForeground(), hasDependent.getForeground(), associatedWith.getForeground(),
-							ignored.getForeground());
-					if (!assocPanel.needToAsk) {
-						return assocPanel.selectedAssociations;
-					}
-					final JDialog d = new JDialog(DataBrowser.this, "Open Path", true);
-					assocPanel.okButton.addActionListener(new ActionListener() {
-						@Override
-						public void actionPerformed(ActionEvent e) {
-							assocPanel.ok = true;
-							d.setVisible(false);
+							ignored.getForeground()) {
+						private static final long serialVersionUID = 1L;
+						protected void onSelectionChanged() {
+							UIUtil.invokeLater(200, () -> {
+								closePath.run();
+								UIUtil.invokeLater(102, () -> openPath.accept(selectedAssociations));
+							});
 						}
-					});
+					};
+					openPath.accept(assocPanel.selectedAssociations);
+					if (!assocPanel.needToAsk) {
+						return;
+					}
+					final JDialog d = new JDialog(DataBrowser.this, "Open Path - Select a specific association between neighboring tables.", false);
+					d.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 					assocPanel.cancelButton.addActionListener(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
-							assocPanel.ok = false;
 							d.setVisible(false);
+							d.dispose();
 						}
+					});
+					initialBrowser.forEach(rb -> {
+						rb.internalFrame.addInternalFrameListener(new InternalFrameAdapter() {
+							public void internalFrameClosed(InternalFrameEvent e) {
+								if (d.isVisible()) {
+									d.setVisible(false);
+									d.dispose();
+								}
+							}
+						});
 					});
 					d.getContentPane().add(assocPanel);
 					d.pack();
@@ -5749,15 +5794,10 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 					d.setLocation(DataBrowser.this.getX() + (DataBrowser.this.getWidth() - d.getWidth()) / 2,
 							Math.max(0, DataBrowser.this.getY() + (DataBrowser.this.getHeight() - d.getHeight()) / 2));
 					UIUtil.fit(d);
-					assocPanel.okButton.grabFocus();
 					d.setVisible(true);
-					if (assocPanel.ok) {
-						return assocPanel.selectedAssociations;
-					}
 				} catch (Exception e) {
 					LogUtil.warn(e);
 				}
-				return null;
 			}
 		};
 		Container cVContentPane = closureView.tablePanel;
