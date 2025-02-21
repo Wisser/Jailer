@@ -2860,7 +2860,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			jLabel1.setText(" ");
 			jLabel4.setText(" ");
 
-			jLabel6.setVisible(false);
+			jLabel12.setVisible(false);
 			java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 			gridBagConstraints.gridx = 8;
 			gridBagConstraints.gridy = 4;
@@ -2873,6 +2873,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			join.setToolTipText(join.getText());
 			on.setToolTipText(assocToolTip(on.getText(), this.association));
 		}
+		on.setPreferredSize(new Dimension(1,on.getPreferredSize().height));
 	}
 
 	private static String assocToolTip(String condition, Association assoc) {
@@ -6451,12 +6452,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
         loadButton = new javax.swing.JButton();
         onPanel = new javax.swing.JPanel();
         on = new javax.swing.JLabel();
-        joinPanel = new javax.swing.JPanel();
-        join = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
         jPanel10 = new javax.swing.JPanel();
         from = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
+        jPanel15 = new javax.swing.JPanel();
+        jLabel10 = new javax.swing.JLabel();
+        joinPanel = new javax.swing.JPanel();
+        join = new javax.swing.JLabel();
+        joinPanel1 = new javax.swing.JPanel();
+        jLabel12 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
@@ -6951,7 +6954,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
         jToolBar1.setRollover(true);
 
-        conditionEditorButton.setText("jToggleButton1");
+        conditionEditorButton.setText("tb");
         conditionEditorButton.setToolTipText("Open Condition Editor");
         conditionEditorButton.setFocusable(false);
         conditionEditorButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -7004,74 +7007,101 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
         on.setFont(on.getFont().deriveFont(on.getFont().getStyle() | java.awt.Font.BOLD));
         on.setText("jLabel3");
+        on.setRequestFocusEnabled(false);
         onPanel.add(on, java.awt.BorderLayout.CENTER);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         menuPanel.add(onPanel, gridBagConstraints);
-
-        joinPanel.setMinimumSize(new java.awt.Dimension(66, 17));
-        joinPanel.setLayout(new java.awt.GridBagLayout());
-
-        join.setFont(join.getFont().deriveFont(join.getFont().getStyle() | java.awt.Font.BOLD));
-        join.setText("jLabel3");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        joinPanel.add(join, gridBagConstraints);
-
-        jLabel6.setText(" as B  ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
-        joinPanel.add(jLabel6, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        menuPanel.add(joinPanel, gridBagConstraints);
 
         jPanel10.setMinimumSize(new java.awt.Dimension(66, 17));
         jPanel10.setLayout(new java.awt.GridBagLayout());
 
+        from.setBackground(new java.awt.Color(51, 255, 0));
         from.setFont(from.getFont().deriveFont(from.getFont().getStyle() | java.awt.Font.BOLD));
         from.setText("jLabel3");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
         jPanel10.add(from, gridBagConstraints);
 
-        jLabel5.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabel5.setText(" as A");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weighty = 1.0;
+        menuPanel.add(jPanel10, gridBagConstraints);
+
+        jPanel15.setMinimumSize(new java.awt.Dimension(66, 17));
+        jPanel15.setLayout(new java.awt.GridBagLayout());
+
+        jLabel10.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabel10.setText(" as A");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
-        jPanel10.add(jLabel5, gridBagConstraints);
+        jPanel15.add(jLabel10, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        menuPanel.add(jPanel10, gridBagConstraints);
+        menuPanel.add(jPanel15, gridBagConstraints);
+
+        joinPanel.setMinimumSize(new java.awt.Dimension(66, 17));
+        joinPanel.setLayout(new java.awt.GridBagLayout());
+
+        join.setBackground(new java.awt.Color(51, 255, 0));
+        join.setFont(join.getFont().deriveFont(join.getFont().getStyle() | java.awt.Font.BOLD));
+        join.setText("jLabel3");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        joinPanel.add(join, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weighty = 1.0;
+        menuPanel.add(joinPanel, gridBagConstraints);
+
+        joinPanel1.setMinimumSize(new java.awt.Dimension(66, 17));
+        joinPanel1.setLayout(new java.awt.GridBagLayout());
+
+        jLabel12.setText(" as B  ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
+        joinPanel1.add(jLabel12, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        menuPanel.add(joinPanel1, gridBagConstraints);
 
         jLabel1.setText(" Join ");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -7259,12 +7289,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
     public javax.swing.JLabel hAlignButtonLabel;
     public javax.swing.JPanel hAlignButtonPanel;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
@@ -7276,6 +7306,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
     private javax.swing.JPanel jPanel12;
     private javax.swing.JPanel jPanel13;
     private javax.swing.JPanel jPanel14;
+    private javax.swing.JPanel jPanel15;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
@@ -7287,6 +7318,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
     private javax.swing.JToolBar jToolBar2;
     private javax.swing.JLabel join;
     private javax.swing.JPanel joinPanel;
+    private javax.swing.JPanel joinPanel1;
     public javax.swing.JButton loadButton;
     private javax.swing.JLabel loadingCauseLabel;
     private javax.swing.JLabel loadingLabel;
