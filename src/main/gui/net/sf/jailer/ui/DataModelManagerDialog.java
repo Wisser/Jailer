@@ -593,7 +593,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		});
 
 		moduleDataBrowserToggleButton = new LightBorderSmallButton(
-				modulBrowserImg) {
+				modulBrowserImg, true) {
 			{
 				silent = true;
 				getFrame().addMouseListener(mouseListener);
@@ -623,7 +623,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		};
 		moduleDataBrowserSubPanel.add(moduleDataBrowserToggleButton);
 		moduleSubsetterToggleButton = new LightBorderSmallButton(
-				modulSubsetterImg) {
+				modulSubsetterImg, true) {
 			{
 				silent = true;
 				getFrame().addMouseListener(mouseListener);

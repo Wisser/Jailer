@@ -2856,7 +2856,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		return sel.toString().trim();
 	}
 
-	private void adjustGui() {
+	protected void adjustGui() {
 		if (this.association == null) {
 			join.setText(" ");
 			on.setText(" ");
@@ -7566,6 +7566,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		reloadRows();
 	}
 
+	protected void changeAssociation(Association association) {
+	}
 	protected void changeColumnOrder(Table table) {
 	}
 	protected void onLayoutChanged() {
@@ -8501,7 +8503,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
     private SmallButton onButton;
     
-	private void initOnSelectionButton() {
+	protected void initOnSelectionButton() {
 		if (onButton != null) {
 			UIUtil.replace(onButton, onLabel);
 			onButton = null;
@@ -8518,7 +8520,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		}
 		if (assocs.size() > 1) {
 			assocs.sort((a, b) -> a.getUnrestrictedJoinCondition().compareToIgnoreCase(b.getUnrestrictedJoinCondition()));
-			onButton = new LightBorderSmallButton(modelIcon) {
+			onButton = new LightBorderSmallButton(modelIcon, true) {
 				private final int MAX_COND_LENGTH = 60;
 				@Override
 				protected void onClick(MouseEvent e) {
@@ -8541,15 +8543,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 							item.setIcon(UIUtil.scaleIcon(this, greyDotIcon));
 						}
 						item.addActionListener(e2 -> {
-							association = a;
-							RowBrowser rb = getRowBrowser();
-							if (rb != null) {
-								rb.association = a;
-								rb.updateColor();
-							}
-							initOnSelectionButton();
-							adjustGui();
-							reloadRows();
+							changeAssociation(a);
 						});
 						popup.add(item);
 					}

@@ -126,6 +126,7 @@ import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.RowsClosure;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.SqlStatementTable;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.UserAction;
+import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.ui.databrowser.TreeLayoutOptimizer.Node;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
@@ -1305,6 +1306,24 @@ public abstract class Desktop extends JDesktopPane {
 			@Override
 			protected void changeColumnOrder(Table table) {
 				Desktop.this.changeColumnOrder(table);
+			}
+
+			@Override
+			protected void changeAssociation(Association association) {
+				if (desktopUndoManager != null) {
+					String undoDescription = "Change Association of Table \"" + association.destination.getName() + "\" to \"" + this.association.reversalAssociation.getName() + "\"";
+					String redoDescription = "Change Association of Table \"" + association.destination.getName() + "\" to \"" + association.reversalAssociation.getName() + "\"";
+					desktopUndoManager.beforeModification(undoDescription, redoDescription);
+				}
+				this.association = association;
+				RowBrowser rb = getRowBrowser();
+				if (rb != null) {
+					rb.association = association;
+					rb.updateColor();
+				}
+				initOnSelectionButton();
+				adjustGui();
+				reloadRows();
 			}
 
 			@Override

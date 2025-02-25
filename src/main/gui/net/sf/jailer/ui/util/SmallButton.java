@@ -44,10 +44,10 @@ public abstract class SmallButton extends JLabel implements PlafAware {
 	}
 	
 	public SmallButton(Icon icon, boolean borderStyle) {
-		this(icon, null, borderStyle);
+		this(icon, null, borderStyle, false);
 	}
 	
-	public SmallButton(Icon icon, Icon iconOver, boolean borderStyle) {
+	public SmallButton(Icon icon, Icon iconOver, boolean borderStyle, boolean reactImmediately) {
 		super(icon);
 		this.icon = icon;
 		this.iconOver = iconOver;
@@ -62,6 +62,9 @@ public abstract class SmallButton extends JLabel implements PlafAware {
 			}
 			@Override
 			public void mousePressed(MouseEvent e) {
+				if (reactImmediately) {
+					mouseClicked(e);
+				}
 			}
 			@Override
 			public void mouseExited(MouseEvent e) {

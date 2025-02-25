@@ -1220,7 +1220,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
         maximizeButton.setText(null);
         maximizeButton.setIcon(UIUtil.plaf == PLAF.FLATDARK? maximizeDarkIcon : maximizeIcon);
         
-        SmallButton closeButton = new SmallButton(UIUtil.plaf == PLAF.FLATDARK? closeDarkIcon : closeIcon, closeOverIcon, false) {
+        SmallButton closeButton = new SmallButton(UIUtil.plaf == PLAF.FLATDARK? closeDarkIcon : closeIcon, closeOverIcon, false, false) {
 			@Override
 			protected void onClick(MouseEvent e) {
 				Window windowAncestor = SwingUtilities.getWindowAncestor(DetailsView.this);

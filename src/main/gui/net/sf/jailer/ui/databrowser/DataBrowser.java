@@ -507,7 +507,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		searchBarToggleButton.setSelected(!Boolean.FALSE.equals(UISettings.restore("searchBarToggleButton")));
 		searchPanelContainer.setVisible(searchBarToggleButton.isSelected());
 		searchPanelSplitSizerPanel.setVisible(searchPanelContainer.isVisible());
-		whereConditionEditorCloseButton = new SmallButton(UIUtil.plaf == PLAF.FLATDARK? closeDarkIcon : closeIcon, closeOverIcon, false) {
+		whereConditionEditorCloseButton = new SmallButton(UIUtil.plaf == PLAF.FLATDARK? closeDarkIcon : closeIcon, closeOverIcon, false, false) {
 			@Override
 			protected void onClick(MouseEvent e) {
 				searchBarToggleButton.doClick();

@@ -29,7 +29,11 @@ public abstract class LightBorderSmallButton extends SmallButton {
 	protected boolean freezed = false;
 	
 	public LightBorderSmallButton(Icon icon) {
-		super(icon, true);
+		this(icon, false);
+	}
+	
+	public LightBorderSmallButton(Icon icon, boolean reactImmediately) {
+		super(icon, null, true, reactImmediately);
 	}
 	
 	protected JComponent getFrame() {

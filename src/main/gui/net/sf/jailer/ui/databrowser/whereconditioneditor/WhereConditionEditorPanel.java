@@ -437,7 +437,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.anchor = GridBagConstraints.EAST;
-        popupTitelPanel.add(new SmallButton(closeIcon, closeOverIcon, true) {
+        popupTitelPanel.add(new SmallButton(closeIcon, closeOverIcon, true, false) {
 			@Override
 			protected void onClick(MouseEvent e) {
 				Window window = SwingUtilities.getWindowAncestor(this);
@@ -1062,7 +1062,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	        allFields.add(valueTextField);
 	    	
 	        final int finalMaxWidth = maxWidth;
-			SmallButton operatorField = new LightBorderSmallButton(null) {
+			SmallButton operatorField = new LightBorderSmallButton(null, true) {
 				@Override
 				protected void onClick(MouseEvent evt) {
 					if (allDisabled) {
