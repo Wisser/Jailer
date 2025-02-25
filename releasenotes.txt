@@ -1,5 +1,7 @@
 16.5.8
- - Data browser: The path search dialog is now non-modal. This means that changes are immediately visible and can be made as often as required.
+ - Data browser
+   - The path search dialog is now non-modal. This means that changes are immediately visible and can be made as often as required.
+   - In the individual table views, the associations to neighboring tables can now be changed at any time, as long as the table itself remains the same.
 
 16.5.7
   - Code completion did not work reliably when substitution variables were used.
