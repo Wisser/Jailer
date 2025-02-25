@@ -209,6 +209,8 @@ import net.sf.jailer.ui.scrollmenu.JScrollMenu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.util.AnimationController;
+import net.sf.jailer.ui.util.LightBorderSmallButton;
+import net.sf.jailer.ui.util.SmallButton;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
@@ -976,6 +978,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		}
 
 		initComponents(); UIUtil.initComponents(this);
+		
+		initOnSelectionButton();
 		
 		jToolBar1.setFloatable(false);
 		jToolBar2.setFloatable(false);
@@ -2858,7 +2862,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			on.setText(" ");
 
 			jLabel1.setText(" ");
-			jLabel4.setText(" ");
+			onLabel.setText(" ");
 
 			jLabel12.setVisible(false);
 			java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -2877,8 +2881,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	}
 
 	private static String assocToolTip(String condition, Association assoc) {
-		return "<html>" + UIUtil.toHTMLFragment(condition, 0) + "<br><hr>FK:&nbsp;<i>"
-				+ UIUtil.toHTML(assoc.reversed? assoc.reversalAssociation.getName() : assoc.getName(), 0) + "</i></html>";
+		return "<html>" + UIUtil.toHTMLFragment(condition, 0) + "<br><hr>FK:&nbsp;<i><font color=" + Colors.HTMLColor_0000dd + ">"
+				+ UIUtil.toHTML(assoc.reversed? assoc.reversalAssociation.getName() : assoc.getName(), 0) + "</font></i></html>";
 	}
 
 	private class AllNonEmptyItem extends JMenuItem {
@@ -6461,7 +6465,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
         joinPanel1 = new javax.swing.JPanel();
         jLabel12 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
+        onLabel = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         rrPanel = new javax.swing.JPanel();
         relatedRowsPanel = new javax.swing.JPanel();
@@ -7113,7 +7117,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
         gridBagConstraints.weighty = 1.0;
         menuPanel.add(jLabel1, gridBagConstraints);
 
-        jLabel4.setText(" on ");
+        onLabel.setText(" on ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 6;
@@ -7121,7 +7125,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weighty = 1.0;
-        menuPanel.add(jLabel4, gridBagConstraints);
+        menuPanel.add(onLabel, gridBagConstraints);
 
         jLabel3.setText(" From ");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -7294,7 +7298,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
@@ -7327,6 +7330,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
     javax.swing.JPanel menuPanel;
     private javax.swing.JPanel noRowsFoundPanel;
     private javax.swing.JLabel on;
+    private javax.swing.JLabel onLabel;
     private javax.swing.JPanel onPanel;
     private javax.swing.JToggleButton openEditorButton;
     private javax.swing.JLabel openEditorLabel;
@@ -7742,6 +7746,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		parentRows = null;
 		rowsClosure.currentClosureRowIDs.clear();
 		adjustGui();
+		initOnSelectionButton();
 		reloadRows();
 	}
 
@@ -8494,6 +8499,86 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
         return scaledWarnIcon;
     }
 
+    private SmallButton onButton;
+    
+	private void initOnSelectionButton() {
+		if (onButton != null) {
+			UIUtil.replace(onButton, onLabel);
+			onButton = null;
+		}
+		if (association == null) {
+			return;
+		}
+		
+		List<Association> assocs = new ArrayList<Association>();
+		for (Association a: association.source.associations) {
+			if (a.destination == association.destination && a != association) {
+				assocs.add(a);
+			}
+		}
+		if (assocs.size() > 1) {
+			assocs.sort((a, b) -> a.getUnrestrictedJoinCondition().compareToIgnoreCase(b.getUnrestrictedJoinCondition()));
+			onButton = new LightBorderSmallButton(modelIcon) {
+				private final int MAX_COND_LENGTH = 60;
+				@Override
+				protected void onClick(MouseEvent e) {
+					JPopupMenu popup = new JPopupMenu();
+					for (Association a: assocs) {
+						String uc = a.getUnrestrictedJoinCondition();
+						if (uc.length() > MAX_COND_LENGTH) {
+							uc = uc.substring(0, MAX_COND_LENGTH) + "...";
+						}
+						JMenuItem item = new JMenuItem(uc);
+						item.setToolTipText(assocToolTip(a.getUnrestrictedJoinCondition(), a));
+						item.setIcon(UIUtil.scaleIcon(this, blueDotIcon));
+						if (a.isInsertDestinationBeforeSource()) {
+							item.setIcon(UIUtil.scaleIcon(this, redDotIcon));
+						}
+						if (a.isInsertSourceBeforeDestination()) {
+							item.setIcon(UIUtil.scaleIcon(this, greenDotIcon));
+						}
+						if (a.reversalAssociation.isIgnored()) {
+							item.setIcon(UIUtil.scaleIcon(this, greyDotIcon));
+						}
+						item.addActionListener(e2 -> {
+							association = a;
+							RowBrowser rb = getRowBrowser();
+							if (rb != null) {
+								rb.association = a;
+								rb.updateColor();
+							}
+							initOnSelectionButton();
+							adjustGui();
+							reloadRows();
+						});
+						popup.add(item);
+					}
+					if (UIUtil.plaf.isFlat) {
+						setBackground(UIUtil.BG_FLATSELECTED);
+						setBorder(new LineBorder(UIUtil.BG_FLATSELECTED, 2, true));
+						freezed = true;
+						popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
+							@Override
+							public void propertyChange(PropertyChangeEvent evt) {
+								if (Boolean.FALSE.equals(evt.getNewValue())) {
+									freezed = false;
+									onMouseExited();
+								}
+							}
+						});
+					}
+					UIUtil.showPopup(this, 0, getHeight(), popup);
+				}
+			};
+			
+			onButton.setText("on");
+			onButton.setHorizontalAlignment(JLabel.LEFT);
+			onButton.setHorizontalTextPosition(JLabel.LEADING);
+			onButton.setToolTipText("Change association to this table");
+			UIUtil.replace(onLabel, onButton);
+		}
+	}
+
 	private Point calcSearchColumnPosition(int column) {
 		JTableHeader header;
 		Point result = new Point();
@@ -8618,6 +8703,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	private static ImageIcon hAlignButtonIcon2;
 	private static ImageIcon findPathIcon;
 	private static ImageIcon clearIcon;
+	private static ImageIcon modelIcon;
 
 	static {
         // load images
@@ -8652,6 +8738,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
      	hAlignButtonIcon2 = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/anchor0.png"), sf);
      	findPathIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/search22.png"));
 	    clearIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/clear.png"));
+	    modelIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/alldot.gif"));
 	}
 
 }

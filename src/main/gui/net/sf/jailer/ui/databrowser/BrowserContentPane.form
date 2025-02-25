@@ -978,7 +978,7 @@
             </Constraint>
           </Constraints>
         </Component>
-        <Component class="javax.swing.JLabel" name="jLabel4">
+        <Component class="javax.swing.JLabel" name="onLabel">
           <Properties>
             <Property name="text" type="java.lang.String" value=" on "/>
           </Properties>

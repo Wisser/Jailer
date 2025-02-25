@@ -574,6 +574,13 @@ public abstract class Desktop extends JDesktopPane {
 			this.mdTable = mdTable;
 		}
 
+		public void updateColor() {
+			if (association != null) {
+				color1 = getAssociationColor1(association);
+				color2 = getAssociationColor2(association);
+			}
+		}
+
 	}
 
 	/**
@@ -1480,10 +1487,7 @@ public abstract class Desktop extends JDesktopPane {
 		tableBrowser.browserContentPane = browserContentPane;
 		tableBrowser.parent = parent;
 		tableBrowser.association = association;
-		if (association != null) {
-			tableBrowser.color1 = getAssociationColor1(association);
-			tableBrowser.color2 = getAssociationColor2(association);
-		}
+		tableBrowser.updateColor();
 		tableBrowsers.add(tableBrowser);
 		
 		jInternalFrame.getContentPane().setLayout(new CardLayout());
