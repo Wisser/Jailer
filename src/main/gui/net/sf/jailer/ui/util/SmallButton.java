@@ -16,6 +16,7 @@
 package net.sf.jailer.ui.util;
 
 import java.awt.Color;
+import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
@@ -56,7 +57,7 @@ public abstract class SmallButton extends JLabel implements PlafAware {
 		addMouseListener(mouseListener = new MouseListener() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				if (entered && SwingUtilities.isLeftMouseButton(e)) {
+				if (entered && isReady() && SwingUtilities.isLeftMouseButton(e)) {
 					doClick(e);
 				}
 			}
@@ -76,7 +77,7 @@ public abstract class SmallButton extends JLabel implements PlafAware {
 			}
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				if (SwingUtilities.isLeftMouseButton(e)) {
+				if (SwingUtilities.isLeftMouseButton(e) && isReady()) {
 					doClick(e);
 				}
 			}
@@ -92,6 +93,10 @@ public abstract class SmallButton extends JLabel implements PlafAware {
 				}
 			}
 		});
+	}
+
+	protected boolean isReady() {
+		return true;
 	}
 
 	@Override

@@ -1311,8 +1311,10 @@ public abstract class Desktop extends JDesktopPane {
 			@Override
 			protected void changeAssociation(Association association) {
 				if (desktopUndoManager != null) {
-					String undoDescription = "Change Association of Table \"" + association.destination.getName() + "\" to \"" + this.association.reversalAssociation.getName() + "\"";
-					String redoDescription = "Change Association of Table \"" + association.destination.getName() + "\" to \"" + association.reversalAssociation.getName() + "\"";
+					String uname = (this.association.reversed? this.association.reversalAssociation : this.association).getName();
+					String rname = (association.reversed? association.reversalAssociation : association).getName();
+					String undoDescription = "Change Association of Table \"" + association.destination.getName() + "\" to \"" + uname + "\"";
+					String redoDescription = "Change Association of Table \"" + association.destination.getName() + "\" to \"" + rname + "\"";
 					desktopUndoManager.beforeModification(undoDescription, redoDescription);
 				}
 				this.association = association;

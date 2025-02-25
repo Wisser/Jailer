@@ -5674,8 +5674,6 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 						associations -> {
 							if (associations != null) {
 								RowBrowser nextRbI = nextRbF;
-								// TODO
-								// TODO test: select initiallySelected?
 								try {
 									Desktop.noArrangeLayoutOnNewTableBrowser = true;
 									desktop.getiFrameStateChangeRenderer().startAtomic();

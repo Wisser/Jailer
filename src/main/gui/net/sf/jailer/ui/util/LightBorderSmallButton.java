@@ -27,6 +27,7 @@ public abstract class LightBorderSmallButton extends SmallButton {
 	
 	private static final Color INVISIBLE = Colors.Color_0_0_0_0;
 	protected boolean freezed = false;
+	private final boolean reactImmediately;
 	
 	public LightBorderSmallButton(Icon icon) {
 		this(icon, false);
@@ -34,10 +35,16 @@ public abstract class LightBorderSmallButton extends SmallButton {
 	
 	public LightBorderSmallButton(Icon icon, boolean reactImmediately) {
 		super(icon, null, true, reactImmediately);
+		this.reactImmediately = reactImmediately;
 	}
 	
 	protected JComponent getFrame() {
 		return this;
+	}
+	
+	@Override
+	protected boolean isReady() {
+		return !reactImmediately || !freezed;
 	}
 	
 	protected void onMouseExited() {
