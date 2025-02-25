@@ -4527,7 +4527,9 @@ public abstract class Desktop extends JDesktopPane {
 	}
 	
     private void removeMetaDataSource(Session session) {
-    	session.setSessionProperty(DataBrowser.class, "removeMetaDataSource", Boolean.TRUE);
+    	if (session != null) {
+    		session.setSessionProperty(DataBrowser.class, "removeMetaDataSource", Boolean.TRUE);
+    	}
     }
 
 	private int iFrameBufferGeneration;
