@@ -57,9 +57,7 @@ public abstract class SmallButton extends JLabel implements PlafAware {
 		addMouseListener(mouseListener = new MouseListener() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				if (entered && isReady() && SwingUtilities.isLeftMouseButton(e)) {
-					doClick(e);
-				}
+				onMouseReleased(e);
 			}
 			@Override
 			public void mousePressed(MouseEvent e) {
@@ -81,17 +79,6 @@ public abstract class SmallButton extends JLabel implements PlafAware {
 					doClick(e);
 				}
 			}
-			
-			boolean sent = false;
-			private void doClick(MouseEvent e) {
-				if (!sent && isEnabled()) {
-					sent = true;
-					UIUtil.invokeLater(() -> {
-						sent = false;
-						onClick(e);
-					});
-				}
-			}
 		});
 	}
 
@@ -103,10 +90,27 @@ public abstract class SmallButton extends JLabel implements PlafAware {
 	public void onNewPlaf() {
 		onMouseExited();
 	}
+	
+	boolean sent = false;
+	private void doClick(MouseEvent e) {
+		if (!sent && isEnabled()) {
+			sent = true;
+			UIUtil.invokeLater(() -> {
+				sent = false;
+				onClick(e);
+			});
+		}
+	}
 
+	public void doClick() {
+		if (isReady()) {
+			doClick(null);
+		}
+	}
+	
 	protected abstract void onClick(MouseEvent e);
 
-	protected void onMouseExited() {
+	public void onMouseExited() {
 		entered = false;
 		Icon theIcon = lafIcon();
 		setIcon(theIcon);
@@ -138,7 +142,7 @@ public abstract class SmallButton extends JLabel implements PlafAware {
 		return icon;
 	}
 
-	protected void onMouseEntered() {
+	public void onMouseEntered() {
 		entered = true;
 		if (silent) {
 			return;
@@ -152,6 +156,12 @@ public abstract class SmallButton extends JLabel implements PlafAware {
 		}
 	}
 	
+	public void onMouseReleased(MouseEvent e) {
+		if (entered && isReady() && SwingUtilities.isLeftMouseButton(e)) {
+			doClick(e);
+		}
+	}
+
 	private Icon closeIcon;
 	private Icon close16Icon;
 	private Icon close16darkIcon;
@@ -165,4 +175,5 @@ public abstract class SmallButton extends JLabel implements PlafAware {
     	close16darkIcon = UIUtil.readImage("/Close-16-1dark.png");
 		closeOverIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/close_over.png"), 1.4);
 	}
+
 }

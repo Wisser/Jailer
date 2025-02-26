@@ -42,41 +42,58 @@ public abstract class LightBorderSmallButton extends SmallButton {
 		return this;
 	}
 	
+	protected JComponent getAdditionalFrame() {
+		return null;
+	}
+	
+	protected Color getSelectedBackgroundColor() {
+		return UIUtil.BG_FLATMOUSEOVER;
+	}
+	
 	@Override
 	protected boolean isReady() {
 		return !reactImmediately || !freezed;
 	}
 	
-	protected void onMouseExited() {
+	public void onMouseExited() {
+		JComponent frame = getFrame();
 		if (!UIUtil.plaf.isFlat) {
 			super.onMouseExited();
-			getFrame().setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED,
+			frame.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED,
 					INVISIBLE, INVISIBLE));
 		} else if (!freezed) {
 			entered = false;
-			getFrame().setOpaque(false);
-			getFrame().setBackground(null);
-			getFrame().setBorder(new javax.swing.border.LineBorder(INVISIBLE, 2, true));
-		}
-	}
-
-	protected void onMouseEntered() {
-		if (isEnabled()) {
-			if (!UIUtil.plaf.isFlat) {
-				super.onMouseEntered();
-				getFrame().setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED, Colors.Color_192_192_192, Colors.Color_128_128_128));
-			} else if (!freezed) {
-				entered = true;
-				getFrame().setOpaque(true);
-				getFrame().setBackground(getSelectedBackgroundColor());
-				getFrame().setBorder(new javax.swing.border.LineBorder(getSelectedBackgroundColor(), 2, true));
+			frame.setOpaque(false);
+			frame.setBackground(null);
+			frame.setBorder(new javax.swing.border.LineBorder(INVISIBLE, 2, true));
+			JComponent additionalFrame = getAdditionalFrame();
+			if (additionalFrame != null) {
+				additionalFrame.setOpaque(false);
+				additionalFrame.setBackground(null);
+				additionalFrame.setBorder(new javax.swing.border.LineBorder(INVISIBLE, 2, true));
 			}
 		}
 	}
 
-	protected Color getSelectedBackgroundColor() {
-		return UIUtil.BG_FLATMOUSEOVER;
+	public void onMouseEntered() {
+		if (isEnabled()) {
+			JComponent frame = getFrame();
+			if (!UIUtil.plaf.isFlat) {
+				super.onMouseEntered();
+				frame.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED, Colors.Color_192_192_192, Colors.Color_128_128_128));
+			} else if (!freezed) {
+				entered = true;
+				frame.setOpaque(true);
+				frame.setBackground(getSelectedBackgroundColor());
+				frame.setBorder(new javax.swing.border.LineBorder(getSelectedBackgroundColor(), 2, true));
+				JComponent additionalFrame = getAdditionalFrame();
+				if (additionalFrame != null) {
+					additionalFrame.setOpaque(true);
+					additionalFrame.setBackground(getSelectedBackgroundColor());
+					additionalFrame.setBorder(new javax.swing.border.LineBorder(getSelectedBackgroundColor(), 2, true));
+				}
+			}
+		}
 	}
-	
 };
 

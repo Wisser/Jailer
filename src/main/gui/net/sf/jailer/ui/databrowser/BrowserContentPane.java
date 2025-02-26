@@ -980,6 +980,38 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		initComponents(); UIUtil.initComponents(this);
 		
 		initOnSelectionButton();
+		on.addMouseListener(new MouseListener() {
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				if (onButton != null) {
+					onButton.onMouseReleased(e);
+				}
+			}
+			@Override
+			public void mouseExited(MouseEvent e) {
+				if (onButton != null) {
+					onButton.onMouseExited();
+				}
+			}
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				if (onButton != null) {
+					onButton.onMouseEntered();
+				}
+			}
+			@Override
+			public void mousePressed(MouseEvent e) {
+				if (onButton != null) {
+					onButton.doClick();
+				}
+			}
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (onButton != null) {
+					onButton.doClick();
+				}
+			}
+		});
 		
 		jToolBar1.setFloatable(false);
 		jToolBar2.setFloatable(false);
@@ -8550,6 +8582,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 					if (UIUtil.plaf.isFlat) {
 						setBackground(UIUtil.BG_FLATSELECTED);
 						setBorder(new LineBorder(UIUtil.BG_FLATSELECTED, 2, true));
+						on.setBackground(UIUtil.BG_FLATSELECTED);
+						on.setBorder(new LineBorder(UIUtil.BG_FLATSELECTED, 2, true));
 						freezed = true;
 						popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
 							@Override
@@ -8562,6 +8596,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 						});
 					}
 					UIUtil.showPopup(this, 0, getHeight(), popup);
+				}
+				protected JComponent getAdditionalFrame() {
+					return on;
+				}
+				
+				protected Color getSelectedBackgroundColor() {
+					return UIUtil.BG_FLATMOUSEOVER;
 				}
 			};
 			
