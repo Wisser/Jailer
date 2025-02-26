@@ -8582,8 +8582,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 					if (UIUtil.plaf.isFlat) {
 						setBackground(UIUtil.BG_FLATSELECTED);
 						setBorder(new LineBorder(UIUtil.BG_FLATSELECTED, 2, true));
+						setOpaque(true);
 						on.setBackground(UIUtil.BG_FLATSELECTED);
 						on.setBorder(new LineBorder(UIUtil.BG_FLATSELECTED, 2, true));
+						on.setOpaque(true);
 						freezed = true;
 						popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
 							@Override

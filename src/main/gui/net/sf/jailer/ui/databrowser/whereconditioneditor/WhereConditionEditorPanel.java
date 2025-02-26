@@ -1081,6 +1081,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 					if (UIUtil.plaf.isFlat) {
 						setBackground(UIUtil.BG_FLATSELECTED);
 						setBorder(new LineBorder(UIUtil.BG_FLATSELECTED, 2, true));
+						setOpaque(true);
 						freezed = true;
 						popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
 							@Override

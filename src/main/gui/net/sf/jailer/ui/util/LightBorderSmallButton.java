@@ -55,6 +55,7 @@ public abstract class LightBorderSmallButton extends SmallButton {
 		return !reactImmediately || !freezed;
 	}
 	
+	@Override
 	public void onMouseExited() {
 		JComponent frame = getFrame();
 		if (!UIUtil.plaf.isFlat) {
@@ -75,6 +76,7 @@ public abstract class LightBorderSmallButton extends SmallButton {
 		}
 	}
 
+	@Override
 	public void onMouseEntered() {
 		if (isEnabled()) {
 			JComponent frame = getFrame();
