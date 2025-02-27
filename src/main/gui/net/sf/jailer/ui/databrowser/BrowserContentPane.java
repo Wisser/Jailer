@@ -8546,7 +8546,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		
 		List<Association> assocs = new ArrayList<Association>();
 		for (Association a: association.source.associations) {
-			if (a.destination == association.destination && a != association) {
+			if (a.destination == association.destination) {
 				assocs.add(a);
 			}
 		}
@@ -8563,6 +8563,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 							uc = uc.substring(0, MAX_COND_LENGTH) + "...";
 						}
 						JMenuItem item = new JMenuItem(uc);
+						item.setEnabled(a != association);
 						item.setToolTipText(assocToolTip(a.getUnrestrictedJoinCondition(), a));
 						item.setIcon(UIUtil.scaleIcon(this, blueDotIcon));
 						if (a.isInsertDestinationBeforeSource()) {
