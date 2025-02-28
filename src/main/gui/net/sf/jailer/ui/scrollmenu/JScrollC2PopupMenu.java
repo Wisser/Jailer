@@ -490,6 +490,7 @@ public class JScrollC2PopupMenu extends JPopupMenu {
 			dim.width += sbw;
 			
 			Insets insets = parent.getInsets();
+			dim.width = dim.width + insets.left + insets.right;
 			dim.height = Math.min(dim.height + insets.top + insets.bottom,
 					visibleAmount);
 			
@@ -520,6 +521,7 @@ public class JScrollC2PopupMenu extends JPopupMenu {
 			}
 
 			Insets insets = parent.getInsets();
+			dim.width = dim.width + insets.left + insets.right;
 			dim.height = Math.min(dim.height + insets.top + insets.bottom,
 					visibleAmount);
 
