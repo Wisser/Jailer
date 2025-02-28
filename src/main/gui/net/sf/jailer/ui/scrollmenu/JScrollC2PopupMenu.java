@@ -575,7 +575,7 @@ public class JScrollC2PopupMenu extends JPopupMenu {
 					Dimension pref = comp.getPreferredSize();
 					if (l % 2 != 0 && pre != null) {
 						prefHeight = pref.height;
-						comp.setBounds(x, y, width - C2WIDTH, prefHeight);
+						comp.setBounds(x, y, width, prefHeight);
 					} else {
 						comp.setBounds(x + width - pref.width - 12, y, pref.width, prefHeight);
 						y += prefHeight;
