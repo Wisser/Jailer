@@ -2547,7 +2547,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
 	private void initConditionEditor() {
 		UIUtil.setLeadingComponent(andCondition, conditionEditorButton);
-		if (UIUtil.plaf.isFlat &&  andCondition.getEditor() != null && (andCondition.getEditor().getEditorComponent() instanceof JTextField)) {
+		if (UIUtil.plaf.isFlat && andCondition.getEditor() != null && (andCondition.getEditor().getEditorComponent() instanceof JTextField)) {
 			JTextField f = ((JTextField) andCondition.getEditor().getEditorComponent());
 			JButton clearButton = new JButton();
 			clearButton.setText(null);
@@ -6507,6 +6507,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
         jPanel9 = new javax.swing.JPanel();
         jPanel14 = new javax.swing.JPanel();
         whereLabel = new javax.swing.JLabel();
+        gapPanel = new javax.swing.JPanel();
 
         andCondition.setEditable(true);
         andCondition.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
@@ -7234,13 +7235,21 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
         jPanel14.setLayout(new java.awt.GridBagLayout());
 
-        whereLabel.setText(" Where");
+        whereLabel.setText(" Where ");
         jPanel14.add(whereLabel, new java.awt.GridBagConstraints());
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 8;
         menuPanel.add(jPanel14, gridBagConstraints);
+
+        gapPanel.setLayout(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 3);
+        menuPanel.add(gapPanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -7322,6 +7331,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
     public javax.swing.JPanel findColumnsPanel;
     private javax.swing.JLabel from;
     private javax.swing.JPanel fullTextSearchContainerPanel;
+    private javax.swing.JPanel gapPanel;
     public javax.swing.JLabel hAlignButtonLabel;
     public javax.swing.JPanel hAlignButtonPanel;
     private javax.swing.JLabel jLabel1;
@@ -8550,6 +8560,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 				assocs.add(a);
 			}
 		}
+		gapPanel.setVisible(true);
 		if (assocs.size() > 1) {
 			assocs.sort((a, b) -> a.getUnrestrictedJoinCondition().compareToIgnoreCase(b.getUnrestrictedJoinCondition()));
 			onButton = new LightBorderSmallButton(modelIcon, true) {
@@ -8609,11 +8620,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 				}
 			};
 			
-			onButton.setText("on");
+			onButton.setText("<html><small>&nbsp;</small>on</html>");
 			onButton.setHorizontalAlignment(JLabel.LEFT);
-			onButton.setHorizontalTextPosition(JLabel.LEADING);
+			onButton.setHorizontalTextPosition(JLabel.LEFT);
 			onButton.setToolTipText("Change association to this table");
 			UIUtil.replace(onLabel, onButton);
+			gapPanel.setVisible(false);
 		}
 	}
 
