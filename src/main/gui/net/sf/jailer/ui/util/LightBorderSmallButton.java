@@ -28,14 +28,21 @@ public abstract class LightBorderSmallButton extends SmallButton {
 	private static final Color INVISIBLE = Colors.Color_0_0_0_0;
 	protected boolean freezed = false;
 	private final boolean reactImmediately;
+	private final int borderThickness;
 	
 	public LightBorderSmallButton(Icon icon) {
-		this(icon, false);
+		this(icon, false, 2);
 	}
 	
 	public LightBorderSmallButton(Icon icon, boolean reactImmediately) {
+		this(icon, reactImmediately, 2);
+	}
+	
+	public LightBorderSmallButton(Icon icon, boolean reactImmediately, int borderThickness) {
 		super(icon, null, true, reactImmediately);
 		this.reactImmediately = reactImmediately;
+		this.borderThickness = borderThickness;
+		onMouseExited();
 	}
 	
 	protected JComponent getFrame() {
@@ -66,12 +73,16 @@ public abstract class LightBorderSmallButton extends SmallButton {
 			entered = false;
 			frame.setOpaque(false);
 			frame.setBackground(null);
-			frame.setBorder(new javax.swing.border.LineBorder(INVISIBLE, 2, true));
+			if (borderThickness > 0) {
+				frame.setBorder(new javax.swing.border.LineBorder(INVISIBLE, borderThickness, true));
+			}
 			JComponent additionalFrame = getAdditionalFrame();
 			if (additionalFrame != null) {
 				additionalFrame.setOpaque(false);
 				additionalFrame.setBackground(null);
-				additionalFrame.setBorder(new javax.swing.border.LineBorder(INVISIBLE, 2, true));
+				if (borderThickness > 0) {
+					additionalFrame.setBorder(new javax.swing.border.LineBorder(INVISIBLE, borderThickness, true));
+				}
 			}
 		}
 	}
@@ -87,12 +98,16 @@ public abstract class LightBorderSmallButton extends SmallButton {
 				entered = true;
 				frame.setOpaque(true);
 				frame.setBackground(getSelectedBackgroundColor());
-				frame.setBorder(new javax.swing.border.LineBorder(getSelectedBackgroundColor(), 2, true));
+				if (borderThickness > 0) {
+					frame.setBorder(new javax.swing.border.LineBorder(getSelectedBackgroundColor(), borderThickness, true));
+				}
 				JComponent additionalFrame = getAdditionalFrame();
 				if (additionalFrame != null) {
 					additionalFrame.setOpaque(true);
 					additionalFrame.setBackground(getSelectedBackgroundColor());
-					additionalFrame.setBorder(new javax.swing.border.LineBorder(getSelectedBackgroundColor(), 2, true));
+					if (borderThickness > 0) {
+						additionalFrame.setBorder(new javax.swing.border.LineBorder(getSelectedBackgroundColor(), borderThickness, true));
+					}
 				}
 			}
 		}
