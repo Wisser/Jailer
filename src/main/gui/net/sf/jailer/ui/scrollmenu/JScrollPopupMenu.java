@@ -39,6 +39,8 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 
 import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
@@ -68,6 +70,26 @@ public class JScrollPopupMenu extends JPopupMenu {
 
 		if (!noSearchFieldNorScrollbar) {
 			super.add(getScrollBar());
+			addPopupMenuListener(new PopupMenuListener() {
+				private String searchText = null;
+				
+				@Override
+				public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+					if (searchText != null) {
+						prevNothingFound = true;
+						search(searchText);
+					}
+				}
+				
+				@Override
+				public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+					searchText = searchField.getText();
+					search("");
+				}
+				@Override
+				public void popupMenuCanceled(PopupMenuEvent e) {
+				}
+			});
 		}
 		
 		addMouseWheelListener(new MouseWheelListener() {

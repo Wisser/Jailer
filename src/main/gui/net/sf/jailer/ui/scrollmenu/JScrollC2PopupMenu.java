@@ -36,6 +36,8 @@ import javax.swing.MenuSelectionManager;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 
 import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
@@ -57,7 +59,27 @@ public class JScrollC2PopupMenu extends JPopupMenu {
 	public JScrollC2PopupMenu(String label) {
 		super(label);
 		setLayout(new ScrollPopupMenuLayout());
-
+		addPopupMenuListener(new PopupMenuListener() {
+			private String searchText = null;
+			
+			@Override
+			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+				if (searchText != null) {
+					prevNothingFound = true;
+					search(searchText);
+				}
+			}
+			
+			@Override
+			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+				searchText = searchField.getText();
+				search("");
+			}
+			@Override
+			public void popupMenuCanceled(PopupMenuEvent e) {
+			}
+		});
+		
 		super.add(getScrollBar());
 		addMouseWheelListener(new MouseWheelListener() {
 			@Override
