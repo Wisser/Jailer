@@ -1,3 +1,6 @@
+16.5.9
+ - Minor improvements to UI design of data browser
+ 
 16.5.8
  - Data browser
    - The path search dialog is now non-modal. This means that changes are immediately visible and can be made as often as required.
