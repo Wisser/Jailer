@@ -573,10 +573,33 @@ public class JScrollC2PopupMenu extends JPopupMenu {
 			}
 
 			y -= position;
-			Component pre = null;
+			int maxPrefWidth = 0;
 			int l = 0;
-			int prefHeight = 22;
 			boolean skip = false;
+			Component pre = null;
+			for (Component comp : parent.getComponents()) {
+				if (skip) {
+					skip = false;
+					continue;
+				}
+				if ((comp instanceof JMenuItem) && !comp.isVisible()) {
+					skip = true;
+					continue;
+				}
+				if (!((comp instanceof JTextField || comp instanceof JSeparator) && comp.isVisible()) && (!(comp instanceof JScrollBar) && comp.isVisible())) {
+					++l;
+					if (!(l % 2 != 0 && pre != null)) {
+						Dimension pref = comp.getPreferredSize();
+						maxPrefWidth = maxPrefWidth == 0? pref.width : Math.max(maxPrefWidth, pref.width);
+					}
+				}
+				pre = comp;
+			}
+			
+			pre = null;
+			l = 0;
+			int prefHeight = 22;
+			skip = false;
 			for (Component comp : parent.getComponents()) {
 				if (skip) {
 					skip = false;
@@ -597,9 +620,9 @@ public class JScrollC2PopupMenu extends JPopupMenu {
 					Dimension pref = comp.getPreferredSize();
 					if (l % 2 != 0 && pre != null) {
 						prefHeight = pref.height;
-						comp.setBounds(x, y, width, prefHeight);
+						comp.setBounds(x, y, width - maxPrefWidth - 12, prefHeight);
 					} else {
-						comp.setBounds(x + width - pref.width - 12, y, pref.width, prefHeight);
+						comp.setBounds(x + width - maxPrefWidth - 12, y, maxPrefWidth, prefHeight);
 						y += prefHeight;
 					}
 				}

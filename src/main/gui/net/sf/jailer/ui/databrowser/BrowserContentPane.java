@@ -2633,7 +2633,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		        		if (i >= 0 && i < tab.getColumns().size()) {
 		        			Column col = tab.getColumns().get(i);
 		        			if (col != null && col.name != null) {
-								nullContraint = col.isNullable? "nullable" : "not null";
+								nullContraint = col.toSQL(null).substring(col.name.length()).trim() + " " + (col.isNullable? "nullable" : "not null");
 			        			if (tab.getName() != null && tab.getName().toUpperCase().equals(tab.getName())) {
 			        				nullContraint = nullContraint.toUpperCase();
 			        			}
@@ -4477,6 +4477,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
 			gridBagConstraints.weightx = 1.0;
 			nav.getPopupMenu().add(countLabel, gridBagConstraints);
+			
+			countLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+			countLabel.setForeground(Colors.Color_0_80_200);
 		}
 		if (l > 0) {
 			popup.add(nav);
