@@ -2633,8 +2633,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		        		if (i >= 0 && i < tab.getColumns().size()) {
 		        			Column col = tab.getColumns().get(i);
 		        			if (col != null && col.name != null) {
-								nullContraint = col.toSQL(null).substring(col.name.length()).trim() + " " + (col.isNullable? "nullable" : "not null");
-			        			if (tab.getName() != null && tab.getName().toUpperCase().equals(tab.getName())) {
+								nullContraint = col.isNullable? "nullable" : "not null";
+								if (BrowserContentPane.this.getQueryBuilderDialog() != null) { // SQL Console
+									nullContraint = "</i>" + col.toSQL(null).substring(col.name.length()).trim() + "<i> " + nullContraint;
+								}
+								if (tab.getName() != null && tab.getName().toUpperCase().equals(tab.getName())) {
 			        				nullContraint = nullContraint.toUpperCase();
 			        			}
 		        			}

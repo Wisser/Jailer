@@ -359,6 +359,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 						textTable = UIUtil.fromHTMLFragment(ntPair[0].replaceAll("<[^>]+>", "")).trim();
 					}
 					l.setText(text);
+					
 					if (alternativeColumnLabelsFull != null && alternativeColumnLabelsFull.length > columnIndexAtI) {
 						l.setToolTipText(alternativeColumnLabelsFull[columnIndexAtI]);
 					} else {
@@ -419,6 +420,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 					        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
 					        gridBagConstraints.fill = GridBagConstraints.BOTH;
 					        content.add(panel2, gridBagConstraints);
+					        panel2.setToolTipText(l.getToolTipText());
 					        lCont = panel;
 						} else {
 							l.setText(shortText(text.replaceAll("<[^>]+>", "")));
@@ -426,6 +428,20 @@ public abstract class DetailsView extends javax.swing.JPanel {
 					}
 				} else {
 					l.setText(textColumn = shortText(c.name != null? c.name : ""));
+					if (c.name != null) {
+						String nullContraint = null;
+						if (table != null && table.getName() != null) {
+							Column col = c;
+							nullContraint = col.isNullable ? "nullable" : "not null";
+							nullContraint = "</i>" + col.toSQL(null).substring(col.name.length()).trim() + "<i> "
+									+ nullContraint;
+							if (table.getName() != null && table.getName().toUpperCase().equals(table.getName())) {
+								nullContraint = nullContraint.toUpperCase();
+							}
+						}
+						l.setToolTipText("<html>" + UIUtil.toHTMLFragment(c.name, 0) + "<hr>" + "<font color="
+								+ Colors.HTMLColor_808080 + "> <i>" + nullContraint + "</i></font></html>");
+					}
 				}
 				l.setFont(nonbold);
 				gridBagConstraints = new java.awt.GridBagConstraints();
@@ -800,6 +816,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 				rowsTable.setAutoCreateRowSorter(true);
 				UIUtil.invokeLater(() -> tabContentPanel.updateTextView(rowsTable));
 			}
+			
 		} finally {
 			browserContentCellEditor.setInDetailsView(false);
 		}
