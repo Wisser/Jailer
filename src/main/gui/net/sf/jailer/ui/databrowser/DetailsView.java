@@ -361,7 +361,19 @@ public abstract class DetailsView extends javax.swing.JPanel {
 					l.setText(text);
 					
 					if (alternativeColumnLabelsFull != null && alternativeColumnLabelsFull.length > columnIndexAtI) {
-						l.setToolTipText(alternativeColumnLabelsFull[columnIndexAtI]);
+						String nullContraint = null;
+						if (c != null && c.name != null) {
+							nullContraint = c.isNullable ? "nullable" : "not null";
+							if (c.name.toUpperCase().equals(c.name)) {
+		        				nullContraint = nullContraint.toUpperCase();
+		        			}
+						}
+						String ttt = alternativeColumnLabelsFull[columnIndexAtI];
+						if (ttt.startsWith("<html") && nullContraint != null) {
+							ttt = ttt.replace("</html>", "<font color=" + Colors.HTMLColor_808080 + "> <i>"
+									+ nullContraint + "</i></font></html>");
+						}
+						l.setToolTipText(ttt);
 					} else {
 						l.setToolTipText(altName);
 					}
@@ -375,6 +387,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 							tab.setOpaque(true);
 							JLabel sep = new JLabel("  ");
 							sep.setToolTipText(l.getToolTipText());
+							UIUtil.initToolTip(sep, tab);
 							tableNames.add(tab);
 							JLabel fTab = tab;
 							removeTableNames.add(() -> {
@@ -727,6 +740,12 @@ public abstract class DetailsView extends javax.swing.JPanel {
 					labels.add(f);
 				}
 				++i;
+				if (tab != null) {
+					UIUtil.initToolTip(tab);
+					UIUtil.initToolTip(l, tab);
+				} else {
+					UIUtil.initToolTip(l);
+				}
 			}
 			editModeToggleButton.setVisible(hasEditableColumn);
 			JPanel p = new JPanel();

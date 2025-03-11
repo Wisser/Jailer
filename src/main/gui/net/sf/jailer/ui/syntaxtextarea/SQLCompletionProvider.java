@@ -1232,12 +1232,16 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                                     }
                                     if (!"=".equals(keyword)) {
                                     	if (caretLevel != null && caretLevel == level && !afterFirstSetOperator || isDml && level == 0) {
-                                    		isStarRelevantPerAlias.put(alias, isStarRelevant);
+                                    		if (!alias.matches("\\+\\d+")) {
+                                    			isStarRelevantPerAlias.put(alias, isStarRelevant);
+                                    		}
                                     	}
                                         if (mdTable != null) {
 		                                    Integer prevLevel = levelPerAlias.get(alias);
 		                                    if (prevLevel == null || prevLevel < level) {
-		                                        aliases.put(alias, mdTable);
+	                                    		if (!alias.matches("\\+\\d+")) {
+	                                    			aliases.put(alias, mdTable);
+	                                    		}
 		                                        levelPerAlias.put(alias, level);
 		                                        tokenStack.clear();
 		                                    }
