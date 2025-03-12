@@ -2682,7 +2682,7 @@ public class UIUtil {
 		return false;
 	}
 
-	private static Map<JComponent, Runnable> resetBorderMap = new WeakHashMap<JComponent, Runnable>();
+	private static Runnable resetBorder;
 	
 	public static void initToolTip(JComponent c, JComponent proxy) {
 		if (c.getToolTipText() != null && !"no-tt-indicator".equals(c.getName())) {
@@ -2704,8 +2704,7 @@ public class UIUtil {
 
 				@Override
 				public void mouseExited(MouseEvent e) {
-					Runnable resetBorder = resetBorderMap.get(c);
-					if (resetBorder != null) {
+					if (resetBorder != null && proxy == null) {
 						resetBorder.run();
 					}
 				}
@@ -2715,18 +2714,17 @@ public class UIUtil {
 					invokeLater(2, () -> {
 						Border origBorder = indicatorComponent.getBorder();
 						if (!(origBorder instanceof ToolTipBorder) && !isToolTipVisible()) {
-							Runnable runnable = resetBorderMap.get(c);
-							if (runnable != null && proxy == null) {
-								runnable.run();
+							if (resetBorder != null && proxy == null) {
+								resetBorder.run();
 							}
 							Border currentTTBorder;
 							indicatorComponent.setBorder(currentTTBorder = new ToolTipBorder(origBorder));
-							resetBorderMap.put(c, () -> {
+							resetBorder = () -> {
 								if (indicatorComponent.getBorder() == currentTTBorder) {
 									indicatorComponent.setBorder(origBorder);
 								}
-								resetBorderMap.put(c, null);
-							});
+								resetBorder = null;
+							};
 							Runnable reset = () -> {
 								if (indicatorComponent.getBorder() == currentTTBorder) {
 									indicatorComponent.setBorder(origBorder);

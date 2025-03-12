@@ -387,7 +387,6 @@ public abstract class DetailsView extends javax.swing.JPanel {
 							tab.setOpaque(true);
 							JLabel sep = new JLabel("  ");
 							sep.setToolTipText(l.getToolTipText());
-							UIUtil.initToolTip(sep, tab);
 							tableNames.add(tab);
 							JLabel fTab = tab;
 							removeTableNames.add(() -> {
@@ -740,12 +739,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 					labels.add(f);
 				}
 				++i;
-				if (tab != null) {
-					UIUtil.initToolTip(tab);
-					UIUtil.initToolTip(l, tab);
-				} else {
-					UIUtil.initToolTip(l);
-				}
+				UIUtil.initToolTip(l);
 			}
 			editModeToggleButton.setVisible(hasEditableColumn);
 			JPanel p = new JPanel();
