@@ -37,6 +37,7 @@ import net.sf.jailer.ui.UIUtil.PlafAware;
 import net.sf.jailer.ui.databrowser.DataBrowser;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithTheme;
 import net.sf.jailer.ui.util.HSLColor;
+import net.sf.jailer.util.LogUtil;
 
 /**
  * PLaF aware manager of UI colors.
@@ -518,10 +519,14 @@ public class Colors {
 					switchBack = true;
 				}
 				UIUtil.traverse(w, null, c-> null, (c, o) -> null, (t, c) -> {
-					if (c instanceof PlafAware) {
-						((PlafAware) c).onNewPlaf();
-					} else if (c instanceof RSyntaxTextAreaWithTheme) {
-						((RSyntaxTextAreaWithTheme) c).initTheme();
+					try {
+						if (c instanceof PlafAware) {
+							((PlafAware) c).onNewPlaf();
+						} else if (c instanceof RSyntaxTextAreaWithTheme) {
+							((RSyntaxTextAreaWithTheme) c).initTheme();
+						}
+					} catch (Throwable th) {
+						LogUtil.warn(th);
 					}
 				});
 				w.repaint();
