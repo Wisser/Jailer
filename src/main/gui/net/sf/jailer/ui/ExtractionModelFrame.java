@@ -310,8 +310,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 	 * Updates state of some menu items.
 	 */
 	private void updateMenuItems() {
-		connectDb.setSelected(dbConnectionDialog.isConnected);
-		disconnectDb.setEnabled(dbConnectionDialog.isConnected);
+		connectDb.setSelected(dbConnectionDialog != null && dbConnectionDialog.isConnected);
+		disconnectDb.setEnabled(dbConnectionDialog != null && dbConnectionDialog.isConnected);
 		extractionModelEditor.connectivityState.setText(getConnectivityState());
 		extractionModelEditor.connectivityState.setIcon(getDBMSLogo());
 		

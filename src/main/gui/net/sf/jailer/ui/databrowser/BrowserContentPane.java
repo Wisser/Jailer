@@ -877,6 +877,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	private int initialRowHeight;
 	private boolean useInheritedBlockNumbers;
 	boolean ignoreSortKey = false;
+	private boolean blockNumbersIgnored;
 	public final FullTextSearchPanel fullTextSearchPanel;
 
 	public static class RowsClosure {
@@ -1317,6 +1318,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 					}
 				}
 
+				blockNumbersIgnored = false;
 				if (!(!useInheritedBlockNumbers && BrowserContentPane.this.association != null && BrowserContentPane.this.association.isInsertDestinationBeforeSource())) {
 					g2d.setPaint(null);
 					g2d.setStroke(new BasicStroke(1));
@@ -1352,6 +1354,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 						}
 						if (count) {
 							if (c == all) {
+								blockNumbersIgnored = true;
 								break;
 							}
 						}
@@ -6016,7 +6019,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
 					boolean hasFocus, int row, int column) {
 				try {
-					dontPaintSortIcon = ignoreSortKey;
+					dontPaintSortIcon = ignoreSortKey || blockNumbersIgnored;
 					int convertedColumnIndex = rowsTable.convertColumnIndexToModel(column);
 					Color fg = pkColumns.contains(convertedColumnIndex) || (pkColumnsConsole.contains(convertedColumnIndex) /* && !fkColumnsConsole.contains(convertedColumnIndex) */) ? UIUtil.FG_PK :
 						fkColumns.contains(convertedColumnIndex) || fkColumnsConsole.contains(convertedColumnIndex) ? UIUtil.FG_FK : null;
