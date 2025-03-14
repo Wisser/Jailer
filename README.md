@@ -73,7 +73,7 @@ Unless you want to use your own Java installation. Or also if you want to use th
 To start the tool from the unpacked zip:
 
   - On windows platform execute "Jailer.exe". You can also start "jailerGUI.bat".
-  - On Unix/Linux platform execute the script "jailerGUI.sh" or use "java -jar jailer.jar"
+  - On Unix/Linux/macOS platform execute the script "jailerGUI.sh" or use "java -jar jailer.jar"
 
 
 ## Building
