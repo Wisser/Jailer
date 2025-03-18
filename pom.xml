@@ -106,6 +106,15 @@
 
         <resources>
             <resource>
+                <directory>${project.basedir}/src/main/engine</directory>
+                <includes>
+                    <include>**/*.json</include>
+                    <include>**/*.csv</include>
+                    <include>**/*.sql</include>
+                    <include>**/*.jm</include>
+                </includes>
+            </resource>
+            <resource>
                 <directory>${project.basedir}/src/main/gui</directory>
                 <includes>
                     <include>**/*.png</include>
@@ -114,6 +123,10 @@
                     <include>**/*.xml</include>
                     <include>**/*.gif</include>
                     <include>**/*.html</include>
+                    <include>**/*.json</include>
+                    <include>**/*.csv</include>
+                    <include>**/*.sql</include>
+                    <include>**/*.jm</include>
                 </includes>
             </resource>
         </resources>
