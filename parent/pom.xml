@@ -103,11 +103,28 @@
                 <artifactId>tablefilter-swing</artifactId>
                 <version>5.5.4</version>
             </dependency>
+
+            <!-- custom jar files, we don't have them in maven central -->
+
             <dependency>
                 <groupId>prefuse</groupId>
                 <artifactId>prefuse</artifactId>
                 <version>0</version>
             </dependency>
+            <dependency>
+                <groupId>com.github.vertical-blank</groupId>
+                <artifactId>sdoc</artifactId>
+                <version>0.5.0-beta</version>
+            </dependency>
+
+            <!-- DB drivers -->
+
+            <dependency>
+                <groupId>com.mysql</groupId>
+                <artifactId>mysql-connector-j</artifactId>
+                <version>9.2.0</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
