@@ -9,7 +9,6 @@
         <relativePath>./parent/pom.xml</relativePath>
     </parent>
 
-    <groupId>com.github.wisser.jailer</groupId>
     <artifactId>jailer-gui</artifactId>
     <packaging>jar</packaging>
     <name>Jailer UI</name>
