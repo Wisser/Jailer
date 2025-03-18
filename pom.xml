@@ -14,6 +14,7 @@
     <name>Jailer UI</name>
 
     <properties>
+        <exec.mainClass>net.sf.jailer.ui.JailerUI</exec.mainClass>
     </properties>
 
     <dependencies>
