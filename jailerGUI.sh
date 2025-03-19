@@ -5,9 +5,6 @@ cd $instdir
  
 LIB=target/lib
 
-# JDBC-driver
-# CP=$CP:<driver-jar>
-
 # configuration files in the config directory
 CLASSPATH="${CLASSPATH}:config"
 
@@ -19,6 +16,6 @@ done
 # the libraries
 CLASSPATH="${CLASSPATH}:target/jailer-gui-1.0.0-SNAPSHOT.jar"
 
-# echo $CP
+# echo "${CLASSPATH}"
 
 java -Xmx1200M -Djava.util.Arrays.useLegacyMergeSort=true -cp "${CLASSPATH}" net.sf.jailer.ui.JailerUI "$@"
