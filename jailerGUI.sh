@@ -9,16 +9,16 @@ LIB=target/lib
 # CP=$CP:<driver-jar>
 
 # configuration files in the config directory
-CLASSPATH=$CLASSPATH:config
+CLASSPATH="${CLASSPATH}:config"
 
 # Add all .jar files from the lib directory to the CLASSPATH
 for jar in $LIB/*.jar; do
-  CLASSPATH="$CLASSPATH:$jar"
+  CLASSPATH="${CLASSPATH}:$jar"
 done
 
 # the libraries
-CLASSPATH=$CLASSPATH:target/jailer-gui-1.0.0-SNAPSHOT.jar
+CLASSPATH="${CLASSPATH}:target/jailer-gui-1.0.0-SNAPSHOT.jar"
 
 # echo $CP
 
-java -Xmx1200M -Djava.util.Arrays.useLegacyMergeSort=true -cp $CLASSPATH net.sf.jailer.ui.JailerUI "$@"
+java -Xmx1200M -Djava.util.Arrays.useLegacyMergeSort=true -cp "${CLASSPATH}" net.sf.jailer.ui.JailerUI "$@"
