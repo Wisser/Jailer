@@ -2552,6 +2552,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
 	private void initConditionEditor() {
 		UIUtil.setLeadingComponent(andCondition, conditionEditorButton);
+		conditionEditorButton.setFocusable(false);
 		if (UIUtil.plaf.isFlat && andCondition.getEditor() != null && (andCondition.getEditor().getEditorComponent() instanceof JTextField)) {
 			JTextField f = ((JTextField) andCondition.getEditor().getEditorComponent());
 			JButton clearButton = new JButton();
