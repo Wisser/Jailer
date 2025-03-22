@@ -401,7 +401,8 @@ public class DMLTransformer extends AbstractResultSetReader {
 						int mdColumnType = getMetaData(resultSet).getColumnType(i);
 						if (mdColumnType == Types.TIME || (content == null && ((currentDialect.getUpdateMode() == UPDATE_MODE.PG || !generateUpsertStatementsWithoutNulls)))) {
 							// explicit cast needed
-							if (mdColumnType == Types.OTHER) {
+							if (mdColumnType == Types.OTHER
+								|| content == null) { // ResultSetMetaData of the Postgres JDBC driver (42.7.5) falsely claims that the column for “select null” is of type “text”. See https://github.com/Wisser/Jailer/issues/120
 								String type = null;
 								if (!columnTypeFromDatamodel.containsKey(i)) {
 									for (Column c: table.getColumns()) {
