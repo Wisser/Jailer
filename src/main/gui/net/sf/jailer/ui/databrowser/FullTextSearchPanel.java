@@ -758,9 +758,13 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
     private javax.swing.JButton nextButton;
     private javax.swing.JButton prevButton;
     private javax.swing.JTextField searchField;
-    private javax.swing.JLabel warnLabel;
+	private javax.swing.JLabel warnLabel;
     // End of variables declaration//GEN-END:variables
     
+    public javax.swing.JTextField getSearchField() {
+		return searchField;
+	}
+
     private static final long serialVersionUID = 2251485971289829275L;
 	
 	private ImageIcon closeIcon;

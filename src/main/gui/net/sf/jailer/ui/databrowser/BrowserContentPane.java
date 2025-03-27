@@ -1432,6 +1432,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
 		this.fullTextSearchPanel = new FullTextSearchPanel(rowsTable);
 		fullTextSearchContainerPanel.add(fullTextSearchPanel);
+		registerAccelerator(KS_EDIT, new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setEditMode(!isEditMode);
+				updateTableModel();
+			}
+		}, fullTextSearchPanel.getSearchField());
 
 		jLayeredPane2.remove(rowsTableScrollPane);
 		rowsTableScrollPane = new JScrollPane() {
