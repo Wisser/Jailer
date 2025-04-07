@@ -3,7 +3,7 @@
 instdir=`dirname $0`
 cd $instdir
  
-LIB=target/lib
+LIB=jailer-gui/target/lib
 
 # configuration files in the config directory
 CLASSPATH="${CLASSPATH}:config"
@@ -13,8 +13,7 @@ for jar in $LIB/*.jar; do
   CLASSPATH="${CLASSPATH}:$jar"
 done
 
-# the libraries
-CLASSPATH="${CLASSPATH}:target/jailer-gui-1.0.0-SNAPSHOT.jar"
+CLASSPATH="${CLASSPATH}:jailer-gui/target/jailer-gui-1.0.0-SNAPSHOT.jar"
 
 # echo "${CLASSPATH}"
 
