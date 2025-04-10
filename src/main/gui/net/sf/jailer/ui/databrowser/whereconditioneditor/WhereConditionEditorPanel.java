@@ -97,7 +97,6 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
-import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.BrowserContentCellEditor;
 import net.sf.jailer.ui.databrowser.DBConditionEditor;
 import net.sf.jailer.ui.databrowser.Desktop;
@@ -779,7 +778,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		return matcher;
 	}
 
-	public static final String VALUE_REGEX = "((?:(?:0x(?:\\d|[a-f])+)|(?:'(?:[^']|'')*')|(?:(?:[\\+\\-]\\s*)?(:?\\.|\\d)+)|(?:true|false)|(?:\\w+\\s*\\([^\\)\\(]*\\)))(?:\\s*\\:\\:\\s*(?:\\w+))?)";
+	public static final String VALUE_REGEX = "((?:(?:0x(?:\\d|[a-f])+)|(?:\\w?'(?:[^']|'')*')|(?:(?:[\\+\\-]\\s*)?(:?\\.|\\d)+)|(?:true|false)|(?:\\w+\\s*\\([^\\)\\(]*\\)))(?:\\s*\\:\\:\\s*(?:\\w+))?)";
 	
 	protected String createComparisionRE(boolean noAlias, Column column, String condition) {
 		String quoteRE = "[\"\u00B4\\[\\]`]";
@@ -798,7 +797,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	}
 
 	protected String columnNameToRegExp(String name) {
-		return Pattern.quote(Quoting.staticUnquote(name));
+		return Pattern.quote(Quoting.staticUnquote(name)) + "(?:(?:\\s*\\:\\:\\s*text)?)";
 	}
     
 	private String toValue(String sqlValue, int columnIndex) {
@@ -827,12 +826,23 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						inlineViewStyle.head(columnNames) +
 						inlineViewStyle.item(new String[] { sqlValue }, columnNames, 0) +
 						inlineViewStyle.terminator("vt", columnNames);
-				session.executeQuery(sql, new AbstractResultSetReader() {
+				AbstractResultSetReader reader = new AbstractResultSetReader() {
 					@Override
 					public void readCurrentRow(ResultSet resultSet) throws SQLException {
 						result.append(cellEditor.cellContentToText(columnIndex, getCellContentConverter(resultSet, session, session.dbms).getObject(resultSet, 1)));
 					}
-				});
+				};
+				try {
+					session.executeQuery(sql, reader);
+				} catch (Throwable t) {
+					// retry, maybe connection was invalid
+					result.setLength(0);
+					try {
+						session.executeQuery(sql, reader);
+					} catch (Throwable t2) {
+						throw t;
+					}
+				}
 				value = result.toString();
 			} catch (Throwable t) {
 				if (!(t instanceof CancellationException)) {
@@ -1837,7 +1847,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		});
 		String initialSearchText = valueTextField.getText();
 		searchPanel.setInitialValue(initialSearchText);
-		searchPanel.setStatus("loading existing values...", null);
+		searchPanel.setStatus("loading existing values...", null, null);
 		JPanel bottom = new JPanel(new GridBagLayout());
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1953,7 +1963,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 					return;
 				} catch (Throwable e) {
 					UIUtil.invokeLater(() -> {
-						searchPanel.setStatus("error loading values", UIUtil.scaleIcon(searchPanel, warnIcon));
+						searchPanel.setStatus("error loading values", e.getMessage(), UIUtil.scaleIcon(searchPanel, warnIcon));
 						UIUtil.stopDW();
 					});
 					return;
@@ -2068,9 +2078,10 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 								(" (" + (incomplete[0] % MAX_NUM_DISTINCTEXISTINGVALUES) 
 								+ " missing"
 								+ (incomplete[0] > MAX_NUM_DISTINCTEXISTINGVALUES? ", multi-line text" : "") + ")")),
+								null,
 								UIUtil.scaleIcon(searchPanel, warnIcon));
 				} else {
-					searchPanel.setStatus(null, null);
+					searchPanel.setStatus(null, null, null);
 				}
 				if (!table.isDistinct()) {
 					boolean containsIsNull = finalDistinctExisting.containsKey(IS_NULL);
@@ -2246,7 +2257,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	private void loadValues(Comparison comparison, Object cancellationContext, int[] incomplete, boolean[] withNull, String condition,
 			final int MAX_TEXT_LENGTH, LinkedHashMap<String, Integer> result, String tabName, int columnIndex,
 			String extJoin, boolean orderBy) throws SQLException {
-		String columnName = comparison.column.name;
+		String columnName = CellContentConverter.prepareForComparison(session, comparison.column);
 		if (tableAlias != null) {
 			columnName = tableAlias + "." + columnName;
 			tabName += " " + tableAlias;
@@ -2456,7 +2467,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						} catch (BadLocationException e) {
 							prefix = "\n";
 						}
-						String name = prefix + (tableAlias != null? tableAlias + "." : "") + comparison.column.name + " ";
+						String name = prefix + (tableAlias != null? tableAlias + "." : "") + CellContentConverter.prepareForComparison(session, comparison.column) + " ";
 						editor.append(name + opSqlValue);
 						pos = new Pair<Integer, Integer>(start + name.length(), start + name.length() + opSqlValue.length());
 						valuePositions.put(comparison.column, pos);
@@ -2736,4 +2747,3 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 //	group by
 //	    A.HIREDATE
 }
-

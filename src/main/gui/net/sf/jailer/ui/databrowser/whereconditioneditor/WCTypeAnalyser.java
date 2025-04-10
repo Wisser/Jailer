@@ -188,6 +188,16 @@ public class WCTypeAnalyser {
 			return names;
 		}
 		
+		public void addOptSuffixToAlternativeNames(String name, String suffix) {
+			Set<String> names = alternativeNames.get(name);
+			if (names == null) {
+				names = alternativeNames.get("(" + name + ")");
+			}
+			if (names != null) {
+				names.addAll(names.stream().map(n -> n + suffix).collect(Collectors.toSet()));
+			}
+		}
+		
 		private Map<String, Set<String>> alternativeNames = new LinkedHashMap<String, Set<String>>();
 		
 		private void addAlternativeName(String name, String alternativeName, Quoting quoting) {

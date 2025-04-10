@@ -402,7 +402,7 @@ public class DataModel {
 			StringBuilder resourceName = new StringBuilder();
 			InputStream nTablesFile = openModelFile(tabFile, resourceName, false, executionContext);
 			if (failOnMissingTables && nTablesFile == null) {
-				throw new RuntimeException("Data model not found: " + resourceName);
+				throw new DataModelNotFoundException("Data model not found: " + resourceName);
 			}
 			CsvFile tablesFile = new CsvFile(nTablesFile, null, tabFile.getPath(), null);
 			List<CsvFile.Line> tableList = new ArrayList<CsvFile.Line>(tablesFile.getLines());
@@ -913,6 +913,17 @@ public class DataModel {
 		}
 		public NoPrimaryKeyException(Table table) {
 			this(table, "has no primary key");
+		}
+	}
+	
+	/**
+	 * Thrown if data model doesn't exist.
+	 */
+	public static class DataModelNotFoundException extends RuntimeException {
+		private static final long serialVersionUID = 3801682276113278257L;
+
+		public DataModelNotFoundException(String message) {
+			super(message);
 		}
 	}
 

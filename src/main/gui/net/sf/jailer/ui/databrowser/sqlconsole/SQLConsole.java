@@ -1222,6 +1222,19 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				Result wcbt = WCTypeAnalyser.getType(sqlStatement, metaDataSource, Quoting.getQuoting(session));
 
 				int columnCount = Math.max(0, metaData.getColumnCount());
+				
+				if (wcbt != null && wcbt.table != null) {
+					for (int i = 0; i < columnCount; ++i) {
+						if (wcbt.table.getColumns().size() > i) {
+							Column column = wcbt.table.getColumns().get(i);
+							column.type = metaData.getColumnTypeName(i + 1);
+							String preped = CellContentConverter.prepareForComparison(session, column);
+							if (!column.name.equals(preped) && preped.startsWith(column.name)) {
+								wcbt.addOptSuffixToAlternativeNames(column.name, preped.substring(column.name.length()));
+							}
+						}
+					}
+				}
 				if (wcbt != null && wcbt.table != null && wcbt.table.getColumns().size() != columnCount) {
 					wcbt = null;
 				}
@@ -4516,6 +4529,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	public boolean isTempFileBased() {
 		return tempFileBased;
 	}
+	
 
 	// TODO 2
 	// TODO ordering per column: break down to SQL?

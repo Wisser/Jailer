@@ -88,6 +88,7 @@ import javax.swing.table.TableColumn;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.JailerVersion;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.DataModel.DataModelNotFoundException;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
@@ -2968,7 +2969,13 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			}
 			currentModel = "";
 			store();
-			onSelect(null, executionContext);
+			try {
+				onSelect(null, executionContext);
+			} catch (DataModelNotFoundException e) {
+				JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+				UIUtil.checkTermination();
+				return;
+			}
 			UISettings.store(tabPropertyName, jTabbedPane1.getSelectedIndex());
 			if (ci != null) {
 				UISettings.addRecentConnectionAliases(ci.alias);

@@ -31,6 +31,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.datamodel.Column;
@@ -162,6 +163,15 @@ public class BrowserContentCellEditor {
 			@Override
 			Object textToContent(int columnType, String text, Object oldContent) {
 				String lcText = text.toLowerCase();
+				// if (session != null && DBMS.POSTGRESQL.equals(session.dbms)) {
+					if (lcText.equals("b'0'") || lcText.equals("'b'1'")) {
+						return new Object() {
+							public String toString() {
+								return text;
+							}
+						};
+					}
+				// }
 				if (trueValuesTF.contains(lcText)) {
 					return true;
 				}

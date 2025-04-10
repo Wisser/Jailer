@@ -541,7 +541,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
         sizeGripPanel.add(comp, gridBagConstraints);
         
         bottomPanel.setVisible(false);
-        setStatus(null, null);
+        setStatus(null, null, null);
         plugInPanel.setVisible(false);
 
         DefaultListModel<String> model = new DefaultListModel<String>();
@@ -823,11 +823,17 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		close(true);
 	}
 
+	private boolean tooltipInitialized = false;
 	/**
-     * Sets status text and icon.
+     * Sets status text, tooltip and icon.
      */
-    public void setStatus(String text, Icon icon) {
-		statusLabel.setText(text);
+    public void setStatus(String text, String tooltip, Icon icon) {
+    	statusLabel.setText(text);
+    	statusLabel.setToolTipText(tooltip);
+    	if (!tooltipInitialized && tooltip != null) {
+    		UIUtil.initToolTip(statusLabel, statusPanel);
+    		tooltipInitialized = true;
+    	}
 		statusLabel.setIcon(icon);
 		statusPanel.setVisible(text != null || icon != null);
 		bottomPanel.setVisible(text != null || icon != null || withSG);
@@ -1267,6 +1273,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         jPanel5.add(bottomPanel, gridBagConstraints);
 
+        searchList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         searchList.setVisibleRowCount(1);
         jScrollPane1.setViewportView(searchList);
 

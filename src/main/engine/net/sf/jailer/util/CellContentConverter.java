@@ -39,6 +39,7 @@ import java.util.UUID;
 
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
+import net.sf.jailer.datamodel.Column;
 
 /**
  * Converts a cell-content to valid SQL-literal.
@@ -807,5 +808,19 @@ public class CellContentConverter {
 	 * All hex digits.
 	 */
 	public static final char[] hexChar = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+
+	private static Set<String> NON_COMPARABLE_PG_TYPES = new HashSet<String>();
+	static {
+		NON_COMPARABLE_PG_TYPES.addAll(Arrays.asList("jsonpath", "hstore", "ghstore", "json", "jsonb", "gtsvector", "point", "lseg", "path", "box", "polygon", "line", "circle" ));
+	}   
+
+	public static String prepareForComparison(Session session, Column column) {
+		if (session != null && DBMS.POSTGRESQL.equals(session.dbms) && column.type != null) {
+			if (NON_COMPARABLE_PG_TYPES.contains(column.type.toLowerCase(Locale.ENGLISH))) {
+				return column.name + "::text";
+			}
+		}
+		return column.name;
+	}
 
 }

@@ -72,6 +72,7 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.database.WorkingTableScope;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.DataModel.DataModelNotFoundException;
 import net.sf.jailer.datamodel.DataModel.NoPrimaryKeyException;
 import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.Table;
@@ -2540,7 +2541,13 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 			protected void onSelect(DbConnectionDialog connectionDialog, ExecutionContext executionContext) {
 				ExtractionModelFrame extractionModelFrame = null;
 				try {
-					extractionModelFrame = createFrame(null, true, true, connectionDialog, executionContext);
+					try {
+						extractionModelFrame = createFrame(null, true, true, connectionDialog, executionContext);
+					} catch (DataModelNotFoundException e) {
+						JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+						UIUtil.checkTermination();
+						return;
+					}
 					CommandLineInstance.clear();
 					final ExtractionModelFrame finalExtractionModelFrame = extractionModelFrame;
 					UIUtil.invokeLater(new Runnable() {

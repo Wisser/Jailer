@@ -38,7 +38,7 @@ public class Column {
 	/**
 	 * The type.
 	 */
-	public final String type;
+	public String type;
 
 	/**
 	 * The length (for VARCHAR, DECIMAL, ...) or <code>0</code> if type-length is not variable.

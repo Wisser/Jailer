@@ -142,6 +142,7 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.DataModel.DataModelNotFoundException;
 import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
@@ -4689,8 +4690,15 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 					final DataModel datamodel;
 					Map<String, String> schemaMapping = ExecutionContext
 							.getSchemaMapping(CommandLineInstance.getInstance().rawschemamapping);
-					datamodel = new DataModel(null, null, schemaMapping, null, new PrimaryKeyFactory(executionContext),
+					
+					try {
+						datamodel = new DataModel(null, null, schemaMapping, null, new PrimaryKeyFactory(executionContext),
 							executionContext, true, null);
+					} catch (DataModelNotFoundException e) {
+						JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+						UIUtil.checkTermination();
+						return;
+					}
 					final DataBrowser databrowser = new DataBrowser(datamodel, null, "", null, schemaMapping,
 							executionContext);
 					UIUtil.invokeLater(new Runnable() {

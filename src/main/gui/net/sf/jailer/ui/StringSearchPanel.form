@@ -319,6 +319,7 @@
           <SubComponents>
             <Component class="javax.swing.JList" name="searchList">
               <Properties>
+                <Property name="selectionMode" type="int" value="0"/>
                 <Property name="visibleRowCount" type="int" value="1"/>
               </Properties>
               <AuxValues>
