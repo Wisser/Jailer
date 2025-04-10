@@ -1,3 +1,7 @@
+16.6.1
+  - Support for non-comparable column types in the condition editor.
+  - Explicit catching and handling of exceptions where the data model is no longer available.
+
 16.6
   - Fixed: "UUID Cols that are "deferred due to circular dependency" end up getting cast as ::text when initially set to null" #120
     https://github.com/Wisser/Jailer/issues/120
