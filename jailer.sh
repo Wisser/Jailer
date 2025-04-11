@@ -3,26 +3,18 @@
 instdir=`dirname $0`
 cd $instdir
  
-LIB=lib
-
-# JDBC-driver
-# CP=$CP:<jdbc.jar>
+LIB=jailer-engine/target/lib
 
 # configuration files in the config directory
-CP=$CP:config
+CLASSPATH="${CLASSPATH}:config"
 
-# the libraries
-CP=$CP:$LIB/junit.jar
-CP=$CP:$LIB/log4j-api-2.17.2.jar
-CP=$CP:$LIB/log4j-core-2.17.2.jar
-CP=$CP:$LIB/log4j-slf4j-impl-2.17.2.jar
-CP=$CP:$LIB/slf4j-api-1.7.25.jar
-CP=$CP:$LIB/flatlaf-3.3.jar
-CP=$CP:$LIB/args4j.jar
-CP=$CP:$LIB/sdoc-0.5.0-beta.jar
-CP=$CP:$LIB/jackson-core-2.16.1.jar
-CP=$CP:$LIB/jackson-annotations-2.16.1.jar
-CP=$CP:$LIB/jackson-databind-2.16.1.jar
-CP=$CP:jailer.jar
+# Add all .jar files from the lib directory to the CLASSPATH
+for jar in $LIB/*.jar; do
+  CLASSPATH="${CLASSPATH}:$jar"
+done
 
-java -Xmx1200M -cp $CP net.sf.jailer.Jailer "$@"
+CLASSPATH="${CLASSPATH}:jailer-engine/target/jailer-engine-1.0.0-SNAPSHOT.jar"
+
+# echo "${CLASSPATH}"
+
+java -Xmx1200M -cp "${CLASSPATH}" net.sf.jailer.Jailer "$@"
