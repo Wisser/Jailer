@@ -5573,7 +5573,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 
 			@Override
 			protected void scrollToTable(Table table) {
-				RowBrowser rb = visibleTables.get(table);
+				RowBrowser rb = getVisibleTables().get(table);
 				if (rb != null) {
 					desktop.scrollToCenter(rb.internalFrame);
 					desktop.getiFrameStateChangeRenderer().onIFrameSelected(rb.internalFrame);
