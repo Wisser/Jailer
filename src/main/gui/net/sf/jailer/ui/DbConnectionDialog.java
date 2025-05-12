@@ -81,7 +81,6 @@ import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.ClasspathUtil;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
-import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Pair;
 
 /**
@@ -775,7 +774,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			}
 			
 		} catch (Exception e) {
-			LogUtil.warn(e);
+			UIUtil.showException(this, "Error", e);
 		}
 	}
 	
