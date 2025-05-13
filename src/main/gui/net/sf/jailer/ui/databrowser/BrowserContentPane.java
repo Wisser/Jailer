@@ -5531,7 +5531,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			tablePosition = null;
 		}
 
-		List<Column> columns = rowIdSupport.getColumns(table, session, !rows.isEmpty());
+		List<Column> columns = new ArrayList<Column>(rowIdSupport.getColumns(table, session, !rows.isEmpty()));
 		String[] columnNames = new String[columns.size()];
 		final Set<String> pkColumnNames = new HashSet<String>();
 		if (rowIdSupport.getPrimaryKey(table, session, !rows.isEmpty()) != null) {
