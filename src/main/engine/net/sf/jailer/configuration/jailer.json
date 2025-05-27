@@ -736,7 +736,7 @@
 			"estimatedRowCountQuery": "SELECT TABNAME, CARD FROM SYSSTAT.TABLES WHERE TABSCHEMA = '%s'",
 			"defaultSchemaQuery": null,
 			"viewTextOrDDLQuery": "SELECT TEXT FROM SYSCAT.VIEWS WHERE VIEWSCHEMA = '%1$s' and VIEWNAME = '%2$s'",
-			"virtualColumnsQuery": "SELECT TABNAME, COLNAME from syscat.columns WHERE TABSCHEMA='${SCHEMA}' AND GENERATED='A'",
+			"virtualColumnsQuery": "SELECT TABNAME, COLNAME from syscat.columns WHERE TABSCHEMA='${SCHEMA}' AND GENERATED='A' AND NOT IDENTITY='Y'",
 			"userDefinedColumnsQuery": null,
 			"nullableContraint": null,
 			"identifierQuoteString": "\"",
