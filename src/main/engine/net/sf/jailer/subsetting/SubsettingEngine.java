@@ -979,7 +979,6 @@ public class SubsettingEngine {
 	}
 
 	private void checkVirtualPK(Set<Table> progress) {
-		// TODO Auto-generated method stub
 		for (Table table: progress) {
 			for (Association assoc: table.associations) {
 				if (!assoc.isInsertDestinationBeforeSource()) {
