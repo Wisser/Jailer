@@ -77,4 +77,10 @@ public class ProgressListenerRegistry {
 		}
 	}
 
+	public void warn(String msg) {
+		for (ProgressListener listener : progressListeners) {
+			listener.warn(msg);
+		}
+	}
+
 }

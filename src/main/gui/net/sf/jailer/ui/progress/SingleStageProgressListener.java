@@ -47,6 +47,7 @@ import net.sf.jailer.ui.ProgressPanel;
 import net.sf.jailer.ui.ProgressTable;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.util.CancellationException;
+import net.sf.jailer.util.LogUtil;
 
 /**
  * Keeps progress indicators up to date for a single {@link ProgressTable}.
@@ -537,4 +538,12 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 		}
 	}
 
+	/**
+	 * User should be warned.
+	 */
+	@Override
+	public void warn(String msg) {
+		JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(progressTable), msg, "Warning", JOptionPane.WARNING_MESSAGE);
+		LogUtil.warn(new RuntimeException(msg));
+	}
 }

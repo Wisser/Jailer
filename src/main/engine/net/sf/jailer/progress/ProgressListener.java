@@ -73,4 +73,9 @@ public interface ProgressListener {
 	 */
 	void prepareExport() throws CancellationException;
 
+	/**
+	 * User should be warned.
+	 */
+	void warn(String msg);
+
 }

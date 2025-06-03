@@ -114,6 +114,14 @@ public abstract class ExportAndDeleteStageProgressListener implements ProgressLi
 		deleteProgressListener.stop();
 	}
 
+	/**
+	 * User should be warned.
+	 */
+	@Override
+	public void warn(String msg) {
+		exportProgressListener.warn(msg);
+	}
+	
 	protected abstract void validatePrimaryKeys();
 
 }

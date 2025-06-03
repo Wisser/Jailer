@@ -154,4 +154,11 @@ public class CollectedRowsCounter implements ProgressListener {
 	public void prepareExport() throws CancellationException {
 	}
 
+	/**
+	 * User should be warned.
+	 */
+	@Override
+	public void warn(String msg) {
+	}
+
 }

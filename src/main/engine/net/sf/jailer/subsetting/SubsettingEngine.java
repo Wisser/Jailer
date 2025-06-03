@@ -752,7 +752,11 @@ public class SubsettingEngine {
 		if (preWriteAction != null) {
 			preWriteAction.run();
 		}
-
+		
+		if (scriptType == ScriptType.INSERT && (ScriptFormat.SQL.equals(executionContext.getScriptFormat()) || ScriptFormat.INTRA_DATABASE.equals(executionContext.getScriptFormat()))) {
+			checkVirtualPK(progress);
+		}
+		
 		long rest = 0;
 		Set<Table> dependentTables = null;
 		Set<Table> currentProgress = new TreeSet<Table>(progress);
@@ -972,6 +976,31 @@ public class SubsettingEngine {
 			throw new CycleFinder.CycleFoundException(msg);
 		}
 		_log.info("file '" + sqlScriptFile + "' written.");
+	}
+
+	private void checkVirtualPK(Set<Table> progress) {
+		// TODO Auto-generated method stub
+		for (Table table: progress) {
+			for (Association assoc: table.associations) {
+				if (!assoc.isInsertDestinationBeforeSource()) {
+					continue;
+				}
+				Map<Column, Column> sdMap = assoc.createSourceToDestinationKeyMapping();
+				if (sdMap.isEmpty()) {
+					continue;
+				}
+				for (Entry<Column, Column> e: sdMap.entrySet()) {
+					Column c = e.getValue();
+					for (Column pk: assoc.destination.primaryKey.getColumns()) {
+						if (c.name.equals(pk.name) && c.isVirtual) {
+							String msg = "The virtual primary key column \"" + (assoc.destination.getName() + "." + c.name) + "\" has a corresponding foreign key column \""  + (assoc.source.getName() + "." + e.getKey().name) + "\". This can lead to problems during import. Please check.";
+							executionContext.getProgressListenerRegistry().warn(msg);
+							return;
+						}
+					}
+				}
+			}
+		}
 	}
 
 	private void updateNullableForeignKeys(final OutputStreamWriter result, final EntityGraph eg,
