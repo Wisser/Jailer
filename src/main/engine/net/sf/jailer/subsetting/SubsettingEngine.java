@@ -993,7 +993,7 @@ public class SubsettingEngine {
 					Column c = e.getValue();
 					for (Column pk: assoc.destination.primaryKey.getColumns()) {
 						if (c.name.equals(pk.name) && c.isVirtual) {
-							String msg = "The virtual primary key column \"" + (assoc.destination.getName() + "." + c.name) + "\" has a corresponding foreign key column \""  + (assoc.source.getName() + "." + e.getKey().name) + "\". This can lead to problems during import. Please check.";
+							String msg = "The virtual/generated primary key column \"" + (assoc.destination.getName() + "." + c.name) + "\" has a corresponding foreign key column \""  + (assoc.source.getName() + "." + e.getKey().name) + "\". This can lead to problems during import. Please check.";
 							executionContext.getProgressListenerRegistry().warn(msg);
 							return;
 						}
