@@ -1,3 +1,7 @@
+16.7
+  - Fix: "Invalid insert statements when overriding a generated key in DB2 LUW #124"
+    https://github.com/Wisser/Jailer/issues/124
+
 16.6.2
   - Fix: Error messages were not shown when saving new database connections failed.
 
