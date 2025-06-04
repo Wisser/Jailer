@@ -17,6 +17,7 @@ package net.sf.jailer.progress;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import net.sf.jailer.datamodel.ModelElement;
 import net.sf.jailer.datamodel.Table;
@@ -77,9 +78,9 @@ public class ProgressListenerRegistry {
 		}
 	}
 
-	public void warn(String msg) {
+	public void warn(Supplier<String> msgSupplier) {
 		for (ProgressListener listener : progressListeners) {
-			listener.warn(msg);
+			listener.warn(msgSupplier);
 		}
 	}
 

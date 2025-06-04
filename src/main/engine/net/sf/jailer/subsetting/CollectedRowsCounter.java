@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
@@ -158,7 +159,7 @@ public class CollectedRowsCounter implements ProgressListener {
 	 * User should be warned.
 	 */
 	@Override
-	public void warn(String msg) {
+	public void warn(Supplier<String> msgSupplier) {
 	}
 
 }

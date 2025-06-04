@@ -21,10 +21,12 @@ import java.awt.event.WindowListener;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
@@ -191,6 +193,10 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
 	private static Timer fadeTimer;
 	
 	public static void openInModalDialog(Window windowAncestor, final ConcurrentTaskControl concurrentTaskControl, final Task task, String title) {
+		openInModalDialog(windowAncestor, concurrentTaskControl, task, title, null);
+	}
+	
+	public static void openInModalDialog(Window windowAncestor, final ConcurrentTaskControl concurrentTaskControl, final Task task, String title, Consumer<JLabel> initInfoLabel) {
 		final JDialog dialog = new JDialog(windowAncestor);
 		dialog.setUndecorated(true);
 		dialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -208,7 +214,10 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
 			}
 		};
 		concurrentTaskControl.master = control;
-		
+		if (initInfoLabel != null) {
+			initInfoLabel.accept(control.infoLabel);
+		}
+
 		control.setBorder(BorderFactory.createLineBorder(Colors.Color_128_128_128));
 		dialog.getContentPane().add(control);
 		dialog.pack();
@@ -260,7 +269,7 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
 	/**
 	 * Calls a {@link Callable} in a separate thread while showing a modal dialog.
 	 */
-	public static <T> T call(Window window, final Callable<T> call, String info) throws Exception {
+	public static <T> T call(Window window, final Callable<T> call, String info, Consumer<JLabel> initInfoLabel) throws Exception {
 		final AtomicReference<Exception> exception = new AtomicReference<Exception>();
 		final AtomicReference<T> result = new AtomicReference<T>();
 		final AtomicBoolean done = new AtomicBoolean(false);
@@ -296,7 +305,7 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
 					});
 				}
 			}
-		}, info);
+		}, info, initInfoLabel);
 		
 		if (exception.get() != null) {
 			throw exception.get();

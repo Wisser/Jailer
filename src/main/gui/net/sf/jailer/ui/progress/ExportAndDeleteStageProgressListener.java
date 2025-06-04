@@ -16,6 +16,7 @@
 package net.sf.jailer.ui.progress;
 
 import java.util.Set;
+import java.util.function.Supplier;
 
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.ModelElement;
@@ -118,8 +119,8 @@ public abstract class ExportAndDeleteStageProgressListener implements ProgressLi
 	 * User should be warned.
 	 */
 	@Override
-	public void warn(String msg) {
-		exportProgressListener.warn(msg);
+	public void warn(Supplier<String> msgSupplier) {
+		exportProgressListener.warn(msgSupplier);
 	}
 	
 	protected abstract void validatePrimaryKeys();

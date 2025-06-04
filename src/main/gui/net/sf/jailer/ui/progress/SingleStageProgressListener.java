@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -542,8 +543,11 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 	 * User should be warned.
 	 */
 	@Override
-	public void warn(String msg) {
-		JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(progressTable), msg, "Warning", JOptionPane.WARNING_MESSAGE);
-		LogUtil.warn(new RuntimeException(msg));
+	public void warn(Supplier<String> msgSupplier) {
+		String msg = msgSupplier.get();
+		if (msg != null) {
+			JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(progressTable), msg, "Warning", JOptionPane.WARNING_MESSAGE);
+			LogUtil.warn(new RuntimeException(msg));
+		}
 	}
 }

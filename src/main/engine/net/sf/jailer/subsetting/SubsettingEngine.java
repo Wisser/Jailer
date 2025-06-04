@@ -979,27 +979,33 @@ public class SubsettingEngine {
 	}
 
 	private void checkVirtualPK(Set<Table> progress) {
-		for (Table table: progress) {
-			for (Association assoc: table.associations) {
-				if (!assoc.isInsertDestinationBeforeSource()) {
-					continue;
-				}
-				Map<Column, Column> sdMap = assoc.createSourceToDestinationKeyMapping();
-				if (sdMap.isEmpty()) {
-					continue;
-				}
-				for (Entry<Column, Column> e: sdMap.entrySet()) {
-					Column c = e.getValue();
-					for (Column pk: assoc.destination.primaryKey.getColumns()) {
-						if (c.name.equals(pk.name) && c.isVirtual) {
-							String msg = "The virtual/generated primary key column \"" + (assoc.destination.getName() + "." + c.name) + "\" has a corresponding foreign key column \""  + (assoc.source.getName() + "." + e.getKey().name) + "\". This can lead to problems during import. Please check.";
-							executionContext.getProgressListenerRegistry().warn(msg);
-							return;
+		executionContext.getProgressListenerRegistry().warn(() -> {
+			for (Table table: progress) {
+				for (Association assoc: table.associations) {
+					if (!assoc.isInsertDestinationBeforeSource()) {
+						continue;
+					}
+					if (!progress.contains(assoc.source) || !progress.contains(assoc.destination)) {
+						continue;
+					}
+					Map<Column, Column> sdMap = assoc.createSourceToDestinationKeyMapping();
+					if (sdMap.isEmpty()) {
+						continue;
+					}
+					for (Entry<Column, Column> e: sdMap.entrySet()) {
+						Column c = e.getValue();
+						for (Column pk: assoc.destination.primaryKey.getColumns()) {
+							if (c.name.equals(pk.name) && c.isVirtual) {
+								if (e.getKey().getFilter() == null) {
+									return "The virtual/generated primary key column \"" + (assoc.destination.getName() + "." + c.name) + "\" has a corresponding foreign key column \""  + (assoc.source.getName() + "." + e.getKey().name) + "\". This can lead to problems during import. Please check.";
+								}
+							}
 						}
 					}
 				}
 			}
-		}
+			return null;
+		});
 	}
 
 	private void updateNullableForeignKeys(final OutputStreamWriter result, final EntityGraph eg,

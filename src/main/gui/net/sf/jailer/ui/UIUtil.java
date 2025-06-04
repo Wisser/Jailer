@@ -1785,7 +1785,7 @@ public class UIUtil {
 			public String call() throws Exception {
 				return ddlCreator.getTableInConflict(dataSource, dbms);
 			}
-		}, "validate working tables...");
+		}, "validate working tables...", null);
 	}
 
 	public static boolean isDDLUptodate(final DDLCreator ddlCreator, Window window, final BasicDataSource dataSource,
@@ -1795,7 +1795,7 @@ public class UIUtil {
 			public Boolean call() throws Exception {
 				return ddlCreator.isUptodate(dataSource, dbms, useRowId, useRowIdsOnlyForTablesWithoutPK, workingTableSchema);
 			}
-		}, "validate working tables...");
+		}, "validate working tables...", null);
 	}
 
 	public static BasicDataSource createBasicDataSource(Window window, final String driverClassName, final String dbUrl, final String dbUser, final String dbPassword, final int maxPoolSize, final URL... jdbcDriverURL) throws Exception {
@@ -1807,7 +1807,25 @@ public class UIUtil {
 			public BasicDataSource call() throws Exception {
 				return new BasicDataSource(driverClassName, dbUrl, dbUser, dbPassword, maxPoolSize, jdbcDriverURL);
 			}
-		}, "connecting...");
+		}, "  Connecting...  ",
+		infoLabel -> {
+			new Runnable() {
+				Timer timer;
+				@Override
+				public void run() {
+					timer = new Timer(500, e -> {
+						if (!infoLabel.isShowing()) {
+							timer.setRepeats(false);
+						}
+						infoLabel.setOpaque(true);
+						infoLabel.setBackground(Colors.Color_255_255_255.equals(infoLabel.getBackground())? Colors.Color_255_230_230 : Colors.Color_255_255_255);
+					});
+			        timer.setRepeats(true);
+			        timer.setInitialDelay(timer.getDelay() * 3);
+			        timer.start();
+				}
+			}.run();
+		});
 	}
 
 	public static boolean checkFileExistsAndWarn(String file, Component parent) {

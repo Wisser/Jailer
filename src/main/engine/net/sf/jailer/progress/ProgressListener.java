@@ -15,6 +15,8 @@
  */
 package net.sf.jailer.progress;
 
+import java.util.function.Supplier;
+
 import net.sf.jailer.datamodel.ModelElement;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.CancellationException;
@@ -76,6 +78,6 @@ public interface ProgressListener {
 	/**
 	 * User should be warned.
 	 */
-	void warn(String msg);
+	void warn(Supplier<String> msgSupplier);
 
 }
