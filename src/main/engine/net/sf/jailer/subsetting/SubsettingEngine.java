@@ -997,7 +997,7 @@ public class SubsettingEngine {
 						for (Column pk: assoc.destination.primaryKey.getColumns()) {
 							if (c.name.equals(pk.name) && c.isVirtual) {
 								if (e.getKey().getFilter() == null) {
-									return "The virtual/generated primary key column \"" + (assoc.destination.getName() + "." + c.name) + "\" has a corresponding foreign key column \""  + (assoc.source.getName() + "." + e.getKey().name) + "\". This can lead to problems during import. Please check.";
+									return "The virtual/generated primary key column \"" + (assoc.destination.getName() + "." + c.name) + "\" has a corresponding foreign key column \""  + (assoc.source.getName() + "." + e.getKey().name) + "\". This can lead to problems during import. \nPlease check.";
 								}
 							}
 						}
