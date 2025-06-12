@@ -40,6 +40,7 @@ import java.beans.PropertyChangeListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -1892,7 +1893,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				int[] incomplete = new int[2];
 				boolean[] withNull = new boolean[1];
 				incomplete[0] = 0;
-				LinkedHashMap<String, Integer> distinctExisting = null;
+				Map<String, Integer> distinctExisting = null;
 				List<String> distinctExistingModel = new ArrayList<String>();
 				if (!condition.isEmpty() || !extJoins.isEmpty()) {
 					try {
@@ -1904,35 +1905,37 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						LogUtil.warn(e);
 					}
 				}
-				LinkedHashMap<String, Integer> finalDistinctExisting = distinctExisting;
+				Map<String, Integer> finalDistinctExisting = distinctExisting;
 				UIUtil.invokeLater(() -> {
 					fullSearchCheckbox.setVisible(true);
 					fullSearchCheckbox.setEnabled(false);
 					fullSearchCheckbox.setSelected(finalDistinctExisting == null);
 					if (finalDistinctExisting != null) {
-						setStatus(incomplete, finalDistinctExisting);
-						defaultComboBoxModel.removeAllElements();
-						initialModel.forEach(s -> {
-							if (finalDistinctExisting.containsKey(s) || (withNull[0] && !finalDistinctExisting.isEmpty() && nullPattern.matcher(s).matches())) {
-								defaultComboBoxModel.addElement(s);
+						synchronized (finalDistinctExisting) {
+							setStatus(incomplete, finalDistinctExisting);
+							defaultComboBoxModel.removeAllElements();
+							initialModel.forEach(s -> {
+								if (finalDistinctExisting.containsKey(s) || (withNull[0] && !finalDistinctExisting.isEmpty() && nullPattern.matcher(s).matches())) {
+									defaultComboBoxModel.addElement(s);
+								}
+							});
+							finalDistinctExisting.keySet().forEach(s -> {
+								if (!nullPattern.matcher(s).matches()) {
+									defaultComboBoxModel.addElement(s);
+									renderConsumer.put(s, label -> label.setIcon(UIUtil.scaleIcon(WhereConditionEditorPanel.this, emptyIcon)));
+								}
+							});
+							distinctExistingModel.clear();
+							for (int i = 0; i < defaultComboBoxModel.getSize(); ++i) {
+								distinctExistingModel.add(defaultComboBoxModel.getElementAt(i));
 							}
-						});
-						finalDistinctExisting.keySet().forEach(s -> {
-							if (!nullPattern.matcher(s).matches()) {
-								defaultComboBoxModel.addElement(s);
-								renderConsumer.put(s, label -> label.setIcon(UIUtil.scaleIcon(WhereConditionEditorPanel.this, emptyIcon)));
+							searchPanel.setEstimatedItemsCount(defaultComboBoxModel.getSize());
+							if (fromCache[0]) {
+								clearCacheButton.setVisible(true);
 							}
-						});
-						distinctExistingModel.clear();
-						for (int i = 0; i < defaultComboBoxModel.getSize(); ++i) {
-							distinctExistingModel.add(defaultComboBoxModel.getElementAt(i));
+							searchPanel.updateList(false, true);
+							UIUtil.stopDW();
 						}
-						searchPanel.setEstimatedItemsCount(defaultComboBoxModel.getSize());
-						if (fromCache[0]) {
-							clearCacheButton.setVisible(true);
-						}
-						searchPanel.updateList(false, true);
-						UIUtil.stopDW();
 					}
 				});
 				UIUtil.invokeLater(6, () -> {
@@ -1943,7 +1946,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				incompleteFull[0] = 0;
 				boolean[] withNullFull = new boolean[1];
 				withNullFull[0] = false;
-				LinkedHashMap<String, Integer> distinctExistingFull = null;
+				Map<String, Integer> distinctExistingFull = null;
 				List<String> distinctExistingFullModel = new ArrayList<String>();
 				try {
 					distinctExistingFull = loadDistinctExistingValues(comparison, cancellationContext, incompleteFull, withNullFull, fromCacheFull, "", false);
@@ -1968,131 +1971,135 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 					});
 					return;
 				}
-				LinkedHashMap<String, Integer> finalDistinctExistingFull = distinctExistingFull;
+				Map<String, Integer> finalDistinctExistingFull = distinctExistingFull;
 				UIUtil.invokeLater(3, new Runnable() { public void run() {
 					if (finalDistinctExistingFull != null) {
-						fullSearchCheckbox.setEnabled(finalDistinctExisting != null);
-						if (finalDistinctExisting != null
-								&& finalDistinctExisting.equals(finalDistinctExistingFull)
-								&& distinctExistingModel.size() == distinctExistingFullModel.size()) {
-							fullSearchCheckbox.setSelected(true);
-							fullSearchCheckbox.setEnabled(false);
-						}
-						finalDistinctExistingFull.keySet().forEach(s -> {
-							if (!nullPattern.matcher(s).matches()) {
-								defaultComboBoxModel.addElement(s);
-								renderConsumer.put(s, label -> label.setIcon(UIUtil.scaleIcon(WhereConditionEditorPanel.this, emptyIcon)));
+						synchronized (finalDistinctExistingFull) {
+							fullSearchCheckbox.setEnabled(finalDistinctExisting != null);
+							if (finalDistinctExisting != null
+									&& finalDistinctExisting.equals(finalDistinctExistingFull)
+									&& distinctExistingModel.size() == distinctExistingFullModel.size()) {
+								fullSearchCheckbox.setSelected(true);
+								fullSearchCheckbox.setEnabled(false);
 							}
-						});
-						distinctExistingFullModel.clear();
-						if (fullSearchCheckbox.isEnabled()) {
-							distinctExistingFullModel.addAll(initialModel);
-						} else {
-							initialModel.forEach(s -> {
-								if (finalDistinctExistingFull.containsKey(s) || (withNullFull[0] && !finalDistinctExistingFull.isEmpty() && nullPattern.matcher(s).matches())) {
-									distinctExistingFullModel.add(s);
+							finalDistinctExistingFull.keySet().forEach(s -> {
+								if (!nullPattern.matcher(s).matches()) {
+									defaultComboBoxModel.addElement(s);
+									renderConsumer.put(s, label -> label.setIcon(UIUtil.scaleIcon(WhereConditionEditorPanel.this, emptyIcon)));
 								}
 							});
-							if (distinctExistingFullModel.isEmpty() && withNullFull[0]) {
-								String text = IS_NULL;
-								distinctExistingFullModel.add(text);
-								ImageIcon sNullIcon = UIUtil.scaleIcon(WhereConditionEditorPanel.this, nullIcon);
-								searchPanel.renderConsumer.put(text, label -> {
-									label.setIcon(sNullIcon);
-								});
-							}
-						}
-						
-						finalDistinctExistingFull.keySet().forEach(s -> { if (!nullPattern.matcher(s).matches()) { distinctExistingFullModel.add(s); }});
-						if (fromCache[0] || fromCacheFull[0]) {
-							clearCacheButton.setVisible(true);
-						}
-						ActionListener action = e -> {
-							defaultComboBoxModel.removeAllElements();
-							if (fullSearchCheckbox.isSelected()) {
-								distinctExistingFullModel.forEach(s -> {
-									defaultComboBoxModel.addElement(s);
-								});
-								setStatus(incompleteFull, finalDistinctExistingFull);
-								clearCacheButton.setVisible(fromCacheFull[0]);
-								searchPanel.setLightCounters(!positiveEquals || finalDistinctExisting != null && !finalDistinctExisting.equals(finalDistinctExistingFull));
+							distinctExistingFullModel.clear();
+							if (fullSearchCheckbox.isEnabled()) {
+								distinctExistingFullModel.addAll(initialModel);
 							} else {
-								distinctExistingModel.forEach(s -> {
-									defaultComboBoxModel.addElement(s);
+								initialModel.forEach(s -> {
+									if (finalDistinctExistingFull.containsKey(s) || (withNullFull[0] && !finalDistinctExistingFull.isEmpty() && nullPattern.matcher(s).matches())) {
+										distinctExistingFullModel.add(s);
+									}
 								});
-								setStatus(incomplete, finalDistinctExisting);
-								clearCacheButton.setVisible(fromCache[0]);
-								searchPanel.setLightCounters(false);
+								if (distinctExistingFullModel.isEmpty() && withNullFull[0]) {
+									String text = IS_NULL;
+									distinctExistingFullModel.add(text);
+									ImageIcon sNullIcon = UIUtil.scaleIcon(WhereConditionEditorPanel.this, nullIcon);
+									searchPanel.renderConsumer.put(text, label -> {
+										label.setIcon(sNullIcon);
+									});
+								}
 							}
-							searchPanel.setEstimatedItemsCount(defaultComboBoxModel.getSize());
-							searchPanel.resetHeight();
-							searchPanel.updateList(false, true);
-						};
-						fullSearchCheckbox.addActionListener(action);
-						action.actionPerformed(null);
-						try {
-							if (comparison.column.name != null) {
-								String st = searchPanel.getSearchTextField().getText();
-								if (initialSearchText.equals(st)) {
-									ListModel<String> m = searchPanel.getSearchList().getModel();
-									if (m instanceof DefaultListModel) {
-										int i;
-										@SuppressWarnings("rawtypes")
-										DefaultListModel model = (DefaultListModel) m;
-										if (model.indexOf(st) >= 0) {
-											if (getHistory(comparison.column).contains(st)) {
-												i = model.indexOf(st);
-											} else {
-												renderConsumer.put(st, label -> {
-													label.setIcon(sHistIcon);
-												});
-												i = 0;
-												model.insertElementAt(st, i);
-											}
-											if (i >= 0) {
-												boolean hadFocus = searchPanel.getSearchTextField().hasFocus();
-												searchPanel.getSearchList().setSelectedIndex(i);
-												if (hadFocus) {
-													searchPanel.getSearchTextField().grabFocus();
+							
+							finalDistinctExistingFull.keySet().forEach(s -> { if (!nullPattern.matcher(s).matches()) { distinctExistingFullModel.add(s); }});
+							if (fromCache[0] || fromCacheFull[0]) {
+								clearCacheButton.setVisible(true);
+							}
+							ActionListener action = e -> {
+								defaultComboBoxModel.removeAllElements();
+								if (fullSearchCheckbox.isSelected()) {
+									distinctExistingFullModel.forEach(s -> {
+										defaultComboBoxModel.addElement(s);
+									});
+									setStatus(incompleteFull, finalDistinctExistingFull);
+									clearCacheButton.setVisible(fromCacheFull[0]);
+									searchPanel.setLightCounters(!positiveEquals || finalDistinctExisting != null && !finalDistinctExisting.equals(finalDistinctExistingFull));
+								} else {
+									distinctExistingModel.forEach(s -> {
+										defaultComboBoxModel.addElement(s);
+									});
+									setStatus(incomplete, finalDistinctExisting);
+									clearCacheButton.setVisible(fromCache[0]);
+									searchPanel.setLightCounters(false);
+								}
+								searchPanel.setEstimatedItemsCount(defaultComboBoxModel.getSize());
+								searchPanel.resetHeight();
+								searchPanel.updateList(false, true);
+							};
+							fullSearchCheckbox.addActionListener(action);
+							action.actionPerformed(null);
+							try {
+								if (comparison.column.name != null) {
+									String st = searchPanel.getSearchTextField().getText();
+									if (initialSearchText.equals(st)) {
+										ListModel<String> m = searchPanel.getSearchList().getModel();
+										if (m instanceof DefaultListModel) {
+											int i;
+											@SuppressWarnings("rawtypes")
+											DefaultListModel model = (DefaultListModel) m;
+											if (model.indexOf(st) >= 0) {
+												if (getHistory(comparison.column).contains(st)) {
+													i = model.indexOf(st);
+												} else {
+													renderConsumer.put(st, label -> {
+														label.setIcon(sHistIcon);
+													});
+													i = 0;
+													model.insertElementAt(st, i);
+												}
+												if (i >= 0) {
+													boolean hadFocus = searchPanel.getSearchTextField().hasFocus();
+													searchPanel.getSearchList().setSelectedIndex(i);
+													if (hadFocus) {
+														searchPanel.getSearchTextField().grabFocus();
+													}
 												}
 											}
 										}
+									} else {
+										searchPanel.updateList(true, true);
 									}
-								} else {
-									searchPanel.updateList(true, true);
 								}
+							} catch (Throwable t) {
+								LogUtil.warn(t);
 							}
-						} catch (Throwable t) {
-							LogUtil.warn(t);
+							UIUtil.invokeLater(2, () -> UIUtil.stopDW());
 						}
-						UIUtil.invokeLater(2, () -> UIUtil.stopDW());
 					}
 				}});
 			}
 
-			protected void setStatus(int[] incomplete, LinkedHashMap<String, Integer> finalDistinctExisting) {
-				if (incomplete[0] > 0 || finalDistinctExisting.size() > MAX_NUM_DISTINCTEXISTINGVALUES) {
-					searchPanel.setStatus("incomplete"
-								+ (finalDistinctExisting.size() > MAX_NUM_DISTINCTEXISTINGVALUES? ("(>" + MAX_NUM_DISTINCTEXISTINGVALUES + " values)")
-										: 
-								(" (" + (incomplete[0] % MAX_NUM_DISTINCTEXISTINGVALUES) 
-								+ " missing"
-								+ (incomplete[0] > MAX_NUM_DISTINCTEXISTINGVALUES? ", multi-line text" : "") + ")")),
-								null,
-								UIUtil.scaleIcon(searchPanel, warnIcon));
-				} else {
-					searchPanel.setStatus(null, null, null);
-				}
-				if (!table.isDistinct()) {
-					boolean containsIsNull = finalDistinctExisting.containsKey(IS_NULL);
-					boolean containsIsNotNull = finalDistinctExisting.containsKey(IS_NOT_NULL);
-					if (containsIsNotNull && !containsIsNull) {
-						finalDistinctExisting.put(IS_NULL, Integer.MIN_VALUE);
-					} else if (!containsIsNotNull && containsIsNull) {
-						finalDistinctExisting.put(IS_NOT_NULL, Integer.MIN_VALUE);
+			protected void setStatus(int[] incomplete, Map<String, Integer> finalDistinctExisting) {
+				synchronized (finalDistinctExisting) {
+					if (incomplete[0] > 0 || finalDistinctExisting.size() > MAX_NUM_DISTINCTEXISTINGVALUES) {
+						searchPanel.setStatus("incomplete"
+									+ (finalDistinctExisting.size() > MAX_NUM_DISTINCTEXISTINGVALUES? ("(>" + MAX_NUM_DISTINCTEXISTINGVALUES + " values)")
+											: 
+									(" (" + (incomplete[0] % MAX_NUM_DISTINCTEXISTINGVALUES) 
+									+ " missing"
+									+ (incomplete[0] > MAX_NUM_DISTINCTEXISTINGVALUES? ", multi-line text" : "") + ")")),
+									null,
+									UIUtil.scaleIcon(searchPanel, warnIcon));
+					} else {
+						searchPanel.setStatus(null, null, null);
 					}
-					searchPanel.setStringCount(finalDistinctExisting);
-				}
+					if (!table.isDistinct()) {
+						boolean containsIsNull = finalDistinctExisting.containsKey(IS_NULL);
+						boolean containsIsNotNull = finalDistinctExisting.containsKey(IS_NOT_NULL);
+						if (containsIsNotNull && !containsIsNull) {
+							finalDistinctExisting.put(IS_NULL, Integer.MIN_VALUE);
+						} else if (!containsIsNotNull && containsIsNull) {
+							finalDistinctExisting.put(IS_NOT_NULL, Integer.MIN_VALUE);
+						}
+						searchPanel.setStringCount(finalDistinctExisting);
+					}
+				}	
 			}
 		});
     }
@@ -2129,19 +2136,19 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	}
 
 	@SuppressWarnings("unchecked")
-	private LinkedHashMap<String, Integer> loadDistinctExistingValues(Comparison comparison, Object cancellationContext, int[] incomplete, boolean[] withNull, boolean[] fromCache, String condition, boolean withExtJoins) throws SQLException {
+	private Map<String, Integer> loadDistinctExistingValues(Comparison comparison, Object cancellationContext, int[] incomplete, boolean[] withNull, boolean[] fromCache, String condition, boolean withExtJoins) throws SQLException {
 		final int MAX_TEXT_LENGTH = 1024 * 4;
-		LinkedHashMap<String, Integer> result;
+		Map<String, Integer> result;
 		Map<Pair<String, String>, Integer> icCache;
 		Map<Pair<String, String>, Boolean> wnCache;
-		Map<Pair<String, String>, LinkedHashMap<String, Integer>> cache;
+		Map<Pair<String, String>, Map<String, Integer>> cache;
 		String tabName = table.getName();
 		Pair<String, String> key = new Pair<String, String>(tabName + "+" + condition, comparison.column.name);
 		synchronized (this) {
 			Long ts = (Long) session.getSessionProperty(getClass(), DISTINCTEXISTINGVALUESTSKEY);
-			cache = (Map<Pair<String, String>, LinkedHashMap<String, Integer>>) session.getSessionProperty(getClass(), DISTINCTEXISTINGVALUESCACHEKEY);
+			cache = (Map<Pair<String, String>, Map<String, Integer>>) session.getSessionProperty(getClass(), DISTINCTEXISTINGVALUESCACHEKEY);
 			if (cache == null || ts == null || ts < Session.lastUpdateTS || ts < System.currentTimeMillis() - (4 * (1000) /* 4 s */)) {
-				cache = new LRUCache<Pair<String,String>, LinkedHashMap<String, Integer>>(SIZE_DISTINCTEXISTINGVALUESCACHE);
+				cache = new LRUCache<Pair<String,String>, Map<String, Integer>>(SIZE_DISTINCTEXISTINGVALUESCACHE);
 				session.setSessionProperty(getClass(), DISTINCTEXISTINGVALUESCACHEKEY, cache);
 				session.setSessionProperty(getClass(), DISTINCTEXISTINGVALUESTSKEY, System.currentTimeMillis());
 			}
@@ -2169,7 +2176,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		if (result == null) {
 			long startTime = System.currentTimeMillis();
 			fromCache[0] = false;
-			result = new LinkedHashMap<String, Integer>();
+			result = Collections.synchronizedMap(new LinkedHashMap<String, Integer>());
 			int columnIndex = 0;
 			while (columnIndex < table.getColumns().size()) {
 				if (comparison.column.equals(table.getColumns().get(columnIndex))) {
@@ -2218,19 +2225,21 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		} else {
 			fromCache[0] = true;
 		}
-		Long sumLength = result.keySet().stream().collect(Collectors.summingLong(String::length));
-		if (sumLength == null || sumLength <= MAX_SIZE_DISTINCTEXISTINGVALUES) {
-			if (time < 0 || time > 500) {
-				cache.put(key, result);
-				icCache.put(key, incomplete[0]);
-				wnCache.put(key, withNull[0]);
+		synchronized (result) {
+			Long sumLength = result.keySet().stream().collect(Collectors.summingLong(String::length));
+			if (sumLength == null || sumLength <= MAX_SIZE_DISTINCTEXISTINGVALUES) {
+				if (time < 0 || time > 500) {
+					cache.put(key, result);
+					icCache.put(key, incomplete[0]);
+					wnCache.put(key, withNull[0]);
+				}
 			}
 		}
 		return result;
 	}
 
 	@SuppressWarnings("unchecked")
-	private void sortValues(LinkedHashMap<String, Integer> resultMap, int columnIndex) {
+	private void sortValues(Map<String, Integer> resultMap, int columnIndex) {
 		List<String> result = new ArrayList<String>(resultMap.keySet());
 		if (cellEditor.useCaseIntensitiveOrderingInGUI(columnIndex)) {
 			result.sort(String::compareToIgnoreCase);
@@ -2243,11 +2252,13 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				result.sort(String::compareToIgnoreCase);
 			}
 		}
-		Map<String, Integer> unsorted = new HashMap<String, Integer>(resultMap);
-		resultMap.clear();
-		result.forEach(s -> {
-			resultMap.put(s, unsorted.get(s));
-		});
+		synchronized (resultMap) {
+			Map<String, Integer> unsorted = new HashMap<String, Integer>(resultMap);
+			resultMap.clear();
+			result.forEach(s -> {
+				resultMap.put(s, unsorted.get(s));
+			});
+		}
 	}
 
 	protected boolean inSQLConsole() {
@@ -2255,7 +2266,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	}
 
 	private void loadValues(Comparison comparison, Object cancellationContext, int[] incomplete, boolean[] withNull, String condition,
-			final int MAX_TEXT_LENGTH, LinkedHashMap<String, Integer> result, String tabName, int columnIndex,
+			final int MAX_TEXT_LENGTH, Map<String, Integer> result, String tabName, int columnIndex,
 			String extJoin, boolean orderBy) throws SQLException {
 		String columnName = CellContentConverter.prepareForComparison(session, comparison.column);
 		if (tableAlias != null) {
