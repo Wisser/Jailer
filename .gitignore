@@ -18,12 +18,11 @@ tmp/
 .lastsession
 .pathhistory
 by-example/
-render/
 bookmark/
 scratch/
-script/
-jailer.json
 downloads/
 nbproject/build-impl.xml
 condition/
 nbproject/
+target/
+.flattened-pom.xml
