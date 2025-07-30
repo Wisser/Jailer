@@ -1,3 +1,6 @@
+16.7.1
+  - Fix: In rare cases, a ConcurrentModificationException could occur when searching for column values in the data browser.
+
 16.7
   - Fix: "Invalid insert statements when overriding a generated key in DB2 LUW #124"
     https://github.com/Wisser/Jailer/issues/124
