@@ -64,6 +64,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.Jailer;
 import net.sf.jailer.JailerVersion;
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.database.BasicDataSource;
@@ -2389,6 +2390,13 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 	 */
 	public static void main(String args[]) {
 		try {
+			if (args.length > 0 && args[0].matches("export|import|delete|create-ddl|build-model|render-datamodel|print-closure")) {
+				String cmd = "sh jailer.sh";
+				if (System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH).startsWith("windows")) {
+					cmd = "jailer.bat";
+				}
+				throw new RuntimeException("Please use the script \"" + cmd + "\" to run the Jailer engine via the command line interface.");
+			}
 			List<String> aList = new ArrayList<String>(Arrays.asList(args));
 			aList.remove("JailerDataBrowser"); // legacy
 			if (aList.size() != 1) {
