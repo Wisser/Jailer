@@ -1,3 +1,7 @@
+16.8
+  - Fix: The universal primary key could be created incorrectly if the data model contained primary key columns of the same type
+    with and without length specifications (e.g. NUMBER and NUMBER(8)) and nullable primary key columns.
+
 16.7.1
   - Fix: In rare cases, a ConcurrentModificationException could occur when searching for column values in the data browser.
 
