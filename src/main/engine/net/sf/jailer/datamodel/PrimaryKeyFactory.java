@@ -121,32 +121,22 @@ public class PrimaryKeyFactory {
 						continue;
 					}
 					Column uPKColumn = universalPrimaryKey.getColumns().get(i);
-					if (uPKColumn.type.equalsIgnoreCase(column.type) && column.precision < 0 && uPKColumn.precision < 0) {
-						if (column.length > 0 && uPKColumn.length > 0 && column.length > uPKColumn.length) {
-							// increase length
-							universalPrimaryKey.getColumns().set(
-									i,
-									new Column(uPKColumn.name, uPKColumn.type,
-											column.length, column.precision));
-						}
+					if (PrimaryKey.isAssignable(uPKColumn, column)) {
 						assigned = true;
 						assignedUPKColumns.add(i);
 						break;
-					}
-					if (uPKColumn.type.equalsIgnoreCase(column.type) && column.precision >= 0 && uPKColumn.precision >= 0
-							&& (column.length >= uPKColumn.length && column.precision >= uPKColumn.precision
-							 || column.length <= uPKColumn.length && column.precision <= uPKColumn.precision)) {
-						if (column.length > 0 && column.length > uPKColumn.length) {
+					} else {
+						if (PrimaryKey.isIncreasable(uPKColumn, column)) {
 							// increase length
 							universalPrimaryKey.getColumns().set(
 									i,
 									new Column(uPKColumn.name, uPKColumn.type,
 											Math.max(column.length, uPKColumn.length),
 											Math.max(column.precision,uPKColumn.precision)));
+							assigned = true;
+							assignedUPKColumns.add(i);
+							break;
 						}
-						assigned = true;
-						assignedUPKColumns.add(i);
-						break;
 					}
 				}
 				if (!assigned) {
@@ -164,10 +154,10 @@ public class PrimaryKeyFactory {
 					Column uPKColumn = universalPrimaryKey.getColumns().get(i);
 					Column column = columns.get(n);
 
-					if(PrimaryKey.isAssignable(uPKColumn,column)) {
+					if (PrimaryKey.isAssignable(uPKColumn, column)) {
 						++n;
 					} else {
-						if(PrimaryKey.isIncreasable(uPKColumn, column)) {
+						if (PrimaryKey.isIncreasable(uPKColumn, column)) {
 							// increase length
 							universalPrimaryKey.getColumns().set(
 									i,
@@ -176,7 +166,6 @@ public class PrimaryKeyFactory {
 											Math.max(column.precision,uPKColumn.precision)));
 							++n;
 						}
-
 					}
 					if(n>=columns.size()) {
 						break;

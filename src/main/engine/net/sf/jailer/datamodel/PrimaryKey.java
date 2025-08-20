@@ -110,7 +110,7 @@ public class PrimaryKey {
 		}
 		
 		if (match.size() != primaryKey.columns.size()) {
-			throw new IllegalStateException("incomplete PK-UPK-match (" + minimize + ")\n"
+			throw new IllegalStateException("incomplete PK-UPK-match (" + Configuration.getInstance().getDoMinimizeUPK() + ", " + !primaryKey.needsOrderedMatch + ")\n"
 					+ "PK: " + primaryKey.toSQL(null) + "\n"
 					+ "UPK: " + toSQL(null) + "\n"
 					+ "Match: " + match + "\n");
@@ -228,15 +228,15 @@ public class PrimaryKey {
 	}
 
 	public static boolean isIncreasable(Column uPKColumn, Column column) {
-		if(!uPKColumn.type.equals(column.type)) {
+		if(!uPKColumn.type.equalsIgnoreCase(column.type)) {
 			return false;
 		}
 
-		if((uPKColumn.precision < 0) && (column.precision >=0) ) {
+		if((uPKColumn.precision < 0) && (column.precision >= 0) ) {
 			return false;
 		}
 
-		if((uPKColumn.precision >=0) && (column.precision < 0)) {
+		if((uPKColumn.precision >= 0) && (column.precision < 0)) {
 			return false;
 		}
 
@@ -257,3 +257,7 @@ public class PrimaryKey {
 	}
 
 }
+
+
+// TODO
+// TODO jailer-console (UIUtil, bei analyse z.b.) geht wohl nicht mehr?
