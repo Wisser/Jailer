@@ -257,7 +257,3 @@ public class PrimaryKey {
 	}
 
 }
-
-
-// TODO
-// TODO jailer-console (UIUtil, bei analyse z.b.) geht wohl nicht mehr?
