@@ -2,4 +2,8 @@ gpg -ab jailer-engine-VERSION.jar
 gpg -ab jailer-engine-VERSION-sources.jar
 gpg -ab jailer-engine-VERSION-javadoc.jar
 gpg -ab jailer-engine-VERSION.pom
-zip oss.zip *.jar *.pom *.asc
+forfiles /s /m *.jar /c "cmd /c CertUtil -hashfile @path MD5 > @path.md5"
+forfiles /s /m *.jar /c "cmd /c CertUtil -hashfile @path sha1 > @path.sha1"
+forfiles /s /m *.pom /c "cmd /c CertUtil -hashfile @path MD5 > @path.md5"
+forfiles /s /m *.pom /c "cmd /c CertUtil -hashfile @path sha1 > @path.sha1"
+zip oss.zip *.jar *.pom *.asc *.sha1 *.md5
