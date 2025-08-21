@@ -2456,9 +2456,13 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		exportLabel.setForeground(fg);
 
 		boolean err = false;
+		JComponent errComp = null;
+		JLabel errLabel = null;
 		if (insert.getText().trim().length() == 0 && (!delete.isVisible() || delete.getText().trim().length() == 0)) {
 			exportLabel.setForeground(Colors.Color_255_0_0);
 			err = true;
+			errComp = insert;
+			errLabel = exportLabel;
 		}
 		if (scriptFormat == ScriptFormat.INTRA_DATABASE) {
 			for (Map.Entry<String, JTextField> e: schemaMappingFields.entrySet()) {
@@ -2467,6 +2471,8 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 					if (e.getValue().getText().trim().length() == 0) {
 						label.setForeground(Colors.Color_255_0_0);
 						err = true;
+						errComp = e.getValue();
+						errLabel = label;
 					} else {
 						label.setForeground(fg);
 					}
@@ -2474,7 +2480,10 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			}
 		}
 		if (err) {
-			JOptionPane.showMessageDialog(this, "Unfilled mandatory fields", "Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, "Unfilled mandatory fields" + (errLabel == null? "" : " (\"" + errLabel.getText().trim() + "\")"), "Error", JOptionPane.ERROR_MESSAGE);
+			if (errComp != null) {
+				errComp.grabFocus();
+			}
 		} else {
 			if (defaultExportFileName != null) {
 				defaultExportFileName.setLength(0);
