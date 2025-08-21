@@ -20,6 +20,7 @@ import java.sql.Clob;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLXML;
 import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
@@ -245,6 +246,9 @@ public class FlatXMLTransformer extends AbstractResultSetReader {
 			object = resultSet.getTime(i);
 		} else if (type == Types.DATE) {
 			object = resultSet.getDate(i);
+		} else if (type == Types.SQLXML) {
+			SQLXML sqlXml = resultSet.getSQLXML(i);
+			object = sqlXml != null ? sqlXml.getString() : null;
 		} else {
 			object = resultSet.getObject(i);
 		}
@@ -294,3 +298,4 @@ public class FlatXMLTransformer extends AbstractResultSetReader {
 	}
 
 }
+
