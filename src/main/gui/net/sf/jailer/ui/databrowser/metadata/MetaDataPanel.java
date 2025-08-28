@@ -818,8 +818,28 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             	 }
             	 if (evt.getButton() == MouseEvent.BUTTON3) {
                     if (mdTable != null || !mdTables.isEmpty() || userObject instanceof MDDatabase || userObject instanceof MDSchema) {
-//                    	int itemCount = 0;
+                        Table table = MetaDataPanel.this.metaDataSource.toTable(mdTable);
                         JPopupMenu popup = new JPopupMenu();
+                        if (mdTable != null) {
+	                        JMenuItem open = new JMenuItem("Select *");
+	                        popup.add(open);
+	                        open.addActionListener(new ActionListener() {
+	                            @Override
+	                            public void actionPerformed(ActionEvent e) {
+	                                openTable(mdTable);
+	                            }
+	                        });
+                        }
+                        if (table != null) {
+	                        JMenuItem open = new JMenuItem("Open in Navigation");
+	                        popup.add(open);
+	                        open.addActionListener(new ActionListener() {
+	                            @Override
+	                            public void actionPerformed(ActionEvent e) {
+	                            	openInNavigation(table);
+	                            }
+	                        });
+                        }
                         JMenuItem ddl = new JMenuItem(DDLScriptGeneratorPanel.TITLE);
                         ddl.setToolTipText(DDLScriptGeneratorPanel.TOOLTIP);
                         String preselectedSchema = userObject instanceof MDDatabase? null : userObject instanceof MDSchema? ((MDSchema) userObject).getName() : userObject instanceof MDTable? ((MDTable) userObject).getSchema().getName() : null;
@@ -846,25 +866,13 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 								DDLScriptGeneratorPanel.open(SwingUtilities.getWindowAncestor(MetaDataPanel.this), preselectedSchema != null? Quoting.staticUnquote(preselectedSchema) : null, dataModel, finalSelectedTables, null, true, metaDataSource.getSession(), executionContext);
                             }
                         });
-                        popup.add(ddl);
-                        if (mdTable != null) {
-	                        JMenuItem open = new JMenuItem("Open");
-	                        popup.add(open);
-//	                        ++itemCount;
-	                        open.addActionListener(new ActionListener() {
-	                            @Override
-	                            public void actionPerformed(ActionEvent e) {
-	                                openTable(mdTable);
-	                            }
-	                        });
+                        if (popup.getComponentCount() > 0) {
+                        	popup.add(new JSeparator());
                         }
-                        if (mdTable != null && MetaDataPanel.this.metaDataSource.toTable(mdTable) == null) {
-//                            if (itemCount > 0) {
-//                            	popup.add(new JSeparator());
-//                            }
+                        popup.add(ddl);
+						if (mdTable != null && table == null) {
                             JMenuItem analyse = new JMenuItem("Analyse schema \""+ mdTable.getSchema().getUnquotedName() + "\"");
                             popup.add(analyse);
-//                            ++itemCount;
                             analyse.addActionListener(new ActionListener() {
                                 @Override
                                 public void actionPerformed(ActionEvent e) {
@@ -873,16 +881,8 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                             });
                         }
                         if (!mdTables.isEmpty()) {
-//                            if (itemCount > 0) {
-//                            	popup.add(new JSeparator());
-//                            }
-//                            JMenu menu = new JMenu("Create Script");
-//                            popup.add(menu);
-//                            ++itemCount;
                             Point pos = new Point(evt.getX(), evt.getY());
 							SwingUtilities.convertPointToScreen(pos, evt.getComponent());
-//                            menu.add(createScriptMenuItem("\"Create Table\" Script", "DDL", "", mdTables, false, pos));
-//                            menu.add(createScriptMenuItem("\"Drop Table\" Script", "Drop %2$s %1$s;", "", mdTables, false, pos));
 							popup.add(new JSeparator());
 							popup.add(createScriptMenuItem("\"Delete\" Script", "Delete from %1$s;", "", mdTables, false, pos));
 							popup.add(createScriptMenuItem("\"Count Rows\" Script", "Select '%1$s' as Tab, count(*) as NumberOfRows From %1$s", " union all", mdTables, true, pos));
@@ -2121,6 +2121,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 
     protected abstract void open(Table table);
     protected abstract void open(MDTable mdTable);
+    protected abstract void openInNavigation(Table table);
     protected abstract void analyseSchema(String schemaName);
     protected abstract void onTableSelect(MDTable mdTable);
     protected abstract void onRowSelect(Table mdTable, Row row);

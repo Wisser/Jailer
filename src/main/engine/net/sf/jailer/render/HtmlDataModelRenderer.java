@@ -478,7 +478,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 		} catch (Throwable t) {
 			// ignore
 		}
-		PrintWriter out = new PrintWriter(new FileOutputStream(file));
+		PrintWriter out = new PrintWriter(file, SqlUtil.getDefaultCharset());
 		out.print(encodeUnencodableChars(content));
 		out.close();
 		_log.info("file '" + file + "' written");
@@ -501,7 +501,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
     
 	private static String encodeUnencodableChars(String content) {
 		try {
-			CharsetEncoder encoder = Charset.defaultCharset().newEncoder();
+			CharsetEncoder encoder = SqlUtil.getDefaultCharset().newEncoder();
 			StringBuilder sb = null;
 			int l = content.length();
 			for (int i = 0; i < l; ++i) {

@@ -388,6 +388,8 @@ public class CsvFile {
 			if (!DEFAULT_CHARSET_ENCODER_INITIALIZED) {
 				DEFAULT_CHARSET_ENCODER_INITIALIZED = true;
 				DEFAULT_CHARSET_ENCODER = Charset.defaultCharset().newEncoder();
+				// TODO
+				// TODO prüfen
 			} else if (DEFAULT_CHARSET_ENCODER == null) {
 				return content;
 			}

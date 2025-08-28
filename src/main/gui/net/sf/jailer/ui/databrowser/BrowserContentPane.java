@@ -7779,13 +7779,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		Window p = SwingUtilities.getWindowAncestor(rowsTable);
 		if (p != null) {
 			int maxX = p.getX() + p.getWidth() - d.getWidth() - 8;
-			d.setLocation(Math.max(0, Math.min(maxX, d.getX())), d.getY());
+			d.setLocation(Math.min(maxX, d.getX()), d.getY());
 			int maxY = p.getY() + p.getHeight() - d.getHeight();
 			if (maxY < d.getY()) {
 				int deltaH = Math.min(d.getY() - maxY, (int) (0.30 * d.getHeight()));
 				maxY += deltaH;
 				d.setSize(d.getWidth(), d.getHeight() - deltaH);
-				d.setLocation(d.getX(), Math.max(0, maxY));
+				d.setLocation(d.getX(), maxY);
 			}
 		}
 		d.addWindowListener(new WindowAdapter() {

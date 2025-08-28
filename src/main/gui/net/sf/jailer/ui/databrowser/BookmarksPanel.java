@@ -154,7 +154,7 @@ public class BookmarksPanel extends javax.swing.JPanel {public static final Stri
  		dialog.getContentPane().add(this);
  		dialog.pack();
  		UIUtil.setDialogSize(dialog, 440, 440);
- 		dialog.setLocation(owner.getX() + (owner.getWidth() - dialog.getWidth()) / 2, Math.max(0, owner.getY() + (owner.getHeight() - dialog.getHeight()) / 2));
+ 		dialog.setLocation(owner.getX() + (owner.getWidth() - dialog.getWidth()) / 2, owner.getY() + (owner.getHeight() - dialog.getHeight()) / 2);
  		UIUtil.fit(dialog);
 
  		ListEditor<StringBuilder> tableEditor = createListEditor(false);
@@ -188,7 +188,7 @@ public class BookmarksPanel extends javax.swing.JPanel {public static final Stri
  		dialog.getContentPane().add(this);
  		dialog.pack();
  		UIUtil.setDialogSize(dialog, 440, 440);
- 		dialog.setLocation(owner.getX() + (owner.getWidth() - dialog.getWidth()) / 2, Math.max(0, owner.getY() + (owner.getHeight() - dialog.getHeight()) / 2));
+ 		dialog.setLocation(owner.getX() + (owner.getWidth() - dialog.getWidth()) / 2, owner.getY() + (owner.getHeight() - dialog.getHeight()) / 2);
  		UIUtil.fit(dialog);
 
  		nameField.setVisible(false);

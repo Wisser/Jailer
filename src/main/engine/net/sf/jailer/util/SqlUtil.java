@@ -829,7 +829,7 @@ public class SqlUtil {
 		BufferedReader bufferedReader;
 		InputStream inputStream = new FileInputStream(file);
 		
-		Charset encoding = Charset.defaultCharset();
+		Charset encoding = getDefaultCharset();
 		
 		Charset uTF8 = null;
 		try {
@@ -849,13 +849,34 @@ public class SqlUtil {
 			} else {
 				bufferedReader = new BufferedReader(new InputStreamReader(inputStream, uTF8), 1);
 			}
-			String line = bufferedReader.readLine();
-			if (line != null && line.contains("encoding UTF-8")) {
+			StringBuilder line = new StringBuilder();
+			int i = 0;
+			for (int c = bufferedReader.read(); c >= 0 && i < 200; c = bufferedReader.read(), ++i) {
+				line.append((char) c);
+			}
+			if (line != null && line.toString().contains("encoding UTF-8")) {
 				encoding = uTF8;
 			}
 			bufferedReader.close();
 		}
 		return encoding;
+	}
+
+	private static Charset defaultEncoding;
+	
+	public synchronized static Charset getDefaultCharset() {
+		if (defaultEncoding == null) {
+			String nativeEncoding = System.getProperty("native.encoding");
+			if (nativeEncoding != null) {
+				defaultEncoding = Charset.forName(nativeEncoding, Charset.defaultCharset());
+			} else {
+				defaultEncoding = Charset.defaultCharset();
+			}
+System.out.println(defaultEncoding); // TODO
+// TODO test
+// TODO json immer UTF-8
+		}
+		return defaultEncoding;
 	}
 	
 	// https://jdbc.postgresql.org/documentation/publicapi/constant-values.html

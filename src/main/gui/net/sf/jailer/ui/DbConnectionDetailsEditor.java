@@ -1004,7 +1004,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		pack();
 		setSize(Math.max(670, getWidth()), getHeight() + 32);
 		if (parent != null) {
-			setLocation(parent.getX() + Math.max(0, (parent.getWidth() - getWidth()) / 2), Math.max(0, parent.getY() + (parent.getHeight() - getHeight()) / 2));
+			setLocation(parent.getX() + Math.max(0, (parent.getWidth() - getWidth()) / 2), parent.getY() + (parent.getHeight() - getHeight()) / 2);
 		} else {
 			setLocation(120, 170);
 		}

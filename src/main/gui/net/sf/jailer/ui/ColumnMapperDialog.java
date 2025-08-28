@@ -178,8 +178,8 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 		tableLabel.setText(dataModel.getDisplayName(table));
 		int w = 1200, h = 600;
 		setSize(w, h);
-		setLocation(Math.max(0, parent.getX() + parent.getWidth() / 2 - w / 2),
-					Math.max(0, parent.getY() + parent.getHeight() / 2 - h / 2));
+		setLocation(parent.getX() + parent.getWidth() / 2 - w / 2,
+					parent.getY() + parent.getHeight() / 2 - h / 2);
 		jSplitPane1.setDividerLocation((int) (w * 0.66));
 		invalidate();
 		try {

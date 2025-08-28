@@ -1261,7 +1261,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 					if (whereConditionEditorPanel != null) {
 						dialog.setSize(wid, Math.min(Math.max(dialog.getHeight(), 260), 600));
 					}
-					dialog.setLocation(Math.max(0, Math.min(maxX, dialog.getX())), dialog.getY());
+					dialog.setLocation(Math.min(maxX, dialog.getX()), dialog.getY());
 					int maxY = getY() + getHeight() - dialog.getHeight() - 8;
 					if (maxY < dialog.getY()) {
 						int deltaH = Math.min(dialog.getY() - maxY, (int) (0.30 * dialog.getHeight()));
@@ -1269,7 +1269,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 						if (whereConditionEditorPanel != null) {
 							dialog.setSize(dialog.getWidth(), dialog.getHeight() - deltaH);
 						}
-						dialog.setLocation(dialog.getX(), Math.max(0, maxY));
+						dialog.setLocation(dialog.getX(), maxY);
 					}
 					UIUtil.invokeLater(() -> {
 						UIUtil.invokeLater(() -> dialog.requestFocus());

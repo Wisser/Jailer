@@ -82,7 +82,7 @@ public class CLIPanel extends javax.swing.JPanel {
  		dialog.getContentPane().add(this);
  		dialog.pack();
  		dialog.setSize(700, 240);
- 		dialog.setLocation(owner.getX() + (owner.getWidth() - dialog.getWidth()) / 2, Math.max(0, owner.getY() + (owner.getHeight() - dialog.getHeight()) / 2));
+ 		dialog.setLocation(owner.getX() + (owner.getWidth() - dialog.getWidth()) / 2, owner.getY() + (owner.getHeight() - dialog.getHeight()) / 2);
  		UIUtil.fit(dialog);
  		dialog.setVisible(true);
     }

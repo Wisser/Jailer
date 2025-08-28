@@ -680,7 +680,7 @@ public class SubsettingEngine {
 		TransformerHandler transformerHandler = null;
 		ImportFilterManager importFilterManager = null;
 		result = null;
-		Charset charset = Charset.defaultCharset();
+		Charset charset = SqlUtil.getDefaultCharset();
 		if (executionContext.getUTF8()) {
 			charset = Charset.forName("UTF8");
 		}
@@ -707,11 +707,7 @@ public class SubsettingEngine {
 
 			transformerHandler.startElement("", "", "changeSet", attrchangeset);
 		} else {
-			if (executionContext.getUTF8()) {
-				result = new OutputStreamWriter(outputStream, charset);
-			} else {
-				result = new OutputStreamWriter(outputStream);
-			}
+			result = new OutputStreamWriter(outputStream, charset);
 			result.append(commentHeader);
 			for (ScriptEnhancer enhancer: Configuration.getScriptEnhancer()) {
 				enhancer.addComments(result, scriptType, session, targetDBMSConfiguration(session), entityGraph, progress, executionContext);
@@ -1249,7 +1245,7 @@ public class SubsettingEngine {
 		Set<Table> cyclicAggregatedTables = getCyclicAggregatedTables(progress);
 		_log.info("cyclic aggregated tables: " + new PrintUtil().tableSetAsString(cyclicAggregatedTables));
 
-		Charset charset = Charset.defaultCharset();
+		Charset charset = SqlUtil.getDefaultCharset();
 		if (executionContext.getUTF8()) {
 			charset = Charset.forName("UTF8");
 		}
@@ -1589,7 +1585,7 @@ public class SubsettingEngine {
 				entityGraph = RemoteEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, rowIdSupport.getUniversalPrimaryKey(session), updateStatistics, executionContext);
 			}
 
-			Charset charset = Charset.defaultCharset();
+			Charset charset = SqlUtil.getDefaultCharset();
 			if (executionContext.getUTF8()) {
 				charset = Charset.forName("UTF8");
 				appendCommentHeader("encoding " + charset.name());

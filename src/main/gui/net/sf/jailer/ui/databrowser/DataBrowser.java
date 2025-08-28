@@ -5912,13 +5912,13 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 				int wid = Math.max(minWidth, dialog.getWidth());
 				int maxX = getX() + getWidth() - wid - 8;
 				dialog.setSize(wid, Math.min(height, 600));
-				dialog.setLocation(Math.max(0, Math.min(maxX, dialog.getX())), dialog.getY());
+				dialog.setLocation(Math.min(maxX, dialog.getX()), dialog.getY());
 				int maxY = getY() + getHeight() - dialog.getHeight() - 8;
 				if (maxY < dialog.getY()) {
 					int deltaH = Math.min(dialog.getY() - maxY, (int) (0.30 * dialog.getHeight()));
 					maxY += deltaH;
 					dialog.setSize(dialog.getWidth(), dialog.getHeight() - deltaH);
-					dialog.setLocation(dialog.getX(), Math.max(0, maxY));
+					dialog.setLocation(dialog.getX(), maxY);
 				}
 				popUpWhereConditionEditorPanel.prepareStringSearchPanelOfInitialColumn(dialog);
 				UIUtil.invokeLater(4, () -> {
@@ -6246,6 +6246,12 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 								} catch (SQLException e) {
 									UIUtil.showException(this, "Error", e);
 								}
+							}
+
+							@Override
+							protected void openInNavigation(Table table) {
+								desktop.addTableBrowser(null, null, table, null, "", null, true);
+								switchToDesktop();
 							}
 
 							@Override
