@@ -821,7 +821,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                         Table table = MetaDataPanel.this.metaDataSource.toTable(mdTable);
                         JPopupMenu popup = new JPopupMenu();
                         if (mdTable != null) {
-	                        JMenuItem open = new JMenuItem("Select *");
+	                        JMenuItem open = new JMenuItem("Select * from " + mdTable.getName());
 	                        popup.add(open);
 	                        open.addActionListener(new ActionListener() {
 	                            @Override

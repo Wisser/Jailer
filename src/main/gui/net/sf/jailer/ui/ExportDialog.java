@@ -402,6 +402,16 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			upsertCheckbox.setEnabled(ScriptFormat.SQL.equals(scriptFormat) || ScriptFormat.INTRA_DATABASE.equals(scriptFormat));
 			rowsPerThread.setEnabled(ScriptFormat.SQL.equals(scriptFormat));
 			insertIncrementally.setEnabled(session.dbms.getLimitTransactionSize().getLimit() != 0);
+			
+			if (scriptFormat.isUsesUTF8()) {
+				unicode.setSelected(true);
+				unicode.setEnabled(false);
+			}
+			
+			if (scriptFormat.isObjectNotation()) {
+				sortedCheckBox.setVisible(false);
+				upsertCheckbox.setVisible(false);
+			}
 
 			Map<JTextField, String> defaults = new HashMap<JTextField, String>();
 
@@ -2776,7 +2786,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			args.add("-isolation-level");
 			args.add(isolationLevel.toString());
 		}
-		if (unicode.isSelected()) {
+		if (unicode.isSelected() && unicode.isEnabled()) {
 			args.add("-UTF8");
 		}
 		if (upsertCheckbox.isSelected()) {

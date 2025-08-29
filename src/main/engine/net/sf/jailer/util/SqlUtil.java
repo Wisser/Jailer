@@ -826,7 +826,6 @@ public class SqlUtil {
 	 */
 	public static Charset retrieveEncoding(String scriptFileName) throws FileNotFoundException, IOException {
 		File file = new File(scriptFileName);
-		BufferedReader bufferedReader;
 		InputStream inputStream = new FileInputStream(file);
 		
 		Charset encoding = getDefaultCharset();
@@ -839,25 +838,33 @@ public class SqlUtil {
 		}
 		
 		if (uTF8 != null) {
-			// retrieve encoding
-			if (scriptFileName.toLowerCase(Locale.ENGLISH).endsWith(".gz")) {
-				bufferedReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream), uTF8), 1);
-			} else if (scriptFileName.toLowerCase(Locale.ENGLISH).endsWith(".zip")) {
-				ZipInputStream zis = new ZipInputStream(new FileInputStream(scriptFileName)); // lgtm [java/input-resource-leak]
-				zis.getNextEntry();
-				bufferedReader = new BufferedReader(new InputStreamReader(zis, uTF8), 1);
+			String lcScriptFileName = scriptFileName.toLowerCase(Locale.ENGLISH);
+			if (lcScriptFileName.endsWith(".yaml") || lcScriptFileName.endsWith(".yml") || lcScriptFileName.endsWith(".json") ||
+				lcScriptFileName.endsWith(".yaml.zip") || lcScriptFileName.endsWith(".yml.zip") || lcScriptFileName.endsWith(".json.zip") ||
+				lcScriptFileName.endsWith(".yaml.gz") || lcScriptFileName.endsWith(".yml.gz") || lcScriptFileName.endsWith(".json.gz")) {
+					encoding = uTF8;
 			} else {
-				bufferedReader = new BufferedReader(new InputStreamReader(inputStream, uTF8), 1);
+				// retrieve encoding
+				BufferedReader bufferedReader;
+				if (lcScriptFileName.endsWith(".gz")) {
+					bufferedReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream), uTF8));
+				} else if (lcScriptFileName.endsWith(".zip")) {
+					ZipInputStream zis = new ZipInputStream(new FileInputStream(scriptFileName)); // lgtm [java/input-resource-leak]
+					zis.getNextEntry();
+					bufferedReader = new BufferedReader(new InputStreamReader(zis, uTF8));
+				} else {
+					bufferedReader = new BufferedReader(new InputStreamReader(inputStream, uTF8));
+				}
+				StringBuilder line = new StringBuilder();
+				int i = 0;
+				for (int c = bufferedReader.read(); c >= 0 && i < 200; c = bufferedReader.read(), ++i) {
+					line.append((char) c);
+				}
+				if (line != null && line.toString().contains("encoding UTF-8")) {
+					encoding = uTF8;
+				}
+				bufferedReader.close();
 			}
-			StringBuilder line = new StringBuilder();
-			int i = 0;
-			for (int c = bufferedReader.read(); c >= 0 && i < 200; c = bufferedReader.read(), ++i) {
-				line.append((char) c);
-			}
-			if (line != null && line.toString().contains("encoding UTF-8")) {
-				encoding = uTF8;
-			}
-			bufferedReader.close();
 		}
 		return encoding;
 	}
@@ -872,9 +879,6 @@ public class SqlUtil {
 			} else {
 				defaultEncoding = Charset.defaultCharset();
 			}
-System.out.println(defaultEncoding); // TODO
-// TODO test
-// TODO json immer UTF-8
 		}
 		return defaultEncoding;
 	}

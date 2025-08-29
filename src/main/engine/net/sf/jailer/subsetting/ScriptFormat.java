@@ -25,47 +25,48 @@ public enum ScriptFormat {
 	/**
 	 * SQL DML.
 	 */
-	SQL("SQL", "SQL Export", ".sql", false, false),
+	SQL("SQL", "SQL Export", ".sql", false, false, false),
 
 	/**
 	 * Intra database export.
 	 */
-	INTRA_DATABASE("Schema in same database", "Intra Database Export - Receipt File", ".txt", false, true),
+	INTRA_DATABASE("Schema in same database", "Intra Database Export - Receipt File", ".txt", false, true, false),
 	
 	/**
 	 * Template based JSON.
 	 */
-	JSON("JSON", "JSON Export", ".json", true, false),
+	JSON("JSON", "JSON Export", ".json", true, false, true),
 
 	/**
 	 * Template based YAML.
 	 */
-	YAML("YAML", "YAML Export", ".yaml", true, false),
+	YAML("YAML", "YAML Export", ".yaml", true, false, true),
 
 	/**
 	 * Template based XML.
 	 */
-	XML("XML", "XML Export", ".xml", true, true),
+	XML("XML", "XML Export", ".xml", true, true, false),
 
 	/**
 	 * DbUnit's FlatXmlDataSet format.
 	 */
-	DBUNIT_FLAT_XML("DbUnit flat dataset", "DbUnit flat dataset Export", ".xml", false, false),
+	DBUNIT_FLAT_XML("DbUnit flat dataset", "DbUnit flat dataset Export", ".xml", false, false, false),
 	
 	
-	LIQUIBASE_XML("Liquibase", "Liquibase Export", ".xml", false, false);
+	LIQUIBASE_XML("Liquibase", "Liquibase Export", ".xml", false, false, false);
 
 	/**
 	 * Constructor.
 	 * 
 	 * @param displayName human readable name
 	 */
-	private ScriptFormat(String displayName, String fileChooserTitle, String fileExtension, boolean isObjectNotation, boolean separatorFollowed) {
+	private ScriptFormat(String displayName, String fileChooserTitle, String fileExtension, boolean isObjectNotation, boolean separatorFollowed, boolean usesUTF8) {
 		this.displayName = displayName;
 		this.fileChooserTitle = fileChooserTitle;
 		this.fileExtension = fileExtension;
 		this.isObjectNotation = isObjectNotation;
 		this.separatorFollowed = separatorFollowed;
+		this.usesUTF8 = usesUTF8;
 	}
 
 	/**
@@ -94,6 +95,11 @@ public enum ScriptFormat {
 	 * Is object notation format? (XML, jSON, YAML, ...)
 	 */
 	private final boolean isObjectNotation;
+	
+	/**
+	 * Uses UTF-8 charset?
+	 */
+	private final boolean usesUTF8;
 	
 	/**
 	 * Is followed by separator in drop-down-list?
@@ -125,4 +131,11 @@ public enum ScriptFormat {
 		return fileExtension;
 	}
 	
+	/**
+	 * Uses UTF-8 charset?
+	 */
+	public boolean isUsesUTF8() {
+		return usesUTF8;
+	}
+
 }

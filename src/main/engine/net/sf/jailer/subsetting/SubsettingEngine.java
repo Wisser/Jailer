@@ -681,7 +681,7 @@ public class SubsettingEngine {
 		ImportFilterManager importFilterManager = null;
 		result = null;
 		Charset charset = SqlUtil.getDefaultCharset();
-		if (executionContext.getUTF8()) {
+		if (executionContext.getUTF8() || executionContext.getScriptFormat().isUsesUTF8()) {
 			charset = Charset.forName("UTF8");
 		}
 		if (scriptType == ScriptType.INSERT && ScriptFormat.DBUNIT_FLAT_XML.equals(executionContext.getScriptFormat())) {
@@ -1246,7 +1246,7 @@ public class SubsettingEngine {
 		_log.info("cyclic aggregated tables: " + new PrintUtil().tableSetAsString(cyclicAggregatedTables));
 
 		Charset charset = SqlUtil.getDefaultCharset();
-		if (executionContext.getUTF8()) {
+		if (executionContext.getUTF8() || scriptFormat.isUsesUTF8()) {
 			charset = Charset.forName("UTF8");
 		}
 
@@ -1586,7 +1586,9 @@ public class SubsettingEngine {
 			}
 
 			Charset charset = SqlUtil.getDefaultCharset();
-			if (executionContext.getUTF8()) {
+			if (scriptFormat.isUsesUTF8()) {
+				charset = Charset.forName("UTF8");
+			} else if (executionContext.getUTF8()) {
 				charset = Charset.forName("UTF8");
 				appendCommentHeader("encoding " + charset.name());
 				appendCommentHeader("");
