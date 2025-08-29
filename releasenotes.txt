@@ -1,3 +1,9 @@
+16.9
+  - Fixed "DBUnit export of an XML column from a DB2 database doesn't work #127"
+    https://github.com/Wisser/Jailer/issues/127
+  - Improved support for multiple screen systems.
+  - Use of the system property ‘native.encoding’ (from Java 18 onwards)
+
 16.8
   - Fix: The universal primary key could be created incorrectly if the data model contained primary key columns of the same type
     with and without length specifications (e.g. NUMBER and NUMBER(8)) and nullable primary key columns.
