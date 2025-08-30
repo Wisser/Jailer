@@ -817,28 +817,35 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             		 findTables(mdTables, node.getLastPathComponent());
             	 }
             	 if (evt.getButton() == MouseEvent.BUTTON3) {
-                    if (mdTable != null || !mdTables.isEmpty() || userObject instanceof MDDatabase || userObject instanceof MDSchema) {
+            		 if (mdTable != null && !mdTables.contains(mdTable)) {
+            			 mdTables.clear();
+            			 mdTables.add(mdTable);
+            			 select(mdTable);
+            		 }
+            		 if (mdTable != null || !mdTables.isEmpty() || userObject instanceof MDDatabase || userObject instanceof MDSchema) {
                         Table table = MetaDataPanel.this.metaDataSource.toTable(mdTable);
                         JPopupMenu popup = new JPopupMenu();
-                        if (mdTable != null) {
-	                        JMenuItem open = new JMenuItem("Select * from " + mdTable.getName());
-	                        popup.add(open);
-	                        open.addActionListener(new ActionListener() {
-	                            @Override
-	                            public void actionPerformed(ActionEvent e) {
-	                                openTable(mdTable);
-	                            }
-	                        });
-                        }
-                        if (table != null) {
-	                        JMenuItem open = new JMenuItem("Open in Navigation");
-	                        popup.add(open);
-	                        open.addActionListener(new ActionListener() {
-	                            @Override
-	                            public void actionPerformed(ActionEvent e) {
-	                            	openInNavigation(table);
-	                            }
-	                        });
+                        if (mdTables.size() <= 1) {
+	                        if (mdTable != null) {
+		                        JMenuItem open = new JMenuItem("Select * from " + mdTable.getName());
+		                        popup.add(open);
+		                        open.addActionListener(new ActionListener() {
+		                            @Override
+		                            public void actionPerformed(ActionEvent e) {
+		                                openTable(mdTable);
+		                            }
+		                        });
+	                        }
+	                        if (table != null) {
+		                        JMenuItem open = new JMenuItem("Open in Navigation");
+		                        popup.add(open);
+		                        open.addActionListener(new ActionListener() {
+		                            @Override
+		                            public void actionPerformed(ActionEvent e) {
+		                            	openInNavigation(table);
+		                            }
+		                        });
+	                        }
                         }
                         JMenuItem ddl = new JMenuItem(DDLScriptGeneratorPanel.TITLE);
                         ddl.setToolTipText(DDLScriptGeneratorPanel.TOOLTIP);
