@@ -6,4 +6,6 @@ forfiles /s /m *.jar /c "cmd /c CertUtil -hashfile @path MD5 > @path.md5"
 forfiles /s /m *.jar /c "cmd /c CertUtil -hashfile @path sha1 > @path.sha1"
 forfiles /s /m *.pom /c "cmd /c CertUtil -hashfile @path MD5 > @path.md5"
 forfiles /s /m *.pom /c "cmd /c CertUtil -hashfile @path sha1 > @path.sha1"
-zip oss.zip *.jar *.pom *.asc *.sha1 *.md5
+mkdir io\github\wisser\jailer-engine\VERSION
+cp *.jar *.pom *.asc *.sha1 *.md5 io\github\wisser\jailer-engine\VERSION
+zip -r oss.zip io
