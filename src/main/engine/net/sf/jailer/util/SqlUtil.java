@@ -875,7 +875,11 @@ public class SqlUtil {
 		if (defaultEncoding == null) {
 			String nativeEncoding = System.getProperty("native.encoding");
 			if (nativeEncoding != null) {
-				defaultEncoding = Charset.forName(nativeEncoding, Charset.defaultCharset());
+				try {
+					defaultEncoding = Charset.forName(nativeEncoding);
+				} catch (Exception e) {
+					defaultEncoding = Charset.defaultCharset();
+				}
 			} else {
 				defaultEncoding = Charset.defaultCharset();
 			}

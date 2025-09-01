@@ -478,7 +478,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 		} catch (Throwable t) {
 			// ignore
 		}
-		PrintWriter out = new PrintWriter(file, SqlUtil.getDefaultCharset());
+		PrintWriter out = new PrintWriter(file, SqlUtil.getDefaultCharset().name());
 		out.print(encodeUnencodableChars(content));
 		out.close();
 		_log.info("file '" + file + "' written");
