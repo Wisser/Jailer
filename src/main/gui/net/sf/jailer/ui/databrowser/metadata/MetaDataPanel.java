@@ -823,7 +823,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             			 select(mdTable);
             		 }
             		 if (mdTable != null || !mdTables.isEmpty() || userObject instanceof MDDatabase || userObject instanceof MDSchema) {
-                        Table table = MetaDataPanel.this.metaDataSource.toTable(mdTable);
+                        Table table = mdTable == null? null : MetaDataPanel.this.metaDataSource.toTable(mdTable);
                         JPopupMenu popup = new JPopupMenu();
                         if (mdTables.size() <= 1) {
 	                        if (mdTable != null) {
