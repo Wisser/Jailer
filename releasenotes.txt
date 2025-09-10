@@ -1,3 +1,6 @@
+16.9.1
+  - Fix: The context menu of the SQL console was only available for tables due to an error.
+
 16.9
   - Fixed "DBUnit export of an XML column from a DB2 database doesn't work #127"
     https://github.com/Wisser/Jailer/issues/127
