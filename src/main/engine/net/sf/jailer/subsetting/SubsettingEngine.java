@@ -1174,10 +1174,15 @@ public class SubsettingEngine {
 	private void writeEntitiesAsXml(String xmlFile, final Set<Table> progress, final Set<Table> subjects, Session session, ScriptFormat scriptFormat) throws IOException, CancellationException, SQLException, SAXException {
 		_log.info("writing file '" + xmlFile + "'...");
 
-		OutputStream outputStream = new FileOutputStream(new File(xmlFile));
+		File file = new File(xmlFile);
+		File parent = file.getParentFile();
+		if (parent != null) {
+			parent.mkdirs();
+		}
+		OutputStream outputStream = new FileOutputStream(file);
 		if (xmlFile.toLowerCase(Locale.ENGLISH).endsWith(".zip")) {
 			outputStream = new ZipOutputStream(outputStream);
-			String zipFileName = new File(xmlFile).getName();
+			String zipFileName = file.getName();
 			((ZipOutputStream)outputStream).putNextEntry(new ZipEntry(zipFileName.substring(0, zipFileName.length() - 4)));
 		} else {
 			if (xmlFile.toLowerCase(Locale.ENGLISH).endsWith(".gz")) {
