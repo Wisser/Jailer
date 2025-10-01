@@ -251,7 +251,7 @@ public class RowCounter {
 
 			if (association != null) {
 				olapPrefix += " From (Select distinct ";
-				olapSuffix += ") S2 Where S2." + ROWNUMBERALIAS + " <= \" + limit";
+				olapSuffix += ") S2 Where S2." + ROWNUMBERALIAS + " <= " + limit;
 				boolean f = true;
 				for (Column pkColumn: rowIdSupport.getPrimaryKey(association.destination).getColumns()) {
 					if (!f) {
@@ -338,18 +338,23 @@ public class RowCounter {
 		if (sql.length() > 0) {
 			sql = "Select count(*) From (" + sql + ") JLASRCNT";
 			int timeout = (int) Math.max(1, (maxTime - System.currentTimeMillis()) / 1000);
-
-			session.executeQuery(sql, new Session.ResultSetReader() {
-
-				@Override
-				public void readCurrentRow(ResultSet resultSet) throws SQLException {
-					rc[0] = resultSet.getLong(1);
-				}
-
-				@Override
-				public void close() {
-				}
-			}, null, context, 0, timeout, false);
+			boolean oldLogStatements = session.getLogStatements();
+			try {
+				session.setLogStatements(false);
+				session.executeQuery(sql, new Session.ResultSetReader() {
+	
+					@Override
+					public void readCurrentRow(ResultSet resultSet) throws SQLException {
+						rc[0] = resultSet.getLong(1);
+					}
+	
+					@Override
+					public void close() {
+					}
+				}, null, context, 0, timeout, false);
+			} finally {
+				session.setLogStatements(oldLogStatements);
+			}
 		}
 		return rc[0];
 	}
