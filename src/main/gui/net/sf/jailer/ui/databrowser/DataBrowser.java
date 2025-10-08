@@ -7495,8 +7495,8 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		closeDarkIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/closedark.png"), 1.4);
 		closeOverIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/close_over.png"), 1.4);
 		runIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/run.png"));
-		sqlConsoleIcon = UIUtil.readImage("/runall.png");
-		desktopIcon = UIUtil.readImage("/navigation.png");
+		sqlConsoleIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/runall_32.png"), 1.3);
+		desktopIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/navigation_32.png"), 1.3);
 		addSqlConsoleIcon = UIUtil.readImage("/add.png");
 		navigationIcon = UIUtil.readImage("/navigation.png");
 		closureIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/closure.png"));

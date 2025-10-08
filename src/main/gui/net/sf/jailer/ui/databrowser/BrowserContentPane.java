@@ -3492,33 +3492,33 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		sqlDml.setIcon(genSQLIcon);
 		popup.add(sqlDml);
 		final String tableName = dataModel.getDisplayName(table);
-		JMenuItem update = new JMenuItem("Updates");
+		JMenuItem update = new JMenuItem(rows.size() == 1? "Update" : "Updates");
 		sqlDml.add(update);
 		update.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				openSQLDialog("Update " + tableName, x, y,  new Object() { @Override
-				public String toString() { return SQLDMLBuilder.buildUpdate(table, sortedAndFiltered(rows), false, session); }});
+				public String toString() { return SQLDMLBuilder.buildUpdate(table, sortedAndFiltered(rows), rows.size() == 1, session); }});
 			}
 		});
-		JMenuItem insert = new JMenuItem("Inserts");
+		JMenuItem insert = new JMenuItem(rows.size() == 1? "Insert" : "Inserts");
 		sqlDml.add(insert);
 		insert.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				openSQLDialog("Insert Into " + tableName, x, y, new Object() { @Override
-				public String toString() { return SQLDMLBuilder.buildInsert(table, sortedAndFiltered(rows), false, session); }});
+				public String toString() { return SQLDMLBuilder.buildInsert(table, sortedAndFiltered(rows), rows.size() == 1, session); }});
 			}
 		});
 		JMenuItem insertNewRow = createInsertChildMenu(sortedAndFiltered(rows), x, y);
 		sqlDml.add(insertNewRow);
-		JMenuItem delete = new JMenuItem("Deletes");
+		JMenuItem delete = new JMenuItem(rows.size() == 1? "Delete" : "Deletes");
 		sqlDml.add(delete);
 		delete.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				openSQLDialog("Delete from " + tableName, x, y,  new Object() { @Override
-				public String toString() { return SQLDMLBuilder.buildDelete(table, sortedAndFiltered(rows), false, session); }});
+				public String toString() { return SQLDMLBuilder.buildDelete(table, sortedAndFiltered(rows), rows.size() == 1, session); }});
 			}
 		});
 		boolean hasPK = !rowIdSupport.getPrimaryKey(table).getColumns().isEmpty();
