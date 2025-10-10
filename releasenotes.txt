@@ -1,3 +1,7 @@
+16.9.2
+  - Fix: "#55 Fix row counter sql generation"
+    https://sourceforge.net/p/jailer/bugs/55/
+
 16.9.1
   - Fix: The context menu of the SQL console was only available for tables due to an error.
 
