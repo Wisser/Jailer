@@ -31,7 +31,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.datamodel.Column;

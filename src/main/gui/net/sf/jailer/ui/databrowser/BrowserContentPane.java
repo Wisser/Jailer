@@ -5777,6 +5777,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 				}
 			}
 
+			inplaceEditorTextField = new JTextField();
 			//set the editor as default on every column
 			inplaceEditorTextField.setBorder(new LineBorder(Colors.Color_0_0_0) {
 				int spWidth = inplaceEditorTextField.getFontMetrics(inplaceEditorTextField.getFont()).stringWidth(" ");
