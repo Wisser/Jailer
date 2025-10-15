@@ -1,3 +1,6 @@
+16.9.3
+  - In-place editing in single-row views did not work correctly after reloading.
+
 16.9.2
   - Fix: "#55 Fix row counter sql generation"
     https://sourceforge.net/p/jailer/bugs/55/
