@@ -1617,6 +1617,14 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 											+ "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</html>");
 						}
 					} else {
+						if (value instanceof DefaultMutableTreeNode
+								&& ((DefaultMutableTreeNode) value).getUserObject() instanceof String) {
+							if (datamodel != null && datamodel.get() != null && ((String) (((DefaultMutableTreeNode) value).getUserObject())).equals(datamodel.get().getName())) {
+								((JLabel) render)
+									.setText("<html><nobr><b>" + UIUtil.toHTMLFragment(((JLabel) render).getText(), 0)
+										+ "</b></html>");
+							}
+						}
 						icon = modelIcon;
 					}
 					((JLabel) render).setIcon(icon);
