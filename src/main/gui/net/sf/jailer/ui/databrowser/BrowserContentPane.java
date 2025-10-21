@@ -631,7 +631,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 							onContentChange(rows, true); // rows.isEmpty() || currentHash != prevHash || rows.size() != prevSize || !prevIDs.equals(currentIDs) || rows.size() != currentIDs.size());
 							updateMode("table", null);
 							if (BrowserContentPane.this.association == null && (andCond == null || andCond.trim().isEmpty())) {
-								updateERCounts(table, limitExceeded, rows.size());
+								updateERCounts(table, limitExceeded || BrowserContentPane.this.getQueryBuilderDialog() == null // SQL Console
+										, rows.size());
 							}
 
 							if (reloadAction != null) {
@@ -742,18 +743,18 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		}
 	}
 
-	private void updateERCounts(Table table, boolean limitExceeded, int numRowsRead) {
+	private void updateERCounts(Table table, boolean isLowerBound, int numRowsRead) {
 		MetaDataSource metaDataSource = getMetaDataSource();
 		if (metaDataSource != null && metaDataSource.isInitialized()) {
 			MDTable mdTable = metaDataSource.toMDTable(table);
 			if (mdTable != null) {
-				if (limitExceeded) {
+				if (isLowerBound) {
 					if (mdTable.getEstimatedRowCount() != null && mdTable.getEstimatedRowCount() >= numRowsRead) {
 						return;
 					}
 				}
 				if (mdTable.getSchema() != null) {
-					if (mdTable.getSchema().setEST(mdTable, numRowsRead, limitExceeded)) {
+					if (mdTable.getSchema().setEST(mdTable, numRowsRead, isLowerBound)) {
 						forceRepaint();
 					}
 				}
@@ -8807,3 +8808,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	}
 
 }
+
+// TODO
+// TODO export datamodel and connections:
+// TODO collape datamodels not focused
+// TODO whatabout: selection connection but not data model?
+// TODO datamodel-rendering in that dialog:
+// TODO render datamodel nodes more recognizable
+
