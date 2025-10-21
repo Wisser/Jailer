@@ -2363,7 +2363,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		Map<Pair<String, String>, LinkedHashMap<String, Integer>> cache = (Map<Pair<String, String>, LinkedHashMap<String, Integer>>) session.getSessionProperty(getClass(), DISTINCTEXISTINGVALUESCACHEKEY);
 		if (cache != null) {
 			Pair<String, String> key = new Pair<String, String>(table.getName() + "+" + condition, comparison.column.name);
-			LinkedHashMap<String, Integer> result = cache.get(key);
+			Map<String, Integer> result = cache.get(key);
 			if (result != null) {
 				return result.size();
 			}
