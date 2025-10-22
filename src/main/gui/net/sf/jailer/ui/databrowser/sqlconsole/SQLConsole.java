@@ -4530,6 +4530,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		return tempFileBased;
 	}
 	
+	
+	// TODO
+	// TODO popup: "drop table..."
+	// TODO datetimeoffset id ddl with precision
 
 	// TODO 2
 	// TODO ordering per column: break down to SQL?
