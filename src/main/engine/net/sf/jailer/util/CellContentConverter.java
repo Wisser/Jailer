@@ -113,6 +113,9 @@ public class CellContentConverter {
 		if (content instanceof SQLExpressionWrapper) {
 			return ((SQLExpressionWrapper) content).getExpression();
 		}
+		if (content instanceof DateTimeOffsetWrapper) {
+			return ((DateTimeOffsetWrapper) content).getExpression();
+		}
 		if (content instanceof java.sql.Date) {
 			if (targetConfiguration.getDatePattern() != null) {
 				return targetConfiguration.createDateFormat().format((Date) content);
@@ -259,7 +262,9 @@ public class CellContentConverter {
 		return nanosString;
 	}
 
+	private static final int DATETIMEOFFSET = 20500;
 	private static final int TYPE_POBJECT = 10500;
+	
 	private static Set<String> OBJECT_TYPES = new HashSet<String>();
 	static {
 		OBJECT_TYPES.addAll(Arrays.asList("uuid", "hstore", "ghstore", "json", "jsonb", "_hstore", "_json", "_jsonb", "_ghstore"));
@@ -324,6 +329,47 @@ public class CellContentConverter {
 		}
 		@Override
 		public int compareTo(SQLExpressionWrapper o) {
+			return toString().compareTo(o.toString());
+		}
+	}
+
+	public class DateTimeOffsetWrapper implements Comparable<DateTimeOffsetWrapper> {
+		private final Object value;
+		public DateTimeOffsetWrapper(Object value) {
+			this.value = value;
+		}
+		public String getExpression() {
+			return "CAST('" + value + "' AS DATETIMEOFFSET)";
+		}
+		@Override
+		public String toString() {
+			return String.valueOf(value);
+		}
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((value == null) ? 0 : value.hashCode());
+			return result;
+		}
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			DateTimeOffsetWrapper other = (DateTimeOffsetWrapper) obj;
+			if (value == null) {
+				if (other.value != null)
+					return false;
+			} else if (!value.equals(other.value))
+				return false;
+			return true;
+		}
+		@Override
+		public int compareTo(DateTimeOffsetWrapper o) {
 			return toString().compareTo(o.toString());
 		}
 	}
@@ -465,7 +511,7 @@ public class CellContentConverter {
 				 // workaround for JDTS bug
 				 if (DBMS.MSSQL.equals(configuration)) {
 					 if ("datetimeoffset".equalsIgnoreCase(columnTypeName)) {
-						 type = Types.TIMESTAMP;
+						 type = DATETIMEOFFSET;
 					 }
 				 }
 				 if (type == Types.CHAR) {
@@ -588,6 +634,9 @@ public class CellContentConverter {
 			if (object instanceof String) {
 				object = new NCharWrapper((String) object);
 			}
+		}
+		if (type == DATETIMEOFFSET && object != null) {
+			object = new DateTimeOffsetWrapper(object);
 		}
 		if (DBMS.POSTGRESQL.equals(configuration)) {
 			if (type == TYPE_POBJECT) {
