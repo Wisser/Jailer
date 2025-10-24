@@ -893,6 +893,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 							popup.add(new JSeparator());
 							popup.add(createScriptMenuItem("\"Delete\" Script", "Delete from %1$s;", "", mdTables, false, pos));
 							popup.add(createScriptMenuItem("\"Count Rows\" Script", "Select '%1$s' as Tab, count(*) as NumberOfRows From %1$s", " union all", mdTables, true, pos));
+							popup.add(createScriptMenuItem("\"Drop Table\" Script", "Drop %2$s %1$s;", "", mdTables, false, pos));
                         }
                         UIUtil.initToolTips(popup);
                         popup.show(evt.getComponent(), evt.getX(), evt.getY());

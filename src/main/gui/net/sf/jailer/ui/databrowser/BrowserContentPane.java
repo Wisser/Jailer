@@ -8809,9 +8809,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
 }
 
-// TODO
-// TODO export datamodel and connections:
-// TODO collape datamodels not focused
 // TODO whatabout: selection connection but not data model?
 // TODO datamodel-rendering in that dialog:
 // TODO render datamodel nodes more recognizable
