@@ -46,6 +46,7 @@ import net.sf.jailer.progress.ProgressListener;
 import net.sf.jailer.render.DataModelRenderer;
 import net.sf.jailer.render.HtmlDataModelRenderer;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
+import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.subsetting.SubsettingEngine;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
@@ -257,7 +258,7 @@ public class Jailer {
 						}
 						URL modelURL = new File(commandLine.arguments.get(1)).toURI().toURL();
 						new SubsettingEngine(executionContext).export(commandLine.where, modelURL, /* clp.exportScriptFileName*/ null, commandLine.deleteScriptFileName,
-								dataSource, dataSource.dbms, /*scriptFormat*/ null, 0);
+								dataSource, dataSource.dbms, ScriptFormat.SQL, 0);
 					}
 				}
 			} else if ("print-closure".equalsIgnoreCase(command)) {

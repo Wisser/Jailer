@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.DBMS;
@@ -425,12 +426,12 @@ public class RemoteEntityGraph extends EntityGraph {
 							rcValid[0] = false;
 						}
 		                rc[0] -= brc;
-		    			totalRowcount -= brc;
+		    			totalRowcount.addAndGet(-brc);
 					}
 				}
 				int brc = ins.executeBatch().length;
 				rc[0] += brc;
-				totalRowcount += brc;
+				totalRowcount.addAndGet(brc);
 			}
 			@Override
 			public void close() {
@@ -532,7 +533,7 @@ public class RemoteEntityGraph extends EntityGraph {
 			for (;;) {
 				long incRc = session.executeUpdate(insert);
 				rc += incRc;
-				totalRowcount += incRc;
+				totalRowcount.addAndGet(incRc);
 				if (updateStatistics != null) {
 					updateStatistics.run();
 				}
@@ -615,7 +616,7 @@ public class RemoteEntityGraph extends EntityGraph {
 		for (;;) {
 			long incRc = session.executeUpdate(insert);
 			rc += incRc;
-			totalRowcount += incRc;
+			totalRowcount.addAndGet(incRc);
 			if (updateStatistics != null) {
 				updateStatistics.run();
 			}
@@ -649,7 +650,7 @@ public class RemoteEntityGraph extends EntityGraph {
 			" and E1.type=" + typeName(from) + " and E2.type=" + typeName(to) + "" +
 			" and " + pkEqualsEntityID(from, fromAlias, "E1") +
 			" and " + pkEqualsEntityID(to, toAlias, "E2");
-		totalRowcount += session.executeUpdate(insert);
+		totalRowcount.addAndGet(session.executeUpdate(insert));
 	}
 
 	/**
@@ -1116,11 +1117,11 @@ public class RemoteEntityGraph extends EntityGraph {
 				try {
 					session.setSilent(true);
 					rc = session.executeUpdate(tryWithAliasFirst? remove : removeWOAlias);
-					totalRowcount += rc;
+					totalRowcount.addAndGet(rc);
 				} catch (SQLException e) {
 					Session._log.debug("failed, retry with/without alias (" + e.getMessage() + ")");
 					rc = session.executeUpdate(tryWithAliasFirst? removeWOAlias : remove);
-					totalRowcount += rc;
+					totalRowcount.addAndGet(rc);
 				} finally {
 					session.setSilent(silent);
 				}
@@ -1384,7 +1385,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	/**
 	 * Total row-count.
 	 */
-	private long totalRowcount = 0;
+	private AtomicLong totalRowcount = new AtomicLong(0);
 
 	/**
 	 * Gets total row-count.
@@ -1393,7 +1394,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 */
 	@Override
 	public long getTotalRowcount() {
-		return totalRowcount;
+		return totalRowcount.get();
 	}
 
 	/**
