@@ -535,10 +535,6 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 					length = 0;
 				}
 				
-				if (DBMS.MSSQL.equals(session.dbms) && sqlType != null && sqlType.equalsIgnoreCase("DATETIMEOFFSET")) {
-					length = resultSet.getInt(9);
-				}
-				
 				if (sqlType != null && sqlType.equalsIgnoreCase("uniqueidentifier")) {
 					length = 0;
 				}
