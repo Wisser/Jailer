@@ -198,7 +198,7 @@ public class ExtractionModel {
 	public ExtractionModel(DataModel dataModel, ExecutionContext executionContext) {
 		this.dataModel = dataModel;
 		this.version = null;
-		subject = dataModel.getTables().iterator().hasNext()? dataModel.getTables().iterator().next() : null;
+		subject = dataModel.firstTable().orElse(null);
 		condition = "";
 		dataModel.setRestrictionModel(new RestrictionModel(dataModel, executionContext));
 		dataModel.deriveFilters();
