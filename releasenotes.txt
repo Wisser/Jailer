@@ -1,4 +1,6 @@
-16.9.4
+16.10
+  - Support for "DateTimeOffset #129"
+    https://github.com/Wisser/Jailer/issues/129
   - Fixed a bug that occurred infrequently in the data browser concerning the column value search function.
   - Improved estimation of the row count in the SQL console.
 
