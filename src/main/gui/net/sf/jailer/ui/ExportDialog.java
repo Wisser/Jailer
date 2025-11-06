@@ -364,6 +364,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			fields.put("transactional", transactional);
 			fields.put("delete", delete);
 			fields.put("localTempDir", localTempDirTextField);
+			fields.put("addGoBatchSeparator", addGoBatchSeparator);
 
 			for (Map.Entry<String, JTextField> e: parameterEditor.textfieldsPerParameter.entrySet()) {
 				fields.put("$" + e.getKey(), e.getValue());
@@ -396,6 +397,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
 			orderByPKCheckbox.setEnabled(ScriptFormat.SQL.equals(scriptFormat));
 			orderByPKCheckbox.setVisible(ScriptFormat.SQL.equals(scriptFormat));
+			addGoBatchSeparator.setVisible(ScriptFormat.SQL.equals(scriptFormat));
 
 			sortedCheckBox.setEnabled(ScriptFormat.SQL.equals(scriptFormat) || ScriptFormat.INTRA_DATABASE.equals(scriptFormat) || ScriptFormat.DBUNIT_FLAT_XML.equals(scriptFormat) || ScriptFormat.LIQUIBASE_XML.equals(scriptFormat));
 			sortedCheckBox.setSelected(true);
@@ -627,6 +629,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			transactional.addActionListener(al);
 			unicode.addActionListener(al);
 			sortedCheckBox.addActionListener(al);
+			addGoBatchSeparator.addActionListener(al);
 			orderByPKCheckbox.addActionListener(al);
 			scopeGlobal.addActionListener(al);
 			scopeSession.addActionListener(al);
@@ -1388,6 +1391,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         unicode = new javax.swing.JCheckBox();
         confirmInsert = new javax.swing.JCheckBox();
         insertIncrementally = new javax.swing.JCheckBox();
+        addGoBatchSeparator = new javax.swing.JCheckBox();
         browseInsertButton = new javax.swing.JButton();
         browseDeleteButton = new javax.swing.JButton();
         targetDBMSLabel1 = new javax.swing.JLabel();
@@ -2110,10 +2114,27 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 48;
+        gridBagConstraints.gridy = 47;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel5.add(insertIncrementally, gridBagConstraints);
+
+        addGoBatchSeparator.setText("Insert “GO” batch terminators"); // NOI18N
+        addGoBatchSeparator.setToolTipText("Insert “GO” batch terminators. (Microsoft SQL Server / Sybase)");
+        addGoBatchSeparator.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        addGoBatchSeparator.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addGoBatchSeparatorActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 48;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        jPanel5.add(addGoBatchSeparator, gridBagConstraints);
+        addGoBatchSeparator.getAccessibleContext().setAccessibleName("Insert “GO” batch terminators");
+        addGoBatchSeparator.getAccessibleContext().setAccessibleDescription("Insert “GO” batch terminators. (Microsoft SQL Server / Sybase)");
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -2723,6 +2744,10 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	    }
 	}//GEN-LAST:event_browseLocalTempDirButtonActionPerformed
 
+    private void addGoBatchSeparatorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addGoBatchSeparatorActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_addGoBatchSeparatorActionPerformed
+
 	public boolean isOk() {
 		return isOk;
 	}
@@ -2781,6 +2806,10 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		if (transactional.isSelected()) {
 			args.add("-transactional");
 		}
+		if (addGoBatchSeparator.isSelected() && addGoBatchSeparator.isVisible()) {
+			args.add("-add-go-batch-separator"); // TODO
+		}
+		
 		Object isolationLevel = isolationLevelComboBox.getSelectedItem();
 		if (isolationLevel != null && !String.valueOf(Connection.TRANSACTION_NONE).equals(isolationLevel)) {
 			args.add("-isolation-level");
@@ -3071,6 +3100,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    public javax.swing.JCheckBox addGoBatchSeparator;
     private javax.swing.JLabel additSubsLabel;
     private javax.swing.JLabel additSubsLabelTitel;
     private javax.swing.JButton browseDeleteButton;

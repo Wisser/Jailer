@@ -54,6 +54,12 @@ public class Clause {
 				return Quoting.staticUnquote(column.name);
 			}
 		},
+		TYPE("Column Type", String.class) {
+			@Override
+			public Object getSubject(Table table, Column column) {
+				return column.type;
+			}
+		},
 		TABLE_NAME("Table name", String.class) {
 			@Override
 			public Object getSubject(Table table, Column column) {
@@ -62,12 +68,6 @@ public class Clause {
 					return Quoting.staticUnquote(table.getUnqualifiedName());
 				}
 				return Quoting.staticUnquote(schema) + "." + Quoting.staticUnquote(table.getUnqualifiedName());
-			}
-		},
-		TYPE("Type", String.class) {
-			@Override
-			public Object getSubject(Table table, Column column) {
-				return column.type;
 			}
 		};
 		
