@@ -61,6 +61,7 @@ public class SQLPlusSupport {
 	private final Pattern DEFINE_PATTERN = Pattern.compile("\\s*DEFINE\\s+(\\w+)\\s*=\\s*(.*)\\s*", Pattern.CASE_INSENSITIVE);
 	private final Pattern UNDEFINE_PATTERN = Pattern.compile("\\s*UNDEFINE\\s+((?:\\w+\\s*)+)", Pattern.CASE_INSENSITIVE); // lgtm [java/redos]
 	private final Pattern COLUMN_PATTERN = Pattern.compile("\\s*COLUMN\\s+(\\w+)\\s*((?:(?:new_value|old_value)\\s+\\w+\\s*)+)", Pattern.CASE_INSENSITIVE);
+	private final Pattern GO_PATTERN = Pattern.compile("\\s*GO\\s*", Pattern.CASE_INSENSITIVE);
 	private final Pattern COMMENTS_PATTERN = Pattern.compile("(/\\*.*?\\*/)|(\\-\\-.*?(\n|$))", Pattern.DOTALL);
 	
 	/**
@@ -71,7 +72,11 @@ public class SQLPlusSupport {
 	 */
 	public boolean executeSQLPLusStatement(String statement) {
 		statement = removeComments(statement).trim();
-		Matcher matcher = DEFINE_PATTERN.matcher(statement);
+		Matcher matcher = GO_PATTERN.matcher(statement);
+		if (matcher.matches()) {
+			return true;
+		}
+		matcher = DEFINE_PATTERN.matcher(statement);
 		if (matcher.matches()) {
 			String var = matcher.group(1);
 			String val = matcher.group(2).trim();

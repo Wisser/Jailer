@@ -148,7 +148,7 @@ public class CommandLine {
 	@Option(name="-no-sorting", usage="the exported rows will not be sorted according to foreign key constraints")
 	public boolean noSorting = false;
 
-	@Option(name="-order-by-pk", usage="Orders the exported rows according to the primary key.")
+	@Option(name="-order-by-pk", usage="orders the exported rows according to the primary key")
 	public boolean orderByPK = false;
 
 	@Option(name="-independent-working-tables", usage="create working tables that are independent of the extraction model. (Potentially less efficient)")
@@ -168,6 +168,9 @@ public class CommandLine {
 
 	@Option(name="-use-rowid-if-needed", usage="use rowid/ctid-column only for tables without primary key (see \"-use-rowid\")")
 	public boolean useRowIdsOnlyForTablesWithoutPK = false;
+	
+	@Option(name="-add-go-batch-separator", usage="insert “GO” batch terminators into generated script (Microsoft SQL Server / Sybase)")
+	public boolean addGoBatchSeparator;
 
 	@Option(name="-import-filter-mapping-table-schema", usage="schema in which the import-filter mapping tables will be created")
 	public String importFilterMappingTableSchema = "";

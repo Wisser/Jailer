@@ -715,6 +715,20 @@ public class Subsetter {
 	}
 
 	/**
+	 * @return if <code>true</code>, insert “GO” batch terminators into generated script (Microsoft SQL Server / Sybase).
+	 */
+	public boolean getAddGoBatchSeparator() {
+		return executionContext.getAddGoBatchSeparator();
+	}
+
+	/**
+	 * @param addGoBatchSeparator if <code>true</code> insert “GO” batch terminators into generated script (Microsoft SQL Server / Sybase)
+	 */
+	public void setAddGoBatchSeparator(boolean addGoBatchSeparator) {
+		executionContext.setAddGoBatchSeparator(addGoBatchSeparator);
+	}
+
+	/**
 	 * Gets schema in which the import-filter mapping tables will be created
 	 *
 	 * @return schema in which the import-filter mapping tables will be created

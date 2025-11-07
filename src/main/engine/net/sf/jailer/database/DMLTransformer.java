@@ -521,7 +521,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 					if (sets.length() > 0) {
 						terminator.append(PrintUtil.LINE_SEPARATOR + "WHEN MATCHED THEN UPDATE SET " + sets + " ");
 					}
-					terminator.append(PrintUtil.LINE_SEPARATOR + "WHEN NOT MATCHED THEN INSERT (" + tSchema + ") VALUES(" + iSchema + ");" + PrintUtil.LINE_SEPARATOR);
+					terminator.append(PrintUtil.LINE_SEPARATOR + "WHEN NOT MATCHED THEN INSERT (" + tSchema + ") VALUES(" + iSchema + ")" + getStatementTerminator());
 
 					StatementBuilder sb = upsertInsertStatementBuilder.get(insertHead);
 					if (sb == null) {
@@ -541,7 +541,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 					insertHead += "Select * From (values ";
 					StringBuffer terminator = new StringBuffer(") as Q(" + columnsWONull + ") Where not exists (Select * from " + qualifiedTableName(table) + " T "
 							+ "Where ");
-					terminator.append(whereForTerminatorWONull + ");" + PrintUtil.LINE_SEPARATOR);
+					terminator.append(whereForTerminatorWONull + ")" + getStatementTerminator());
 
 					StatementBuilder sb = upsertInsertStatementBuilder.get(insertHead);
 					if (sb == null) {
@@ -558,7 +558,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 					insertHead += "Select * From (" + PrintUtil.LINE_SEPARATOR + " Select ";
 					StringBuffer terminator = new StringBuffer(") as Q " + PrintUtil.LINE_SEPARATOR + "Where not exists (Select * from " + qualifiedTableName(table) + " T "
 							+ "Where ");
-					terminator.append(whereForTerminatorWONull + ");" + PrintUtil.LINE_SEPARATOR);
+					terminator.append(whereForTerminatorWONull + ")" + getStatementTerminator());
 
 					StatementBuilder sb = upsertInsertStatementBuilder.get(insertHead);
 					if (sb == null) {
@@ -582,7 +582,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 								 "dual" : currentDialect.getUpsertMode() == UPSERT_MODE.FROM_SYSDUMMY1? "sysibm.sysdummy1" : SQLDialect.DUAL_TABLE);
 					StringBuffer terminator = new StringBuffer(" Where not exists (Select * from " + qualifiedTableName(table) + " T "
 							+ "Where ");
-					terminator.append(where + ");" + PrintUtil.LINE_SEPARATOR);
+					terminator.append(where + ")" + getStatementTerminator());
 
 					StatementBuilder sb = upsertInsertStatementBuilder.get(insertHead);
 					if (sb == null) {
@@ -635,7 +635,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 									headAsString,
 									itemAsString,
 									", " + PrintUtil.LINE_SEPARATOR,
-									terminator + ")" + PrintUtil.LINE_SEPARATOR + "Where " + whereForTerminator + ";" + PrintUtil.LINE_SEPARATOR);
+									terminator + ")" + PrintUtil.LINE_SEPARATOR + "Where " + whereForTerminator + getStatementTerminator());
 						}
 					} else if (currentDialect.getUpdateMode() == UPDATE_MODE.MYSQL || currentDialect.getUpdateMode() == UPDATE_MODE.MSSQL) {
 						boolean ms = currentDialect.getUpdateMode() == UPDATE_MODE.MSSQL;
@@ -693,7 +693,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 								terminator.append(PrintUtil.LINE_SEPARATOR);
 								terminator.append("set " + set);
 							}
-							terminator.append(";").append(PrintUtil.LINE_SEPARATOR);
+							terminator.append(getStatementTerminator());
 							String terminatorAsString = (ms? (") Q(" + columns + ") on ") : ") Q on ") + terminator.toString();
 							if (!terminatorAsString.equals(updateStatementBuilderTerminator) || !updateStatementBuilder.isAppendable(headAsString)) {
 								writeToScriptFile(updateStatementBuilder.build(), true);
@@ -735,7 +735,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 					if (!insertStatementBuilder.isAppendable(insertSchema)) {
 						writeToScriptFile(insertStatementBuilder.build(), true);
 					}
-					insertStatementBuilder.append(insertSchema, item, " Union all ", ";" + PrintUtil.LINE_SEPARATOR);
+					insertStatementBuilder.append(insertSchema, item, " Union all ", getStatementTerminator());
 				} else if (DBMS.ORACLE.equals(targetDBMSConfiguration) && maxBodySize > 1) {
 					String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") " + identityColumnInsertClause;
 					if (!insertStatementBuilder.isAppendable(insertSchema)) {
@@ -747,21 +747,21 @@ public class DMLTransformer extends AbstractResultSetReader {
 					} else {
 						item = PrintUtil.LINE_SEPARATOR + " Select " + valueList + " From DUAL";
 					}
-					insertStatementBuilder.append(insertSchema, item, " Union all ", ";" + PrintUtil.LINE_SEPARATOR);
+					insertStatementBuilder.append(insertSchema, item, " Union all ", getStatementTerminator());
 				} else if (DBMS.SQLITE.equals(targetDBMSConfiguration) && maxBodySize > 1) {
 					String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") " + identityColumnInsertClause;
 					String item = PrintUtil.LINE_SEPARATOR + " Select " + valueList + " ";
 					if (!insertStatementBuilder.isAppendable(insertSchema)) {
 						writeToScriptFile(insertStatementBuilder.build(), true);
 					}
-					insertStatementBuilder.append(insertSchema, item, " Union all ", ";" + PrintUtil.LINE_SEPARATOR);
+					insertStatementBuilder.append(insertSchema, item, " Union all ", getStatementTerminator());
 				} else {
 					String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") " + identityColumnInsertClause + "values ";
 					String item = (maxBodySize > 1? PrintUtil.LINE_SEPARATOR + " " : "") + "(" + valueList + ")";
 					if (!insertStatementBuilder.isAppendable(insertSchema)) {
 						writeToScriptFile(insertStatementBuilder.build(), true);
 					}
-					insertStatementBuilder.append(insertSchema, item, ", ", ";" + PrintUtil.LINE_SEPARATOR);
+					insertStatementBuilder.append(insertSchema, item, ", ", getStatementTerminator());
 				}
 			}
 
@@ -769,6 +769,10 @@ public class DMLTransformer extends AbstractResultSetReader {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	private String getStatementTerminator() {
+		return ";" + PrintUtil.LINE_SEPARATOR + (executionContext.getAddGoBatchSeparator()? PrintUtil.LINE_SEPARATOR + "GO" + PrintUtil.LINE_SEPARATOR + PrintUtil.LINE_SEPARATOR : "");
 	}
 
 	/**

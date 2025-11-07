@@ -280,7 +280,7 @@ public class SqlScriptExecutor {
 			while ((line = lineReader.readLine()) != null) {
 				++lineNumber;
 				line = line.trim();
-				if (line.length() == 0) {
+				if (line.length() == 0 || "GO".equalsIgnoreCase(line)) {
 					if (currentStatement.length() == 0) {
 						++currentStatementlineNumber;
 					}

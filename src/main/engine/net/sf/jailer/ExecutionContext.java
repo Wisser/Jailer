@@ -84,6 +84,7 @@ public class ExecutionContext {
 		this.isolationLevel = other.isolationLevel;
 		this.useRowid = other.useRowid;
 		this.useRowIdsOnlyForTablesWithoutPK = other.useRowIdsOnlyForTablesWithoutPK;
+		this.addGoBatchSeparator = other.addGoBatchSeparator;
 		this.importFilterMappingTableSchema = other.importFilterMappingTableSchema;
 		this.scope = other.scope;
 		this.rawparameters = other.rawparameters;
@@ -558,6 +559,20 @@ public class ExecutionContext {
 	}
 
 	/**
+	 * @return if <code>true</code>, insert “GO” batch terminators into generated script (Microsoft SQL Server / Sybase).
+	 */
+	public boolean getAddGoBatchSeparator() {
+		return addGoBatchSeparator;
+	}
+
+	/**
+	 * @param addGoBatchSeparator if <code>true</code> insert “GO” batch terminators into generated script (Microsoft SQL Server / Sybase)
+	 */
+	public void setAddGoBatchSeparator(boolean addGoBatchSeparator) {
+		this.addGoBatchSeparator = addGoBatchSeparator;
+	}
+
+	/**
 	 * Gets schema in which the import-filter mapping tables will be created
 	 *
 	 * @return schema in which the import-filter mapping tables will be created
@@ -930,6 +945,9 @@ public class ExecutionContext {
 
 	// use rowid-column only for tables without primary key
 	private boolean useRowIdsOnlyForTablesWithoutPK = false;
+	
+	// insert “GO” batch terminators into generated script (Microsoft SQL Server / Sybase)
+	private boolean addGoBatchSeparator;
 
 	// collects the rows using multiple insert operations with a limited number of rows per operation
 	private boolean insertIncrementally = false;
@@ -1162,6 +1180,7 @@ public class ExecutionContext {
 		isolationLevel = commandLine.isolationLevel;
 		useRowid = commandLine.useRowid;
 		useRowIdsOnlyForTablesWithoutPK = commandLine.useRowIdsOnlyForTablesWithoutPK;
+		addGoBatchSeparator = commandLine.addGoBatchSeparator;
 		importFilterMappingTableSchema = commandLine.importFilterMappingTableSchema;
 		insertIncrementally = commandLine.insertIncrementally;
 		abortInCaseOfInconsistency = commandLine.abortInCaseOfInconsistency;

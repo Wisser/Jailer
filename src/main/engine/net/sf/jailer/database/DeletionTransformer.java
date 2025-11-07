@@ -30,6 +30,7 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.subsetting.TransformerFactory;
 import net.sf.jailer.util.CellContentConverter;
+import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
@@ -180,7 +181,7 @@ public class DeletionTransformer extends AbstractResultSetReader {
 				if (!deleteStatementBuilder.isAppendable(deleteHead)) {
 					writeToScriptFile(deleteStatementBuilder.build());
 				}
-				deleteStatementBuilder.append(deleteHead, item, ") or (", ");\n");
+				deleteStatementBuilder.append(deleteHead, item, ") or (", ")" + getStatementTerminator());
 			} else {
 				String deleteHead;
 				String item;
@@ -205,11 +206,15 @@ public class DeletionTransformer extends AbstractResultSetReader {
 				if (!deleteStatementBuilder.isAppendable(deleteHead)) {
 					writeToScriptFile(deleteStatementBuilder.build());
 				}
-				deleteStatementBuilder.append(deleteHead, item, ", ", ");\n");
+				deleteStatementBuilder.append(deleteHead, item, ", ", ")" + getStatementTerminator());
 			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	private String getStatementTerminator() {
+		return ";" + PrintUtil.LINE_SEPARATOR + (executionContext.getAddGoBatchSeparator()? PrintUtil.LINE_SEPARATOR + "GO" + PrintUtil.LINE_SEPARATOR + PrintUtil.LINE_SEPARATOR : "");
 	}
 
 	/**
