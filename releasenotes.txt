@@ -1,3 +1,7 @@
+16.11
+  - Feature "#131 Add an extra statement after insert blocks"
+    https://github.com/Wisser/Jailer/issues/131
+
 16.10
   - Support for "DateTimeOffset #129"
     https://github.com/Wisser/Jailer/issues/129
