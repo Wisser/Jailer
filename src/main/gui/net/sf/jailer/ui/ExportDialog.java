@@ -2119,8 +2119,8 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel5.add(insertIncrementally, gridBagConstraints);
 
-        addGoBatchSeparator.setText("Insert “GO” batch terminators"); // NOI18N
-        addGoBatchSeparator.setToolTipText("Insert “GO” batch terminators. (Microsoft SQL Server / Sybase)");
+        addGoBatchSeparator.setText("Insert \"GO\" batch terminators"); // NOI18N
+        addGoBatchSeparator.setToolTipText("Insert \"GO\" batch terminators. (Microsoft SQL Server / Sybase)");
         addGoBatchSeparator.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         addGoBatchSeparator.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2133,8 +2133,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel5.add(addGoBatchSeparator, gridBagConstraints);
-        addGoBatchSeparator.getAccessibleContext().setAccessibleName("Insert “GO” batch terminators");
-        addGoBatchSeparator.getAccessibleContext().setAccessibleDescription("Insert “GO” batch terminators. (Microsoft SQL Server / Sybase)");
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;

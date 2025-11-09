@@ -559,14 +559,14 @@ public class ExecutionContext {
 	}
 
 	/**
-	 * @return if <code>true</code>, insert “GO” batch terminators into generated script (Microsoft SQL Server / Sybase).
+	 * @return if <code>true</code>, insert "GO" batch terminators into generated script (Microsoft SQL Server / Sybase).
 	 */
 	public boolean getAddGoBatchSeparator() {
 		return addGoBatchSeparator;
 	}
 
 	/**
-	 * @param addGoBatchSeparator if <code>true</code> insert “GO” batch terminators into generated script (Microsoft SQL Server / Sybase)
+	 * @param addGoBatchSeparator if <code>true</code> insert "GO" batch terminators into generated script (Microsoft SQL Server / Sybase)
 	 */
 	public void setAddGoBatchSeparator(boolean addGoBatchSeparator) {
 		this.addGoBatchSeparator = addGoBatchSeparator;
@@ -946,7 +946,7 @@ public class ExecutionContext {
 	// use rowid-column only for tables without primary key
 	private boolean useRowIdsOnlyForTablesWithoutPK = false;
 	
-	// insert “GO” batch terminators into generated script (Microsoft SQL Server / Sybase)
+	// insert "GO" batch terminators into generated script (Microsoft SQL Server / Sybase)
 	private boolean addGoBatchSeparator;
 
 	// collects the rows using multiple insert operations with a limited number of rows per operation
