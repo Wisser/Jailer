@@ -169,7 +169,7 @@ public class CommandLine {
 	@Option(name="-use-rowid-if-needed", usage="use rowid/ctid-column only for tables without primary key (see \"-use-rowid\")")
 	public boolean useRowIdsOnlyForTablesWithoutPK = false;
 	
-	@Option(name="-add-go-batch-separator", usage="insert "GO" batch terminators into generated script (Microsoft SQL Server / Sybase)")
+	@Option(name="-add-go-batch-separator", usage="insert \"GO\" batch terminators into generated script (Microsoft SQL Server / Sybase)")
 	public boolean addGoBatchSeparator;
 
 	@Option(name="-import-filter-mapping-table-schema", usage="schema in which the import-filter mapping tables will be created")
