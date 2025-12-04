@@ -2813,7 +2813,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
-        gridBagConstraints.insets = new java.awt.Insets(8, 180, 8, 0);
+        gridBagConstraints.insets = new java.awt.Insets(8, 40, 8, 0);
         jPanel6.add(dummyLabel, gridBagConstraints);
 
         continueButton.setText("jButton1");
@@ -2831,7 +2831,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
         jPanel4.setLayout(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.weightx = 1.0;
         jPanel6.add(jPanel4, gridBagConstraints);
@@ -2843,7 +2843,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
+        gridBagConstraints.insets = new java.awt.Insets(0, 20, 0, 4);
         jPanel6.add(cancelInStautusbarButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

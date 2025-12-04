@@ -2805,7 +2805,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			args.add("-transactional");
 		}
 		if (addGoBatchSeparator.isSelected() && addGoBatchSeparator.isVisible()) {
-			args.add("-add-go-batch-separator"); // TODO
+			args.add("-add-go-batch-separator");
 		}
 		
 		Object isolationLevel = isolationLevelComboBox.getSelectedItem();

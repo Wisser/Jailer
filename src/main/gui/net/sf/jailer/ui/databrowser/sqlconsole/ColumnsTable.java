@@ -64,6 +64,8 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
+import net.sf.jailer.datamodel.Column;
+import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.ExtendetCopyPanel;
 import net.sf.jailer.ui.UIUtil;
@@ -336,11 +338,13 @@ public class ColumnsTable extends JTable {
 					if (column == 0) {
 						String text = ((JLabel) render).getText();
 						String tabName = useTableName && (table == ColumnsTable.this || "columnNames".equals(table.getName()))? tableName.get(row) : null;
+						int mCol = cm.getColumn(row).getModelIndex();
+						Table tab = ColumnsTable.this.rb.table;
 						if (tabName != null) {
-							JLabel tab = new JLabel("<html>&nbsp;" + tabName + "&nbsp;</html>");
-							tab.setForeground(Colors.Color_0_0_180);
-							tab.setBackground(render.getBackground());
-							tab.setOpaque(render.isOpaque());
+							JLabel lTab = new JLabel("<html>&nbsp;" + tabName + "&nbsp;</html>");
+							lTab.setForeground(Colors.Color_0_0_180);
+							lTab.setBackground(render.getBackground());
+							lTab.setOpaque(render.isOpaque());
 							JPanel panel = new JPanel(new GridBagLayout());
 							panel.setToolTipText(text);
 							GridBagConstraints gridBagConstraints;
@@ -351,7 +355,7 @@ public class ColumnsTable extends JTable {
 					        gridBagConstraints.weightx = 1;
 					        gridBagConstraints.weighty = 1;
 					        gridBagConstraints.anchor = GridBagConstraints.WEST;
-					        panel.add(tab, gridBagConstraints);
+					        panel.add(lTab, gridBagConstraints);
 					        gridBagConstraints = new java.awt.GridBagConstraints();
 					        gridBagConstraints.gridx = 3;
 					        gridBagConstraints.gridy = 1;
@@ -360,8 +364,60 @@ public class ColumnsTable extends JTable {
 					        gridBagConstraints.weighty = 1;
 					        panel.add(render, gridBagConstraints);
 					        ((JLabel) render).setText(text + "  ");
-							return panel;
+					        if (ColumnsTable.this.rb.getAlternativeColumnLabelsFull() != null && ColumnsTable.this.rb.getAlternativeColumnLabelsFull().length > mCol) {
+					        	String ttt = ColumnsTable.this.rb.getAlternativeColumnLabelsFull()[mCol];
+					        	Table rsTab = ColumnsTable.this.rb.getResultSetTypeForColumn(mCol);
+					        	
+					        	if (rsTab != null && rsTab.getName() != null && rsTab.getColumns().size() > mCol) {
+									Column col = rsTab.getColumns().get(mCol);
+									
+									String nullContraint = null;
+					        		if (col != null && col.name != null) {
+										nullContraint = col.isNullable? "nullable" : "not null";
+										if (tabName != null && tabName.toUpperCase().equals(tabName)) {
+					        				nullContraint = nullContraint.toUpperCase();
+					        			}
+						        		if (ttt.startsWith("<html")) {
+						        			ttt = ttt.replace("</html>",  "<font color=" + Colors.HTMLColor_808080 + "> <i>" + nullContraint + "</i></font></html>");
+						        			((JLabel) render).setToolTipText(ttt);
+						        		} else {
+						        			ttt = "<html>" + UIUtil.toHTMLFragment(ttt, 0) + "<hr>" + "<font color=" + Colors.HTMLColor_808080 + "> <i>" + nullContraint + "</i></font></html>";
+						        			((JLabel) render).setToolTipText(ttt);
+						        		}
+					        		}
+					        	}
+				        		panel.setToolTipText(ttt);
+				        	}
+					        return panel;
 						}
+						if (tab != null && tab.getColumns().size() > mCol) {
+							Column col = tab.getColumns().get(mCol);
+							
+							String nullContraint = null;
+							String ttt = col.name;
+			        		if (col != null && col.name != null) {
+								nullContraint = col.isNullable? "nullable" : "not null";
+								if (tab.getName() != null && tab.getName().toUpperCase().equals(tab.getName())) {
+			        				nullContraint = nullContraint.toUpperCase();
+			        			}
+								if (inDesktop) {
+									nullContraint = "</i>" + col.toSQL(null).substring(col.name.length()).trim() + "<i> " + nullContraint;
+								}
+			        		}
+				        	if (ColumnsTable.this.rb.getAlternativeColumnLabelsFull() != null && ColumnsTable.this.rb.getAlternativeColumnLabelsFull().length > mCol) {
+				        		ttt = ColumnsTable.this.rb.getAlternativeColumnLabelsFull()[mCol];
+				        	}
+				        	if (nullContraint != null) {
+				        		if (ttt.startsWith("<html")) {
+				        			ttt = ttt.replace("</html>",  "<font color=" + Colors.HTMLColor_808080 + "> <i>" + nullContraint + "</i></font></html>");
+				        			((JLabel) render).setToolTipText(ttt);
+				        		} else {
+				        			ttt = "<html>" + UIUtil.toHTMLFragment(ttt, 0) + "<hr>" + "<font color=" + Colors.HTMLColor_808080 + "> <i>" + nullContraint + "</i></font></html>";
+				        			((JLabel) render).setToolTipText(ttt);
+				        		}
+				        	}
+						}
+						
 						((JLabel) render).setText(" " + text);
 					} else {
 						if (inTempClosure()) {
@@ -666,3 +722,4 @@ public class ColumnsTable extends JTable {
 	}
 
 }
+

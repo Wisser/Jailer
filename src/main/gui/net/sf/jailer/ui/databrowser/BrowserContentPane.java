@@ -7947,7 +7947,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	 * @param column the column
 	 * @return suitable table for column or {@link #table}
 	 */
-	private Table getResultSetTypeForColumn(int column) {
+	public Table getResultSetTypeForColumn(int column) {
 		if (resultSetType == null) {
 			return table;
 		}
