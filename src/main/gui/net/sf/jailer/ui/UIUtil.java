@@ -2858,3 +2858,8 @@ public class UIUtil {
 	private static Map<Runnable, Runnable> scaleAwareInitializer = new WeakHashMap<Runnable, Runnable>();
 	
 }
+
+
+// TODO
+// TODO settings menu: tooltip: + "(will be persisted / is persistent setting)"
+
