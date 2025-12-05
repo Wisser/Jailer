@@ -8772,39 +8772,41 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
 	static {
         // load images
-        cancelIcon = UIUtil.readImage("/buttoncancel.png");
-        warnIcon = UIUtil.readImage("/wanr.png");
-    	blueIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/bluedot.gif"));
-    	findColumnIconWhereHalf = UIUtil.readImage("/findcolumnWhereHalf.png");
-    	findColumnIconWhere = UIUtil.readImage("/findcolumnWhereReady.png");
-    	findColumnIconWhereReady = UIUtil.readImage("/findcolumnWhereReady.png");
-    	findColumnIconWhereReadySelected = UIUtil.readImage("/findcolumnWhereReadySel.png");
-    	findColumnIconWhereUsedReady = UIUtil.readImage("/findcolumnWhereUReady.png");
-    	findColumnIconWhereUsedReadySelected = UIUtil.readImage("/findcolumnWhereUReadySel.png");
-    	findColumnIcon1 = UIUtil.readImage("/findcolumn.png");
-    	findColumnIcon2 = UIUtil.readImage("/findcolumn2.png");
-    	runIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/run.png"));
-    	constraintPKIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/constraint_pk.png"));
-       	emptyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/empty.png"));
-       	sort123Icon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/sort123.png"));
-       	sortABCIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/sortabc.png"));
-       	minimizeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/minimize.png"));
-       	exportIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/export.png"));
-       	subsetIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/subset.png"));
-      	genSQLIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/procedure_32.png"));
-      	copyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/copy.png"));
-      	ecopyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/ecopy.png"));
-      	detailsIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/ieditdetails_64.png"));
-     	selectIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/select.png"));
-     	menuIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/menu.png"));
-     	allDotIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/alldot.gif"));
-     	double sf = 1.2;
-     	hAlignButtonIcon1 = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/anchor1.png"), sf);
-     	hAlignButtonIcon2 = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/anchor0.png"), sf);
-     	findPathIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/search22.png"));
-	    clearIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/clear.png"));
-	    modelIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/alldot.gif"), 1.2);
-	    emptyScIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/empty.png"), 1.2);
+		UIUtil.initScaleAware(() -> {
+	        cancelIcon = UIUtil.readImage("/buttoncancel.png");
+	        warnIcon = UIUtil.readImage("/wanr.png");
+	    	blueIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/bluedot.gif"));
+	    	findColumnIconWhereHalf = UIUtil.readImage("/findcolumnWhereHalf.png");
+	    	findColumnIconWhere = UIUtil.readImage("/findcolumnWhereReady.png");
+	    	findColumnIconWhereReady = UIUtil.readImage("/findcolumnWhereReady.png");
+	    	findColumnIconWhereReadySelected = UIUtil.readImage("/findcolumnWhereReadySel.png");
+	    	findColumnIconWhereUsedReady = UIUtil.readImage("/findcolumnWhereUReady.png");
+	    	findColumnIconWhereUsedReadySelected = UIUtil.readImage("/findcolumnWhereUReadySel.png");
+	    	findColumnIcon1 = UIUtil.readImage("/findcolumn.png");
+	    	findColumnIcon2 = UIUtil.readImage("/findcolumn2.png");
+	    	runIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/run.png"));
+	    	constraintPKIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/constraint_pk.png"));
+	       	emptyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/empty.png"));
+	       	sort123Icon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/sort123.png"));
+	       	sortABCIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/sortabc.png"));
+	       	minimizeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/minimize.png"));
+	       	exportIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/export.png"));
+	       	subsetIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/subset.png"));
+	      	genSQLIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/procedure_32.png"));
+	      	copyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/copy.png"));
+	      	ecopyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/ecopy.png"));
+	      	detailsIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/ieditdetails_64.png"));
+	     	selectIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/select.png"));
+	     	menuIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/menu.png"));
+	     	allDotIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/alldot.gif"));
+	     	double sf = 1.2;
+	     	hAlignButtonIcon1 = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/anchor1.png"), sf);
+	     	hAlignButtonIcon2 = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/anchor0.png"), sf);
+	     	findPathIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/search22.png"));
+		    clearIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/clear.png"));
+		    modelIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/alldot.gif"), 1.2);
+		    emptyScIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/empty.png"), 1.2);
+		});
 	}
 
 }

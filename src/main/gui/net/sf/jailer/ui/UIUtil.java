@@ -2833,9 +2833,9 @@ public class UIUtil {
 	private static float scale = 1;
 	
 	public static void initScalingMenu(JMenu scalingMenu) {
-		scalingMenu.setVisible(false); // TODO
+//		scalingMenu.setVisible(false); // TODO
 		scalingMenu.removeAll();
-		float[] factors = new float[] { 0.8f, 0.85f, 0.9f, 0.95f, 1, 1.1f, 1.2f, 1.3f, 1.4f, 1.5f, 1.6f, 1.8f, 1.9f, 2.0f };
+		float[] factors = new float[] { 0.8f, 0.85f, 0.9f, 0.95f, 1, 1.1f, 1.2f, 1.3f, 1.4f, 1.5f };
 		for (float f: factors) {
 			JMenuItem item = new JCheckBoxMenuItem(String.format("%d%%", (int)(f * 100f)));
 			item.setSelected(UIScale.getZoomFactor() == f);
@@ -2844,9 +2844,17 @@ public class UIUtil {
 				UISettings.store("scale", scale = f);
 				UIScale.setZoomFactor(f);
 				FlatLaf.updateUI();
+				scaleAwareInitializer.forEach((r, a) -> r.run());
 				initPLAF();
 			});
 		}
 	}
 
+	public static void initScaleAware(Runnable initializer) {
+		initializer.run();
+		scaleAwareInitializer.put(initializer, initializer);
+	}
+
+	private static Map<Runnable, Runnable> scaleAwareInitializer = new WeakHashMap<Runnable, Runnable>();
+	
 }
