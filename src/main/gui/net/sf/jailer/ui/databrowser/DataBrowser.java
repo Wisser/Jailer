@@ -377,6 +377,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		executionContext.setUseRowIdsOnlyForTablesWithoutPK(true);
 		initComponents();
 		UIUtil.initComponents(this);
+		UIUtil.initScalingMenu(scalingMenu);
 		jToolBar1.setFloatable(false);
 		jToolBar2.setFloatable(false);
 		
@@ -2528,6 +2529,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
         view = new javax.swing.JMenu();
         jMenu3 = new javax.swing.JMenu();
         plafMenu = new javax.swing.JMenu();
+        scalingMenu = new javax.swing.JMenu();
         jSeparator20 = new javax.swing.JPopupMenu.Separator();
         autoLayoutMenuItem = new javax.swing.JCheckBoxMenuItem();
         zoomWithMouseWheelMenuItem = new javax.swing.JCheckBoxMenuItem();
@@ -3821,6 +3823,10 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 
         plafMenu.setText("Theme (Look and Feel)");
         jMenu3.add(plafMenu);
+
+        scalingMenu.setText("Scaling");
+        scalingMenu.setToolTipText("UI Scaling");
+        jMenu3.add(scalingMenu);
         jMenu3.add(jSeparator20);
 
         autoLayoutMenuItem.setSelected(true);
@@ -4988,6 +4994,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
     private javax.swing.JMenu rowLimitMenu;
     private javax.swing.JMenuItem saveScriptAsMenuItem;
     private javax.swing.JMenuItem saveScriptMenuItem;
+    private javax.swing.JMenu scalingMenu;
     private javax.swing.JMenuItem schemaMappingMenuItem;
     private javax.swing.JLabel schemaName;
     private javax.swing.JPanel schemaNamePanel;
@@ -7436,10 +7443,11 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		updateTabbedPane(workbenchTabbedPane.getSelectedIndex());
 		return result;
 	}
-
+	
 	@Override
 	public void onNewPlaf() {
 		updateStatusBar();
+		UIUtil.initScalingMenu(scalingMenu);
 		UIUtil.invokeLater(() -> {
 			try {
 				if (desktop != null) {

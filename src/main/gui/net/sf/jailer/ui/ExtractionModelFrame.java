@@ -166,6 +166,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 	public ExtractionModelFrame(String extractionModelFile, boolean isHorizonal, DbConnectionDialog initDbConnectionDialog, ExecutionContext executionContext) throws IOException {
 		this.executionContext = executionContext;
 		initComponents(); UIUtil.initComponents(this);
+		UIUtil.initScalingMenu(scalingMenu);
 		initMenu();
 		initSandbox();
         AnimationController.registerWindow(this, new AnimationController.AnimationControl() {
@@ -485,6 +486,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
         consistencyCheckMenuItem = new javax.swing.JMenuItem();
         jMenu5 = new javax.swing.JMenu();
         plafMenu = new javax.swing.JMenu();
+        scalingMenu = new javax.swing.JMenu();
         jSeparator6 = new javax.swing.JPopupMenu.Separator();
         horizontalLayoutMenuItem = new javax.swing.JCheckBoxMenuItem();
         jMenu4 = new javax.swing.JMenu();
@@ -982,6 +984,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 
         plafMenu.setText("Theme (Look and Feel)");
         jMenu5.add(plafMenu);
+
+        scalingMenu.setText("Scaling");
+        scalingMenu.setToolTipText("UI Scaling");
+        jMenu5.add(scalingMenu);
         jMenu5.add(jSeparator6);
 
         horizontalLayoutMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_I, java.awt.event.InputEvent.CTRL_DOWN_MASK));
@@ -2662,6 +2668,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 	@Override
 	public void onNewPlaf() {
 		updateMenuItems();
+		UIUtil.initScalingMenu(scalingMenu);
 	}
 	
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -2736,6 +2743,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
     private javax.swing.JMenuItem renderHtml1;
     private javax.swing.JMenuItem save;
     private javax.swing.JMenuItem saveAs;
+    private javax.swing.JMenu scalingMenu;
     javax.swing.JCheckBoxMenuItem showIgnored;
     private javax.swing.JCheckBoxMenuItem showTableDetails;
     private javax.swing.JRadioButtonMenuItem steptime10;

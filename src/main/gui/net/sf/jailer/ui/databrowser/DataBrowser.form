@@ -549,6 +549,12 @@
                 <Property name="text" type="java.lang.String" value="Theme (Look and Feel)"/>
               </Properties>
             </Menu>
+            <Menu class="javax.swing.JMenu" name="scalingMenu">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Scaling"/>
+                <Property name="toolTipText" type="java.lang.String" value="UI Scaling"/>
+              </Properties>
+            </Menu>
             <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator20">
             </MenuItem>
             <MenuItem class="javax.swing.JCheckBoxMenuItem" name="autoLayoutMenuItem">
