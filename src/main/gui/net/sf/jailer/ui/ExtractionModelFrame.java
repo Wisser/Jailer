@@ -166,7 +166,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 	public ExtractionModelFrame(String extractionModelFile, boolean isHorizonal, DbConnectionDialog initDbConnectionDialog, ExecutionContext executionContext) throws IOException {
 		this.executionContext = executionContext;
 		initComponents(); UIUtil.initComponents(this);
-		UIUtil.initScalingMenu(scalingMenu);
 		initMenu();
 		initSandbox();
         AnimationController.registerWindow(this, new AnimationController.AnimationControl() {
@@ -2668,7 +2667,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 	@Override
 	public void onNewPlaf() {
 		updateMenuItems();
-		UIUtil.initScalingMenu(scalingMenu);
 	}
 	
     // Variables declaration - do not modify//GEN-BEGIN:variables

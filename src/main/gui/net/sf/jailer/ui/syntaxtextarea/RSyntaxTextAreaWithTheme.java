@@ -49,6 +49,7 @@ public class RSyntaxTextAreaWithTheme extends RSyntaxTextArea {
 
 	public RSyntaxTextAreaWithTheme(String text) {
 		super(text);
+		initTheme();
 	}
 
 	protected Gutter gutter;

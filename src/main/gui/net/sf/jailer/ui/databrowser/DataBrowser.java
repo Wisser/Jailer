@@ -377,7 +377,6 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		executionContext.setUseRowIdsOnlyForTablesWithoutPK(true);
 		initComponents();
 		UIUtil.initComponents(this);
-		UIUtil.initScalingMenu(scalingMenu);
 		jToolBar1.setFloatable(false);
 		jToolBar2.setFloatable(false);
 		
@@ -7447,7 +7446,6 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	@Override
 	public void onNewPlaf() {
 		updateStatusBar();
-		UIUtil.initScalingMenu(scalingMenu);
 		UIUtil.invokeLater(() -> {
 			try {
 				if (desktop != null) {

@@ -102,7 +102,6 @@ import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -110,7 +109,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButton;
@@ -140,7 +138,6 @@ import org.slf4j.LoggerFactory;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.FlatLightLaf;
-import com.formdev.flatlaf.util.UIScale;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.Jailer;
@@ -2258,12 +2255,6 @@ public class UIUtil {
 	}
     
 	public static void readAndInitPLAF() {
-		Object sO = UISettings.restore("scale");
-		if (sO instanceof Float) {
-			scale = (Float) sO;
-		}
-		
-		UIScale.setZoomFactor(scale);
 		FlatLaf.registerCustomDefaultsSource("net.sf.jailer.ui.resource");
 
 		Object plafSetting = UISettings.restore(UISettings.USE_NATIVE_PLAF);
@@ -2830,26 +2821,6 @@ public class UIUtil {
 		}
 	}
 	
-	private static float scale = 1;
-	
-	public static void initScalingMenu(JMenu scalingMenu) {
-//		scalingMenu.setVisible(false); // TODO
-		scalingMenu.removeAll();
-		float[] factors = new float[] { 0.8f, 0.85f, 0.9f, 0.95f, 1, 1.1f, 1.2f, 1.3f, 1.4f, 1.5f };
-		for (float f: factors) {
-			JMenuItem item = new JCheckBoxMenuItem(String.format("%d%%", (int)(f * 100f)));
-			item.setSelected(UIScale.getZoomFactor() == f);
-			scalingMenu.add(item);
-			item.addActionListener(e -> {
-				UISettings.store("scale", scale = f);
-				UIScale.setZoomFactor(f);
-				FlatLaf.updateUI();
-				scaleAwareInitializer.forEach((r, a) -> r.run());
-				initPLAF();
-			});
-		}
-	}
-
 	public static void initScaleAware(Runnable initializer) {
 		initializer.run();
 		scaleAwareInitializer.put(initializer, initializer);
@@ -2858,8 +2829,3 @@ public class UIUtil {
 	private static Map<Runnable, Runnable> scaleAwareInitializer = new WeakHashMap<Runnable, Runnable>();
 	
 }
-
-
-// TODO
-// TODO settings menu: tooltip: + "(will be persisted / is persistent setting)"
-
