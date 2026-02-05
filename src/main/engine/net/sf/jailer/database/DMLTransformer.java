@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 - 2025 Ralf Wisser.
+ * Copyright 2007 - 2026 Ralf Wisser.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -402,7 +402,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 						if (mdColumnType == Types.TIME || (content == null && ((currentDialect.getUpdateMode() == UPDATE_MODE.PG || !generateUpsertStatementsWithoutNulls)))) {
 							// explicit cast needed
 							if (mdColumnType == Types.OTHER
-								|| content == null) { // ResultSetMetaData of the Postgres JDBC driver (42.7.5) falsely claims that the column for “select null” is of type “text”. See https://github.com/Wisser/Jailer/issues/120
+								|| content == null) { // ResultSetMetaData of the Postgres JDBC driver (42.7.5) falsely claims that the column for "select nul" is of type "text". See https://github.com/Wisser/Jailer/issues/120
 								String type = null;
 								if (!columnTypeFromDatamodel.containsKey(i)) {
 									for (Column c: table.getColumns()) {

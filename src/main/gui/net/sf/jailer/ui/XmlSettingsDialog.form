@@ -119,7 +119,7 @@
         <Component class="javax.swing.JTextField" name="rootTag">
           <Properties>
             <Property name="text" type="java.lang.String" value="jTextField1"/>
-            <Property name="toolTipText" type="java.lang.String" value="Name of the top-level element in the XML export file. Only relevant if &#x201c;Multiple Objects (Array)&#x201d; is selected."/>
+            <Property name="toolTipText" type="java.lang.String" value="Name of the top-level element in the XML export file. Only relevant if &quot;Multiple Objects (Array)&quot; is selected."/>
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">

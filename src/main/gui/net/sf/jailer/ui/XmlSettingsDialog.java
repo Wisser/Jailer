@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 - 2025 Ralf Wisser.
+ * Copyright 2007 - 2026 Ralf Wisser.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
 		buttonGroup.add(multipleRoots);
 		buttonGroup.add(singleRoot);
 
-		buttonGroup = new ButtonGroup();
+		buttonGroup = new ButtonGroup(); 
 		buttonGroup.add(include);
 		buttonGroup.add(ignore);
 		buttonGroup.add(disallow);
@@ -326,7 +326,7 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
         jPanel3.add(timestampPattern, gridBagConstraints);
 
         rootTag.setText("jTextField1");
-        rootTag.setToolTipText("Name of the top-level element in the XML export file. Only relevant if “Multiple Objects (Array)” is selected.");
+        rootTag.setToolTipText("Name of the top-level element in the XML export file. Only relevant if \"Multiple Objects (Array)\" is selected.");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 10;
         gridBagConstraints.gridy = 15;
