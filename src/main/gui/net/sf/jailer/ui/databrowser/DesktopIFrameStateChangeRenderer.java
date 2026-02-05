@@ -107,7 +107,7 @@ public class DesktopIFrameStateChangeRenderer {
 				g2d.setColor(color);
 				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 				double width = stateChange.iFrame.getWidth() / 20 * ((factor - stateChange.factorOffset) / (1 - stateChange.factorOffset) + 0.1);
-				BasicStroke stroke = new BasicStroke((float) width, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+				BasicStroke stroke = new BasicStroke((float) Math.max(0.1, width), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 				g2d.setStroke(stroke);
 				
 				Rectangle rect = stateChange.iFrame.getBounds();

@@ -109,6 +109,7 @@ import javax.swing.Timer;
 import javax.swing.WindowConstants;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
+import javax.swing.table.JTableHeader;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
@@ -126,10 +127,10 @@ import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.RowsClosure;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.SqlStatementTable;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.UserAction;
-import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.ui.databrowser.TreeLayoutOptimizer.Node;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
+import net.sf.jailer.ui.databrowser.sqlconsole.ColumnsTable;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.ui.databrowser.whereconditioneditor.WhereConditionEditorPanel;
 import net.sf.jailer.ui.util.HSLColor;
@@ -880,12 +881,13 @@ public abstract class Desktop extends JDesktopPane {
 					}
 				};
 				additionalMouseAdapter = ml;
-				singleRowViewScrollPane.addMouseListener(ml);
-				singleRowViewScrollPane.addMouseMotionListener((MouseMotionListener) ml);
-				singleRowViewContainterPanel.addMouseListener(ml);
-				singleRowViewContainterPanel.addMouseMotionListener((MouseMotionListener) ml);
 				rowsTable.addMouseListener(ml);
 				rowsTable.addMouseMotionListener((MouseMotionListener) ml);
+				JTableHeader th = rowsTable.getTableHeader();
+				if (th != null) {
+					th.addMouseListener(ml);
+					th.addMouseMotionListener((MouseMotionListener) ml);
+				}
 			}
 			
 			@Override
@@ -903,12 +905,18 @@ public abstract class Desktop extends JDesktopPane {
 				JComponent source = (JComponent) e.getSource();
 				if (source == rowsTable) {
 					ri = rowsTable.rowAtPoint(e.getPoint());
-				} else if (source == inplaceEditorTextField && inplaceEditorcurrentRow >= 0 && inplaceEditorcurrentRow < rows.size()) {
+				} else if (source == inplaceEditorTextField && inplaceEditorcurrentRow >= 0
+						&& inplaceEditorcurrentRow < rows.size()) {
 					ri = rowsTable.getRowSorter().convertRowIndexToView(inplaceEditorcurrentRow);
-				} else {
+				} else if (source instanceof ColumnsTable) {
 					ri = 0;
+				} else {
+					ri = -1;
 				}
-				if (ri >= 0 && !rows.isEmpty() && rowsTable.getRowSorter().getViewRowCount() > 0) {
+				if (ri < 0 || rows.isEmpty()) {
+					onRowSelect(table, null);
+					currentlyViewedRow = null;
+				} else if (ri >= 0 && !rows.isEmpty() && rowsTable.getRowSorter().getViewRowCount() > 0) {
 					int i = 0;
 					if (source == rowsTable) {
 						i = rowsTable.getRowSorter().convertRowIndexToModel(ri);
@@ -918,7 +926,6 @@ public abstract class Desktop extends JDesktopPane {
 						if (rows.size() != 1 || getQueryBuilderDialog() == null /* SQL Console */) {
 							return;
 						}
-						ri = 0;
 						i = 0;
 					}
 					Row row = rows.get(i);
@@ -2962,8 +2969,8 @@ public abstract class Desktop extends JDesktopPane {
 		}
 
 		public void resizeDesktop() {
-			int x = 0;
-			int y = 0;
+			int x = reservedDesktopSize.width;
+			int y = reservedDesktopSize.height;
 			int paX = 0;
 			int paY = 0;
 			JScrollPane scrollPane = getScrollPane();
@@ -3025,6 +3032,16 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	private Dimension minimumDesktopSize;
+	private Dimension reservedDesktopSize = new Dimension(0, 0);
+	public Dimension getReservedDesktopSize() {
+		return reservedDesktopSize;
+	}
+
+	public void setReservedDesktopSize(Dimension reservedDesktopSize) {
+		this.reservedDesktopSize = reservedDesktopSize;
+		manager.resizeDesktop();
+	}
+
 	private Point desktopViewPos;
 	
 	public Dimension getMinimumDesktopSize() {

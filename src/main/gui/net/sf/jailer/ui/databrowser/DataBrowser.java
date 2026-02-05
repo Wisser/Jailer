@@ -5692,6 +5692,18 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 
 				RowBrowser nextRbF = nextRb;
 				int iF = i;
+				if (i < 0 && !path.isEmpty()) {
+					RowBrowser rb = getVisibleTables().get(path.get(0));
+					if (rb != null) {
+						try {
+							rb.internalFrame.setSelected(true);
+							desktop.scrollToCenter(rb.internalFrame);
+							rb.internalFrame.grabFocus();
+						} catch (PropertyVetoException e) {
+							// ignore
+						}
+					}
+				}
 				openAssociationPathPanel(path.subList(0, i + 1),
 						associations -> {
 							if (associations != null) {
@@ -5733,21 +5745,30 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 									desktop.catchUpLastArrangeLayoutOnNewTableBrowser();
 								}
 								closureView.find(getDataModel().getDisplayName(path.get(0)));
+								desktop.setReservedDesktopSize(
+										new Dimension(
+												Math.max(desktop.getReservedDesktopSize().width, desktop.getMinimumSize().width),
+												Math.max(desktop.getReservedDesktopSize().height, desktop.getMinimumSize().height)
+												));
 							}
 						},
 						() -> {
-							desktopUndoManager.pop();
-							HashSet<RowBrowser> toClose = new HashSet<>(desktop.getBrowsers());
-							toClose.removeAll(initialBrowser);
-							desktop.closeAll(toClose);
-							if (initiallySelectedBrowser != null) {
-								try {
-									initiallySelectedBrowser.internalFrame.setSelected(true);
-								} catch (PropertyVetoException e) {
-									// ignore
+							try {
+								Desktop.noArrangeLayoutOnNewTableBrowser = true;
+								desktopUndoManager.pop();
+								HashSet<RowBrowser> toClose = new HashSet<>(desktop.getBrowsers());
+								toClose.removeAll(initialBrowser);
+								desktop.closeAll(toClose);
+								if (initiallySelectedBrowser != null) {
+									try {
+										initiallySelectedBrowser.internalFrame.setSelected(true);
+									} catch (PropertyVetoException e) {
+										// ignore
+									}
 								}
-							}
-							UIUtil.invokeLater(100, () -> desktopUndoManager.pop());
+								UIUtil.invokeLater(100, () -> desktopUndoManager.pop());
+							} finally {
+								Desktop.noArrangeLayoutOnNewTableBrowser = false;							}
 						}, initialBrowser);
 			}
 
@@ -5814,6 +5835,12 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 					d.setLocation(DataBrowser.this.getX() + (DataBrowser.this.getWidth() - d.getWidth()) / 2,
 							Math.max(0, DataBrowser.this.getY() + (DataBrowser.this.getHeight() - d.getHeight()) / 2));
 					UIUtil.fit(d);
+					d.addWindowListener(new WindowAdapter() {
+						@Override
+						public void windowClosed(WindowEvent e) {
+							desktop.setReservedDesktopSize(new Dimension());
+						}
+					});
 					d.setVisible(true);
 				} catch (Exception e) {
 					LogUtil.warn(e);
