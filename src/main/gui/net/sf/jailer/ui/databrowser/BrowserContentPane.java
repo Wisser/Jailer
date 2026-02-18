@@ -1635,6 +1635,20 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 				updateTableModel();
 			}
 		});
+		
+//		AbstractAction a1 = new AbstractAction() {
+//			@Override
+//			public void actionPerformed(ActionEvent e) {
+//				System.out.println("Copy to clipboard"); // TODO
+//			}
+//		};
+//
+//		registerAccelerator(KS_COPY_TO_CLIPBOARD, a1, this);
+//		registerAccelerator(KS_COPY_TO_CLIPBOARD, a1, rowsTable);
+//		registerAccelerator(KS_COPY_TO_CLIPBOARD, a1, loadButton);
+//		registerAccelerator(KS_COPY_TO_CLIPBOARD, a1, sqlLabel1);
+//		registerAccelerator(KS_COPY_TO_CLIPBOARD, a1, relatedRowsLabel);
+//		registerAccelerator(KS_COPY_TO_CLIPBOARD, a1, andCondition);
 
 		rowsTable.setAutoCreateRowSorter(true);
 		rowsTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
@@ -3365,17 +3379,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 				editMode.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						Boolean oldForceAdjustRows = Desktop.forceAdjustRows;
-						try {
-							Desktop.forceAdjustRows = null;
-							setEditMode(!isEditMode);
-							updateTableModel();
-							if (repaint != null) {
-								UIUtil.invokeLater(repaint);
-							}
-						} finally {
-							Desktop.forceAdjustRows = oldForceAdjustRows;
-						}
+						toggleEditMode(repaint);
 					}
 				});
 				popup.add(editMode);
@@ -8733,6 +8737,20 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	@Override
 	public void onNewPlaf() {
 		initConditionEditor();
+	}
+
+	public void toggleEditMode(final Runnable repaint) {
+		Boolean oldForceAdjustRows = Desktop.forceAdjustRows;
+		try {
+			Desktop.forceAdjustRows = null;
+			setEditMode(!isEditMode);
+			updateTableModel();
+			if (repaint != null) {
+				UIUtil.invokeLater(repaint);
+			}
+		} finally {
+			Desktop.forceAdjustRows = oldForceAdjustRows;
+		}
 	}
 
 	protected Set<Integer> filteredColumns;

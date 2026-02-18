@@ -164,7 +164,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 
     private static final String reIdentifier = "(?:[\"][^\"]+[\"])|(?:[`][^`]+[`])|(?:['][^']+['])|(?:[\\w]+)";
     private static final String reIdentDotOnly = ".*?(" + reIdentifier + ")\\s*\\.\\s*[\"'`]?\\w*$";
-    private static final String reClauseKW = "\\b(?:select|from|update|where|(?:group\\s+by)|having|with|in|exists|into|delete|insert|(?:order\\s+by)|union|intersect|except|values|merge)\\b";
+    private static final String reClauseKW = "\\b(?:select|from|update|where|(?:group\\s+by)|having|with|in|exists|into|delete|insert|(?:order\\s+by)|union|intersect|except|values|merge|set)\\b";
     private static final String reIdentWSWordPattern = ".*?(" + reIdentifier + ")\\s+\\w*$";
     
     private static final Pattern identDotOnlyPattern = Pattern.compile(reIdentDotOnly, Pattern.DOTALL);
@@ -926,6 +926,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		Matcher matcher = pattern.matcher(input);
         boolean inFrom = false;
         boolean inWith = false;
+        boolean inSet = false;
         boolean cteExpected = false;
         boolean firstCTE = true;
         boolean isSubselect = false;
@@ -1257,6 +1258,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                 if (clause != null) {
                     inFrom = "from".equalsIgnoreCase(clause) || "update".equalsIgnoreCase(clause) || "into".equalsIgnoreCase(clause);
                     inWith = "with".equalsIgnoreCase(clause);
+                    inSet = "set".equalsIgnoreCase(clause);
                     clear = true;
                 }
                 if (keyword != null || clause != null || identifier != null) {

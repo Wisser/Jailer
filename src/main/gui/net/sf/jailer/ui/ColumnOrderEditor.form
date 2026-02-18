@@ -56,8 +56,6 @@
                         <Column editable="true" title="Title 4" type="java.lang.Object"/>
                       </Table>
                     </Property>
-                    <Property name="showHorizontalLines" type="boolean" value="false"/>
-                    <Property name="showVerticalLines" type="boolean" value="false"/>
                   </Properties>
                 </Component>
               </SubComponents>
@@ -108,6 +106,7 @@
                   </FontInfo>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Define the rendering position of columns in table:  "/>
+                <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;Specify the position in which each column of a table, or all tables (&quot;(all tables)&quot;),&lt;br&gt; &#xa;appears in the table display:&lt;br&gt;&lt;br&gt;&#xa;- &lt;b&gt;Left/Top&lt;/b&gt;: on the left in the data browser and at the top in the extraction model editor. This is the most prominent position and should be used for very significant columns.&lt;br&gt;&#xa;- &lt;b&gt;Bottom/Right&lt;/b&gt;: on the right in the data browser and at the bottom in the extraction model editor. For less important columns.&lt;br&gt;&#xa;- &lt;b&gt;No selection&lt;/b&gt;: between the two above.&#xa;&lt;/html&gt;"/>
               </Properties>
               <Constraints>
                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">

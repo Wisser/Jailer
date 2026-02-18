@@ -25,8 +25,8 @@ import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -48,7 +48,6 @@ import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JLabel;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
@@ -71,6 +70,7 @@ import net.sf.jailer.ui.ExtendetCopyPanel;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
+import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
 import net.sf.jailer.ui.databrowser.Row;
 import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Pair;
@@ -165,7 +165,7 @@ public class ColumnsTable extends JTable {
 			setColumnSelectionAllowed(true);
 			setCellSelectionEnabled(true);
 		} else {
-			setFocusable(false);
+//			setFocusable(false);
 			setRowSelectionAllowed(false);
 			setColumnSelectionAllowed(false);
 			rowsTable.setEnabled(false);
@@ -208,13 +208,22 @@ public class ColumnsTable extends JTable {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				JTable tab = ColumnsTable.this;
-				List<Integer> types = new ArrayList<Integer>();
-				if (rb != null && rb.browserContentCellEditor != null) {
-					for (int type: rb.browserContentCellEditor.getColumnTypes()) {
-						types.add(type);
+				if (inDesktop) {
+					int s = currentRow;
+					if (s >= 0) {
+						Object o = tab.getValueAt(s, 1);
+						String text = o != null? o instanceof TableModelItem? "" + ((TableModelItem) o).value :  o.toString() : "";
+						UIUtil.setClipboardContent(new StringSelection(text.trim()));
 					}
+				} else {
+					List<Integer> types = new ArrayList<Integer>();
+					if (rb != null && rb.browserContentCellEditor != null) {
+						for (int type: rb.browserContentCellEditor.getColumnTypes()) {
+							types.add(type);
+						}
+					}
+					ExtendetCopyPanel.openDialog(tab, false, "?no-name?", types, true, true);
 				}
-				ExtendetCopyPanel.openDialog(tab, false, "?no-name?", types, true, true);
 			}
 		};
 		am.put(key, a);
@@ -243,15 +252,7 @@ public class ColumnsTable extends JTable {
 		a = new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				UIUtil.traverse(createPopupMenu(null), null, c-> null, (c, o) -> null, (t, c) -> {
-					if (c instanceof JMenuItem) {
-						if (KS_EDIT.equals(((JMenuItem) c).getAccelerator())) {
-							for (ActionListener al: ((JMenuItem) c).getActionListeners()) {
-								al.actionPerformed(e);
-							}
-						}
-					}
-				});
+				rb.toggleEditMode(() -> resetCellEditor());
 			}
 		};
 		am.put(key, a);
@@ -514,12 +515,7 @@ public class ColumnsTable extends JTable {
 		return rb.createPopupMenu(this, row, i, selectedRowsIndexes, (int) p.getX(), (int) p.getY(), false, copyAction, ecopyAction, new Runnable() {
 			@Override
 			public void run() {
-				for (int i = 0; i < getColumnCount(); i++) {
-					TableCellEditor defaultEditor = getDefaultEditor(getColumnClass(i));
-					if (defaultEditor != null) {
-						defaultEditor.cancelCellEditing();
-					}
-				}
+				resetCellEditor();
 			}
 		}, true, true, true);
 	}
@@ -717,6 +713,15 @@ public class ColumnsTable extends JTable {
 						g2d.drawRoundRect(x[0], y[0], x[1] - x[0], y[1] - y[0] - 1, 8, 8);
 					}
 				}
+			}
+		}
+	}
+
+	private void resetCellEditor() {
+		for (int i = 0; i < getColumnCount(); i++) {
+			TableCellEditor defaultEditor = getDefaultEditor(getColumnClass(i));
+			if (defaultEditor != null) {
+				defaultEditor.cancelCellEditing();
 			}
 		}
 	}

@@ -90,6 +90,7 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
         
     	initTablesCombobox();
     	
+    	tablesComboBox.setToolTipText(jinfoLabe.getToolTipText());
     	okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
 		closeButton.setIcon(UIUtil.scaleIcon(closeButton, cancelIcon));
 		
@@ -110,7 +111,7 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
     }
 
 	private void updateTableModel(Component owner, DataModel dataModel) {
-		columnOrderModel = new DefaultTableModel(new String[] { "Column", currentTable == null? "Frequency" : "Type", "Key", "Left/Top (least significant)", "Right/Bottom (most significant)" }, 0) {
+		columnOrderModel = new DefaultTableModel(new String[] { "Column", currentTable == null? "Frequency" : "Type", "Key", "Left/Top (most significant)", "Right/Bottom (least significant)" }, 0) {
 			@Override
 			public boolean isCellEditable(int row, int column) {
 				return column == 3 || column == 4;
@@ -366,7 +367,7 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
         okButton = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         jinfoLabe = new javax.swing.JLabel();
-        tablesComboBox = new JComboBox2<>();
+        tablesComboBox = new JComboBox2();
         dummyLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
@@ -386,8 +387,6 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        columnOrderTable.setShowHorizontalLines(false);
-        columnOrderTable.setShowVerticalLines(false);
         jScrollPane1.setViewportView(columnOrderTable);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -439,6 +438,7 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
 
         jinfoLabe.setFont(jinfoLabe.getFont().deriveFont(jinfoLabe.getFont().getSize()+2f));
         jinfoLabe.setText("Define the rendering position of columns in table:  ");
+        jinfoLabe.setToolTipText("<html>Specify the position in which each column of a table, or all tables (\"(all tables)\"),<br> \nappears in the table display:<br><br>\n- <b>Left/Top</b>: on the left in the data browser and at the top in the extraction model editor. This is the most prominent position and should be used for very significant columns.<br>\n- <b>Bottom/Right</b>: on the right in the data browser and at the bottom in the extraction model editor. For less important columns.<br>\n- <b>No selection</b>: between the two above.\n</html>");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -508,7 +508,7 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel jinfoLabe;
     private javax.swing.JButton okButton;
-    private JComboBox2<String> tablesComboBox;
+    private JComboBox2 tablesComboBox;
     // End of variables declaration//GEN-END:variables
 
     public void adjustTableColumnsWidth() {
