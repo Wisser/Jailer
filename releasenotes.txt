@@ -1,3 +1,7 @@
+16.11.2
+  - Copying individual columns in the "single row view" in the data browser is now possible.
+  - The "Outline" feature in the SQL console has been improved.
+
 16.11.1
   - Tooltips for column types and constraints are now also shown in the column view of a table.
 
