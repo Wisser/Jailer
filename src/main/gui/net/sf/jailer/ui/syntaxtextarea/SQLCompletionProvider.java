@@ -928,7 +928,6 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		Matcher matcher = pattern.matcher(input);
         boolean inFrom = false;
         boolean inWith = false;
-        boolean inSet = false;
         boolean cteExpected = false;
         boolean firstCTE = true;
         boolean isSubselect = false;
@@ -1260,7 +1259,6 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                 if (clause != null) {
                     inFrom = "from".equalsIgnoreCase(clause) || "update".equalsIgnoreCase(clause) || "into".equalsIgnoreCase(clause);
                     inWith = "with".equalsIgnoreCase(clause);
-                    inSet = "set".equalsIgnoreCase(clause);
                     clear = true;
                 }
                 if (keyword != null || clause != null || identifier != null) {
