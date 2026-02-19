@@ -1636,20 +1636,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			}
 		});
 		
-//		AbstractAction a1 = new AbstractAction() {
-//			@Override
-//			public void actionPerformed(ActionEvent e) {
-//				System.out.println("Copy to clipboard"); // TODO
-//			}
-//		};
-//
-//		registerAccelerator(KS_COPY_TO_CLIPBOARD, a1, this);
-//		registerAccelerator(KS_COPY_TO_CLIPBOARD, a1, rowsTable);
-//		registerAccelerator(KS_COPY_TO_CLIPBOARD, a1, loadButton);
-//		registerAccelerator(KS_COPY_TO_CLIPBOARD, a1, sqlLabel1);
-//		registerAccelerator(KS_COPY_TO_CLIPBOARD, a1, relatedRowsLabel);
-//		registerAccelerator(KS_COPY_TO_CLIPBOARD, a1, andCondition);
-
 		rowsTable.setAutoCreateRowSorter(true);
 		rowsTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
         rowsTableScrollPane.setViewportView(rowsTable);
