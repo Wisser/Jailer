@@ -896,6 +896,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         final String origStatement = prepareStatementForAliasAnalysis(origStatementUP);
         scopeDescriptionPerLastKeyword.put("select", "Select");
         scopeDescriptionPerLastKeyword.put("from", "From");
+        scopeDescriptionPerLastKeyword.put("set", "Set");
         scopeDescriptionPerLastKeyword.put("with", "With");
         scopeDescriptionPerLastKeyword.put("where", "Where");
         scopeDescriptionPerLastKeyword.put("group", "Group by");
@@ -918,6 +919,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         scopesWithContext.add("order");
         scopesWithContext.add("having");
         scopesWithContext.add("values");
+        scopesWithContext.add("set");
         
         Map<String, TABLE> aliases = new LinkedHashMap<String, TABLE>();
         dummyTables.clear();
