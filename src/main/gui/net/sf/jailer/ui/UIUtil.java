@@ -2597,18 +2597,22 @@ public class UIUtil {
         Map<String, Column> byName = new HashMap<>();
         Map<String, Column> byCIName = new HashMap<>();
         table.getColumns().forEach(c -> {
-        	byName.put(c.name, c);
-        	byCIName.put(Quoting.staticUnquote(c.name).toUpperCase(Locale.ENGLISH), c);
+        	if (c.name != null) {
+        		byName.put(c.name, c);
+        		byCIName.put(Quoting.staticUnquote(c.name).toUpperCase(Locale.ENGLISH), c);
+        	}
         });
         Set<Column> result = new HashSet<>();
         fks.forEach(c -> {
-        	Column column = byName.get(c.name);
-        	if (column == null) {
-        		column = byCIName.get(Quoting.staticUnquote(c.name).toUpperCase(Locale.ENGLISH));
+        	if (c.name != null) {
+            	Column column = byName.get(c.name);
+            	if (column == null) {
+            		column = byCIName.get(Quoting.staticUnquote(c.name).toUpperCase(Locale.ENGLISH));
+            	}
+            	if (column != null) {
+            		result.add(column);
+            	}
         	}
-    		if (column != null) {
-    			result.add(column);
-    		}
         });
         return result;
 	}
