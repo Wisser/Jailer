@@ -312,24 +312,26 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 	 * Updates state of some menu items.
 	 */
 	private void updateMenuItems() {
-		connectDb.setSelected(dbConnectionDialog != null && dbConnectionDialog.isConnected);
-		disconnectDb.setEnabled(dbConnectionDialog != null && dbConnectionDialog.isConnected);
-		extractionModelEditor.connectivityState.setText(getConnectivityState());
-		extractionModelEditor.connectivityState.setIcon(getDBMSLogo());
-		
-		if (!origKnown) {
-			origKnown = true;
-			origCSBG = extractionModelEditor.connectivityState.getBackground();
-			origL2BG = extractionModelEditor.legende2.getBackground();
+		if (extractionModelEditor != null) {
+			connectDb.setSelected(dbConnectionDialog != null && dbConnectionDialog.isConnected);
+			disconnectDb.setEnabled(dbConnectionDialog != null && dbConnectionDialog.isConnected);
+			extractionModelEditor.connectivityState.setText(getConnectivityState());
+			extractionModelEditor.connectivityState.setIcon(getDBMSLogo());
+			
+			if (!origKnown) {
+				origKnown = true;
+				origCSBG = extractionModelEditor.connectivityState.getBackground();
+				origL2BG = extractionModelEditor.legende2.getBackground();
+			}
+			ConnectionInfo connection = dbConnectionDialog != null ? dbConnectionDialog.currentConnection : null;
+			if (connection == null) {
+				lastConnectionInfo = null;
+			} else {
+				lastConnectionInfo = new ConnectionInfo();
+				lastConnectionInfo.assign(connection);
+			}
+			onConnectionTypeChange();
 		}
-		ConnectionInfo connection = dbConnectionDialog != null ? dbConnectionDialog.currentConnection : null;
-		if (connection == null) {
-			lastConnectionInfo = null;
-		} else {
-			lastConnectionInfo = new ConnectionInfo();
-			lastConnectionInfo.assign(connection);
-		}
-		onConnectionTypeChange();
 	}
 	
 	private ConnectionInfo lastConnectionInfo = null;
