@@ -37,11 +37,13 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.apache.commons.collections4.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -303,6 +305,18 @@ public class DataModel {
 	public Collection<Table> getTables() {
 		return tables.values();
 	}
+
+  /**
+   * When starting UI we need to pick a table to get selected at first, in a stable way.
+   * Alphabetically first table sounds good and deterministic.
+   */
+  public Optional<Table> firstTable() {
+    if (MapUtils.isEmpty(tables)) {
+      return Optional.empty();
+    }
+
+    return tables.keySet().stream().sorted().findFirst().map(tables::get);
+  }
 
 	/**
 	 * Reads in <code>table.csv</code> and <code>association.csv</code>
