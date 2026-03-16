@@ -222,7 +222,6 @@
                           <Connection code="/* Renaming also in *.form! */ Colors.Color_128_128_128" type="code"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value=" "/>
-                        <Property name="toolTipText" type="java.lang.String" value=""/>
                       </Properties>
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">

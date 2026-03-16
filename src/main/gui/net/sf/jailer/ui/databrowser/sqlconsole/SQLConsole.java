@@ -2807,7 +2807,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
         dummyLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_128_128_128);
         dummyLabel.setText(" ");
-        dummyLabel.setToolTipText("");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
