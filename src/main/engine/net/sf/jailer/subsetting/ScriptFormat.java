@@ -71,6 +71,8 @@ public enum ScriptFormat {
 
 	/**
 	 * Gets human readable name.
+	 *
+	 * @return human readable name
 	 */
 	public String getDisplayName() {
 		return displayName;
@@ -92,7 +94,7 @@ public enum ScriptFormat {
 	private final String fileExtension;
 	
 	/**
-	 * Is object notation format? (XML, jSON, YAML, ...)
+	 * Is object notation format? (XML, JSON, YAML, ...)
 	 */
 	private final boolean isObjectNotation;
 	
@@ -107,7 +109,9 @@ public enum ScriptFormat {
 	public final boolean separatorFollowed;
 	
 	/**
-	 * Is object notation format) (XML, jSON, YAML, ...)
+	 * Is object notation format? (XML, JSON, YAML, ...)
+	 *
+	 * @return <code>true</code> if this format is an object notation format
 	 */
 	public boolean isObjectNotation() {
 		return isObjectNotation;
@@ -133,6 +137,8 @@ public enum ScriptFormat {
 	
 	/**
 	 * Uses UTF-8 charset?
+	 *
+	 * @return <code>true</code> if this format uses the UTF-8 charset
 	 */
 	public boolean isUsesUTF8() {
 		return usesUTF8;

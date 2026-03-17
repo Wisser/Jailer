@@ -43,6 +43,11 @@ public abstract class PrimaryKeyValidator {
 
 	private final Object cancellationContext;
 
+	/**
+	 * Constructor.
+	 *
+	 * @param cancellationContext the context used to check for cancellation
+	 */
 	public PrimaryKeyValidator(Object cancellationContext) {
 		this.cancellationContext = cancellationContext;
 	}
@@ -51,8 +56,9 @@ public abstract class PrimaryKeyValidator {
 	 * Validates all primary keys of a set of tables.
 	 *
 	 * @param session the session
-	 * @param tables the tables
-	 * @throws SQLException if a pk is invalid
+	 * @param tables the tables whose primary keys are to be validated
+	 * @param jobManager the job manager used to run validation jobs in parallel
+	 * @throws SQLException if a primary key is invalid
 	 */
 	public void validatePrimaryKey(final Session session, Set<Table> tables, JobManager jobManager) throws SQLException {
 		numTotal.set(0);

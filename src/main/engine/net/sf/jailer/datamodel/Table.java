@@ -247,6 +247,13 @@ public class Table extends ModelElement implements Comparable<Table> {
 		return str + "\n";
 	}
 
+	/**
+	 * Compares this table to another by name.
+	 *
+	 * @param o the other table
+	 * @return a negative integer, zero, or a positive integer as this table's name
+	 *         is less than, equal to, or greater than the other table's name
+	 */
 	@Override
 	public int compareTo(Table o) {
 		return name.compareTo(o.name);
@@ -351,6 +358,8 @@ public class Table extends ModelElement implements Comparable<Table> {
 
 	/**
 	 * Sets template for XML exports (for internal uses/GUI only).
+	 *
+	 * @param xmlTemplate the XML template string to set
 	 */
 	public void setXmlTemplateInternal(String xmlTemplate) {
 		this.xmlTemplate = xmlTemplate;
@@ -358,6 +367,8 @@ public class Table extends ModelElement implements Comparable<Table> {
 	
 	/**
 	 * Sets template for XML exports.
+	 *
+	 * @param xmlTemplate the XML template string to set
 	 */
 	public void setXmlTemplate(String xmlTemplate) {
 		this.xmlTemplate = xmlTemplate;
@@ -396,6 +407,8 @@ public class Table extends ModelElement implements Comparable<Table> {
 
 	/**
 	 * Gets template for XML exports.
+	 *
+	 * @return the XML template string, or <code>null</code> if not set
 	 */
 	public String getXmlTemplate() {
 		return xmlTemplate;
@@ -403,6 +416,9 @@ public class Table extends ModelElement implements Comparable<Table> {
 
 	/**
 	 * Gets template for XML exports as DOM.
+	 *
+	 * @param quoting the quoting to use for column names
+	 * @return the XML template as a DOM document
 	 */
 	public Document getXmlTemplateAsDocument(Quoting quoting) throws ParserConfigurationException, SAXException, IOException {
 		return getXmlTemplateAsDocument(xmlTemplate, quoting);
@@ -410,6 +426,9 @@ public class Table extends ModelElement implements Comparable<Table> {
 
 	/**
 	 * Gets default template for XML exports as DOM.
+	 *
+	 * @param quoting the quoting to use for column names
+	 * @return the default XML template as a DOM document
 	 */
 	public Document getDefaultXmlTemplate(Quoting quoting) throws ParserConfigurationException, SAXException, IOException {
 		return createInitialXmlTemplate(quoting);
@@ -417,6 +436,10 @@ public class Table extends ModelElement implements Comparable<Table> {
 
 	/**
 	 * Gets template for XML exports as DOM.
+	 *
+	 * @param xmlTemplate the XML template string to use, or <code>null</code> for the default template
+	 * @param quoting the quoting to use for column names
+	 * @return the XML template as a DOM document
 	 */
 	public Document getXmlTemplateAsDocument(String xmlTemplate, Quoting quoting) throws ParserConfigurationException, SAXException, IOException {
 		Document template;
@@ -623,12 +646,22 @@ public class Table extends ModelElement implements Comparable<Table> {
 		return result;
 	}
 
+	/**
+	 * Gets whether this table is excluded from deletion.
+	 *
+	 * @return <code>true</code> if this table is excluded from deletion
+	 */
 	public boolean isExcludedFromDeletion() {
 		return excludeFromDeletion == null? defaultExcludeFromDeletion : excludeFromDeletion;
 	}
 
 	private static final String NON_VIRTUAL_COLUMNS_PROP_PREFIX = "nonVirtualColumns:";
 
+	/**
+	 * Clears all session properties associated with this class.
+	 *
+	 * @param session the session whose properties should be cleared
+	 */
 	public static void clearSessionProperties(Session session) {
 		session.removeSessionProperties(Table.class);
 	}
@@ -680,6 +713,8 @@ public class Table extends ModelElement implements Comparable<Table> {
 
 	/**
 	 * Gets whether this table is artificial (i.e. does not represent a table in a database).
+	 *
+	 * @return <code>true</code> if this table is artificial
 	 */
 	public boolean isArtifical() {
 		return isArtifical;
@@ -699,6 +734,8 @@ public class Table extends ModelElement implements Comparable<Table> {
 
 	/**
 	 * Gets whether this table is a distinct join over several tables (needed for counting of column values).
+	 *
+	 * @return <code>true</code> if this table is a distinct join
 	 */
 	public boolean isDistinct() {
 		return isDistinct;

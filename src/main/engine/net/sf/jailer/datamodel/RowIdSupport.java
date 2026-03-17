@@ -48,6 +48,7 @@ public class RowIdSupport {
 	 * @param configuration DBMS configuration
 	 * @param rowIdType type of rowid-columns
 	 * @param useRowIds <code>true</code> iff rowid column is used instead of primary keys
+	 * @param useRowIdsOnlyForTablesWithoutPK <code>true</code> to use rowids only for tables without a primary key
 	 */
 	public RowIdSupport(DataModel dataModel, DBMS configuration, String rowIdType, boolean useRowIds, boolean useRowIdsOnlyForTablesWithoutPK) {
 		this.dataModel = dataModel;
@@ -71,6 +72,7 @@ public class RowIdSupport {
 	 * @param dataModel the data model
 	 * @param configuration DBMS configuration
 	 * @param useRowIds <code>true</code> iff rowid column is used instead of primary keys
+	 * @param useRowIdsOnlyForTablesWithoutPK <code>true</code> to use rowids only for tables without a primary key
 	 */
 	public RowIdSupport(DataModel dataModel, DBMS configuration, boolean useRowIds, boolean useRowIdsOnlyForTablesWithoutPK) {
 		this(dataModel, configuration, configuration.getRowidType(), useRowIds && configuration.getRowidName() != null, useRowIdsOnlyForTablesWithoutPK);
@@ -109,7 +111,8 @@ public class RowIdSupport {
 	 * Gets the primary key of a table.
 	 *
 	 * @param table the table
-	 * @param exact 
+	 * @param session the session, or <code>null</code>
+	 * @param exact <code>true</code> to check rowid applicability exactly against the database
 	 * @return the primary key of the table
 	 */
 	public PrimaryKey getPrimaryKey(Table table, Session session, boolean exact) {
@@ -130,6 +133,7 @@ public class RowIdSupport {
 	 * Gets the primary key of a table.
 	 *
 	 * @param table the table
+	 * @param session the session, or <code>null</code>
 	 * @return the primary key of the table
 	 */
 	public PrimaryKey getPrimaryKey(Table table, Session session) {
@@ -172,7 +176,9 @@ public class RowIdSupport {
 	}
 
 	/**
-	 * @param useRowIdsOnlyForTablesWithoutPK the useRowIdsOnlyForTablesWithoutPK to set
+	 * Sets whether rowids should only be used for tables without a primary key.
+	 *
+	 * @param useRowIdsOnlyForTablesWithoutPK <code>true</code> to use rowids only for tables without a primary key
 	 */
 	public void setUseRowIdsOnlyForTablesWithoutPK(
 			boolean useRowIdsOnlyForTablesWithoutPK) {
@@ -180,21 +186,23 @@ public class RowIdSupport {
 	}
 
 	/**
-	 * Gets the columns with additional rowid-column of a table
+	 * Gets the columns with additional rowid-column of a table.
 	 *
 	 * @param table the table
-	 * @return the columns of the table
+	 * @param session the session, or <code>null</code>
+	 * @return the columns of the table, including the rowid-column if applicable
 	 */
 	public List<Column> getColumns(Table table, Session session) {
 		return getColumns(table, session, true);
 	}
 	
 	/**
-	 * Gets the columns with additional rowid-column of a table
+	 * Gets the columns with additional rowid-column of a table.
 	 *
 	 * @param table the table
-	 * @param exact 
-	 * @return the columns of the table
+	 * @param session the session, or <code>null</code>
+	 * @param exact <code>true</code> to check rowid applicability exactly against the database
+	 * @return the columns of the table, including the rowid-column if applicable
 	 */
 	public List<Column> getColumns(Table table, Session session, boolean exact) {
 		List<Column> columns = table.getColumns();
@@ -213,6 +221,12 @@ public class RowIdSupport {
 		return columns;
 	}
 
+	/**
+	 * Checks whether the given column is the rowid column.
+	 *
+	 * @param column the column to check
+	 * @return <code>true</code> if the given column is the rowid column
+	 */
 	public boolean isRowIdColumn(Column column) {
 		return rowIdColumn != null && rowIdColumn.name.equals(column.name);
 	}

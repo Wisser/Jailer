@@ -335,7 +335,10 @@ public enum InlineViewStyle {
 	}
 
 	/**
-	 * Gets a style for a session.
+	 * Gets a suitable inline-view style for a session.
+	 *
+	 * @param session the database session
+	 * @return a suitable {@link InlineViewStyle} for the given session
 	 */
 	public static InlineViewStyle forSession(Session session) {
 		StringBuilder messages = new StringBuilder();
@@ -364,12 +367,38 @@ public enum InlineViewStyle {
 		throw new RuntimeException("No suitable Inline-View Style known for " + session.dbUrl + "\n\n" + messages);
 	}
 
+	/**
+	 * Returns the SQL head (opening) of the inline view.
+	 *
+	 * @param columnNames the column names of the inline view
+	 * @return the head SQL fragment
+	 */
 	public abstract String head(String[] columnNames) throws SQLException;
 
+	/**
+	 * Returns the SQL fragment for a single row of the inline view.
+	 *
+	 * @param values the SQL literal values for the row
+	 * @param columnNames the column names of the inline view
+	 * @param rowNumber zero-based index of the row (first row may need column aliases)
+	 * @return the SQL fragment for the row
+	 */
 	public abstract String item(String[] values, String[] columnNames, int rowNumber) throws SQLException;
 
+	/**
+	 * Returns the SQL separator between row items.
+	 *
+	 * @return the separator SQL fragment
+	 */
 	public abstract String separator() throws SQLException;
 
+	/**
+	 * Returns the SQL terminator (closing) of the inline view.
+	 *
+	 * @param name the alias name of the inline view
+	 * @param columnNames the column names of the inline view
+	 * @return the terminator SQL fragment
+	 */
 	public abstract String terminator(String name, String[] columnNames) throws SQLException;
 
 }

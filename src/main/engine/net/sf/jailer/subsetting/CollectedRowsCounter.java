@@ -44,10 +44,20 @@ public class CollectedRowsCounter implements ProgressListener {
 	private Map<Table, Long> collectedRowsCount = new HashMap<Table, Long>();
 	private Map<Table, Long> deletedRowsCount = new HashMap<Table, Long>();
 
+	/**
+	 * Gets the number of collected rows per table.
+	 *
+	 * @return map from table to number of collected rows
+	 */
 	public Map<Table, Long> getCollectedRowsCount() {
 		return collectedRowsCount;
 	}
 
+	/**
+	 * Gets the number of deleted rows per table.
+	 *
+	 * @return map from table to number of deleted rows
+	 */
 	public Map<Table, Long> getDeletedRowsCount() {
 		return deletedRowsCount;
 	}
@@ -55,7 +65,10 @@ public class CollectedRowsCounter implements ProgressListener {
 	/**
 	 * Creates the statistic.
 	 *
-	 * @return the statistic
+	 * @param forDelete <code>true</code> to create a deletion statistic, <code>false</code> for an export statistic
+	 * @param datamodel the data model used for display names
+	 * @param exportStatistic if not <code>null</code>, will be populated with the export row counts
+	 * @return the statistic as a list of formatted lines
 	 */
 	public List<String> createStatistic(boolean forDelete, final DataModel datamodel, ExportStatistic exportStatistic) {
 		List<String> result = new ArrayList<String>();

@@ -138,21 +138,27 @@ public class StatementBuilder {
 	}
 
 	/**
-	 * Returns the size of the current statement.
+	 * Returns the number of items in the current statement.
+	 *
+	 * @return the number of items
 	 */
 	public int size() {
 		return body.size();
 	}
-	
+
 	/**
 	 * Returns the items of the current statement.
+	 *
+	 * @return the list of items
 	 */
 	public List<String> getItems() {
 		return body;
 	}
-	
+
 	/**
 	 * Gets the maximal size of a body-list.
+	 *
+	 * @return the maximal number of items per statement
 	 */
 	public int getMaxBodySize() {
 		return maxBodySize;

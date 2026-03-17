@@ -160,6 +160,8 @@ public class RemoteEntityGraph extends EntityGraph {
 
 	/**
 	 * Creates a new entity-graph of same type and session.
+	 *
+	 * @return the newly created entity-graph
 	 */
 	public EntityGraph createNewGraph() throws SQLException {
 		RemoteEntityGraph entityGraph = create(dataModel, createUniqueGraphID(), session, universalPrimaryKey, null, executionContext);
@@ -223,6 +225,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	/**
 	 * Gets the number of entities from given tables in the graph.
 	 *
+	 * @param tables the tables to count entities for
 	 * @return the number of entities in the graph
 	 */
 	@Override
@@ -492,6 +495,9 @@ public class RemoteEntityGraph extends EntityGraph {
 	 *
 	 * @param table the table
 	 * @param association the association to resolve
+	 * @param otherGraph the target entity-graph to add resolved entities into
+	 * @param universum the universe entity-graph used to filter candidates
+	 * @param forDelete if <code>true</code>, resolves for deletion rather than export
 	 *
 	 * @return row-count
 	 */
@@ -638,6 +644,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * @param condition condition of dependency
 	 * @param aggregationId id of aggregation association (for XML export), 0 if not applicable
 	 * @param dependencyId id of dependency
+	 * @param isAssociationReversed if <code>true</code>, the association is used in reverse direction
 	 */
 	@Override
 	public void addDependencies(Table from, String fromAlias, Table to, String toAlias, String condition, int aggregationId, int dependencyId, boolean isAssociationReversed) throws SQLException {
@@ -654,7 +661,9 @@ public class RemoteEntityGraph extends EntityGraph {
 	}
 
 	/**
-	 * Gets distinct association-ids of all edged.
+	 * Gets distinct association-ids of all edges.
+	 *
+	 * @return set of distinct dependency IDs
 	 */
 	@Override
 	public Set<Integer> getDistinctDependencyIDs() throws SQLException {
@@ -675,6 +684,8 @@ public class RemoteEntityGraph extends EntityGraph {
 	/**
 	 * Marks all entities of a given table which don't dependent on other entities,
 	 * s.t. they can be read and deleted.
+	 *
+	 * @param table the table
 	 */
 	@Override
 	public void markIndependentEntities(Table table) throws SQLException {
@@ -706,6 +717,8 @@ public class RemoteEntityGraph extends EntityGraph {
 
 	/**
 	 * Marks all rows which are not target of a dependency.
+	 *
+	 * @param table the table
 	 */
 	@Override
 	public void markRoots(Table table) throws SQLException {
@@ -827,6 +840,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * @param table the table
 	 * @param columns the columns
 	 * @param reader to read
+	 * @return number of rows read
 	 */
 	@Override
 	public long readUnfilteredEntityColumns(final Table table, final List<Column> columns, final Session.ResultSetReader reader) throws SQLException {
@@ -942,6 +956,11 @@ public class RemoteEntityGraph extends EntityGraph {
 
 	/**
 	 * Adds a prefix to a column name. Respects quoting.
+	 *
+	 * @param prefix the prefix to prepend, or <code>null</code> for no prefix
+	 * @param quoting the quoting helper
+	 * @param column the column
+	 * @return the prefixed (and re-quoted) column name
 	 */
 	protected String prefixColumnName(String prefix, Quoting quoting, Column column) {
 		if (prefix == null) return quoting.requote(column.name);
@@ -951,6 +970,8 @@ public class RemoteEntityGraph extends EntityGraph {
 
 	/**
 	 * Deletes all entities which are marked as independent.
+	 *
+	 * @param table the table
 	 */
 	@Override
 	public void deleteIndependentEntities(Table table) throws SQLException {
@@ -1007,6 +1028,9 @@ public class RemoteEntityGraph extends EntityGraph {
 
 	/**
 	 * Deletes all entities from a given table.
+	 *
+	 * @param table the table
+	 * @return number of deleted entities
 	 */
 	@Override
 	public long deleteEntities(Table table) throws SQLException {
@@ -1041,9 +1065,9 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * Removes all entities from this graph which are associated with an entity
 	 * outside the graph.
 	 *
+	 * @param association the association
 	 * @param deletedEntitiesAreMarked if true, consider entity as deleted if its birthday is negative
 	 * @param allTables set of tables from which there are entities in E
-	 * @param association the association
 	 * @return number of removed entities
 	 */
 	@Override
@@ -1279,10 +1303,10 @@ public class RemoteEntityGraph extends EntityGraph {
 	}
 
 	/**
-	 * Gets a SQL comparition expression for comparing rows with entities.
+	 * Gets a SQL comparison expression for comparing rows with entities.
 	 *
 	 * @param table the table
-	 * @return a SQL comparition expression for comparing rows of <code>table</code> with entities
+	 * @return a SQL comparison expression for comparing rows of <code>table</code> with entities
 	 */
 	protected String pkEqualsEntityID(Table table, String tableAlias, String entityAlias) {
 		return pkEqualsEntityID(table, tableAlias, entityAlias, "");
@@ -1429,21 +1453,39 @@ public class RemoteEntityGraph extends EntityGraph {
 		session.shutDown();
 	}
 
+	/**
+	 * Gets the session.
+	 *
+	 * @return the session
+	 */
 	@Override
 	public Session getSession() {
 		return session;
 	}
 
+	/**
+	 * Gets the data model.
+	 *
+	 * @return the data model
+	 */
 	@Override
 	public DataModel getDatamodel() {
 		return dataModel;
 	}
 
+	/**
+	 * Closes the graph.
+	 */
 	@Override
 	public void close() throws SQLException {
 		// nothing to do
 	}
 
+	/**
+	 * Gets the target session.
+	 *
+	 * @return the target session
+	 */
 	@Override
 	public Session getTargetSession() {
 		return session;

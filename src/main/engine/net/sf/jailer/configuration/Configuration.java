@@ -97,6 +97,12 @@ public class Configuration {
 		return new File(file);
 	}
 
+	/**
+	 * Checks whether the given file is a temporary file managed by this configuration.
+	 *
+	 * @param file the file to check
+	 * @return <code>true</code> if the file is a managed temporary file
+	 */
 	public boolean isTempFile(File file) {
 		try {
 			return new File(getTempFileFolder()).equals(file.getParentFile()) && file.getName().startsWith("up-");
@@ -123,16 +129,38 @@ public class Configuration {
 		private String pattern;
 		private String replacement;
 
+		/**
+		 * Gets the URL pattern to match.
+		 *
+		 * @return the URL pattern
+		 */
 		public String getPattern() {
 			return pattern;
 		}
+
+		/**
+		 * Sets the URL pattern to match.
+		 *
+		 * @param pattern the URL pattern to set
+		 */
 		public void setPattern(String pattern) {
 			this.pattern = pattern;
 		}
-		
+
+		/**
+		 * Gets the replacement string.
+		 *
+		 * @return the replacement string
+		 */
 		public String getReplacement() {
 			return replacement;
 		}
+
+		/**
+		 * Sets the replacement string.
+		 *
+		 * @param replacement the replacement string to set
+		 */
 		public void setReplacement(String replacement) {
 			this.replacement = replacement;
 		}
@@ -174,10 +202,20 @@ public class Configuration {
 
 	private String additionalSQLKeywords;
 
+	/**
+	 * Gets additional SQL keywords.
+	 *
+	 * @return the additional SQL keywords
+	 */
 	public String getAdditionalSQLKeywords() {
 		return additionalSQLKeywords;
 	}
 
+	/**
+	 * Sets additional SQL keywords.
+	 *
+	 * @param additionalSQLKeywords the additional SQL keywords to set
+	 */
 	public void setAdditionalSQLKeywords(String additionalSQLKeywords) {
 		this.additionalSQLKeywords = additionalSQLKeywords;
 	}
@@ -192,7 +230,9 @@ public class Configuration {
 	}
 
 	/**
-	 * Returns <code>true</code>, the UPK don't preserve order. This minimizes the size of the UPK.
+	 * Returns <code>true</code> if the UPK doesn't preserve order. This minimizes the size of the UPK.
+	 *
+	 * @return <code>true</code> if the UPK doesn't preserve order
 	 */
 	public boolean getDoMinimizeUPK() {
 		return doMinimizeUPK;
@@ -200,6 +240,8 @@ public class Configuration {
 	
 	/**
 	 * Gets time in seconds waiting for an idle database connection to be tested if it is still valid.
+	 *
+	 * @return the timeout in seconds
 	 */
 	public int getDatabaseConnectionInteractiveTimeout() {
 		return databaseConnectionInteractiveTimeout;
@@ -207,6 +249,8 @@ public class Configuration {
 
 	/**
 	 * Sets time in seconds waiting for an idle database connection to be tested if it is still valid.
+	 *
+	 * @param databaseConnectionInteractiveTimeout the timeout in seconds
 	 */
 	public void setDatabaseConnectionInteractiveTimeout(int databaseConnectionInteractiveTimeout) {
 		this.databaseConnectionInteractiveTimeout = databaseConnectionInteractiveTimeout;
@@ -219,6 +263,8 @@ public class Configuration {
 
 	/**
 	 * Gets the configuration.
+	 *
+	 * @return the singleton {@link Configuration} instance
 	 */
 	public synchronized static Configuration getInstance() {
 		loadConfigurationFile();
@@ -226,7 +272,9 @@ public class Configuration {
 	}
 	
 	/**
-	 * Gets the scipt-enhancer.
+	 * Gets the script-enhancer.
+	 *
+	 * @return list of {@link ScriptEnhancer}s
 	 */
 	public static List<ScriptEnhancer> getScriptEnhancer() {
 		ArrayList<ScriptEnhancer> enhancer = new ArrayList<ScriptEnhancer>();
@@ -265,84 +313,108 @@ public class Configuration {
 	}
 
 	/**
-	 * @return the columnsPerIFMTable
+	 * Gets the number of columns per import-filter mapping table.
+	 *
+	 * @return the number of columns per import-filter mapping table
 	 */
 	public int getColumnsPerIFMTable() {
 		return columnsPerIFMTable;
 	}
 
 	/**
-	 * @return the theRenderer
+	 * Gets the HTML data model renderer.
+	 *
+	 * @return the renderer
 	 */
 	public HtmlDataModelRenderer getRenderer() {
 		return renderer;
 	}
 
 	/**
-	 * @param theRenderer the theRenderer to set
+	 * Sets the HTML data model renderer.
+	 *
+	 * @param theRenderer the renderer to set
 	 */
 	public void setRenderer(HtmlDataModelRenderer theRenderer) {
 		this.renderer = theRenderer;
 	}
 
 	/**
-	 * @return the URL rewrite rules.
+	 * Gets all URL rewrite rules.
+	 *
+	 * @return the URL rewrite rules
 	 */
 	public List<UrlRewriteRule> getUrlRewriteRules() {
 		return urlRewriteRules;
 	}
 
 	/**
-	 * @param urlRewriteRules the URL rewrite rules.
+	 * Sets all URL rewrite rules.
+	 *
+	 * @param urlRewriteRules the URL rewrite rules to set
 	 */
 	public void setUrlRewriteRules(List<UrlRewriteRule> urlRewriteRules) {
 		this.urlRewriteRules = urlRewriteRules;
 	}
 
 	/**
-	 * @return the dBMSConfigurations
+	 * Gets all DBMS configurations.
+	 *
+	 * @return the list of DBMS configurations
 	 */
 	public List<DBMS> getDBMS() {
 		return dBMSConfigurations;
 	}
 
 	/**
-	 * @param dBMSConfigurations the dBMSConfigurations to set
+	 * Sets all DBMS configurations.
+	 *
+	 * @param dBMSConfigurations the list of DBMS configurations to set
 	 */
 	public void setdBMSConfigurations(List<DBMS> dBMSConfigurations) {
 		this.dBMSConfigurations = dBMSConfigurations;
 	}
 
 	/**
-	 * @param doMinimizeUPK the doMinimizeUPK to set
+	 * Sets whether the UPK should not preserve order in order to minimize its size.
+	 *
+	 * @param doMinimizeUPK <code>true</code> to minimize the UPK size
 	 */
 	public void setDoMinimizeUPK(boolean doMinimizeUPK) {
 		this.doMinimizeUPK = doMinimizeUPK;
 	}
 
 	/**
-	 * @param nullColumnPlaceholder the nullColumnPlaceholder to set
+	 * Sets the replacement for null in DBUnit datasets.
+	 *
+	 * @param nullColumnPlaceholder the replacement string for null values
 	 */
 	public void setNullColumnPlaceholder(String nullColumnPlaceholder) {
 		this.nullColumnPlaceholder = nullColumnPlaceholder;
 	}
 
 	/**
-	 * @param columnsPerIFMTable the columnsPerIFMTable to set
+	 * Sets the number of columns per import-filter mapping table.
+	 *
+	 * @param columnsPerIFMTable the number of columns per import-filter mapping table
 	 */
 	public void setColumnsPerIFMTable(int columnsPerIFMTable) {
 		this.columnsPerIFMTable = columnsPerIFMTable;
 	}
 
 	/**
-	 * @return generate upsert statements without nulls?
+	 * Returns whether upsert statements are generated without null values.
+	 *
+	 * @return <code>true</code> if upsert statements are generated without nulls
 	 */
 	public boolean isGenerateUpsertStatementsWithoutNulls() {
 		return generateUpsertStatementsWithoutNulls;
 	}
 
 	/**
-	 * @param generateUpsertStatementsWithoutNulls generate upsert statements without nulls?
+	 * Sets whether upsert statements should be generated without null values.
+	 *
+	 * @param generateUpsertStatementsWithoutNulls <code>true</code> to generate upsert statements without nulls
 	 */
 	public void setGenerateUpsertStatementsWithoutNulls(boolean generateUpsertStatementsWithoutNulls) {
 		this.generateUpsertStatementsWithoutNulls = generateUpsertStatementsWithoutNulls;

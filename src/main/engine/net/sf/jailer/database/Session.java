@@ -130,11 +130,11 @@ public class Session {
 		private CellContentConverter cellContentConverter;
 
 		/**
-		 * Gets and cache meta data of a result set.
+		 * Gets and caches the meta data of a result set.
 		 *
-		 * @param resultSet
-		 * @return meta data of resultSet
-		 * @throws SQLException
+		 * @param resultSet the result set
+		 * @return meta data of the result set
+		 * @throws SQLException if a database access error occurs
 		 */
 		protected ResultSetMetaData getMetaData(ResultSet resultSet) throws SQLException {
 			if (owner == resultSet) {
@@ -146,11 +146,13 @@ public class Session {
 		}
 
 		/**
-		 * Gets and cache CellContentConverter for the result set.
+		 * Gets and caches the {@link CellContentConverter} for the result set.
 		 *
-		 * @param resultSet
-		 * @return meta data of resultSet
-		 * @throws SQLException
+		 * @param resultSet the result set
+		 * @param session the current session
+		 * @param targetDBMSConfiguration configuration of the target DBMS
+		 * @return the {@link CellContentConverter} for the result set
+		 * @throws SQLException if a database access error occurs
 		 */
 		protected CellContentConverter getCellContentConverter(ResultSet resultSet, Session session, DBMS targetDBMSConfiguration) throws SQLException {
 			if (cccOwner == resultSet && cccSession == session) {
@@ -164,7 +166,8 @@ public class Session {
 
 		/**
 		 * Does nothing.
-		 * @throws SQLException
+		 *
+		 * @throws SQLException if a database access error occurs
 		 */
 		@Override
 		public void close() throws SQLException {
@@ -173,8 +176,8 @@ public class Session {
 		/**
 		 * Initializes the reader.
 		 *
-		 * @param resultSet the result set to read.
-		 * @throws SQLException
+		 * @param resultSet the result set to read
+		 * @throws SQLException if a database access error occurs
 		 */
 		public void init(ResultSet resultSet) throws SQLException {
 		}
@@ -229,6 +232,7 @@ public class Session {
 	 *
 	 * @param dataSource the data source
 	 * @param dbms the DBMS
+	 * @param isolationLevel the transaction isolation level, or <code>null</code> to use the default
 	 */
 	public Session(DataSource dataSource, DBMS dbms, Integer isolationLevel) throws SQLException {
 		this(dataSource, dbms, isolationLevel, null, false);
@@ -239,6 +243,9 @@ public class Session {
 	 *
 	 * @param dataSource the data source
 	 * @param dbms the DBMS
+	 * @param isolationLevel the transaction isolation level, or <code>null</code> to use the default
+	 * @param scope the working-table scope
+	 * @param transactional <code>true</code> to operate in transactional mode
 	 */
 	public Session(DataSource dataSource, DBMS dbms, Integer isolationLevel, final WorkingTableScope scope, boolean transactional) throws SQLException {
 		this(dataSource, dbms, isolationLevel, scope, transactional, false);
@@ -249,6 +256,9 @@ public class Session {
 	 *
 	 * @param dataSource the data source
 	 * @param dbms the DBMS
+	 * @param isolationLevel the transaction isolation level, or <code>null</code> to use the default
+	 * @param scope the working-table scope
+	 * @param transactional <code>true</code> to operate in transactional mode
 	 * @param local <code>true</code> for the local entity-graph database
 	 */
 	public Session(final DataSource dataSource, DBMS dbms, final Integer isolationLevel, final WorkingTableScope scope, boolean transactional, final boolean local) throws SQLException {
@@ -505,24 +515,27 @@ public class Session {
 	private static final ThreadLocal<Boolean> logStatements = new ThreadLocal<Boolean>();
 
 	/**
-	 * Log statements?
+	 * Sets whether SQL statements should be logged.
+	 *
+	 * @param logStatements <code>true</code> to enable statement logging
 	 */
 	public void setLogStatements(boolean logStatements) {
 		Session.logStatements.set(logStatements);
 	}
 
 	/**
-	 * Log statements?
+	 * Returns whether SQL statements should be logged.
+	 *
+	 * @return <code>true</code> if statement logging is enabled
 	 */
 	public boolean getLogStatements() {
 		return !Boolean.FALSE.equals(logStatements.get());
 	}
 
 	/**
-	 * Logs driver info
+	 * Logs driver info.
 	 *
 	 * @param connection connection to DB
-	 * @return the DBMS
 	 */
 	private void logDriverInfo(Connection connection) {
 		try {
@@ -1210,6 +1223,9 @@ public class Session {
 
 	private boolean checkMetaData = true;
 
+	/**
+	 * Disables re-validation of cached database meta data.
+	 */
 	public void disableMetaDataChecking() {
 		checkMetaData = false;
 	}
@@ -1265,6 +1281,11 @@ public class Session {
 		_log.info(logPrefix + "connection closed");
 	}
 
+	/**
+	 * Returns whether this session has been shut down.
+	 *
+	 * @return <code>true</code> if the session is shut down
+	 */
 	public boolean isDown() {
 		return down.get();
 	}
@@ -1412,7 +1433,9 @@ public class Session {
 	private final Object CLI_LOCK = new String("CLI_LOCK");
 
 	/**
-	 * Gets connection password (UI support)
+	 * Gets connection password (UI support).
+	 *
+	 * @return the connection password
 	 */
 	public String getPassword() {
 		synchronized (CLI_LOCK) {
@@ -1421,7 +1444,9 @@ public class Session {
 	}
 
 	/**
-	 * Sets connection password (UI support)
+	 * Sets connection password (UI support).
+	 *
+	 * @param password the connection password
 	 */
 	public void setPassword(String password) {
 		synchronized (CLI_LOCK) {
@@ -1430,7 +1455,9 @@ public class Session {
 	}
 
 	/**
-	 * Sets CLI connection arguments (UI support)
+	 * Sets CLI connection arguments (UI support).
+	 *
+	 * @param args the CLI connection arguments
 	 */
 	public void setCliArguments(List<String> args) {
 		synchronized (CLI_LOCK) {
@@ -1439,7 +1466,9 @@ public class Session {
 	}
 
 	/**
-	 * Gets CLI connection arguments (UI support)
+	 * Gets CLI connection arguments (UI support).
+	 *
+	 * @return the CLI connection arguments
 	 */
 	public List<String> getCliArguments() {
 		synchronized (CLI_LOCK) {
@@ -1530,10 +1559,10 @@ public class Session {
 	}
 
 	/**
-	 * Checks SQL query.
+	 * Checks whether a SQL query can be executed without errors.
 	 *
-	 * @param sql
-	 * @return <code>true</code> iff sql is executable without errors
+	 * @param sql the SQL query to check
+	 * @return <code>true</code> if the query is executable without errors
 	 */
 	public boolean checkQuery(String sql) {
 		try {
@@ -1553,12 +1582,20 @@ public class Session {
 
 	public final Object MD_GETCOLUMNS_LOCK = new String("MD_GETCOLUMNS_LOCK");
 
+	/**
+	 * Marks the current thread as sharing a connection with other threads.
+	 */
 	public static void setThreadSharesConnection() {
 		sharesConnection.set(true);
 	}
 
 	private String logPrefix = "";
 	
+	/**
+	 * Sets a prefix string that is prepended to all log messages from this session.
+	 *
+	 * @param logPrefix the log prefix to set
+	 */
 	public void setLogPrefix(String logPrefix) {
 		this.logPrefix = logPrefix;
 	}
@@ -1567,20 +1604,36 @@ public class Session {
 	private Connection defaultConnection = null;
 	public static volatile long lastUpdateTS;
 	
+	/**
+	 * Promotes the current default connection to the global fallback connection.
+	 */
 	public void setGlobalFallbackConnection() {
 		Session.globalFallbackConnection = defaultConnection;
 	}
 
+	/**
+	 * Clears the global fallback connection.
+	 */
 	public static void resetGlobalFallbackConnection() {
 		Session.globalFallbackConnection = null;
 	}
 
+	/**
+	 * Returns whether the current thread holds the connection exclusively.
+	 *
+	 * @return <code>true</code> if no other thread is using the same connection
+	 */
 	public synchronized boolean isConnectionExclusive() {
 		Long tid = Thread.currentThread().getId();
 		Integer count = connectionCount.get(tid);
 		return count != null && count <= 1;
 	}
 
+	/**
+	 * Returns a string summarising connection pool statistics.
+	 *
+	 * @return connection statistics string
+	 */
 	public synchronized String getConnectionStats() {
 		return "ConStats:" + connections.size() + "/" + connectionCount.size() + "/" + connectionCount.keySet().size();
 	}

@@ -1491,9 +1491,15 @@ public class SubsettingEngine {
 	/**
 	 * Exports entities.
 	 *
+	 * @param whereClause optional WHERE clause to restrict the subject rows, or <code>null</code>
+	 * @param extractionModelURL URL of the extraction model
+	 * @param scriptFile name of the export script file to write, or <code>null</code>
+	 * @param deleteScriptFileName name of the delete script file to write, or <code>null</code>
+	 * @param dataSource the data source to read from
+	 * @param dbms the DBMS configuration
+	 * @param scriptFormat the output script format
 	 * @param modelPoolSize size of extraction-model pool
-	 *
-	 * @return statistic
+	 * @return the export statistic
 	 */
 	public ExportStatistic export(String whereClause, URL extractionModelURL, String scriptFile, String deleteScriptFileName, DataSource dataSource, DBMS dbms, ScriptFormat scriptFormat, int modelPoolSize) throws SQLException, IOException, SAXException {
 		if (dbms != null && dbms.getSessionTemporaryTableManager() == null &&

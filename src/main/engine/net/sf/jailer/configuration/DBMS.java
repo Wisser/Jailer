@@ -195,10 +195,20 @@ public class DBMS {
 
 	private String liquibaseProductName;
 	
+	/**
+	 * Gets the Liquibase product name for this DBMS.
+	 *
+	 * @return the Liquibase product name
+	 */
 	public String getLiquibaseProductName() {
 		return liquibaseProductName;
 	}
 
+	/**
+	 * Sets the Liquibase product name for this DBMS.
+	 *
+	 * @param liquibaseProductName the Liquibase product name to set
+	 */
 	public void setLiquibaseProductName(String liquibaseProductName) {
 		this.liquibaseProductName = liquibaseProductName;
 	}
@@ -238,28 +248,36 @@ public class DBMS {
 	private String constraintsQuery;
 
 	/**
-	 * DB-Query to get DDL of a table
+	 * Gets the DB query to retrieve the DDL of a table.
+	 *
+	 * @return the DDL query
 	 */
 	public String getDdlQuery() {
 		return ddlQuery;
 	}
 
 	/**
-	 * DB-Query to get DDL of a table
+	 * Sets the DB query to retrieve the DDL of a table.
+	 *
+	 * @param ddlQuery the DDL query to set
 	 */
 	public void setDdlQuery(String ddlQuery) {
 		this.ddlQuery = ddlQuery;
 	}
 
 	/**
-	 * DB-Call to get DDL of a table
+	 * Gets the DB call to retrieve the DDL of a table.
+	 *
+	 * @return the DDL call
 	 */
 	public String getDdlCall() {
 		return ddlCall;
 	}
 
 	/**
-	 * DB-Call to get DDL of a table
+	 * Sets the DB call to retrieve the DDL of a table.
+	 *
+	 * @param ddlCall the DDL call to set
 	 */
 	public void setDdlCall(String ddlCall) {
 		this.ddlCall = ddlCall;
@@ -519,7 +537,9 @@ public class DBMS {
 	}
 
 	/**
-	 * @return the sqlDialect
+	 * Sets the SQL dialect.
+	 *
+	 * @param sqlDialect the SQL dialect to set
 	 */
 	public void setSqlDialect(SQLDialect sqlDialect) {
 		this.sqlDialect = sqlDialect;
@@ -549,15 +569,27 @@ public class DBMS {
 
 	/**
 	 * Sets DB-URL pattern of DBMS for which this holds the configuration.
+	 *
+	 * @param urlPattern the URL pattern to set
 	 */
 	public void setUrlPattern(String urlPattern) {
 		this.urlPattern = urlPattern;
 	}
 
+	/**
+	 * Gets the set of type names for which no data must be exported.
+	 *
+	 * @return the set of blocked export type names
+	 */
 	public Set<String> getExportBlocks() {
 		return exportBlocks;
 	}
 
+	/**
+	 * Sets the set of type names for which no data must be exported.
+	 *
+	 * @param exportBlocks the set of blocked export type names to set
+	 */
 	public void setExportBlocks(Set<String> exportBlocks) {
 		this.exportBlocks = exportBlocks;
 	}
@@ -580,14 +612,29 @@ public class DBMS {
 		this.statisticRenovator = statisticRenovator;
 	}
 
+	/**
+	 * Sets the value used to represent an empty CLOB.
+	 *
+	 * @param emptyCLOBValue the empty CLOB value to set
+	 */
 	public void setEmptyCLOBValue(String emptyCLOBValue) {
 		this.emptyCLOBValue = emptyCLOBValue;
 	}
 
+	/**
+	 * Sets the value used to represent an empty BLOB.
+	 *
+	 * @param emptyBLOBValue the empty BLOB value to set
+	 */
 	public void setEmptyBLOBValue(String emptyBLOBValue) {
 		this.emptyBLOBValue = emptyBLOBValue;
 	}
 
+	/**
+	 * Sets the pattern used to format binary data.
+	 *
+	 * @param binaryPattern the binary pattern to set
+	 */
 	public void setBinaryPattern(String binaryPattern) {
 		this.binaryPattern = binaryPattern;
 	}
@@ -652,30 +699,46 @@ public class DBMS {
 	}
 
 	/**
-	 * Sets replacement map for column types used for DDL generation. Only used if DBMS accept it.
+	 * Gets replacement map for column types used for DDL generation. Only used if DBMS accepts it.
+	 *
+	 * @return the experimental type replacement map
 	 */
 	public Map<String, String> getExperimentalTypeReplacement() {
 		return experimentalTypeReplacement;
 	}
 
 	/**
-	 * Sets manager for session local temporary tables.
+	 * Sets the manager for session-local temporary tables.
+	 *
+	 * @param tableManager the session temporary table manager to set
 	 */
 	public void setSessionTemporaryTableManager(DefaultTemporaryTableManager tableManager) {
 		sessionTemporaryTableManager = tableManager;
 	}
 
 	/**
-	 * Sets manager for transaction local temporary tables.
+	 * Sets the manager for transaction-local temporary tables.
+	 *
+	 * @param tableManager the transaction temporary table manager to set
 	 */
 	public void setTransactionTemporaryTableManager(DefaultTemporaryTableManager tableManager) {
 		transactionTemporaryTableManager = tableManager;
 	}
 
+	/**
+	 * Returns whether the DBMS supports identity-type columns (MS SQL Server).
+	 *
+	 * @return <code>true</code> if identity inserts are supported
+	 */
 	public boolean isIdentityInserts() {
 		return identityInserts;
 	}
 
+	/**
+	 * Sets whether the DBMS supports identity-type columns (MS SQL Server).
+	 *
+	 * @param identityInserts <code>true</code> if identity inserts are supported
+	 */
 	public void setIdentityInserts(boolean identityInserts) {
 		this.identityInserts = identityInserts;
 	}
@@ -757,19 +820,19 @@ public class DBMS {
 	 * Converts a string to a string literal according to the {@link #getStringLiteralEscapeSequences()}.
 	 *
 	 * @param string the string to convert
-	 * @param boolean[] mustBeParenthesized 1-element array. Contains <code>true</code> after call iff result is complex expression.
+	 * @param mustBeParenthesized 1-element array. Contains <code>true</code> after call iff result is complex expression.
 	 * @return the string literal
 	 */
 	public String convertToStringLiteral(String string, boolean[] mustBeParenthesized) {
 		return convertToStringLiteral(string, null, mustBeParenthesized);
 	}
-	
+
 	/**
 	 * Converts a string to a string literal according to the {@link #getStringLiteralEscapeSequences()}.
 	 *
 	 * @param string the string to convert
 	 * @param prefix literal prefix (optional)
-	 * @param boolean[] mustBeParenthesized 1-element array. Contains <code>true</code> after call iff result is complex expression.
+	 * @param mustBeParenthesized 1-element array. Contains <code>true</code> after call iff result is complex expression.
 	 * @return the string literal
 	 */
 	public String convertToStringLiteral(String string, String prefix, boolean[] mustBeParenthesized) {
@@ -815,11 +878,12 @@ public class DBMS {
 	}
 	
 	/**
-	 * Evt. applies standart escape syntax.
-	 * 
-	 * @param literal the litaral
+	 * Eventually applies standard escape syntax.
+	 *
+	 * @param literal the literal
 	 * @param value original string
-	 * @return literal
+	 * @param prefix literal prefix (optional)
+	 * @return the post-processed literal
 	 */
 	public String postProcessStringLiteral(String literal, String value, String prefix) {
 		// TODO 1 check. this doesn't make sense. (f.e. what about the "'"?)
@@ -831,10 +895,20 @@ public class DBMS {
 		return literal;
 	}
 	
+	/**
+	 * Returns whether left joins should be avoided for this DBMS.
+	 *
+	 * @return <code>true</code> if left joins should be avoided
+	 */
 	public boolean isAvoidLeftJoin() {
 		return avoidLeftJoin;
 	}
 
+	/**
+	 * Sets whether left joins should be avoided for this DBMS.
+	 *
+	 * @param avoidLeftJoin <code>true</code> to avoid left joins
+	 */
 	public void setAvoidLeftJoin(boolean avoidLeftJoin) {
 		this.avoidLeftJoin = avoidLeftJoin;
 	}
@@ -853,10 +927,20 @@ public class DBMS {
 		return sqlLimitSuffix;
 	}
 
+	/**
+	 * Gets the maximum length for VARCHAR columns, or {@code null} if unlimited.
+	 *
+	 * @return the VARCHAR length limit, or {@code null}
+	 */
 	public Integer getVarcharLengthLimit() {
 		return varcharLengthLimit;
 	}
 
+	/**
+	 * Sets the maximum length for VARCHAR columns.
+	 *
+	 * @param varcharLengthLimit the VARCHAR length limit to set, or {@code null} for unlimited
+	 */
 	public void setVarcharLengthLimit(Integer varcharLengthLimit) {
 		this.varcharLengthLimit = varcharLengthLimit;
 	}
@@ -1016,44 +1100,94 @@ public class DBMS {
 		this.identifierQuoteString = identifierQuoteString;
 	}
 
+	/**
+	 * Gets the test query for this DBMS.
+	 *
+	 * @return the test query
+	 */
 	public String getTestQuery() {
 		return testQuery;
 	}
 
+	/**
+	 * Sets the test query for this DBMS.
+	 *
+	 * @param testQuery the test query to set
+	 */
 	public void setTestQuery(String testQuery) {
 		this.testQuery = testQuery;
 	}
 
+	/**
+	 * Gets the query to retrieve user-defined columns.
+	 *
+	 * @return the user-defined columns query
+	 */
 	public String getUserDefinedColumnsQuery() {
 		return userDefinedColumnsQuery;
 	}
 
+	/**
+	 * Sets the query to retrieve user-defined columns.
+	 *
+	 * @param userDefinedColumnsQuery the user-defined columns query to set
+	 */
 	public void setUserDefinedColumnsQuery(String userDefinedColumnsQuery) {
 		this.userDefinedColumnsQuery = userDefinedColumnsQuery;
 	}
 
+	/**
+	 * Gets the query to retrieve identity columns.
+	 *
+	 * @return the identity columns query
+	 */
 	public String getIdentityColumnsQuery() {
 		return identityColumnsQuery;
 	}
 
+	/**
+	 * Sets the query to retrieve identity columns.
+	 *
+	 * @param identityColumnsQuery the identity columns query to set
+	 */
 	public void setIdentityColumnsQuery(String identityColumnsQuery) {
 		this.identityColumnsQuery = identityColumnsQuery;
 	}
-	
+
+	/**
+	 * Gets the query to retrieve partition information.
+	 *
+	 * @return the partitions query
+	 */
 	public String getPartitionsQuery() {
 		return partitionsQuery;
 	}
 
+	/**
+	 * Sets the query to retrieve partition information.
+	 *
+	 * @param partitionsQuery the partitions query to set
+	 */
 	public void setPartitionsQuery(String partitionsQuery) {
 		this.partitionsQuery = partitionsQuery;
 	}
 
 	private String identityColumnInsertClause;
 
+	/**
+	 * Gets the SQL clause used in INSERT statements for identity columns.
+	 *
+	 * @return the identity column insert clause
+	 */
 	public String getIdentityColumnInsertClause() {
 		return identityColumnInsertClause;
 	}
 
+	/**
+	 * Sets the SQL clause used in INSERT statements for identity columns.
+	 *
+	 * @param identityColumnInsertClause the identity column insert clause to set
+	 */
 	public void setIdentityColumnInsertClause(String identityColumnInsertClause) {
 		this.identityColumnInsertClause = identityColumnInsertClause;
 	}
@@ -1179,66 +1313,146 @@ public class DBMS {
 		return transactionTemporaryTableManager;
 	}
 
+	/**
+	 * Gets the DBMS identifier.
+	 *
+	 * @return the DBMS id
+	 */
 	public String getId() {
 		return id;
 	}
 
+	/**
+	 * Sets the DBMS identifier.
+	 *
+	 * @param id the DBMS id to set
+	 */
 	public void setId(String id) {
 		this.id = id;
 	}
 
+	/**
+	 * Gets the DBMS family identifier.
+	 *
+	 * @return the family id
+	 */
 	public String getFamilyId() {
 		return familyId;
 	}
 
+	/**
+	 * Sets the DBMS family identifier.
+	 *
+	 * @param familyId the family id to set
+	 */
 	public void setFamilyId(String familyId) {
 		this.familyId = familyId;
 	}
 
+	/**
+	 * Gets the display name of this DBMS.
+	 *
+	 * @return the display name
+	 */
 	public String getDisplayName() {
 		return displayName;
 	}
 
+	/**
+	 * Sets the display name of this DBMS.
+	 *
+	 * @param displayName the display name to set
+	 */
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
 	}
 
+	/**
+	 * Gets the icon resource name for this DBMS.
+	 *
+	 * @return the icon resource name
+	 */
 	public String getIcon() {
 		return icon;
 	}
 
+	/**
+	 * Sets the icon resource name for this DBMS.
+	 *
+	 * @param icon the icon resource name to set
+	 */
 	public void setIcon(String icon) {
 		this.icon = icon;
 	}
 
+	/**
+	 * Gets the SQL statement to prepare for query explain.
+	 *
+	 * @return the explain prepare statement
+	 */
 	public String getExplainPrepare() {
 		return explainPrepare;
 	}
 
+	/**
+	 * Sets the SQL statement to prepare for query explain.
+	 *
+	 * @param explainPrepare the explain prepare statement to set
+	 */
 	public void setExplainPrepare(String explainPrepare) {
 		this.explainPrepare = explainPrepare;
 	}
 
+	/**
+	 * Gets the SQL statement to create the explain table.
+	 *
+	 * @return the explain table creation statement
+	 */
 	public String getExplainCreateExplainTable() {
 		return explainCreateExplainTable;
 	}
 
+	/**
+	 * Sets the SQL statement to create the explain table.
+	 *
+	 * @param explainCreateExplainTable the explain table creation statement to set
+	 */
 	public void setExplainCreateExplainTable(String explainCreateExplainTable) {
 		this.explainCreateExplainTable = explainCreateExplainTable;
 	}
 
+	/**
+	 * Gets the query to retrieve the explain plan.
+	 *
+	 * @return the explain query
+	 */
 	public String getExplainQuery() {
 		return explainQuery;
 	}
 
+	/**
+	 * Sets the query to retrieve the explain plan.
+	 *
+	 * @param explainQuery the explain query to set
+	 */
 	public void setExplainQuery(String explainQuery) {
 		this.explainQuery = explainQuery;
 	}
 
+	/**
+	 * Gets the SQL statement to clean up after query explain.
+	 *
+	 * @return the explain cleanup statement
+	 */
 	public String getExplainCleanup() {
 		return explainCleanup;
 	}
 
+	/**
+	 * Sets the SQL statement to clean up after query explain.
+	 *
+	 * @param explainCleanup the explain cleanup statement to set
+	 */
 	public void setExplainCleanup(String explainCleanup) {
 		this.explainCleanup = explainCleanup;
 	}
@@ -1326,6 +1540,11 @@ public class DBMS {
 		return viewTextOrDDLQuery;
 	}
 
+	/**
+	 * Sets the query to get view text or DDL.
+	 *
+	 * @param viewTextOrDDLQuery the query to set
+	 */
 	public void setViewTextOrDDLQuery(String viewTextOrDDLQuery) {
 		this.viewTextOrDDLQuery = viewTextOrDDLQuery;
 	}
@@ -1359,7 +1578,9 @@ public class DBMS {
 	}
 
 	/**
-	 * Information about how to to limit transaction size (never <code>null</code>).
+	 * Gets information about how to limit transaction size (never <code>null</code>).
+	 *
+	 * @return the limit transaction size info, never <code>null</code>
 	 */
 	public LimitTransactionSizeInfo getLimitTransactionSize() {
 		if (limitTransactionSize == null) {
@@ -1369,7 +1590,9 @@ public class DBMS {
 	}
 
 	/**
-	 * Information about how to limit transaction size.
+	 * Sets information about how to limit transaction size.
+	 *
+	 * @param incremenalInsertInfo the limit transaction size info to set
 	 */
 	public void setLimitTransactionSize(LimitTransactionSizeInfo incremenalInsertInfo) {
 		this.limitTransactionSize = incremenalInsertInfo;

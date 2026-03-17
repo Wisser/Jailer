@@ -39,6 +39,8 @@ public class JailerVersion {
 
 	/**
 	 * Prints version.
+	 *
+	 * @param args command-line arguments (unused)
 	 */
 	public static void main(String[] args) {
 		System.out.print(VERSION);

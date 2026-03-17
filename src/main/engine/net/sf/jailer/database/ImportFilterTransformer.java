@@ -24,7 +24,11 @@ import net.sf.jailer.datamodel.Filter;
 public interface ImportFilterTransformer {
 
 	/**
-	 * Transforms columns with import-{@link Filter}s into SQL-expressions.
+	 * Transforms a column with an import-{@link Filter} into an SQL-expression.
+	 *
+	 * @param column the column whose import filter is to be applied
+	 * @param oldValue the original SQL literal value of the column
+	 * @return the transformed SQL expression
 	 */
 	String transform(Column column, String oldValue);
 	

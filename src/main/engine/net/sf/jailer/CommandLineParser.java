@@ -84,6 +84,13 @@ public class CommandLineParser {
 		}
 	}
 
+	/**
+	 * Pre-processes the {@code -file-lookup} options by replacing each such option and its
+	 * file-name argument with the first line read from that file.
+	 *
+	 * @param cArgs the raw command-line arguments
+	 * @return the processed argument array
+	 */
 	public static String[] preprocessFileLookup(String[] cArgs) throws IOException {
 		List<String> result = new ArrayList<String>();
 		for (int i = 0; i < cArgs.length; ++i) {
@@ -108,6 +115,8 @@ public class CommandLineParser {
 
 	/**
 	 * Prints out usage.
+	 *
+	 * @param args the original command-line arguments (used only for printing the argument list at the end)
 	 */
 	public static void printUsage(String[] args) {
 		String cmd = "sh jailer.sh";
@@ -159,6 +168,13 @@ public class CommandLineParser {
 		printAruments(System.out, args, null);
 	}
 
+	/**
+	 * Prints the supplied argument list to the given stream, masking any argument that equals the password.
+	 *
+	 * @param out the stream to print to
+	 * @param args the command-line arguments to print
+	 * @param password the password value to mask, or {@code null} if no masking is needed
+	 */
 	public static void printAruments(PrintStream out, String[] args, String password) {
 		if (args.length > 0) {
 			out.println();

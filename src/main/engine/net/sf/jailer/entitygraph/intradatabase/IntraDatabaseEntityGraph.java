@@ -137,6 +137,8 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 
 	/**
 	 * Creates a new entity-graph of same type and session.
+	 *
+	 * @return the newly created entity-graph
 	 */
 	public EntityGraph createNewGraph() throws SQLException {
 		IntraDatabaseEntityGraph entityGraph = create(dataModel, createUniqueGraphID(),

@@ -58,8 +58,8 @@ public class ExportStatistic {
 	}
 	
 	/**
-	 * sets total number of exported rows.
-	 * 
+	 * Sets total number of exported rows.
+	 *
 	 * @param total total number of exported rows
 	 */
 	public void setTotal(long total) {

@@ -119,7 +119,15 @@ public class PrimaryKey {
 		return match;
 	}
 
-	public static boolean  isAssignable(Column uPKColumn, Column entityColumn) {
+	/**
+	 * Checks whether a universal primary key column can be assigned to an entity column
+	 * (i.e. the UPK column type is compatible with and at least as large as the entity column type).
+	 *
+	 * @param uPKColumn the universal primary key column
+	 * @param entityColumn the entity column to check against
+	 * @return <code>true</code> if the UPK column is assignable to the entity column
+	 */
+	public static boolean isAssignable(Column uPKColumn, Column entityColumn) {
 		if (!uPKColumn.type.equalsIgnoreCase(entityColumn.type)) {
 			return false;
 		}
@@ -146,8 +154,9 @@ public class PrimaryKey {
 	
 	/**
 	 * Creates a comma-separated list of column names.
-	 * 
+	 *
 	 * @param prefix an optional prefix for each PK-column
+	 * @return comma-separated list of column names
 	 */
 	public String columnList(String prefix) {
 		return columnList(prefix, null);
@@ -155,8 +164,10 @@ public class PrimaryKey {
 	
 	/**
 	 * Creates a comma-separated list of column names.
-	 * 
+	 *
 	 * @param prefix an optional prefix for each PK-column
+	 * @param quoting optional quoting to apply to column names
+	 * @return comma-separated list of column names
 	 */
 	public String columnList(String prefix, Quoting quoting) {
 		String list = "";
@@ -174,8 +185,9 @@ public class PrimaryKey {
 	
 	/**
 	 * Returns the primary key in SQL syntax.
-	 * 
+	 *
 	 * @param columnPrefix an optional prefix for each PK-column
+	 * @return the primary key definition in SQL syntax
 	 */
 	public String toSQL(String columnPrefix) {
 		return toSQL(columnPrefix, true);
@@ -183,8 +195,10 @@ public class PrimaryKey {
 	
 	/**
 	 * Returns the primary key in SQL syntax.
-	 * 
+	 *
 	 * @param columnPrefix an optional prefix for each PK-column
+	 * @param withContraints <code>true</code> to include NOT NULL constraints
+	 * @return the primary key definition in SQL syntax
 	 */
 	public String toSQL(String columnPrefix, boolean withContraints) {
 		StringBuffer sb = new StringBuffer();
@@ -199,9 +213,11 @@ public class PrimaryKey {
 	
 	/**
 	 * Returns the primary key in SQL syntax.
-	 * 
+	 *
 	 * @param columnPrefix an optional prefix for each PK-column
-	 * @param typeReplacement column types replacements
+	 * @param contraint the constraint expression to append after each column definition
+	 * @param typeReplacement column type replacements
+	 * @return the primary key definition in SQL syntax
 	 */
 	public String toSQL(String columnPrefix, String contraint, Map<String, String> typeReplacement) {
 		StringBuffer sb = new StringBuffer();
@@ -222,11 +238,24 @@ public class PrimaryKey {
 		return toSQL(null);
 	}
 
+	/**
+	 * Replaces the current primary-key columns with the given list.
+	 *
+	 * @param primaryKeyColumns the new primary-key columns
+	 */
 	public void assign(List<Column> primaryKeyColumns) {
 		columns.clear();
 		columns.addAll(primaryKeyColumns);
 	}
 
+	/**
+	 * Checks whether a universal primary key column can be increased in size
+	 * to accommodate the given column.
+	 *
+	 * @param uPKColumn the universal primary key column
+	 * @param column the column whose size requirements must be met
+	 * @return <code>true</code> if the UPK column can be increased to fit the given column
+	 */
 	public static boolean isIncreasable(Column uPKColumn, Column column) {
 		if(!uPKColumn.type.equalsIgnoreCase(column.type)) {
 			return false;

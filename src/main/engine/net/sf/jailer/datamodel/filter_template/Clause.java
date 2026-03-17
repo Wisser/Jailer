@@ -275,6 +275,8 @@ public class Clause {
 	}
 
 	/**
+	 * Gets the subject of this clause.
+	 *
 	 * @return the subject
 	 */
 	public Subject getSubject() {

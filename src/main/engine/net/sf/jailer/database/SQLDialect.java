@@ -62,62 +62,80 @@ public class SQLDialect {
 	private UPDATE_MODE updateMode = null;
 
 	/**
-	 * @return the needsValuesKeywordForDeletes
+	 * Returns whether the DBMS requires the {@code VALUES} keyword in DELETE statements with an IN-clause.
+	 *
+	 * @return <code>true</code> if the {@code VALUES} keyword is needed for deletes
 	 */
 	public boolean isNeedsValuesKeywordForDeletes() {
 		return needsValuesKeywordForDeletes;
 	}
 
 	/**
-	 * @param needsValuesKeywordForDeletes the needsValuesKeywordForDeletes to set
+	 * Sets whether the DBMS requires the {@code VALUES} keyword in DELETE statements with an IN-clause.
+	 *
+	 * @param needsValuesKeywordForDeletes <code>true</code> if the {@code VALUES} keyword is needed for deletes
 	 */
 	public void setNeedsValuesKeywordForDeletes(boolean needsValuesKeywordForDeletes) {
 		this.needsValuesKeywordForDeletes = needsValuesKeywordForDeletes;
 	}
 
 	/**
-	 * @return the supportsInClauseForDeletes
+	 * Returns whether the DBMS supports IN-clauses in DELETE statements.
+	 *
+	 * @return <code>true</code> if IN-clauses for deletes are supported
 	 */
 	public boolean isSupportsInClauseForDeletes() {
 		return supportsInClauseForDeletes;
 	}
 
 	/**
-	 * @param supportsInClauseForDeletes the supportsInClauseForDeletes to set
+	 * Sets whether the DBMS supports IN-clauses in DELETE statements.
+	 *
+	 * @param supportsInClauseForDeletes <code>true</code> if IN-clauses for deletes are supported
 	 */
 	public void setSupportsInClauseForDeletes(boolean supportsInClauseForDeletes) {
 		this.supportsInClauseForDeletes = supportsInClauseForDeletes;
 	}
 
 	/**
-	 * @return the supportsMultiRowInserts
+	 * Returns whether the DBMS supports multi-row INSERT statements.
+	 *
+	 * @return <code>true</code> if multi-row inserts are supported
 	 */
 	public boolean isSupportsMultiRowInserts() {
 		return supportsMultiRowInserts;
 	}
 
 	/**
-	 * @param supportsMultiRowInserts the supportsMultiRowInserts to set
+	 * Sets whether the DBMS supports multi-row INSERT statements.
+	 *
+	 * @param supportsMultiRowInserts <code>true</code> if multi-row inserts are supported
 	 */
 	public void setSupportsMultiRowInserts(boolean supportsMultiRowInserts) {
 		this.supportsMultiRowInserts = supportsMultiRowInserts;
 	}
 
 	/**
-	 * @return the upsertMode
+	 * Gets the upsert mode.
+	 *
+	 * @return the upsert mode
 	 */
 	public UPSERT_MODE getUpsertMode() {
 		return upsertMode;
 	}
 
 	/**
-	 * @param upsertMode the upsertMode to set
+	 * Sets the upsert mode.
+	 *
+	 * @param upsertMode the upsert mode to set
 	 */
 	public void setUpsertMode(UPSERT_MODE upsertMode) {
 		this.upsertMode = upsertMode;
 	}
 
 	/**
+	 * Gets the update mode.
+	 *
 	 * @return the update mode
 	 */
 	public UPDATE_MODE getUpdateMode() {
@@ -125,7 +143,9 @@ public class SQLDialect {
 	}
 
 	/**
-	 * @param updateMode the update mode
+	 * Sets the update mode.
+	 *
+	 * @param updateMode the update mode to set
 	 */
 	public void setUpdateMode(UPDATE_MODE updateMode) {
 		this.updateMode = updateMode;

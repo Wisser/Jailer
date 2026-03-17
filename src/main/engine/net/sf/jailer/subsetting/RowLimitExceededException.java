@@ -24,6 +24,11 @@ public class RowLimitExceededException extends RuntimeException {
 	
 	private static final long serialVersionUID = 2860150928554329986L;
 
+	/**
+	 * Constructor.
+	 *
+	 * @param message the detail message
+	 */
 	public RowLimitExceededException(String message) {
 		super(message);
 	}

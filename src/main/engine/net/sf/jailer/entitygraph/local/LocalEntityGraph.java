@@ -345,6 +345,8 @@ public class LocalEntityGraph extends EntityGraph {
 
 	/**
 	 * Creates a new entity-graph of same type and session.
+	 *
+	 * @return the newly created entity-graph
 	 */
 	public EntityGraph createNewGraph() throws SQLException {
 		LocalEntityGraph entityGraph = new LocalEntityGraph(createUniqueGraphID(), dataModel, remoteSession, localSession, localDatabase, localInlineViewStyle, remoteInlineViewStyle, upkColumnNames, universalPrimaryKey, birthdayOfSubject, rowIdSupport, executionContext);
@@ -734,6 +736,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * @param condition condition of dependency
 	 * @param aggregationId id of aggregation association (for XML export), 0 if not applicable
 	 * @param dependencyId id of dependency
+	 * @param isAssociationReversed if <code>true</code>, the association is used in reverse direction
 	 */
 	@Override
 	public void addDependencies(final Table from, final String fromAlias, final Table to, final String toAlias, final String condition, final int aggregationId, final int dependencyId, boolean isAssociationReversed) throws SQLException {
@@ -794,7 +797,9 @@ public class LocalEntityGraph extends EntityGraph {
 	}
 
 	/**
-	 * Gets distinct association-ids of all edged.
+	 * Gets distinct association-ids of all edges.
+	 *
+	 * @return set of distinct dependency IDs
 	 */
 	@Override
 	public Set<Integer> getDistinctDependencyIDs() throws SQLException {
@@ -815,6 +820,8 @@ public class LocalEntityGraph extends EntityGraph {
 	/**
 	 * Marks all entities of a given table which don't dependent on other entities,
 	 * s.t. they can be read and deleted.
+	 *
+	 * @param table the table
 	 */
 	@Override
 	public void markIndependentEntities(Table table) throws SQLException {
@@ -850,6 +857,8 @@ public class LocalEntityGraph extends EntityGraph {
 
 	/**
 	 * Marks all rows which are not target of a dependency.
+	 *
+	 * @param table the table
 	 */
 	@Override
 	public void markRoots(Table table) throws SQLException {
@@ -1046,6 +1055,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * @param table the table
 	 * @param columns the columns
 	 * @param reader to read
+	 * @return number of rows read
 	 */
 	@Override
 	public long readUnfilteredEntityColumns(final Table table, final List<Column> columns, final Session.ResultSetReader reader) throws SQLException {
@@ -1132,6 +1142,8 @@ public class LocalEntityGraph extends EntityGraph {
 
 	/**
 	 * Deletes all entities which are marked as independent.
+	 *
+	 * @param table the table
 	 */
 	@Override
 	public void deleteIndependentEntities(Table table) throws SQLException {
@@ -1189,6 +1201,9 @@ public class LocalEntityGraph extends EntityGraph {
 
 	/**
 	 * Deletes all entities from a given table.
+	 *
+	 * @param table the table
+	 * @return number of deleted entities
 	 */
 	@Override
 	public long deleteEntities(Table table) throws SQLException {
@@ -1684,16 +1699,31 @@ public class LocalEntityGraph extends EntityGraph {
 		remoteSession.shutDown();
 	}
 
+	/**
+	 * Gets the session.
+	 *
+	 * @return the local session
+	 */
 	@Override
 	public Session getSession() {
 		return localSession;
 	}
 
+	/**
+	 * Gets the data model.
+	 *
+	 * @return the data model
+	 */
 	@Override
 	public DataModel getDatamodel() {
 		return dataModel;
 	}
 
+	/**
+	 * Gets the target session.
+	 *
+	 * @return the remote session
+	 */
 	@Override
 	public Session getTargetSession() {
 		return remoteSession;

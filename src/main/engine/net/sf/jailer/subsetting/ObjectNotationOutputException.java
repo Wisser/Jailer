@@ -24,6 +24,11 @@ public class ObjectNotationOutputException extends RuntimeException {
 	
 	private static final long serialVersionUID = -3712636626146836549L;
 
+	/**
+	 * Constructor.
+	 *
+	 * @param message the detail message
+	 */
 	public ObjectNotationOutputException(String message) {
 		super(message);
 	}

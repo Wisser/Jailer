@@ -65,6 +65,8 @@ public interface ProgressListener {
 	 * New stage has begun.
 	 *
 	 * @param stage the stage
+	 * @param isErrorStage <code>true</code> if the stage represents an error
+	 * @param isFinalStage <code>true</code> if this is the final stage
 	 */
 	void newStage(String stage, boolean isErrorStage, boolean isFinalStage);
 
@@ -77,6 +79,8 @@ public interface ProgressListener {
 
 	/**
 	 * User should be warned.
+	 *
+	 * @param msgSupplier supplier for the warning message
 	 */
 	void warn(Supplier<String> msgSupplier);
 

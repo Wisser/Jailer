@@ -229,6 +229,8 @@ public class DMLTransformer extends AbstractResultSetReader {
 
 		/**
 		 * Sets the {@link ImportFilterTransformer}.
+		 *
+		 * @param importFilterManager the import filter transformer to set
 		 */
 		public void setImportFilterTransformer(ImportFilterTransformer importFilterManager) {
 			this.importFilterTransformer = importFilterManager;
@@ -243,11 +245,13 @@ public class DMLTransformer extends AbstractResultSetReader {
 	 *
 	 * @param table the table to read from
 	 * @param scriptFileWriter the file to write to
-	 * @param maxBodySize maximum length of SQL values list (for generated inserts)
 	 * @param upsertOnly use 'upsert' statements for all entities
+	 * @param maxBodySize maximum length of SQL values list (for generated inserts)
 	 * @param session the session
 	 * @param targetDBMSConfiguration configuration of the target DBMS
-	 * @param executionContext
+	 * @param importFilterTransformer transforms import filters into SQL expressions
+	 * @param identityInsertTable tracks the table currently enabled for identity inserts
+	 * @param executionContext the execution context
 	 */
 	protected DMLTransformer(Table table, OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, Session session, DBMS targetDBMSConfiguration, ImportFilterTransformer importFilterTransformer, AtomicReference<Table> identityInsertTable, ExecutionContext executionContext) throws SQLException {
 		this.executionContext = executionContext;
@@ -782,6 +786,8 @@ public class DMLTransformer extends AbstractResultSetReader {
 	 * @param resultSet points to current row
 	 * @param i current result set index
 	 * @param content cell content
+	 * @param callerId identifier of the caller (used to de-duplicate filter reason comments)
+	 * @param suffix optional SQL type suffix to append (e.g. a PostgreSQL cast), or <code>null</code>
 	 * @return SQL literal
 	 */
 	protected String convertToSql(CellContentConverter cellContentConverter, ResultSet resultSet, int i, Object content, int callerId, String suffix) throws SQLException {

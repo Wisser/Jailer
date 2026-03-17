@@ -30,18 +30,50 @@ public class SqlException extends SQLException {
 	private boolean isFormatted = false;
 	private final String sqlState;
 
+	/**
+	 * Constructor.
+	 *
+	 * @param message the error message
+	 * @param sqlStatement the SQL statement that caused the exception
+	 * @param t the cause
+	 */
 	public SqlException(String message, String sqlStatement, Throwable t) {
 		this(null, message, sqlStatement, t);
 	}
-	
+
+	/**
+	 * Constructor.
+	 *
+	 * @param message the error message
+	 * @param sqlStatement the SQL statement that caused the exception
+	 * @param t the cause
+	 * @param sqlLState the SQL state string
+	 */
 	public SqlException(String message, String sqlStatement, Throwable t, String sqlLState) {
 		this(null, message, sqlStatement, t, sqlLState);
 	}
 
+	/**
+	 * Constructor.
+	 *
+	 * @param errorDialogTitle the title for the error dialog, or <code>null</code>
+	 * @param message the error message
+	 * @param sqlStatement the SQL statement that caused the exception
+	 * @param t the cause
+	 */
 	public SqlException(String errorDialogTitle, String message, String sqlStatement, Throwable t) {
 		this(errorDialogTitle, message, sqlStatement, t, null);
 	}
 
+	/**
+	 * Constructor.
+	 *
+	 * @param errorDialogTitle the title for the error dialog, or <code>null</code>
+	 * @param message the error message
+	 * @param sqlStatement the SQL statement that caused the exception
+	 * @param t the cause
+	 * @param sqlState the SQL state string
+	 */
 	public SqlException(String errorDialogTitle, String message, String sqlStatement, Throwable t, String sqlState) {
 		super(message, t);
 		this.sqlState = sqlState;
@@ -52,10 +84,20 @@ public class SqlException extends SQLException {
 
 	private static final long serialVersionUID = 766715312577675914L;
 
+	/**
+	 * Returns whether the error message is already formatted for display.
+	 *
+	 * @return <code>true</code> if the message is pre-formatted
+	 */
 	public boolean isFormatted() {
 		return isFormatted;
 	}
 
+	/**
+	 * Sets whether the error message is already formatted for display.
+	 *
+	 * @param isFormatted <code>true</code> if the message is pre-formatted
+	 */
 	public void setFormatted(boolean isFormatted) {
 		this.isFormatted = isFormatted;
 	}

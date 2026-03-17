@@ -23,6 +23,11 @@ package net.sf.jailer.subsetting;
 public class InconsistentSubsettingResultException extends RuntimeException {
 	private static final long serialVersionUID = 4705779220417580180L;
 
+	/**
+	 * Constructor.
+	 *
+	 * @param message the detail message
+	 */
 	public InconsistentSubsettingResultException(String message) {
 		super(message);
 	}

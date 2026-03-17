@@ -83,6 +83,8 @@ public class DefaultTemporaryTableManager implements TemporaryTableManager {
 
 	/**
 	 * Sets prefix of table name to be used in DDL for creating temporary index.
+	 *
+	 * @param v the prefix to set
 	 */
 	public void setIndexTablePrefix(String v) {
 		this.indexTablePrefix = v;
@@ -114,34 +116,44 @@ public class DefaultTemporaryTableManager implements TemporaryTableManager {
 
 	/**
 	 * Sets prefix of references to a temporary table in DML statements.
+	 *
+	 * @param dmlTableReferencePrefix the prefix to set
 	 */
 	public void setDmlTableReferencePrefix(String dmlTableReferencePrefix) {
 		this.dmlTableReferencePrefix = dmlTableReferencePrefix;
 	}
 
 	/**
-	 * Gets prefix of DDL statement to create temporary table.
+	 * Sets prefix of DDL statement to create temporary table.
+	 *
+	 * @param v the prefix to set
 	 */
 	public void setCreateTablePrefix(String v) {
 		createTablePrefix = v;
 	}
 
 	/**
-	 * Gets suffix of DDL statement to create temporary table.
+	 * Sets suffix of DDL statement to create temporary table.
+	 *
+	 * @param v the suffix to set
 	 */
 	public void setCreateTableSuffix(String v) {
 		createTableSuffix = v;
 	}
 
 	/**
-	 * Gets prefix of DDL statement to create temporary index.
+	 * Sets prefix of DDL statement to create temporary index.
+	 *
+	 * @param v the prefix to set
 	 */
 	public void setCreateIndexPrefix(String v) {
 		createIndexPrefix = v;
 	}
 
 	/**
-	 * Gets suffix of DDL statement to create temporary index.
+	 * Sets suffix of DDL statement to create temporary index.
+	 *
+	 * @param v the suffix to set
 	 */
 	public void setCreateIndexSuffix(String v) {
 		createIndexSuffix = v;
@@ -170,14 +182,29 @@ public class DefaultTemporaryTableManager implements TemporaryTableManager {
 		return dmlTableReferencePrefix + table + "_T";
 	}
 
+	/**
+	 * Gets prefix of references to a temporary table in DML statements.
+	 *
+	 * @return the DML table reference prefix
+	 */
 	public String getDmlTableReferencePrefix() {
 		return dmlTableReferencePrefix;
 	}
 
+	/**
+	 * Sets prefix of references to a temporary table in DDL statements.
+	 *
+	 * @param ddlTableReferencePrefix the prefix to set
+	 */
 	public void setDdlTableReferencePrefix(String ddlTableReferencePrefix) {
 		this.ddlTableReferencePrefix = ddlTableReferencePrefix;
 	}
 
+	/**
+	 * Gets prefix of references to a temporary table in DDL statements.
+	 *
+	 * @return the DDL table reference prefix
+	 */
 	public String getDdlTableReferencePrefix() {
 		return ddlTableReferencePrefix;
 	}

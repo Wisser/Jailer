@@ -46,6 +46,13 @@ public class LocalDatabase {
 	
 	/**
 	 * Creates a local database.
+	 *
+	 * @param driverClassName name of the JDBC driver class
+	 * @param urlPattern JDBC URL pattern where {@code %s} is replaced with the database file path
+	 * @param user the database user
+	 * @param password the database password
+	 * @param jarfile path to the JDBC driver jar file
+	 * @param executionContext the execution context
 	 */
 	public LocalDatabase(String driverClassName, String urlPattern, String user, String password, String jarfile, ExecutionContext executionContext) throws ClassNotFoundException, FileNotFoundException, SQLException {
 		String tempFileFolder = determineTempFileFolder(executionContext);

@@ -97,7 +97,7 @@ public class Importer {
 	/**
 	 * If <code>true</code>, import rows in a single transaction. (default is true)
 	 *
-	 * @return <code>true</code> if Import rows in a single transaction
+	 * @return <code>true</code> if import rows in a single transaction
 	 */
 	public boolean getTransactional() {
 		return transactional;
@@ -114,8 +114,9 @@ public class Importer {
 	}
 
 	/**
-	 * Gets IsolationLevel.
-	 * 
+	 * Gets the isolation level.
+	 *
+	 * @return the isolation level, or {@code null} if not set
 	 * @see Connection#setTransactionIsolation(int)
 	 */
 	public Integer getIsolationLevel() {
@@ -123,8 +124,9 @@ public class Importer {
 	}
 
 	/**
-	 * Sets IsolationLevel.
-	 * 
+	 * Sets the isolation level.
+	 *
+	 * @param isolationLevel the isolation level to set
 	 * @see Connection#setTransactionIsolation(int)
 	 */
 	public void setIsolationLevel(Integer isolationLevel) {

@@ -137,21 +137,27 @@ public class Filter {
 	}
 
 	/**
-	 * @return source
+	 * Gets the source of this filter.
+	 *
+	 * @return the filter source, or <code>null</code> if there is no source
 	 */
 	public FilterSource getFilterSource() {
 		return filterSource;
 	}
 
 	/**
-	 * @return the appliedTo
+	 * Gets the list of destinations this filter has been applied to.
+	 *
+	 * @return the list of destinations this filter has been applied to
 	 */
 	public List<String> getAppliedTo() {
 		return appliedTo;
 	}
 
 	/**
-	 * @param appliedTo the appliedTo to set
+	 * Sets the list of destinations this filter has been applied to.
+	 *
+	 * @param appliedTo the list of destinations to set
 	 */
 	public void setAppliedTo(List<String> appliedTo) {
 		this.appliedTo = appliedTo;
@@ -167,9 +173,9 @@ public class Filter {
 	}
 
 	/**
-	 * Gets reasion.
-	 * 
-	 * @return reasion
+	 * Gets reason.
+	 *
+	 * @return reason
 	 */
 	public String getReason() {
 		return reason;

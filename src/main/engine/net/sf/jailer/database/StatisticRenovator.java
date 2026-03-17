@@ -27,8 +27,9 @@ public interface StatisticRenovator {
 
 	/**
 	 * Renews the DB table statistics for the working-tables.
-	 * 
+	 *
 	 * @param session for execution of SQL-statements
+	 * @param executionContext the execution context
 	 */
 	void renew(Session session, ExecutionContext executionContext) throws Exception;
 	

@@ -76,6 +76,8 @@ public enum Cardinality {
 	
 	/**
 	 * Stringifies cardinality.
+	 *
+	 * @return string representation of the cardinality
 	 */
 	@Override
 	public String toString() {

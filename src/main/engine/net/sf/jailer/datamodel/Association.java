@@ -229,6 +229,10 @@ public class Association extends ModelElement {
 
 	/**
 	 * Stringifies the association.
+	 *
+	 * @param maxGab minimum width of the destination table name column
+	 * @param useDisplayName <code>true</code> to use display names for tables
+	 * @return string representation of the association
 	 */
 	public String toString(int maxGab, boolean useDisplayName) {
 		RestrictionModel restrictionModel = dataModel.getRestrictionModel();
@@ -266,6 +270,7 @@ public class Association extends ModelElement {
 	 * @param restrictionSeparator
 	 *            separates join-condition from restriction condition in the
 	 *            result
+	 * @return the join condition as a string, with any restriction appended after the separator
 	 */
 	public String renderJoinCondition(String restrictionSeparator) {
 		RestrictionModel restrictionModel = dataModel.getRestrictionModel();
@@ -389,6 +394,8 @@ public class Association extends ModelElement {
 
 	/**
 	 * Whether there is any restriction of this association.
+	 *
+	 * @return <code>true</code> if there is a restriction on this association
 	 */
 	public boolean isRestricted() {
 		RestrictionModel restrictionModel = dataModel.getRestrictionModel();
@@ -502,6 +509,8 @@ public class Association extends ModelElement {
 
 	/**
 	 * Gets data-model to which this association belongs to.
+	 *
+	 * @return the data model containing this association
 	 */
 	public DataModel getDataModel() {
 		return dataModel;
@@ -616,6 +625,12 @@ public class Association extends ModelElement {
 				Filter.EXCLUDED_VALUE.equals(filter.getExpression()));
 	}
 
+	/**
+	 * Checks whether this association has a nullable foreign key
+	 * (i.e. all FK columns on the source side are nullable and have no non-null filter).
+	 *
+	 * @return <code>true</code> if the foreign key columns are all nullable
+	 */
 	public boolean hasNullableFK() {
 		if (!isInsertDestinationBeforeSource()) {
 			return false;
@@ -640,6 +655,11 @@ public class Association extends ModelElement {
 		return true;
 	}
 
+	/**
+	 * Checks whether all foreign key columns on the source side have a null filter.
+	 *
+	 * @return <code>true</code> if all FK source columns have a null filter
+	 */
 	public boolean fkHasNullFilter() {
 		Map<Column, Column> sdMap = createSourceToDestinationKeyMapping();
 		for (Column c: sdMap.keySet()) {
@@ -650,6 +670,11 @@ public class Association extends ModelElement {
 		return true;
 	}
 
+	/**
+	 * Checks whether all foreign key columns on the source side have an exclude filter.
+	 *
+	 * @return <code>true</code> if all FK source columns have an exclude filter
+	 */
 	public boolean fkHasExcludeFilter() {
 		Map<Column, Column> sdMap = createSourceToDestinationKeyMapping();
 		for (Column c: sdMap.keySet()) {
@@ -660,6 +685,12 @@ public class Association extends ModelElement {
 		return true;
 	}
 
+	/**
+	 * Sets or resets null filters on the foreign key columns of the source side.
+	 *
+	 * @param set <code>true</code> to set null filters, <code>false</code> to remove them
+	 * @return <code>true</code> if any filter was changed
+	 */
 	public boolean setOrResetFKNullFilter(boolean set) {
 		boolean changed = false;
 		Map<Column, Column> sdMap = createSourceToDestinationKeyMapping();
@@ -681,6 +712,11 @@ public class Association extends ModelElement {
 		return changed;
 	}
 
+	/**
+	 * Checks whether this is a restricted dependency whose FK columns are set to null.
+	 *
+	 * @return <code>true</code> if this is a restricted dependency with nulled FK columns
+	 */
 	public boolean isRestrictedDependencyWithNulledFK() {
 		boolean restrictedDep = isInsertDestinationBeforeSource() && getRestrictionCondition() != null;
 		if (restrictedDep) {

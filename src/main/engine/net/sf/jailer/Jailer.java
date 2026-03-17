@@ -161,7 +161,8 @@ public class Jailer {
 	 *            arguments
 	 * @param warnings
 	 *            string-buffer to print warnings into, may be <code>null</code>
-	 * @param progressListener listens to progess events, may be <code>null</code>
+	 * @param progressListener listens to progress events, may be <code>null</code>
+	 * @param fromCli <code>true</code> if invoked from the command-line interface
 	 * @return <code>false</code> iff something went wrong
 	 */
 	public static boolean jailerMain(String[] args, StringBuffer warnings, ProgressListener progressListener, boolean fromCli) throws Exception {

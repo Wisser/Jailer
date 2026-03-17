@@ -57,12 +57,11 @@ public abstract class InlineViewBuilder implements Session.ResultSetReader {
 	
 	/**
 	 * Constructor.
-	 * 
-	 * @param style
-	 *            the style
-	 * @param name
-	 *            the name
-	 * @param columnNames 
+	 *
+	 * @param style the inline-view style
+	 * @param name the name of the inline view
+	 * @param session the database session
+	 * @param columnNames the column names of the inline view
 	 */
 	public InlineViewBuilder(InlineViewStyle style, String name, Session session, String[] columnNames) {
 		this.name = name;
@@ -73,10 +72,11 @@ public abstract class InlineViewBuilder implements Session.ResultSetReader {
 	}
 
 	/**
-	 * Creates an {@link InlineViewBuilder} with DEFAULT_NAME.
-	 * 
-	 * @param style
-	 *            the style
+	 * Creates an {@link InlineViewBuilder} with {@link #DEFAULT_NAME}.
+	 *
+	 * @param style the inline-view style
+	 * @param session the database session
+	 * @param columnNames the column names of the inline view
 	 */
 	public InlineViewBuilder(InlineViewStyle style, Session session, String[] columnNames) {
 		this(style, DEFAULT_NAME, session, columnNames);

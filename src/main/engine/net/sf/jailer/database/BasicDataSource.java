@@ -130,13 +130,14 @@ public class BasicDataSource implements DataSource {
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param driverClassName name of JDBC-driver class
 	 * @param dbUrl the URL
 	 * @param dbUser the user
 	 * @param dbPassword the password
+	 * @param dbms the DBMS
 	 * @param maxPoolSize maximum number of pooled connections
-	 * @param dbms the DBMS 
+	 * @param jdbcDriverURL URL(s) of driver jar file
 	 */
 	public BasicDataSource(String driverClassName, String dbUrl, String dbUser, String dbPassword, DBMS dbms, int maxPoolSize, URL... jdbcDriverURL) {
 		this.driverClassName = driverClassName;
@@ -304,6 +305,12 @@ public class BasicDataSource implements DataSource {
 
 	private final List<Connection> pool = Collections.synchronizedList(new LinkedList<Connection>());
 	
+	/**
+	 * Checks whether determining the DBMS for a given URL requires a connection.
+	 *
+	 * @param dbUrl the DB URL
+	 * @return <code>true</code> if a connection is needed to determine the DBMS
+	 */
 	public static boolean findDBMSNeedsConnection(String dbUrl) {
 		if (perUrl.containsKey(dbUrl)) {
 			return false;

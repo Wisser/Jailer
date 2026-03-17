@@ -213,5 +213,8 @@ public class CommandLine {
 		return null;
 	}
 
+	/**
+	 * Base directory of the application.
+	 */
 	public static File applicationBase;
 }

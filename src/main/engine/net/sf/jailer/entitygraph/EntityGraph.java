@@ -108,6 +108,8 @@ public abstract class EntityGraph {
 
 	/**
 	 * Creates a new entity-graph of same type and session.
+	 *
+	 * @return the newly created entity-graph
 	 */
 	public abstract EntityGraph createNewGraph() throws SQLException;
 
@@ -150,6 +152,7 @@ public abstract class EntityGraph {
 	/**
 	 * Gets the number of entities from given tables in the graph.
 	 *
+	 * @param tables the tables to count entities for
 	 * @return the number of entities in the graph
 	 * @throws SQLException
 	 */
@@ -203,6 +206,7 @@ public abstract class EntityGraph {
 	 * @param condition the condition in SQL that the entities must fulfill
 	 * @param today the birthday of the new entities
 	 * @param limitDefinition limit
+	 * @param joinWithEntity if <code>true</code>, join with the entity-table to avoid duplicates
 	 *
 	 * @return row-count
 	 */
@@ -228,6 +232,9 @@ public abstract class EntityGraph {
 	 *
 	 * @param table the table
 	 * @param association the association to resolve
+	 * @param otherGraph the target entity-graph to add resolved entities into
+	 * @param universum the universe entity-graph used to filter candidates
+	 * @param forDelete if <code>true</code>, resolves for deletion rather than export
 	 *
 	 * @return row-count
 	 */
@@ -243,11 +250,14 @@ public abstract class EntityGraph {
 	 * @param condition condition of dependency
 	 * @param aggregationId id of aggregation association (for XML export), 0 if not applicable
 	 * @param dependencyId id of dependency
+	 * @param isAssociationReversed if <code>true</code>, the association is used in reverse direction
 	 */
 	public abstract void addDependencies(Table from, String fromAlias, Table to, String toAlias, String condition, int aggregationId, int dependencyId, boolean isAssociationReversed) throws SQLException;
 
 	/**
-	 * Gets distinct association-ids of all edged.
+	 * Gets distinct association-ids of all edges.
+	 *
+	 * @return set of distinct dependency IDs
 	 */
 	public abstract Set<Integer> getDistinctDependencyIDs() throws SQLException;
 
@@ -410,11 +420,18 @@ public abstract class EntityGraph {
 
 	/**
 	 * Increments lob-counter and returns new value.
+	 *
+	 * @return the incremented lob-counter value
 	 */
 	public synchronized int incLobCount() {
 		return ++lobCount;
 	}
 
+	/**
+	 * Gets the data model.
+	 *
+	 * @return the data model
+	 */
 	public abstract DataModel getDatamodel();
 
 	/**
@@ -425,14 +442,24 @@ public abstract class EntityGraph {
 	/**
 	 * Removes all dependencies for a given association.
 	 *
-	 * @param association the asociation
+	 * @param association the association
 	 */
 	public void removeDependencies(Association association) throws SQLException {
 		deleteRows(getSession(), dmlTableReference(DEPENDENCY, getSession()), "depend_id=" + association.getId() + " and r_entitygraph=" + graphID);
 	}
 
+	/**
+	 * Gets the target session.
+	 *
+	 * @return the target session
+	 */
 	public abstract Session getTargetSession();
 
+	/**
+	 * Sets the delete mode.
+	 *
+	 * @param deleteMode if <code>true</code>, the graph operates in delete mode
+	 */
 	public void setDeleteMode(boolean deleteMode) {
 		inDeleteMode = deleteMode;
 	}
@@ -625,6 +652,11 @@ public abstract class EntityGraph {
 		}
 	}
 
+	/**
+	 * Gets the total number of exported rows.
+	 *
+	 * @return the total number of exported rows
+	 */
 	public long getExportedCount() {
 		synchronized (EXPORT_COUNT_LOCK) {
 			Long cnt = (Long) getSession().getSessionProperty(EntityGraph.class, "ExportedCount");

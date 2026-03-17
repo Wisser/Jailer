@@ -271,10 +271,11 @@ public class Column {
 	}
 
 	/**
-	 * Returns the primary key in SQL syntax.
+	 * Returns the column definition in SQL syntax.
 	 *
-	 * @param columnPrefix an optional prefix for each PK-column
-	 * @param typeReplacement column types replacements
+	 * @param columnPrefix an optional prefix for the column name
+	 * @param typeReplacement column type replacements
+	 * @return the column definition in SQL syntax
 	 */
 	public String toSQL(String columnPrefix, Map<String, String> typeReplacement) {
 		String theType = type;
@@ -289,6 +290,7 @@ public class Column {
 	 * Returns the column definition in SQL syntax.
 	 *
 	 * @param columnPrefix an optional prefix for the column name
+	 * @return the column definition in SQL syntax
 	 */
 	public String toSQL(String columnPrefix) {
 		return toSQL(columnPrefix, null);
@@ -303,9 +305,9 @@ public class Column {
 	}
 
 	/**
-	 * Returns <code>true</code> iff this column cannot be updated.
+	 * Returns <code>true</code> iff this column is virtual.
 	 *
-	 * @return <code>true</code> iff this column cannot be updated
+	 * @return <code>true</code> iff this column is virtual
 	 */
 	public boolean isVirtual() {
 		return isVirtual;

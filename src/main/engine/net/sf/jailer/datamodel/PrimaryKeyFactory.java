@@ -69,6 +69,8 @@ public class PrimaryKeyFactory {
 	/**
 	 * Constructs a new primary-key.
 	 *
+	 * @param columns the primary-key columns
+	 * @param tableName the name of the table owning the primary key
 	 * @return a newly created primary-key
 	 *
 	 * @exception IllegalStateException
@@ -205,6 +207,15 @@ public class PrimaryKeyFactory {
 		return universalPrimaryKey;
 	}
 
+	/**
+	 * Creates a UPK scope by computing the closure of all subject tables in the extraction model
+	 * and storing the resulting table names in the execution context.
+	 *
+	 * @param extractionModelFile path to the extraction model file
+	 * @param executionContext the execution context to store the UPK domain into
+	 * @throws MalformedURLException if the extraction model file URL is malformed
+	 * @throws IOException if an I/O error occurs while reading the extraction model
+	 */
 	public static void createUPKScope(String extractionModelFile, ExecutionContext executionContext) throws MalformedURLException, IOException {
 		ExtractionModel extractionModel = new ExtractionModel(new File(extractionModelFile).toURI().toURL(), executionContext.getSourceSchemaMapping(), executionContext.getParameters(), executionContext, true);
 		Set<Table> subjects = new HashSet<Table>();

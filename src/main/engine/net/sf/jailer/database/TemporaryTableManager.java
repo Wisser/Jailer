@@ -23,42 +23,59 @@ package net.sf.jailer.database;
 public interface TemporaryTableManager {
 
 	/**
-	 * Gets reference to a temporary table in DML statements.
+	 * Gets the reference to a temporary table for use in DML statements.
+	 *
+	 * @param table the base name of the working table
+	 * @return the DML table reference
 	 */
 	String getDmlTableReference(String table);
 
 	/**
-	 * Gets prefix of DDL statement to create temporary table.
+	 * Gets prefix of DDL statement to create a temporary table.
+	 *
+	 * @return the CREATE TABLE prefix
 	 */
 	String getCreateTablePrefix();
 
 	/**
-	 * Gets suffix of DDL statement to create temporary table.
+	 * Gets suffix of DDL statement to create a temporary table.
+	 *
+	 * @return the CREATE TABLE suffix
 	 */
 	String getCreateTableSuffix();
-	
+
 	/**
-	 * Gets prefix of DDL statement to create temporary index.
+	 * Gets prefix of DDL statement to create a temporary index.
+	 *
+	 * @return the CREATE INDEX prefix
 	 */
 	String getCreateIndexPrefix();
 
 	/**
-	 * Gets suffix of DDL statement to create temporary index.
+	 * Gets suffix of DDL statement to create a temporary index.
+	 *
+	 * @return the CREATE INDEX suffix
 	 */
 	String getCreateIndexSuffix();
-	
+
 	/**
-	 * Gets prefix of table name to be used in DDL for creating temporary index.
+	 * Gets prefix of table name to be used in DDL for creating a temporary index.
+	 *
+	 * @return the index table name prefix
 	 */
 	String getIndexTablePrefix();
-	
+
 	/**
 	 * Gets prefix to be used in DDL for dropping temporary tables.
+	 *
+	 * @return the DROP TABLE prefix
 	 */
 	String getDropTablePrefix();
-	
+
 	/**
 	 * Gets prefix of reference to a temporary table in DDL statements.
+	 *
+	 * @return the DDL table reference prefix
 	 */
 	String getDdlTableReferencePrefix();
 

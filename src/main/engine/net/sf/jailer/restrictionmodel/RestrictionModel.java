@@ -68,6 +68,7 @@ public class RestrictionModel {
 	 * Constructor.
 	 *
 	 * @param dataModel the data-model
+	 * @param executionContext the execution context
 	 */
 	public RestrictionModel(DataModel dataModel, ExecutionContext executionContext) {
 		this.dataModel = dataModel;
@@ -83,6 +84,8 @@ public class RestrictionModel {
 
 	/**
 	 * Is the restriction-model transposed?
+	 *
+	 * @return <code>true</code> if the restriction-model is transposed
 	 */
 	public boolean isTransposed() {
 		return transposed;
@@ -118,6 +121,7 @@ public class RestrictionModel {
 	/**
 	 * Adds restrictions defined in a restriction-file.
 	 *
+	 * @param extractionModelURL URL of the restriction-file to read
 	 * @param parameters apply this parameter-value mapping to all restriction conditions
 	 */
 	public void addRestrictionDefinition(URL extractionModelURL, Map<String, String> parameters) throws Exception {
@@ -127,8 +131,9 @@ public class RestrictionModel {
 	/**
 	 * Adds restrictions defined in a restriction-file.
 	 *
+	 * @param csvFile the CSV file containing the restriction definitions
+	 * @param fileName name of the restriction file (for tracking)
 	 * @param parameters apply this parameter-value mapping to all restriction conditions
-	 * @param fileName
 	 */
 	public void addRestrictionDefinition(CsvFile csvFile, String fileName, Map<String, String> parameters) throws Exception {
 		dataModel.version++;
