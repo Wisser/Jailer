@@ -231,6 +231,8 @@ public class Subsetter {
 
 	/**
 	 * Gets URL of the current data model (the datamodel's base folder)
+	 *
+	 * @return URL of the current data model (the datamodel's base folder)
 	 */
 	public URL getDataModelURL() {
 		return executionContext.getDataModelURL();
@@ -238,6 +240,8 @@ public class Subsetter {
 
 	/**
 	 * Sets URL of the current data model (the datamodel's base folder)
+	 *
+	 * @param datamodelURL URL of the data model base folder
 	 */
 	public void setDataModelURL(URL datamodelURL) {
 		executionContext.setDataModelURL(datamodelURL);
@@ -288,14 +292,14 @@ public class Subsetter {
 	/**
 	 * Sets the script format.
 	 *
-	 * @return the script format
+	 * @param scriptFormat the script format
 	 */
 	public void setScriptFormat(ScriptFormat scriptFormat) {
 		executionContext.setScriptFormat(scriptFormat);
 	}
 
 	/**
-	 * If <code>true</code>, Use uTF-8 encoding
+	 * If <code>true</code>, use UTF-8 encoding
 	 *
 	 * @return <code>true</code> if use UTF-8 encoding
 	 */
@@ -436,14 +440,14 @@ public class Subsetter {
 	}
 
 	/**
-	 * @return allow only a single root/subject object to be written out into JSON/YAML/XML export file
+	 * @return if <code>true</code>, raise an error if there are objects not aggregated into any other object in JSON/YAML/XML export file
 	 */
 	public boolean isDisallowNonAggregated() {
 		return executionContext.isDisallowNonAggregated();
 	}
 
 	/**
-	 * @param disallowNonAggregated allow only a single root/subject object to be written out into JSON/YAML/XML export file
+	 * @param disallowNonAggregated if <code>true</code>, raise an error if there are objects not aggregated into any other object in JSON/YAML/XML export file
 	 */
 	public void setDisallowNonAggregated(boolean disallowNonAggregated) {
 		executionContext.setDisallowNonAggregated(disallowNonAggregated);

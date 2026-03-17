@@ -628,13 +628,17 @@ public class ExecutionContext {
 
 	/**
 	 * Is the subsetter embedded into an application?
+	 *
+	 * @return <code>true</code> if the subsetter is embedded into an application
 	 */
 	public boolean isEmbedded() {
 		return embedded;
 	}
 
 	/**
-	 * @param embedded is the subsetter embedded into an application?
+	 * Sets whether the subsetter is embedded into an application.
+	 *
+	 * @param embedded <code>true</code> if the subsetter is embedded into an application
 	 */
 	public void setEmbedded(boolean embedded) {
 		this.embedded = embedded;
@@ -674,6 +678,12 @@ public class ExecutionContext {
 
 	private Map<String, String> schemaMapping;
 
+	/**
+	 * Parses a raw schema mapping string (comma-separated "from=to" pairs) into a map.
+	 *
+	 * @param rawschemamapping comma-separated schema mapping string, e.g. {@code "schema1=schema2,schema3=schema4"}
+	 * @return parsed schema mapping
+	 */
 	public static Map<String, String> getSchemaMapping(String rawschemamapping) {
 		Map<String, String> mapping = new HashMap<String, String>();
 		if (rawschemamapping != null) {
@@ -687,6 +697,11 @@ public class ExecutionContext {
 		return mapping;
 	}
 
+	/**
+	 * Gets schema map for destination database.
+	 *
+	 * @return schema map for destination database
+	 */
 	public Map<String, String> getSchemaMapping() {
 		if (schemaMapping == null) {
 			schemaMapping = getSchemaMapping(rawschemamapping);
@@ -695,10 +710,10 @@ public class ExecutionContext {
 	}
 
 	/**
-	 * Sets source schema map
+	 * Sets schema map for destination database.
 	 *
 	 * @param schemaMapping
-	 *            source schema map
+	 *            destination schema map
 	 */
 	public void setSchemaMapping(Map<String, String> schemaMapping) {
 		this.schemaMapping = schemaMapping;
@@ -707,12 +722,19 @@ public class ExecutionContext {
 	private Map<String, String> sourceSchemaMapping;
 
 	/**
-	 * @param sourceSchemaMapping the sourceSchemaMapping to set
+	 * Sets schema map for source database.
+	 *
+	 * @param sourceSchemaMapping the source schema map
 	 */
 	public void setSourceSchemaMapping(Map<String, String> sourceSchemaMapping) {
 		this.sourceSchemaMapping = sourceSchemaMapping;
 	}
 
+	/**
+	 * Gets schema map for source database.
+	 *
+	 * @return the source schema map
+	 */
 	public Map<String, String> getSourceSchemaMapping() {
 		if (sourceSchemaMapping == null) {
 			sourceSchemaMapping = new HashMap<String, String>();
@@ -731,12 +753,19 @@ public class ExecutionContext {
 	private Map<String, String> deletionSchemaMapping;
 
 	/**
-	 * @param deletionSchemaMapping the sourceSchemaMapping to set
+	 * Sets schema map for the deletion script.
+	 *
+	 * @param deletionSchemaMapping the deletion schema map
 	 */
 	public void setDeletionSchemaMapping(Map<String, String> deletionSchemaMapping) {
 		this.deletionSchemaMapping = deletionSchemaMapping;
 	}
 
+	/**
+	 * Gets schema map for the deletion script.
+	 *
+	 * @return the deletion schema map
+	 */
 	public Map<String, String> getDeletionSchemaMapping() {
 		if (deletionSchemaMapping == null) {
 			deletionSchemaMapping = new HashMap<String, String>();
@@ -777,7 +806,7 @@ public class ExecutionContext {
 	/**
 	 * Sets the script format.
 	 *
-	 * @return the script format
+	 * @param scriptFormat the script format
 	 */
 	public void setScriptFormat(ScriptFormat scriptFormat) {
 		this.scriptFormat = scriptFormat;
@@ -809,7 +838,9 @@ public class ExecutionContext {
 	private URL datamodelURL;
 
 	/**
-	 * Gets URL of the current data model (the datamodels base folder)
+	 * Gets URL of the current data model (the datamodel's base folder)
+	 *
+	 * @return URL of the current data model (the datamodel's base folder)
 	 */
 	public URL getDataModelURL() {
 		if (datamodelURL == null) {
@@ -829,7 +860,9 @@ public class ExecutionContext {
 	}
 
 	/**
-	 * Sets URL of the current data model (the datamodels base folder)
+	 * Sets URL of the current data model (the datamodel's base folder)
+	 *
+	 * @param datamodelURL URL of the data model base folder
 	 */
 	public void setDataModelURL(URL datamodelURL) {
 		if (!datamodelURL.toExternalForm().endsWith("/")) {
@@ -982,14 +1015,14 @@ public class ExecutionContext {
 	}
 
 	/**
-	 * @return allow only a single root/subject object to be written out into JSON/YAML/XML export file
+	 * @return if <code>true</code>, raise an error if there are objects not aggregated into any other object in JSON/YAML/XML export file
 	 */
 	public boolean isDisallowNonAggregated() {
 		return disallowNonAggregated;
 	}
 
 	/**
-	 * @param disallowNonAggregated allow only a single root/subject object to be written out into JSON/YAML/XML export file
+	 * @param disallowNonAggregated if <code>true</code>, raise an error if there are objects not aggregated into any other object in JSON/YAML/XML export file
 	 */
 	public void setDisallowNonAggregated(boolean disallowNonAggregated) {
 		this.disallowNonAggregated = disallowNonAggregated;
@@ -1066,10 +1099,20 @@ public class ExecutionContext {
 
 	private LayoutStorage layoutStorage = new LayoutStorage();
 
+	/**
+	 * Gets the layout storage.
+	 *
+	 * @return the layout storage
+	 */
 	public LayoutStorage getLayoutStorage() {
 		return layoutStorage;
 	}
 
+	/**
+	 * Sets the layout storage.
+	 *
+	 * @param layoutStorage the layout storage
+	 */
 	public void setLayoutStorage(LayoutStorage layoutStorage) {
 		this.layoutStorage = layoutStorage;
 	}
@@ -1102,18 +1145,38 @@ public class ExecutionContext {
 		this.independentWorkingTables = independentWorkingTables;
 	}
 
+	/**
+	 * Gets the universal primary key domain.
+	 *
+	 * @return the universal primary key domain
+	 */
 	public Set<String> getUpkDomain() {
 		return upkDomain;
 	}
 
+	/**
+	 * Sets the universal primary key domain.
+	 *
+	 * @param upkDomain the universal primary key domain
+	 */
 	public void setUpkDomain(Set<String> upkDomain) {
 		this.upkDomain = upkDomain;
 	}
 
+	/**
+	 * Gets the alias of the current connection.
+	 *
+	 * @return the current connection alias
+	 */
 	public String getCurrentConnectionAlias() {
 		return currentConnectionAlias;
 	}
 
+	/**
+	 * Sets the alias of the current connection.
+	 *
+	 * @param currentConnectionAlias the current connection alias
+	 */
 	public void setCurrentConnectionAlias(String currentConnectionAlias) {
 		this.currentConnectionAlias = currentConnectionAlias;
 	}
