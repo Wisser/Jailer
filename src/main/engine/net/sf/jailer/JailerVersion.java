@@ -47,7 +47,3 @@ public class JailerVersion {
 	}
 
 }
-
-
-// TODO
-// TODO commit javadocs
