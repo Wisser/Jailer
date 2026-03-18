@@ -32,8 +32,9 @@ public abstract class MDGeneric extends MDObject {
 	
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param name the object name
+	 * @param metaDataSource the meta data source
 	 */
 	public MDGeneric(String name, MetaDataSource metaDataSource) {
 		super(name, metaDataSource);
@@ -41,7 +42,9 @@ public abstract class MDGeneric extends MDObject {
 
 	/**
 	 * Gets the render of the database object.
-	 * 
+	 *
+	 * @param session the database session
+	 * @param executionContext the execution context
 	 * @return render of the database object
 	 */
 	public final JComponent getRender(Session session, ExecutionContext executionContext) {
@@ -57,8 +60,10 @@ public abstract class MDGeneric extends MDObject {
 	}
 
 	/**
-	 * creates the render of the database object.
-	 * 
+	 * Creates the render of the database object.
+	 *
+	 * @param session the database session
+	 * @param executionContext the execution context
 	 * @return render of the database object
 	 */
 	public abstract JComponent createRender(Session session, ExecutionContext executionContext) throws Exception;

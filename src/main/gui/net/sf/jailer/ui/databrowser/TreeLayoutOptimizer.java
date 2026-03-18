@@ -30,6 +30,11 @@ import java.util.function.Consumer;
  */
 public class TreeLayoutOptimizer<T> {
 
+	/**
+	 * A node in the tree layout.
+	 *
+	 * @param <T> the type of the user object
+	 */
 	public static class Node<T> {
 		private final T userObject;
 		private final List<Node<T>> children = new ArrayList<Node<T>>();
@@ -37,39 +42,80 @@ public class TreeLayoutOptimizer<T> {
 		int level = 0;
 		Node<T> parent = null;
 		double position = 0;
-		
+
+		/**
+		 * Returns the user object associated with this node.
+		 *
+		 * @return the user object
+		 */
 		public T getUserObject() {
 			return userObject;
 		}
-		
+
+		/**
+		 * Constructor.
+		 *
+		 * @param userObject the user object to associate with this node
+		 * @param isAnchor whether this node is an anchor node
+		 */
 		public Node(T userObject, boolean isAnchor) {
 			this.userObject = userObject;
 			this.isAnchor = isAnchor;
 		}
-		
+
+		/**
+		 * Adds a child node.
+		 *
+		 * @param child the child node to add
+		 */
 		public void addChild(Node<T> child) {
 			children.add(child);
 			child.parent = this;
 			child.level = level + 1;
 		}
-		
+
+		/**
+		 * Visits this node and all its descendants.
+		 *
+		 * @param visitor the visitor to apply to each node
+		 */
 		public void visit(Consumer<Node<T>> visitor) {
 			visitor.accept(this);
 			children.forEach(child -> child.visit(visitor));
 		}
-		
+
+		/**
+		 * Returns the layout position of this node.
+		 *
+		 * @return the position
+		 */
 		public double getPosition() {
 			return position;
 		}
 
+		/**
+		 * Returns the level of this node in the tree.
+		 *
+		 * @return the level (root is 0)
+		 */
 		public int getLevel() {
 			return level;
 		}
 
+		/**
+		 * Returns the list of child nodes.
+		 *
+		 * @return the children
+		 */
 		public List<Node<T>> getChildren() {
 			return children;
 		}
-		
+
+		/**
+		 * Returns the depth of the subtree rooted at this node.
+		 *
+		 * @return the depth (1 for a leaf node)
+		 */
 		public int getDepth() {
 			int maxChildDepth = 0;
 			for (Node<T> child: children) {
@@ -78,6 +124,11 @@ public class TreeLayoutOptimizer<T> {
 			return 1 + maxChildDepth;
 		}
 
+		/**
+		 * Returns the minimum position in the subtree rooted at this node.
+		 *
+		 * @return the minimum position
+		 */
 		public double getMinPosition() {
 			double minPos = position;
 			if (getUserObject() == null) {
@@ -91,6 +142,11 @@ public class TreeLayoutOptimizer<T> {
 			return minPos;
 		}
 
+		/**
+		 * Shifts the positions of this node and all its descendants by the given delta.
+		 *
+		 * @param delta the amount to subtract from each position
+		 */
 		public void adjustPosition(double delta) {
 			position -= delta;
 			for (Node<T> child: children) {
@@ -98,6 +154,12 @@ public class TreeLayoutOptimizer<T> {
 			}
 		}
 
+		/**
+		 * Shifts the positions of this node and all its descendants by the given delta, but only for nodes at or above a threshold.
+		 *
+		 * @param delta the amount to subtract from each qualifying position
+		 * @param thres only nodes with position &gt;= thres are shifted
+		 */
 		public void adjustPosition(double delta, double thres) {
 			if (position >= thres) {
 				position -= delta;
@@ -107,6 +169,11 @@ public class TreeLayoutOptimizer<T> {
 			}
 		}
 
+		/**
+		 * Returns the total number of nodes in the subtree rooted at this node.
+		 *
+		 * @return the node count including this node
+		 */
 		public int getNodesCount() {
 			int count = 1;
 			for (Node<T> child: children) {
@@ -115,6 +182,11 @@ public class TreeLayoutOptimizer<T> {
 			return count;
 		}
 
+		/**
+		 * Returns a compactness score for the subtree rooted at this node. Lower values indicate a more compact layout.
+		 *
+		 * @return the compactness score
+		 */
 		public double getCompactness() {
 			double compactness = 0;
 			if (children.size() > 0) {
@@ -135,6 +207,11 @@ public class TreeLayoutOptimizer<T> {
 			return compactness;
 		}
 
+		/**
+		 * Returns an anchor quality score for the subtree. Lower values indicate better alignment of anchor nodes with their parents.
+		 *
+		 * @return the anchor quality score
+		 */
 		public double getAnchorQuality() {
 			double quality = 0;
 			for (Node<T> child: children) {
@@ -149,6 +226,12 @@ public class TreeLayoutOptimizer<T> {
 		}
 	}
 
+	/**
+	 * Optimizes the layout of a tree by arranging nodes to minimize overlap and compactness.
+	 *
+	 * @param <T> the type of the user object
+	 * @param root the root node of the tree
+	 */
 	public static <T> void optimizeTreeLayout(Node<T> root) {
 		int numNodes = root.getNodesCount();
 		optimizeChildrenOrder(root, System.currentTimeMillis(), MAX_OPTIM_TIME_MS, numNodes);

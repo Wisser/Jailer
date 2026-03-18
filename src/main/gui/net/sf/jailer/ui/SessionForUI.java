@@ -51,9 +51,15 @@ public class SessionForUI extends Session {
 
 	/**
 	 * Creates a new session.
-	 * 
+	 *
 	 * @param dataSource the data source
 	 * @param dbms the DBMS
+	 * @param isolationLevel the transaction isolation level, or <code>null</code> for the default
+	 * @param shutDownImmediatelly if <code>true</code>, the session is shut down immediately on close
+	 * @param initInlineViewStyle if <code>true</code>, the inline view style is initialized
+	 * @param w the owner window for the connecting dialog
+	 * @return the new session, or <code>null</code> if the user cancelled
+	 * @throws SQLException if a database access error occurs
 	 */
 	public static SessionForUI createSession(DataSource dataSource, DBMS dbms, Integer isolationLevel, boolean shutDownImmediatelly, boolean initInlineViewStyle, final Window w) throws SQLException {
 		return createSession(dataSource, dbms, isolationLevel, shutDownImmediatelly, initInlineViewStyle, false, w, null);
@@ -61,9 +67,17 @@ public class SessionForUI extends Session {
 	
 	/**
 	 * Creates a new session.
-	 * 
+	 *
 	 * @param dataSource the data source
 	 * @param dbms the DBMS
+	 * @param isolationLevel the transaction isolation level, or <code>null</code> for the default
+	 * @param shutDownImmediatelly if <code>true</code>, the session is shut down immediately on close
+	 * @param initInlineViewStyle if <code>true</code>, the inline view style is initialized
+	 * @param testOnly if <code>true</code>, only a test connection is made and then closed
+	 * @param w the owner window for the connecting dialog
+	 * @param sessionInitializer optional initializer called after the connection is established, or <code>null</code>
+	 * @return the new session, or <code>null</code> if the user cancelled
+	 * @throws SQLException if a database access error occurs
 	 */
 	public static SessionForUI createSession(DataSource dataSource, DBMS dbms, Integer isolationLevel, boolean shutDownImmediatelly, boolean initInlineViewStyle, boolean testOnly, Window w, Consumer<Session> sessionInitializer) throws SQLException {
 		Session.setThreadSharesConnection();
@@ -222,6 +236,9 @@ public class SessionForUI extends Session {
 	private static Long fadeStart;
 	private static Timer fadeTimer;
 	
+	/**
+	 * Starts the fade-in animation for the connecting dialog.
+	 */
 	public static void startFadeIn() {
 		fadeStart = System.currentTimeMillis();
 	}
@@ -291,6 +308,12 @@ public class SessionForUI extends Session {
 	
 	private static final String SUPPORT_WC_EDITOR = "supportWCEditor";
 
+    /**
+     * Returns whether the where-clause editor is supported for the given session.
+     *
+     * @param session the session to check
+     * @return <code>true</code> if the where-clause editor is supported
+     */
     public static boolean isWCEditorSupported(Session session) {
     	return !Boolean.FALSE.equals(session.getSessionProperty(SessionForUI.class, SUPPORT_WC_EDITOR));
     }

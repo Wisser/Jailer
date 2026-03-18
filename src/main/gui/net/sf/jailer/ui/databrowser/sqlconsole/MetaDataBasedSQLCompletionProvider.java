@@ -34,12 +34,18 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.syntaxtextarea.SQLCompletionProvider;
 
 /**
- * A {@link SQLCompletionProvider} based on {@link SQLCompletionProvider}.
- * 
+ * A {@link SQLCompletionProvider} based on {@link MetaDataSource}.
+ *
  * @author Ralf Wisser
  */
 public class MetaDataBasedSQLCompletionProvider extends SQLCompletionProvider<MetaDataSource, MDSchema, MDTable> {
 
+	/**
+	 * Constructor.
+	 *
+	 * @param session the database session
+	 * @param metaDataSource the meta data source
+	 */
 	public MetaDataBasedSQLCompletionProvider(Session session, MetaDataSource metaDataSource) throws SQLException {
 		super(session, metaDataSource);
 	}

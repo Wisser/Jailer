@@ -131,6 +131,11 @@ public abstract class PendingDecisionsPanel extends javax.swing.JPanel {
 	private boolean updatePending = false;
 	private boolean ignoreSelection = false;
 	
+	/**
+	 * Returns whether the panel is currently activated (i.e., there are pending unchecked decisions).
+	 *
+	 * @return <code>true</code> if the panel is activated
+	 */
 	public boolean isActivated() {
 		return activated;
 	}
@@ -246,6 +251,11 @@ public abstract class PendingDecisionsPanel extends javax.swing.JPanel {
 		table.setRowSorter(sorter);
 	}
 
+	/**
+	 * Adjusts the column widths of the given table to fit the content.
+	 *
+	 * @param table the table whose column widths are to be adjusted
+	 */
 	public void adjustTableColumnsWidth(JTable table) {
 		DefaultTableModel dtm = (DefaultTableModel) table.getModel();
 		DefaultTableCellRenderer defaultTableCellRenderer = new DefaultTableCellRenderer();
@@ -534,6 +544,11 @@ public abstract class PendingDecisionsPanel extends javax.swing.JPanel {
         updateView();
     }//GEN-LAST:event_clearButtonActionPerformed
 
+    /**
+     * Selects the given association in the associations table.
+     *
+     * @param selected the association to select, or <code>null</code> to clear the selection
+     */
     public void selectAssociation(Association selected) {
 		if (selected != null) {
 			int i = atBorder.indexOf(selected);
@@ -552,6 +567,12 @@ public abstract class PendingDecisionsPanel extends javax.swing.JPanel {
 		}
 	}
     
+    /**
+     * Returns whether the given association has been checked (decision made).
+     *
+     * @param association the association to check
+     * @return <code>true</code> if the association has been checked
+     */
     public boolean isChecked(Association association) {
     	return checked.contains(association);
     }

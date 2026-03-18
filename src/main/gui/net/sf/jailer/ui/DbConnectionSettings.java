@@ -88,8 +88,10 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 	private static ImageIcon leftIcon;
 	
 	/**
-     * Creates new form DBConnectionSetings
-     */
+	 * Creates a new DbConnectionSettings panel.
+	 *
+	 * @param root the component used as the owner for positioning dialogs
+	 */
     public DbConnectionSettings(Component root) {
     	this.owner = root;
         initComponents(); UIUtil.initComponents(this);
@@ -509,6 +511,11 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 	
 	private String currentParameterizedURL;
 
+	/**
+	 * Returns the current JDBC URL with parameter placeholders replaced by user-entered values.
+	 *
+	 * @return the current parameterized JDBC URL
+	 */
     public String getCurrentParameterizedURL() {
 		return currentParameterizedURL;
 	}

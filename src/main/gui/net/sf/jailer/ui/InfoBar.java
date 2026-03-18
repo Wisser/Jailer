@@ -39,7 +39,13 @@ public class InfoBar extends JPanel {
 	private final String message;
 	private final String footer;
 	
-	/** Creates new form SqlErrorDialog */
+	/**
+	 * Creates a new InfoBar with a title, message body, and optional footer.
+	 *
+	 * @param titel the bold title displayed at the top, or {@code null} to omit it
+	 * @param message the main message text, with newlines separating lines
+	 * @param footer a bold footer line displayed below the message, or {@code null} to omit it
+	 */
 	public InfoBar(String titel, String message, String footer) {
 		this.titel = titel;
 		this.message = message;
@@ -90,6 +96,11 @@ public class InfoBar extends JPanel {
 		}
 	}
 
+	/**
+	 * Creates a copy of an existing InfoBar, reusing its title, message, footer, and icon.
+	 *
+	 * @param infoBar the InfoBar to copy
+	 */
 	public InfoBar(InfoBar infoBar) {
 		this(infoBar.titel, infoBar.message, infoBar.footer);
 		if (infoBar.iconLabel.getIcon() != null) {
@@ -97,10 +108,18 @@ public class InfoBar extends JPanel {
 		}
 	}
 
+	/**
+	 * Sets the icon displayed on the left side of the info bar.
+	 *
+	 * @param errorIcon the icon to display
+	 */
 	public void setIcon(Icon errorIcon) {
 		iconLabel.setIcon(errorIcon);
 	}
-	
+
+	/**
+	 * Hides the bottom spacer label to reduce the bar's vertical size.
+	 */
 	public void shrink() {
 		jLabel1.setVisible(false);
 	}

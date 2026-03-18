@@ -72,7 +72,14 @@ public class ConditionEditor extends EscapableDialog {
 	private ParameterSelector parameterSelector;
 	private DataModelBasedSQLCompletionProvider provider;
 
-	/** Creates new form ConditionEditor 
+	/**
+	 * Creates new form ConditionEditor.
+	 *
+	 * @param anchor the component to position the dialog near, or {@code null}
+	 * @param parent the parent frame
+	 * @param parametersGetter provides the set of available parameters, or {@code null}
+	 * @param dataModel the data model used for SQL completion, or {@code null}
+	 * @param altTitel alternative label for the "Where" keyword, or {@code null} to use the default
 	 */
 	public ConditionEditor(JComponent anchor, java.awt.Frame parent, ParameterSelector.ParametersGetter parametersGetter, DataModel dataModel, String altTitel) {
 		super(parent, true);
@@ -374,6 +381,21 @@ public class ConditionEditor extends EscapableDialog {
 	 * @param condition the condition
 	 * @return new condition or <code>null</code>, if user canceled the editor
 	 */
+	/**
+	 * Edits a given SQL condition.
+	 *
+	 * @param anchor the component to position the dialog near, or {@code null}
+	 * @param condition the initial SQL condition to edit
+	 * @param table1label label for the first table
+	 * @param table1alias alias for the first table
+	 * @param table1 the first table, or {@code null}
+	 * @param table2label label for the second table
+	 * @param table2alias alias for the second table
+	 * @param table2 the second table, or {@code null}
+	 * @param addPseudoColumns if {@code true}, pseudo-columns like {@code $IS_SUBJECT} are offered
+	 * @param addConvertSubqueryButton if {@code true}, the "Convert to Subquery" button is shown
+	 * @return the new condition, or {@code null} if the user cancelled
+	 */
 	public String edit(JComponent anchor, String condition, String table1label, String table1alias, Table table1, String table2label, String table2alias, Table table2, boolean addPseudoColumns, boolean addConvertSubqueryButton) {
 		if (Pattern.compile("\\bselect\\b", Pattern.CASE_INSENSITIVE|Pattern.DOTALL).matcher(condition).find()) {
 			condition = new BasicFormatterImpl().format(condition);
@@ -477,6 +499,11 @@ public class ConditionEditor extends EscapableDialog {
 		return sb.toString();
 	}
 
+	/**
+	 * Sets the dialog location and adjusts it to fit within the screen bounds.
+	 *
+	 * @param pos the desired screen position
+	 */
 	public void setLocationAndFit(Point pos) {
 		setLocation(pos);
 //		UIUtil.fit(this);
@@ -492,6 +519,15 @@ public class ConditionEditor extends EscapableDialog {
         }
 	}
 
+	/**
+	 * Creates a popup menu for inserting scalar subquery snippets for neighboring tables.
+	 *
+	 * @param alias the alias of the source table in the condition
+	 * @param table the source table
+	 * @param editor the editor into which the selected snippet is inserted
+	 * @param neighbors associations to highlight as neighbors, or {@code null}
+	 * @return the populated popup menu
+	 */
 	public static JPopupMenu createJoinPopupMenu(final String alias, Table table, final RSyntaxTextAreaWithSQLSyntaxStyle editor, Set<Association> neighbors) {
 		JPopupMenu popupMenu = new JScrollPopupMenu(true);
 		ImageIcon redDotIconScaled = UIUtil.scaleIcon(editor, redDotIcon);

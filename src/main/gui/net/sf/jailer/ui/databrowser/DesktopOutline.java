@@ -67,6 +67,14 @@ public class DesktopOutline extends JPanel {
 	private Point draggingViewPosition = null;
 	private Rectangle visibleRectInOutline = null;
 	
+	/**
+	 * Constructor.
+	 *
+	 * @param sameWidthFriend the component whose width is used to scale the outline
+	 * @param scrollPane the desktop scroll pane
+	 * @param desktop the desktop to outline
+	 * @param doubleClickAction the action to perform when a browser window is double-clicked in the outline
+	 */
 	public DesktopOutline(JComponent sameWidthFriend, JScrollPane scrollPane, Desktop desktop, Consumer<RowBrowser> doubleClickAction) {
 		this.sameWidthFriend = sameWidthFriend;
 		this.scrollPane = scrollPane;
@@ -457,6 +465,11 @@ public class DesktopOutline extends JPanel {
 		return new Dimension(1, Math.max(1, (int) (Math.min(maxHeight, (((double) sameWidthFriend.getWidth() - r * 2.0) / (double) desktop.getWidth() * (double) desktop.getHeight())) + r * 2.0)));
 	}
 
+	/**
+	 * Returns whether a drag operation is currently in progress.
+	 *
+	 * @return {@code true} if dragging is in progress
+	 */
 	public boolean draggingInProgress() {
 		return draggingStart != null;
 	}

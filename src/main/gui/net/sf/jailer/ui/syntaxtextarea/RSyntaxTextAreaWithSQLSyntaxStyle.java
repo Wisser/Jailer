@@ -78,7 +78,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 	private final boolean withExecuteActions;
 
 	/**
-	 * Key stokes.
+	 * Key strokes.
 	 */
 	public static KeyStroke KS_RUN_BLOCK = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK);
 	public static KeyStroke KS_RUN_ALL = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.ALT_DOWN_MASK);
@@ -100,6 +100,12 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 	private final Action zoomOut;
 	private final Action zoomReset;
 	
+	/**
+	 * Constructor.
+	 *
+	 * @param withExecuteActions {@code true} to add run/explain actions to the popup menu
+	 * @param withSelectTableAction {@code true} to add a select-table action to the popup menu
+	 */
 	public RSyntaxTextAreaWithSQLSyntaxStyle(boolean withExecuteActions, boolean withSelectTableAction) {
 		this.withExecuteActions = withExecuteActions;
 		setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
@@ -442,10 +448,13 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 
 	/**
 	 * Gets text between two lines.
-	 * 
+	 *
+	 * @param from the start line number (inclusive)
+	 * @param to the end line number (inclusive)
 	 * @param complete
 	 *            if <code>false</code>, return text from start line to current
 	 *            caret position
+	 * @return the text between the given lines
 	 */
 	public String getText(int from, int to, boolean complete) {
 		Segment txt = new Segment();
@@ -463,6 +472,10 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 
 	/**
 	 * Does the text have any non-WS characters?
+	 *
+	 * @param from the start line number (inclusive)
+	 * @param to the end line number (inclusive)
+	 * @return {@code true} if the text between the given lines contains only whitespace
 	 */
 	public boolean isTextEmpty(int from, int to) {
 		Segment txt = new Segment();
@@ -523,9 +536,11 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 
 	/**
 	 * Gets start- and end-line number of statement(s) at caret position.
-	 * 
+	 *
 	 * @param singleStatement <code>true</code> to get only one statement
-	 * @param eosLines if not <code>null</code>, put end-of-statement line numbers into
+	 * @param currentLineMayBeEmpty <code>true</code> if the current line may be empty
+	 * @param eosLines if not <code>null</code>, put end-of-statement line numbers into this set
+	 * @param startAtLineAbove <code>true</code> to start searching from the line above the caret
 	 * @return pair of start and end line number
 	 */
 	public Pair<Integer, Integer> getCurrentStatementLocation(boolean singleStatement, boolean currentLineMayBeEmpty, Set<Integer> eosLines, boolean startAtLineAbove) {
@@ -735,6 +750,9 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 		}
 	}
 
+	/**
+	 * Forces a caret event to be fired, refreshing all caret listeners.
+	 */
 	public void forceCaretEvent() {
 		// force caret event
 		int cPos = getCaretPosition();
@@ -909,14 +927,30 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 		}
 	}
 
+	/**
+	 * Updates the enabled state of menu items based on the current caret position.
+	 */
 	public void updateMenuItemState() {
 		updateMenuItemState(true, true);
 	}
 
+	/**
+	 * Updates the enabled state of menu items based on the current caret position.
+	 *
+	 * @param allowRun {@code true} to allow the run actions to be enabled
+	 * @param setLineHighlights {@code true} to update the line highlight icons in the gutter
+	 */
 	public void updateMenuItemState(boolean allowRun, boolean setLineHighlights) {
 		updateMenuItemState(allowRun, setLineHighlights, false);
 	}
 	
+	/**
+	 * Updates the enabled state of menu items based on the current caret position.
+	 *
+	 * @param allowRun {@code true} to allow the run actions to be enabled
+	 * @param setLineHighlights {@code true} to update the line highlight icons in the gutter
+	 * @param defrd {@code true} if this update was triggered by a deferred (background) task
+	 */
 	public void updateMenuItemState(boolean allowRun, boolean setLineHighlights, boolean defrd) {
 		Set<Integer> eosLines = new HashSet<Integer>();
 		Pair<Integer, Integer> loc;
@@ -1134,6 +1168,12 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 	private final AtomicBoolean stopped = new AtomicBoolean(false);
 	private final AtomicBoolean pending = new AtomicBoolean(false);
 	
+	/**
+	 * Sets a tracking icon for the specified line in the gutter.
+	 *
+	 * @param line the line number to track
+	 * @param theIcon the icon to display, or {@code null} to remove any existing icon
+	 */
 	public void setLineTrackingIcon(int line, Icon theIcon) {
 		if (gutter != null) {
 			try {

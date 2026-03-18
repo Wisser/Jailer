@@ -75,8 +75,12 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param name the object name
+	 * @param metaDataSource the meta data source
+	 * @param schema the schema
+	 * @param dataModel the data model
+	 * @param databaseObjectRenderingDescription the rendering description
 	 */
 	public MDDescriptionBasedGeneric(String name, MetaDataSource metaDataSource, MDSchema schema, DataModel dataModel, DatabaseObjectRenderingDescription databaseObjectRenderingDescription) {
 		super(name, metaDataSource);
@@ -132,8 +136,10 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 	}
 
 	/**
-	 * creates the render of the database object.
-	 * 
+	 * Creates the render of the database object.
+	 *
+	 * @param session the database session
+	 * @param executionContext the execution context
 	 * @return render of the database object
 	 */
 	@Override
@@ -263,8 +269,12 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 
 	/**
 	 * Retrieves list of all objects.
-	 * 
-	 * @return list of all objects 
+	 *
+	 * @param session the database session
+	 * @param query the SQL query
+	 * @param schema the schema name
+	 * @param parentName the parent object name
+	 * @return list of all objects
 	 */
 	protected MemorizedResultSet retrieveList(Session session, String query, String schema, String parentName) throws SQLException {
 		Statement cStmt = null;
@@ -305,6 +315,11 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 
 	private static Map<String, ImageIcon> icons = Collections.synchronizedMap(new HashMap<String, ImageIcon>());
 	
+	/**
+	 * Gets the icon for this database object.
+	 *
+	 * @return the icon, or <code>null</code> if no icon is available
+	 */
 	public ImageIcon getIcon() {
 		if (databaseObjectRenderingDescription.getIconURL() != null) {
 			ImageIcon icon = icons.get(databaseObjectRenderingDescription.getIconURL());
@@ -320,10 +335,20 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 		return null;
 	}
 
+	/**
+	 * Returns <code>true</code> if loading this object is considered cheap (fast).
+	 *
+	 * @return <code>true</code> if loading is cheap
+	 */
 	public boolean isCheap() {
 		return databaseObjectRenderingDescription.isCheap();
 	}
 
+	/**
+	 * Returns <code>true</code> if this object has details to display.
+	 *
+	 * @return <code>true</code> if this object has details
+	 */
 	public boolean hasDetails() {
 		return true;
 	}

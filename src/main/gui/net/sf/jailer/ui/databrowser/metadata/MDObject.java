@@ -29,8 +29,9 @@ public class MDObject {
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param name the object name
+	 * @param metaDataSource the meta data source
 	 */
 	public MDObject(String name, MetaDataSource metaDataSource) {
 		this.name = name;

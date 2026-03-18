@@ -18,10 +18,21 @@ package net.sf.jailer.ui.util;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * A simple LRU (Least Recently Used) cache backed by a {@link LinkedHashMap}.
+ *
+ * @param <K> the type of keys
+ * @param <V> the type of values
+ */
 @SuppressWarnings("serial")
 public class LRUCache<K, V> extends LinkedHashMap<K, V> {
 	private int cacheSize;
 
+	/**
+	 * Constructor.
+	 *
+	 * @param cacheSize the maximum number of entries to keep in the cache
+	 */
 	public LRUCache(int cacheSize) {
 		super(64, 0.75f, true);
 		this.cacheSize = cacheSize;

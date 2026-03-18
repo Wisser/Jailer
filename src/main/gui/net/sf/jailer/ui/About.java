@@ -31,8 +31,11 @@ import net.sf.jailer.JailerVersion;
  */
 public final class About extends javax.swing.JDialog {
 	
-	/** 
-	 * Creates new "About" form. 
+	/**
+	 * Creates new "About" form.
+	 *
+	 * @param parent the parent frame
+	 * @param modal whether the dialog is modal
 	 */
 	public About(java.awt.Frame parent, boolean modal) {
 		super(parent, modal);

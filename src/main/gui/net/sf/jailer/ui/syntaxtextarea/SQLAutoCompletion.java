@@ -46,6 +46,12 @@ public class SQLAutoCompletion extends AutoCompletion {
 	
 	private final RTextArea editorPane;
 
+	/**
+	 * Constructor.
+	 *
+	 * @param provider the completion provider
+	 * @param editorPane the text area to install the auto-completion on
+	 */
 	public SQLAutoCompletion(final CompletionProvider provider, final RTextArea editorPane) {
 		super(provider);
 		this.editorPane = editorPane;

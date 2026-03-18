@@ -53,8 +53,11 @@ public class MDDatabase extends MDGeneric {
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param name the object name
+	 * @param metaDataSource the meta data source
+	 * @param dataModel the data model
+	 * @param executionContext the execution context
 	 */
 	public MDDatabase(String name, MetaDataSource metaDataSource, DataModel dataModel, ExecutionContext executionContext) {
 		super(name, metaDataSource);
@@ -63,7 +66,9 @@ public class MDDatabase extends MDGeneric {
 
 	/**
 	 * Gets the render of the database object.
-	 * 
+	 *
+	 * @param session the database session
+	 * @param executionContext the execution context
 	 * @return render of the database object
 	 */
 	@SuppressWarnings("deprecation")

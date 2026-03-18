@@ -43,6 +43,11 @@ class ExpressionAnalyzer extends ExpressionVisitorAdapter {
 	private boolean isOuterJoinExpression;
 	private Set<Equiv> equivs = new HashSet<Equiv>();
 
+	/**
+	 * Constructor.
+	 *
+	 * @param fromClause the FROM clause aliases mapped to their metadata tables
+	 */
 	public ExpressionAnalyzer(LinkedHashMap<String, MDTable> fromClause) {
 		this.fromClause = fromClause;
 	}
@@ -87,6 +92,11 @@ class ExpressionAnalyzer extends ExpressionVisitorAdapter {
 		}
 	}
 	
+	/**
+	 * Sets whether the current expression is an outer join expression.
+	 *
+	 * @param isOuterJoinExpression <code>true</code> if this is an outer join expression
+	 */
 	public void setOuterJoinExpression(boolean isOuterJoinExpression) {
 		this.isOuterJoinExpression = isOuterJoinExpression;
 	}

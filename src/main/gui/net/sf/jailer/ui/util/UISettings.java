@@ -139,8 +139,9 @@ public class UISettings {
 
 	/**
 	 * Restores a property.
-	 * 
+	 *
 	 * @param name the name of the property
+	 * @return the stored value, or {@code null} if no value has been stored for the given name
 	 */
 	public static synchronized Object restore(String name) {
 		loadUISettings();
@@ -161,6 +162,9 @@ public class UISettings {
 	public static volatile long s17;
 	public static volatile long s18;
 
+	/**
+	 * Stores collected usage statistics.
+	 */
 	public synchronized static void storeStats() {
 		try {
 		    int numScreens = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices().length;
@@ -182,6 +186,11 @@ public class UISettings {
 		store("stats", sb.toString());
 	}
 
+	/**
+	 * Restores and clears the previously stored usage statistics.
+	 *
+	 * @return the statistics string, or an empty string if none were stored
+	 */
 	public synchronized static String restoreStats() {
 		Object stats = restore("stats");
 		if (stats != null) {
@@ -191,6 +200,11 @@ public class UISettings {
 		return "";
 	}
 
+	/**
+	 * Updates usage statistics based on the given data model.
+	 *
+	 * @param dataModel the data model whose statistics should be collected, or {@code null}
+	 */
 	public static void dmStats(DataModel dataModel) {
 		if (dataModel != null) {
 			s1 = Math.max(UISettings.s1, dataModel.getTables().size());
@@ -210,6 +224,11 @@ public class UISettings {
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
+	/**
+	 * Loads the list of recently used files.
+	 *
+	 * @return a list of pairs of file and last-used date, ordered from most to least recent
+	 */
 	public static List<Pair<File, Date>> loadRecentFiles() {
 		Object files = restore(RECENT_FILES);
 		List<Pair<File, Date>> result = new ArrayList<Pair<File,Date>>();
@@ -234,6 +253,11 @@ public class UISettings {
 		return result;
 	}
 
+	/**
+	 * Adds a file to the list of recently used files.
+	 *
+	 * @param file the file to add
+	 */
 	public static void addRecentFile(File file) {
 		if (!Configuration.getInstance().isTempFile(file)) {
 			List<Pair<File, Date>> files = loadRecentFiles();
@@ -251,6 +275,11 @@ public class UISettings {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
+	/**
+	 * Loads the list of recently used connection aliases.
+	 *
+	 * @return a list of pairs of alias and last-used date, ordered from most to least recent
+	 */
 	public static List<Pair<String, Date>> loadRecentConnectionAliases() {
 		Object aliases = restore(RECENT_ALIASES);
 		List<Pair<String, Date>> result = new ArrayList<Pair<String,Date>>();
@@ -269,6 +298,11 @@ public class UISettings {
 		return result;
 	}
 	
+	/**
+	 * Adds a connection alias to the list of recently used connection aliases.
+	 *
+	 * @param alias the connection alias to add
+	 */
 	public static void addRecentConnectionAliases(String alias) {
 		List<Pair<String, Date>> aliases = loadRecentConnectionAliases();
 		for (Iterator<Pair<String, Date>> i = aliases.iterator(); i.hasNext(); ) {
@@ -285,6 +319,11 @@ public class UISettings {
 	}
 
 	@SuppressWarnings({ "rawtypes" })
+	/**
+	 * Loads the list of recently used bookmarks.
+	 *
+	 * @return a list of bookmark IDs ordered from most to least recent
+	 */
 	public static List<BookmarkId> loadRecentBookmarks() {
 		Object bookmarks = restore(RECENT_BOOKMARKS);
 		List<BookmarkId> result = new ArrayList<BookmarkId>();
@@ -298,6 +337,11 @@ public class UISettings {
 		return result;
 	}
 	
+	/**
+	 * Adds a bookmark to the list of recently used bookmarks.
+	 *
+	 * @param bookmark the bookmark to add
+	 */
 	public static void addRecentBookmarks(BookmarksPanel.BookmarkId bookmark) {
 		if (bookmark.connectionAlias != null && bookmark.datamodelFolder != null) {
 			List<BookmarkId> bookmarks = loadRecentBookmarks();
@@ -310,6 +354,12 @@ public class UISettings {
 		}
 	}
 
+	/**
+	 * Stores a bookmark as the last session for the given module.
+	 *
+	 * @param bookmark the bookmark representing the last session
+	 * @param module the module identifier
+	 */
 	public static void storeLastSession(BookmarkId bookmark, String module) {
 		List<BookmarkId> lastSessions = restoreLastSessions(module);
 		if (lastSessions == null) {
@@ -325,6 +375,12 @@ public class UISettings {
 	}
 
 	@SuppressWarnings("unchecked")
+	/**
+	 * Restores the list of last sessions for the given module.
+	 *
+	 * @param module the module identifier
+	 * @return the list of bookmark IDs, or {@code null} if none are stored
+	 */
 	public static List<BookmarkId> restoreLastSessions(String module) {
 		Object lastSessions = restore(LAST_SESSIONS + module);
 		if (lastSessions instanceof List) {

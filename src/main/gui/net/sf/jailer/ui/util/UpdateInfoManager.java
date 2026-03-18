@@ -27,6 +27,9 @@ import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.UIUtil.PLAF;
 
+/**
+ * Checks for available updates and displays a notification to the user.
+ */
 public class UpdateInfoManager {
 
 	private static final String[] versionURL = new String[] {
@@ -40,6 +43,14 @@ public class UpdateInfoManager {
 	private static final String LAST_TS_FILE = ".lastcuats";
 	private static boolean checked = false;
 
+	/**
+	 * Asynchronously checks whether a newer version is available and shows a notification.
+	 *
+	 * @param ui the component that is shown when an update is available
+	 * @param infoLabel the label used to display the available version text
+	 * @param downloadMenuItem the menu item whose text is updated with the release number, or {@code null}
+	 * @param modul the module identifier sent as part of the version check request
+	 */
 	public static void checkUpdateAvailability(final JComponent ui, final JLabel infoLabel, final JMenuItem downloadMenuItem, final String modul) {
 		ui.setVisible(false);
 
@@ -198,6 +209,9 @@ public class UpdateInfoManager {
 
 	public static String currentDownloadableRelease = null;
 
+	/**
+	 * Opens the download page in the system browser.
+	 */
 	public static void download() {
 		try {
 			URI uri = new URI(downloadURL);

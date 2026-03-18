@@ -15,18 +15,16 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
-/*
- *  Prevent the specified number of columns from scrolling horizontally in
+/**
+ *  Prevents the specified number of columns from scrolling horizontally in
  *  the scroll pane. The table must already exist in the scroll pane.
  *
  *  The functionality is accomplished by creating a second JTable (fixed)
  *  that will share the TableModel and SelectionModel of the main table.
  *  This table will be used as the row header of the scroll pane.
  *
- *  The fixed table created can be accessed by using the getFixedTable()
- *  method. will be returned from this method. It will allow you to:
- *
- *  You can change the model of the main table and the change will be
+ *  The fixed table created can be accessed by using the {@link #getFixedTable()}
+ *  method. You can change the model of the main table and the change will be
  *  reflected in the fixed model. However, you cannot change the structure
  *  of the model.
  */
@@ -36,9 +34,12 @@ public class FixedColumnTable implements ChangeListener, PropertyChangeListener
 	public JTable fixed;
 	private JScrollPane scrollPane;
 
-	/*
+	/**
 	 *  Specify the number of columns to be fixed and the scroll pane
 	 *  containing the table.
+	 *
+	 *  @param fixedColumns the number of columns to fix (prevent from scrolling horizontally)
+	 *  @param scrollPane the scroll pane containing the table
 	 */
 	public FixedColumnTable(int fixedColumns, JScrollPane scrollPane)
 	{
@@ -135,8 +136,10 @@ public class FixedColumnTable implements ChangeListener, PropertyChangeListener
 		fixed.getTableHeader().addMouseListener( ma );
 	}
 
-	/*
-	 *  Return the table being used in the row header
+	/**
+	 *  Returns the table being used as the row header (the fixed columns table).
+	 *
+	 *  @return the fixed columns table
 	 */
 	public JTable getFixedTable()
 	{
@@ -145,6 +148,11 @@ public class FixedColumnTable implements ChangeListener, PropertyChangeListener
 //
 //  Implement the ChangeListener
 //
+	/**
+	 *  Synchronizes the scroll pane's vertical scroll bar with the row header viewport.
+	 *
+	 *  @param e the change event
+	 */
 	public void stateChanged(ChangeEvent e)
 	{
 		//  Sync the scroll pane scrollbar with the row header
@@ -155,6 +163,12 @@ public class FixedColumnTable implements ChangeListener, PropertyChangeListener
 //
 //  Implement the PropertyChangeListener
 //
+	/**
+	 *  Keeps the fixed table in sync with the main table when the selection model or
+	 *  data model changes.
+	 *
+	 *  @param e the property change event
+	 */
 	public void propertyChange(PropertyChangeEvent e)
 	{
 		//  Keep the fixed table in sync with the main table

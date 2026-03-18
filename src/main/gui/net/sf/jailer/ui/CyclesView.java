@@ -106,7 +106,11 @@ public class CyclesView extends javax.swing.JDialog {
 	 */
 	private Set<CellInfo> cellInfo = new HashSet<CellInfo>();
 	
-	/** Creates new form FindDialog */
+	/**
+	 * Creates new form CyclesView.
+	 *
+	 * @param extractionModelFrame the extraction model frame that owns this view
+	 */
 	public CyclesView(ExtractionModelFrame extractionModelFrame) {
 		super(extractionModelFrame, false);
 		this.extractionModelFrame = extractionModelFrame;
@@ -346,6 +350,9 @@ public class CyclesView extends javax.swing.JDialog {
 		private static final long serialVersionUID = -6499791486275376059L;
 	}
 
+	/**
+	 * Starts the cycle search and displays the results in this view.
+	 */
 	public void findCycles() {
 		final FindCyclesDialog findCyclesDialog = new FindCyclesDialog();
 		UIUtil.setDialogSize(this, 700, 500);

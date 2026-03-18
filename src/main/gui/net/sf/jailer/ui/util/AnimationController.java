@@ -46,6 +46,9 @@ public class AnimationController {
 
 	/**
 	 * Registers a new top level window.
+	 *
+	 * @param window the window to register
+	 * @param animationControl the animation control used to enable or disable animations for the window
 	 */
 	public static void registerWindow(final Window window, AnimationControl animationControl) {
 		windowIsActive.put(window, false);
@@ -124,6 +127,11 @@ public class AnimationController {
 		}
 	}
 
+	/**
+	 * Temporarily activates the animation for the given window regardless of its focus state.
+	 *
+	 * @param window the window whose animation should be activated
+	 */
 	public static void activateAnimation(Window window) {
 		if (window != null && window.isShowing() && !windowIsActive.get(window)) {
 			AnimationControl animationControl = windowControl.get(window);

@@ -29,6 +29,9 @@ import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.UIUtil.PlafAware;
 
+/**
+ * A label-based button with mouse-over highlighting and optional border style.
+ */
 public abstract class SmallButton extends JLabel implements PlafAware {
 
 	private final boolean borderStyle;
@@ -40,14 +43,33 @@ public abstract class SmallButton extends JLabel implements PlafAware {
 	protected boolean silent = false;
 	protected MouseListener mouseListener;
 	
+	/**
+	 * Constructor.
+	 *
+	 * @param icon the icon to display
+	 */
 	public SmallButton(Icon icon) {
 		this(icon, false);
 	}
 	
+	/**
+	 * Constructor.
+	 *
+	 * @param icon the icon to display
+	 * @param borderStyle {@code true} to use a bevel-border style instead of enable/disable toggling
+	 */
 	public SmallButton(Icon icon, boolean borderStyle) {
 		this(icon, null, borderStyle, false);
 	}
 	
+	/**
+	 * Constructor.
+	 *
+	 * @param icon the icon to display in the normal state
+	 * @param iconOver the icon to display on mouse-over, or {@code null}
+	 * @param borderStyle {@code true} to use a bevel-border style instead of enable/disable toggling
+	 * @param reactImmediately {@code true} to fire the click action on mouse press rather than mouse click
+	 */
 	public SmallButton(Icon icon, Icon iconOver, boolean borderStyle, boolean reactImmediately) {
 		super(icon);
 		this.icon = icon;
@@ -102,14 +124,25 @@ public abstract class SmallButton extends JLabel implements PlafAware {
 		}
 	}
 
+	/**
+	 * Programmatically triggers the button's click action if the button is ready.
+	 */
 	public void doClick() {
 		if (isReady()) {
 			doClick(null);
 		}
 	}
 	
+	/**
+	 * Called when the button is clicked.
+	 *
+	 * @param e the mouse event, or {@code null} if triggered programmatically
+	 */
 	protected abstract void onClick(MouseEvent e);
 
+	/**
+	 * Called when the mouse exits the button area; resets the visual state.
+	 */
 	public void onMouseExited() {
 		entered = false;
 		Icon theIcon = lafIcon();
@@ -142,6 +175,9 @@ public abstract class SmallButton extends JLabel implements PlafAware {
 		return icon;
 	}
 
+	/**
+	 * Called when the mouse enters the button area; applies the hover visual state.
+	 */
 	public void onMouseEntered() {
 		entered = true;
 		if (silent) {
@@ -156,6 +192,11 @@ public abstract class SmallButton extends JLabel implements PlafAware {
 		}
 	}
 	
+	/**
+	 * Called when the mouse button is released; triggers the click action if the pointer is still inside.
+	 *
+	 * @param e the mouse event
+	 */
 	public void onMouseReleased(MouseEvent e) {
 		if (entered && isReady() && SwingUtilities.isLeftMouseButton(e)) {
 			doClick(e);

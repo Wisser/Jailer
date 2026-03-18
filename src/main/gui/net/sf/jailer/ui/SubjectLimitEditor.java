@@ -70,8 +70,13 @@ public abstract class SubjectLimitEditor extends EscapableDialog {
 		init(dataModel, false);
 	}
 
-	/** Creates new form 
-	 * @param modal */
+	/**
+	 * Creates new form SubjectLimitEditor.
+	 *
+	 * @param parent the parent dialog
+	 * @param dataModel the data model used for SQL completion
+	 * @param modal if <code>true</code>, the dialog is modal
+	 */
 	public SubjectLimitEditor(Dialog parent, DataModel dataModel, boolean modal) {
 		super(parent, modal);
 		init(dataModel, modal);
@@ -333,7 +338,11 @@ public abstract class SubjectLimitEditor extends EscapableDialog {
 	private SubjectLimitDefinition subjectLimitDefinition;
 	
 	/**
-	 * Edits a given definition.
+	 * Edits a given subject limit definition.
+	 *
+	 * @param locator component near which the editor is positioned, or <code>null</code>
+	 * @param table the subject table used for SQL completion, or <code>null</code>
+	 * @param subjectLimitDefinition the definition to edit
 	 */
 	public void edit(JComponent locator, Table table, SubjectLimitDefinition subjectLimitDefinition) {
 		this.subjectLimitDefinition = subjectLimitDefinition;
@@ -422,6 +431,11 @@ public abstract class SubjectLimitEditor extends EscapableDialog {
 		return sb.toString();
 	}
 
+	/**
+	 * Sets the dialog location and adjusts it to fit within the screen bounds.
+	 *
+	 * @param pos the desired position
+	 */
 	public void setLocationAndFit(Point pos) {
 		setLocation(pos);
 		UIUtil.fit(this);
@@ -462,6 +476,12 @@ public abstract class SubjectLimitEditor extends EscapableDialog {
 	public RSyntaxTextAreaWithSQLSyntaxStyle editorPane;
 	private SQLAutoCompletion sqlAutoCompletion;
 
+	/**
+	 * Attaches a listener to a text field that opens this limit editor when Ctrl+Space is pressed.
+	 *
+	 * @param textfield the text field to observe
+	 * @param open runnable that opens the editor with the current text field content
+	 */
 	public void observe(final JTextField textfield, final Runnable open) {
 		InputMap im = textfield.getInputMap();
 		@SuppressWarnings("serial")
@@ -523,6 +543,12 @@ public abstract class SubjectLimitEditor extends EscapableDialog {
 		consume(ok? def : null);
 	}
 
+	/**
+	 * Renders a subject limit definition as an HTML string.
+	 *
+	 * @param limitDefinition the definition to render
+	 * @return HTML string representation of the limit definition
+	 */
 	public static String subjectLimitDefinitionRender(SubjectLimitDefinition limitDefinition) {
 		if (limitDefinition.limit == null) {
 			return "<html><i>no limit</i></html>";

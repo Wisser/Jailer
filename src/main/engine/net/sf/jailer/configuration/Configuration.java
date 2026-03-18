@@ -60,7 +60,7 @@ public class Configuration {
 	/**
 	 * Gets the temporary files folder. Defaults to 'tmp'.
 	 * 
-	 * @return the tempFileFolder absolute or relative to {@link #getWorkingFolder()}
+	 * @return the tempFileFolder
 	 */
 	public String getTempFileFolder() {
 		return tempFileFolder;
@@ -69,7 +69,7 @@ public class Configuration {
 	/**
 	 * Sets the temporary files folder. Defaults to 'tmp'.
 	 * 
-	 * @param tempFileFolder absolute or relative to {@link #getWorkingFolder()}
+	 * @param tempFileFolder the tempFileFolder to set
 	 */
 	public void setTempFileFolder(String tempFileFolder) {
 		this.tempFileFolder = tempFileFolder;

@@ -43,8 +43,10 @@ import net.sf.jailer.util.CancellationException;
 public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
 
     /**
-     * Creates new form ConcurrentTaskControl
-     * @param parent
+     * Creates a new ConcurrentTaskControl.
+     *
+     * @param parent the parent window (used to auto-cancel when the parent closes), or {@code null}
+     * @param info the informational text to display while the task is running
      */
     public ConcurrentTaskControl(Window parent, String info) {
         initComponents(); UIUtil.initComponents(this);
@@ -192,10 +194,27 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
     private static Long fadeStart;
 	private static Timer fadeTimer;
 	
+	/**
+	 * Opens a modal dialog that displays this control while the given task runs.
+	 *
+	 * @param windowAncestor the parent window for the dialog
+	 * @param concurrentTaskControl the control whose callbacks are invoked on completion or error
+	 * @param task the task to execute
+	 * @param title the dialog title
+	 */
 	public static void openInModalDialog(Window windowAncestor, final ConcurrentTaskControl concurrentTaskControl, final Task task, String title) {
 		openInModalDialog(windowAncestor, concurrentTaskControl, task, title, null);
 	}
 	
+	/**
+	 * Opens a modal dialog that displays this control while the given task runs.
+	 *
+	 * @param windowAncestor the parent window for the dialog
+	 * @param concurrentTaskControl the control whose callbacks are invoked on completion or error
+	 * @param task the task to execute
+	 * @param title the dialog title
+	 * @param initInfoLabel optional consumer to customize the info label, or {@code null}
+	 */
 	public static void openInModalDialog(Window windowAncestor, final ConcurrentTaskControl concurrentTaskControl, final Task task, String title, Consumer<JLabel> initInfoLabel) {
 		final JDialog dialog = new JDialog(windowAncestor);
 		dialog.setUndecorated(true);
@@ -268,6 +287,14 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
 
 	/**
 	 * Calls a {@link Callable} in a separate thread while showing a modal dialog.
+	 *
+	 * @param <T> the return type of the callable
+	 * @param window the parent window for the dialog
+	 * @param call the callable to execute
+	 * @param info the informational text to display while the callable is running
+	 * @param initInfoLabel optional consumer to customize the info label, or {@code null}
+	 * @return the result of the callable
+	 * @throws Exception if the callable throws an exception or the operation is cancelled
 	 */
 	public static <T> T call(Window window, final Callable<T> call, String info, Consumer<JLabel> initInfoLabel) throws Exception {
 		final AtomicReference<Exception> exception = new AtomicReference<Exception>();

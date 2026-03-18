@@ -123,10 +123,10 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 	/**
 	 * Opens detail editor for a connection.
 	 *
-	 * @param ci the connection
-	 * @param connectionList
-	 * @param executionContext
-	 * @return <code>true</code> if connection has been edited
+	 * @param ci the connection to edit
+	 * @param connectionList the list of all available connections
+	 * @param executionContext the execution context
+	 * @return {@code true} if the connection has been edited and confirmed
 	 */
 	public boolean edit(ConnectionInfo ci, List<ConnectionInfo> connectionList, ExecutionContext executionContext) {
 		this.connectionList = connectionList;
@@ -245,10 +245,9 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 	}
 
 	/**
-	 * Sets details.
+	 * Populates the editor fields with the details of the given connection.
 	 *
-	 * @param ci the connection
-	 * @return <code>true</code> if connection has been edited
+	 * @param ci the connection whose details should be displayed
 	 */
 	public void setDetails(ConnectionInfo ci) {
 		this.ci = ci;
@@ -397,9 +396,15 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		}});
 	}
 
-	/** Creates new form DbConnectionDialog
-	 * @param forNew
-	 * @param dataModelAware */
+	/**
+	 * Creates a new DbConnectionDetailsEditor dialog.
+	 *
+	 * @param parent the owner window
+	 * @param forNew {@code true} if creating a new connection
+	 * @param initUialUrl the initial JDBC URL to pre-fill, or {@code null}
+	 * @param forClone {@code true} if cloning an existing connection
+	 * @param dataModelAware {@code true} if the dialog should show data model selection
+	 */
 	public DbConnectionDetailsEditor(Window parent, boolean forNew, String initUialUrl, boolean forClone, boolean dataModelAware) {
 		this(parent, forNew, forClone, null, initUialUrl, false, dataModelAware);
 	}
@@ -423,7 +428,16 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 	private SmallButton clear;
 	private static final String PROP_PARAMETER = "JDBCPARAMETER";
 
-	/** Creates new form DbConnectionDialog
+	/**
+	 * Creates a new DbConnectionDetailsEditor dialog with full options.
+	 *
+	 * @param parent the owner window
+	 * @param forNew {@code true} if creating a new connection
+	 * @param forClone {@code true} if cloning an existing connection
+	 * @param infoBar optional info bar to display at the top of the dialog, or {@code null}
+	 * @param initUialUrl the initial JDBC URL to pre-fill, or {@code null}
+	 * @param needsTest {@code true} if the connection must be tested before confirming
+	 * @param dataModelAware {@code true} if the dialog should show data model selection
 	 */
 	public DbConnectionDetailsEditor(Window parent, boolean forNew, boolean forClone, InfoBar infoBar, String initUialUrl, boolean needsTest, boolean dataModelAware) {
 		super(parent);
@@ -2222,6 +2236,11 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 
 	private static List<Runnable> listener = new ArrayList<Runnable>();
 
+	/**
+	 * Registers a listener that is notified when a new data model is created via this dialog.
+	 *
+	 * @param onChange the runnable to invoke when a new data model has been created
+	 */
 	public static void addNewDatamodelListener(Runnable onChange) {
 		listener.add(onChange);
 	}

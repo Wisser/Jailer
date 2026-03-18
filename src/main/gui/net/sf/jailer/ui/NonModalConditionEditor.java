@@ -76,14 +76,26 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 	private ParameterSelector parameterSelector;
 	private DataModelBasedSQLCompletionProvider provider;
 
-	/** Creates new form ConditionEditor 
-	 * @param withPseudoColumns */
+	/**
+	 * Creates new form ConditionEditor.
+	 *
+	 * @param parent the parent frame
+	 * @param parametersGetter getter for available parameters, or <code>null</code>
+	 * @param withPseudoColumns if <code>true</code>, pseudo-columns are offered for completion
+	 * @param dataModel the data model used for SQL completion
+	 */
 	public NonModalConditionEditor(java.awt.Frame parent, ParameterSelector.ParametersGetter parametersGetter, boolean withPseudoColumns, DataModel dataModel) {
 		super(parent, false);
 		init(parametersGetter, dataModel, withPseudoColumns);
 	}
 
-	/** Creates new form ConditionEditor */
+	/**
+	 * Creates new form ConditionEditor.
+	 *
+	 * @param parent the parent dialog
+	 * @param parametersGetter getter for available parameters, or <code>null</code>
+	 * @param dataModel the data model used for SQL completion
+	 */
 	public NonModalConditionEditor(Dialog parent, ParameterSelector.ParametersGetter parametersGetter, DataModel dataModel) {
 		super(parent, false);
 		init(parametersGetter, dataModel, false);
@@ -452,10 +464,17 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 	
 	/**
 	 * Edits a given condition.
-	 * @param locator 
-	 * 
-	 * @param condition the condition
-	 * @return new condition or <code>null</code>, if user canceled the editor
+	 *
+	 * @param locator component near which the editor is positioned, or <code>null</code>
+	 * @param condition the condition to edit
+	 * @param table1label display label for the first table
+	 * @param table1alias alias for the first table
+	 * @param table1 the first table, or <code>null</code>
+	 * @param table2label display label for the second table
+	 * @param table2alias alias for the second table
+	 * @param table2 the second table, or <code>null</code>
+	 * @param addPseudoColumns if <code>true</code>, pseudo-columns are offered for completion
+	 * @param addConvertSubqueryButton if <code>true</code>, the "to Subquery" button is shown
 	 */
 	public void edit(JComponent locator, String condition, String table1label, String table1alias, Table table1, String table2label, String table2alias, Table table2, boolean addPseudoColumns, boolean addConvertSubqueryButton) {
 		if (condition.length() > 60 || Pattern.compile("\\bselect\\b", Pattern.CASE_INSENSITIVE|Pattern.DOTALL).matcher(condition).find()) {
@@ -567,6 +586,11 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 		return sb.toString();
 	}
 
+	/**
+	 * Sets the dialog location and adjusts it to fit within the screen bounds.
+	 *
+	 * @param pos the desired position
+	 */
 	public void setLocationAndFit(Point pos) {
 		setLocation(new Point(pos.x + 1, pos.y + 1));
 		UIUtil.fit(this);
@@ -608,6 +632,12 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 	public RSyntaxTextAreaWithSQLSyntaxStyle editorPane;
 	private SQLAutoCompletion sqlAutoCompletion;
 
+	/**
+	 * Attaches listeners to a text field that open this condition editor when the field is clicked or Ctrl+Space is pressed.
+	 *
+	 * @param textfield the text field to observe
+	 * @param open consumer that receives the text field content (with a caret marker inserted) and sets the editor content accordingly
+	 */
 	public void observe(final JTextField textfield, final Consumer<String> open) {
 		textfield.addMouseListener(new MouseAdapter() {
 			final long MAX_PTIME_DIFF = 250;

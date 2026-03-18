@@ -469,6 +469,9 @@ public class Colors {
 	private static boolean timerIsInitialized = false;
 	private static boolean inDarkLAFMode = false;
 	
+	/**
+	 * Initializes all colors according to the current PLaF and triggers a repaint of all windows.
+	 */
 	public static void init() {
 		if (!timerIsInitialized) {
 //			inDarkLAFMode = "true".equals(System.getProperty("darkLAF")); // TODO remove
@@ -582,6 +585,13 @@ public class Colors {
 		private Color light;
 		private boolean blink;
 
+		/**
+		 * Initializes the color with separate light and dark variants.
+		 *
+		 * @param light the color used in light PLaF
+		 * @param dark the color used in dark PLaF
+		 * @return this instance
+		 */
 		public LAFAwareColor init(Color light, Color dark) {
 			this.color = UIUtil.plaf == PLAF.FLATDARK? dark : light;
 			this.origColor = color;
@@ -595,10 +605,22 @@ public class Colors {
 			return this;
 		}
 		
+		/**
+		 * Initializes the color with the same value for both light and dark PLaF.
+		 *
+		 * @param light the color used in both light and dark PLaF
+		 * @return this instance
+		 */
 		public LAFAwareColor initSame(Color light) {
 			return init(light, light);
 		}
 
+		/**
+		 * Initializes the color with a light variant and an automatically computed dark variant.
+		 *
+		 * @param light the color used in light PLaF; the dark variant is derived automatically
+		 * @return this instance
+		 */
 		public LAFAwareColor init(Color light) {
 			Color luminanceAdjusted;
 			HSLColor hslLight = new HSLColor(light);
@@ -629,7 +651,10 @@ public class Colors {
 		public LAFAwareColor() {
 			super(0);
 		}
-		
+
+		/**
+		 * Enables blinking for this color (used for visual feedback in dark PLaF mode).
+		 */
 		public void blink() {
 			blink = true;
 		}

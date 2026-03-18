@@ -23,7 +23,10 @@ package net.sf.jailer.ui;
 public abstract class ExpansionLimitMessage extends javax.swing.JPanel {
 
     /**
-     * Creates new form ExpansionLimitMessage
+     * Creates new form ExpansionLimitMessage.
+     *
+     * @param limit the number of additional tables shown by the "Show more" button
+     * @param numAllTables the total number of tables that can be shown
      */
     public ExpansionLimitMessage(int limit, int numAllTables) {
         initComponents(); UIUtil.initComponents(this);
@@ -108,8 +111,14 @@ public abstract class ExpansionLimitMessage extends javax.swing.JPanel {
         showAll();
     }//GEN-LAST:event_showAllButtonActionPerformed
 
+    /**
+     * Called when the user clicks the "Show more" button.
+     */
     protected abstract void showMore();
 
+    /**
+     * Called when the user clicks the "Show all" button.
+     */
     protected abstract void showAll();
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

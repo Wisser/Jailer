@@ -17,12 +17,21 @@ import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.Quoting;
 
+/**
+ * SQL completion provider based on the Jailer data model.
+ */
 public class DataModelBasedSQLCompletionProvider extends SQLCompletionProvider<DataModel, String, Table> {
 
 	private final Map<String, String> schemaPerUUCName = new HashMap<String, String>();
 	private final Map<String, Table> schemaTablePerUUCName = new HashMap<String, Table>();
 	private final Map<String, List<Table>> tablesPerSchema = new HashMap<String, List<Table>>();
-	
+
+	/**
+	 * Constructor.
+	 *
+	 * @param session the database session
+	 * @param metaDataSource the data model used as the metadata source
+	 */
 	public DataModelBasedSQLCompletionProvider(Session session, DataModel metaDataSource) {
 		super(session, metaDataSource);
 		for (Table table: metaDataSource.getTables()) {

@@ -273,7 +273,7 @@ public class TextIcon implements Icon, PropertyChangeListener
 	}
 
    /**
-	*  Paint the icons of this compound icon at the specified location
+	*  Paint the text of this icon at the specified location.
 	*
 	*  @param c The component to which the icon is added
 	*  @param g the graphics context
@@ -325,6 +325,11 @@ public class TextIcon implements Icon, PropertyChangeListener
 //
 //  Implement the PropertyChangeListener interface
 //
+	/**
+	 *  Recalculates the icon dimensions when the component's font property changes.
+	 *
+	 *  @param e the property change event
+	 */
 	public void propertyChange(PropertyChangeEvent e)
 	{
 		//  Handle font change when using the default font

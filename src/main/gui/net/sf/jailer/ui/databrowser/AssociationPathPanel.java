@@ -46,11 +46,12 @@ public abstract class AssociationPathPanel extends javax.swing.JPanel {
 	
     /**
      * Creates new form AssociationPathPanel
+     * @param dataModel the data model
      * @param path the path
-     * @param ignoredColor 
-     * @param assocColor 
-     * @param hasDepColor 
-     * @param depOnColor 
+     * @param depOnColor color for "depends on" associations
+     * @param hasDepColor color for "has dependency" associations
+     * @param assocColor color for regular associations
+     * @param ignoredColor color for ignored associations
      */
     public AssociationPathPanel(DataModel dataModel, List<Table> path, Color depOnColor, Color hasDepColor, Color assocColor, Color ignoredColor) {
         initComponents(); UIUtil.initComponents(this);

@@ -54,6 +54,11 @@ public class RSyntaxTextAreaWithTheme extends RSyntaxTextArea {
 
 	protected Gutter gutter;
 
+	/**
+	 * Sets the gutter associated with this text area.
+	 *
+	 * @param gutter the gutter to associate with this text area
+	 */
 	public void setGutter(Gutter gutter) {
 		this.gutter = gutter;
 		Color clhc = currentLineHighlightColor;
@@ -65,6 +70,9 @@ public class RSyntaxTextAreaWithTheme extends RSyntaxTextArea {
 		}
 	}
 
+	/**
+	 * Initializes the syntax highlighting theme based on the current look and feel.
+	 */
 	public void initTheme() {
 		try {
 			Color clhc = currentLineHighlightColor;

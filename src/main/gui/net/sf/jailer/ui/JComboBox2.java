@@ -30,13 +30,26 @@ public class JComboBox2<T> extends javax.swing.JComboBox<T> {
 	private Integer prefWidth = null;
 	private int maxWidth = 900;
 
+	/**
+	 * Creates a JComboBox2 with the given vector as data model.
+	 *
+	 * @param model the data model
+	 */
 	public JComboBox2(Vector<T> model) {
 		super(model);
 	}
 
+	/**
+	 * Creates a JComboBox2 with the default maximum popup width.
+	 */
 	public JComboBox2() {
 	}
 
+	/**
+	 * Creates a JComboBox2 with the specified maximum popup width.
+	 *
+	 * @param maxWidth the maximum width of the popup in pixels
+	 */
 	public JComboBox2(int maxWidth) {
 		this.maxWidth = maxWidth;
 	}
@@ -64,6 +77,11 @@ public class JComboBox2<T> extends javax.swing.JComboBox<T> {
 		return sz;
 	}
 
+	/**
+	 * Sets the preferred minimum popup width.
+	 *
+	 * @param prefWidth the preferred minimum width in pixels (capped at maxWidth)
+	 */
 	public void setPrefWidth(int prefWidth) {
 		this.prefWidth = Math.min(maxWidth, prefWidth);
 	}

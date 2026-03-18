@@ -87,7 +87,7 @@ public class ProgressTable extends JTable {
 	}
 
 	/**
-	 * Holds infos about a cells.
+	 * Holds infos about cells.
 	 */
 	private List<List<CellInfo>> cellInfos = new ArrayList<List<CellInfo>>();
 
@@ -847,7 +847,7 @@ public class ProgressTable extends JTable {
 	}
 
 	/**
-	 * Adjusts with of table columns.
+	 * Adjusts width of table columns.
 	 */
 	public void adjustColumnWidth() {
 		if (getRowCount() == 0) {
@@ -878,6 +878,11 @@ public class ProgressTable extends JTable {
 	
 	private boolean showExcludeFromDeletionImage = true;
 
+	/**
+	 * Sets whether the "exclude from deletion" icon is shown in cells.
+	 *
+	 * @param showExcludeFromDeletionImage <code>true</code> to show the icon
+	 */
 	public void setShowExcludeFromDeletionImage(boolean showExcludeFromDeletionImage) {
 		this.showExcludeFromDeletionImage = showExcludeFromDeletionImage;
 	}

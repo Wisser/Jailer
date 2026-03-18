@@ -112,6 +112,13 @@ public class BookmarksPanel extends javax.swing.JPanel {public static final Stri
 		});
 	}
 
+	/**
+	 * Opens a dialog to create a new bookmark.
+	 *
+	 * @param defaultName the default name for the new bookmark
+	 * @param props existing bookmark names offered as suggestions
+	 * @return the name of the created bookmark, or {@code null} if the user cancelled
+	 */
 	public String newBookmark(String defaultName, Set<String> props) {
 		remove(nameField);
 		try {
@@ -181,6 +188,9 @@ public class BookmarksPanel extends javax.swing.JPanel {public static final Stri
  		return name;
     }
 
+	/**
+	 * Opens a dialog to edit (rename or delete) existing bookmarks.
+	 */
 	public void editBookmarks() {
 		dialog = new EscapableDialog(owner, "Edit Layouts") {
         };
@@ -448,6 +458,9 @@ public class BookmarksPanel extends javax.swing.JPanel {public static final Stri
 		}
 	}
 
+	/**
+	 * Rebuilds the bookmarks menu to reflect the current list of bookmarks.
+	 */
 	public void updateBookmarksMenu() {
 		List<StringBuilder> bookmarks = loadBookmarks(executionContext);
 		while (bookmarksMenu.getItemCount() > 3) {
@@ -497,11 +510,24 @@ public class BookmarksPanel extends javax.swing.JPanel {public static final Stri
 		}
 	}
 
+	/**
+	 * Loads all bookmarks for the current data model.
+	 *
+	 * @param executionContext the execution context
+	 * @return list of bookmark names
+	 */
 	public static List<StringBuilder> loadBookmarks(ExecutionContext executionContext) {
 		File bookmarksFolder = getBookmarksFolder(executionContext);
 		return loadBookmarks(bookmarksFolder, executionContext);
 	}
 
+	/**
+	 * Loads all bookmarks from a given folder.
+	 *
+	 * @param bookmarksFolder the folder to load bookmarks from
+	 * @param executionContext the execution context
+	 * @return list of bookmark names sorted by last modification time
+	 */
 	public static List<StringBuilder> loadBookmarks(final File bookmarksFolder, ExecutionContext executionContext) {
 		try {
 			String[] fileList = bookmarksFolder.list(new FilenameFilter() {
@@ -542,10 +568,23 @@ public class BookmarksPanel extends javax.swing.JPanel {public static final Stri
 
 	private static Map<File, String> lastUsedBM = new HashMap<File, String>();
 
+	/**
+	 * Returns the name of the last used bookmark for the current data model.
+	 *
+	 * @param executionContext the execution context
+	 * @return the name of the last used bookmark, or {@code null} if none
+	 */
 	public static String getLastUsedBookmark(ExecutionContext executionContext) {
 		return lastUsedBM.get(getBookmarksFolder(executionContext));
 	}
 
+	/**
+	 * Sets the name of the last used bookmark for the current data model.
+	 *
+	 * @param lastUsedBookmark the name of the last used bookmark
+	 * @param executionContext the execution context
+	 * @return the previously stored last used bookmark name, or {@code null} if none
+	 */
 	public static String setLastUsedBookmark(String lastUsedBookmark, ExecutionContext executionContext) {
 		return lastUsedBM.put(getBookmarksFolder(executionContext), lastUsedBookmark);
 	}
@@ -562,6 +601,14 @@ public class BookmarksPanel extends javax.swing.JPanel {public static final Stri
 		private String content;
 		private String contentInfo;
 		
+		/**
+		 * Constructor.
+		 *
+		 * @param bookmark the bookmark name
+		 * @param datamodelFolder the data model folder
+		 * @param connectionAlias the connection alias
+		 * @param rawSchemaMapping the raw schema mapping string
+		 */
 		public BookmarkId(String bookmark, String datamodelFolder, String connectionAlias, String rawSchemaMapping) {
 			this.bookmark = bookmark;
 			this.datamodelFolder = datamodelFolder;
@@ -609,18 +656,38 @@ public class BookmarksPanel extends javax.swing.JPanel {public static final Stri
 
 		private static final long serialVersionUID = -7491145126834345194L;
 
+		/**
+		 * Sets the bookmark content.
+		 *
+		 * @param content the bookmark content
+		 */
 		public void setContent(String content) {
 			this.content = content;
 		}
-		
+
+		/**
+		 * Returns the bookmark content.
+		 *
+		 * @return the bookmark content
+		 */
 		public String getContent() {
 			return content;
 		}
-		
+
+		/**
+		 * Sets the bookmark content info.
+		 *
+		 * @param contentInfo the bookmark content info
+		 */
 		public void setContentInfo(String contentInfo) {
 			this.contentInfo = contentInfo;
 		}
-		
+
+		/**
+		 * Returns the bookmark content info.
+		 *
+		 * @return the bookmark content info
+		 */
 		public String getContentInfo() {
 			return contentInfo;
 		}

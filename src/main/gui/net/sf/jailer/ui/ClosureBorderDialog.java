@@ -84,6 +84,11 @@ public abstract class ClosureBorderDialog extends javax.swing.JDialog {
 		refresh();
 	}
 
+	/**
+	 * Removes restrictions from the given associations.
+	 *
+	 * @param associations the associations whose restrictions should be removed
+	 */
 	protected abstract void removeRestrictions(Collection<Association> associations);
 
 	/** This method is called from within the constructor to
@@ -166,8 +171,25 @@ public abstract class ClosureBorderDialog extends javax.swing.JDialog {
 		}
 	}
 
+	/**
+	 * Returns the root tables for the closure computation.
+	 *
+	 * @return list of root tables
+	 */
 	protected abstract List<Table> getRoots();
+
+	/**
+	 * Returns the current data model.
+	 *
+	 * @return the data model
+	 */
 	protected abstract DataModel getDataModel();
+
+	/**
+	 * Called when an association is selected in the list.
+	 *
+	 * @param association the selected association
+	 */
 	protected abstract void onSelect(Association association);
 
 }

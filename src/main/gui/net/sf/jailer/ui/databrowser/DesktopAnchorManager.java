@@ -179,6 +179,16 @@ public abstract class DesktopAnchorManager {
 	
 	protected abstract void addAdditionalActions(RowBrowser tableBrowser);
 
+	/**
+	 * Adds an additional action button to the anchor panel.
+	 *
+	 * @param icon the button icon, or {@code null} to add a spacer
+	 * @param tooltip the tooltip text
+	 * @param action the action to perform when the button is clicked
+	 * @param isToggleButton {@code true} to create a toggle button
+	 * @param isSelected the initial selection state (for toggle buttons)
+	 * @param enabled whether the button is initially enabled
+	 */
 	protected void addAdditionalAction(ImageIcon icon, String tooltip, Runnable action, boolean isToggleButton, boolean isSelected, boolean enabled) {
 		if (icon == null) {
 			anchorPanel.setSize(anchorPanel.getWidth(), anchorPanel.getHeight() + 6);
@@ -248,6 +258,11 @@ public abstract class DesktopAnchorManager {
 		}
 	}
 
+	/**
+	 * Called when the mouse cursor nears a table browser window.
+	 *
+	 * @param tableBrowser the table browser being neared
+	 */
 	public void onTableBrowserNeared(RowBrowser tableBrowser) {
 		if (isAvailable()) {
 			anchorButton.setEnabled(isApplicable(tableBrowser));
@@ -257,6 +272,11 @@ public abstract class DesktopAnchorManager {
 		}
 	}
 
+	/**
+	 * Called when a new table browser window is added to the desktop.
+	 *
+	 * @param tableBrowser the newly added table browser
+	 */
 	public void onNewTableBrowser(final RowBrowser tableBrowser) {
 		newestBrowser = tableBrowser;
 		tableBrowser.internalFrame.addInternalFrameListener(new InternalFrameListener() {
@@ -453,18 +473,36 @@ public abstract class DesktopAnchorManager {
 		}
 	}
 
+	/**
+	 * Returns the height of the anchor panel.
+	 *
+	 * @return the height in pixels
+	 */
 	public int getHeight() {
 		return height;
 	}
-	
+
+	/**
+	 * Returns the most recently added table browser.
+	 *
+	 * @return the newest table browser, or {@code null} if none
+	 */
 	public RowBrowser getNewestBrowser() {
 		return newestBrowser;
 	}
 
+	/**
+	 * Sets the most recently added table browser.
+	 *
+	 * @param browser the newest table browser
+	 */
 	public void setNewestBrowser(RowBrowser browser) {
 		newestBrowser = browser;
 	}
 
+	/**
+	 * Checks whether the anchor panel has been visible long enough and hides it if necessary.
+	 */
 	public void checkRetention() {
 		long now = System.currentTimeMillis();
 		if (anchorPanel.isVisible() && showedAt != null && showedAt + MAX_RETENDION < now) {
@@ -472,6 +510,11 @@ public abstract class DesktopAnchorManager {
 		}
 	}
 
+	/**
+	 * Returns the width of the anchor button.
+	 *
+	 * @return the button width in pixels
+	 */
 	public int getButtonWidth() {
 		return anchorButton.getWidth();
 	}

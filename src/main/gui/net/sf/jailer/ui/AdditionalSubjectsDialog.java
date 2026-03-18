@@ -157,8 +157,13 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 	private JButton whereConEditorButton;
 	
 	/**
-	 * Creates new form AdditionalSubjectsDialog
-	 * @param extractionModelEditor 
+	 * Creates new form AdditionalSubjectsDialog.
+	 *
+	 * @param parent the parent frame
+	 * @param extractionModelEditor the extraction model editor
+	 * @param extractionModel the extraction model
+	 * @param subject the primary subject table
+	 * @param subjectCond the condition for the primary subject
 	 */
 	public AdditionalSubjectsDialog(Frame parent, ExtractionModelEditor extractionModelEditor, final ExtractionModel extractionModel, Table subject, String subjectCond) {
 		super(parent, true);
@@ -245,6 +250,11 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 		UIUtil.fit(this);
 	}
 
+	/**
+	 * Opens the dialog for editing additional subjects.
+	 *
+	 * @return {@code true} if the subjects were modified and OK was clicked
+	 */
 	public boolean edit() {
 		ok = false;
 		setVisible(true);

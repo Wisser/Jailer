@@ -31,10 +31,21 @@ import java.util.function.Consumer;
 
 import net.sf.jailer.ui.Environment;
 
+/**
+ * Utility class for downloading files over HTTP.
+ */
 public class HttpDownload {
-	
+
 	public static final String DOWNLOADFOLDER = "downloads";
-	
+
+	/**
+	 * Downloads the resource at the given URL and returns the local file path.
+	 *
+	 * @param url the URL to download
+	 * @param volConsumer optional consumer called periodically with the number of bytes received since the last call, or {@code null}
+	 * @return the absolute path of the downloaded file
+	 * @throws Throwable if the download fails
+	 */
 	public static String get(final String url, Consumer<Long> volConsumer) throws Throwable {
 		Throwable t = null;
 		StringBuilder result = new StringBuilder();
@@ -65,6 +76,15 @@ public class HttpDownload {
 		return result.toString();
 	}
 
+	/**
+	 * Downloads the resource at the given URL and appends the local file path to {@code result}.
+	 *
+	 * @param url the URL to download
+	 * @param result the builder to which the local file path is appended
+	 * @param volConsumer optional consumer called periodically with the number of bytes received since the last call, or {@code null}
+	 * @throws MalformedURLException if the URL is malformed
+	 * @throws IOException if an I/O error occurs during the download
+	 */
 	public static void get(final String url, final StringBuilder result, Consumer<Long> volConsumer) throws MalformedURLException, IOException {
 		URL theUrl;
 		theUrl = new URL(url);
@@ -114,6 +134,12 @@ public class HttpDownload {
 		}
 	}
 
+	/**
+	 * Derives a local file name from the path component of the given URL.
+	 *
+	 * @param theUrl the URL whose path is used to derive the file name
+	 * @return the file name
+	 */
 	public static String toFileName(URL theUrl) {
 		String name = theUrl.getPath().replaceAll("^.*/([^/]+)$", "$1");
 		return name;

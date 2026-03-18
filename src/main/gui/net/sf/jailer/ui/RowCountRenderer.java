@@ -53,6 +53,12 @@ public class RowCountRenderer extends JComponent {
 	public static final String m = "m";
 	public static final String g = "g";
 
+	/**
+	 * Creates a new row count renderer.
+	 *
+	 * @param count the formatted count string to display
+	 * @param suffix the suffix indicating the magnitude ("k", "m", "g"), or <code>null</code> for no suffix
+	 */
 	public RowCountRenderer(String count, String suffix) {
 		if (!initialized) {
 			initialized = true;
@@ -107,6 +113,11 @@ public class RowCountRenderer extends JComponent {
 		doPaint(g);
 	}
 
+	/**
+	 * Paints the count and suffix onto the given graphics context.
+	 *
+	 * @param g the graphics context to paint on
+	 */
 	public void doPaint(Graphics g) {
 		int oy = UIUtil.plaf.isFlat ? 2 : 3;
 		if (g instanceof Graphics2D) {

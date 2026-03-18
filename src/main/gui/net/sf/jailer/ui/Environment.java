@@ -57,6 +57,13 @@ public class Environment {
 
 	private static File home = null;
 
+	/**
+	 * Initializes the application environment: sets up logging, locates the application base,
+	 * copies default data files to the user home if needed, and starts the AWT watchdog.
+	 *
+	 * @param args command-line arguments; {@code -jpack} and {@code -jpackrpm} flags are consumed
+	 * @return the remaining command-line arguments after consuming environment-specific flags
+	 */
 	public static String[] init(String[] args) {
 		try {
 			// see:
@@ -256,6 +263,13 @@ public class Environment {
 
 	private static File applicationBase = null;
 
+	/**
+	 * Returns a file relative to the application base (jpack installation directory),
+	 * or relative to the current working directory if not jpack-installed.
+	 *
+	 * @param name the relative file name
+	 * @return the resolved file
+	 */
 	public static File newWorkingFolderFile(String name) {
 		if (applicationBase == null || new File(name).isAbsolute()) {
 			return new File(name);
@@ -263,6 +277,11 @@ public class Environment {
 		return new File(applicationBase, name);
 	}
 
+	/**
+	 * Returns whether the application is running in jpack-installed mode.
+	 *
+	 * @return {@code true} if running from a jpack installation
+	 */
 	public static boolean isJPacked() {
 		return applicationBase != null;
 	}
@@ -350,6 +369,13 @@ public class Environment {
 		}
 	}
 
+	/**
+	 * Returns a file relative to the user home {@code .jailer} folder,
+	 * or relative to the current working directory if not running in multi/single-user mode.
+	 *
+	 * @param name the relative file name
+	 * @return the resolved file
+	 */
 	public static File newFile(String name) {
 		if (home == null || new File(name).isAbsolute()) {
 			return new File(name);
@@ -357,6 +383,12 @@ public class Environment {
 		return new File(home, name);
 	}
 	
+	/**
+	 * Makes a file path relative to the current working directory if possible.
+	 *
+	 * @param file the file path to convert
+	 * @return the relative path, or the absolute path if it cannot be made relative
+	 */
 	public static String makeRelative(String file) {
 		try {
 			String work;
@@ -379,6 +411,11 @@ public class Environment {
 		}
 	}
 
+	/**
+	 * Tests whether a temporary file can be created in the current working directory.
+	 *
+	 * @return {@code true} if write access to the current directory is available
+	 */
 	public static boolean testCreateTempFile() {
 		try {
 			File tempFile = new File("tp" + ThreadLocalRandom.current().nextInt(100000));

@@ -728,6 +728,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
 	private Runnable reloadAction;
 
+	/**
+	 * Registers a reload action to be executed whenever this pane reloads its data.
+	 * Multiple actions can be registered; they will all be executed in order.
+	 *
+	 * @param runnable the action to register
+	 */
 	public void setOnReloadAction(final Runnable runnable) {
 		if (reloadAction == null) {
 			reloadAction = runnable;
@@ -862,10 +868,20 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
 	private int currentRowSelection = -1;
 
+	/**
+	 * Sets the currently selected row index.
+	 *
+	 * @param currentRowSelection the row index to select, or -1 for no selection
+	 */
 	public void setCurrentRowSelection(int currentRowSelection) {
 		this.currentRowSelection = currentRowSelection;
 	}
 
+	/**
+	 * Returns the currently selected row index.
+	 *
+	 * @return the selected row index, or -1 if no row is selected
+	 */
 	public int getCurrentRowSelection() {
 		return currentRowSelection;
 	}
@@ -932,6 +948,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
 	private boolean isTableFilterEnabled = false;
 
+	/**
+	 * Enables or disables the table content filter.
+	 *
+	 * @param isTableFilterEnabled {@code true} to enable the filter
+	 */
 	public void setTableFilterEnabled(boolean isTableFilterEnabled) {
 		this.isTableFilterEnabled = isTableFilterEnabled;
 	}
@@ -2594,6 +2615,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		}
 	}
 
+	/**
+	 * Returns whether all columns should be copied (i.e., exactly one cell is selected).
+	 *
+	 * @return {@code true} if all columns should be copied
+	 */
 	public boolean copyAllColumns() {
 		if (rowsTable.getSelectedColumnCount() ==1 && rowsTable.getSelectedRowCount() == 1) {
 			return true;
@@ -2601,6 +2627,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		return false;
 	}
 
+	/**
+	 * Enables or disables the horizontal align button.
+	 *
+	 * @param enabled {@code true} to enable the button
+	 */
 	public void setHAlignButtonEnabled(boolean enabled) {
 		hAlignButtonLabel.setEnabled(enabled);
 	}
@@ -3653,6 +3684,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		return resultSetType != null || !rowIdSupport.getPrimaryKey(theTable).getColumns().isEmpty();
 	}
 
+	/**
+	 * Closes this pane and all its child browsers, asking for confirmation if there are sub-nodes.
+	 *
+	 * @param parentComponent the parent component for any confirmation dialog
+	 * @return {@code true} if the pane was closed
+	 */
 	public boolean closeWithChildren(Component parentComponent) {
 		int count = countSubNodes(this);
 		Component parent = SwingUtilities.getWindowAncestor(this);
@@ -6119,6 +6156,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		}
 	}
 
+	/**
+	 * Updates the row count label based on the current number of loaded rows.
+	 *
+	 * @param browserInClosure the set of browsers currently in the closure
+	 */
 	public void updateRowsCountLabel(Set<BrowserContentPane> browserInClosure) {
 		int limit = lastLimit;
 		boolean limitExceeded = lastLimitExceeded;
@@ -6322,6 +6364,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	public LinkedHashMap<Integer, Integer> lastColumnConfig;
 	public LinkedHashMap<Integer, Integer> userColumnConfig;
 	
+	/**
+	 * Adjusts the column widths of the rows table.
+	 *
+	 * @param bluePrint_ blueprint column widths to use as a reference, or {@code null}
+	 * @param columnConfig user-defined column configuration, or {@code null}
+	 */
 	public void adjustRowTableColumnsWidth(LinkedHashMap<Integer, Integer> bluePrint_, LinkedHashMap<Integer, Integer> columnConfig) {
 		if (columnConfig == null) {
 			lastColumnConfig = null;
@@ -7417,9 +7465,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	}
 
 	/**
-	 * Cancels current load job.
-	 * @param propagate
-	 * @return
+	 * Cancels the current load job.
+	 *
+	 * @param propagate if {@code true}, also cancels load jobs of all child browsers
 	 */
 	public void cancelLoadJob(boolean propagate) {
 		LoadJob cLoadJob;
@@ -7602,6 +7650,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
 	protected Integer ownLimit = null;
 
+	/**
+	 * Returns the effective reload limit for this pane, taking into account any pane-specific override.
+	 *
+	 * @return the reload limit
+	 */
 	public int getOwnReloadLimit() {
 		if (ownLimit != null && ownLimit > getReloadLimit()) {
 			return ownLimit;

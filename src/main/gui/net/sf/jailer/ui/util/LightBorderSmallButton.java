@@ -23,6 +23,10 @@ import javax.swing.JComponent;
 import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
 
+/**
+ * A {@link SmallButton} variant that uses a lightweight border for hover feedback
+ * when running under a flat look and feel.
+ */
 public abstract class LightBorderSmallButton extends SmallButton {
 	
 	private static final Color INVISIBLE = Colors.Color_0_0_0_0;
@@ -30,14 +34,32 @@ public abstract class LightBorderSmallButton extends SmallButton {
 	private final boolean reactImmediately;
 	private final int borderThickness;
 	
+	/**
+	 * Constructor.
+	 *
+	 * @param icon the icon to display
+	 */
 	public LightBorderSmallButton(Icon icon) {
 		this(icon, false, 2);
 	}
 	
+	/**
+	 * Constructor.
+	 *
+	 * @param icon the icon to display
+	 * @param reactImmediately {@code true} to fire the click action on mouse press rather than mouse click
+	 */
 	public LightBorderSmallButton(Icon icon, boolean reactImmediately) {
 		this(icon, reactImmediately, 2);
 	}
 	
+	/**
+	 * Constructor.
+	 *
+	 * @param icon the icon to display
+	 * @param reactImmediately {@code true} to fire the click action on mouse press rather than mouse click
+	 * @param borderThickness the thickness of the hover border in pixels
+	 */
 	public LightBorderSmallButton(Icon icon, boolean reactImmediately, int borderThickness) {
 		super(icon, null, true, reactImmediately);
 		this.reactImmediately = reactImmediately;

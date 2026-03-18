@@ -166,6 +166,12 @@ public class SQLPlusSupport {
 
 	private Map<Integer, String[]> varsPerIndex = new HashMap<Integer, String[]>();
 
+	/**
+	 * Prepares column substitutions by mapping column names from the result set metadata to variable names.
+	 *
+	 * @param metaData the result set metadata
+	 * @throws SQLException if a database access error occurs
+	 */
 	public void prepareColumnSubstitution(ResultSetMetaData metaData) throws SQLException {
 		varsPerIndex.clear();
 		if (!columnSubstitutions.isEmpty()) {
@@ -179,6 +185,12 @@ public class SQLPlusSupport {
 		}
 	}
 
+	/**
+	 * Substitutes column values into variables for the current result set row.
+	 *
+	 * @param resultSet the current result set
+	 * @throws SQLException if a database access error occurs
+	 */
 	public void substituteColumns(ResultSet resultSet) throws SQLException {
 		if (!varsPerIndex.isEmpty()) {
 			for (Entry<Integer, String[]> e: varsPerIndex.entrySet()) {

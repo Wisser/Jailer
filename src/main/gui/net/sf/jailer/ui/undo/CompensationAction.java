@@ -25,6 +25,14 @@ public abstract class CompensationAction {
 	final String whatToCompensate;
 	final String where;
 	
+	/**
+	 * Constructor.
+	 *
+	 * @param prio the priority of this action (higher value means higher priority)
+	 * @param whatHasDone human-readable description of what was done
+	 * @param whatToCompensate human-readable description of what this action compensates
+	 * @param where human-readable description of where the change occurred
+	 */
 	public CompensationAction(int prio, String whatHasDone, String whatToCompensate, String where) {
 		this.prio = prio;
 		this.whatHasDone = whatHasDone;

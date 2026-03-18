@@ -232,12 +232,19 @@ public class NewDataModelDialog extends javax.swing.JDialog {
     // End of variables declaration//GEN-END:variables
 
 	/**
-	 * Gets the name entered, or <code>null</code> if no name has entered.
+	 * Gets the name entered, or <code>null</code> if no name has been entered.
+	 *
+	 * @return the name entered, or <code>null</code> if the dialog was cancelled
 	 */
 	public String getNameEntered() {
 		return nameEntered;
 	}
 
+	/**
+	 * Gets the folder name derived from the entered name.
+	 *
+	 * @return the folder name derived from the entered name
+	 */
 	public String getFolderName() {
 		return folderName(nameEntered);
 	}

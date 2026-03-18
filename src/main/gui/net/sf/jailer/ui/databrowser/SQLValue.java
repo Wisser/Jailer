@@ -22,6 +22,11 @@ package net.sf.jailer.ui.databrowser;
  */
 public interface SQLValue {
 
+	/**
+	 * Returns the SQL expression representing this value.
+	 *
+	 * @return the SQL expression
+	 */
 	String getSQLExpression();
 
 }

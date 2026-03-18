@@ -39,6 +39,9 @@ public class DataModelManager {
 	/**
 	 * Gets names of all model folders. Including <code>null</code> for the
 	 * default model.
+	 *
+	 * @param executionContext the execution context
+	 * @return list of model folder names, with {@code null} representing the default model
 	 */
 	public static List<String> getModelFolderNames(ExecutionContext executionContext) {
 		File dmFolder = new File(getBaseFolder(executionContext));
@@ -65,9 +68,10 @@ public class DataModelManager {
 
 	/**
 	 * Deletes a Data Model.
-	 * 
-	 * @param modelFolder
-	 *            folder name, <code>null</code> for the default model
+	 *
+	 * @param modelFolder folder name, {@code null} for the default model
+	 * @param executionContext the execution context
+	 * @return {@code true} if the model was deleted successfully
 	 */
 	public static boolean deleteModel(String modelFolder, ExecutionContext executionContext) {
 		String dir = getBaseFolder(executionContext) + File.separator + (modelFolder != null ? modelFolder + File.separator : "");
@@ -87,11 +91,11 @@ public class DataModelManager {
 	}
 
 	/**
-	 * Gets display name and last-modified timestamp of a given model folders as
-	 * a pair.
-	 * 
-	 * @param modelFolder
-	 *            folder name, <code>null</code> for the default model
+	 * Gets display name and last-modified timestamp of a given model folder as a pair.
+	 *
+	 * @param modelFolder folder name, {@code null} for the default model
+	 * @param executionContext the execution context
+	 * @return a pair of the model's display name and its last-modified timestamp
 	 */
 	public static Pair<String, Long> getModelDetails(String modelFolder, ExecutionContext executionContext) {
 		File nameFile = new File(
@@ -122,9 +126,9 @@ public class DataModelManager {
 
 	/**
 	 * Sets folder of current data model.
-	 * 
-	 * @param modelFolder
-	 *            the folder, <code>null</code> for default model
+	 *
+	 * @param modelFolder the folder, {@code null} for the default model
+	 * @param executionContext the execution context
 	 */
 	public static void setCurrentModelSubfolder(String modelFolder, ExecutionContext executionContext) {
 		executionContext.setCurrentModelSubfolder(modelFolder);
@@ -132,21 +136,21 @@ public class DataModelManager {
 
 	/**
 	 * Gets folder of current data model.
-	 * 
-	 * @return modelFolder the folder, <code>null</code> for default model
+	 *
+	 * @param executionContext the execution context
+	 * @return the current model subfolder, or {@code null} for the default model
 	 */
 	public static String getCurrentModelSubfolder(ExecutionContext executionContext) {
 		return executionContext.getCurrentModelSubfolder();
 	}
 
 	/**
-	 * Creates a new model
-	 * 
-	 * @param newName
-	 *            model name
-	 * @param folderName
-	 *            folder name
-	 * @throws IOException
+	 * Creates a new data model.
+	 *
+	 * @param newName model display name
+	 * @param folderName folder name for the new model
+	 * @param executionContext the execution context
+	 * @throws IOException if the model folder or initial files cannot be created
 	 */
 	public static void createNewModel(String newName, String folderName, ExecutionContext executionContext) throws IOException {
 		setCurrentModelSubfolder(null, executionContext);

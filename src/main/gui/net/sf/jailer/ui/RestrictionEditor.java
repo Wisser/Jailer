@@ -87,6 +87,9 @@ public class RestrictionEditor extends javax.swing.JPanel {
 		});
 	}
 
+	/**
+	 * Resets the background color of the restriction text field to its original color.
+	 */
 	public void resetBGColor() {
 		restriction.setBackground(origGBColor);
 	}
@@ -454,6 +457,9 @@ public class RestrictionEditor extends javax.swing.JPanel {
     	updateHint();
     }//GEN-LAST:event_fkToNullCheckBoxPropertyChange
 
+	/**
+	 * Updates the visibility and tooltip of the foreign key hint label.
+	 */
 	public void updateHint() {
 		fk20DisabledHintLabel.setVisible(fkToNullCheckBox.isVisible() && !fkToNullCheckBox.isEnabled() && !fkToNullCheckBox.isSelected());
     	fk20DisabledHintLabel.setToolTipText(fkToNullCheckBox.getToolTipText());

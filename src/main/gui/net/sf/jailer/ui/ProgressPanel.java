@@ -86,6 +86,11 @@ public class ProgressPanel extends javax.swing.JPanel {
 
 	private Map<String, JLabel> reductionLabels = new HashMap<String, JLabel>();
 
+	/**
+	 * Updates the row reduction counts displayed per table.
+	 *
+	 * @param rowsReductionPerTable map from table name to the number of rows reduced
+	 */
 	public void updateRowsReductionPerTable(Map<String, Long> rowsReductionPerTable) {
 		for (Entry<String, Long> e: rowsReductionPerTable.entrySet()) {
 			JLabel label = reductionLabels.get(e.getKey());
@@ -95,6 +100,11 @@ public class ProgressPanel extends javax.swing.JPanel {
 		}
 	}
 
+	/**
+	 * Updates the collected row counts displayed per table.
+	 *
+	 * @param rowsPerTable map from table name to the number of collected rows
+	 */
 	public void updateRowsPerTable(Map<String, Long> rowsPerTable) {
 		rowsPerTablePanel.removeAll();
 		allMouseListener.clear();
@@ -214,6 +224,9 @@ public class ProgressPanel extends javax.swing.JPanel {
 		return label;
 	}
 
+	/**
+	 * Switches the view to the delete reduction tab.
+	 */
 	public void switchToDeleteTab() {
 		jTabbedPane1.setSelectedIndex(1);
 	}
@@ -451,6 +464,9 @@ public class ProgressPanel extends javax.swing.JPanel {
         add(jSplitPane1);
     }// </editor-fold>//GEN-END:initComponents
 
+	/**
+	 * Shows a confirmation dialog indicating successful completion.
+	 */
 	public void confirm() {
 		String message;
 		message = "Successfully completed.";
@@ -478,6 +494,9 @@ public class ProgressPanel extends javax.swing.JPanel {
 		}
 	}
 
+	/**
+	 * Updates the UI to indicate that a cancellation is in progress.
+	 */
 	public void onCancel() {
 		inCancellingStep = true;
 		stepLabel.setText("cancelling...");
@@ -529,6 +548,11 @@ public class ProgressPanel extends javax.swing.JPanel {
     private Color stepLabelColor;
     private Color initialStepLabelColor;
 
+    /**
+     * Sets the foreground color of the step label.
+     *
+     * @param color the foreground color to set
+     */
     public void setStepLabelForeground(Color color) {
     	stepLabel.setForeground(color);
     	stepLabelColor = color;

@@ -24,10 +24,21 @@ import net.sf.jailer.JailerVersion;
  */
 public class DataBrowserContext {
 
+	/**
+	 * Returns the application name, optionally in short form.
+	 *
+	 * @param shortName if {@code true}, returns the short name without the subtitle
+	 * @return the application name
+	 */
 	public static String getAppName(boolean shortName) {
 		return JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + (shortName? "" : " - Relational Data Browser");
 	}
-	
+
+	/**
+	 * Returns the short application name.
+	 *
+	 * @return the short application name
+	 */
 	public static String getAppName() {
 		return JailerVersion.APPLICATION_NAME;
 	}

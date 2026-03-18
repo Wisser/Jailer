@@ -100,9 +100,9 @@ public abstract class Settings  {
 
 	/**
 	 * Saves a setting.
-	 * 
+	 *
 	 * @param name the name of the setting
-	 * @param settingsContextSecondaryKey 
+	 * @param settingsContextSecondaryKey secondary key to qualify the setting context
 	 */
 	public void save(String name, String settingsContextSecondaryKey) {
 		if (name != null && name.trim().length() > 0) {
@@ -155,15 +155,21 @@ public abstract class Settings  {
 		userModified.put(name + ":" + key, value);
 	}
 
+	/**
+	 * Stores the text value of the given field entry into the setting map.
+	 *
+	 * @param setting the setting map to update
+	 * @param entry the form field entry whose value is to be stored
+	 */
 	public void putValue(Map<String, String> setting, Map.Entry<String, JComponent> entry) {
 		setting.put(entry.getKey(), ((JTextField) entry.getValue()).getText());
 	}
 
 	/**
 	 * Restores a setting.
-	 * 
+	 *
 	 * @param name the name of the setting
-	 * @param settingsContextSecondaryKey 
+	 * @param settingsContextSecondaryKey secondary key to qualify the setting context
 	 */
 	public void restore(String name, String settingsContextSecondaryKey) {
 		if (name != null && name.trim().length() > 0) {

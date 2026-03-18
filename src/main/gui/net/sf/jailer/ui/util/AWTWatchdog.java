@@ -17,10 +17,16 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.UIUtil;
 
+/**
+ * Monitors the AWT event dispatch thread and reports hangs.
+ */
 public class AWTWatchdog {
 
 	private static final long MAX_DELAY = 8000 + 4000;
 
+	/**
+	 * Starts the AWT watchdog thread.
+	 */
 	public static void start() {
 		try {
 			Thread watchdog = new Thread(new Runnable() {

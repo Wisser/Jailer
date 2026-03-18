@@ -62,6 +62,11 @@ public class CLIPanel extends javax.swing.JPanel {
 		closeButton.setIcon(UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/buttoncancel.png")));
 	}
 
+    /**
+     * Opens the CLI panel in a modal dialog.
+     *
+     * @param owner the owner frame of the dialog
+     */
     public void open(Frame owner) {
     	if (bookmarks != null) {
     		DefaultComboBoxModel<String> model = new DefaultComboBoxModel<String>();

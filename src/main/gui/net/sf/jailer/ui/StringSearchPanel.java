@@ -245,6 +245,11 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		}
 	}
 	
+	/**
+	 * Sets a callback that is invoked when the search dialog is closed.
+	 *
+	 * @param onClose the callback to invoke on close, or <code>null</code>
+	 */
 	public void setOnClose(Runnable onClose) {
 		this.onClose = onClose;
 	}
@@ -253,10 +258,20 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	private Integer cellHeight;
 	private boolean indicateLeadingAndTrailingSpaces;
 
+	/**
+	 * Sets whether leading and trailing spaces in list items should be visually indicated.
+	 *
+	 * @param indicateLeadingAndTrailingSpaces if <code>true</code>, leading and trailing spaces are indicated
+	 */
 	public void setIndicateLeadingAndTrailingSpaces(boolean indicateLeadingAndTrailingSpaces) {
 		this.indicateLeadingAndTrailingSpaces = indicateLeadingAndTrailingSpaces;
 	}
 
+	/**
+	 * Sets the estimated number of items, used to pre-size the dialog height.
+	 *
+	 * @param estimatedItemsCount the estimated item count, or <code>null</code> to disable pre-sizing
+	 */
 	public void setEstimatedItemsCount(Integer estimatedItemsCount) {
 		this.estimatedItemsCount = estimatedItemsCount;
 	}
@@ -271,6 +286,15 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	
 	private long openingTime;
 
+	/**
+	 * Opens the search dialog.
+	 *
+	 * @param owner the owner window for the dialog
+	 * @param titel the dialog title
+	 * @param x the x screen coordinate for the dialog location
+	 * @param y the y screen coordinate for the dialog location
+	 * @param locateUnderButton if <code>true</code>, the dialog is placed below the given position; otherwise above
+	 */
 	public void find(Window owner, Object titel, int x, int y, boolean locateUnderButton) {
 		isEscaped = false;
 		explictlyClosed = false;
@@ -397,6 +421,9 @@ public class StringSearchPanel extends javax.swing.JPanel {
 
 	private int oHeight;
 	
+	/**
+	 * Resets the dialog height based on the estimated items count and screen constraints.
+	 */
 	public void resetHeight() {
 		Integer maxX = maxX();
 		int y = dialog.getY();
@@ -448,14 +475,28 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	private boolean keepSearchText = false;
 	private boolean isFiltered = true;
 	
+	/**
+	 * Updates the search result list, applying the current search filter.
+	 */
 	public void updateList() {
 		updateList(true, false);
 	}
-	
+
+	/**
+	 * Updates the search result list.
+	 *
+	 * @param filter if <code>true</code>, applies the search text filter; otherwise shows all items
+	 */
 	public void updateList(boolean filter) {
 		updateList(filter, false);
 	}
 
+	/**
+	 * Updates the search result list.
+	 *
+	 * @param filter if <code>true</code>, applies the search text filter; otherwise shows all items
+	 * @param allowDuplicates if <code>true</code>, duplicate items are allowed in the result list
+	 */
 	public void updateList(boolean filter, boolean allowDuplicates) {
 		DefaultListModel<String> matches = new DefaultListModel<String>();
 		Set<String> seen = new HashSet<String>();
@@ -507,12 +548,15 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	public final Map<String, Consumer<JLabel>> renderConsumer;
 
     /**
-     * Creates new form StringSearchPanel
-     * @param button 
-     * @param dataModel 
-     * @param metaDataSource 
-     * @param prepare 
-     * @param renderConsumer 
+     * Creates new form StringSearchPanel.
+     *
+     * @param button the toggle button that triggered the search panel, or <code>null</code>
+     * @param combobox the combo box to search and select from
+     * @param metaDataSource the metadata source for schema selection, or <code>null</code>
+     * @param dataModel the data model, or <code>null</code>
+     * @param prepare the prepare callback invoked when schema selection changes, or <code>null</code>
+     * @param onSuccess the callback invoked when the user selects a value, or <code>null</code>
+     * @param renderConsumer optional map of item-specific label render consumers, or <code>null</code>
      */
     public StringSearchPanel(JToggleButton button, javax.swing.JComboBox combobox, MetaDataSource metaDataSource, DataModel dataModel, Prepare prepare, final Runnable onSuccess, Map<String, Consumer<JLabel>> renderConsumer) {
     	this.button = button;
@@ -825,8 +869,12 @@ public class StringSearchPanel extends javax.swing.JPanel {
 
 	private boolean tooltipInitialized = false;
 	/**
-     * Sets status text, tooltip and icon.
-     */
+	 * Sets status text, tooltip and icon.
+	 *
+	 * @param text the status text to display, or <code>null</code> to hide the status panel
+	 * @param tooltip the tooltip for the status label, or <code>null</code>
+	 * @param icon the icon to display in the status label, or <code>null</code>
+	 */
     public void setStatus(String text, String tooltip, Icon icon) {
     	statusLabel.setText(text);
     	statusLabel.setToolTipText(tooltip);
@@ -839,6 +887,11 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		bottomPanel.setVisible(text != null || icon != null || withSG);
     }
 
+	/**
+	 * Sets an initial search text value and pre-populates the list without filtering.
+	 *
+	 * @param value the initial value to pre-fill in the search field
+	 */
 	public void setInitialValue(String value) {
 		searchTextField.setText(value);
 		searchTextField.selectAll();
@@ -846,6 +899,9 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		acceptAll = true;
 	}
 	
+	/**
+	 * Adds a size grip to the bottom of the panel, allowing the user to resize the dialog.
+	 */
 	public void withSizeGrip() {
 		JPanel corner = new SizeGrip();
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -861,14 +917,29 @@ public class StringSearchPanel extends javax.swing.JPanel {
     private boolean acceptAll = false;
     private boolean plainIsValid = false;
     
+	/**
+	 * Returns the current value from the search text field or the combo box selection.
+	 *
+	 * @return the plain text value entered or selected
+	 */
     public String getPlainValue() {
 	    return plainIsValid? searchTextField.getText() : combobox.getSelectedItem() instanceof String? (String) combobox.getSelectedItem() : searchTextField.getText();
     }
     
+	/**
+	 * Returns the search text field.
+	 *
+	 * @return the search text field
+	 */
     public JTextField getSearchTextField() {
 	    return searchTextField;
     }
     
+	/**
+	 * Returns whether the plain value was taken from the combo box selection (as opposed to the search field text).
+	 *
+	 * @return <code>true</code> if the plain value originates from the combo box selection
+	 */
     public boolean isPlainValueFromCombobox() {
 	    return plainIsValid? false : combobox.getSelectedItem() instanceof String? true : false;
     }

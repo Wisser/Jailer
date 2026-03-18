@@ -75,8 +75,14 @@ public class TableDetailsView extends javax.swing.JPanel {
 	private final Map<String, Consumer<JLabel>> renderConsumer;
 	
 	/**
-     * Creates new form TableDetailsView
-	 * @param row 
+     * Creates new form TableDetailsView.
+     *
+     * @param table the data model table
+     * @param mdTable the metadata table
+     * @param metaDataDetailsPanel the owning details panel
+     * @param row the selected row, or <code>null</code>
+     * @param dataModel the data model
+     * @param currentView the currently displayed view, or <code>null</code>
      */
     public TableDetailsView(final Table table, final MDTable mdTable, final MetaDataDetailsPanel metaDataDetailsPanel, final Row row, final DataModel dataModel, TableDetailsView currentView) {
         initComponents(); UIUtil.initComponents(this);
@@ -510,6 +516,11 @@ public class TableDetailsView extends javax.swing.JPanel {
 		searchPanel.find(owner, "Find Column", x, y, true);
 	}
 
+    /**
+     * Returns <code>true</code> if this view can be cached.
+     *
+     * @return <code>true</code> if cacheable
+     */
     public boolean isCacheable() {
 		return cacheable;
 	}
@@ -696,10 +707,20 @@ public class TableDetailsView extends javax.swing.JPanel {
     
     private Point lastKnownVPos = null;
     
+    /**
+     * Gets the current scroll position of the columns viewport.
+     *
+     * @return the current view position
+     */
     public Point getViewPosition() {
     	return lastKnownVPos == null? jScrollPane2.getViewport().getLocation() : lastKnownVPos;
     }
-    
+
+    /**
+     * Sets the scroll position of the columns viewport.
+     *
+     * @param vpos the view position to set, or <code>null</code> to do nothing
+     */
     public void setViewPosition(Point vpos) {
     	if (vpos != null) {
     		jScrollPane2.getViewport().setViewPosition(vpos);

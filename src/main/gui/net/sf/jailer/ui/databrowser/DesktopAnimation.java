@@ -210,8 +210,9 @@ public class DesktopAnimation {
 	
 	/**
 	 * Scrolls desktop to a given location (animated).
-	 * 
+	 *
 	 * @param vr the location
+	 * @param fastLinear if {@code true}, uses a faster linear animation
 	 */
 	public void scrollRectToVisible(Rectangle vr, boolean fastLinear) {
 		Rectangle svr = desktop.getScrollPane().getViewport().getViewRect();
@@ -250,10 +251,11 @@ public class DesktopAnimation {
 
 	/**
 	 * Sets the bounds of an internal frame (animated).
-	 * 
+	 *
 	 * @param iFrame the frame
 	 * @param browserContentPane the content pane
 	 * @param r new bounds
+	 * @param rescale if {@code true}, uses a fast linear animation for rescaling
 	 */
 	public void setIFrameBounds(JInternalFrame iFrame, BrowserContentPane browserContentPane, Rectangle r, boolean rescale) {
 		startAnimation(iFrame, new MoveIFrame(iFrame, browserContentPane, r, rescale));
@@ -273,6 +275,12 @@ public class DesktopAnimation {
 		animations.remove(internalFrame);
 	}
 
+	/**
+	 * Returns the target bounds of an internal frame, taking pending animations into account.
+	 *
+	 * @param iFrame the frame
+	 * @return the target bounds of the frame
+	 */
 	public Rectangle getIFrameBounds(JInternalFrame iFrame) {
 		Animation animation = waiting.get(iFrame);
 		if (animation instanceof MoveIFrame) {
@@ -312,12 +320,22 @@ public class DesktopAnimation {
 
 	public static boolean stopScrolling = false;
 	
+	/**
+	 * Returns whether any animations are currently running.
+	 *
+	 * @return {@code true} if at least one animation is active
+	 */
 	public boolean isActive() {
 		return !animations.isEmpty();
 	}
 
 	private long lastActionTS = 0;
-	
+
+	/**
+	 * Returns the time in milliseconds since the last animation action.
+	 *
+	 * @return milliseconds since last animation, or {@code 0} if no animation has run yet
+	 */
 	public long getInactiveTime() {
 		if (lastActionTS == 0) {
 			return 0;

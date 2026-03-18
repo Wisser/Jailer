@@ -97,9 +97,9 @@ public class MDTable extends MDObject {
     }
 
     /**
-     * Gets the schema the tables schema
+     * Gets the schema of this table.
      *
-     * @return the schema the tables schema
+     * @return the schema of this table
      */
     public MDSchema getSchema() {
         return schema;
@@ -138,6 +138,8 @@ public class MDTable extends MDObject {
     /**
      * Gets columns of table. Waits until a given timeout and sets the wait cursor.
      *
+     * @param timeOut timeout in milliseconds
+     * @param waitCursorSubject component to show wait cursor on, or <code>null</code>
      * @return columns of table
      */
     public List<String> getColumns(long timeOut, JComponent waitCursorSubject) throws SQLException {
@@ -380,6 +382,11 @@ public class MDTable extends MDObject {
         return true;
     }
 
+	/**
+	 * Returns <code>true</code> if this table is a system table.
+	 *
+	 * @return <code>true</code> if this is a system table
+	 */
 	public boolean isSystem() {
 		if (getTableType() != null) {
 			if (getTableType().toUpperCase().contains("SYSTEM")) {
@@ -392,14 +399,29 @@ public class MDTable extends MDObject {
    		return false;
 	}
 
+	/**
+	 * Returns <code>true</code> if this table is a view.
+	 *
+	 * @return <code>true</code> if this is a view
+	 */
     public boolean isView() {
         return isView;
     }
 
+	/**
+	 * Returns <code>true</code> if this table is a synonym.
+	 *
+	 * @return <code>true</code> if this is a synonym
+	 */
     public boolean isSynonym() {
         return isSynonym;
     }
 
+	/**
+	 * Returns <code>true</code> if the columns have been loaded.
+	 *
+	 * @return <code>true</code> if columns are loaded
+	 */
     public boolean isLoaded() {
         return loaded.get();
     }
@@ -682,24 +704,50 @@ public class MDTable extends MDObject {
         return sb.toString();
     }
 
+	/**
+	 * Gets the column type definitions of this table.
+	 *
+	 * @return column type definitions, or <code>null</code> if not yet loaded
+	 */
     public List<Column> getColumnTypes() {
 		return columnTypes;
 	}
 
+	/**
+	 * Returns <code>true</code> if the DDL has been loaded.
+	 *
+	 * @return <code>true</code> if DDL is loaded
+	 */
     public boolean isDDLLoaded() {
         return ddlLoaded.get();
     }
-    
+
     private boolean estRCIsLowerBound;
 
+	/**
+	 * Returns <code>true</code> if the estimated row count is a lower bound.
+	 *
+	 * @return <code>true</code> if the estimated row count is a lower bound
+	 */
     public boolean isEstRCIsLowerBound() {
 		return estRCIsLowerBound;
 	}
 
+	/**
+	 * Gets the estimated row count of this table.
+	 *
+	 * @return the estimated row count, or <code>null</code> if unknown
+	 */
 	public Long getEstimatedRowCount() {
 		return estimatedRowCount;
 	}
 
+	/**
+	 * Sets the estimated row count of this table.
+	 *
+	 * @param erc the estimated row count
+	 * @param isLowerBound <code>true</code> if the value is a lower bound, or <code>null</code> to keep existing value
+	 */
 	public void setEstimatedRowCount(Long erc, Boolean isLowerBound) {
     	if (isLowerBound != null) {
     		this.estRCIsLowerBound = isLowerBound;
@@ -726,14 +774,29 @@ public class MDTable extends MDObject {
     
 //	static AtomicBoolean estUpdatePending = new AtomicBoolean(false);
 	
+	/**
+	 * Sets the comment for this table.
+	 *
+	 * @param comment the table comment, or empty string to clear
+	 */
     public void setComment(String comment) {
     	this.comment = "".equals(comment)? null : comment;
     }
 
+	/**
+	 * Gets the table type string (e.g. "TABLE", "VIEW", "SYSTEM TABLE").
+	 *
+	 * @return the table type, or <code>null</code> if not set
+	 */
     public String getTableType() {
 		return tableType;
 	}
 
+	/**
+	 * Sets the table type string.
+	 *
+	 * @param tableType the table type
+	 */
 	public void setTableType(String tableType) {
 		this.tableType = tableType;
 	}

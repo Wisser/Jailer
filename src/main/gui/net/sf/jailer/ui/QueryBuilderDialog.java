@@ -1278,14 +1278,16 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 
 	/**
 	 * Opens the dialog.
-	 * 
-	 * @param table
-	 *            subject of query
-	 * @param usePath
-	 *            if <code>true</code>, immediately build query based on
-	 *            selected path
-	 * @param associationsOnPath
-	 *            currently selected associations path
+	 *
+	 * @param table subject of query
+	 * @param usePath if <code>true</code>, immediately build query based on the selected path
+	 * @param showJoinButton if <code>true</code>, the join button is shown
+	 * @param associationsOnPath currently selected associations path
+	 * @param whereClauses where clauses per path element
+	 * @param datamodel the data model
+	 * @param session the database session
+	 * @param metaDataSource the meta data source
+	 * @param openSQLConsole if <code>true</code>, opens the SQL console directly
 	 */
 	public void buildQuery(Table table, boolean usePath,
 			boolean showJoinButton, List<Association> associationsOnPath,
@@ -1351,12 +1353,13 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 
 	/**
 	 * Opens the dialog.
-	 * 
-	 * @param table
-	 *            subject of query
-	 * @param root
-	 *            root relation
-	 * @param openSQLConsole 
+	 *
+	 * @param table subject of query
+	 * @param root root relationship
+	 * @param datamodel the data model
+	 * @param session the database session
+	 * @param metaDataSource the meta data source
+	 * @param openSQLConsole if <code>true</code>, opens the SQL console directly
 	 */
 	public void buildQuery(Table table, Relationship root, DataModel datamodel, Session session, MetaDataSource metaDataSource, boolean openSQLConsole) {
 		if (table == null) {

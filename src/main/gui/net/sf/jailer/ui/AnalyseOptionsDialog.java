@@ -80,7 +80,13 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 	 */
 	private boolean ok;
 	
-	/** Creates new form AnalyseOptionsDialog 
+	/**
+	 * Creates new form AnalyseOptionsDialog.
+	 *
+	 * @param parent the parent frame
+	 * @param dataModel the current data model, or {@code null}
+	 * @param executionContext the execution context
+	 * @throws Exception if initialization fails
 	 */
 	public AnalyseOptionsDialog(java.awt.Frame parent, DataModel dataModel, ExecutionContext executionContext) throws Exception {
 		super(parent, true);
@@ -135,10 +141,20 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 				parent.getLocation().y + parent.getSize().height/2 - getPreferredSize().height/2);
 	}
 
+	/**
+	 * Returns whether the user selected to remove existing tables or associations from the data model.
+	 *
+	 * @return {@code true} if removing of existing tables or associations is selected
+	 */
 	public boolean isRemoving() {
 		return removeCurrentAssociationsCheckBox.isSelected() || removeCurrentTablesCheckBox.isSelected();
 	}
 	
+	/**
+	 * Returns a line filter for association CSV lines based on the current eviction settings.
+	 *
+	 * @return line filter that accepts association lines to keep
+	 */
 	public LineFilter getAssociationLineFilter() {
 		final boolean remove = removeCurrentAssociationsCheckBox.isSelected();
 		final boolean keep = keepManAssociationsCheckBox.isSelected();
@@ -156,6 +172,11 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 		};
 	}
 	
+	/**
+	 * Returns a line filter for table CSV lines based on the current eviction settings.
+	 *
+	 * @return line filter that accepts table lines to keep
+	 */
 	public LineFilter getTableLineFilter() {
 		final boolean remove = removeCurrentTablesCheckBox.isSelected();
 		final boolean keep = keepManTablesCheckBox.isSelected();
@@ -187,18 +208,47 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 		return false;
 	}
 
+	/**
+	 * Sets the initial selection state of the "Analyse Views" checkbox.
+	 *
+	 * @param withViews {@code true} to pre-select the checkbox
+	 */
 	public void setInitiallyWithViews(boolean withViews) {
 		analyseViews.setSelected(withViews);
 	}
 
+	/**
+	 * Sets the initial selection state of the "Analyse Synonyms" checkbox.
+	 *
+	 * @param withSynonyms {@code true} to pre-select the checkbox
+	 */
 	public void setInitiallyWithSynonyms(boolean withSynonyms) {
 		analyseSynonyms.setSelected(withSynonyms);
 	}
 
+	/**
+	 * Opens the dialog and lets the user configure analysis options.
+	 *
+	 * @param dbConnectionDialog the database connection dialog
+	 * @param isDefaultSchema output array; set to {@code true} if the selected schema is the default schema
+	 * @param currentUser the current database user
+	 * @return {@code true} if the user confirmed with OK
+	 * @throws Exception if schema retrieval fails
+	 */
 	public boolean edit(DbConnectionDialog dbConnectionDialog, boolean[] isDefaultSchema, String currentUser) throws Exception {
 		return edit(dbConnectionDialog, null, isDefaultSchema, currentUser);
 	}
 
+	/**
+	 * Opens the dialog with a pre-selected schema and lets the user configure analysis options.
+	 *
+	 * @param dbConnectionDialog the database connection dialog
+	 * @param initiallySelectedSchema the schema to pre-select, or {@code null}
+	 * @param isDefaultSchema output array; set to {@code true} if the selected schema is the default schema
+	 * @param currentUser the current database user
+	 * @return {@code true} if the user confirmed with OK
+	 * @throws Exception if schema retrieval fails
+	 */
 	public boolean edit(final DbConnectionDialog dbConnectionDialog, final String initiallySelectedSchema, final boolean[] isDefaultSchema, final String currentUser) throws Exception {
 		final String[] defaultSchemaF = new String[1];
 		final List<String> schemas;
@@ -275,10 +325,20 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 		return ok;
 	}
 	
+	/**
+	 * Returns the schema selected by the user.
+	 *
+	 * @return the selected schema name, or {@code null} if none was selected
+	 */
 	public String getSelectedSchema() {
 		return selectedSchema;
 	}
 	
+	/**
+	 * Appends CLI options for the selected analyse settings to the given argument list.
+	 *
+	 * @param args the argument list to append to
+	 */
 	public void appendAnalyseCLIOptions(List<String> args) {
 		if (analyseAlias.isSelected()) {
 			args.add("-analyse-alias");

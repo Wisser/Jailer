@@ -216,6 +216,11 @@ public class ParameterSelector extends javax.swing.JPanel {
 	private static final long serialVersionUID = 5153763345779925099L;
 	private boolean hasOpenDialog = false;
 	
+	/**
+	 * Returns whether a parameter input dialog is currently open.
+	 *
+	 * @return <code>true</code> if a dialog is currently open
+	 */
 	public boolean hasOpenDialog() {
 		return hasOpenDialog;
 	}

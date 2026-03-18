@@ -60,7 +60,10 @@ public class ParameterEditor extends javax.swing.JDialog {
 	}
 
 	/**
-	 * Creates the editor pane.
+	 * Creates the editor pane for the given set of parameters.
+	 *
+	 * @param parameters the set of parameter names to create input fields for
+	 * @return the scroll pane containing the parameter editor
 	 */
 	public JComponent createPane(Set<String> parameters) {
 		filterPane.removeAll();

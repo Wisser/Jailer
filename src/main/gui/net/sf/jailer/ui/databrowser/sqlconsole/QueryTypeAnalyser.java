@@ -177,6 +177,9 @@ public class QueryTypeAnalyser {
 	 * Parses a SQL query and tries to find out the type.
 	 *
 	 * @param sqlSelect the query
+	 * @param checkPKs <code>true</code> to check that primary key columns are present in the select clause
+	 * @param columnExpression map to receive SQL expressions for non-column select items (by index)
+	 * @param metaDataSource the meta data source for table lookups
 	 * @return the type or <code>null</code>
 	 */
 	public static List<Table> getType(String sqlSelect, boolean checkPKs, Map<Integer, String> columnExpression, final MetaDataSource metaDataSource) {
@@ -590,6 +593,14 @@ public class QueryTypeAnalyser {
 		return null;
 	}
 
+	/**
+	 * Compares two SQL identifiers for equality, optionally ignoring quoting and case.
+	 *
+	 * @param a the first identifier
+	 * @param b the second identifier
+	 * @param strict <code>true</code> for exact string comparison, <code>false</code> to ignore quoting and case
+	 * @return <code>true</code> if the identifiers are equal
+	 */
 	static boolean idEquals(String a, String b, boolean strict) {
 		if (strict) {
 			return a.equals(b);

@@ -33,7 +33,7 @@ import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
 /**
- * Counts number of rows associated with a given row.
+ * Counts the number of rows associated with a given row.
  */
 public class RowCounter {
 
@@ -44,16 +44,34 @@ public class RowCounter {
 	private final RowIdSupport rowIdSupport;
 	private final int TIMEOUT = 8;
 
+	/**
+	 * Holds the result of a row count operation.
+	 */
 	public static class RowCount {
 		public final long count;
 		public final boolean isExact;
 
+		/**
+		 * Constructor.
+		 *
+		 * @param count the row count
+		 * @param isExact {@code true} if the count is exact, {@code false} if it is an estimate
+		 */
 		public RowCount(long count, boolean isExact) {
 			this.count = count;
 			this.isExact = isExact;
 		}
 	}
 
+	/**
+	 * Constructor.
+	 *
+	 * @param table the table to count rows for
+	 * @param association the association to follow, or {@code null} for a direct count
+	 * @param theRows the parent rows
+	 * @param session the database session
+	 * @param rowIdSupport the row ID support
+	 */
 	public RowCounter(Table table, Association association, List<Row> theRows, Session session, RowIdSupport rowIdSupport) {
 		this.table = table;
 		this.association = association;
@@ -65,10 +83,12 @@ public class RowCounter {
 	/**
 	 * Counts rows from {@link #table}.
 	 *
-	 * @param context
-	 *            cancellation context
-	 * @param limit
-	 *            row number limit
+	 * @param andCond additional SQL condition
+	 * @param context cancellation context
+	 * @param limit row number limit
+	 * @param selectDistinct if {@code true}, count distinct rows
+	 * @return the row count result
+	 * @throws SQLException if a database error occurs
 	 */
 	public RowCount countRows(String andCond, Object context, int limit, boolean selectDistinct) throws SQLException {
 
@@ -223,14 +243,20 @@ public class RowCounter {
 	private static final String ROWNUMBERALIAS = "RN";
 
 	/**
-	 * count rows from {@link #table}.
+	 * Counts rows from {@link #table}.
 	 *
-	 * @param rows
-	 *            to put the rows into
-	 * @param context
-	 *            cancellation context
-	 * @param selectDistinct
-	 * @param inlineViewStyle
+	 * @param andCond additional SQL condition
+	 * @param parentRows the parent rows to filter by
+	 * @param rows map to collect result rows into
+	 * @param context cancellation context
+	 * @param limit row number limit
+	 * @param useOLAPLimitation if {@code true}, uses OLAP-based row limitation
+	 * @param sqlLimitSuffix SQL suffix for row limiting, or {@code null}
+	 * @param selectDistinct if {@code true}, count distinct rows
+	 * @param maxTime the maximum time in milliseconds for the query
+	 * @param inlineViewStyle the inline view style to use, or {@code null}
+	 * @return the number of counted rows
+	 * @throws SQLException if a database error occurs
 	 */
 	public long countRows(String andCond, final List<Row> parentRows, final Map<String, List<Row>> rows, Object context, int limit, boolean useOLAPLimitation,
 			String sqlLimitSuffix, boolean selectDistinct, long maxTime, InlineViewStyle inlineViewStyle) throws SQLException {

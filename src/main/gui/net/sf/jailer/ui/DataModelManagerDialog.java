@@ -160,7 +160,12 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	private static float MODULE_IMAGE_SCALE_FACTOR = 0.5f;
 	
 	/**
-	 * Creates new.
+	 * Creates new Data Model Management dialog.
+	 *
+	 * @param applicationName the application name shown in the title
+	 * @param withLoadJMButton if {@code true}, show the "Load Extraction Model" tab instead of bookmarks
+	 * @param module the module identifier (e.g. "S" for subsetter, "B" for data browser)
+	 * @param executionContext the execution context
 	 */
 	public DataModelManagerDialog(String applicationName, boolean withLoadJMButton, String module, ExecutionContext executionContext) {
 		this.applicationName = applicationName;
@@ -771,6 +776,13 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		UIUtil.initToolTips(this);
 	}
 
+	/**
+	 * Starts the application by selecting the appropriate module dialog (subsetter or data browser).
+	 *
+	 * @param module the module to start ("S" for subsetter, "B" for data browser, {@code null} to auto-detect)
+	 * @param withStartupWizzard if {@code true}, show the startup wizard in the subsetter
+	 * @param executionContext the execution context
+	 */
 	public static void start(String module, boolean withStartupWizzard, ExecutionContext executionContext) {
 		DataModelManagerDialog dmmdBrowser = DataBrowser.createDMMDialog(executionContext);
 		DataModelManagerDialog dmmdSubsetter = ExtractionModelFrame.createDMMDialog(withStartupWizzard, executionContext);
@@ -1678,7 +1690,9 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	}
 
 	/**
-	 * Reads in and set currentBaseFolder.
+	 * Reads and sets the current base folder from the persisted model selection file.
+	 *
+	 * @param executionContext the execution context whose base folder will be updated
 	 */
 	public static void setCurrentBaseFolder(ExecutionContext executionContext) {
 		String currentBaseFolder = null;
@@ -2881,7 +2895,9 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
      }//GEN-LAST:event_exportButtonActionPerformed
 
 	/**
-	 * Opens file chooser.
+	 * Opens a directory chooser dialog to let the user select a base folder.
+	 *
+	 * @return the selected folder path, or {@code null} if the user cancelled
 	 */
 	public String choseFolder() {
 		JFileChooser fc = new JFileChooser();

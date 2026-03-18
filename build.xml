@@ -182,6 +182,9 @@ available targets:
 		<zip destfile="${JAR-ENGINE-SRC}" basedir="${SRC_DIR}/main/engine">
 		</zip>
 		<javadoc packagenames="net.sf.jailer.*" sourcepath="src/main/engine" defaultexcludes="yes" destdir="docs/api" author="true" version="true" use="true" windowtitle="Jailer Subsetter API">
+			<classpath>
+				<path refid="default.classpath" />
+			</classpath>
 			<doctitle><![CDATA[<h1>Jailer Subsetter API</h1>]]></doctitle>
 			<tag name="todo" scope="all" description="To do:" />
 			<link offline="true" href="http://docs.oracle.com/javase/7/docs/api/" packagelistLoc="C:\tmp" />

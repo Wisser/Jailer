@@ -98,7 +98,12 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel implements
 	private final Map<Table, TableDetailsView> tableDetailsViewsAll = new HashMap<Table, TableDetailsView>();
 
     /**
-     * Creates new form MetaDataDetailsPanell 
+     * Creates new form MetaDataDetailsPanel.
+     *
+     * @param datamodel the data model reference
+     * @param session the database session
+     * @param owner the owner frame
+     * @param executionContext the execution context
      */
     public MetaDataDetailsPanel(Reference<DataModel> datamodel, Session session, JFrame owner, ExecutionContext executionContext) {
     	this.datamodel = datamodel;
@@ -150,10 +155,16 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel implements
         }
     }
 
+	/**
+	 * Hides this panel.
+	 */
 	public void clear() {
     	setVisible(false);
 	}
 
+	/**
+	 * Clears cached detail views.
+	 */
 	public void reset() {
 		detailsViews.clear();
 		tableDetailsViews.clear();
@@ -165,6 +176,12 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel implements
 		reset();
 	}
 
+	/**
+	 * Shows meta data details for a generic database object.
+	 *
+	 * @param mdOther the generic database object
+	 * @param executionContext the execution context
+	 */
 	public void showMetaDataDetails(MDGeneric mdOther, ExecutionContext executionContext) {
 		setVisible(true);
         ((CardLayout) getLayout()).show(this, "other");
@@ -625,6 +642,13 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel implements
     private javax.swing.JPanel tableDetailsPanel;
     // End of variables declaration//GEN-END:variables
 
+    /**
+     * Analyses the given schema and updates the data model.
+     *
+     * @param schemaName the schema name to analyse
+     * @param withViews <code>true</code> to include views
+     * @param withSynonyms <code>true</code> to include synonyms
+     */
     protected abstract void analyseSchema(String schemaName, boolean withViews, boolean withSynonyms);
    
 }

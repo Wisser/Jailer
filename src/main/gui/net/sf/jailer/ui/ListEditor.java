@@ -82,8 +82,12 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 	private static final long serialVersionUID = 6636910708235642618L;
 
 	/**
-	 * Creates new form ListEditor
-	 * @param simple 
+	 * Creates new form ListEditor.
+	 *
+	 * @param columnNames column names for the list table
+	 * @param elementTypeDisplayName display name of the element type
+	 * @param withCopy if <code>true</code>, a copy button is shown
+	 * @param readonly if <code>true</code>, the list is read-only
 	 */
 	public ListEditor(String[] columnNames, String elementTypeDisplayName,
 			boolean withCopy,
@@ -250,17 +254,18 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 	
 	/**
 	 * Creates a list of column-values for a model element.
-	 * 
+	 *
 	 * @param element the model element
+	 * @param index the index of the element in the model
 	 * @return list of column-values for a model element
 	 */
 	protected abstract Object[] toColumnList(T element, int index);
 
 	/**
 	 * Gets foreground color of the column of a given model element.
-	 * 
+	 *
 	 * @param element the element
-	 * @param column 
+	 * @param column the column index
 	 * @return foreground color or <code>null</code> for default color
 	 */
 	protected abstract Color getForegroundColor(T element, int column);
@@ -609,15 +614,26 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 		return copy(t);
 	}
 
+	/**
+	 * Returns whether the model has unsaved changes.
+	 *
+	 * @return <code>true</code> if the model needs to be saved
+	 */
 	public boolean needsSave() {
 		return needsSave;
 	}
 
+	/**
+	 * Hides the up and down ordering buttons.
+	 */
 	public void hideUpAndDownButton() {
 		upButton.setVisible(false);
 		downButton.setVisible(false);
 	}
 
+	/**
+	 * Configures the editor to show only the update (rename) and delete buttons.
+	 */
 	public void forUpdateAndDeleteOnly() {
 		hideUpAndDownButton();
 		addButton.setVisible(false);
@@ -625,7 +641,10 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 		updateButton.setVisible(true);
 		updateButton.setText("Rename");
 	}
-	
+
+	/**
+	 * Hides all action buttons.
+	 */
 	public void hideAllButtons() {
 		hideUpAndDownButton();
 		addButton.setVisible(false);

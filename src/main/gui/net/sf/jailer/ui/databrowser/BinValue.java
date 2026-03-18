@@ -21,7 +21,12 @@ package net.sf.jailer.ui.databrowser;
  * @author Ralf Wisser
  */
 public interface BinValue {
-	
+
+	/**
+	 * Returns the binary content.
+	 *
+	 * @return the binary content as a byte array
+	 */
 	byte[] getContent();
-	
+
 }

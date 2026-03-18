@@ -95,6 +95,12 @@ public class BasicFormatterImpl {
 	static final String indentString = "     ";
 	static final String initial = "\n     ";
 	
+	/**
+	 * Formats a SQL statement.
+	 *
+	 * @param sql the SQL statement to format
+	 * @return the formatted SQL statement
+	 */
 	public String format(String sql) {
 		if (sql.length() > 100_000) {
 			return sql; // too big

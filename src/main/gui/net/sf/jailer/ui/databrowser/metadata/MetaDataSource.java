@@ -109,6 +109,11 @@ public class MetaDataSource {
 
 	private AtomicBoolean initialized = new AtomicBoolean(false);
 
+	/**
+	 * Returns <code>true</code> if the schemas have been initialized.
+	 *
+	 * @return <code>true</code> if initialized
+	 */
 	public boolean isInitialized() {
 		return initialized.get();
 	}
@@ -189,7 +194,9 @@ public class MetaDataSource {
 	}
 
 	/**
-	 * Gets the users default schema.
+	 * Gets the user's default schema.
+	 *
+	 * @return the default schema, or <code>null</code> if not found
 	 */
 	public MDSchema getDefaultSchema() {
 		for (MDSchema schema: getSchemas()) {
@@ -201,7 +208,7 @@ public class MetaDataSource {
 	}
 
 	/**
-	 * Removes all chached data.
+	 * Removes all cached data.
 	 */
 	public synchronized void clear() {
     	for (MDSchema mdSchema: schemas) {
@@ -239,6 +246,12 @@ public class MetaDataSource {
 	private final Map<String, Table> tablePerUnquotedNameUC = new HashMap<String, Table>();
 	private final Map<String, MDSchema> schemaPerUnquotedNameUC = new HashMap<String, MDSchema>();
 
+    /**
+     * Finds the data model table corresponding to the given metadata table.
+     *
+     * @param mdTable the metadata table
+     * @return the corresponding data model table, or <code>null</code> if not found
+     */
     public Table toTable(MDTable mdTable) {
     	if (mDTableToTable.containsKey(mdTable)) {
     		return mDTableToTable.get(mdTable);
@@ -265,6 +278,12 @@ public class MetaDataSource {
     	return table;
     }
 
+    /**
+     * Gets the schema containing the given data model table.
+     *
+     * @param table the data model table
+     * @return the schema, or <code>null</code> if not found
+     */
     public MDSchema getSchemaOfTable(Table table) {
     	MDSchema defaultSchema = getDefaultSchema();
     	if (defaultSchema != null) {
@@ -291,6 +310,12 @@ public class MetaDataSource {
     	return null;
     }
 
+    /**
+     * Finds the metadata table corresponding to the given data model table.
+     *
+     * @param table the data model table
+     * @return the corresponding metadata table, or <code>null</code> if not found
+     */
     public MDTable toMDTable(Table table) {
     	if (tableToMDTable.containsKey(table)) {
     		return tableToMDTable.get(table);

@@ -457,10 +457,11 @@ public class BrowserContentCellEditor {
 	
 	/**
 	 * Is given cell editable?
-	 * 
-	 * @param table the table 
+	 *
+	 * @param table the table
 	 * @param column column number
 	 * @param content cell content
+	 * @return {@code true} if the cell is editable
 	 */
 	public boolean isEditable(Table table, int column, Object content) {
 		return isEditable(table, column, content, false);
@@ -468,11 +469,12 @@ public class BrowserContentCellEditor {
 	
 	/**
 	 * Is given cell editable?
-	 * 
-	 * @param table the table 
+	 *
+	 * @param table the table
 	 * @param column column number
 	 * @param content cell content
-	 * @param relaxed if <code>true</code>, content is editable iff it is uniquely convertable into SQL literal. No Need to edit it in a JTextField.
+	 * @param relaxed if {@code true}, content is editable iff it is uniquely convertible into a SQL literal. No need to edit it in a JTextField.
+	 * @return {@code true} if the cell is editable
 	 */
 	public boolean isEditable(Table table, int column, Object content, boolean relaxed) {
 		if (column < 0 || column >= columnTypes.length) {
@@ -530,10 +532,10 @@ public class BrowserContentCellEditor {
 
 	/**
 	 * Converts text to cell content.
-	 * 
+	 *
 	 * @param column column number
 	 * @param text the text
-	 * 
+	 * @param oldContent the previous cell content
 	 * @return cell content or {@link #INVALID} if text cannot be converted
 	 */
 	public Object textToContent(int column, String text, Object oldContent) {
@@ -552,9 +554,10 @@ public class BrowserContentCellEditor {
 	}
 
 	/**
-	 * Should cell content be sorted case insensitive?
-	 * 
+	 * Should cell content be sorted case-insensitively?
+	 *
 	 * @param column column number
+	 * @return {@code true} if case-insensitive ordering should be used
 	 */
 	public boolean useCaseIntensitiveOrderingInGUI(int column) {
 		Converter converter = converterPerType.get(columnTypes[column]);
@@ -572,22 +575,51 @@ public class BrowserContentCellEditor {
 	private boolean inDetailsView = false;
 	private boolean isLoading = false;
 
+	/**
+	 * Returns whether the editor is currently loading data.
+	 *
+	 * @return {@code true} if data is being loaded
+	 */
 	public boolean isLoading() {
 		return isLoading;
 	}
 
+	/**
+	 * Sets the loading state of the editor.
+	 *
+	 * @param isLoading {@code true} if data is being loaded
+	 */
 	public void setLoading(boolean isLoading) {
 		this.isLoading = isLoading;
 	}
 
+	/**
+	 * Returns whether the editor is currently in the details view.
+	 *
+	 * @return {@code true} if the editor is in the details view
+	 */
 	public boolean isInDetailsView() {
 		return inDetailsView;
 	}
 
+	/**
+	 * Sets whether the editor is in the details view.
+	 *
+	 * @param inDetailsView {@code true} if the editor is in the details view
+	 */
 	public void setInDetailsView(boolean inDetailsView) {
 		this.inDetailsView = inDetailsView;
 	}
 
+	/**
+	 * Creates or retrieves a {@link BrowserContentCellEditor} for the given table.
+	 *
+	 * @param table the table
+	 * @param rowIdSupport the row ID support, or {@code null}
+	 * @param session the database session
+	 * @return a {@link BrowserContentCellEditor} for the table
+	 * @throws SQLException if a database error occurs
+	 */
 	public static BrowserContentCellEditor forTable(Table table, RowIdSupport rowIdSupport, Session session) throws SQLException {
 		String key = "browserContentCellEditor-" + table.getName();
 		BrowserContentCellEditor browserContentCellEditor[] = new BrowserContentCellEditor[] {

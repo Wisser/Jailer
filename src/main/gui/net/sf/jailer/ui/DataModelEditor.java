@@ -150,12 +150,20 @@ public class DataModelEditor extends javax.swing.JDialog {
 
 	private Set<Integer> tablesWithInvalidPK = new HashSet<Integer>();
 	
-	/** 
+	/**
 	 * Creates new form DataModelEditor.
-	 * 
-	 * @param toEdit if not null, open table editor for this table immediately
-	 * @param assocFilter 
-	 * @param tableFilter 
+	 *
+	 * @param parent the parent frame
+	 * @param merge if {@code true}, merge model-finder results into the model
+	 * @param initiallyDirty if {@code true}, mark the model as modified on open
+	 * @param toEdit if not {@code null}, open the table editor for this table immediately
+	 * @param tableFilter filter applied to table lines when reading the model file
+	 * @param assocFilter filter applied to association lines when reading the model file
+	 * @param modelname the current model name, or {@code null}
+	 * @param modelnameSuggestion a suggested name for new models, or {@code null}
+	 * @param dbConnectionDialog the database connection dialog, or {@code null}
+	 * @param executionContext the execution context
+	 * @throws Exception if the model files cannot be read
 	 */
 	public DataModelEditor(java.awt.Frame parent, boolean merge, boolean initiallyDirty, final Table toEdit, LineFilter tableFilter, LineFilter assocFilter, String modelname, String modelnameSuggestion, DbConnectionDialog dbConnectionDialog, ExecutionContext executionContext) throws Exception {
 		super(parent, true);
@@ -1220,7 +1228,11 @@ public class DataModelEditor extends javax.swing.JDialog {
 	}
 
 	/**
-	 * Saves the model name.
+	 * Saves the model name to the model name file.
+	 *
+	 * @param name the model display name to save
+	 * @param executionContext the execution context
+	 * @throws FileNotFoundException if the name file cannot be written
 	 */
 	public static void createNameFile(String name, ExecutionContext executionContext) throws FileNotFoundException {
 		PrintWriter out = new PrintWriter(DataModel.getModelNameFile(executionContext));
@@ -1260,9 +1272,10 @@ public class DataModelEditor extends javax.swing.JDialog {
 	}
 
 	/**
-	 * Compares current model with the previous one.
-	 * 
-	 * @return <code>true</code> if something has changed
+	 * Compares current model with the previously saved version.
+	 *
+	 * @return {@code true} if the model has changed since it was last saved
+	 * @throws Exception if the comparison cannot be performed
 	 */
 	public boolean dataModelHasChanged() throws Exception {
 		String tmpFile = DataModel.getDatamodelFolder(executionContext) + File.separator + "tempcsv.tmp";

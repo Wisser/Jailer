@@ -58,8 +58,13 @@ import net.sf.jailer.util.Pair;
 public class ResultSetRenderer extends javax.swing.JPanel {
 
     /**
-     * Creates new form ResultSetRenderer
-     * @param executionContext
+     * Creates new form ResultSetRenderer.
+     *
+     * @param resultSet the result set to render
+     * @param titel the title to display
+     * @param datamodel the data model
+     * @param session the database session
+     * @param executionContext the execution context
      */
     public ResultSetRenderer(ResultSet resultSet, String titel, DataModel datamodel, Session session, ExecutionContext executionContext) throws SQLException {
         initComponents(); UIUtil.initComponents(this);

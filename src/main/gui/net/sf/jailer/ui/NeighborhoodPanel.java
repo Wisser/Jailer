@@ -70,13 +70,16 @@ public class NeighborhoodPanel extends javax.swing.JPanel {
     private final MouseWheelListener mouseWheelListener;
     
 	/**
-     * Creates new form NeighborhoodPanel
-     * @param table 
-	 * @param graphView 
-	 * @param ignoredColor 
-	 * @param assocWithColor 
-	 * @param hasDepColor 
-	 * @param depOnColor 
+     * Creates new form NeighborhoodPanel.
+     *
+     * @param dataModel the data model
+     * @param table the table whose neighborhood is shown
+     * @param graphView the graphical data model view
+     * @param hideIgnored if <code>true</code>, ignored associations are hidden
+     * @param depOnColor color for "depends on" associations
+     * @param hasDepColor color for "has dependency" associations
+     * @param assocWithColor color for "associated with" associations
+     * @param ignoredColor color for ignored associations
      */
     public NeighborhoodPanel(final DataModel dataModel, final Table table, final GraphicalDataModelView graphView, final boolean hideIgnored, final Color depOnColor, final Color hasDepColor, final Color assocWithColor, final Color ignoredColor) {
         this.depOnColor = depOnColor;

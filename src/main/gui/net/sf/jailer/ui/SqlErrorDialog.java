@@ -52,8 +52,18 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 
 	private static final long serialVersionUID = -6737420167295938488L;
 
-	/** Creates new form SqlErrorDialog 
-	 * @param isWarning */
+	/**
+	 * Creates new form SqlErrorDialog.
+	 *
+	 * @param parent the parent window
+	 * @param message the error message to display
+	 * @param sql the SQL statement that caused the error
+	 * @param isFormatted if <code>true</code>, the SQL is already formatted
+	 * @param sqlError if <code>true</code>, this is a SQL error (as opposed to a general GUI error)
+	 * @param title the dialog title, or <code>null</code> for the default title
+	 * @param isWarning if <code>true</code>, the dialog is shown as a warning (hides the SQL panel and copy button)
+	 * @param additionalControl an optional additional control to add to the dialog, or <code>null</code>
+	 */
 	@SuppressWarnings("serial")
 	public SqlErrorDialog(Window parent, String message, String sql, boolean isFormatted, boolean sqlError, String title, boolean isWarning, JComponent additionalControl) {
 		super(parent, ModalityType.APPLICATION_MODAL);

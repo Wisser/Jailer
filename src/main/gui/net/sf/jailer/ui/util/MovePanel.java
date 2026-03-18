@@ -29,8 +29,14 @@ import javax.swing.event.MouseInputAdapter;
 
 import net.sf.jailer.ui.Colors;
 
+/**
+ * A panel that allows the user to move its parent window by dragging.
+ */
 public class MovePanel extends JPanel {
-		
+
+		/**
+		 * Constructor.
+		 */
 		public MovePanel() {
 	        MouseInputAdapter ml = new MouseInputAdapter() {
 	    		private Point origPos;
@@ -68,6 +74,11 @@ public class MovePanel extends JPanel {
 	    	setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
 		}
 		
+		/**
+		 * Constructor.
+		 *
+		 * @param layoutManager the layout manager to use
+		 */
 		public MovePanel(LayoutManager layoutManager) {
 			this();
 			setLayout(layoutManager);

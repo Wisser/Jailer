@@ -114,6 +114,13 @@ public class TipDialog extends javax.swing.JDialog {
 
 	private static Set<String> toldTips = new HashSet<String>();
 	
+	/**
+	 * Shows a tip dialog if the tip has not been shown before and the user has not dismissed it.
+	 *
+	 * @param parent the parent frame
+	 * @param tipId a unique identifier for this tip
+	 * @param tip the tip text to display
+	 */
 	public static void showTip(Frame parent, String tipId, String tip) {
 		if (toldTips.contains(tipId)) {
 			return;

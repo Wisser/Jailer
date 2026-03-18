@@ -51,6 +51,11 @@ public class DesktopIFrameStateChangeRenderer {
 	
 	private Map<JInternalFrame, StateChange> stateChanges = new LinkedHashMap<JInternalFrame, StateChange>();
 	
+	/**
+	 * Called when a new internal frame is added to the desktop.
+	 *
+	 * @param iFrame the newly added internal frame
+	 */
 	public void onNewIFrame(final JInternalFrame iFrame) {
 		if (atomicBlock != null) {
 			atomicBlock.add(iFrame);
@@ -67,10 +72,21 @@ public class DesktopIFrameStateChangeRenderer {
 		}
 	}
  
+	/**
+	 * Called when an internal frame is selected.
+	 *
+	 * @param iFrame the selected internal frame
+	 */
 	public void onIFrameSelected(JInternalFrame iFrame) {
 		onIFrameSelected(iFrame, 0);
 	}
 
+	/**
+	 * Called when an internal frame is selected, with an animation factor offset.
+	 *
+	 * @param iFrame the selected internal frame
+	 * @param factorOffset offset applied to the animation progress factor
+	 */
 	public void onIFrameSelected(final JInternalFrame iFrame, final double factorOffset) {
 		if (atomicBlock == null) {
 			UIUtil.invokeLater(12, new Runnable() {
@@ -88,6 +104,11 @@ public class DesktopIFrameStateChangeRenderer {
 		}
 	}
 
+	/**
+	 * Renders all active state change animations onto the given graphics context.
+	 *
+	 * @param g2d the graphics context to render onto
+	 */
 	public void render(Graphics2D g2d) {
 		for (Iterator<Entry<JInternalFrame, StateChange>> iter = stateChanges.entrySet().iterator(); iter.hasNext(); ) {
 			StateChange stateChange = iter.next().getValue();
@@ -126,10 +147,16 @@ public class DesktopIFrameStateChangeRenderer {
 		}		
 	}
 
+	/**
+	 * Starts an atomic block, deferring state-change animations until {@link #endAtomic()} is called.
+	 */
 	public void startAtomic() {
 		atomicBlock = new ArrayList<JInternalFrame>();
 	}
 
+	/**
+	 * Ends an atomic block and triggers deferred state-change animations.
+	 */
 	public void endAtomic() {
 		if (atomicBlock != null) {
 			final List<JInternalFrame> iFrames = atomicBlock;
@@ -152,6 +179,9 @@ public class DesktopIFrameStateChangeRenderer {
 		}
 	}
 
+	/**
+	 * Rolls back an atomic block without triggering any deferred state-change animations.
+	 */
 	public void rollbackAtomic() {
 		atomicBlock = null;
 	}

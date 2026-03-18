@@ -85,36 +85,58 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 
 		/**
 		 * The source table.
+		 *
+		 * @return the display name of the source table
 		 */
 		String getSourceName();
 
 		/**
 		 * The destination table.
+		 *
+		 * @return the display name of the destination table
 		 */
 		String getDestinationName();
 
 		/**
 		 * The join-condition for joining source with destination table.
+		 *
+		 * @return the join condition
 		 */
 		String getJoinCondition();
 
 		/**
 		 * The cardinality.
+		 *
+		 * @return the cardinality, or {@code null} if unknown
 		 */
 		Cardinality getCardinality();
 
+		/**
+		 * Returns the type of this association.
+		 *
+		 * @return the association type
+		 */
 		AssociationType getType();
 
 		/**
 		 * <code>true</code> for reversed association.
+		 *
+		 * @return {@code true} if this is a reversed association
 		 */
 		boolean isReversed();
 
 		/**
 		 * The name of the association.
+		 *
+		 * @return the association name
 		 */
 		String getName();
 
+		/**
+		 * Returns the data model this association belongs to.
+		 *
+		 * @return the data model
+		 */
 		DataModel getDataModel();
 
 	}

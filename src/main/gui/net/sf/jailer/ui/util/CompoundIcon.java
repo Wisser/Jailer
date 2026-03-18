@@ -42,8 +42,8 @@ public class CompoundIcon implements Icon
     private float alignmentY = CENTER;
 
 	/**
-	 *  Convenience contructor for creating a CompoundIcon where the
-	 *  icons are layed out on on the X-AXIS, the gap is 0 and the
+	 *  Convenience constructor for creating a CompoundIcon where the
+	 *  icons are laid out on the X-AXIS, the gap is 0 and the
 	 *  X/Y alignments will default to CENTER.
 	 *
 	 *  @param icons  the Icons to be painted as part of the CompoundIcon
@@ -54,11 +54,11 @@ public class CompoundIcon implements Icon
     }
 
 	/**
-	 *  Convenience contructor for creating a CompoundIcon where the
+	 *  Convenience constructor for creating a CompoundIcon where the
 	 *  gap is 0 and the X/Y alignments will default to CENTER.
 	 *
 	 *  @param axis   the axis used to lay out the icons for painting.
-	 *                Must be one of the Axis enums: X_AXIS, Y_AXIS, Z_Axis.
+	 *                Must be one of the Axis enums: X_AXIS, Y_AXIS, Z_AXIS.
 	 *  @param icons  the Icons to be painted as part of the CompoundIcon
 	 */
     public CompoundIcon(Axis axis, Icon... icons)
@@ -67,11 +67,11 @@ public class CompoundIcon implements Icon
     }
 
 	/**
-	 *  Convenience contructor for creating a CompoundIcon where the
+	 *  Convenience constructor for creating a CompoundIcon where the
 	 *  X/Y alignments will default to CENTER.
 	 *
 	 *  @param axis   the axis used to lay out the icons for painting
-	 *                Must be one of the Axis enums: X_AXIS, Y_AXIS, Z_Axis.
+	 *                Must be one of the Axis enums: X_AXIS, Y_AXIS, Z_AXIS.
 	 *  @param gap    the gap between the icons
 	 *  @param icons  the Icons to be painted as part of the CompoundIcon
 	 */
@@ -84,7 +84,7 @@ public class CompoundIcon implements Icon
 	 *  Create a CompoundIcon specifying all the properties.
 	 *
 	 *  @param axis        the axis used to lay out the icons for painting
-	 *                     Must be one of the Axis enums: X_AXIS, Y_AXIS, Z_Axis.
+	 *                     Must be one of the Axis enums: X_AXIS, Y_AXIS, Z_AXIS.
 	 *  @param gap         the gap between the icons
 	 *  @param alignmentX  the X alignment of the icons. Common values are
 	 *                     LEFT, CENTER, RIGHT. Can be any value between 0.0 and 1.0
@@ -165,7 +165,7 @@ public class CompoundIcon implements Icon
 	 *  Get the Icon at the specified index.
 	 *
 	 *  @param index  the index of the Icon to be returned
-	 *  @return  the Icon at the specifed index
+	 *  @return  the Icon at the specified index
 	 *  @exception IndexOutOfBoundsException  if the index is out of range
 	 */
 	public Icon getIcon(int index)

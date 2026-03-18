@@ -24,8 +24,9 @@ public class Row {
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param rowId unique ID, also serves as SQL predicate which identifies this row
+	 * @param primaryKey primary key values
 	 * @param v column values
 	 */
 	public Row(String rowId, String[] primaryKey, Object[] v) {
@@ -68,14 +69,14 @@ public class Row {
 	private int parentModelIndex = 0;
 
 	/**
-	 * @return the parentModelInndex
+	 * @return the parentModelIndex
 	 */
 	public int getParentModelIndex() {
 		return parentModelIndex;
 	}
 
 	/**
-	 * @param parentModelIndex the parentModelInndex to set
+	 * @param parentModelIndex the parentModelIndex to set
 	 */
 	public void setParentModelIndex(int parentModelIndex) {
 		this.parentModelIndex = parentModelIndex;

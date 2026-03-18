@@ -97,6 +97,12 @@ public class ColumnsTable extends JTable {
 	private Action ecopyAction;
 	private Action editModeAction;
 	
+	/**
+	 * Constructor.
+	 *
+	 * @param rb the browser content pane providing the row data
+	 * @param inDesktop <code>true</code> if displayed inside the desktop
+	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public ColumnsTable(final BrowserContentPane rb, boolean inDesktop) {
 		this.rb = rb;
@@ -567,6 +573,9 @@ public class ColumnsTable extends JTable {
 		}
 	}
 
+	/**
+	 * Scrolls the view so that the currently selected row is visible.
+	 */
 	public void scrollToCurrentRow() {
 		final int currentColumn = rb.getCurrentRowSelection();
 		if (currentColumn >= 0 && currentColumn + 1 < getColumnCount()) {
@@ -586,6 +595,11 @@ public class ColumnsTable extends JTable {
 		}
 	}
 
+	/**
+	 * Updates the closure highlight state of this table.
+	 *
+	 * @param inClosure <code>true</code> if this table is in closure
+	 */
 	public void updateInClosureState(boolean inClosure) {
 		this.inClosure = inClosure;
 		repaint();
@@ -604,6 +618,11 @@ public class ColumnsTable extends JTable {
 
 	private JTable fixed;
 	
+	/**
+	 * Initializes a fixed companion table that mirrors row selection.
+	 *
+	 * @param fixed the fixed table to synchronize with
+	 */
 	public void initFixedTable(JTable fixed) {
 		this.fixed = fixed;
 		fixed.addMouseListener(new MouseAdapter() {
@@ -633,6 +652,9 @@ public class ColumnsTable extends JTable {
 		am.put(key, editModeAction);
 	}
 	
+	/**
+	 * Clears the current row selection highlight.
+	 */
 	public void clear() {
 		currentRow = -1;
 		repaint();

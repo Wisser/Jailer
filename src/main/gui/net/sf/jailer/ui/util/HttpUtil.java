@@ -25,8 +25,17 @@ import java.net.URLConnection;
 
 import net.sf.jailer.ui.Environment;
 
+/**
+ * Utility class for HTTP GET requests.
+ */
 public class HttpUtil {
-	
+
+	/**
+	 * Performs an HTTP GET request and returns the response body as a string.
+	 *
+	 * @param url the URL to fetch
+	 * @return the response body, or an empty string if the request fails
+	 */
 	public static String get(final String url) {
 		final StringBuilder result = new StringBuilder();
 		try {

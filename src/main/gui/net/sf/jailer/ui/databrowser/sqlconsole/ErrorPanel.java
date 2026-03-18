@@ -143,6 +143,9 @@ public class ErrorPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
     private final RSyntaxTextArea sqlEditorPane;
 
+	/**
+	 * Disables all components in this panel.
+	 */
 	public void doDisable() {
 		iconLabel.setEnabled(false);
 		statementPanel.setEnabled(false);

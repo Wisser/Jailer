@@ -59,6 +59,10 @@ public class UndoManager {
 	
 	/**
 	 * Constructor.
+	 *
+	 * @param undoMenuItem the menu item used to trigger the undo action
+	 * @param redoMenuItem the menu item used to trigger the redo action
+	 * @param undoViewHolder the panel used to display the undo/redo history
 	 */
 	public UndoManager(JMenuItem undoMenuItem, JMenuItem redoMenuItem, JPanel undoViewHolder) {
 		this.undoMenuItem = undoMenuItem;
@@ -360,6 +364,9 @@ public class UndoManager {
 		timer.start();
 	}
 
+	/**
+	 * Performs an undo operation.
+	 */
 	public void undo() {
 		undoing = true;
 		isOpen = true;
@@ -380,6 +387,9 @@ public class UndoManager {
 		updateView();
 	}
 
+	/**
+	 * Performs a redo operation.
+	 */
 	public void redo() {
 		redoing = true;
 		isOpen = true;
@@ -410,12 +420,18 @@ public class UndoManager {
 		}
 	}
 
+	/**
+	 * Resets the undo and redo stacks.
+	 */
 	public void reset() {
 		undoStack.clear();
 		redoStack.clear();
 		updateView();
 	}
 
+	/**
+	 * Clears and hides the undo/redo history view.
+	 */
 	public void hideView() {
 		protocol.clear();
 		updateView();

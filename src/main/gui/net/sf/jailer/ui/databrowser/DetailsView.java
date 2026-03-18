@@ -261,6 +261,11 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	private List<JLabel> labels = new ArrayList<JLabel>();
 	private List<Color> labelColors = new ArrayList<Color>();
 	
+	/**
+	 * Sets the border color of the scroll pane.
+	 *
+	 * @param color the border color
+	 */
 	public void setBorderColor(Color color) {
 		jScrollPane1.setBorder(BorderFactory.createEtchedBorder(color, Colors.Color_128_128_128));
 	}
@@ -1132,10 +1137,20 @@ public abstract class DetailsView extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_maximizeButtonActionPerformed
 
+    /**
+     * Returns whether this details view is pinned.
+     *
+     * @return {@code true} if the view is pinned
+     */
     public boolean isPinned() {
     	return pinToggleButton.isSelected();
     }
     
+    /**
+     * Returns the main details panel.
+     *
+     * @return the details panel
+     */
     public JPanel getDetailsPanel() {
     	return jPanel1;
     }
@@ -1162,6 +1177,11 @@ public abstract class DetailsView extends javax.swing.JPanel {
     private javax.swing.JPanel updatePanel;
     // End of variables declaration//GEN-END:variables
 
+	/**
+	 * Sets whether columns should be sorted alphabetically.
+	 *
+	 * @param selected {@code true} to sort columns, {@code false} to show them in original order
+	 */
 	public void setSortColumns(boolean selected) {
 		sortColumns = selected;
     	setCurrentRow(currentRow, showSpinner);
@@ -1178,6 +1198,9 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	private SQLDMLPanel sqlDmlDeletePanel = null;
 	private TabContentPanel tabContentPanel = null;
 	
+	/**
+	 * Prepares this view for use in a non-modal floating window, adding resize grip and DML panels.
+	 */
 	public void prepareForNonModalUsage() {
 		closeButton.setVisible(false);
 
@@ -1283,6 +1306,11 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		return text.replaceFirst("^(<[^>]+>)*([^<]{32}).+$", "$2...");
 	}
 	
+	/**
+	 * Restores the display state (sort order, pin state, scroll position, selected tab) from a previous details view.
+	 *
+	 * @param oldDv the previous details view to restore state from, or {@code null}
+	 */
 	public void restoreFromOld(DetailsView oldDv) {
 		if (oldDv != null) {
 			setSortColumns(oldDv.sortColumns);

@@ -79,7 +79,12 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
 	private static final String ALL_TABLES = "(all tables)";
 
     /**
-     * Creates new form.
+     * Creates new form and opens the column ordering dialog.
+     *
+     * @param owner the owner frame
+     * @param currentTable the initially selected table, or {@code null} for all tables
+     * @param dataModel the data model
+     * @param executionContext the execution context
      */
     public ColumnOrderEditor(JFrame owner, Table currentTable, DataModel dataModel, ExecutionContext executionContext) {
         this.dataModel = dataModel;
@@ -511,10 +516,19 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
     private JComboBox2 tablesComboBox;
     // End of variables declaration//GEN-END:variables
 
+    /**
+     * Adjusts all column widths of the column order table to fit their content.
+     */
     public void adjustTableColumnsWidth() {
 		adjustTableColumnsWidth(columnOrderTable, false);
 	}
 
+	/**
+	 * Adjusts column widths of a given table to fit their content.
+	 *
+	 * @param table the table whose columns should be resized
+	 * @param fixFirstColumn if {@code true}, the first column width is fixed
+	 */
 	public void adjustTableColumnsWidth(JTable table, boolean fixFirstColumn) {
 		try {
 			((DefaultTableCellRenderer) table.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
@@ -542,6 +556,11 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
 		}
 	}
 
+	/**
+	 * Returns whether the user confirmed the dialog with OK.
+	 *
+	 * @return {@code true} if the user clicked OK and changes were saved
+	 */
 	public boolean wasOk() {
 		return ok;
 	}

@@ -144,9 +144,11 @@ public class MDSchema extends MDObject {
 	private Object getTablesLock = new String("getTablesLock");
 	
 	/**
-	 * Gets tables of schema
-	 * @param afterLoadAction 
-	 * 
+	 * Gets tables of schema.
+	 *
+	 * @param loadTableColumns <code>true</code> to also load table columns
+	 * @param afterLoadAction action to run after columns are loaded, or <code>null</code>
+	 * @param afterLoadERCAction action to run after estimated row counts are loaded, or <code>null</code>
 	 * @return tables of schema
 	 */
 	public List<MDTable> getTables(boolean loadTableColumns, Runnable afterLoadAction, final Runnable afterLoadERCAction) {
@@ -255,6 +257,14 @@ public class MDSchema extends MDObject {
 		}
 	}
 
+	/**
+	 * Adds a delta to the estimated row count of a table.
+	 *
+	 * @param table the table
+	 * @param delta the delta to add
+	 * @param isLowerBound <code>true</code> if the result is a lower bound
+	 * @return <code>true</code> if the count was updated
+	 */
 	public boolean addEST(MDTable table, long delta, Boolean isLowerBound) {
 		if (estimatedRowCountsLoaded.get()) {
 			String key = getMetaDataSource().getQuoting().unquote(table.getName());
@@ -266,6 +276,14 @@ public class MDSchema extends MDObject {
 		return false;
 	}
 	
+	/**
+	 * Sets the estimated row count of a table.
+	 *
+	 * @param table the table
+	 * @param rc the estimated row count
+	 * @param isLowerBound <code>true</code> if the value is a lower bound
+	 * @return <code>true</code> if the count was updated
+	 */
 	public boolean setEST(MDTable table, long rc, Boolean isLowerBound) {
 		if (estimatedRowCountsLoaded.get()) {
 			String key = getMetaDataSource().getQuoting().unquote(table.getName());
@@ -304,6 +322,8 @@ public class MDSchema extends MDObject {
 
 	/**
 	 * Have the tables of the schema been loaded?
+	 *
+	 * @return <code>true</code> if the tables have been loaded
 	 */
 	public boolean isLoaded() {
 		return loaded.get();
@@ -311,6 +331,11 @@ public class MDSchema extends MDObject {
 
 	/**
 	 * Asynchronously loads the tables.
+	 *
+	 * @param loadTableColumns <code>true</code> to also load table columns
+	 * @param afterLoadAction action to run after columns are loaded, or <code>null</code>
+	 * @param afterAvailableAction action to run after tables are available, or <code>null</code>
+	 * @param afterLoadESTAction action to run after estimated row counts are loaded, or <code>null</code>
 	 */
 	public void loadTables(final boolean loadTableColumns, final Runnable afterLoadAction, final Runnable afterAvailableAction, final Runnable afterLoadESTAction) {
 		loadTablesQueue.add(new Runnable() {
@@ -348,6 +373,11 @@ public class MDSchema extends MDObject {
 
 	private Object validLock = new Object();
 	
+	/**
+	 * Sets the valid state of this schema.
+	 *
+	 * @param valid <code>true</code> if the schema is valid
+	 */
 	public void setValid(boolean valid) {
 		synchronized (validLock) {
 			this.valid = valid;
@@ -368,6 +398,11 @@ public class MDSchema extends MDObject {
 
 	private MemorizedResultSet constraints;
 	
+	/**
+	 * Returns <code>true</code> if the constraints have been loaded.
+	 *
+	 * @return <code>true</code> if constraints are loaded
+	 */
 	public boolean isConstraintsLoaded() {
 		return constraintsLoaded.get();
 	}
@@ -478,6 +513,12 @@ public class MDSchema extends MDObject {
 
 	private static Map<String, ImageIcon> constraintTypeIcons = Collections.synchronizedMap(new HashMap<String, ImageIcon>());
 
+	/**
+	 * Gets the icon for a constraint type.
+	 *
+	 * @param type the constraint type name
+	 * @return icon with text for the given constraint type
+	 */
 	public static UIUtil.IconWithText getConstraintTypeIcon(final String type) {
 		ImageIcon icon = null;
 		if (type != null) {

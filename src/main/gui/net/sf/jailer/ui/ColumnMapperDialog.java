@@ -58,7 +58,13 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 	private String initialTemplate = "";
 	private ExecutionContext executionContext;
 	
-	/** Creates new form ColumnMapperDialog */
+	/**
+	 * Creates new form ColumnMapperDialog.
+	 *
+	 * @param parent the parent frame
+	 * @param parametersGetter provides the set of available parameters
+	 * @param executionContext the execution context
+	 */
 	public ColumnMapperDialog(java.awt.Frame parent, ParameterSelector.ParametersGetter parametersGetter, ExecutionContext executionContext) {
 		super(parent, true);
 		this.executionContext = executionContext;
@@ -153,9 +159,11 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 
 	/**
 	 * Edits column mapping for a given table.
-	 * 
+	 *
 	 * @param dataModel the data model
 	 * @param table the table
+	 * @param scriptFormat the script format (XML, JSON, YAML)
+	 * @return {@code true} if the user confirmed the changes, {@code false} if cancelled
 	 */
 	public boolean edit(DataModel dataModel, Table table, ScriptFormat scriptFormat) {
 		this.table = table;

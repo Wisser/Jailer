@@ -36,8 +36,13 @@ public abstract class StartupWizzardDialog extends javax.swing.JDialog {
 
 	private static final long serialVersionUID = -6737420167295938488L;
 	
-	/** Creates new form SqlErrorDialog 
-	*/
+	/**
+	 * Creates new form StartupWizzardDialog.
+	 *
+	 * @param parent the parent window
+	 * @param withLoad if <code>true</code>, the "Load Model" button is shown
+	 * @param pos the position for the dialog, or <code>null</code> to center on the parent
+	 */
 	public StartupWizzardDialog(Window parent, boolean withLoad, Point pos) {
 		super(parent, ModalityType.MODELESS);
 		setUndecorated(true);

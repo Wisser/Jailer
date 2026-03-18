@@ -12,6 +12,12 @@ import net.sf.jailer.util.Base64;
 public class StringObfuscator {
 	private static final String KEY = "Open Secret.";
 
+	/**
+	 * Encrypts (obfuscates) the given text using XOR and Base64 encoding.
+	 *
+	 * @param text the text to encrypt, or {@code null}
+	 * @return the encrypted text, or {@code null} if {@code text} is {@code null}
+	 */
 	public String encrypt(final String text) {
 		try {
 			if (text == null) {
@@ -23,6 +29,12 @@ public class StringObfuscator {
 		}
 	}
 
+	/**
+	 * Decrypts a previously encrypted text.
+	 *
+	 * @param text the encrypted text, or {@code null}
+	 * @return the decrypted text, or {@code null} if {@code text} is {@code null}
+	 */
 	public String decrypt(final String text) {
 		try {
 			if (text == null) {

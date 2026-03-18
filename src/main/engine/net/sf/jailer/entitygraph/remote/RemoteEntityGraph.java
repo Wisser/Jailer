@@ -914,8 +914,8 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * @param applyImportFilter if <code>true</code>, apply import filters to the selection clause
 	 * @return select clause
 	 */
-	protected String filteredSelectionClause(Table table, boolean appylImportFilter) {
-		return filteredSelectionClause(table, null, quoting, appylImportFilter);
+	protected String filteredSelectionClause(Table table, boolean applyImportFilter) {
+		return filteredSelectionClause(table, null, quoting, applyImportFilter);
 	}
 
 	/**

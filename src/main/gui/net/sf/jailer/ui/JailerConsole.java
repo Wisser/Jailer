@@ -55,8 +55,10 @@ public class JailerConsole {
 	 * Constructor.
 	 *
 	 * @param owner the enclosing component
-	 * @param showLogfileButton <code>true</code> for offering a button to open the log-file
-	 * @param progressPanel progress panel, optional
+	 * @param dialog the window used as the console dialog (JDialog or JFrame)
+	 * @param showLogfileButton {@code true} for offering a button to open the log-file
+	 * @param progressPanel progress panel, or {@code null} if not used
+	 * @param fullSize {@code true} to open the console in a larger window
 	 */
 	public JailerConsole(Window owner, Window dialog, boolean showLogfileButton, ProgressPanel progressPanel, boolean fullSize) {
 		this.dialog = dialog;

@@ -24,6 +24,10 @@ import javax.swing.text.PlainDocument;
  * the public domain dedication, visit
  * http://creativecommons.org/licenses/publicdomain/
  */
+
+/**
+ * Adds auto-completion functionality to an editable {@link net.sf.jailer.ui.JComboBox2}.
+ */
 public class AutoCompletion extends PlainDocument {
 	net.sf.jailer.ui.JComboBox2 comboBox;
 	ComboBoxModel model;
@@ -38,6 +42,11 @@ public class AutoCompletion extends PlainDocument {
 	KeyListener editorKeyListener;
 	FocusListener editorFocusListener;
 
+	/**
+	 * Creates a new AutoCompletion and attaches it to the given combo box.
+	 *
+	 * @param detailsComboBox the combo box to enable auto-completion for
+	 */
 	public AutoCompletion(final net.sf.jailer.ui.JComboBox2 detailsComboBox) {
 		this.comboBox = detailsComboBox;
 		model = detailsComboBox.getModel();
@@ -103,6 +112,11 @@ public class AutoCompletion extends PlainDocument {
 		highlightCompletedText(0);
 	}
 
+	/**
+	 * Enables auto-completion on the given combo box.
+	 *
+	 * @param detailsComboBox the combo box to enable auto-completion for
+	 */
 	public static void enable(net.sf.jailer.ui.JComboBox2 detailsComboBox) {
 		// has to be editable
 		detailsComboBox.setEditable(true);

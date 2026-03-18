@@ -79,6 +79,16 @@ public class DesktopUndoManager {
 	private Stack<State> undoStack = new Stack<State>();
 	private Stack<State> redoStack = new Stack<State>();
 
+	/**
+	 * Constructor.
+	 *
+	 * @param undoButton the undo toolbar button
+	 * @param redoButton the redo toolbar button
+	 * @param undoMenuItem the undo menu item
+	 * @param redoMenuItem the redo menu item
+	 * @param dataBrowser the data browser
+	 * @param scrollPane the desktop scroll pane
+	 */
 	public DesktopUndoManager(JButton undoButton, JButton redoButton, JMenuItem undoMenuItem, JMenuItem redoMenuItem, DataBrowser dataBrowser, JScrollPane scrollPane) {
 		this.undoButton = undoButton;
 		this.redoButton = redoButton;
@@ -167,6 +177,9 @@ public class DesktopUndoManager {
 		updateUI();
 	}
 
+	/**
+	 * Removes the topmost entry from the undo stack without restoring it.
+	 */
 	public void pop() {
 		if (!undoStack.isEmpty()) {
 			undoStack.pop();
@@ -210,6 +223,12 @@ public class DesktopUndoManager {
 
 	private int numPending = 0;
 	
+	/**
+	 * Must be called before a modification to capture the current state for undo.
+	 *
+	 * @param undoDescription the label shown in the undo tooltip
+	 * @param redoDescription the label shown in the redo tooltip
+	 */
 	public void beforeModification(String undoDescription, String redoDescription) {
 		if (!restoring && enabled) {
 			if (numPending > 0) {
@@ -256,6 +275,9 @@ public class DesktopUndoManager {
 		return state;
 	}
 
+	/**
+	 * Must be called before restoring a session to disable undo tracking and clear the stacks.
+	 */
 	public void beforeRestore() {
 		if (!restoring) {
 			enabled = false;
@@ -265,16 +287,29 @@ public class DesktopUndoManager {
 		}
 	}
 
+	/**
+	 * Must be called after restoring a session to re-enable undo tracking.
+	 */
 	public void afterRestore() {
 		if (!restoring) {
 			enabled = true;
 		}
 	}
 
+	/**
+	 * Returns whether undo/redo tracking is currently enabled.
+	 *
+	 * @return {@code true} if undo/redo is enabled
+	 */
 	public boolean isEnabled() {
 		return enabled;
 	}
 
+	/**
+	 * Enables or disables undo/redo tracking. Disabling clears both stacks.
+	 *
+	 * @param enabled {@code true} to enable, {@code false} to disable
+	 */
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 		if (!enabled) {
