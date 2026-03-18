@@ -223,6 +223,12 @@ public class MetaDataCache {
 		}
 	}
 	
+	/**
+	 * Returns a result set containing the cached meta data rows for the given table name.
+	 *
+	 * @param tableName the unqualified table name to look up
+	 * @return a {@link ResultSet} with the cached rows, or {@code null} if the cache is empty
+	 */
 	public ResultSet forTable(String tableName) {
 		if (cache == null) {
 			return null;
@@ -277,6 +283,12 @@ public class MetaDataCache {
 		}
 	}
 	
+	/**
+	 * Returns a diagnostic string describing the cache contents for the given subject table.
+	 *
+	 * @param subject the table name to include in the diagnostic output
+	 * @return a string with cache statistics and the rows for the given subject table
+	 */
 	public String info(String subject) {
 		try {
 			Set<String> schema = new HashSet<String>();

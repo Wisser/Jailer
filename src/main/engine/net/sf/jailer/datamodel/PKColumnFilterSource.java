@@ -25,7 +25,10 @@ package net.sf.jailer.datamodel;
  */
 public class PKColumnFilterSource implements FilterSource {
 	
+	/** The table owning the primary key column. */
 	public final Table table;
+
+	/** The primary key column that is the source of the filter. */
 	public final Column column;
 
 	/**

@@ -57,8 +57,13 @@ public enum ScriptFormat {
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param displayName human readable name
+	 * @param fileChooserTitle title for file chooser dialogs
+	 * @param fileExtension the file extension for this format
+	 * @param isObjectNotation <code>true</code> if this is an object notation format (XML, JSON, YAML, ...)
+	 * @param separatorFollowed <code>true</code> if this format is followed by a separator in the drop-down list
+	 * @param usesUTF8 <code>true</code> if this format uses the UTF-8 charset
 	 */
 	private ScriptFormat(String displayName, String fileChooserTitle, String fileExtension, boolean isObjectNotation, boolean separatorFollowed, boolean usesUTF8) {
 		this.displayName = displayName;

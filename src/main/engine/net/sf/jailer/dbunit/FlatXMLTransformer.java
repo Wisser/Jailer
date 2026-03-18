@@ -92,11 +92,15 @@ public class FlatXMLTransformer extends AbstractResultSetReader {
 		
 		/**
 		 * Constructor.
-		 * 
+		 *
 		 * @param transformerHandler
 		 *            to write the XML into
 		 * @param metaData
 		 *            database meta data
+		 * @param dbms
+		 *            the target DBMS configuration
+		 * @param executionContext
+		 *            the execution context
 		 */
 		public Factory(TransformerHandler transformerHandler, DatabaseMetaData metaData, DBMS dbms, ExecutionContext executionContext) {
 			this.executionContext = executionContext;
@@ -212,16 +216,17 @@ public class FlatXMLTransformer extends AbstractResultSetReader {
 	}
 
 	/**
-	 * Gets value from current row a result-set.
-	 * 
+	 * Gets value from current row of a result-set.
+	 *
 	 * @param resultSet
-	 *            result-set
+	 *            the result-set
 	 * @param i
 	 *            column index
 	 * @param typeCache
-	 *            for caching types
-	 * @param dbms 
-	 * @return object
+	 *            for caching column types
+	 * @param dbms
+	 *            the target DBMS configuration
+	 * @return the column value as a string, or the null placeholder if the value is null
 	 */
 	private String getValue(ResultSet resultSet, int i, Map<Integer, Integer> typeCache, DBMS dbms) throws SQLException {
 		Object object;

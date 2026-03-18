@@ -102,6 +102,12 @@ public class SqlException extends SQLException {
 		this.isFormatted = isFormatted;
 	}
 
+	/**
+	 * Returns the SQL state associated with this exception.
+	 * Returns the SQL state from the wrapped cause if available.
+	 *
+	 * @return the SQL state string, or <code>null</code> if unavailable
+	 */
 	@Override
 	public String getSQLState() {
 		if (sqlState != null) {

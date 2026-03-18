@@ -66,8 +66,9 @@ public class Quoting {
 
 	/**
 	 * Gets the {@link Quoting} for a given session.
-	 * 
+	 *
 	 * @param session the database session
+	 * @return the {@link Quoting} instance for the session
 	 */
 	public static synchronized Quoting getQuoting(Session session) throws SQLException {
 		Quoting quoting = (Quoting) session.getSessionProperty(Quoting.class, "quoting");
@@ -165,6 +166,12 @@ public class Quoting {
 		return identifier;
 	}
 
+	/**
+	 * Checks whether an identifier has the correct case to be used unquoted.
+	 *
+	 * @param identifier the identifier to check
+	 * @return <code>true</code> if the identifier can be used without quoting
+	 */
 	public boolean hasCorrectCase(String identifier) {
 		String lower = "abcdefghijklmnopqrstuvwxyz_0123456789";
 		String upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789";
@@ -325,14 +332,21 @@ public class Quoting {
 		return quote;
 	}
 
+	/**
+	 * Checks if a character is a potential identifier quote character.
+	 *
+	 * @param c the character to check
+	 * @return <code>true</code> if the character can be used as an identifier quote
+	 */
 	public static boolean isPotentialIdentifierQuote(char c) {
 		return c == '"' || c == '\u00B4' || c == '`';
 	}
 
 	/**
-	 * Creates new Quoting with different identifierQuoteString.
-	 * 
-	 * @param identifierQuoteString
+	 * Creates a new {@link Quoting} with a different identifier quote string.
+	 *
+	 * @param identifierQuoteString the new identifier quote string
+	 * @return a new {@link Quoting} instance using the given quote string
 	 */
 	public Quoting withIdentifierQuoteString(String identifierQuoteString) {
 		return new Quoting(identifierQuoteString, unquotedIdentifierInUpperCase, unquotedIdentifierInMixedCase, keyWordsMap, keyWords);
@@ -345,7 +359,7 @@ public class Quoting {
 	 * </code>
 	 * 
 	 * @param identifier the identifier
-	 * @return normalize identifier
+	 * @return normalized identifier
 	 */
 	public static String normalizeIdentifier(String identifier) {
 		if (identifier == null) {
@@ -354,6 +368,12 @@ public class Quoting {
 		return staticUnquote(identifier).toUpperCase(Locale.ENGLISH);
 	}
 
+	/**
+	 * Normalizes the case of an unquoted identifier according to the database's case rules.
+	 *
+	 * @param identifier the identifier to normalize
+	 * @return the identifier with normalized case, or <code>null</code> if the input is <code>null</code>
+	 */
 	public String normalizeCase(String identifier) {
 		if (identifier == null) {
 			return null;
@@ -384,13 +404,28 @@ public class Quoting {
 		return staticUnquote(a).equalsIgnoreCase(staticUnquote(b));
 	}
 
+	/**
+	 * Checks whether a SQL LIKE search pattern matches either of two candidates, ignoring quoting and case.
+	 *
+	 * @param a the search pattern
+	 * @param cand1 the first candidate
+	 * @param cand2 the second candidate
+	 * @return <code>true</code> if the pattern matches either candidate
+	 */
 	public static boolean equalsWROSearchPattern(String a, String cand1, String cand2) {
 		return equalsWROSearchPattern(a, cand1) || equalsWROSearchPattern(a, cand2);
-	}		
+	}
 
+	/**
+	 * Checks whether a SQL LIKE search pattern matches a candidate, ignoring quoting and case.
+	 *
+	 * @param a the search pattern
+	 * @param b the candidate
+	 * @return <code>true</code> if the pattern matches the candidate
+	 */
 	public static boolean equalsWROSearchPattern(String a, String b) {
 		return a == null || b == null || (a.indexOf('_') < 0 && a.indexOf('%') < 0) || equalsIgnoreQuotingAndCase(a, b);
-	}		
+	}
 
 	private static Map<String, Pattern> quotePattern = new HashMap<>();
 	private static Map<String, Pattern> unquotePattern = new HashMap<>();

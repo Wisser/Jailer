@@ -28,8 +28,9 @@ public interface DataModelRenderer {
 
 	/**
 	 * Generates a human readable representation of the data-model.
-	 * 
+	 *
 	 * @param dataModel the data-model
+	 * @param restrictionFiles list of restriction-model file names applied to the data-model
 	 */
 	void render(DataModel dataModel, List<String> restrictionFiles);
 

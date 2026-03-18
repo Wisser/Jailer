@@ -104,7 +104,16 @@ public class CsvFile {
 		}
 	}
 
+	/**
+	 * Filter for CSV lines.
+	 */
 	public static interface LineFilter {
+		/**
+		 * Returns <code>true</code> if the given line should be included.
+		 *
+		 * @param line the line to test
+		 * @return <code>true</code> if the line is accepted
+		 */
 		boolean accept(Line line);
 	}
 	
@@ -129,8 +138,9 @@ public class CsvFile {
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param csvFile the csv file
+	 * @param filter optional line filter, or <code>null</code> to accept all lines
 	 */
 	public CsvFile(File csvFile, LineFilter filter) throws IOException {
 		this(csvFile, null, filter);
@@ -148,9 +158,10 @@ public class CsvFile {
 	
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param csvFile the csv file
 	 * @param block the block to read, <code>null</code> to read default block
+	 * @param filter optional line filter, or <code>null</code> to accept all lines
 	 */
 	public CsvFile(File csvFile, String block, LineFilter filter) throws IOException {
 		if (csvFile.exists()) {
@@ -204,9 +215,11 @@ public class CsvFile {
 
 	/**
 	 * Constructor.
-	 * 
-	 * @param in to read from
+	 *
+	 * @param in the input stream to read from
 	 * @param block the block to read, <code>null</code> to read default block
+	 * @param location a description of the input source used in error messages
+	 * @param filter optional line filter, or <code>null</code> to accept all lines
 	 */
 	public CsvFile(InputStream in, String block, String location, LineFilter filter) throws IOException {
 		if (in != null) {
@@ -264,10 +277,10 @@ public class CsvFile {
 	}
 
 	/**
-	 * Decodes and splits csv-line.
-	 * 
+	 * Decodes and splits a CSV line.
+	 *
 	 * @param line the line to decode
-	 * @return decoded and splitted line
+	 * @return decoded and split line as an array of cell values
 	 */
 	public static String[] decodeLine(String line) {
 		String content = decodeUnencodableChars(line);
@@ -303,8 +316,8 @@ public class CsvFile {
 	}
 
 	/**
-	 * Encodes and csv-cell.
-	 * 
+	 * Encodes a CSV cell.
+	 *
 	 * @param cell the cell to encode
 	 * @return encoded cell
 	 */
@@ -342,9 +355,10 @@ public class CsvFile {
 
 	/**
 	 * Gets the list of lines of a cached block.
-	 * 
-	 * @return list of lists of cell-contents of given block
-	 * 
+	 *
+	 * @param block the block name, or <code>null</code> for the default block
+	 * @return list of lines of the given block
+	 *
 	 * @see CsvFile#ALL_BLOCKS
 	 */
 	public List<Line> getLines(String block) {

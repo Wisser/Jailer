@@ -868,6 +868,8 @@ public class RemoteEntityGraph extends EntityGraph {
 	 *
 	 * @param table the table
 	 * @param orderByPK if <code>true</code>, result will be ordered by primary keys
+	 * @param reader the result set reader to process each row
+	 * @return the number of rows read
 	 */
 	protected long readEntities(Table table, boolean orderByPK, Session.ResultSetReader reader) throws SQLException {
 		String sqlQuery = "Select " + filteredSelectionClause(table, false) + " From " + dmlTableReference(ENTITY, session) + " E join " + quoting.requote(table.getName()) + " T on " +
@@ -892,7 +894,9 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * Updates columns of a table.
 	 *
 	 * @param table the table
-	 * @param columns the columns;
+	 * @param columns the columns
+	 * @param scriptFileWriter writer for the SQL script output
+	 * @param targetConfiguration the target DBMS configuration
 	 * @param inSourceSchema if <code>true</code>, use source-schema-mapping, else use schema-mapping
 	 * @param reason to be written as comment
 	 */
@@ -907,6 +911,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * with respect of the column filters.
 	 *
 	 * @param table the table to read rows from
+	 * @param applyImportFilter if <code>true</code>, apply import filters to the selection clause
 	 * @return select clause
 	 */
 	protected String filteredSelectionClause(Table table, boolean appylImportFilter) {
@@ -918,8 +923,9 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * with respect of the column filters.
 	 *
 	 * @param table the table to read rows from
-	 * @param columnPrefix optional prefix for aliases
-	 * @param quoting for unquoting of column names if columnPrefix is given
+	 * @param columnPrefix optional prefix for column aliases, or {@code null} for no prefix
+	 * @param quoting quoting helper for unquoting of column names when a columnPrefix is given
+	 * @param applyImportFilter if <code>true</code>, apply import filters to the selection clause
 	 * @return select clause
 	 */
 	protected String filteredSelectionClause(Table table, String columnPrefix, Quoting quoting, boolean appylImportFilter) {
@@ -1157,13 +1163,16 @@ public class RemoteEntityGraph extends EntityGraph {
 	}
 
 	/**
-	 * Reads all entities which depends on given entity.
+	 * Reads all entities which depend on a given entity.
 	 *
 	 * @param table the table from which to read entities
 	 * @param association the dependency
-	 * @param resultSet current row is given entity
+	 * @param resultSet current row is the given entity
+	 * @param resultSetMetaData meta data of the result set
 	 * @param reader reads the entities
+	 * @param typeCache cache for column type lookups
 	 * @param selectionSchema the selection schema
+	 * @param originalPKAliasPrefix prefix for original primary key aliases
 	 */
 	@Override
 	public void readDependentEntities(Table table, Association association, ResultSet resultSet, ResultSetMetaData resultSetMetaData, ResultSetReader reader, Map<String, Integer> typeCache, String selectionSchema, String originalPKAliasPrefix) throws SQLException {
@@ -1198,10 +1207,12 @@ public class RemoteEntityGraph extends EntityGraph {
 	}
 
 	/**
-	 * Marks all entities which depends on given entity as traversed.
+	 * Marks all entities which depend on a given entity as traversed.
 	 *
 	 * @param association the dependency
-	 * @param resultSet current row is given entity
+	 * @param resultSet current row is the given entity
+	 * @param resultSetMetaData meta data of the result set
+	 * @param typeCache cache for column type lookups
 	 */
 	@Override
 	public void markDependentEntitiesAsTraversed(Association association, ResultSet resultSet, ResultSetMetaData resultSetMetaData, Map<String, Integer> typeCache) throws SQLException {
@@ -1266,11 +1277,14 @@ public class RemoteEntityGraph extends EntityGraph {
 	}
 
 	/**
-	 * Gets a SQL comparison expression for comparing rows with given entity.
+	 * Gets a SQL comparison expression for comparing rows with a given entity.
 	 *
 	 * @param table the table
-	 * @param resultSet
-	 * @return a SQL comparison expression for comparing rows of <code>table</code> with current row of resultSet
+	 * @param resultSet the result set whose current row represents the given entity
+	 * @param alias the alias for the dependency table in the SQL expression
+	 * @param columnPrefix prefix for the primary key column names
+	 * @param cellContentConverter converter for cell content
+	 * @return a SQL comparison expression for comparing rows of <code>table</code> with the current row of resultSet
 	 */
 	private String pkEqualsEntityID(Table table, ResultSet resultSet, String alias, String columnPrefix, CellContentConverter cellContentConverter) throws SQLException {
 		Map<Column, Column> match = universalPrimaryKey.match(rowIdSupport.getPrimaryKey(table));
@@ -1306,6 +1320,8 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * Gets a SQL comparison expression for comparing rows with entities.
 	 *
 	 * @param table the table
+	 * @param tableAlias the alias for the table in the SQL expression
+	 * @param entityAlias the alias for the entity table in the SQL expression
 	 * @return a SQL comparison expression for comparing rows of <code>table</code> with entities
 	 */
 	protected String pkEqualsEntityID(Table table, String tableAlias, String entityAlias) {

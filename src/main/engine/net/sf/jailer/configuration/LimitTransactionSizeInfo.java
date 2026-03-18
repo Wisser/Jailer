@@ -48,7 +48,8 @@ public class LimitTransactionSizeInfo {
 
 	/**
 	 * Is this applicable?
-	 * 
+	 *
+	 * @param executionContext the execution context
 	 * @return <code>true</code> if applicable
 	 */
 	public boolean isApplicable(ExecutionContext executionContext) {
@@ -57,7 +58,8 @@ public class LimitTransactionSizeInfo {
 
 	/**
 	 * Gets increment size or <code>null</code>, if incremental inserts are not applicable.
-	 * 
+	 *
+	 * @param executionContext the execution context
 	 * @return increment size or <code>null</code>, if incremental inserts are not applicable
 	 */
 	public long getSize(ExecutionContext executionContext) {
@@ -66,7 +68,8 @@ public class LimitTransactionSizeInfo {
 
 	/**
 	 * Gets fragment to be inserted into a select statement after the "SELECT".
-	 * 
+	 *
+	 * @param executionContext the execution context
 	 * @return fragment (may be the empty string)
 	 */
 	public String afterSelectFragment(ExecutionContext executionContext) {
@@ -79,7 +82,8 @@ public class LimitTransactionSizeInfo {
 
 	/**
 	 * Gets fragment to be inserted as condition into the "WHERE".
-	 * 
+	 *
+	 * @param executionContext the execution context
 	 * @return fragment (may be the empty string)
 	 */
 	public String additionalWhereConditionFragment(ExecutionContext executionContext) {
@@ -92,7 +96,8 @@ public class LimitTransactionSizeInfo {
 
 	/**
 	 * Gets fragment to be appended.
-	 * 
+	 *
+	 * @param executionContext the execution context
 	 * @return fragment (may be the empty string)
 	 */
 	public String statementSuffixFragment(ExecutionContext executionContext) {
@@ -104,8 +109,8 @@ public class LimitTransactionSizeInfo {
 	}
 
 	/**
-	 * Limit or 0.
-	 * 
+	 * Gets the limit.
+	 *
 	 * @return limit or 0 if limiting is not possible
 	 */
 	public long getLimit() {
@@ -113,49 +118,63 @@ public class LimitTransactionSizeInfo {
 	}
 
 	/**
-	 * Limit.
+	 * Sets the limit.
+	 *
+	 * @param size the limit to set
 	 */
 	public void setLimit(long size) {
 		this.limit = size;
 	}
 
 	/**
-	 * Pattern to be inserted after "SELECT" in a select query.
+	 * Gets the pattern to be inserted after "SELECT" in a select query.
+	 *
+	 * @return the pattern to be inserted after "SELECT"
 	 */
 	public String getAfterSelect() {
 		return afterSelect;
 	}
 
 	/**
-	 * Pattern to be inserted after "SELECT" in a select query.
+	 * Sets the pattern to be inserted after "SELECT" in a select query.
+	 *
+	 * @param afterSelect the pattern to set
 	 */
 	public void setAfterSelect(String afterSelect) {
 		this.afterSelect = afterSelect;
 	}
 
 	/**
-	 * Pattern to be inserted as condition into the "WHERE".
+	 * Gets the pattern to be inserted as condition into the "WHERE".
+	 *
+	 * @return the additional WHERE condition pattern
 	 */
 	public String getAdditionalWhereCondition() {
 		return additionalWhereCondition;
 	}
 
 	/**
-	 * Pattern to be inserted as condition into the "WHERE".
+	 * Sets the pattern to be inserted as condition into the "WHERE".
+	 *
+	 * @param additionalWhereCondition the additional WHERE condition pattern to set
 	 */
 	public void setAdditionalWhereCondition(String additionalWhereCondition) {
 		this.additionalWhereCondition = additionalWhereCondition;
 	}
 
 	/**
-	 * Pattern to be appended.
+	 * Gets the pattern to be appended to the statement.
+	 *
+	 * @return the statement suffix pattern
 	 */
 	public String getStatementSuffix() {
 		return statementSuffix;
 	}
 
 	/**
-	 * Pattern to be appended.
+	 * Sets the pattern to be appended to the statement.
+	 *
+	 * @param statementSuffix the statement suffix pattern to set
 	 */
 	public void setStatementSuffix(String statementSuffix) {
 		this.statementSuffix = statementSuffix;

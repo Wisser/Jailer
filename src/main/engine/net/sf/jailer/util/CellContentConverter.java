@@ -270,15 +270,30 @@ public class CellContentConverter {
 		OBJECT_TYPES.addAll(Arrays.asList("uuid", "hstore", "ghstore", "json", "jsonb", "_hstore", "_json", "_jsonb", "_ghstore"));
 	}
 
+	/**
+	 * Wraps a database value together with a type and conversion pattern to produce a SQL expression.
+	 */
 	public class SQLExpressionWrapper implements Comparable<SQLExpressionWrapper> {
 		private final Object value;
 		private final String type;
 		private final String pattern;
+		/**
+		 * Constructor.
+		 *
+		 * @param value the database value
+		 * @param type the SQL type name
+		 * @param pattern the conversion pattern containing <code>$1</code> (value) and <code>$2</code> (type) placeholders
+		 */
 		public SQLExpressionWrapper(Object value, String type, String pattern) {
 			this.value = value;
 			this.type = type;
 			this.pattern = pattern;
 		}
+		/**
+		 * Returns the SQL expression for this value.
+		 *
+		 * @return the SQL expression
+		 */
 		public String getExpression() {
 			String expression = pattern.replace("$1", "$\n1").replace("$2", type);
 			if (pattern.contains("'$1'")) {
@@ -333,11 +348,24 @@ public class CellContentConverter {
 		}
 	}
 
+	/**
+	 * Wraps a DATETIMEOFFSET value (Microsoft SQL Server specific).
+	 */
 	public class DateTimeOffsetWrapper implements Comparable<DateTimeOffsetWrapper> {
 		private final Object value;
+		/**
+		 * Constructor.
+		 *
+		 * @param value the DATETIMEOFFSET value
+		 */
 		public DateTimeOffsetWrapper(Object value) {
 			this.value = value;
 		}
+		/**
+		 * Returns the SQL CAST expression for this DATETIMEOFFSET value.
+		 *
+		 * @return the SQL expression
+		 */
 		public String getExpression() {
 			return "CAST('" + value + "' AS DATETIMEOFFSET)";
 		}
@@ -374,16 +402,35 @@ public class CellContentConverter {
 		}
 	}
 
+	/**
+	 * Wraps a PostgreSQL object value together with its type name.
+	 */
 	public static class PObjectWrapper implements Comparable<PObjectWrapper> {
 		private final String value;
 		private final String type;
+		/**
+		 * Constructor.
+		 *
+		 * @param value the string representation of the value
+		 * @param type the PostgreSQL type name
+		 */
 		public PObjectWrapper(String value, String type) {
 			this.value = value;
 			this.type = type;
 		}
+		/**
+		 * Returns the string representation of this value.
+		 *
+		 * @return the value
+		 */
 		public String getValue() {
 			return value;
 		}
+		/**
+		 * Returns the PostgreSQL type name.
+		 *
+		 * @return the type name
+		 */
 		public String getType() {
 			return type;
 		}
@@ -426,8 +473,16 @@ public class CellContentConverter {
 		}
 	}
 
+	/**
+	 * Wraps a national character (NCHAR/NVARCHAR) string value.
+	 */
 	public static class NCharWrapper implements Comparable<NCharWrapper> {
 		private final String value;
+		/**
+		 * Constructor.
+		 *
+		 * @param value the national character string value
+		 */
 		public NCharWrapper(String value) {
 			this.value = value;
 		}
@@ -464,8 +519,16 @@ public class CellContentConverter {
 		}
 	}
 
+	/**
+	 * A {@link Timestamp} subclass that preserves nanosecond precision.
+	 */
 	@SuppressWarnings("serial")
 	public static class TimestampWithNano extends Timestamp {
+		/**
+		 * Constructor.
+		 *
+		 * @param time the time in milliseconds since the epoch
+		 */
 		public TimestampWithNano(long time) {
 			super(time);
 		}
@@ -694,6 +757,12 @@ public class CellContentConverter {
 		return object;
 	}
 
+	/**
+	 * Checks whether the given column type name is a PostgreSQL object type.
+	 *
+	 * @param columnTypeName the column type name to check
+	 * @return <code>true</code> if the type is a known PostgreSQL object type
+	 */
 	public static boolean isPostgresObjectType(String columnTypeName) {
 		if (columnTypeName == null) {
 			return false;
@@ -863,6 +932,14 @@ public class CellContentConverter {
 		NON_COMPARABLE_PG_TYPES.addAll(Arrays.asList("jsonpath", "hstore", "ghstore", "json", "jsonb", "gtsvector", "point", "lseg", "path", "box", "polygon", "line", "circle" ));
 	}   
 
+	/**
+	 * Returns a SQL expression for a column that can be used in a comparison,
+	 * applying any necessary type cast for DBMS-specific non-comparable types.
+	 *
+	 * @param session the current database session
+	 * @param column the column to prepare
+	 * @return SQL expression for the column suitable for comparison
+	 */
 	public static String prepareForComparison(Session session, Column column) {
 		if (session != null && DBMS.POSTGRESQL.equals(session.dbms) && column.type != null) {
 			if (NON_COMPARABLE_PG_TYPES.contains(column.type.toLowerCase(Locale.ENGLISH))) {

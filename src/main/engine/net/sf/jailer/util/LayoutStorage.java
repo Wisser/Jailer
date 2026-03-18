@@ -193,9 +193,9 @@ public class LayoutStorage {
 	}
 
 	/**
-	 * Store layout into stream.
-	 * 
-	 * @param out the stream
+	 * Stores the layout into a stream.
+	 *
+	 * @param out the stream to write to
 	 */
 	public void store(PrintWriter out) {
 		store(out, tablePositions);
@@ -254,9 +254,10 @@ public class LayoutStorage {
 	}
 
 	/**
-	 * Store layout into stream.
-	 * 
-	 * @param out the stream
+	 * Stores the given layout positions into a stream.
+	 *
+	 * @param out the stream to write to
+	 * @param positions the positions to store, keyed by root table and then table name
 	 */
 	public void store(PrintWriter out, Map<String, Map<String, double[]>> positions) {
 		out.println(CsvFile.BLOCK_INDICATOR + "layout");
@@ -270,9 +271,9 @@ public class LayoutStorage {
 	}
 
 	/**
-	 * Restores a layout from file
-	 *  
-	 * @param file the file
+	 * Restores a layout from a file.
+	 *
+	 * @param file the file path to restore from
 	 */
 	public void restore(String file) {
 		restore(file, true);
@@ -328,6 +329,12 @@ public class LayoutStorage {
 	 */
 	private Map<String, Map<String, double[]>> globalTablePositions = Collections.synchronizedMap(new TreeMap<String, Map<String,double[]>>());
 
+	/**
+	 * Sets temporary storage for positions (used for undo/redo).
+	 * When set to a non-null value, all position reads and writes use this map instead of the persistent storage.
+	 *
+	 * @param tmp the temporary position map, or <code>null</code> to disable temporary storage
+	 */
 	public void setTempStorage(Map<String, double[]> tmp) {
 		tempPosistions = tmp;
 	}

@@ -239,8 +239,8 @@ public class RestrictionModel {
 	 *
 	 * @param association the association
 	 * @param condition the restriction-condition
-	 * @param parameters apply this parameter-value mapping to all restriction conditions
 	 * @param location location in CSV-file
+	 * @param parameters apply this parameter-value mapping to all restriction conditions
 	 */
 	public void addRestriction(Association association, String condition, String location, Map<String, String> parameters) {
 		addRestriction(association, condition, location, false, parameters);

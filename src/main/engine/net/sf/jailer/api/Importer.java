@@ -104,7 +104,7 @@ public class Importer {
 	}
 
 	/**
-	 * If <code>true</code>, Import rows in a single transaction. (default is true)
+	 * If <code>true</code>, import rows in a single transaction. (default is true)
 	 *
 	 * @param transactional
 	 *            <code>true</code> if import rows in a single transaction

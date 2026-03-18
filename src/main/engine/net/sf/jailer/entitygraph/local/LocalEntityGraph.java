@@ -330,6 +330,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * Copies an entity-graph.
 	 *
 	 * @param newGraphID the unique ID of the new graph
+	 * @param _unused not used (the local session is reused from this graph)
 	 * @return the newly created entity-graph
 	 */
 	@Override
@@ -570,6 +571,9 @@ public class LocalEntityGraph extends EntityGraph {
 	 *
 	 * @param table the table
 	 * @param association the association to resolve
+	 * @param otherGraph the target entity-graph to add resolved entities into
+	 * @param universum the universe entity-graph used to filter candidates
+	 * @param forDelete if <code>true</code>, resolves for deletion rather than export
 	 *
 	 * @return row-count
 	 */
@@ -1095,7 +1099,9 @@ public class LocalEntityGraph extends EntityGraph {
 	 * Updates columns of a table.
 	 *
 	 * @param table the table
-	 * @param columns the columns;
+	 * @param columns the columns
+	 * @param scriptFileWriter writer for the SQL script output
+	 * @param targetConfiguration the target DBMS configuration
 	 * @param inSourceSchema if <code>true</code>, use source-schema-mapping, else use schema-mapping
 	 * @param reason to be written as comment
 	 */
@@ -1385,13 +1391,16 @@ public class LocalEntityGraph extends EntityGraph {
 	}
 
 	/**
-	 * Reads all entities which depends on given entity.
+	 * Reads all entities which depend on a given entity.
 	 *
 	 * @param table the table from which to read entities
 	 * @param association the dependency
-	 * @param resultSet current row is given entity
+	 * @param resultSet current row is the given entity
+	 * @param resultSetMetaData meta data of the result set
 	 * @param reader reads the entities
+	 * @param theTypeCache cache for column type lookups
 	 * @param selectionSchema the selection schema
+	 * @param originalPKAliasPrefix prefix for original primary key aliases
 	 */
 	@Override
 	public void readDependentEntities(final Table table, final Association association, final ResultSet resultSet, ResultSetMetaData resultSetMetaData, final ResultSetReader reader, final Map<String, Integer> theTypeCache, final String selectionSchema, final String originalPKAliasPrefix) throws SQLException {
@@ -1431,11 +1440,12 @@ public class LocalEntityGraph extends EntityGraph {
 	}
 
 	/**
-	 * Marks all entities which depends on given entity as traversed.
+	 * Marks all entities which depend on a given entity as traversed.
 	 *
 	 * @param association the dependency
-	 * 
-	 * @param resultSet current row is given entity
+	 * @param resultSet current row is the given entity
+	 * @param resultSetMetaData meta data of the result set
+	 * @param typeCache cache for column type lookups
 	 */
 	@Override
 	public void markDependentEntitiesAsTraversed(Association association, ResultSet resultSet, ResultSetMetaData resultSetMetaData, Map<String, Integer> typeCache) throws SQLException {

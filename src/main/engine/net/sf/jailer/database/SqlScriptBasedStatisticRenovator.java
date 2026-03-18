@@ -77,8 +77,9 @@ public class SqlScriptBasedStatisticRenovator implements StatisticRenovator {
 	/**
 	 * Renews the DB table statistics for the working-tables
 	 * by executing the SQL-script.
-	 * 
+	 *
 	 * @param session for execution of SQL-statements
+	 * @param executionContext the execution context
 	 */
 	@Override
 	public void renew(Session session, ExecutionContext executionContext) throws Exception {

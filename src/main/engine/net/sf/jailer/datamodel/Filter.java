@@ -89,15 +89,22 @@ public class Filter {
 	 */
 	private List<String> appliedTo;
 	
+	/** Placeholder for the old (original) column value in filter expressions. */
 	public static String OLD_VALUE_PROP = "${old-value}";
+
+	/** The pure parameter name used inside {@link #OLD_VALUE_PROP}. */
 	public static String OLD_VALUE_PROP_PURE = "old-value";
+
+	/** Regular expression pattern matching {@link #OLD_VALUE_PROP}. */
 	public static String OLD_VALUE_PROP_RE = "\\$\\{old-value\\}";
 	
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param expression filter expression (in SQL)
+	 * @param type optional type of filter expression
 	 * @param derived derived from parent primary key column?
+	 * @param filterSource the source of this filter
 	 */
 	public Filter(String expression, String type, boolean derived, FilterSource filterSource) {
 		this(expression, type, derived, filterSource, null);
@@ -105,10 +112,12 @@ public class Filter {
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param expression filter expression (in SQL)
+	 * @param type optional type of filter expression
 	 * @param derived derived from parent primary key column?
-	 * @param reason reason
+	 * @param filterSource the source of this filter
+	 * @param reason reason (optional)
 	 */
 	public Filter(String expression, String type, boolean derived, FilterSource filterSource, String reason) {
 		this.expression = expression;

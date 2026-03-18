@@ -54,15 +54,37 @@ public class MemorizedResultSet implements ResultSet {
 	private boolean wasNull;
 	MemorizedResultSetMetaData resultSetMetaData;
 
+	/**
+	 * Constructor. Creates a memorized result set from a pre-built row list without meta data.
+	 *
+	 * @param rowList the list of rows to memorize
+	 */
 	public MemorizedResultSet(List<Object[]> rowList) {
 		this.rowList = rowList;
 	}
 
+	/**
+	 * Constructor. Creates a memorized result set from a pre-built row list with full meta data.
+	 *
+	 * @param rowList the list of rows to memorize
+	 * @param numCol the number of columns
+	 * @param names the column names
+	 * @param types the SQL column types
+	 * @param typeNames the SQL column type names
+	 */
 	public MemorizedResultSet(List<Object[]> rowList, int numCol, String[] names, int[] types, String[] typeNames) {
 		this.rowList = rowList;
 		this.resultSetMetaData = new MemorizedResultSetMetaData(numCol, names, types, typeNames);
 	}
 
+	/**
+	 * Constructor. Creates a memorized result set from a pre-built row list with meta data (without type names).
+	 *
+	 * @param rowList the list of rows to memorize
+	 * @param numCol the number of columns
+	 * @param names the column names
+	 * @param types the SQL column types
+	 */
 	public MemorizedResultSet(List<Object[]> rowList, int numCol, String[] names, int[] types) {
 		this.rowList = rowList;
 		String[] typeNames = new String[types.length];
@@ -72,28 +94,65 @@ public class MemorizedResultSet implements ResultSet {
 		this.resultSetMetaData = new MemorizedResultSetMetaData(numCol, names, types, typeNames);
 	}
 
+	/**
+	 * Constructor. Creates a memorized result set from a pre-built row list with the given meta data.
+	 *
+	 * @param rowList the list of rows to memorize
+	 * @param resultSetMetaData the meta data to associate with this result set
+	 */
 	public MemorizedResultSet(List<Object[]> rowList, MemorizedResultSetMetaData resultSetMetaData) {
 		this.rowList = rowList;
 		this.resultSetMetaData = resultSetMetaData;
 	}
 
+	/**
+	 * Resets the cursor to before the first row.
+	 */
 	public void reset() {
 		index = -1;
 	}
 
+	/**
+	 * Gets the number of rows in this result set.
+	 *
+	 * @return the number of rows
+	 */
 	public int getSize() {
 		return rowList.size();
 	}
 
+	/**
+	 * Gets the underlying list of rows.
+	 *
+	 * @return the list of rows
+	 */
 	public List<Object[]> getRowList() {
 		return rowList;
 	}
 
+	/**
+	 * Constructor. Reads and memorizes all rows from the given result set.
+	 *
+	 * @param resultSet the result set to read from
+	 * @param limit maximum number of rows to read, or {@code null} for no limit
+	 * @param session the database session
+	 * @param cancellationContext context object used for cancellation checks, or {@code null}
+	 */
 	public MemorizedResultSet(ResultSet resultSet, Integer limit, Session session, Object cancellationContext)
 			throws SQLException {
 		this(resultSet, limit, session, cancellationContext, null, null);
 	}
 
+	/**
+	 * Constructor. Reads and memorizes rows from the given result set, optionally projecting columns.
+	 *
+	 * @param resultSet the result set to read from
+	 * @param limit maximum number of rows to read, or {@code null} for no limit
+	 * @param session the database session
+	 * @param cancellationContext context object used for cancellation checks, or {@code null}
+	 * @param projection optional array of 1-based column indices to project, or {@code null} for all columns
+	 * @param columnNames optional array of column names to use instead of the result set column names, or {@code null}
+	 */
 	public MemorizedResultSet(ResultSet resultSet, Integer limit, Session session, Object cancellationContext, int[] projection, String[] columnNames)
 			throws SQLException {
 		this.rowList = new ArrayList<Object[]>();
@@ -144,6 +203,11 @@ public class MemorizedResultSet implements ResultSet {
 		return objectSupplier.get();
 	}
 
+	/**
+	 * Removes all rows where the value at the given column index is {@code null}.
+	 *
+	 * @param columnIndex the 1-based column index to check for null values
+	 */
 	public void removeNullRows(int columnIndex) {
 		if (rowList != null) {
 			Iterator<Object[]> i = rowList.iterator();

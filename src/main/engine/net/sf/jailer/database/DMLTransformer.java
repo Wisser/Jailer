@@ -203,8 +203,11 @@ public class DMLTransformer extends AbstractResultSetReader {
 		 * Constructor.
 		 *
 		 * @param scriptFileWriter the file to write to
-		 * @param maxBodySize maximum length of SQL values list (for generated inserts)
 		 * @param upsertOnly use 'upsert' statements for all entities
+		 * @param maxBodySize maximum length of SQL values list (for generated inserts)
+		 * @param session the current session
+		 * @param targetDBMSConfiguration configuration of the target DBMS
+		 * @param executionContext the execution context
 		 */
 		public Factory(OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, Session session, DBMS targetDBMSConfiguration, ExecutionContext executionContext) {
 			this.maxBodySize = maxBodySize;
@@ -292,6 +295,12 @@ public class DMLTransformer extends AbstractResultSetReader {
 		}
 	}
 
+	/**
+	 * Creates a {@link Quoting} instance for the given session.
+	 *
+	 * @param session the session
+	 * @return a {@link Quoting} instance for the session
+	 */
 	protected Quoting createQuoting(Session session) throws SQLException {
 		return Quoting.getQuoting(session);
 	}

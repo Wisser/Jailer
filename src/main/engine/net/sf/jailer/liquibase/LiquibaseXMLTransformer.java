@@ -36,6 +36,11 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.subsetting.TransformerFactory;
 
+/**
+ * Transforms result set rows into Liquibase XML changeset format.
+ *
+ * @author Ralf Wisser
+ */
 public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 	
 	private static final String VALUE_DATE = "valueDate";
@@ -56,7 +61,7 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 	private final SimpleDateFormat datePattern;
 	
 	/**
-	 * Pattern for dates.
+	 * Pattern for times.
 	 */
 	private final SimpleDateFormat timePattern;
 	

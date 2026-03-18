@@ -221,6 +221,8 @@ public class Association extends ModelElement {
 
 	/**
 	 * Stringifies the association.
+	 *
+	 * @return string representation of the association
 	 */
 	@Override
 	public String toString() {

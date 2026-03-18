@@ -360,34 +360,70 @@ public class DBMS {
 	
 	private boolean usesCatalog;
 	
+	/**
+	 * Returns whether this DBMS uses catalogs.
+	 *
+	 * @return <code>true</code> if catalogs are used
+	 */
 	public boolean isUsesCatalog() {
 		return usesCatalog;
 	}
 
+	/**
+	 * Sets whether this DBMS uses catalogs.
+	 *
+	 * @param usesCatalog <code>true</code> if catalogs are used
+	 */
 	public void setUsesCatalog(boolean usesCatalog) {
 		this.usesCatalog = usesCatalog;
 	}
 	
 	private boolean supportsGlobalWorkingtables = true;
 	
+	/**
+	 * Returns whether this DBMS supports global working tables.
+	 *
+	 * @return <code>true</code> if global working tables are supported
+	 */
 	public boolean isSupportsGlobalWorkingtables() {
 		return supportsGlobalWorkingtables;
 	}
 
+	/**
+	 * Sets whether this DBMS supports global working tables.
+	 *
+	 * @param supportsGlobalWorkingtables <code>true</code> if global working tables are supported
+	 */
 	public void setSupportsGlobalWorkingtables(boolean supportsGlobalWorkingtables) {
 		this.supportsGlobalWorkingtables = supportsGlobalWorkingtables;
 	}
 
 	private boolean supported = true;
 	
+	/**
+	 * Returns whether this DBMS is supported.
+	 *
+	 * @return <code>true</code> if this DBMS is supported
+	 */
 	public boolean isSupported() {
 		return supported;
 	}
 
+	/**
+	 * Sets whether this DBMS is supported.
+	 *
+	 * @param supported <code>true</code> if this DBMS is supported
+	 */
 	public void setSupported(boolean supported) {
 		this.supported = supported;
 	}
 
+	/**
+	 * Returns whether the given type name matches the CLOB type pattern.
+	 *
+	 * @param typeWithLength the SQL type name (possibly including length)
+	 * @return <code>true</code> if the type is a CLOB type
+	 */
 	public boolean isClobType(String typeWithLength) {
 		if (clobTypesRE == null) {
 			return false;
@@ -398,6 +434,12 @@ public class DBMS {
 		return clobTypesPattern.matcher(typeWithLength).matches();
 	}
 
+	/**
+	 * Returns whether the given type name matches the NCLOB type pattern.
+	 *
+	 * @param typeWithLength the SQL type name (possibly including length)
+	 * @return <code>true</code> if the type is an NCLOB type
+	 */
 	public boolean isNClobType(String typeWithLength) {
 		if (nClobTypesRE == null) {
 			return false;
@@ -408,6 +450,12 @@ public class DBMS {
 		return nClobTypesPattern.matcher(typeWithLength).matches();
 	}
 
+	/**
+	 * Returns whether the given type name matches the BLOB type pattern.
+	 *
+	 * @param typeWithLength the SQL type name (possibly including length)
+	 * @return <code>true</code> if the type is a BLOB type
+	 */
 	public boolean isBlobType(String typeWithLength) {
 		if (blobTypesRE == null) {
 			return false;
@@ -418,81 +466,127 @@ public class DBMS {
 		return blobTypesPattern.matcher(typeWithLength).matches();
 	}
 
+	/**
+	 * Gets the regular expression pattern for CLOB type names.
+	 *
+	 * @return the CLOB types regular expression
+	 */
 	public String getClobTypesRE() {
 		return clobTypesRE;
 	}
 
+	/**
+	 * Sets the regular expression pattern for CLOB type names.
+	 *
+	 * @param clobTypesRE the CLOB types regular expression to set
+	 */
 	public void setClobTypesRE(String clobTypesRE) {
 		this.clobTypesRE = clobTypesRE;
 	}
 
+	/**
+	 * Gets the regular expression pattern for NCLOB type names.
+	 *
+	 * @return the NCLOB types regular expression
+	 */
 	public String getnClobTypesRE() {
 		return nClobTypesRE;
 	}
 
+	/**
+	 * Sets the regular expression pattern for NCLOB type names.
+	 *
+	 * @param nClobTypesRE the NCLOB types regular expression to set
+	 */
 	public void setnClobTypesRE(String nClobTypesRE) {
 		this.nClobTypesRE = nClobTypesRE;
 	}
 
+	/**
+	 * Gets the regular expression pattern for BLOB type names.
+	 *
+	 * @return the BLOB types regular expression
+	 */
 	public String getBlobTypesRE() {
 		return blobTypesRE;
 	}
 
+	/**
+	 * Sets the regular expression pattern for BLOB type names.
+	 *
+	 * @param blobTypesRE the BLOB types regular expression to set
+	 */
 	public void setBlobTypesRE(String blobTypesRE) {
 		this.blobTypesRE = blobTypesRE;
 	}
 
 	/**
-	 * @return the virtualColumnsQuery
+	 * Gets the query to retrieve virtual columns.
+	 *
+	 * @return the virtual columns query
 	 */
 	public String getVirtualColumnsQuery() {
 		return virtualColumnsQuery;
 	}
 
 	/**
-	 * @param virtualColumnsQuery the virtualColumnsQuery to set
+	 * Sets the query to retrieve virtual columns.
+	 *
+	 * @param virtualColumnsQuery the virtual columns query to set
 	 */
 	public void setVirtualColumnsQuery(String virtualColumnsQuery) {
 		this.virtualColumnsQuery = virtualColumnsQuery;
 	}
 
 	/**
-	 * @return the useInlineViewsInDataBrowser
+	 * Returns whether inline views should be used in the Data Browser for this DBMS.
+	 *
+	 * @return <code>true</code> if inline views should be used in the Data Browser
 	 */
 	public boolean isUseInlineViewsInDataBrowser() {
 		return useInlineViewsInDataBrowser;
 	}
 
 	/**
-	 * @param useInlineViewsInDataBrowser the useInlineViewsInDataBrowser to set
+	 * Sets whether inline views should be used in the Data Browser for this DBMS.
+	 *
+	 * @param useInlineViewsInDataBrowser <code>true</code> to use inline views in the Data Browser
 	 */
 	public void setUseInlineViewsInDataBrowser(boolean useInlineViewsInDataBrowser) {
 		this.useInlineViewsInDataBrowser = useInlineViewsInDataBrowser;
 	}
 
 	/**
-	 * @return the embeddedLobSizeLimit
+	 * Gets the maximum size (in bytes) for LOB values to be embedded inline in SQL statements.
+	 *
+	 * @return the embedded LOB size limit
 	 */
 	public int getEmbeddedLobSizeLimit() {
 		return embeddedLobSizeLimit;
 	}
 
 	/**
-	 * @param embeddedLobSizeLimit the embeddedLobSizeLimit to set
+	 * Sets the maximum size (in bytes) for LOB values to be embedded inline in SQL statements.
+	 *
+	 * @param embeddedLobSizeLimit the embedded LOB size limit to set
 	 */
 	public void setEmbeddedLobSizeLimit(int embeddedLobSizeLimit) {
 		this.embeddedLobSizeLimit = embeddedLobSizeLimit;
 	}
 
 	/**
-	 * @return the supportsSchemasInIndexDefinitions
+	 * Returns whether this DBMS supports schema qualifiers in index definitions.
+	 *
+	 * @return <code>true</code> if schema qualifiers are supported in index definitions, or {@code null} if unknown
 	 */
 	public Boolean getSupportsSchemasInIndexDefinitions() {
 		return supportsSchemasInIndexDefinitions;
 	}
 
 	/**
-	 * @param supportsSchemasInIndexDefinitions the supportsSchemasInIndexDefinitions to set
+	 * Sets whether this DBMS supports schema qualifiers in index definitions.
+	 *
+	 * @param supportsSchemasInIndexDefinitions <code>true</code> if schema qualifiers are supported in index definitions
 	 */
 	public void setSupportsSchemasInIndexDefinitions(
 			Boolean supportsSchemasInIndexDefinitions) {
@@ -500,28 +594,36 @@ public class DBMS {
 	}
 
 	/**
-	 * @return the rowidName
+	 * Gets the name of the rowid/ctid pseudo-column for this DBMS.
+	 *
+	 * @return the rowid column name, or {@code null} if not applicable
 	 */
 	public String getRowidName() {
 		return rowidName;
 	}
 
 	/**
-	 * @param rowidName the rowidName to set
+	 * Sets the name of the rowid/ctid pseudo-column for this DBMS.
+	 *
+	 * @param rowidName the rowid column name to set
 	 */
 	public void setRowidName(String rowidName) {
 		this.rowidName = rowidName != null && rowidName.trim().length() == 0? null : rowidName;
 	}
 
 	/**
-	 * @return the rowidType
+	 * Gets the SQL type of the rowid/ctid pseudo-column for this DBMS.
+	 *
+	 * @return the rowid column type, or {@code null} if not applicable
 	 */
 	public String getRowidType() {
 		return rowidType;
 	}
 
 	/**
-	 * @param rowidType the rowidType to set
+	 * Sets the SQL type of the rowid/ctid pseudo-column for this DBMS.
+	 *
+	 * @param rowidType the rowid column type to set
 	 */
 	public void setRowidType(String rowidType) {
 		this.rowidType = rowidType;
@@ -530,7 +632,9 @@ public class DBMS {
 	private String rowidType = null;
 
 	/**
-	 * @return the sqlDialect
+	 * Gets the SQL dialect configuration for this DBMS.
+	 *
+	 * @return the SQL dialect
 	 */
 	public SQLDialect getSqlDialect() {
 		return sqlDialect;
@@ -561,7 +665,9 @@ public class DBMS {
 	private Map<String, String> jdbcProperties = null;
 
 	/**
-	 * @return the urlPattern
+	 * Gets the DB-URL pattern for this DBMS.
+	 *
+	 * @return the URL pattern
 	 */
 	public String getUrlPattern() {
 		return urlPattern;
@@ -641,48 +747,62 @@ public class DBMS {
 
 	/**
 	 * Sets replacement map for column types used for DDL generation.
+	 *
+	 * @param tr the type replacement map to set
 	 */
 	public void setTypeReplacement(Map<String, String> tr) {
 		typeReplacement = tr;
 	}
 
 	/**
-	 * Sets replacement map for column types used for DDL generation. Only used if DBMS accept it.
+	 * Sets replacement map for column types used for DDL generation. Only used if the DBMS accepts it.
+	 *
+	 * @param tr the experimental type replacement map to set
 	 */
 	public void setExperimentalTypeReplacement(Map<String, String> tr) {
 		experimentalTypeReplacement = tr;
 	}
 
 	/**
-	 * @return the toBlob
+	 * Gets the SQL expression template used to convert a value to a BLOB.
+	 *
+	 * @return the to-BLOB conversion expression
 	 */
 	public String getToBlob() {
 		return toBlob;
 	}
 
 	/**
-	 * @param toBlob the toBlob to set
+	 * Sets the SQL expression template used to convert a value to a BLOB.
+	 *
+	 * @param toBlob the to-BLOB conversion expression to set
 	 */
 	public void setToBlob(String toBlob) {
 		this.toBlob = toBlob;
 	}
 
 	/**
-	 * @return the toClob
+	 * Gets the SQL expression template used to convert a value to a CLOB.
+	 *
+	 * @return the to-CLOB conversion expression
 	 */
 	public String getToClob() {
 		return toClob;
 	}
 
 	/**
-	 * @param toClob the toClob to set
+	 * Sets the SQL expression template used to convert a value to a CLOB.
+	 *
+	 * @param toClob the to-CLOB conversion expression to set
 	 */
 	public void setToClob(String toClob) {
 		this.toClob = toClob;
 	}
 
 	/**
-	 * Gets replacement map for column types used for DDL generation.
+	 * Gets the replacement map for column types used for DDL generation.
+	 *
+	 * @return the type replacement map
 	 */
 	public Map<String, String> getTypeReplacement() {
 		if (!this.equals(DBMS.ORACLE)) {
@@ -767,7 +887,9 @@ public class DBMS {
 	}
 
 	/**
-	 * Sets replacement map for special characters in string literals.
+	 * Sets the replacement map for special characters in string literals.
+	 *
+	 * @param stringLiteralEscapeSequences the string literal escape sequences map to set
 	 */
 	public void setStringLiteralEscapeSequences(Map<String, String> stringLiteralEscapeSequences) {
 		if (stringLiteralEscapeSequences == null) {
@@ -810,7 +932,9 @@ public class DBMS {
 	}
 
 	/**
-	 * Gets replacement map for special characters in string literals.
+	 * Gets the replacement map for special characters in string literals.
+	 *
+	 * @return the string literal escape sequences map
 	 */
 	public Map<String, String> getStringLiteralEscapeSequences() {
 		return stringLiteralEscapeSequences;
@@ -914,14 +1038,18 @@ public class DBMS {
 	}
 
 	/**
-	 * @param sqlLimitSuffix the sqlLimitSuffix to set
+	 * Sets the suffix appended to a SQL SELECT statement to limit the number of rows returned.
+	 *
+	 * @param sqlLimitSuffix the SQL limit suffix to set
 	 */
 	public void setSqlLimitSuffix(String sqlLimitSuffix) {
 		this.sqlLimitSuffix = sqlLimitSuffix;
 	}
 
 	/**
-	 * @return the sqlLimitSuffix
+	 * Gets the suffix appended to a SQL SELECT statement to limit the number of rows returned.
+	 *
+	 * @return the SQL limit suffix
 	 */
 	public String getSqlLimitSuffix() {
 		return sqlLimitSuffix;
@@ -946,49 +1074,63 @@ public class DBMS {
 	}
 
 	/**
-	 * @return the timestampPattern
+	 * Gets the pattern used to format timestamp values.
+	 *
+	 * @return the timestamp pattern
 	 */
 	public String getTimestampPattern() {
 		return timestampPattern;
 	}
 
 	/**
-	 * @param timestampPattern the timestampPattern to set
+	 * Sets the pattern used to format timestamp values.
+	 *
+	 * @param timestampPattern the timestamp pattern to set
 	 */
 	public void setTimestampPattern(String timestampPattern) {
 		this.timestampPattern = timestampPattern;
 	}
 
 	/**
-	 * @return name of timestamp type with nano-precision, if any
+	 * Gets the name of the timestamp type with nanosecond precision, if any.
+	 *
+	 * @return the name of the timestamp type with nano-precision, or {@code null} if not applicable
 	 */
 	public String getTimestampWithNanoTypeName() {
 		return timestampWithNanoTypeName;
 	}
 
 	/**
-	 * @param timestampWithNanoTypeName name of timestamp type with nano-precision, if any
+	 * Sets the name of the timestamp type with nanosecond precision.
+	 *
+	 * @param timestampWithNanoTypeName the name of the timestamp type with nano-precision, if any
 	 */
 	public void setTimestampWithNanoTypeName(String timestampWithNanoTypeName) {
 		this.timestampWithNanoTypeName = timestampWithNanoTypeName;
 	}
 
 	/**
-	 * @return timestampPattern the timestampPattern to set
+	 * Gets the pattern used to format timestamp values with nanosecond precision.
+	 *
+	 * @return the timestamp-with-nano pattern
 	 */
 	public String getTimestampWithNanoPattern() {
 		return timestampWithNanoPattern;
 	}
 
 	/**
-	 * @param timestampWithNanoPattern the timestampPattern to set
+	 * Sets the pattern used to format timestamp values with nanosecond precision.
+	 *
+	 * @param timestampWithNanoPattern the timestamp-with-nano pattern to set
 	 */
 	public void setTimestampWithNanoPattern(String timestampWithNanoPattern) {
 		this.timestampWithNanoPattern = timestampWithNanoPattern;
 	}
 
 	/**
-	 * @return the {@link #getTimestampWithNanoPattern()} as {@link SimpleDateFormat}.
+	 * Creates a {@link SimpleDateFormat} from the {@link #getTimestampWithNanoPattern()}.
+	 *
+	 * @return the timestamp-with-nano format, or {@code null} if no pattern is configured
 	 */
 	public SimpleDateFormat createTimestampWithNanoFormat() {
 		if (timestampWithNanoPattern == null) {
@@ -1003,7 +1145,9 @@ public class DBMS {
 	}
 
 	/**
-	 * @return the {@link #getTimestampPattern()} as {@link SimpleDateFormat}.
+	 * Creates a {@link SimpleDateFormat} from the {@link #getTimestampPattern()}.
+	 *
+	 * @return the timestamp format
 	 */
 	public SimpleDateFormat createTimestampFormat() {
 		SimpleDateFormat format = timestampFormat.get();
@@ -1015,21 +1159,27 @@ public class DBMS {
 	}
 
 	/**
-	 * @return the datePattern
+	 * Gets the pattern used to format date values.
+	 *
+	 * @return the date pattern
 	 */
 	public String getDatePattern() {
 		return datePattern;
 	}
 
 	/**
-	 * @param datePattern the datePattern to set
+	 * Sets the pattern used to format date values.
+	 *
+	 * @param datePattern the date pattern to set
 	 */
 	public void setDatePattern(String datePattern) {
 		this.datePattern = datePattern;
 	}
 
 	/**
-	 * @return the {@link #getDatePattern()} as {@link SimpleDateFormat}.
+	 * Creates a {@link SimpleDateFormat} from the {@link #getDatePattern()}.
+	 *
+	 * @return the date format
 	 */
 	public SimpleDateFormat createDateFormat() {
 		SimpleDateFormat format = dateFormat.get();
@@ -1041,28 +1191,36 @@ public class DBMS {
 	}
 
 	/**
-	 * @return the ncharPrefix
+	 * Gets the prefix used for national character (NCHAR) string literals.
+	 *
+	 * @return the NCHAR prefix
 	 */
 	public String getNcharPrefix() {
 		return ncharPrefix;
 	}
 
 	/**
-	 * @param ncharPrefix the ncharPrefix to set
+	 * Sets the prefix used for national character (NCHAR) string literals.
+	 *
+	 * @param ncharPrefix the NCHAR prefix to set
 	 */
 	public void setNcharPrefix(String ncharPrefix) {
 		this.ncharPrefix = ncharPrefix;
 	}
 
 	/**
-	 * @return the tableProperties
+	 * Gets the additional table properties clause appended to CREATE TABLE statements.
+	 *
+	 * @return the table properties clause
 	 */
 	public String getTableProperties() {
 		return tableProperties;
 	}
 
 	/**
-	 * @param tableProperties the tableProperties to set
+	 * Sets the additional table properties clause appended to CREATE TABLE statements.
+	 *
+	 * @param tableProperties the table properties clause to set
 	 */
 	public void setTableProperties(String tableProperties) {
 		this.tableProperties = tableProperties;
@@ -1087,14 +1245,18 @@ public class DBMS {
 	}
 
 	/**
-	 * @return the identifierQuoteString
+	 * Gets the string used to quote SQL identifiers.
+	 *
+	 * @return the identifier quote string
 	 */
 	public String getIdentifierQuoteString() {
 		return identifierQuoteString;
 	}
 
 	/**
-	 * @param identifierQuoteString the identifierQuoteString to set
+	 * Sets the string used to quote SQL identifiers.
+	 *
+	 * @param identifierQuoteString the identifier quote string to set
 	 */
 	public void setIdentifierQuoteString(String identifierQuoteString) {
 		this.identifierQuoteString = identifierQuoteString;
@@ -1195,119 +1357,153 @@ public class DBMS {
 	private String nullableContraint = null;
 
 	/**
-	 * @return the nullableContraint
+	 * Gets the SQL constraint clause used to declare nullable columns.
+	 *
+	 * @return the nullable constraint clause
 	 */
 	public String getNullableContraint() {
 		return nullableContraint;
 	}
 
 	/**
-	 * @param nullableContraint the nullableContraint to set
+	 * Sets the SQL constraint clause used to declare nullable columns.
+	 *
+	 * @param nullableContraint the nullable constraint clause to set
 	 */
 	public void setNullableContraint(String nullableContraint) {
 		this.nullableContraint = nullableContraint;
 	}
 
 	/**
-	 * @return the emptyNCLOBValue
+	 * Gets the value used to represent an empty NCLOB.
+	 *
+	 * @return the empty NCLOB value
 	 */
 	public String getEmptyNCLOBValue() {
 		return emptyNCLOBValue;
 	}
 
 	/**
-	 * @param emptyNCLOBValue the emptyNCLOBValue to set
+	 * Sets the value used to represent an empty NCLOB.
+	 *
+	 * @param emptyNCLOBValue the empty NCLOB value to set
 	 */
 	public void setEmptyNCLOBValue(String emptyNCLOBValue) {
 		this.emptyNCLOBValue = emptyNCLOBValue;
 	}
 
 	/**
-	 * @return the importedKeysQuery
+	 * Gets the query to retrieve imported foreign keys.
+	 *
+	 * @return the imported keys query
 	 */
 	public String getImportedKeysQuery() {
 		return importedKeysQuery;
 	}
 
 	/**
-	 * @param importedKeysQuery the importedKeysQuery to set
+	 * Sets the query to retrieve imported foreign keys.
+	 *
+	 * @param importedKeysQuery the imported keys query to set
 	 */
 	public void setImportedKeysQuery(String importedKeysQuery) {
 		this.importedKeysQuery = importedKeysQuery;
 	}
 
 	/**
-	 * @return the primaryKeysQuery
+	 * Gets the query to retrieve primary keys.
+	 *
+	 * @return the primary keys query
 	 */
 	public String getPrimaryKeysQuery() {
 		return primaryKeysQuery;
 	}
 
 	/**
-	 * @param primaryKeysQuery the primaryKeysQuery to set
+	 * Sets the query to retrieve primary keys.
+	 *
+	 * @param primaryKeysQuery the primary keys query to set
 	 */
 	public void setPrimaryKeysQuery(String primaryKeysQuery) {
 		this.primaryKeysQuery = primaryKeysQuery;
 	}
 
 	/**
-	 * @return the indexInfoQuery
+	 * Gets the query to retrieve index information.
+	 *
+	 * @return the index info query
 	 */
 	public String getIndexInfoQuery() {
 		return indexInfoQuery;
 	}
 
 	/**
-	 * @param indexInfoQuery the indexInfoQuery to set
+	 * Sets the query to retrieve index information.
+	 *
+	 * @param indexInfoQuery the index info query to set
 	 */
 	public void setIndexInfoQuery(String indexInfoQuery) {
 		this.indexInfoQuery = indexInfoQuery;
 	}
 
 	/**
-	 * @return the toNClob
+	 * Gets the SQL expression template used to convert a value to an NCLOB.
+	 *
+	 * @return the to-NCLOB conversion expression
 	 */
 	public String getToNClob() {
 		return toNClob;
 	}
 
 	/**
-	 * @param toNClob the toNClob to set
+	 * Sets the SQL expression template used to convert a value to an NCLOB.
+	 *
+	 * @param toNClob the to-NCLOB conversion expression to set
 	 */
 	public void setToNClob(String toNClob) {
 		this.toNClob = toNClob;
 	}
 
 	/**
-	 * @return the emptyCLOBValue
+	 * Gets the value used to represent an empty CLOB.
+	 *
+	 * @return the empty CLOB value
 	 */
 	public String getEmptyCLOBValue() {
 		return emptyCLOBValue;
 	}
 
 	/**
-	 * @return the emptyBLOBValue
+	 * Gets the value used to represent an empty BLOB.
+	 *
+	 * @return the empty BLOB value
 	 */
 	public String getEmptyBLOBValue() {
 		return emptyBLOBValue;
 	}
 
 	/**
-	 * @return the binaryPattern
+	 * Gets the pattern used to format binary data as a SQL literal.
+	 *
+	 * @return the binary pattern
 	 */
 	public String getBinaryPattern() {
 		return binaryPattern;
 	}
 
 	/**
-	 * @return the sessionTemporaryTableManager
+	 * Gets the manager for session-local temporary tables.
+	 *
+	 * @return the session temporary table manager
 	 */
 	public DefaultTemporaryTableManager getSessionTemporaryTableManager() {
 		return sessionTemporaryTableManager;
 	}
 
 	/**
-	 * @return the transactionTemporaryTableManager
+	 * Gets the manager for transaction-local temporary tables.
+	 *
+	 * @return the transaction temporary table manager
 	 */
 	public DefaultTemporaryTableManager getTransactionTemporaryTableManager() {
 		return transactionTemporaryTableManager;
@@ -1457,84 +1653,154 @@ public class DBMS {
 		this.explainCleanup = explainCleanup;
 	}
 
+	/**
+	 * Gets the query to retrieve the source of a function.
+	 *
+	 * @return the function source query
+	 */
 	public String getFunctionSourceQuery() {
 		return functionSourceQuery;
 	}
 
+	/**
+	 * Sets the query to retrieve the source of a function.
+	 *
+	 * @param functionSourceQuery the function source query to set
+	 */
 	public void setFunctionSourceQuery(String functionSourceQuery) {
 		this.functionSourceQuery = functionSourceQuery;
 	}
 
+	/**
+	 * Gets the query to retrieve the source of a stored procedure.
+	 *
+	 * @return the procedure source query
+	 */
 	public String getProcedureSourceQuery() {
 		return procedureSourceQuery;
 	}
 
+	/**
+	 * Sets the query to retrieve the source of a stored procedure.
+	 *
+	 * @param procedureSourceQuery the procedure source query to set
+	 */
 	public void setProcedureSourceQuery(String procedureSourceQuery) {
 		this.procedureSourceQuery = procedureSourceQuery;
 	}
 
+	/**
+	 * Gets the query to retrieve the source of a package.
+	 *
+	 * @return the package source query
+	 */
 	public String getPackageSourceQuery() {
 		return packageSourceQuery;
 	}
 
+	/**
+	 * Sets the query to retrieve the source of a package.
+	 *
+	 * @param packageSourceQuery the package source query to set
+	 */
 	public void setPackageSourceQuery(String packageSourceQuery) {
 		this.packageSourceQuery = packageSourceQuery;
 	}
 
+	/**
+	 * Gets the query to retrieve the names of all packages.
+	 *
+	 * @return the package names query
+	 */
 	public String getPackageNamesQuery() {
 		return packageNamesQuery;
 	}
 
+	/**
+	 * Sets the query to retrieve the names of all packages.
+	 *
+	 * @param packageNamesQuery the package names query to set
+	 */
 	public void setPackageNamesQuery(String packageNamesQuery) {
 		this.packageNamesQuery = packageNamesQuery;
 	}
 
+	/**
+	 * Gets the list of database object renderer descriptions.
+	 *
+	 * @return the object renderers
+	 */
 	public List<DatabaseObjectRenderingDescription> getObjectRenderers() {
 		return objectRenderers;
 	}
 
+	/**
+	 * Sets the list of database object renderer descriptions.
+	 *
+	 * @param objectRenderers the object renderers to set
+	 */
 	public void setObjectRenderers(List<DatabaseObjectRenderingDescription> objectRenderers) {
 		this.objectRenderers = objectRenderers;
 	}
 
+	/**
+	 * Returns whether retrieving procedure details requires the specific (overloaded) name.
+	 *
+	 * @return <code>true</code> if a specific name is required for procedure detail retrieval
+	 */
 	public boolean isProcedureDetailNeedsSpecificName() {
 		return procedureDetailNeedsSpecificName;
 	}
 
+	/**
+	 * Sets whether retrieving procedure details requires the specific (overloaded) name.
+	 *
+	 * @param procedureDetailNeedsSpecificName <code>true</code> if a specific name is required for procedure detail retrieval
+	 */
 	public void setProcedureDetailNeedsSpecificName(boolean procedureDetailNeedsSpecificName) {
 		this.procedureDetailNeedsSpecificName = procedureDetailNeedsSpecificName;
 	}
 
 	/**
-	 * Gets query to get constraints
+	 * Gets the query to retrieve constraint information.
+	 *
+	 * @return the constraints query
 	 */
 	public String getConstraintsQuery() {
 		return constraintsQuery;
 	}
 
 	/**
-	 * Sets query to get constraints
+	 * Sets the query to retrieve constraint information.
+	 *
+	 * @param constraintsQuery the constraints query to set
 	 */
 	public void setConstraintsQuery(String constraintsQuery) {
 		this.constraintsQuery = constraintsQuery;
 	}
 
 	/**
-	 * Gets query to get row count.
+	 * Gets the query to retrieve an estimated row count for a table.
+	 *
+	 * @return the estimated row count query
 	 */
 	public String getEstimatedRowCountQuery() {
 		return estimatedRowCountQuery;
 	}
 
 	/**
-	 * Sets query to get row count.
+	 * Sets the query to retrieve an estimated row count for a table.
+	 *
+	 * @param estimatedRowCountQuery the estimated row count query to set
 	 */
 	public void setEstimatedRowCountQuery(String estimatedRowCountQuery) {
 		this.estimatedRowCountQuery = estimatedRowCountQuery;
 	}
 
 	/**
-	 * Gets query to get view text.
+	 * Gets the query to retrieve the text or DDL of a view.
+	 *
+	 * @return the view text or DDL query
 	 */
 	public String getViewTextOrDDLQuery() {
 		return viewTextOrDDLQuery;
@@ -1550,28 +1816,36 @@ public class DBMS {
 	}
 
 	/**
-	 * Gets query to get underlying table of a synonym.
+	 * Gets the query to retrieve the underlying table of a synonym.
+	 *
+	 * @return the synonym table query
 	 */
 	public String getSynonymTableQuery() {
 		return synonymTableQuery;
 	}
 
 	/**
-	 * Sets query to get underlying table of a synonym.
+	 * Sets the query to retrieve the underlying table of a synonym.
+	 *
+	 * @param synonymTableQuery the synonym table query to set
 	 */
 	public void setSynonymTableQuery(String synonymTableQuery) {
 		this.synonymTableQuery = synonymTableQuery;
 	}
 
 	/**
-	 * Gets query to get default schema of the user.
+	 * Gets the query to retrieve the default schema of the current user.
+	 *
+	 * @return the default schema query
 	 */
 	public String getDefaultSchemaQuery() {
 		return defaultSchemaQuery;
 	}
 
 	/**
-	 * Sets query to get default schema of the user.
+	 * Sets the query to retrieve the default schema of the current user.
+	 *
+	 * @param defaultSchemaQuery the default schema query to set
 	 */
 	public void setDefaultSchemaQuery(String defaultSchemaQuery) {
 		this.defaultSchemaQuery = defaultSchemaQuery;
@@ -1616,10 +1890,20 @@ public class DBMS {
 		this.fetchSize = fetchSize;
 	}
 
+	/**
+	 * Gets the SQL expression rewrite rules for this DBMS.
+	 *
+	 * @return the SQL expression rule map
+	 */
 	public Map<String, String> getSqlExpressionRule() {
 		return sqlExpressionRule;
 	}
 
+	/**
+	 * Sets the SQL expression rewrite rules for this DBMS.
+	 *
+	 * @param sqlExpressionRule the SQL expression rule map to set
+	 */
 	public void setSqlExpressionRule(Map<String, String> sqlExpressionRule) {
 		this.sqlExpressionRule = sqlExpressionRule;
 	}
@@ -1661,10 +1945,21 @@ public class DBMS {
 
 	private static final ThreadLocal<Integer> tmpFetchSize = new ThreadLocal<>();
 	
+	/**
+	 * Sets a temporary override for the fetch size, used during limited-row queries.
+	 *
+	 * @param tmpFetchSize the temporary fetch size to set, or {@code null} to clear
+	 */
 	public static void setTmpFetchSize(Integer tmpFetchSize) {
 		DBMS.tmpFetchSize.set(tmpFetchSize);
 	}
-	
+
+	/**
+	 * Gets the effective fetch size to use when fetching at most {@code limit} rows.
+	 *
+	 * @param limit the maximum number of rows to fetch, or 0 if unlimited
+	 * @return the fetch size to use
+	 */
 	public int getLimitedFetchSize(long limit) {
 		Integer fSize = getFetchSize();
 		if (fSize != null) {

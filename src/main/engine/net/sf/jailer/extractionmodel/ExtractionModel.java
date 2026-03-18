@@ -89,39 +89,51 @@ public class ExtractionModel {
 		private String condition;
 
 		/**
-		 * @return the subject
+		 * Gets the subject table.
+		 *
+		 * @return the subject table
 		 */
 		public Table getSubject() {
 			return subject;
 		}
 		/**
-		 * @param subject the subject to set
+		 * Sets the subject table.
+		 *
+		 * @param subject the subject table to set
 		 */
 		public void setSubject(Table subject) {
 			this.subject = subject;
 		}
 		/**
-		 * @return the condition
+		 * Gets the "where" condition.
+		 *
+		 * @return the "where" condition
 		 */
 		public String getCondition() {
 			return condition;
 		}
 		/**
-		 * @param condition the condition to set
+		 * Sets the "where" condition.
+		 *
+		 * @param condition the "where" condition to set
 		 */
 		public void setCondition(String condition) {
 			this.condition = condition;
 		}
 
 		/**
-		 * @return Subject Limit Definition
+		 * Gets the subject limit definition.
+		 *
+		 * @return the subject limit definition
 		 */
 		public SubjectLimitDefinition getSubjectLimitDefinition() {
 			return subjectLimitDefinition;
 		}
-		
+
 		/**
-		 * @param subjectLimitDefinition Subject Limit Definition
+		 * Sets the subject limit definition.
+		 *
+		 * @param subjectLimitDefinition the subject limit definition to set
 		 */
 		public void setSubjectLimitDefinition(SubjectLimitDefinition subjectLimitDefinition) {
 			this.subjectLimitDefinition = subjectLimitDefinition;
@@ -529,6 +541,14 @@ public class ExtractionModel {
 		}
 	}
 
+	/**
+	 * Loads the data model folder name from an extraction model file.
+	 *
+	 * @param fileName the name of the extraction model file
+	 * @param executionContext the execution context
+	 * @return the data model folder name, or {@code null} if not specified in the file
+	 * @throws IOException if an I/O error occurs or the file is not a valid extraction model
+	 */
 	public static String loadDatamodelFolder(String fileName, ExecutionContext executionContext) throws IOException {
 		File csvFile = new File(fileName);
 		if (!csvFile.exists()) {
@@ -546,6 +566,8 @@ public class ExtractionModel {
 	}
 
 	/**
+	 * Gets the subject condition.
+	 *
 	 * @return the subject condition
 	 */
 	public String getCondition() {
@@ -554,6 +576,11 @@ public class ExtractionModel {
 
 	private String subjectTableName;
 
+	/**
+	 * Gets the name of the subject table, in case the subject table is unknown in the data model.
+	 *
+	 * @return the subject table name, or {@code null} if the subject table is known
+	 */
 	public String getSubjectTableName() {
 		return subjectTableName;
 	}

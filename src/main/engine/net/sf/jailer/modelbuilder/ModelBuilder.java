@@ -80,27 +80,39 @@ public class ModelBuilder {
 	private static Session session;
 
 	/**
-	 * Name of CSV file for generated table definitions.
+	 * Gets the name of the CSV file for generated table definitions.
+	 *
+	 * @param executionContext the execution context
+	 * @return the file name
 	 */
 	public static String getModelBuilderTablesFilename(ExecutionContext executionContext) {
 		return DataModel.getDatamodelFolder(executionContext) + File.separator + "model-builder-table.csv";
 	}
 
 	/**
-	 * Name of CSV file for generated column definitions.
+	 * Gets the name of the CSV file for generated column definitions.
+	 *
+	 * @param executionContext the execution context
+	 * @return the file name
 	 */
 	public static String getModelBuilderColumnsFilename(ExecutionContext executionContext) {
 		return DataModel.getDatamodelFolder(executionContext) + File.separator + "model-builder-column.csv";
 	}
 
 	/**
-	 * Name of CSV file for generated association definitions.
+	 * Gets the name of the CSV file for generated association definitions.
+	 *
+	 * @param executionContext the execution context
+	 * @return the file name
 	 */
 	public static String getModelBuilderAssociationsFilename(ExecutionContext executionContext) {
 		return DataModel.getDatamodelFolder(executionContext) + File.separator + "model-builder-association.csv";
 	}
 	/**
-	 * Name of CSV file for generated comments.
+	 * Gets the name of the CSV file for generated comments.
+	 *
+	 * @param executionContext the execution context
+	 * @return the file name
 	 */
 	public static String getModelBuilderCommentsFilename(ExecutionContext executionContext) {
 		return DataModel.getDatamodelFolder(executionContext) + File.separator + "model-builder-comment.csv";
@@ -137,9 +149,13 @@ public class ModelBuilder {
 	}
 
 	/**
-	 * Builds and merges model.
+	 * Builds and merges the data model.
 	 *
-	 * @param warnings string-buffer to print warnings into, may be <code>null</code>
+	 * @param dataSource the data source to analyze
+	 * @param dbms the DBMS configuration
+	 * @param schema the schema to introspect
+	 * @param warnings string buffer to append warnings into, may be <code>null</code>
+	 * @param executionContext the execution context
 	 */
 	public static void buildAndMerge(DataSource dataSource, DBMS dbms, String schema, StringBuffer warnings, ExecutionContext executionContext) throws Exception {
 		build(dataSource, dbms, schema, warnings, executionContext);
@@ -177,9 +193,13 @@ public class ModelBuilder {
 	}
 
 	/**
-	 * Builds model.
+	 * Builds the data model and writes generated definitions to CSV files.
 	 *
-	 * @param warnings string-buffer to print warnings into, may be <code>null</code>
+	 * @param dataSource the data source to analyze
+	 * @param dbms the DBMS configuration
+	 * @param schema the schema to introspect
+	 * @param warnings string buffer to append warnings into, may be <code>null</code>
+	 * @param executionContext the execution context
 	 */
 	public static void build(DataSource dataSource, DBMS dbms, String schema, StringBuffer warnings, ExecutionContext executionContext) throws Exception {
 		session = new Session(dataSource, dbms, executionContext.getIsolationLevel());
@@ -464,11 +484,11 @@ public class ModelBuilder {
 	}
 
 	/**
-	 * Checks if table is one of Jailers working tables.
+	 * Checks if table is one of Jailer's working tables.
 	 *
 	 * @param table the table to check
-	 * @param quoting
-	 * @return <code>true</code> if table is one of Jailers working tables
+	 * @param quoting the quoting helper for unquoting table names
+	 * @return <code>true</code> if table is one of Jailer's working tables
 	 */
 	private static boolean isJailerTable(Table table, Quoting quoting) {
 		String tName = quoting.unquote(table.getUnqualifiedName()).toUpperCase(Locale.ENGLISH);
@@ -478,10 +498,10 @@ public class ModelBuilder {
 	}
 
 	/**
-	 * Checks if table is one of Jailers working tables.
+	 * Checks if a table name refers to one of Jailer's working tables.
 	 *
-	 * @param table the table to check
-	 * @return <code>true</code> if table is one of Jailers working tables
+	 * @param table the table name to check
+	 * @return <code>true</code> if the name refers to one of Jailer's working tables
 	 */
 	public static boolean isJailerTable(String table) {
 		String tName = Quoting.normalizeIdentifier(table);
@@ -493,10 +513,10 @@ public class ModelBuilder {
 	/**
 	 * Checks if an association is already in a model.
 	 *
-	 * @param association the association
-	 * @param dataModel the model
-	 * @param knownIdentifiers
-	 * @return <code>true</code> iff association is already in model
+	 * @param association the association to check
+	 * @param dataModel the model to check against
+	 * @param knownIdentifiers map of known identifiers for normalizing join conditions
+	 * @return <code>true</code> iff the association is already in the model
 	 */
 	private static boolean contains(Association association, DataModel dataModel, KnownIdentifierMap knownIdentifiers) {
 		for (Association a: association.source.associations) {
@@ -526,8 +546,8 @@ public class ModelBuilder {
 	/**
 	 * Writes content into a file.
 	 *
-	 * @param content the content
-	 * @param fileName the name of the file
+	 * @param fileName the name of the file to write
+	 * @param content the content to write into the file
 	 */
 	private static void writeFile(String fileName, String content) throws IOException {
 		File f = new File(fileName);

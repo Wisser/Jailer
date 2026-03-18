@@ -52,7 +52,7 @@ public class CancellationHandler {
 
 	/**
 	 * Resets the handler.
-	 * 
+	 *
 	 * @param context cancellation context, <code>null</code> for default context
 	 */
 	public static synchronized void reset(Object context) {
@@ -62,7 +62,7 @@ public class CancellationHandler {
 
 	/**
 	 * Requests cancellation.
-	 * 
+	 *
 	 * @param context cancellation context, <code>null</code> for default context
 	 */
 	public static void cancel(Object context) {
@@ -72,7 +72,7 @@ public class CancellationHandler {
 
 	/**
 	 * Requests cancellation without logging.
-	 * 
+	 *
 	 * @param context cancellation context, <code>null</code> for default context
 	 */
 	public static void cancelSilently(Object context) {
@@ -110,9 +110,9 @@ public class CancellationHandler {
 	
 	/**
 	 * Indicates that a statement is going to be executed.
-	 * 
-	 * @param context cancellation context, <code>null</code> for default context
+	 *
 	 * @param statement the statement
+	 * @param context cancellation context, <code>null</code> for default context
 	 */
 	public static synchronized void begin(Statement statement, Object context) {
 		checkForCancellation(context);
@@ -126,7 +126,7 @@ public class CancellationHandler {
 	
 	/**
 	 * Indicates that a statement has been executed.
-	 * 
+	 *
 	 * @param statement the statement
 	 * @param context cancellation context, <code>null</code> for default context
 	 */
@@ -138,9 +138,9 @@ public class CancellationHandler {
 	
 	/**
 	 * Checks for cancellation.
-	 * 
+	 *
 	 * @param context cancellation context, <code>null</code> for default context
-	 * @throws CancellationException if cancellation have been requested
+	 * @throws CancellationException if cancellation has been requested
 	 */
 	public static synchronized void checkForCancellation(Object context) throws CancellationException {
 		if (cancelled.containsKey(context == null? DEFAULT_CONTEXT : context)) {

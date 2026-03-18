@@ -32,9 +32,10 @@ import net.sf.jsqlparser.parser.StringProvider;
 import net.sf.jsqlparser.statement.Statement;
 
 /**
- * SQL parsing.
+ * SQL parsing utility using JSQLParser.
  *
- * @see https://github.com/JSQLParser/JSqlParser
+ * @author Ralf Wisser
+ * @see <a href="https://github.com/JSQLParser/JSqlParser">JSQLParser</a>
  */
 public final class JSqlParserUtil {
 

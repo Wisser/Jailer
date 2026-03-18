@@ -63,7 +63,7 @@ public class DDLCreator {
 	/**
 	 * Constructor.
 	 *
-	 * @param executionContext the command line arguments
+	 * @param executionContext the execution context
 	 */
 	public DDLCreator(ExecutionContext executionContext) {
 		this.executionContext = executionContext;
@@ -71,6 +71,12 @@ public class DDLCreator {
 
 	/**
 	 * Creates the DDL for the working-tables.
+	 *
+	 * @param dataSource the data source, or <code>null</code> to print DDL to stdout
+	 * @param dbms the target DBMS configuration
+	 * @param temporaryTableScope the scope for working tables
+	 * @param workingTableSchema the schema for working tables, or <code>null</code> for the default schema
+	 * @return <code>true</code> if DDL was created successfully
 	 */
 	public boolean createDDL(DataSource dataSource, DBMS dbms, WorkingTableScope temporaryTableScope, String workingTableSchema) throws SQLException, FileNotFoundException, IOException {
 		Session session = null;
@@ -88,6 +94,10 @@ public class DDLCreator {
 
 	/**
 	 * Creates the DDL for the working-tables.
+	 *
+	 * @param localSession the database session to execute DDL against
+	 * @param temporaryTableScope the scope for working tables
+	 * @param workingTableSchema the schema for working tables, or <code>null</code> for the default schema
 	 */
 	public void createDDL(Session localSession, WorkingTableScope temporaryTableScope, String workingTableSchema) throws FileNotFoundException, IOException, SQLException {
 		// TODO register all current export processes.
@@ -99,6 +109,12 @@ public class DDLCreator {
 
 	/**
 	 * Creates the DDL for the working-tables.
+	 *
+	 * @param datamodel the data model
+	 * @param session the database session, or <code>null</code> to print DDL to stdout
+	 * @param temporaryTableScope the scope for working tables
+	 * @param workingTableSchema the schema for working tables, or <code>null</code> for the default schema
+	 * @return <code>true</code> if DDL was created successfully
 	 */
 	public boolean createDDL(DataModel datamodel, Session session, WorkingTableScope temporaryTableScope, String workingTableSchema) throws FileNotFoundException, IOException, SQLException {
 		RowIdSupport rowIdSupport = new RowIdSupport(datamodel, targetDBMS(session), executionContext);
@@ -124,6 +140,13 @@ public class DDLCreator {
 
 	/**
 	 * Creates the DDL for the working-tables.
+	 *
+	 * @param datamodel the data model
+	 * @param session the database session, or <code>null</code> to print DDL to stdout
+	 * @param temporaryTableScope the scope for working tables
+	 * @param rowIdSupport the row-id support configuration
+	 * @param workingTableSchema the schema for working tables, or <code>null</code> for the default schema
+	 * @return <code>true</code> if DDL was created successfully
 	 */
 	public boolean createDDL(DataModel datamodel, Session session, WorkingTableScope temporaryTableScope, RowIdSupport rowIdSupport, String workingTableSchema) throws FileNotFoundException, IOException, SQLException {
 		try {
@@ -334,9 +357,12 @@ public class DDLCreator {
 
 	/**
 	 * Checks whether working-tables schema is up-to-date.
-	 * @param useRowId
-	 * @param workingTableSchema
 	 *
+	 * @param dataSource the data source
+	 * @param dbms the target DBMS configuration
+	 * @param useRowId <code>true</code> if row IDs are used instead of primary keys
+	 * @param useRowIdsOnlyForTablesWithoutPK <code>true</code> to use row IDs only for tables without a primary key
+	 * @param workingTableSchema the schema for working tables, or <code>null</code> for the default schema
 	 * @return <code>true</code> if working-tables schema is up-to-date
 	 */
 	public boolean isUptodate(DataSource dataSource, DBMS dbms, boolean useRowId, boolean useRowIdsOnlyForTablesWithoutPK, String workingTableSchema) {
@@ -356,9 +382,11 @@ public class DDLCreator {
 
 	/**
 	 * Checks whether working-tables schema is up-to-date.
-	 * @param useRowId
-	 * @param workingTableSchema
 	 *
+	 * @param session the database session
+	 * @param useRowId <code>true</code> if row IDs are used instead of primary keys
+	 * @param useRowIdsOnlyForTablesWithoutPK <code>true</code> to use row IDs only for tables without a primary key
+	 * @param workingTableSchema the schema for working tables, or <code>null</code> for the default schema
 	 * @return <code>true</code> if working-tables schema is up-to-date
 	 */
 	public boolean isUptodate(final Session session, boolean useRowId, boolean useRowIdsOnlyForTablesWithoutPK, String workingTableSchema) {
@@ -430,6 +458,8 @@ public class DDLCreator {
 	/**
 	 * Checks for conflicts of existing tables and working-tables.
 	 *
+	 * @param dataSource the data source
+	 * @param dbms the target DBMS configuration
 	 * @return name of table in conflict or <code>null</code>
 	 */
 	public String getTableInConflict(DataSource dataSource, DBMS dbms) {

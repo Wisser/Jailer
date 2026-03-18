@@ -153,11 +153,12 @@ public class SQLDialect {
 
 	/**
 	 * Gets table reference for DML statements for a given working table.
-	 * 
+	 *
 	 * @param tableName the working table
 	 * @param session holds connection to DBMS
+	 * @param executionContext the execution context
 	 * @return table reference for the working table
-	 * @throws SQLException 
+	 * @throws SQLException if a database access error occurs
 	 */
 	public static String dmlTableReference(String tableName, Session session, ExecutionContext executionContext) throws SQLException {
 		String tableRef;
@@ -184,7 +185,9 @@ public class SQLDialect {
 	}
 
 	/**
-	 * @see java.lang.Object#toString()
+	 * Returns a string representation of this SQL dialect.
+	 *
+	 * @return a string representation of this SQL dialect
 	 */
 	@Override
 	public String toString() {

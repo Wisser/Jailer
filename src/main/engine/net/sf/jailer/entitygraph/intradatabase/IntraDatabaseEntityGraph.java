@@ -217,7 +217,9 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	 * Updates columns of a table.
 	 *
 	 * @param table the table
-	 * @param columns the columns;
+	 * @param columns the columns
+	 * @param scriptFileWriter writer for the SQL script output
+	 * @param targetConfiguration the target DBMS configuration
 	 * @param inSourceSchema if <code>true</code>, use source-schema-mapping, else use schema-mapping
 	 * @param reason to be written as comment
 	 */

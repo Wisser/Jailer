@@ -132,14 +132,17 @@ public class UpdateTransformer extends AbstractResultSetReader {
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param table the table to read from
+	 * @param columns the columns to update
 	 * @param scriptFileWriter the file to write to
 	 * @param maxBodySize maximum length of SQL values list (for generated inserts)
 	 * @param session the session
 	 * @param targetDBMSConfiguration configuration of the target DBMS
+	 * @param importFilterTransformer transforms import filters into SQL expressions
 	 * @param inSourceSchema if <code>true</code>, use source-schema-mapping, else use schema-mapping
 	 * @param reason to be written as comment
+	 * @param executionContext the execution context
 	 */
 	public UpdateTransformer(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, int maxBodySize, Session session, DBMS targetDBMSConfiguration, ImportFilterTransformer importFilterTransformer, boolean inSourceSchema, String reason, ExecutionContext executionContext) throws SQLException {
 		this.executionContext = executionContext;

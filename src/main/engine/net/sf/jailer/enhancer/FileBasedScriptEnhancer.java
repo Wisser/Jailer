@@ -76,8 +76,10 @@ public class FileBasedScriptEnhancer implements ScriptEnhancer {
 	/**
 	 * Adds enhancement to the script.
 	 *
-	 * @param script writer to script
+	 * @param script writer to the script
 	 * @param progress the export progress
+	 * @param dir the directory containing enhancement files
+	 * @param executionContext the execution context
 	 */
 	private void addEnhancement(Writer script, Set<Table> progress, File dir, ExecutionContext executionContext) throws IOException {
 		if (ScriptFormat.SQL.equals(executionContext.getScriptFormat())) {
@@ -93,7 +95,9 @@ public class FileBasedScriptEnhancer implements ScriptEnhancer {
 	/**
 	 * Adds enhancement to the script.
 	 *
-	 * @param script writer to script
+	 * @param script writer to the script
+	 * @param dir the directory containing the enhancement file
+	 * @param fileName the name of the enhancement file
 	 */
 	private void addEnhancement(Writer script, File dir, String fileName)
 			throws FileNotFoundException, IOException {

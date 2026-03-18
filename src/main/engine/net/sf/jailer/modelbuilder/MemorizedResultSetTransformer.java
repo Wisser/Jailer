@@ -27,10 +27,23 @@ import java.util.Set;
  */
 public class MemorizedResultSetTransformer {
 
+    /**
+     * Functional interface for aggregate functions applied to a group of rows.
+     */
     public interface AggregateFunction {
+        /**
+         * Evaluates the aggregate function over the given group of rows.
+         *
+         * @param group the group of rows to aggregate
+         * @param columnIndex the 0-based column index to aggregate
+         * @return the aggregated value
+         */
         Object eval(List<Object[]> group, int columnIndex);
     }
 
+    /**
+     * An aggregate function that concatenates non-null values as a comma-separated list.
+     */
     public static class ListAggregation implements AggregateFunction {
         @Override
 		public Object eval(List<Object[]> group, int columnIndex) {
@@ -53,6 +66,12 @@ public class MemorizedResultSetTransformer {
     public static class ColumnTransformation {
         final int columnIndex;
         final AggregateFunction aggregateFunction;
+        /**
+         * Constructor.
+         *
+         * @param columnIndex the 1-based column index in the source result set
+         * @param aggregateFunction the aggregate function to apply, or {@code null} to use the column as a grouping key
+         */
         public ColumnTransformation(int columnIndex, AggregateFunction aggregateFunction) {
             this.columnIndex = columnIndex;
             this.aggregateFunction = aggregateFunction;
@@ -60,7 +79,11 @@ public class MemorizedResultSetTransformer {
     }
 
     /**
-     * Transforms (sort/select/group) Memorized Result sets.
+     * Transforms (groups and selects columns from) a memorized result set.
+     *
+     * @param resultSet the source result set to transform
+     * @param columnTransformations the column transformations defining the output structure and grouping
+     * @return a new {@link MemorizedResultSet} containing the transformed rows
      */
     public static MemorizedResultSet transform(MemorizedResultSet resultSet, ColumnTransformation[] columnTransformations) {
         Map<List<Object>, List<Object[]>> groups = new LinkedHashMap<List<Object>, List<Object[]>>();

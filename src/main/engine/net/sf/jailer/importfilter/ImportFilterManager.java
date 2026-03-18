@@ -116,9 +116,12 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 	
 	/**
 	 * Constructor.
-	 * 
-	 * @param result to write results into
-	 * @param targetQuoting
+	 *
+	 * @param localSession the local database session, or {@code null} to create one on demand
+	 * @param result writer to write DDL results into
+	 * @param progress the set of tables that are part of the export
+	 * @param targetQuoting quoting helper for the target database
+	 * @param executionContext the execution context
 	 */
 	public ImportFilterManager(Session localSession, OutputStreamWriter result, Set<Table> progress, Quoting targetQuoting, ExecutionContext executionContext) throws FileNotFoundException, SQLException {
 		this.executionContext = executionContext;
@@ -306,6 +309,9 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 	
 	protected abstract void sync(OutputStreamWriter result) throws IOException;
 
+	/**
+	 * Shuts down the local database, releasing all resources.
+	 */
 	public synchronized void shutDown() throws SQLException {
 		if (this.theLocalDatabase != null) {
 			this.theLocalDatabase.shutDown();
@@ -314,11 +320,15 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 	}
 
 	/**
-	 * Insert the values of columns with non-derived-import-filters into the local database.
-	 * 
-	 * @param entityGraph
-	 * @param jobManager
-	 * @param dmlResultWriter
+	 * Inserts the values of columns with non-derived import-filters into the local database
+	 * and writes the mapping table DML to the given writer.
+	 *
+	 * @param entityGraph the entity graph to read unfiltered columns from
+	 * @param jobManager the job manager used to execute jobs in parallel
+	 * @param dmlResultWriter writer for the DML result output
+	 * @param numberOfEntities the number of entities to process
+	 * @param targetSession the session for the target database
+	 * @param targetDBMSConfiguration the target DBMS configuration
 	 */
 	public void fillAndWriteMappingTables(final EntityGraph entityGraph, JobManager jobManager, final OutputStreamWriter dmlResultWriter,
 			int numberOfEntities, final Session targetSession, final DBMS targetDBMSConfiguration) throws CancellationException, SQLException {

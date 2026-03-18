@@ -220,6 +220,9 @@ public abstract class PrimaryKeyValidator {
 	protected AtomicInteger numDone = new AtomicInteger();
 	protected AtomicInteger numTotal = new AtomicInteger();
 
+	/**
+	 * Updates the progress bar to reflect the current validation progress.
+	 */
 	protected abstract void updateProgressBar();
 
 	private synchronized void addError(Table table, String message, String sql) {

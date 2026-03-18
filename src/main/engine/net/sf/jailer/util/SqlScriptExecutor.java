@@ -117,9 +117,9 @@ public class SqlScriptExecutor {
 
 	/**
 	 * Reads in and executes a SQL-script.
-	 * 
+	 *
 	 * @param scriptFileName the name of the script-file
-	 * 
+	 * @param transactional <code>true</code> to execute the script within a transaction
 	 * @return Pair(statementCount, rowCount)
 	 */
 	public Pair<Integer, Long> executeScript(String scriptFileName, boolean transactional) throws IOException, SQLException {
@@ -639,6 +639,11 @@ public class SqlScriptExecutor {
 
 	private static Pair<Integer, Long> lastRowCount = null;
 	
+	/**
+	 * Gets the statement and row count from the last script execution.
+	 *
+	 * @return Pair(statementCount, rowCount) from the last script execution, or (0, 0) if no script has been executed
+	 */
 	public static synchronized Pair<Integer, Long> getLastStatementCount() {
 		if (lastRowCount != null) {
 			return lastRowCount;

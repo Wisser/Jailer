@@ -170,6 +170,8 @@ public class CollectedRowsCounter implements ProgressListener {
 
 	/**
 	 * User should be warned.
+	 *
+	 * @param msgSupplier supplier for the warning message
 	 */
 	@Override
 	public void warn(Supplier<String> msgSupplier) {

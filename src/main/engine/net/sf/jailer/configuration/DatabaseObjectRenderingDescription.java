@@ -59,6 +59,8 @@ public class DatabaseObjectRenderingDescription {
 
 	/**
 	 * Copy constructor.
+	 *
+	 * @param other the instance to copy from
 	 */
 	public DatabaseObjectRenderingDescription(DatabaseObjectRenderingDescription other) {
 		iconURL = other.iconURL;
@@ -140,19 +142,39 @@ public class DatabaseObjectRenderingDescription {
 		this.name = name;
 	}
 
+	/**
+	 * Gets the icon URL.
+	 *
+	 * @return the icon URL
+	 */
 	public String getIconURL() {
 		return iconURL;
 	}
 
+	/**
+	 * Sets the icon URL.
+	 *
+	 * @param iconURL the icon URL to set
+	 */
 	public void setIconURL(String iconURL) {
 		this.iconURL = iconURL;
 	}
 
+	/**
+	 * Returns whether retrieving this object's details is considered cheap (not expensive).
+	 *
+	 * @return <code>true</code> if retrieving details is not expensive
+	 */
 	@JsonIgnore
 	public boolean isCheap() {
 		return !expensive;
 	}
 
+	/**
+	 * Sets whether retrieving this object's details is considered cheap (not expensive).
+	 *
+	 * @param cheap <code>true</code> if retrieving details is not expensive
+	 */
 	public void setCheap(boolean cheap) {
 		expensive = !cheap;
 	}

@@ -394,7 +394,9 @@ public class Jailer {
 	/**
 	 * Render the data model.
 	 *
+	 * @param arguments the command-line arguments (first element is the command, remaining elements are extraction model file names)
 	 * @param schema schema to analyze
+	 * @param executionContext the execution context
 	 */
 	private static void renderDataModel(List<String> arguments, String schema, ExecutionContext executionContext) throws Exception {
 		DataModel dataModel = new DataModel(executionContext);

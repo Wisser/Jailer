@@ -170,6 +170,12 @@ public class BasicDataSource implements DataSource {
 	 */
 	public static class DriverShim implements Driver {
 		private Driver driver;
+
+		/**
+		 * Constructor.
+		 *
+		 * @param d the JDBC driver to wrap
+		 */
 		public DriverShim(Driver d) {
 			this.driver = d;
 		}

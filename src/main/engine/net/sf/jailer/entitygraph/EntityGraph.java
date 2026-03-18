@@ -153,8 +153,8 @@ public abstract class EntityGraph {
 	 * Gets the number of entities from given tables in the graph.
 	 *
 	 * @param tables the tables to count entities for
-	 * @return the number of entities in the graph
-	 * @throws SQLException
+	 * @return the number of entities from the given tables in the graph
+	 * @throws SQLException if a database access error occurs
 	 */
 	public long getSize(final Set<Table> tables) throws SQLException {
 		final long[] total = new long[1];
@@ -184,7 +184,7 @@ public abstract class EntityGraph {
 	/**
 	 * Deletes the graph.
 	 *
-	 * @param forced force deletion. if <code>true</code>, don't allow optimization.
+	 * @param forced if <code>true</code>, force deletion and don't allow optimization
 	 */
 	public abstract void delete(boolean forced);
 
@@ -301,7 +301,9 @@ public abstract class EntityGraph {
 	 * Updates columns of a table.
 	 *
 	 * @param table the table
-	 * @param columns the columns;
+	 * @param columns the columns
+	 * @param scriptFileWriter writer for the SQL script output
+	 * @param targetConfiguration the target DBMS configuration
 	 * @param inSourceSchema if <code>true</code>, use source-schema-mapping, else use schema-mapping
 	 * @param reason to be written as comment
 	 */
@@ -346,21 +348,26 @@ public abstract class EntityGraph {
 	public abstract long removeAssociatedDestinations(Association association, boolean deletedEntitiesAreMarked, Set<Table> allTables) throws SQLException;
 
 	/**
-	 * Reads all entities which depends on given entity.
+	 * Reads all entities which depend on a given entity.
 	 *
 	 * @param table the table from which to read entities
 	 * @param association the dependency
-	 * @param resultSet current row is given entity
+	 * @param resultSet current row is the given entity
+	 * @param resultSetMetaData meta data of the result set
 	 * @param reader reads the entities
+	 * @param typeCache cache for column type lookups
 	 * @param selectionSchema the selection schema
+	 * @param originalPKAliasPrefix prefix for original primary key aliases
 	 */
 	public abstract void readDependentEntities(Table table, Association association, ResultSet resultSet, ResultSetMetaData resultSetMetaData, ResultSetReader reader, Map<String, Integer> typeCache, String selectionSchema, String originalPKAliasPrefix) throws SQLException;
 
 	/**
-	 * Marks all entities which depends on given entity as traversed.
+	 * Marks all entities which depend on a given entity as traversed.
 	 *
 	 * @param association the dependency
-	 * @param resultSet current row is given entity
+	 * @param resultSet current row is the given entity
+	 * @param resultSetMetaData meta data of the result set
+	 * @param typeCache cache for column type lookups
 	 */
 	public abstract void markDependentEntitiesAsTraversed(Association association, ResultSet resultSet, ResultSetMetaData resultSetMetaData, Map<String, Integer> typeCache) throws SQLException;
 
@@ -515,7 +522,14 @@ public abstract class EntityGraph {
 	}
 
 	/**
-	 * Insert the values of columns with non-derived-import-filters into the local database.
+	 * Inserts the values of columns with non-derived import-filters into the local database.
+	 *
+	 * @param jobManager the job manager used to execute jobs in parallel
+	 * @param dmlResultWriter writer for the DML result output
+	 * @param numberOfEntities the number of entities to process
+	 * @param targetSession the session for the target database
+	 * @param targetDBMSConfiguration the target DBMS configuration
+	 * @param dbmsConfiguration the source DBMS configuration
 	 */
 	public void fillAndWriteMappingTables(JobManager jobManager, final OutputStreamWriter dmlResultWriter,
 			int numberOfEntities, final Session targetSession, final DBMS targetDBMSConfiguration, DBMS dbmsConfiguration) throws SQLException, IOException {
@@ -527,6 +541,9 @@ public abstract class EntityGraph {
 
 	/**
 	 * Creates the DROP-statements for the mapping tables.
+	 *
+	 * @param result writer for the DROP-statement output
+	 * @param targetDBMSConfiguration the target DBMS configuration
 	 */
 	public void dropMappingTables(OutputStreamWriter result, DBMS targetDBMSConfiguration) throws IOException, SQLException {
 		if (importFilterManager != null) {
@@ -582,6 +599,7 @@ public abstract class EntityGraph {
 	/**
 	 * Tries to delete this graph using "truncate".
 	 *
+	 * @param executionContext the execution context
 	 * @param checkExist if <code>true</code>, checks existence of each graph
 	 */
 	public void truncate(ExecutionContext executionContext, boolean checkExist) throws SQLException {
@@ -621,7 +639,10 @@ public abstract class EntityGraph {
 	}
 
 	/**
-	 * Check if the graph still exists.
+	 * Checks if the graph still exists.
+	 *
+	 * @param executionContext the execution context
+	 * @throws RuntimeException if the graph no longer exists
 	 */
 	public void checkExist(ExecutionContext executionContext) throws SQLException {
 		synchronized (EntityGraph.class) {
@@ -666,10 +687,10 @@ public abstract class EntityGraph {
 	
 	/**
 	 * Gets all non-virtual columns of the table in the order in which they are selected.
-	 * 
+	 *
+	 * @param table the table
 	 * @return all non-virtual columns of the table in the order in which they are selected
-	 * 
-	 * @throws Exception if selection clause is empty
+	 * @throws RuntimeException if the selection clause is empty
 	 */
 	protected List<Column> getSelectionClause(Table table) {
 		List<Column> selectionClause = table.getSelectionClause();

@@ -354,6 +354,11 @@ public abstract class JobManager {
 		return false;
 	}
 
+	/**
+	 * Called when a job throws an exception.
+	 *
+	 * @param t the exception thrown by the job
+	 */
 	protected abstract void onException(Throwable t);
 
 }

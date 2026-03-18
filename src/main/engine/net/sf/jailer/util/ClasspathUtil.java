@@ -31,6 +31,16 @@ import java.util.Set;
  */
 public class ClasspathUtil {
 	
+	/**
+	 * Converts up to four jar file names to an array of URLs.
+	 *
+	 * @param jarName1 first jar file name, or <code>null</code>
+	 * @param jarName2 second jar file name, or <code>null</code>
+	 * @param jarName3 third jar file name, or <code>null</code>
+	 * @param jarName4 fourth jar file name, or <code>null</code>
+	 * @return array of URLs for the given jar files
+	 * @throws FileNotFoundException if any of the specified jar files cannot be found
+	 */
 	public static URL[] toURLArray(String jarName1, String jarName2, String jarName3, String jarName4) throws FileNotFoundException {
 		if (jarName1 != null && jarName1.trim().length() == 0) {
 			jarName1 = null;

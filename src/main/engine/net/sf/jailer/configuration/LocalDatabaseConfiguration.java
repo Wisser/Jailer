@@ -38,120 +38,144 @@ public class LocalDatabaseConfiguration {
 	private String lib = "lib/h2-2.2.224.jar";
 
 	/**
-	 * @return the localPKType
+	 * Gets the SQL type used for primary key columns in the local database.
+	 *
+	 * @return the local primary key type
 	 */
 	public String getLocalPKType() {
 		return localPKType;
 	}
 
 	/**
-	 * @param localPKType
-	 *            the localPKType to set
+	 * Sets the SQL type used for primary key columns in the local database.
+	 *
+	 * @param localPKType the local primary key type to set
 	 */
 	public void setLocalPKType(String localPKType) {
 		this.localPKType = localPKType;
 	}
 
 	/**
-	 * @return the localNPKType
+	 * Gets the SQL type used for non-primary-key columns in the local database.
+	 *
+	 * @return the local non-primary-key type
 	 */
 	public String getLocalNPKType() {
 		return localNPKType;
 	}
 
 	/**
-	 * @param localNPKType
-	 *            the localNPKType to set
+	 * Sets the SQL type used for non-primary-key columns in the local database.
+	 *
+	 * @param localNPKType the local non-primary-key type to set
 	 */
 	public void setLocalNPKType(String localNPKType) {
 		this.localNPKType = localNPKType;
 	}
 
 	/**
-	 * @return the localPKLength
+	 * Gets the maximum length for primary key columns in the local database.
+	 *
+	 * @return the local primary key column length
 	 */
 	public int getLocalPKLength() {
 		return localPKLength;
 	}
 
 	/**
-	 * @param localPKLength
-	 *            the localPKLength to set
+	 * Sets the maximum length for primary key columns in the local database.
+	 *
+	 * @param localPKLength the local primary key column length to set
 	 */
 	public void setLocalPKLength(int localPKLength) {
 		this.localPKLength = localPKLength;
 	}
 
 	/**
-	 * @return the urlPattern
+	 * Gets the JDBC URL pattern for the local database.
+	 *
+	 * @return the JDBC URL pattern
 	 */
 	public String getUrlPattern() {
 		return urlPattern;
 	}
 
 	/**
-	 * @param urlPattern
-	 *            the urlPattern to set
+	 * Sets the JDBC URL pattern for the local database.
+	 *
+	 * @param urlPattern the JDBC URL pattern to set
 	 */
 	public void setUrlPattern(String urlPattern) {
 		this.urlPattern = urlPattern;
 	}
 
 	/**
-	 * @return the driver
+	 * Gets the JDBC driver class name for the local database.
+	 *
+	 * @return the JDBC driver class name
 	 */
 	public String getDriver() {
 		return driver;
 	}
 
 	/**
-	 * @param driver
-	 *            the driver to set
+	 * Sets the JDBC driver class name for the local database.
+	 *
+	 * @param driver the JDBC driver class name to set
 	 */
 	public void setDriver(String driver) {
 		this.driver = driver;
 	}
 
 	/**
-	 * @return the lib
+	 * Gets the path to the JDBC driver library for the local database.
+	 *
+	 * @return the path to the JDBC driver library
 	 */
 	public String getLib() {
 		return lib;
 	}
 
 	/**
-	 * @param lib
-	 *            the lib to set
+	 * Sets the path to the JDBC driver library for the local database.
+	 *
+	 * @param lib the path to the JDBC driver library to set
 	 */
 	public void setLib(String lib) {
 		this.lib = lib;
 	}
 
 	/**
-	 * @return the user
+	 * Gets the database user name for the local database.
+	 *
+	 * @return the database user name
 	 */
 	public String getUser() {
 		return user;
 	}
 
 	/**
-	 * @param user
-	 *            the user to set
+	 * Sets the database user name for the local database.
+	 *
+	 * @param user the database user name to set
 	 */
 	public void setUser(String user) {
 		this.user = user;
 	}
 
 	/**
-	 * @return the password
+	 * Gets the database password for the local database.
+	 *
+	 * @return the database password
 	 */
 	public String getPassword() {
 		return password;
 	}
 
 	/**
-	 * @param password
-	 *            the password to set
+	 * Sets the database password for the local database.
+	 *
+	 * @param password the database password to set
 	 */
 	public void setPassword(String password) {
 		this.password = password;

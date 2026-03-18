@@ -115,7 +115,7 @@ public class SubsettingEngine {
 	/**
 	 * Constructor.
 	 *
-	 * @param executionContext the command line arguments
+	 * @param executionContext the execution context
 	 */
 	public SubsettingEngine(ExecutionContext executionContext) {
 		this.executionContext = executionContext;
@@ -233,9 +233,11 @@ public class SubsettingEngine {
 	 * @param condition
 	 *            the condition (in SQL) the exported rows must fulfill
 	 * @param progressOfYesterday
-	 *            set of tables to account for resolvation
+	 *            set of tables to account for resolution
 	 * @param completedTables
-	 *
+	 *            set of tables whose rows have all been exported
+	 * @param withRestDep
+	 *            <code>true</code> to compute restricted dependencies
 	 * @return set of tables from which entities are added
 	 */
 	private Set<Table> export(Table table, String condition, Collection<Table> progressOfYesterday, Set<Table> completedTables, boolean withRestDep) throws SQLException {
@@ -310,6 +312,8 @@ public class SubsettingEngine {
 	 * Exports all entities from initial-data tables.
 	 *
 	 * @param extractionModel the extraction model
+	 * @param completedTables set of tables whose rows have all been exported
+	 * @return set of tables from which entities were added
 	 */
 	private Set<Table> exportSubjects(ExtractionModel extractionModel, Set<Table> completedTables) throws CancellationException, SQLException {
 		List<AdditionalSubject> allSubjects = new ArrayList<ExtractionModel.AdditionalSubject>();
@@ -432,9 +436,9 @@ public class SubsettingEngine {
 	 * @param today
 	 *            birthday of newly created entities
 	 * @param progressOfYesterday
-	 *            set of tables to account for resolvation
+	 *            set of tables to account for resolution
 	 * @param completedTables
-	 *
+	 *            set of tables whose rows have all been exported
 	 * @return map from tables from which entities are added to all associations
 	 *         which lead to the entities
 	 */
@@ -519,6 +523,8 @@ public class SubsettingEngine {
 	 *
 	 * @param progress
 	 *            set of tables to take into account
+	 * @param treatAggregationAsDependency
+	 *            <code>true</code> to treat aggregation associations as dependencies
 	 */
 	private void addDependencies(Set<Table> progress, boolean treatAggregationAsDependency) throws CancellationException, SQLException {
 		List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
@@ -622,7 +628,8 @@ public class SubsettingEngine {
 	 *            if script format is not XML.
 	 * @param scriptType
 	 *            the script type
-	 *
+	 * @param filepath
+	 *            the output file path
 	 * @return result set reader for processing the rows to be exported
 	 */
 	private TransformerFactory createTransformerFactory(OutputStreamWriter outputWriter, TransformerHandler transformerHandler, ScriptType scriptType, String filepath) throws SQLException	{
@@ -653,11 +660,21 @@ public class SubsettingEngine {
 	 *
 	 * @param sqlScriptFile
 	 *            the name of the sql-script to write the data to
+	 * @param scriptType
+	 *            the type of script (INSERT or DELETE)
 	 * @param progress
 	 *            set of tables to account for extraction
+	 * @param session
+	 *            the database session
 	 * @param stage stage name for {@link ProgressListener}
-	 * @param afterCollectionTimestamp
 	 * @param startTimestamp
+	 *            timestamp when the export started
+	 * @param afterCollectionTimestamp
+	 *            timestamp after the collection phase finished
+	 * @param preWriteAction
+	 *            action to run before writing entities, or <code>null</code>
+	 * @param postWriteAction
+	 *            action to run after writing entities, or <code>null</code>
 	 */
 	private void writeEntities(final String sqlScriptFile, final ScriptType scriptType, final Set<Table> progress, Session session, String stage, Long startTimestamp, Long afterCollectionTimestamp, WriteAction preWriteAction, WriteAction postWriteAction) throws IOException, SAXException, SQLException {
 		_log.info("writing file '" + sqlScriptFile + "'...");
@@ -2162,7 +2179,10 @@ public class SubsettingEngine {
 	private static Map<URL, String> tmpUrl = Collections.synchronizedMap(new HashMap<>());
 	
 	/**
-	 * Registers real name of extraction model for temp URL (GUI support).
+	 * Registers the real name of an extraction model for a temporary URL (GUI support).
+	 *
+	 * @param extractionModelURL the temporary URL of the extraction model
+	 * @param name the real name to associate with the URL
 	 */
 	public static void registerTmpURL(URL extractionModelURL, String name) {
 		tmpUrl.put(extractionModelURL, name);

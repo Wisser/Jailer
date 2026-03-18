@@ -94,10 +94,12 @@ public class DeletionTransformer extends AbstractResultSetReader {
 		
 		/**
 		 * Constructor.
-		 * 
+		 *
 		 * @param scriptFileWriter the file to write to
 		 * @param maxBodySize maximum length of SQL values list (for generated deletes)
+		 * @param session the current session
 		 * @param targetDBMSConfiguration configuration of the target DBMS
+		 * @param executionContext the execution context
 		 */
 		public Factory(OutputStreamWriter scriptFileWriter, int maxBodySize, Session session, DBMS targetDBMSConfiguration, ExecutionContext executionContext) {
 			this.executionContext = executionContext;
@@ -128,7 +130,7 @@ public class DeletionTransformer extends AbstractResultSetReader {
 	 * @param maxBodySize maximum length of SQL values list (for generated deletes)
 	 * @param session the session
 	 * @param targetDBMSConfiguration configuration of the target DBMS
-	 * @param executionContext 
+	 * @param executionContext the execution context
 	 */
 	private DeletionTransformer(Table table, OutputStreamWriter scriptFileWriter, int maxBodySize, Session session, DBMS targetDBMSConfiguration, ExecutionContext executionContext) throws SQLException {
 		this.executionContext = executionContext;

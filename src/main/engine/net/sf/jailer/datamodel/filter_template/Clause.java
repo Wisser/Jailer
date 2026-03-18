@@ -284,6 +284,8 @@ public class Clause {
 	}
 
 	/**
+	 * Sets the subject of this clause.
+	 *
 	 * @param subject the subject to set
 	 */
 	public void setSubject(Subject subject) {
@@ -291,6 +293,8 @@ public class Clause {
 	}
 
 	/**
+	 * Gets the predicate of this clause.
+	 *
 	 * @return the predicate
 	 */
 	public Predicate getPredicate() {
@@ -298,6 +302,8 @@ public class Clause {
 	}
 
 	/**
+	 * Sets the predicate of this clause.
+	 *
 	 * @param predicate the predicate to set
 	 */
 	public void setPredicate(Predicate predicate) {
@@ -305,6 +311,8 @@ public class Clause {
 	}
 
 	/**
+	 * Gets the object of this clause.
+	 *
 	 * @return the object
 	 */
 	public String getObject() {
@@ -312,6 +320,8 @@ public class Clause {
 	}
 
 	/**
+	 * Sets the object of this clause.
+	 *
 	 * @param object the object to set
 	 */
 	public void setObject(String object) {

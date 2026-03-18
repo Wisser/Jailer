@@ -108,10 +108,11 @@ public class Table extends ModelElement implements Comparable<Table> {
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param name the table-name
-	 * @param primaryKey the names of the primary-key columns
+	 * @param primaryKey the primary key of the table
 	 * @param defaultUpsert data model default for export mode
+	 * @param defaultExcludeFromDeletion data model default for exclude-from-deletion
 	 */
 	public Table(String name, PrimaryKey primaryKey, boolean defaultUpsert, boolean defaultExcludeFromDeletion) {
 		this.name = name;
@@ -160,7 +161,10 @@ public class Table extends ModelElement implements Comparable<Table> {
 	}
 
 	/**
-	 * Compares tables.
+	 * Compares tables by name.
+	 *
+	 * @param other the object to compare with
+	 * @return <code>true</code> if both tables have the same name
 	 */
 	@Override
 	public boolean equals(Object other) {
@@ -174,7 +178,9 @@ public class Table extends ModelElement implements Comparable<Table> {
 	}
 
 	/**
-	 * The hash-code.
+	 * Returns a hash code based on the table name.
+	 *
+	 * @return the hash code
 	 */
 	@Override
 	public int hashCode() {
@@ -183,6 +189,8 @@ public class Table extends ModelElement implements Comparable<Table> {
 	
 	/**
 	 * Stringifies the table.
+	 *
+	 * @return string representation of the table including its primary key and associations
 	 */
 	@Override
 	public String toString() {
@@ -668,8 +676,8 @@ public class Table extends ModelElement implements Comparable<Table> {
 	
 	/**
 	 * Gets non-virtual and non-filtered primary-key columns.
+	 *
 	 * @param session the session
-	 * 
 	 * @return non-virtual and non-filtered primary-key columns
 	 */
 	public List<Column> getNonVirtualPKColumns(Session session) {

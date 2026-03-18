@@ -54,12 +54,18 @@ public class HelperTableEnhancer implements ScriptEnhancer {
 		return false;
 	}
 	
+	/**
+	 * Adds nothing.
+	 */
 	@Override
 	public void addComments(Writer script, ScriptType scriptType,
 			Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph,
 			Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
 	}
 
+	/**
+	 * Drops the JL_DUAL helper table at the bottom of the script if it was needed.
+	 */
 	@Override
 	public void addEpilog(Writer script, ScriptType scriptType,
 			Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph,
@@ -69,6 +75,9 @@ public class HelperTableEnhancer implements ScriptEnhancer {
 		}
 	}
 
+	/**
+	 * Creates and populates the JL_DUAL helper table at the top of the script if needed.
+	 */
 	@Override
 	public void addProlog(Writer script, ScriptType scriptType,
 			Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph,

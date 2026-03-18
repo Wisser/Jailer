@@ -37,8 +37,8 @@ import net.sf.jailer.datamodel.Table;
  */
 public class CycleFinder {
 
-	/** 
-	 * Path from n table <code>from</code> to another table <code>to</code>.
+	/**
+	 * Path from a table <code>from</code> to another table <code>to</code>.
 	 * Concatenation of two paths left/right or an edge, if left and right is null.
 	 */
 	public static class Path {
@@ -79,6 +79,11 @@ public class CycleFinder {
 			return from.hashCode() + 7 * to.hashCode() + 11 * length;
 		}
 		
+		/**
+		 * Fills a list with all tables along this path.
+		 *
+		 * @param path the list to fill
+		 */
 		public void fillPath(List<Table> path) {
 			if (left == null) {
 				path.add(from);
@@ -124,11 +129,13 @@ public class CycleFinder {
 	
 	/**
 	 * Finds all dependency cycles in a data model.
-	 * 
+	 *
 	 * @param dataModel the data model
+	 * @param tables the set of tables to search within
+	 * @param findExact <code>true</code> to find exact (non-overlapping) cycles
+	 * @param timeout optional timeout in milliseconds, or <code>null</code> for no timeout
 	 * @param cycleConsumer consumes cycles (optional)
-	 * 
-	 * @return all cycles in the data model
+	 * @return all cycles found in the data model
 	 */
 	public static Collection<Path> findCycle(DataModel dataModel, Collection<Table> tables, boolean findExact, Long timeout, CycleConsumer cycleConsumer) {
 		Collection<Path> allCycles = new LinkedHashSet<Path>();
@@ -320,13 +327,21 @@ public class CycleFinder {
 		return cycle;
 	}
 
+	/**
+	 * Thrown when a dependency cycle is detected.
+	 */
 	@SuppressWarnings("serial")
 	public static class CycleFoundException extends RuntimeException {
 
+		/**
+		 * Constructor.
+		 *
+		 * @param msg the detail message
+		 */
 		public CycleFoundException(String msg) {
 			super(msg);
 		}
-		
+
 	}
 	
 }

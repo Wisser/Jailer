@@ -193,7 +193,20 @@ public class Session {
 	 * Connection factory.
 	 */
 	public interface ConnectionFactory {
+		/**
+		 * Gets the connection for the current thread.
+		 *
+		 * @return the connection
+		 * @throws SQLException if a database access error occurs
+		 */
 		Connection getConnection() throws SQLException;
+
+		/**
+		 * Creates a new connection. Must be closed by the caller.
+		 *
+		 * @return a new connection
+		 * @throws SQLException if a database access error occurs
+		 */
 		Connection createNewConnection() throws SQLException;
 	}
 
@@ -504,7 +517,7 @@ public class Session {
 	/**
 	 * No SQL-Exceptions will be logged in silent mode.
 	 *
-	 * @return silent <code>true</code> for silence
+	 * @return <code>true</code> for silence
 	 */
 	public boolean getSilent() {
 		synchronized (silentLock) {
@@ -970,6 +983,12 @@ public class Session {
 
 	/**
 	 * Inserts a CLob.
+	 *
+	 * @param table the target table name
+	 * @param column the target column name
+	 * @param where the WHERE clause identifying the row to update
+	 * @param lobFile the file containing the CLOB data
+	 * @param length the length of the CLOB data in characters
 	 */
 	public void insertClob(String table, String column, String where, File lobFile, long length) throws SQLException, IOException {
 		String sqlUpdate = "Update " + table + " set " + column + "=? where " + where;
@@ -1006,6 +1025,12 @@ public class Session {
 
 	/**
 	 * Inserts a SQL-XML.
+	 *
+	 * @param table the target table name
+	 * @param column the target column name
+	 * @param where the WHERE clause identifying the row to update
+	 * @param lobFile the file containing the XML data
+	 * @param length the length of the XML data in characters
 	 */
 	public void insertSQLXML(String table, String column, String where, File lobFile, long length) throws SQLException, IOException {
 		String sqlUpdate = "Update " + table + " set " + column + "=? where " + where;
@@ -1040,6 +1065,11 @@ public class Session {
 
 	/**
 	 * Inserts a BLob.
+	 *
+	 * @param table the target table name
+	 * @param column the target column name
+	 * @param where the WHERE clause identifying the row to update
+	 * @param lobFile the file containing the BLOB data
 	 */
 	public void insertBlob(String table, String column, String where, File lobFile) throws SQLException, IOException {
 		String sqlUpdate = "Update " + table + " set " + column + "=? where " + where;
@@ -1073,18 +1103,22 @@ public class Session {
 	}
 
 	/**
-	 * Executes a SQL-Statement without returning any result.
+	 * Executes a SQL-Statement.
 	 *
 	 * @param sql the SQL-Statement
+	 * @return the update count
 	 */
 	public long execute(String sql) throws SQLException {
 		return execute(sql, null, false);
 	}
 
 	/**
-	 * Executes a SQL-Statement without returning any result.
+	 * Executes a SQL-Statement.
 	 *
 	 * @param sql the SQL-Statement
+	 * @param cancellationContext the context used to check for cancellation, or <code>null</code>
+	 * @param acceptQueries if <code>true</code>, SELECT statements are also accepted
+	 * @return the update count, or 0 for queries
 	 */
 	public long execute(String sql, Object cancellationContext, boolean acceptQueries) throws SQLException {
 		if (getLogStatements()) {

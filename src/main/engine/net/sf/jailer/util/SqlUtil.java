@@ -63,7 +63,7 @@ public class SqlUtil {
 	 * Change alias A to B and B to A in a SQL-condition.
 	 *
 	 * @param condition the condition
-	 * @return condition with revered aliases
+	 * @return condition with reversed aliases
 	 */
 	public static String reversRestrictionCondition(String condition) {
 		final String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_";
@@ -145,9 +145,10 @@ public class SqlUtil {
 	 * @param condition the condition
 	 * @param entityAAlias alias for entity table joined with A
 	 * @param entityBAlias alias for entity table joined with B
+	 * @param today today's day counter
 	 * @param birthdayOfSubject birthday of subject
-	 * @param today today
-	 * @param inDeleteMode
+	 * @param inDeleteMode <code>true</code> if processing is in delete mode
+	 * @return the condition with pseudo-columns resolved
 	 */
 	public static String resolvePseudoColumns(String condition, String entityAAlias, String entityBAlias, int today, int birthdayOfSubject, boolean inDeleteMode) {
 		return resolvePseudoColumns(condition, entityAAlias, entityBAlias, today, birthdayOfSubject, "birthday", inDeleteMode);
@@ -159,10 +160,11 @@ public class SqlUtil {
 	 * @param condition the condition
 	 * @param entityAAlias alias for entity table joined with A
 	 * @param entityBAlias alias for entity table joined with B
+	 * @param today today's day counter
 	 * @param birthdayOfSubject birthday of subject
-	 * @param today today
 	 * @param birthdayColumnName name of the column which holds the birthday of an entity ('birthday' or 'orig_birthday')
-	 * @param inDeleteMode
+	 * @param inDeleteMode <code>true</code> if processing is in delete mode, <code>null</code> to leave the pseudo-column unresolved
+	 * @return the condition with pseudo-columns resolved
 	 */
 	public static String resolvePseudoColumns(String condition, String entityAAlias, String entityBAlias, int today, int birthdayOfSubject, String birthdayColumnName, Boolean inDeleteMode) {
 		String aBirthday = entityAAlias == null? "" + (today - birthdayOfSubject) : ("(" + entityAAlias + "." + birthdayColumnName + " - " + birthdayOfSubject + ")");
@@ -186,10 +188,11 @@ public class SqlUtil {
 	 * Resolves the pseudo-columns in a restriction condition.
 	 *
 	 * @param condition the condition
+	 * @param today today's day counter
 	 * @param birthdayOfSubject birthday of subject
-	 * @param today today
-	 * @param reversed
-	 * @param inDeleteMode
+	 * @param reversed <code>true</code> if the direction of the association is reversed
+	 * @param inDeleteMode <code>true</code> if processing is in delete mode
+	 * @return the condition with pseudo-columns resolved
 	 */
 	public static String resolvePseudoColumns(String condition, int today, int birthdayOfSubject, boolean reversed, boolean inDeleteMode) {
 		int da = reversed? 0 : 1;
@@ -212,9 +215,10 @@ public class SqlUtil {
 	/**
 	 * Reads a table-list from CSV-file.
 	 *
-	 * @param dataModel to get tables from
 	 * @param tableFile the file containing the list
-	 * @return set of tables, empty list if file contains no tables
+	 * @param dataModel to get tables from
+	 * @param sourceSchemaMapping schema mapping to apply to table names, or <code>null</code>
+	 * @return set of tables, empty set if file contains no tables
 	 */
 	public static Set<Table> readTableList(CsvFile tableFile, DataModel dataModel, Map<String, String> sourceSchemaMapping) {
 		Set<Table> tabuTables = new HashSet<Table>();
@@ -286,7 +290,9 @@ public class SqlUtil {
 	/**
 	 * Gets type of column from result-set.
 	 *
+	 * @param configuration the DBMS configuration
 	 * @param resultSet result-set
+	 * @param resultSetMetaData meta data of the result set
 	 * @param i column index
 	 * @param typeCache for caching types
 	 * @return type according to {@link Types}
@@ -323,9 +329,10 @@ public class SqlUtil {
 	 * Gets type of column from result-set.
 	 *
 	 * @param resultSet result-set
+	 * @param resultSetMetaData meta data of the result set
 	 * @param columnName column name
 	 * @param typeCache for caching types
-	 * @return object
+	 * @return type according to {@link Types}
 	 */
 	public static int getColumnType(ResultSet resultSet, ResultSetMetaData resultSetMetaData, String columnName, Map<String, Integer> typeCache) throws SQLException {
 		Integer type = typeCache.get(columnName);
@@ -401,6 +408,12 @@ public class SqlUtil {
 		return sb.toString();
 	}
 
+	/**
+	 * Converts a {@link Double} to a plain string representation without scientific notation.
+	 *
+	 * @param content the value to convert
+	 * @return plain string representation of the value
+	 */
 	public static String toString(Double content) {
 		String s = content.toString();
 		if (s.contains("E")) {
@@ -411,6 +424,12 @@ public class SqlUtil {
 		return s;
 	}
 
+	/**
+	 * Converts a {@link BigDecimal} to a plain string representation without scientific notation.
+	 *
+	 * @param content the value to convert
+	 * @return plain string representation of the value
+	 */
 	public static String toString(BigDecimal content) {
 		return remove0Tail(content.toPlainString());
 	}
@@ -434,6 +453,12 @@ public class SqlUtil {
 		return s;
 	}
 
+	/**
+	 * Normalizes a restriction condition by reordering the column references into a canonical form.
+	 *
+	 * @param cond the restriction condition to normalize
+	 * @return the normalized condition, or the original condition if normalization is not possible
+	 */
 	public static String normalizeRestrictionCondition(String cond) {
 		String[] equations = cond.replaceAll("\\(|\\)", " ").trim()
 				.split("\\s*\\b(a|A)(n|N)(d|D)\\b\\s*");
@@ -535,10 +560,10 @@ public class SqlUtil {
 
 	/**
 	 * Removes all non-meaningful fragments of an SQL statement
-	 * that might interfere with the SQL parser. (Comments, Literals, etc.)
+	 * that might interfere with the SQL parser (comments, literals, etc.).
 	 *
-	 * @param sqlStatement
-	 * @return
+	 * @param sqlStatement the SQL statement to process
+	 * @return the SQL statement with non-meaningful fragments removed
 	 */
 	public static String removeNonMeaningfulFragments(String sqlStatement) {
 		sqlStatement = removeCommentsAndLiterals(sqlStatement);
@@ -602,8 +627,7 @@ public class SqlUtil {
 	 *
 	 * @param statement
 	 *            the statement
-	 *
-	 * @return statement the statement without comments
+	 * @return the statement without comments
 	 */
 	public static String removeComments(String statement) {
 		Pattern pattern = Pattern.compile("('([^']*'))|(/\\*.*?\\*/)|(\\-\\-.*?(?=\n|$))", Pattern.DOTALL);
@@ -634,8 +658,7 @@ public class SqlUtil {
 	 *
 	 * @param statement
 	 *            the statement
-	 *
-	 * @return statement the statement without comments and literals
+	 * @return the statement without comments and literals
 	 */
 	public static String removeCommentsAndLiterals(String statement) {
 		Pattern pattern = Pattern.compile("('([^']*'))|(/\\*.*?\\*/)|(\\-\\-.*?(?=\n|$))", Pattern.DOTALL);
@@ -669,8 +692,7 @@ public class SqlUtil {
 	 *
 	 * @param sqlSelect
 	 *            the statement
-	 *
-	 * @return statement the statement without sub-queries
+	 * @return the statement without sub-queries
 	 */
 	public static String removeSubQueries(String sqlSelect) {
 		StringBuilder result = new StringBuilder(SqlUtil.removeComments(sqlSelect));
@@ -699,6 +721,16 @@ public class SqlUtil {
 		return result.toString();
 	}
 
+	/**
+	 * Gets the properly quoted column label for use in a SQL statement.
+	 *
+	 * @param quoting the quoting to use
+	 * @param session the current database session
+	 * @param targetDBMSConfiguration the target DBMS configuration
+	 * @param table the table containing the column
+	 * @param columnLabel the column label from the result set
+	 * @return the properly quoted column name
+	 */
 	public static String columnLabel(Quoting quoting, Session session, DBMS targetDBMSConfiguration, Table table, String columnLabel) {
 //		if (targetDBMSConfiguration != session.dbms) {
 			int count = 0;
@@ -716,10 +748,24 @@ public class SqlUtil {
 		return quoting.quote(columnLabel);
 	}
 
+	/**
+	 * Checks whether a character is a letter, digit, or underscore as used in SQL identifiers.
+	 *
+	 * @param c the character to check
+	 * @return <code>true</code> if the character is alphabetic, a digit, or an underscore
+	 */
 	public static boolean isLetterOrDigit(char c) {
 		return Character.isAlphabetic(c) || Character.isLetterOrDigit(c) || c == '_';
 	}
 
+	/**
+	 * Creates a regular expression pattern that matches a SQL fragment,
+	 * ignoring differences in whitespace and case.
+	 *
+	 * @param sql the SQL fragment to create a pattern for
+	 * @param withFlags <code>true</code> to include case-insensitive and dot-all flags in the pattern
+	 * @return the regular expression pattern string
+	 */
 	public static String createSQLFragmentSearchPattern(String sql, boolean withFlags) {
 		Pattern wordChar = Pattern.compile("\\w");
 		StringBuilder pattern = new StringBuilder(withFlags? "(?is)" : "");
@@ -796,7 +842,10 @@ public class SqlUtil {
 	}
 
 	/**
-	 * Gets index of schema-table separator.
+	 * Gets the index of the schema-table name separator dot in a fully qualified table name.
+	 *
+	 * @param fullName the fully qualified table name
+	 * @return the index of the dot separator, or -1 if not present
 	 */
 	public static int indexOfDot(String fullName) {
 		if (fullName.length() > 0) {
@@ -871,6 +920,11 @@ public class SqlUtil {
 
 	private static Charset defaultEncoding;
 	
+	/**
+	 * Gets the default character set for SQL script files, taking the native encoding system property into account.
+	 *
+	 * @return the default {@link Charset}
+	 */
 	public synchronized static Charset getDefaultCharset() {
 		if (defaultEncoding == null) {
 			String nativeEncoding = System.getProperty("native.encoding");

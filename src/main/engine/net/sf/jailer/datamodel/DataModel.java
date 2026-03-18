@@ -136,6 +136,9 @@ public class DataModel {
 
 	/**
 	 * Gets name of data model folder.
+	 *
+	 * @param executionContext the execution context
+	 * @return name of the data model folder
 	 */
 	public static String getDatamodelFolder(ExecutionContext executionContext) {
 		return executionContext.getQualifiedDatamodelFolder();
@@ -143,13 +146,19 @@ public class DataModel {
 
 	/**
 	 * Gets name of file containing the table definitions.
+	 *
+	 * @param executionContext the execution context
+	 * @return name of the file containing the table definitions
 	 */
 	public static String getTablesFile(ExecutionContext executionContext) {
 		return getDatamodelFolder(executionContext) + File.separator + TABLE_CSV_FILE;
 	}
 
 	/**
-	 * Gets name of file containing the model name
+	 * Gets name of file containing the model name.
+	 *
+	 * @param executionContext the execution context
+	 * @return name of the file containing the model name
 	 */
 	public static String getModelNameFile(ExecutionContext executionContext) {
 		return getDatamodelFolder(executionContext) + File.separator + MODELNAME_CSV_FILE;
@@ -157,6 +166,9 @@ public class DataModel {
 
 	/**
 	 * Gets name of file containing the display names.
+	 *
+	 * @param executionContext the execution context
+	 * @return name of the file containing the display names
 	 */
 	public static String getDisplayNamesFile(ExecutionContext executionContext) {
 		return getDatamodelFolder(executionContext) + File.separator + "displayname.csv";
@@ -164,6 +176,9 @@ public class DataModel {
 
 	/**
 	 * Gets name of file containing the column definitions.
+	 *
+	 * @param executionContext the execution context
+	 * @return name of the file containing the column definitions
 	 */
 	public static String getColumnsFile(ExecutionContext executionContext) {
 		return getDatamodelFolder(executionContext) + File.separator + "column.csv";
@@ -171,6 +186,9 @@ public class DataModel {
 
 	/**
 	 * Gets name of file containing the association definitions.
+	 *
+	 * @param executionContext the execution context
+	 * @return name of the file containing the association definitions
 	 */
 	public static String getAssociationsFile(ExecutionContext executionContext) {
 		return getDatamodelFolder(executionContext) + File.separator + "association.csv";
@@ -185,20 +203,29 @@ public class DataModel {
 
 	/**
 	 * Gets name of file containing the comments.
+	 *
+	 * @param executionContext the execution context
+	 * @return name of the file containing the comments
 	 */
 	public static String getCommentsFile(ExecutionContext executionContext) {
 		return getDatamodelFolder(executionContext) + File.separator + "comment.csv";
 	}
 
 	/**
-	 * List of tables to be excluded from deletion.
+	 * Gets name of file containing the list of tables to be excluded from deletion.
+	 *
+	 * @param executionContext the execution context
+	 * @return name of the file containing tables excluded from deletion
 	 */
 	public static String getExcludeFromDeletionFile(ExecutionContext executionContext) {
 		return getDatamodelFolder(executionContext) + File.separator + "exclude-from-deletion.csv";
 	}
 
 	/**
-	 * Name of file containing the version number.
+	 * Gets name of file containing the version number.
+	 *
+	 * @param executionContext the execution context
+	 * @return name of the file containing the version number
 	 */
 	public static String getVersionFile(ExecutionContext executionContext) {
 		return getDatamodelFolder(executionContext) + File.separator + "version.csv";
@@ -307,6 +334,10 @@ public class DataModel {
 	/**
 	 * Reads in <code>table.csv</code> and <code>association.csv</code>
 	 * and builds the relational data model.
+	 *
+	 * @param primaryKeyFactory factory for creating primary keys
+	 * @param sourceSchemaMapping mapping of source schema names
+	 * @param executionContext the execution context
 	 */
 	public DataModel(PrimaryKeyFactory primaryKeyFactory, Map<String, String> sourceSchemaMapping, ExecutionContext executionContext) throws IOException {
 		this(null, null, sourceSchemaMapping, null, primaryKeyFactory, executionContext, false, null);
@@ -315,6 +346,8 @@ public class DataModel {
 	/**
 	 * Reads in <code>table.csv</code> and <code>association.csv</code>
 	 * and builds the relational data model.
+	 *
+	 * @param executionContext the execution context
 	 */
 	public DataModel(ExecutionContext executionContext) throws IOException {
 		this(null, null, new HashMap<String, String>(), null, new PrimaryKeyFactory(executionContext), executionContext, false, null);
@@ -323,7 +356,9 @@ public class DataModel {
 	/**
 	 * Reads in <code>table.csv</code> and <code>association.csv</code>
 	 * and builds the relational data model.
-	 * @param knownIdentifiers
+	 *
+	 * @param knownIdentifiers map of known identifiers for name normalization
+	 * @param executionContext the execution context
 	 */
 	public DataModel(KnownIdentifierMap knownIdentifiers, ExecutionContext executionContext) throws IOException {
 		this(null, null, new HashMap<String, String>(), null, new PrimaryKeyFactory(executionContext), executionContext, false, knownIdentifiers);
@@ -332,6 +367,10 @@ public class DataModel {
 	/**
 	 * Reads in <code>table.csv</code> and <code>association.csv</code>
 	 * and builds the relational data model.
+	 *
+	 * @param sourceSchemaMapping mapping of source schema names
+	 * @param executionContext the execution context
+	 * @param failOnMissingTables <code>true</code> to throw an exception if the data model files are not found
 	 */
 	public DataModel(Map<String, String> sourceSchemaMapping, ExecutionContext executionContext, boolean failOnMissingTables) throws IOException {
 		this(null, null, sourceSchemaMapping, null, new PrimaryKeyFactory(executionContext), executionContext, failOnMissingTables, null);
@@ -341,8 +380,10 @@ public class DataModel {
 	 * Reads in <code>table.csv</code> and <code>association.csv</code>
 	 * and builds the relational data model.
 	 *
-	 * @param additionalTablesFile table file to read too
-	 * @param additionalAssociationsFile association file to read too
+	 * @param additionalTablesFile additional table file to read, or <code>null</code>
+	 * @param additionalAssociationsFile additional association file to read, or <code>null</code>
+	 * @param primaryKeyFactory factory for creating primary keys
+	 * @param executionContext the execution context
 	 */
 	public DataModel(String additionalTablesFile, String additionalAssociationsFile, PrimaryKeyFactory primaryKeyFactory, ExecutionContext executionContext) throws IOException {
 		this(additionalTablesFile, additionalAssociationsFile, new HashMap<String, String>(), null, primaryKeyFactory, executionContext, false, null);
@@ -352,8 +393,9 @@ public class DataModel {
 	 * Reads in <code>table.csv</code> and <code>association.csv</code>
 	 * and builds the relational data model.
 	 *
-	 * @param additionalTablesFile table file to read too
-	 * @param additionalAssociationsFile association file to read too
+	 * @param additionalTablesFile additional table file to read, or <code>null</code>
+	 * @param additionalAssociationsFile additional association file to read, or <code>null</code>
+	 * @param executionContext the execution context
 	 */
 	public DataModel(String additionalTablesFile, String additionalAssociationsFile, ExecutionContext executionContext) throws IOException {
 		this(additionalTablesFile, additionalAssociationsFile, new HashMap<String, String>(), null, new PrimaryKeyFactory(executionContext), executionContext, false, null);
@@ -363,8 +405,11 @@ public class DataModel {
 	 * Reads in <code>table.csv</code> and <code>association.csv</code>
 	 * and builds the relational data model.
 	 *
-	 * @param additionalTablesFile table file to read too
-	 * @param additionalAssociationsFile association file to read too
+	 * @param additionalTablesFile additional table file to read, or <code>null</code>
+	 * @param additionalAssociationsFile additional association file to read, or <code>null</code>
+	 * @param sourceSchemaMapping mapping of source schema names
+	 * @param assocFilter filter for association lines, or <code>null</code>
+	 * @param executionContext the execution context
 	 */
 	public DataModel(String additionalTablesFile, String additionalAssociationsFile, Map<String, String> sourceSchemaMapping, LineFilter assocFilter, ExecutionContext executionContext) throws IOException {
 		this(additionalTablesFile, additionalAssociationsFile, sourceSchemaMapping, assocFilter, new PrimaryKeyFactory(executionContext), executionContext, false, null);
@@ -374,9 +419,13 @@ public class DataModel {
 	 * Reads in <code>table.csv</code> and <code>association.csv</code>
 	 * and builds the relational data model.
 	 *
-	 * @param additionalTablesFile table file to read too
-	 * @param additionalAssociationsFile association file to read too
-	 * @throws IOException
+	 * @param additionalTablesFile additional table file to read, or <code>null</code>
+	 * @param additionalAssociationsFile additional association file to read, or <code>null</code>
+	 * @param sourceSchemaMapping mapping of source schema names
+	 * @param assocFilter filter for association lines, or <code>null</code>
+	 * @param primaryKeyFactory factory for creating primary keys
+	 * @param executionContext the execution context
+	 * @param failOnMissingTables <code>true</code> to throw an exception if the data model files are not found
 	 */
 	public DataModel(String additionalTablesFile, String additionalAssociationsFile, Map<String, String> sourceSchemaMapping, LineFilter assocFilter, PrimaryKeyFactory primaryKeyFactory, ExecutionContext executionContext, boolean failOnMissingTables) throws IOException {
 		this(additionalTablesFile, additionalAssociationsFile, sourceSchemaMapping, assocFilter, primaryKeyFactory, executionContext, failOnMissingTables, null);
@@ -386,9 +435,14 @@ public class DataModel {
 	 * Reads in <code>table.csv</code> and <code>association.csv</code>
 	 * and builds the relational data model.
 	 *
-	 * @param additionalTablesFile table file to read too
-	 * @param additionalAssociationsFile association file to read too
-	 * @throws IOException
+	 * @param additionalTablesFile additional table file to read, or <code>null</code>
+	 * @param additionalAssociationsFile additional association file to read, or <code>null</code>
+	 * @param sourceSchemaMapping mapping of source schema names
+	 * @param assocFilter filter for association lines, or <code>null</code>
+	 * @param primaryKeyFactory factory for creating primary keys
+	 * @param executionContext the execution context
+	 * @param failOnMissingTables <code>true</code> to throw an exception if the data model files are not found
+	 * @param knownIdentifiers map of known identifiers for name normalization, or <code>null</code>
 	 */
 	public DataModel(String additionalTablesFile, String additionalAssociationsFile, Map<String, String> sourceSchemaMapping, LineFilter assocFilter, PrimaryKeyFactory primaryKeyFactory, ExecutionContext executionContext, boolean failOnMissingTables, KnownIdentifierMap knownIdentifiers) throws IOException {
 		this.executionContext = executionContext;
@@ -864,6 +918,8 @@ public class DataModel {
 
 	/**
 	 * Gets export modus, SQL or XML. (GUI support).
+	 *
+	 * @return the export modus
 	 */
 	public String getExportModus() {
 		return exportModus;
@@ -871,6 +927,8 @@ public class DataModel {
 
 	/**
 	 * Sets export modus, SQL or XML. (GUI support).
+	 *
+	 * @param modus the export modus to set
 	 */
 	public void setExportModus(String modus) {
 		exportModus = modus;
@@ -879,6 +937,8 @@ public class DataModel {
 
 	/**
 	 * Gets XML settings for exportation into XML files.
+	 *
+	 * @return the XML settings
 	 */
 	public XmlSettings getXmlSettings() {
 		return xmlSettings;
@@ -886,6 +946,8 @@ public class DataModel {
 
 	/**
 	 * Sets XML settings for exportation into XML files.
+	 *
+	 * @param xmlSettings the XML settings to set
 	 */
 	public void setXmlSettings(XmlSettings xmlSettings) {
 		this.xmlSettings = xmlSettings;
@@ -931,8 +993,8 @@ public class DataModel {
 	 * Checks whether all tables in the closure of a given subject have primary keys.
 	 *
 	 * @param subjects the subjects
-	 * @param hasRowID
-	 * 
+	 * @param hasRowID <code>true</code> if row IDs are available as a substitute for primary keys
+	 * @return the set of all tables in the closure that were checked
 	 * @throws NoPrimaryKeyException if a table has no primary key
 	 */
 	public Set<Table> checkForPrimaryKey(Set<Table> subjects, boolean hasRowID) throws NoPrimaryKeyException {
@@ -959,6 +1021,7 @@ public class DataModel {
 	 * Gets all parameters which occur in subject condition, association restrictions or XML templates.
 	 *
 	 * @param subjectCondition the subject condition
+	 * @param additionalSubjects additional subjects to scan for parameters
 	 * @return all parameters which occur in subject condition, association restrictions or XML templates
 	 */
 	public SortedSet<String> getParameters(String subjectCondition, List<ExtractionModel.AdditionalSubject> additionalSubjects) {
@@ -1055,13 +1118,14 @@ public class DataModel {
 	 * Saves the data model.
 	 *
 	 * @param file the file name
-	 * @param stable
 	 * @param stable the subject table
-	 * @param subjectLimitDefinition limit of subject
-	 * @param subjectCondition
-	 * @param scriptFormat
+	 * @param subjectLimitDefinition limit definition of the subject
+	 * @param subjectCondition the subject condition
+	 * @param scriptFormat the script format
+	 * @param restrictionDefinitions the restriction definitions to save
 	 * @param positions table positions or <code>null</code>
-	 * @param additionalSubjects
+	 * @param additionalSubjects additional subjects
+	 * @param currentModelSubfolder the current model subfolder
 	 */
 	public void save(String file, Table stable, SubjectLimitDefinition subjectLimitDefinition, String subjectCondition, ScriptFormat scriptFormat, List<RestrictionDefinition> restrictionDefinitions, Map<String, Map<String, double[]>> positions, List<AdditionalSubject> additionalSubjects, String currentModelSubfolder) throws FileNotFoundException {
 		File extractionModel = new File(file);
@@ -1211,7 +1275,8 @@ public class DataModel {
 	/**
 	 * Saves restrictions only.
 	 *
-	 * @param file to save restrictions into
+	 * @param file the file to save restrictions into
+	 * @param restrictionDefinitions the restriction definitions to save
 	 */
 	public void saveRestrictions(File file, List<RestrictionDefinition> restrictionDefinitions) throws FileNotFoundException {
 		PrintWriter out = new PrintWriter(file);
@@ -1379,6 +1444,12 @@ public class DataModel {
 		}
 	}
 
+	/**
+	 * Adds all tables that are part of a restricted dependency with nulled foreign key
+	 * to the given set of tables.
+	 *
+	 * @param tables the set of tables to extend
+	 */
 	public static void addRestrictedDependencyWithNulledFK(Set<Table> tables) {
 		Set<Table> toAdd = new HashSet<Table>();
 		tables.forEach(table -> table.associations.forEach(association -> {
@@ -1392,6 +1463,13 @@ public class DataModel {
 
 	private Map<String, String> comments = new HashMap<String, String>();
 	
+	/**
+	 * Gets the comment for a table or column.
+	 *
+	 * @param table the table
+	 * @param column the column, or <code>null</code> for table-level comments
+	 * @return the comment, or <code>null</code> if none exists
+	 */
 	public String getComment(Table table, Column column) {
 		return comments.get(table.getName() + (column != null? "." + column.name : ""));
 	}

@@ -82,6 +82,11 @@ public abstract class InlineViewBuilder implements Session.ResultSetReader {
 		this(style, DEFAULT_NAME, session, columnNames);
 	}
 
+	/**
+	 * Reads the current row and appends it to the inline-view being built.
+	 *
+	 * @param resultSet the current result set row
+	 */
 	@Override
 	public void readCurrentRow(ResultSet resultSet) throws SQLException {
 		if (resultSetMetaData == null) {
@@ -120,6 +125,9 @@ public abstract class InlineViewBuilder implements Session.ResultSetReader {
 		return cellContentConverter.toSql(cellContentConverter.getObject(resultSet, i));
 	}
 
+	/**
+	 * Finalizes reading and processes any remaining inline-view content.
+	 */
 	@Override
 	public void close() throws SQLException {
 		if (!statementBuilder.isEmpty()) {

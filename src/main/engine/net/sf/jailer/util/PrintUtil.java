@@ -51,17 +51,20 @@ public class PrintUtil {
 
 	/**
 	 * Converts a set of tables into a string.
-	 * 
+	 *
 	 * @param tables the set
+	 * @return a string representation of the table set
 	 */
 	public String tableSetAsString(Set<Table> tables) {
 		return tableSetAsString(tables, "      ");
 	}
-	
+
 	/**
 	 * Converts a set of tables into a string.
-	 * 
+	 *
 	 * @param tables the set
+	 * @param linePrefix prefix to insert before each line break, or <code>null</code> for no line breaks
+	 * @return a string representation of the table set
 	 */
 	public String tableSetAsString(Set<Table> tables, String linePrefix) {
 		List<String> tableNames = new ArrayList<String>();
@@ -290,6 +293,12 @@ public class PrintUtil {
 		return sb.toString();
 	}
 
+	/**
+	 * Formats a time value in milliseconds as a human-readable string (HH:MM:SS.t).
+	 *
+	 * @param time the time in milliseconds
+	 * @return formatted time string
+	 */
 	public static String formatVitalTime(long time) {
 		long et = time / 100;
 		long hs = et % 10;

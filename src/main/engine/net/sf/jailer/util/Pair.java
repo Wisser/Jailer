@@ -96,7 +96,7 @@ public class Pair<A, B> implements Serializable {
 	}
 
 	/**
-	 * Gets string representation of an pair.
+	 * Gets string representation of a pair.
 	 */
 	@Override
 	public String toString() {

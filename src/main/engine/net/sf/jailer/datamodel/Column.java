@@ -236,6 +236,12 @@ public class Column {
 		return column;
 	}
 
+	/**
+	 * Checks equality based on name, type, and length.
+	 *
+	 * @param obj the object to compare with
+	 * @return <code>true</code> if the columns are equal
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -260,6 +266,11 @@ public class Column {
 		return true;
 	}
 
+	/**
+	 * Returns a hash code based on name, type, and length.
+	 *
+	 * @return the hash code
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -298,6 +309,8 @@ public class Column {
 
 	/**
 	 * Returns a string representation of the column.
+	 *
+	 * @return the column definition in SQL syntax
 	 */
 	@Override
 	public String toString() {

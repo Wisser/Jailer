@@ -232,7 +232,9 @@ public class PrimaryKey {
 	
 	/**
 	 * Returns a string representation of the primary key.
-	 */ 
+	 *
+	 * @return the primary key definition in SQL syntax
+	 */
 	@Override
 	public String toString() {
 		return toSQL(null);

@@ -123,7 +123,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	private Map<Pair<Table, Column>, String> comments = new HashMap<>();
 
 	/**
-	 * Get of the names of user defined types.
+	 * Gets the names of user defined types.
 	 *
 	 * @param session to retrieve the UDT names
 	 * @return names of user defined types
@@ -156,9 +156,10 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	/**
 	 * Finds associations by reading the databases meta-data.
 	 *
-	 * @param session the statement executor for executing SQL-statements
 	 * @param dataModel model containing already known elements
 	 * @param namingSuggestion to put naming suggestions for associations into
+	 * @param session the statement executor for executing SQL-statements
+	 * @param executionContext the execution context
 	 * @return found associations
 	 */
 	@Override
@@ -288,6 +289,15 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		return associations;
 	}
 
+	/**
+	 * Gets the imported keys (foreign keys) for a table, optionally using a cache.
+	 *
+	 * @param session the database session
+	 * @param schema the schema name
+	 * @param table the table name
+	 * @param withCaching if <code>true</code>, use a cached result set if available
+	 * @return a result set describing the imported keys
+	 */
 	public static ResultSet getImportedKeys(Session session, String schema, String table, boolean withCaching) throws SQLException {
 		if (withCaching) {
 			final String NAME = "getImportedKeys " + schema;
@@ -307,6 +317,14 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		return session.getMetaData().getImportedKeys(null, schema, table);
 	}
 
+	/**
+	 * Gets the exported keys (referenced by foreign keys in other tables) for a table.
+	 *
+	 * @param session the database session
+	 * @param schema the schema name
+	 * @param table the table name
+	 * @return a result set describing the exported keys
+	 */
 	public static ResultSet getExportedKeys(Session session, String schema, String table) throws SQLException {
 		if (session.dbms.isUsesCatalog()) {
 			return session.getMetaData().getExportedKeys(schema, null, table);
@@ -357,9 +375,11 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	}
 
 	/**
-	 * Finds all tables in DB schema.
+	 * Finds all tables in the DB schema.
 	 *
 	 * @param session the statement executor for executing SQL-statements
+	 * @param executionContext the execution context
+	 * @return the set of tables found in the schema
 	 */
 	@Override
 	public Set<Table> findTables(Session session, ExecutionContext executionContext) throws Exception {
@@ -663,6 +683,13 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		return tables;
 	}
 
+	/**
+	 * Finds all table names that are partitions in the given schema.
+	 *
+	 * @param session the database session
+	 * @param introspectionSchema the schema to search for partitions
+	 * @return a set of table names that are partitions
+	 */
 	public static Set<String> findPartitions(Session session, String introspectionSchema) {
 		Set<String> partitions = new HashSet<>();
 		String partitionsQuery = session.dbms.getPartitionsQuery();
@@ -883,6 +910,15 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		return result;
 	}
 
+	/**
+	 * Retrieves primary key information for a given table.
+	 *
+	 * @param session the database session
+	 * @param schema the schema name
+	 * @param table the table name
+	 * @param withCaching if <code>true</code>, use a cached result set if available
+	 * @return a result set describing the primary keys
+	 */
 	public static ResultSet getPrimaryKeys(Session session, String schema, String table, boolean withCaching) throws SQLException {
 		if (withCaching) {
 			final String NAME = "getPrimaryKeys " + schema;
@@ -902,6 +938,15 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		return session.getMetaData().getPrimaryKeys(null, schema, table);
 	}
 
+	/**
+	 * Calls {@link DatabaseMetaData#getTables(String, String, String, String[])}. Uses schemaPattern as catalogPattern on MySQL.
+	 *
+	 * @param session the database session
+	 * @param schemaPattern the schema name pattern
+	 * @param tableNamePattern the table name pattern
+	 * @param types the list of table types to include
+	 * @return a result set describing the matching tables
+	 */
 	public static ResultSet getTables(Session session, String schemaPattern, String tableNamePattern, String[] types) throws SQLException {
 		if (session.dbms.isUsesCatalog()) {
 			 return session.getMetaData().getTables(schemaPattern, null, tableNamePattern, types);
@@ -1027,7 +1072,12 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	}
 
 	/**
-	 * Calls {@link DatabaseMetaData#getIndexInfo(String, String, String, boolean, boolean). Uses schemaPattern as catalogPattern on MySQL.
+	 * Calls {@link DatabaseMetaData#getIndexInfo(String, String, String, boolean, boolean)}. Uses schemaPattern as catalogPattern on MySQL.
+	 *
+	 * @param session the database session
+	 * @param schemaPattern the schema name pattern
+	 * @param tableNamePattern the table name pattern
+	 * @return a result set describing the indexes of matching tables
 	 */
 	public static ResultSet getIndexes(Session session, String schemaPattern, String tableNamePattern) throws SQLException {
 		if (session.dbms.isUsesCatalog()) {
@@ -1038,7 +1088,15 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	
 	/**
 	 * Calls {@link DatabaseMetaData#getColumns(String, String, String, String)}. Uses schemaPattern as catalogPattern on MySQL.
-	 * @param withCaching
+	 *
+	 * @param session the database session
+	 * @param schemaPattern the schema name pattern
+	 * @param tableNamePattern the table name pattern
+	 * @param columnNamePattern the column name pattern
+	 * @param withCaching if <code>true</code>, use a cached result set if available
+	 * @param onlyIfCached if <code>true</code>, return only from cache; skip if cache is not populated
+	 * @param tableType the table type (e.g. "TABLE", "SYNONYM")
+	 * @return a result set describing the matching columns
 	 */
 	public static ResultSet getColumns(Session session, String schemaPattern, String tableNamePattern, String columnNamePattern, boolean withCaching, boolean onlyIfCached, String tableType) throws SQLException {
 		boolean includeSynonym = false;
@@ -1096,6 +1154,11 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 
 	/**
 	 * Calls {@link DatabaseMetaData#getProcedures(String, String, String)}. Uses schemaPattern as catalogPattern on MySQL.
+	 *
+	 * @param session the database session
+	 * @param schemaPattern the schema name pattern
+	 * @param functionPattern the procedure/function name pattern
+	 * @return a result set describing matching procedures and functions
 	 */
 	public static ResultSet getProcedures(Session session, String schemaPattern, String functionPattern) throws SQLException {
 		if (session.dbms.isUsesCatalog()) {
@@ -1119,6 +1182,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	 *
 	 * @param session the statement executor for executing SQL-statements
 	 * @param userName schema with this name may be empty
+	 * @return sorted list of schema names
 	 */
 	public static List<String> getSchemas(Session session, String userName) {
 		List<String> schemas = new ArrayList<String>();
@@ -1151,6 +1215,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	 * Finds all catalogs with all schemas in DB.
 	 *
 	 * @param session the statement executor for executing SQL-statements
+	 * @return sorted list of catalog.schema name pairs, or an empty list if not supported
 	 */
 	public static List<String> getCatalogsWithSchemas(Session session) {
 		if (session.dbms.isUsesCatalog()) {
@@ -1198,6 +1263,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	 *
 	 * @param session the statement executor for executing SQL-statements
 	 * @param userName schema with this name may be empty
+	 * @return the default schema name
 	 */
 	public static String getDefaultSchema(Session session, String userName) {
 		return getDefaultSchema(session, userName, null);
@@ -1208,6 +1274,8 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	 *
 	 * @param session the statement executor for executing SQL-statements
 	 * @param userName schema with this name may be empty
+	 * @param schemaNames optional list of known schema names to use for resolution
+	 * @return the default schema name
 	 */
 	public static String getDefaultSchema(Session session, String userName, List<String> schemaNames) {
 		if (session.dbms.getDefaultSchemaQuery() != null) {
@@ -1276,7 +1344,8 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	 *
 	 * @param table the table
 	 * @param session the statement executor for executing SQL-statements
-	 *
+	 * @param executionContext the execution context
+	 * @return the list of columns found for the given table
 	 * @throws Exception on each error
 	 */
 	@Override
@@ -1462,9 +1531,10 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	 *
 	 * @param length the length as given from driver
 	 * @param precision the precision as given from driver
+	 * @param typeName the SQL type name
 	 * @param type the sql type
 	 * @param dbms the DBMS
-	 *
+	 * @param origLength the original unfiltered length
 	 * @return filtered length
 	 */
 	public static int filterLength(int length, int precision, String typeName, int type, DBMS dbms, int origLength) {
@@ -1500,11 +1570,12 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	 * Filters the precision attribute of a column in a DBMS specific way.
 	 *
 	 * @param length the length as given from driver
-	 * @param precision
+	 * @param precision the precision as given from driver
+	 * @param typeName the SQL type name
 	 * @param type the sql type
 	 * @param dbms the DBMS
-	 *
-	 * @return filtered length
+	 * @param origLength the original unfiltered length
+	 * @return filtered precision
 	 */
 	public static int filterPrecision(int length, int precision, String typeName, int type, DBMS dbms, int origLength) {
 		if (length == 65535 && precision == 32767 && "DECIMAL".equals(typeName) && DBMS.H2.equals(dbms)) {
@@ -1516,11 +1587,13 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	/**
 	 * Filters the type attribute of a column in a DBMS specific way.
 	 *
+	 * @param sqlType the SQL type name as given from driver
 	 * @param length the length as given from driver
-	 * @param type the sql type
+	 * @param typeName the native type name as given from driver
+	 * @param type the sql type code
 	 * @param dbms the DBMS
-	 *
-	 * @return filtered length
+	 * @param origLength the original unfiltered length
+	 * @return filtered type name
 	 */
 	public static String filterType(String sqlType, int length, String typeName, int type, DBMS dbms, int origLength) {
 		if (length > 10485760) {
@@ -1567,6 +1640,14 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		return sqlType;
 	}
 
+	/**
+	 * Converts a column from {@link ResultSetMetaData} into a {@link Column} model object.
+	 *
+	 * @param metaData the result set meta data
+	 * @param i the 1-based column index
+	 * @param session the database session
+	 * @return the corresponding {@link Column}
+	 */
 	public static Column toColumn(ResultSetMetaData metaData, int i, Session session) throws SQLException {
 		Quoting quoting = Quoting.getQuoting(session);
 		String colName = quoting.quote(metaData.getColumnLabel(i));
@@ -1618,6 +1699,11 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		return column;
 	}
 
+	/**
+	 * Resets all cached metadata for the given session.
+	 *
+	 * @param session the session whose caches should be cleared
+	 */
 	public static void resetCaches(Session session) {
 		session.removeSessionProperties(JDBCMetaDataBasedModelElementFinder.class);
 	}
@@ -1635,7 +1721,20 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		sessionWithPermissionToReadSchema.clear();
 	}
 
+	/**
+	 * Provides a session with elevated privileges for reading restricted schema metadata.
+	 */
 	public static interface PrivilegedSessionProvider {
+		/**
+		 * Returns a session with permission to read the given schema, or {@code null} if not available.
+		 *
+		 * @param session the current session
+		 * @param view the view or table requiring elevated access
+		 * @param schema the schema to access
+		 * @param tableName the table name to access
+		 * @param executionContext the execution context
+		 * @return a session with permission to read the schema, or {@code null}
+		 */
 		Session askForSessionWithPermissionToReadSchema(Session session, Table view, String schema, String tableName, ExecutionContext executionContext);
 	}
 

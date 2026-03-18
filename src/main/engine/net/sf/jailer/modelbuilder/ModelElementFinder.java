@@ -36,10 +36,10 @@ public interface ModelElementFinder {
 
 	/**
 	 * Finds a set of {@link Table}s.
-	 * 
-	 * @param session the statement executor for executing SQL-statements 
+	 *
+	 * @param session the statement executor for executing SQL-statements
+	 * @param executionContext the execution context
 	 * @return a set of {@link Table}s
-	 * 
 	 * @throws Exception on each error
 	 */
 	Collection<Table> findTables(Session session, ExecutionContext executionContext) throws Exception;
@@ -48,8 +48,9 @@ public interface ModelElementFinder {
 	 * Finds the {@link Column}s of a given {@link Table}.
 	 *
 	 * @param table the table
-	 * @param session the statement executor for executing SQL-statements 
-	 * 
+	 * @param session the statement executor for executing SQL-statements
+	 * @param executionContext the execution context
+	 * @return the list of columns found for the given table
 	 * @throws Exception on each error
 	 */
 	List<Column> findColumns(Table table, Session session, ExecutionContext executionContext) throws Exception;

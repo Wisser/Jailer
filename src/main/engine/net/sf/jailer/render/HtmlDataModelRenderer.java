@@ -72,37 +72,46 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 	public static final String CONTENT_FOLDER_NAME = "tables";
 
 	/**
-	 * @return the outputDir
+	 * Gets the directory to put the HTML-render in.
+	 *
+	 * @return the output folder
 	 */
 	public String getOutputFolder() {
 		return outputFolder;
 	}
 
 	/**
-	 * @param outputFolder the outputDir to set
+	 * Sets the directory to put the HTML-render in.
+	 *
+	 * @param outputFolder the output folder to set
 	 */
 	public void setOutputFolder(String outputFolder) {
 		this.outputFolder = outputFolder;
 	}
 
 	/**
-	 * @return the maxDepth
+	 * Gets the maximum depth of expansion on table render.
+	 *
+	 * @return the maximum depth
 	 */
 	public int getMaxDepth() {
 		return maxDepth;
 	}
 
 	/**
-	 * @param maxDepth the maxDepth to set
+	 * Sets the maximum depth of expansion on table render.
+	 *
+	 * @param maxDepth the maximum depth to set
 	 */
 	public void setMaxDepth(int maxDepth) {
 		this.maxDepth = maxDepth;
 	}
 
-	/** 
+	/**
 	 * Generates a human readable HTML-representation of the data-model.
-	 * 
+	 *
 	 * @param dataModel the data-model
+	 * @param restrictionFiles list of restriction-model file names applied to the data-model
 	 */
 	@Override
 	public void render(DataModel dataModel, List<String> restrictionFiles) {
@@ -154,16 +163,22 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 		}
 	}
 
+	/**
+	 * Gets the output folder for a given data-model.
+	 *
+	 * @param dataModel the data-model
+	 * @return the output folder path for the data-model
+	 */
 	public String outputFolderOf(DataModel dataModel) {
 		return new File(outputFolder, toFileName(dataModel.getName())).getPath();
 	}
 
 	/**
 	 * Renders the closure of a table.
-	 * 
+	 *
 	 * @param table the table
-	 * @param dataModel 
-	 * 
+	 * @param legend buffer to append the legend to
+	 * @param dataModel the data model
 	 * @return render of closure
 	 */
 	private String renderClosure(Table table, StringBuffer legend, DataModel dataModel) throws FileNotFoundException, IOException {
@@ -219,8 +234,13 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 
 	/**
 	 * Renders a table.
-	 * 
-	 * @param table the table
+	 *
+	 * @param table the table to render
+	 * @param current the table for which the overall page is being rendered
+	 * @param depth the current nesting depth
+	 * @param indent the indentation level
+	 * @param alreadyRendered set of tables already rendered (to avoid duplicates)
+	 * @param dataModel the data model
 	 * @return render of table
 	 */
 	private String renderTableBody(Table table, Table current, int depth, int indent, Set<Table> alreadyRendered, DataModel dataModel) throws FileNotFoundException, IOException {
@@ -328,8 +348,9 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 
 	/**
 	 * Generates a row in the table render.
-	 * 
-	 * @param indent the indentation
+	 *
+	 * @param indent the indentation level
+	 * @param content the content of the row
 	 * @return a row in the table render
 	 */
 	private String tableRow(int indent, String content) throws FileNotFoundException, IOException {
@@ -338,9 +359,12 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 
 	/**
 	 * Generates a row in the table render.
-	 * 
-	 * @param indent the indentation
-	 * @param highlighted 
+	 *
+	 * @param indent the indentation level
+	 * @param association the association to render
+	 * @param current the table for which the overall page is being rendered
+	 * @param highlighted <code>true</code> if this row should be highlighted
+	 * @param dataModel the data model
 	 * @return a row in the table render
 	 */
 	private String tableRow(int indent, Association association, Table current, boolean highlighted, DataModel dataModel) throws FileNotFoundException, IOException {
@@ -358,8 +382,9 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 	
 	/**
 	 * Generates a HTML render of a table schema.
-	 * 
+	 *
 	 * @param table the table
+	 * @param dataModel the data model
 	 * @return HTML render of table schema
 	 */
 	private String generateColumnsTable(Table table, DataModel dataModel) throws SQLException, FileNotFoundException, IOException {
@@ -384,6 +409,11 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 
 	/**
 	 * Generates a HTML table.
+	 *
+	 * @param title the table title
+	 * @param indents optional list of indent levels per row, or <code>null</code> for uniform indentation
+	 * @param column1 the list of cell contents
+	 * @return the generated HTML table, or <code>null</code> if the list is empty
 	 */
 	private String generateHTMLTable(String title, List<Integer> indents, List<String> column1) throws FileNotFoundException, IOException {
 		StringBuffer result = new StringBuffer();
@@ -395,8 +425,9 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 
 	/**
 	 * Returns Space-string of given length.
-	 * 
+	 *
 	 * @param indent the length
+	 * @return a string of HTML non-breaking spaces corresponding to the indent level
 	 */
 	private String indentSpaces(int indent) {
 		StringBuffer result = new StringBuffer();
@@ -409,9 +440,10 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 	}
 
 	/**
-	 * Returns a HTML-hyper link to the render of a given table. 
-	 * 
+	 * Returns a HTML-hyper link to the render of a given table.
+	 *
 	 * @param table the table
+	 * @param dataModel the data model
 	 * @return HTML-hyper link to the render of table
 	 */
 	private String linkTo(Table table, DataModel dataModel) {
@@ -419,10 +451,12 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 	}
 
 	/**
-	 * Returns a HTML-hyper link to the render of a given table. 
-	 * 
+	 * Returns a HTML-hyper link to the render of a given table.
+	 *
 	 * @param table the table
-	 * @param name the name of the link
+	 * @param name the link text
+	 * @param parent the relative path prefix to prepend to the file name
+	 * @param dataModel the data model
 	 * @return HTML-hyper link to the render of table
 	 */
 	private String linkTo(Table table, String name, String parent, DataModel dataModel) {
@@ -437,9 +471,8 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 
 	/**
 	 * Gets name of the file containing the HTML render of a given table.
-	 * 
-	 * @param tableName the table
-	 * 
+	 *
+	 * @param tableName the table name
 	 * @return name of the file containing the HTML render of table
 	 */
 	public static String toFileName(String tableName) {
@@ -468,9 +501,9 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 	
 	/**
 	 * Writes content into a file.
-	 * 
-	 * @param content the content
-	 * @param file the file
+	 *
+	 * @param file the file to write to
+	 * @param content the content to write
 	 */
 	private static void writeFile(File file, String content) throws IOException {
 		try {
@@ -484,10 +517,21 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 		_log.info("file '" + file + "' written");
 	}
 
+	/**
+	 * Sets the optional HTML overview content to include in the index page.
+	 *
+	 * @param overviewHtml the HTML overview content, or <code>null</code> for none
+	 */
 	public void setOverviewHtml(String overviewHtml) {
 		this.overviewHtml  = overviewHtml;
 	}
 
+	/**
+	 * Escapes HTML special characters in the given string.
+	 *
+	 * @param input the input string, may be <code>null</code>
+	 * @return the escaped string, or an empty string if input is <code>null</code>
+	 */
     public static String escapeHtmlEntities(String input){
     	if (input == null) {
     		return "";

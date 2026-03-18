@@ -56,11 +56,12 @@ public class RestrictionDefinition {
 	
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param from source table
 	 * @param to destination table
 	 * @param name name of restriction or <code>null</code>
 	 * @param condition restriction condition
+	 * @param isIgnored <code>true</code> if the association is ignored
 	 */
 	public RestrictionDefinition(Table from, Table to, String name, String condition, boolean isIgnored) {
 		this.from = from;

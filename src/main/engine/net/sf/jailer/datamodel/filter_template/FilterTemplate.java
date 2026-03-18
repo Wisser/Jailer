@@ -111,8 +111,8 @@ public class FilterTemplate implements FilterSource {
 
 	/**
 	 * Sets the filter expression (in SQL).
-	 * 
-	 * @return the filter expression (in SQL)
+	 *
+	 * @param expression the filter expression (in SQL)
 	 */
 	public void setExpression(String expression) {
 		this.expression = expression;
@@ -147,13 +147,17 @@ public class FilterTemplate implements FilterSource {
 	}
 
 	/**
-	 * @return the name
+	 * Gets the name of the template.
+	 *
+	 * @return the name of the template
 	 */
 	public String getName() {
 		return name;
 	}
 
 	/**
+	 * Sets the name of the template.
+	 *
 	 * @param name the name to set
 	 */
 	public void setName(String name) {
@@ -161,14 +165,18 @@ public class FilterTemplate implements FilterSource {
 	}
 
 	/**
-	 * @return the enabled
+	 * Returns whether the template is enabled.
+	 *
+	 * @return <code>true</code> if the template is enabled
 	 */
 	public boolean isEnabled() {
 		return enabled;
 	}
 
 	/**
-	 * @param enabled the enabled to set
+	 * Sets whether the template is enabled.
+	 *
+	 * @param enabled <code>true</code> to enable the template
 	 */
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;

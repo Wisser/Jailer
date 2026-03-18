@@ -47,9 +47,9 @@ public class KnownIdentifierMap {
 
 	/**
 	 * Returns previously put non-normalized unique table name.
-	 * 
+	 *
 	 * @param tableName the table name
-	 * @return previously put non-normalized unique table name or <code>null</code>, if non exists
+	 * @return previously put non-normalized unique table name, or <code>null</code> if none exists
 	 */
 	public String getTableName(String tableName) {
 		return get(normalizeTableName(tableName));
@@ -67,10 +67,10 @@ public class KnownIdentifierMap {
 
 	/**
 	 * Returns previously put non-normalized unique column name.
-	 * 
+	 *
 	 * @param tableName the column's table name
 	 * @param columnName the column name
-	 * @return previously put non-normalized unique table name or <code>null</code>, if non exists
+	 * @return previously put non-normalized unique column name, or <code>null</code> if none exists
 	 */
 	public String getColumnName(String tableName, String columnName) {
 		return get(normalizeColumnName(tableName, columnName));
@@ -87,9 +87,9 @@ public class KnownIdentifierMap {
 
 	/**
 	 * Returns previously put non-normalized unique join condition.
-	 * 
+	 *
 	 * @param condition the join condition
-	 * @return previously put non-normalized unique table name or <code>null</code>, if non exists
+	 * @return previously put non-normalized unique join condition, or <code>null</code> if none exists
 	 */
 	public String getCondition(String condition) {
 		return get(normalizeCondition(condition));
