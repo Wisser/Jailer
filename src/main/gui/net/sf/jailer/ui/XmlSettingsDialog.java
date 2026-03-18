@@ -35,7 +35,11 @@ import net.sf.jailer.subsetting.ScriptFormat;
  */
 public class XmlSettingsDialog extends javax.swing.JDialog {
 	
-	/** Creates new form XmlSettingsDialog */
+	/**
+	 * Creates new form XmlSettingsDialog.
+	 *
+	 * @param parent the parent frame
+	 */
 	public XmlSettingsDialog(java.awt.Frame parent) {
 		super(parent, true);
 		initComponents(); UIUtil.initComponents(this);
@@ -76,9 +80,9 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
 	
 	/**
 	 * Edits the XML settings of a data model.
-	 * 
+	 *
 	 * @param dataModel the data model
-	 * @param scriptFormat 
+	 * @param scriptFormat the script format (determines which settings are visible)
 	 * @return <code>true</code> iff settings are changed
 	 */
 	public boolean edit(DataModel dataModel, ScriptFormat scriptFormat) {

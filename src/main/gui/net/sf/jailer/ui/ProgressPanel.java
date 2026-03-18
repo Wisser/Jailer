@@ -50,8 +50,13 @@ public class ProgressPanel extends javax.swing.JPanel {
 	private final ProgressTable progressTable;
 	private final ProgressTable deleteProgressTable;
 
-	/** Creates new form ProgressPanel
-	 * @param progressTable */
+	/**
+	 * Creates new form ProgressPanel.
+	 *
+	 * @param progressTable the progress table for the export phase
+	 * @param deleteProgressTable the progress table for the delete reduction phase
+	 * @param withDelete if <code>true</code>, the delete reduction tab is shown
+	 */
 	public ProgressPanel(ProgressTable progressTable, ProgressTable deleteProgressTable, boolean withDelete) {
 		this.progressTable = progressTable;
 		this.deleteProgressTable = deleteProgressTable;

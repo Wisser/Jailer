@@ -319,8 +319,9 @@ public class ProgressTable extends JTable {
 
 	/**
 	 * Recursively selects cells.
-	 * 
+	 *
 	 * @param cellInfo current cell
+	 * @param depth current recursion depth
 	 */
 	private void selectCell(CellInfo cellInfo, int depth) {
 		if (!selectedCells.contains(cellInfo) && depth < MAX_DEPTH) {
@@ -708,9 +709,10 @@ public class ProgressTable extends JTable {
 	}
 
 	/**
-	 * Fitness (qualitiy) of the ordering of a row.
-	 * 
+	 * Fitness (quality) of the ordering of a row.
+	 *
 	 * @param row the row
+	 * @param maxParentRow the maximum row index of a parent cell
 	 * @return the fitness, less is better
 	 */
 	private double fitness(List<CellInfo> row, int maxParentRow) {
@@ -754,9 +756,8 @@ public class ProgressTable extends JTable {
 
 	/**
 	 * Sets total number of collected rows.
-	 * 
-	 * @param totalNumberOfCollectedRows
-	 *            total number of collected rows
+	 *
+	 * @param totalNumberOfCollectedRows total number of collected rows
 	 */
 	public void setTotalNumberOfCollectedRows(long totalNumberOfCollectedRows) {
 		this.totalNumberOfCollectedRows = totalNumberOfCollectedRows;

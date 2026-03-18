@@ -46,7 +46,13 @@ public class ParameterSelector extends javax.swing.JPanel {
 	 */
 	private List<String> parameters;
 	
-	/** Creates new form ParametersEditor */
+	/**
+	 * Creates new form ParameterSelector.
+	 *
+	 * @param parent the parent component used for dialog placement
+	 * @param textArea the text component into which selected parameters are inserted
+	 * @param parametersGetter getter for the available parameters
+	 */
 	public ParameterSelector(final Component parent, final JTextComponent textArea, ParametersGetter parametersGetter) {
 		this.parametersGetter = parametersGetter;
 		parameters = new ArrayList<String>();

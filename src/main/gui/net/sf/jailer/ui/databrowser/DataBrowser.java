@@ -393,16 +393,24 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		modelNavigationSplitSizerPanel.setVisible(false);
 		modelNavigationSplitSizerPanel.add(createModelNavSplitSizer());
 		modelNavigationConnectButtonV.setText(null);
-		modelNavigationConnectButtonV.setIcon(new CompoundIcon(Axis.Y_AXIS, 4, onePxIcon, noconnectionIcon, onePxIcon));
+		try {
+			modelNavigationConnectButtonV.setIcon(new CompoundIcon(Axis.Y_AXIS, 4, onePxIcon, noconnectionIcon, onePxIcon));
+		} catch (Exception e) {
+			LogUtil.warn(e);
+		}
 		modelNavigationConnectButtonV.addActionListener(this::reconnectMenuItemActionPerformed);
 		modelNavigationButtonV.setText(null);
 		modelNavigationButtonV.setVerticalAlignment(SwingConstants.TOP);
-		CompoundIcon ti = new CompoundIcon(Axis.Y_AXIS, 2, new TextIcon(modelNavigationButtonV, " Connections "),
-				onePxIcon);
-		Icon ii = new CompoundIcon(Axis.Y_AXIS, 4, onePxIcon, menuIcon, onePxIcon);
-		Icon ri1 = new RotatedIcon(new CompoundIcon(Axis.X_AXIS, 2, ti, new RotatedIcon(ii, RotatedIcon.Rotate.DOWN)),
-				RotatedIcon.Rotate.UP);
-		modelNavigationButtonV.setIcon(ri1);
+		try {
+			CompoundIcon ti = new CompoundIcon(Axis.Y_AXIS, 2, new TextIcon(modelNavigationButtonV, " Connections "),
+					onePxIcon);
+			Icon ii = new CompoundIcon(Axis.Y_AXIS, 4, onePxIcon, menuIcon, onePxIcon);
+			Icon ri1 = new RotatedIcon(new CompoundIcon(Axis.X_AXIS, 2, ti, new RotatedIcon(ii, RotatedIcon.Rotate.DOWN)),
+					RotatedIcon.Rotate.UP);
+			modelNavigationButtonV.setIcon(ri1);
+		} catch (Exception e) {
+			LogUtil.warn(e);
+		}
 		ActionListener al = e -> {
 			modelNavigationScrollPane.setVisible(!modelNavigationScrollPane.isVisible());
 			modelNavigationButtonV.setVisible(!modelNavigationScrollPane.isVisible());
@@ -2086,6 +2094,9 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	private Integer rowLimitStore = ROW_LIMIT_DEFAULT;
 	private Map<Integer, JRadioButtonMenuItem> itemPerLimit = new HashMap<Integer, JRadioButtonMenuItem>();
 
+	/**
+	 * Updates the navigation combo box with the current list of tables from the data model.
+	 */
 	@SuppressWarnings("unchecked")
 	public void updateNavigationCombobox() {
 		List<String> tables = new ArrayList<String>();

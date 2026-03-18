@@ -101,6 +101,14 @@ public class ExportPanel extends javax.swing.JPanel {
     private Set<ConnectionInfo> selectedConnections = new TreeSet<>((a, b) -> a.alias.compareToIgnoreCase(b.alias));
     private ExecutionContext executionContext;
     
+    /**
+     * Opens the export dialog to let the user export data models and connections.
+     *
+     * @param owner the owner window for the dialog
+     * @param initiallySelected the item to select initially in the list, or {@code null}
+     * @param connectionDialog the connection dialog providing the list of connections
+     * @return {@code true} if the user confirmed the export, {@code false} if cancelled
+     */
     public boolean openExportDialog(Window owner, Object initiallySelected, DbConnectionDialog connectionDialog) {
     	List<ConnectionInfo> connectionList = connectionDialog.getConnectionList();
     	return openDialog(owner, initiallySelected, connectionList, new HashSet<>(), "Export data models and connections", connectionDialog);
@@ -516,6 +524,15 @@ public class ExportPanel extends javax.swing.JPanel {
 		}
 	}
     
+    /**
+     * Opens a file chooser and imports data models and connections from the selected file.
+     *
+     * @param owner the owner window for the file chooser dialog
+     * @param connectionDialog the connection dialog to update with imported connections
+     * @return a {@link Pair} whose first element indicates whether the import was performed,
+     *         and whose second element is a pair of the number of imported models and the list of imported connections;
+     *         or {@code null} if the operation was cancelled
+     */
     public static Pair<Boolean, Pair<Integer, List<ConnectionInfo>>> openImportDialog(Window owner, DbConnectionDialog connectionDialog) {
     	ExecutionContext executionContext = connectionDialog.executionContext;
 		

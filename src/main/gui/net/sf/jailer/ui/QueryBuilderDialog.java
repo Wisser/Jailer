@@ -69,7 +69,11 @@ import net.sf.jailer.util.SqlUtil;
  */
 public class QueryBuilderDialog extends javax.swing.JDialog {
 
-	/** Creates new form QueryBuilderDialog */
+	/**
+	 * Creates new form QueryBuilderDialog.
+	 *
+	 * @param parent the parent frame
+	 */
 	public QueryBuilderDialog(java.awt.Frame parent) {
 		super(parent, true);
 		this.sqlTextArea = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false) {
@@ -908,9 +912,9 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 
 	/**
 	 * Gets render of an association for the join-combobox.
-	 * 
-	 * @param association
-	 *            the association
+	 *
+	 * @param from the source table of the association
+	 * @param association the association
 	 * @return render of association
 	 */
 	private String joinTableRender(Table from, Association association) {

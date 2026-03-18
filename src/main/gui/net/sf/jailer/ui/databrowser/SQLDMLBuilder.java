@@ -40,7 +40,8 @@ public class SQLDMLBuilder {
 	 * Build Update statements.
 	 *
 	 * @param table the table
-	 * @param rows rows
+	 * @param rows rows to be updated
+	 * @param withComments if {@code true}, adds column type comments
 	 * @param session current DB session
 	 * @return update statements for rows
 	 */
@@ -58,6 +59,7 @@ public class SQLDMLBuilder {
 	 *
 	 * @param table the table
 	 * @param theRow row to be updated
+	 * @param withComments if {@code true}, adds column type comments
 	 * @param session current DB session
 	 * @return update statement for row
 	 */
@@ -170,7 +172,8 @@ public class SQLDMLBuilder {
 	 * Build Insert statements.
 	 *
 	 * @param table the table
-	 * @param rows rows
+	 * @param rows rows to be inserted
+	 * @param withComments if {@code true}, adds column type comments
 	 * @param session current DB session
 	 * @return insert statements for rows
 	 */
@@ -187,9 +190,10 @@ public class SQLDMLBuilder {
 	 * Build Insert statements.
 	 *
 	 * @param table the table
-	 * @param row row to be updated
+	 * @param row row to be inserted
+	 * @param withComments if {@code true}, adds column type comments
 	 * @param session current DB session
-	 * @return update statement for row
+	 * @return insert statement for row
 	 */
 	public static String buildInsert(Table table, Row row, boolean withComments, Session session) {
 		Quoting quoting;
@@ -246,9 +250,10 @@ public class SQLDMLBuilder {
 	 * Build Delete statements.
 	 *
 	 * @param table the table
-	 * @param row row to be updated
+	 * @param row row to be deleted
+	 * @param withComments if {@code true}, adds column type comments
 	 * @param session current DB session
-	 * @return update statement for row
+	 * @return delete statement for row
 	 */
 	public static String buildDelete(Table table, Row row, boolean withComments, Session session) {
 		String sql = "Delete from " + table.getName() + " Where " + SqlUtil.replaceAliases(row.rowId, null, null);
@@ -259,7 +264,8 @@ public class SQLDMLBuilder {
 	 * Build Delete statements.
 	 *
 	 * @param table the table
-	 * @param rows rows
+	 * @param rows rows to be deleted
+	 * @param withComments if {@code true}, adds column type comments
 	 * @param session current DB session
 	 * @return delete statements for rows
 	 */
@@ -294,7 +300,7 @@ public class SQLDMLBuilder {
 	 * Gets SQL literal for a given object. Returns <code>null</code> if the object cannot be converted into a SQL literal (LOBs).
 	 *
 	 * @param value the value
-	 * @param cellContentConverter
+	 * @param cellContentConverter the converter used to produce SQL literals
 	 * @return SQL literal or <code>null</code>
 	 */
 	private static String getSQLLiteral(Object value, CellContentConverter cellContentConverter) {

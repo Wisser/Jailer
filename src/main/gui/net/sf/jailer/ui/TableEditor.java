@@ -228,10 +228,12 @@ public abstract class TableEditor extends javax.swing.JDialog {
 	}
 
 	/**
-	 * Creates new form TableEditor
-	 * 
+	 * Creates new form TableEditor.
+	 *
+	 * @param parent the parent dialog
+	 * @param displayNames map from table name to display name
 	 * @param tables all tables (as csv-lines)
-	 * @param associations all associations (as csv-line)
+	 * @param associations all associations (as csv-lines)
 	 * @param excludeFromDeletionList list of tables to be excluded from deletion
 	 */
 	public TableEditor(java.awt.Dialog parent, Map<String, String> displayNames, Collection<Line> tables, List<Line> associations, List<String> excludeFromDeletionList) {
@@ -827,8 +829,9 @@ public abstract class TableEditor extends javax.swing.JDialog {
 	
 	/**
 	 * Edits a table (as csv-line).
-	 * 
+	 *
 	 * @param tableLine the table-line
+	 * @param columnLines map from table name to column csv-line
 	 * @return <code>true</code> if line was modified
 	 */
 	public boolean edit(Line tableLine, Map<String, Line> columnLines) {

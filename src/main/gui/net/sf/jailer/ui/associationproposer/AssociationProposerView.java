@@ -97,8 +97,13 @@ public class AssociationProposerView extends javax.swing.JPanel {
 	private final int timeoutSec;
 	
     /**
-     * Creates new form ConstraintChecker
+     * Creates new form AssociationProposerView.
+     *
+     * @param owner the owner frame
+     * @param dataModel the data model
      * @param scriptFile file to load, if not <code>null</code>
+     * @param timeoutSec the parse timeout in seconds
+     * @param executionContext the execution context
      */
     public AssociationProposerView(JFrame owner, DataModel dataModel, final File scriptFile, final int timeoutSec, ExecutionContext executionContext) {
         this.dataModel = dataModel;

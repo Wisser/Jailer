@@ -218,7 +218,21 @@ public enum MetaDataDetails {
 	public final String name;
 	public final int queueIndex;
 
+	/**
+	 * Reads the metadata details for the given table.
+	 *
+	 * @param session the database session
+	 * @param mdTable the metadata table
+	 * @return a result set containing the metadata details
+	 * @throws SQLException if a database error occurs
+	 */
 	public abstract ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException;
+
+	/**
+	 * Adjusts the column order and layout of the rows table after loading.
+	 *
+	 * @param rowsTable the table component to adjust
+	 */
 	public void adjustRowsTable(JTable rowsTable) {
 	}
 

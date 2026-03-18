@@ -42,7 +42,9 @@ public class CommandLineInstance {
 	}
 
 	/**
-	 * Sets the singleton.
+	 * Initializes the singleton from the given command-line arguments.
+	 *
+	 * @param args the command-line arguments
 	 */
 	public static synchronized void init(String[] args) throws Exception {
 		commandLine = UICommandLineParser.parse(args, true);
@@ -53,6 +55,9 @@ public class CommandLineInstance {
 		}
 	}
 
+	/**
+	 * Resets the singleton to a default (empty) instance.
+	 */
 	public static void clear() {
 		commandLine = new UICommandLine();
 	}

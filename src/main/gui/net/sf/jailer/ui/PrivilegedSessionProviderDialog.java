@@ -135,7 +135,9 @@ public class PrivilegedSessionProviderDialog extends javax.swing.JDialog {
 	}
 
     /**
-     * Creates new form PrivilegedSessionProvider
+     * Creates new form PrivilegedSessionProviderDialog.
+     *
+     * @param parent the parent frame
      */
     public PrivilegedSessionProviderDialog(Frame parent) {
         super(parent, true);

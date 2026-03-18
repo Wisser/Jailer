@@ -108,9 +108,13 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 	/**
 	 * Constructor.
 	 *
-	 * @param progressTable
-	 *            table showing collected rows
-	 * @param targetSchemaSet
+	 * @param progressTable the table showing collected rows
+	 * @param progressPanel the progress panel
+	 * @param dataModel the data model
+	 * @param confirm <code>true</code> to ask for confirmation before deleting
+	 * @param targetSchemaSet the set of target schema names
+	 * @param forExportStage <code>true</code> if this listener is for the export stage
+	 * @param checkPK <code>true</code> to validate primary keys
 	 */
 	public SingleStageProgressListener(final ProgressTable progressTable, final ProgressPanel progressPanel, DataModel dataModel, final boolean confirm, Set<String> targetSchemaSet, boolean forExportStage, boolean checkPK) {
 		this.progressTable = progressTable;

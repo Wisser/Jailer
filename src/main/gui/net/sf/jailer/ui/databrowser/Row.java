@@ -69,6 +69,8 @@ public class Row {
 	private int parentModelIndex = 0;
 
 	/**
+	 * Returns the parent model index (block number).
+	 *
 	 * @return the parentModelIndex
 	 */
 	public int getParentModelIndex() {
@@ -76,6 +78,8 @@ public class Row {
 	}
 
 	/**
+	 * Sets the parent model index (block number).
+	 *
 	 * @param parentModelIndex the parentModelIndex to set
 	 */
 	public void setParentModelIndex(int parentModelIndex) {
@@ -88,13 +92,17 @@ public class Row {
 	private int inheritedParentModelIndex = 0;
 
 	/**
-	 * @return the parentModelIndex
+	 * Returns the inherited parent model index (inherited block number).
+	 *
+	 * @return the inheritedParentModelIndex
 	 */
 	public int getInheritedParentModelIndex() {
 		return inheritedParentModelIndex;
 	}
 
 	/**
+	 * Sets the inherited parent model index (inherited block number).
+	 *
 	 * @param inheritedParentModelIndex the inheritedParentModelIndex to set
 	 */
 	public void setInheritedParentModelIndex(int inheritedParentModelIndex) {

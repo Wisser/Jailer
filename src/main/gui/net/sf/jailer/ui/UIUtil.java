@@ -382,6 +382,11 @@ public class UIUtil {
                 fullSize, false, returnFalseOnError, false, null, openResult, false, executionContext);
     }
 
+	/**
+	 * Returns whether the Jailer engine can be started, showing a dialog if it is already running.
+	 *
+	 * @return <code>true</code> if no engine is currently running
+	 */
 	public static boolean canRunJailer() {
 		if (currentConsoleFrame != null) {
 			currentConsoleFrame.toFront();
@@ -1022,6 +1027,9 @@ public class UIUtil {
     /**
      * Tries to get as much memory as possible and shows it's size.
      */
+	/**
+	 * Shows the maximum available heap memory in a dialog by exhausting memory until an OutOfMemoryError is thrown.
+	 */
     public static void showMaxMemory() {
         long memSize = 0;
         try {
@@ -1036,6 +1044,12 @@ public class UIUtil {
         }
     }
 
+	/**
+	 * Replaces a component in its parent container, preserving the GridBag layout constraints.
+	 *
+	 * @param component the component to replace
+	 * @param replacement the replacement component, or <code>null</code> to simply remove the component
+	 */
     public static void replace(JComponent component, JComponent replacement) {
         Container parent = component.getParent();
         GridBagConstraints c = ((GridBagLayout) parent.getLayout()).getConstraints(component);
@@ -1045,6 +1059,11 @@ public class UIUtil {
         }
     }
 
+	/**
+	 * Ensures a popup menu does not exceed a maximum number of items by grouping overflow items into submenus.
+	 *
+	 * @param popup the popup menu to fit
+	 */
     public static void fit(JPopupMenu popup) {
         if (!(popup instanceof JScrollPopupMenu || popup instanceof JScrollC2PopupMenu)) {
             final int MAX_ITEMS = 40;
@@ -1483,10 +1502,21 @@ public class UIUtil {
 		});
 	}
 
+	/**
+	 * Schedules the given runnable to be executed on the Event Dispatch Thread.
+	 *
+	 * @param runnable the runnable to execute
+	 */
     public static void invokeLater(final Runnable runnable) {
     	SwingUtilities.invokeLater(runnable);
     }
 
+	/**
+	 * Schedules the given runnable to be executed on the Event Dispatch Thread after a given number of event-dispatch ticks.
+	 *
+	 * @param ticks the number of event-dispatch ticks to delay
+	 * @param runnable the runnable to execute
+	 */
     public static void invokeLater(final int ticks, final Runnable runnable) {
 		SwingUtilities.invokeLater(new Runnable() {
 			int count = ticks;
@@ -1504,6 +1534,11 @@ public class UIUtil {
 
     private static Map<Component, Integer> waitLevel = new WeakHashMap<Component, Integer>();
 
+	/**
+	 * Sets the wait cursor on the given component, using a reference count to handle nested calls.
+	 *
+	 * @param component the component to set the wait cursor on
+	 */
 	public static void setWaitCursor(Component component) {
 		if (component != null) {
 			Integer level = waitLevel.get(component);
@@ -1516,6 +1551,11 @@ public class UIUtil {
 		}
 	}
 
+	/**
+	 * Resets the wait cursor on the given component once the outermost nested call is finished.
+	 *
+	 * @param component the component to reset the cursor on
+	 */
 	public static void resetWaitCursor(Component component) {
 		if (component != null) {
 			Integer level = waitLevel.get(component);
@@ -1714,10 +1754,22 @@ public class UIUtil {
 		}
 	}
 
+	/**
+	 * Formats a number using the default locale's number format.
+	 *
+	 * @param number the number to format
+	 * @return the formatted string
+	 */
 	public static String format(long number) {
 		return NumberFormat.getInstance().format(number);
 	}
 
+	/**
+	 * Formats a number using the default locale's number format.
+	 *
+	 * @param number the number to format
+	 * @return the formatted string, or "NaN" if the value is not a number
+	 */
 	public static String format(double number) {
 		if (Double.isNaN(number)) {
 			return "NaN";
@@ -1725,6 +1777,12 @@ public class UIUtil {
 		return NumberFormat.getInstance().format(number);
 	}
 
+	/**
+	 * Formats a BigDecimal number preserving its scale.
+	 *
+	 * @param number the number to format
+	 * @return the formatted string
+	 */
 	public static String format(BigDecimal number) {
 		NumberFormat instance = new DecimalFormat("");
 		int scale = number.scale();
@@ -1739,6 +1797,12 @@ public class UIUtil {
 		return result;
 	}
 
+	/**
+	 * Corrects the file separator in the given file name for the current OS if the file does not exist as-is.
+	 *
+	 * @param fileName the file name to correct
+	 * @return the corrected file name
+	 */
 	public static String correctFileSeparator(String fileName) {
 		try {
 			if (fileName == null || new File(fileName).exists()) {
@@ -1754,6 +1818,12 @@ public class UIUtil {
 		}
 	}
 
+	/**
+	 * Converts a timestamp in milliseconds to a human-readable date/time string.
+	 *
+	 * @param time the timestamp in milliseconds, or <code>null</code>
+	 * @return the formatted date/time string, or an empty string if time is <code>null</code>
+	 */
 	public static String toDateAsString(Long time) {
 		if (time == null) {
 			return "";
@@ -1761,6 +1831,12 @@ public class UIUtil {
 		return DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date(time));
 	}
 
+	/**
+	 * Converts a {@link Date} to a human-readable date/time string.
+	 *
+	 * @param date the date to convert, or <code>null</code>
+	 * @return the formatted date/time string, or <code>null</code> if date is <code>null</code>
+	 */
 	public static Object toDateAsString(Date date) {
 		if (date != null) {
 			return toDateAsString(date.getTime());
@@ -1771,6 +1847,11 @@ public class UIUtil {
 
 	private static Font defaultFont = null;
 
+	/**
+	 * Returns the default bold title font derived from the standard label font.
+	 *
+	 * @return the default title font
+	 */
 	public static Font defaultTitleFont() {
 		if (defaultFont == null) {
 			defaultFont = new JLabel().getFont();
@@ -1779,6 +1860,15 @@ public class UIUtil {
 		return defaultFont;
 	}
 
+	/**
+	 * Returns the name of a working table that conflicts with existing tables, or <code>null</code> if there is no conflict.
+	 *
+	 * @param ddlCreator the DDL creator
+	 * @param window the parent window for the progress dialog
+	 * @param dataSource the data source
+	 * @param dbms the DBMS configuration
+	 * @return the conflicting table name, or <code>null</code>
+	 */
 	public static String getDDLTableInConflict(final DDLCreator ddlCreator, Window window, final BasicDataSource dataSource, final DBMS dbms) throws Exception {
 		return ConcurrentTaskControl.call(window, new Callable<String>() {
 			@Override
@@ -1788,6 +1878,18 @@ public class UIUtil {
 		}, "validate working tables...", null);
 	}
 
+	/**
+	 * Returns whether the working-table DDL is up to date with the current configuration.
+	 *
+	 * @param ddlCreator the DDL creator
+	 * @param window the parent window for the progress dialog
+	 * @param dataSource the data source
+	 * @param dbms the DBMS configuration
+	 * @param useRowId if <code>true</code>, row IDs are used
+	 * @param useRowIdsOnlyForTablesWithoutPK if <code>true</code>, row IDs are used only for tables without a primary key
+	 * @param workingTableSchema the schema for working tables, or <code>null</code>
+	 * @return <code>true</code> if the DDL is up to date
+	 */
 	public static boolean isDDLUptodate(final DDLCreator ddlCreator, Window window, final BasicDataSource dataSource,
 			final DBMS dbms, final boolean useRowId, final boolean useRowIdsOnlyForTablesWithoutPK, final String workingTableSchema) throws Exception {
 		return ConcurrentTaskControl.call(window, new Callable<Boolean>() {
@@ -1885,11 +1987,22 @@ public class UIUtil {
 		return sb.toString();
 	}
 
+	/**
+	 * Converts multi-line SQL text to a single line by removing line breaks and superfluous spaces.
+	 *
+	 * @param text the SQL text
+	 * @return the single-line SQL text
+	 */
 	public static String toSingleLineSQL(String text) {
 		return UIUtil.removesuperfluousSpaces(
 				removeSingleLineComments(text).replaceAll("\\s*\\n\\s*", " ").replaceAll(";\\s*$", ""));
 	}
 
+	/**
+	 * Marks the given thread as a daemon thread and starts it.
+	 *
+	 * @param thread the thread to start as a daemon
+	 */
 	public static void startDemon(Thread thread) {
 		thread.setDaemon(true);
 		thread.start();
@@ -1899,10 +2012,23 @@ public class UIUtil {
 	private static Map<ImageIcon, String> imageNames = new HashMap<ImageIcon, String>();
 	private static boolean errorSeen = false;
 
+	/**
+	 * Reads and returns an image icon from the given resource path.
+	 *
+	 * @param resource the resource path (relative to the UI resource directory)
+	 * @return the image icon, or <code>null</code> if the resource cannot be loaded
+	 */
 	public static ImageIcon readImage(String resource) {
 		return readImage(resource, true);
 	}
 
+	/**
+	 * Reads and returns an image icon from the given resource path.
+	 *
+	 * @param resource the resource path (relative to the UI resource directory)
+	 * @param showError if <code>true</code>, shows an error dialog if the resource cannot be loaded
+	 * @return the image icon, or <code>null</code> if the resource cannot be loaded
+	 */
 	public static ImageIcon readImage(String resource, boolean showError) {
 		ImageIcon result = images.get(resource);
 		if (result == null) {
@@ -2132,6 +2258,9 @@ public class UIUtil {
 	private static Map<Window, Float> hiddenWindows = new LinkedHashMap<>();
 	private static Timer dwTimer = null;
 	
+	/**
+	 * Starts a short deferred-window timer that hides newly added windows until {@link #stopDW()} is called.
+	 */
 	public static void startDW() {
 		if (dwTimer == null) {
 			dwTimer = new Timer(120, e -> {

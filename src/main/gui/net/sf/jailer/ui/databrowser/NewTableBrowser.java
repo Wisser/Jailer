@@ -41,7 +41,13 @@ import net.sf.jailer.ui.UIUtil;
 @SuppressWarnings("serial")
 public abstract class NewTableBrowser extends javax.swing.JDialog {
 
-	/** Creates new form NewTableBrowser */
+	/**
+	 * Creates new form NewTableBrowser.
+	 *
+	 * @param parent the parent frame
+	 * @param datamodel the data model
+	 * @param offerAlternatives if {@code true}, shows additional options such as opening a session and restoring a layout
+	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public NewTableBrowser(java.awt.Frame parent, DataModel datamodel, boolean offerAlternatives) {
 		super(parent, true);

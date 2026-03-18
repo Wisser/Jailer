@@ -33,7 +33,9 @@ public class RestrictionEditor extends javax.swing.JPanel {
 
 	private Color origGBColor;
 	
-	/** Creates new form RestrictionEditor */
+	/**
+	 * Creates new form RestrictionEditor.
+	 */
 	public RestrictionEditor() {
 		initComponents(); UIUtil.initComponents(this);
 		

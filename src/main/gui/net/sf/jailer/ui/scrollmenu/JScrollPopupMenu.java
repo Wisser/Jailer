@@ -55,14 +55,28 @@ public class JScrollPopupMenu extends JPopupMenu {
 	private final boolean noSearchFieldNorScrollbar;
 	private static final String PLACEHOLDERTEXT = "Type partial value to search";
 	
+	/**
+	 * Constructs a new <code>JScrollPopupMenu</code> with no label and a search field.
+	 */
 	public JScrollPopupMenu() {
 		this(null, false);
 	}
 
+	/**
+	 * Constructs a new <code>JScrollPopupMenu</code> with no label.
+	 *
+	 * @param noSearchField <code>true</code> to hide the search field and scrollbar
+	 */
 	public JScrollPopupMenu(boolean noSearchField) {
 		this(null, noSearchField);
 	}
 
+	/**
+	 * Constructs a new <code>JScrollPopupMenu</code> with the given label.
+	 *
+	 * @param label the string that a UI may use to display as a description of the popup menu
+	 * @param noSearchField <code>true</code> to hide the search field and scrollbar
+	 */
 	public JScrollPopupMenu(String label, boolean noSearchField) {
 		super(label);
 		this.noSearchFieldNorScrollbar = noSearchField;
@@ -325,10 +339,20 @@ public class JScrollPopupMenu extends JPopupMenu {
 		return popupScrollBar;
 	}
 
+	/**
+	 * Gets the maximum number of visible rows before a scrollbar appears.
+	 *
+	 * @return the maximum number of visible rows
+	 */
 	public int getMaximumVisibleRows() {
 		return maximumVisibleRows;
 	}
 
+	/**
+	 * Sets the maximum number of visible rows before a scrollbar appears.
+	 *
+	 * @param maximumVisibleRows the maximum number of visible rows
+	 */
 	public void setMaximumVisibleRows(int maximumVisibleRows) {
 		this.maximumVisibleRows = maximumVisibleRows;
 	}

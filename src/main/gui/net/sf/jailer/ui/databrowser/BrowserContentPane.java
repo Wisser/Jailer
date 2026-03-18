@@ -969,7 +969,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	 * @param dataModel
 	 *            the data model
 	 * @param table
-	 *            to read rows from. Opens SQL browser if table is <code>null</code>.
+	 *            table to read rows from. Opens SQL browser if table is <code>null</code>.
 	 * @param condition
 	 *            initial condition
 	 * @param session
@@ -978,6 +978,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	 *            all parent rows, if there are more than 1
 	 * @param association
 	 *            {@link Association} with parent row
+	 * @param parentFrame
+	 *            the parent frame
+	 * @param rowsClosure
+	 *            the rows closure
+	 * @param selectDistinct
+	 *            if {@code true}, use SELECT DISTINCT
+	 * @param reload
+	 *            if {@code true}, reload rows on creation
+	 * @param executionContext
+	 *            the execution context
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public BrowserContentPane(final DataModel dataModel, final Table table, String condition, Session session, List<Row> parentRows,
@@ -3052,7 +3062,21 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
 	/**
 	 * Creates popup menu for navigation.
-	 * @param selectedRowsIndexes 
+	 *
+	 * @param contextJTable the table in which the popup was triggered
+	 * @param row the row at the popup position, or {@code null}
+	 * @param rowIndex the index of the row at the popup position
+	 * @param selectedRowsIndexes the set of currently selected row indices, or {@code null}
+	 * @param x the x coordinate of the popup trigger
+	 * @param y the y coordinate of the popup trigger
+	 * @param navigateFromAllRows if {@code true}, navigation uses all rows rather than only the current row
+	 * @param altCopyTCB alternative copy action, or {@code null}
+	 * @param ealtCopyTCB extended alternative copy action, or {@code null}
+	 * @param repaint runnable to repaint the table, or {@code null}
+	 * @param withKeyStroke if {@code true}, adds keyboard shortcuts to menu items
+	 * @param withSingleRow if {@code true}, adds single-row actions
+	 * @param forColumnsTable if {@code true}, the popup is for the columns table view
+	 * @return the popup menu
 	 */
 	public JPopupMenu createPopupMenu(final JTable contextJTable, final Row row, final int rowIndex, Set<Integer> selectedRowsIndexes, final int x, final int y, boolean navigateFromAllRows, Action altCopyTCB, Action ealtCopyTCB, final Runnable repaint, final boolean withKeyStroke, boolean withSingleRow, boolean forColumnsTable) {
 		JMenuItem tableFilter = new JCheckBoxMenuItem("Table Filter");

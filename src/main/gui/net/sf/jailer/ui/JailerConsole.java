@@ -216,7 +216,7 @@ public class JailerConsole {
 	/**
 	 * Sets status of console to "finished".
 	 *
-	 * @param ok indicates errors
+	 * @param ok {@code true} if the operation completed successfully, {@code false} if it failed
 	 */
 	public void finish(boolean ok) {
 		getLoadSqlLog().setEnabled(true);

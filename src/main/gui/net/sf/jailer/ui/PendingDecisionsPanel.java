@@ -61,7 +61,10 @@ public abstract class PendingDecisionsPanel extends javax.swing.JPanel {
 	public final Set<String> origDecisionPending;
 
 	/**
-	 * Creates new form PendingDecisionsPanel
+	 * Creates new form PendingDecisionsPanel.
+	 *
+	 * @param dataModel the data model
+	 * @param extractionModelEditor the extraction model editor
 	 */
 	public PendingDecisionsPanel(DataModel dataModel, ExtractionModelEditor extractionModelEditor) {
 		this.dataModel = dataModel;

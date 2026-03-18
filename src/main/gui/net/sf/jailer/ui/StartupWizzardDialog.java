@@ -236,6 +236,9 @@ public abstract class StartupWizzardDialog extends javax.swing.JDialog {
 		setVisible(false);
 	}//GEN-LAST:event_loadButtonActionPerformed
 
+	/**
+	 * Called when the dialog is closed.
+	 */
 	protected abstract void onClose();
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

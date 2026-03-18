@@ -157,6 +157,7 @@ public class AssociationProposer {
 	 *
 	 * @param sqlStatement the statement
 	 * @param startLineNumber the line number at which the statement begins in the script
+	 * @param timeoutSec the parse timeout in seconds
 	 * @return an error message if statement is invalid, else <code>null</code>
 	 */
 	public synchronized String analyze(String sqlStatement, int startLineNumber, int timeoutSec) {

@@ -192,6 +192,15 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel implements
     	otherPanel.repaint();
 	}
 
+    /**
+     * Shows meta data details for a table.
+     *
+     * @param mdTable the metadata table
+     * @param table the data model table, or <code>null</code>
+     * @param row the selected row, or <code>null</code>
+     * @param onlyTable <code>true</code> to show only the table details panel
+     * @param dataModel the data model
+     */
     public void showMetaDataDetails(final MDTable mdTable, Table table, Row row, boolean onlyTable, DataModel dataModel) {
     	TableDetailsView v = table == null? null : tableDetailsViewsAll.get(table);
     	Point vpos = v == null? null : v.getViewPosition();

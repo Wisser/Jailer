@@ -52,9 +52,17 @@ public class SchemaMappingDialog extends javax.swing.JDialog {
 	private boolean ok = false;
 	private Map<String, JComboBox2> comboboxes = new TreeMap<String, JComboBox2>();
 	
-	/** Creates new form SchemaMappingDialog 
-	 * @param mapping 
-	 * @throws Exception */
+	/**
+	 * Creates new form SchemaMappingDialog.
+	 *
+	 * @param parent the parent frame
+	 * @param dataModel the data model
+	 * @param connectionDialog the connection dialog providing schema information
+	 * @param session the database session
+	 * @param mapping the initial schema mapping
+	 * @param executionContext the execution context
+	 * @throws Exception if initialization fails
+	 */
 	public SchemaMappingDialog(java.awt.Frame parent, DataModel dataModel, DbConnectionDialog connectionDialog, Session session, Map<String, String> mapping, ExecutionContext executionContext) throws Exception {
 		super(parent, true);
 		initComponents(); UIUtil.initComponents(this);
@@ -243,8 +251,8 @@ public class SchemaMappingDialog extends javax.swing.JDialog {
 	}//GEN-LAST:event_okButtonActionPerformed
 
 	/**
-	 * Gets current mapping, or <code>null</code> if dialog was canceled.
-	 * 
+	 * Gets the current schema mapping as selected by the user.
+	 *
 	 * @return current mapping, or <code>null</code> if dialog was canceled
 	 */
 	public Map<String, String> getMapping() {
@@ -284,10 +292,10 @@ public class SchemaMappingDialog extends javax.swing.JDialog {
 	}
 
 	/**
-	 * Restores all persisted schema mappings.
-	 * 
-	 * @param connectionDialog to get mapping key
-	 * @return all persisted schema mappings
+	 * Restores the persisted schema mapping for the given connection.
+	 *
+	 * @param connectionDialog the connection dialog used to identify the mapping key
+	 * @return the persisted schema mapping for the connection, or an empty map if none exists
 	 */
 	public static Map<String, String> restore(DbConnectionDialog connectionDialog) {
 		if (connectionDialog.currentConnection == null) {

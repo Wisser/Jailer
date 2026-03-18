@@ -179,6 +179,11 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			dataModelFolder = DataModelManager.getCurrentModelSubfolder(executionContext);
 		}
 		
+		/**
+		 * Returns the connection type of this connection.
+		 *
+		 * @return the connection type, defaulting to {@link ConnectionType#Development} if not set
+		 */
 		public ConnectionType getConnectionType() {
 			if (connectionType != null) {
 				return connectionType;
@@ -193,7 +198,12 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			}
 			return connectionType;
 		}
-		
+
+		/**
+		 * Sets the connection type of this connection.
+		 *
+		 * @param type the connection type to set
+		 */
 		public void setConnectionType(ConnectionType type) {
 			connectionType = type;
 			connectionTypeName = type.name();

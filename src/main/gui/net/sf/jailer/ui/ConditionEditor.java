@@ -376,12 +376,6 @@ public class ConditionEditor extends EscapableDialog {
 	private boolean addPseudoColumns;
 	
 	/**
-	 * Edits a given condition.
-	 * 
-	 * @param condition the condition
-	 * @return new condition or <code>null</code>, if user canceled the editor
-	 */
-	/**
 	 * Edits a given SQL condition.
 	 *
 	 * @param anchor the component to position the dialog near, or {@code null}

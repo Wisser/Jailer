@@ -53,7 +53,11 @@ public class ParameterEditor extends javax.swing.JDialog {
 	 */
 	public Map<String, JTextField> textfieldsPerParameter = new HashMap<String, JTextField>();
 	
-	/** Creates new form */
+	/**
+	 * Creates new form ParameterEditor.
+	 *
+	 * @param parent the parent frame
+	 */
 	public ParameterEditor(Frame parent) {
 		super(parent, true);
 		initComponents(); UIUtil.initComponents(this);

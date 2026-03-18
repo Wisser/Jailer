@@ -46,7 +46,15 @@ public class CLIPanel extends javax.swing.JPanel {
 	private EscapableDialog dialog;
 	
 	/**
-	 * Creates new form CLIPanel
+	 * Creates new form CLIPanel.
+	 *
+	 * @param connectionDialog the database connection dialog providing connection information
+	 * @param forDataBrowser {@code true} if the panel is opened for the data browser, {@code false} for the extraction model editor
+	 * @param extractionModelFile path to the extraction model file, or {@code null}
+	 * @param rawSchemaMapping raw schema mapping string, or {@code null}
+	 * @param bookmarks list of bookmark names for the bookmark combo box, or {@code null} if not applicable
+	 * @param bookmark the initially selected bookmark, or {@code null}
+	 * @param executionContext the execution context
 	 */
 	public CLIPanel(DbConnectionDialog connectionDialog, boolean forDataBrowser, String extractionModelFile,
 			String rawSchemaMapping, List<String> bookmarks, String bookmark, ExecutionContext executionContext) {

@@ -27,16 +27,27 @@ import java.util.Set;
 public class HistoryItem implements Serializable {
 	private static final long serialVersionUID = -2228012653415732355L;
 
+	/** The name of the source table. */
 	public String source;
+	/** The name of the destination table. */
 	public String destination;
+	/** <code>true</code> if this history item was created implicitly. */
 	public boolean implicit = false;
-	
+
+	/** The names of the required intermediate tables (path stations). */
 	public List<String> pathStations;
+	/** The names of the tables on the found path. */
 	public List<String> path;
+	/** The names of tables excluded from the path search. */
 	public Set<String> excludedTables;
 
+	/**
+	 * Returns <code>true</code> if this history item is valid and complete.
+	 *
+	 * @return <code>true</code> if all required fields are set
+	 */
 	public boolean isValid() {
 		return path != null && pathStations != null && excludedTables != null && source != null && destination != null;
 	}
-	
+
 }

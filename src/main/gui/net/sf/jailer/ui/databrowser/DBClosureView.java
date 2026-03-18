@@ -363,7 +363,11 @@ public abstract class DBClosureView extends javax.swing.JDialog implements PlafA
 
 	private TableMouseListener tableMouseListener;
 
-    /** Creates new form FindDialog
+    /**
+     * Creates new form DBClosureView.
+     *
+     * @param parent the parent frame
+     * @param metaDataSourceSupplier supplier for the metadata source
      */
     public DBClosureView(JFrame parent, Supplier<MetaDataSource> metaDataSourceSupplier) {
         super();
@@ -655,8 +659,10 @@ public abstract class DBClosureView extends javax.swing.JDialog implements PlafA
 	}
 
 	/**
-	 * @param metaDataSourceSupplier
-	 * @return 
+	 * Creates a map of table display names to their estimated row counts.
+	 *
+	 * @param metaDataSourceSupplier supplier for the metadata source
+	 * @return map from table display name to estimated row count
 	 */
 	private Map<String, Integer> createStringCount(Supplier<MetaDataSource> metaDataSourceSupplier) {
 		Map<String, Integer> stringCount = new HashMap<String, Integer>();
@@ -882,6 +888,11 @@ public abstract class DBClosureView extends javax.swing.JDialog implements PlafA
      */
     protected abstract DataModel getDataModel();
 
+    /**
+     * Returns the root table of the closure view.
+     *
+     * @return the root table
+     */
     protected abstract Table getRootTable();
 
     /**
@@ -1410,6 +1421,11 @@ public abstract class DBClosureView extends javax.swing.JDialog implements PlafA
         }
     }
     
+    /**
+     * Opens the path finder for the table with the given display name.
+     *
+     * @param toFind the display name of the target table
+     */
     public void findPath(String toFind) {
         if (toFind != null) {
             CellInfo cellInfo = this.cellInfo.get(toFind);

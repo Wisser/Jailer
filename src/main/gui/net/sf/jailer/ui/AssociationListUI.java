@@ -154,6 +154,8 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 
 		/**
 		 * The source table.
+		 *
+		 * @return the display name of the source table
 		 */
 		@Override
 		public String getSourceName() {
@@ -162,6 +164,8 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 
 		/**
 		 * The destination table.
+		 *
+		 * @return the display name of the destination table
 		 */
 		@Override
 		public String getDestinationName() {
@@ -170,6 +174,8 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 
 		/**
 		 * The join-condition for joining source with destination table.
+		 *
+		 * @return the join condition
 		 */
 		@Override
 		public String getJoinCondition() {
@@ -178,6 +184,8 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 
 		/**
 		 * The cardinality.
+		 *
+		 * @return the cardinality, or {@code null} if unknown
 		 */
 		@Override
 		public Cardinality getCardinality() {
@@ -186,6 +194,8 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 
 		/**
 		 * <code>true</code> for reversed association.
+		 *
+		 * @return {@code true} if this is a reversed association
 		 */
 		@Override
 		public boolean isReversed() {
@@ -194,6 +204,8 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 
 		/**
 		 * The name of the association.
+		 *
+		 * @return the association name
 		 */
 		@Override
 		public String getName() {

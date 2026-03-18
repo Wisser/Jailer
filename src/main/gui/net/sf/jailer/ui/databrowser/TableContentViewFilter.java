@@ -76,10 +76,10 @@ public class TableContentViewFilter {
 	}
 
 	/**
-	 * Filters content
-	 * 
-	 * @param object cell content
-	 * @param name names of the column
+	 * Filters content.
+	 *
+	 * @param object cell content array
+	 * @param name mapping of column names to their indices
 	 * @return filtered content
 	 */
 	public Object filter(Object[] object, Map<String, Integer> name) {

@@ -78,7 +78,12 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 	private JDialog dialog;
 	
     /**
-     * Creates new form ConstraintChecker
+     * Creates new form ConstraintChecker.
+     *
+     * @param owner the owner frame
+     * @param dataModel the data model
+     * @param withViewButton if <code>true</code>, the "Select invalid Rows" button is shown
+     * @param session the database session used to execute check queries
      */
     public ConstraintChecker(JFrame owner, DataModel dataModel, boolean withViewButton, final Session session) {
         initComponents(); UIUtil.initComponents(this);
@@ -710,6 +715,9 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         thread.start();
     }
 
+	/**
+	 * Adjusts the preferred widths of the problems table columns to fit their content.
+	 */
 	public void adjustTableColumnsWidth() {
 		DefaultTableModel dtm = (DefaultTableModel) problemsTable.getModel();
 		DefaultTableCellRenderer defaultTableCellRenderer = new DefaultTableCellRenderer();
@@ -730,6 +738,12 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 		}
 	}
 
+	/**
+	 * Opens the table browser for the given source table, filtered by the given WHERE clause.
+	 *
+	 * @param source the source table to browse
+	 * @param where the WHERE clause used to filter the rows to display
+	 */
 	protected abstract void openTableBrowser(Table source, String where);
 	
 	private ImageIcon cancelIcon;

@@ -37,7 +37,10 @@ public abstract class HistoryPanel extends javax.swing.JPanel {
 	private final Table source;
 
 	/**
-     * Creates new form HistoryPanel
+     * Creates new form HistoryPanel.
+     *
+     * @param source the source table, or <code>null</code> to hide the panel
+     * @param dataModel the data model
      */
     public HistoryPanel(Table source, DataModel dataModel) {
     	this.dataModel = dataModel;

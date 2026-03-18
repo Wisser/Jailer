@@ -216,16 +216,31 @@ public abstract class Desktop extends JDesktopPane {
 	
 	private static final KeyStroke KS_SQLCONSOLE = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK);
 	
+	/**
+	 * Returns the iFrame state-change renderer.
+	 *
+	 * @return the iFrame state-change renderer
+	 */
 	public DesktopIFrameStateChangeRenderer getiFrameStateChangeRenderer() {
 		return iFrameStateChangeRenderer;
 	}
 
 	private DesktopUndoManager desktopUndoManager;
-	
+
+	/**
+	 * Sets the undo manager for this desktop.
+	 *
+	 * @param desktopUndoManager the undo manager to set
+	 */
 	public void setUndoManager(DesktopUndoManager desktopUndoManager) {
 		this.desktopUndoManager = desktopUndoManager;
 	}
 
+	/**
+	 * Returns the undo manager for this desktop.
+	 *
+	 * @return the undo manager
+	 */
 	public DesktopUndoManager getUndoManager() {
 		return desktopUndoManager;
 	}
@@ -233,14 +248,23 @@ public abstract class Desktop extends JDesktopPane {
 	
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param datamodel
 	 *            the {@link DataModel}
 	 * @param jailerIcon
 	 *            icon for the frames
 	 * @param session
 	 *            DB-session
-	 * @param anchorManager 
+	 * @param parentFrame
+	 *            the parent data browser frame
+	 * @param dbConnectionDialog
+	 *            the database connection dialog
+	 * @param schemaMapping
+	 *            the schema mapping
+	 * @param anchorManager
+	 *            the desktop anchor manager
+	 * @param executionContext
+	 *            the execution context
 	 */
 	public Desktop(Reference<DataModel> datamodel, Icon jailerIcon, Session session, DataBrowser parentFrame, DbConnectionDialog dbConnectionDialog, Map<String, String> schemaMapping, DesktopAnchorManager anchorManager, ExecutionContext executionContext) {
 		this.executionContext = executionContext;
@@ -474,6 +498,9 @@ public abstract class Desktop extends JDesktopPane {
 		 */
 		public List<RowToRowLink> rowToRowLinks = new ArrayList<RowToRowLink>();
 
+		/**
+		 * Converts this RowBrowser to a root browser (removes parent and association).
+		 */
 		public void convertToRoot() {
 			association = null;
 			parent = null;

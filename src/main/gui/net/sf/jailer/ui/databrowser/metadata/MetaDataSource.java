@@ -186,7 +186,9 @@ public class MetaDataSource {
 	}
 
 	/**
-	 * @return the schemas
+	 * Gets all schemas.
+	 *
+	 * @return the list of schemas
 	 */
 	public synchronized List<MDSchema> getSchemas() {
 		readSchemas();

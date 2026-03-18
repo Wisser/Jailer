@@ -168,18 +168,36 @@ public class WCTypeAnalyser {
 	 */
 	private static final Logger logger = LoggerFactory.getLogger(MetaDataDetailsPanel.class);
 
+	/**
+	 * Result of a SQL query type analysis.
+	 */
 	public static class Result {
+		/** The table referenced in the query. */
 		public Table table;
+		/** The CTE (Common Table Expression) portion of the query, or <code>null</code>. */
 		public String cte;
+		/** <code>true</code> if the query contains a WHERE or HAVING condition. */
 		public boolean hasCondition;
+		/** <code>true</code> if the condition is a HAVING clause, <code>false</code> for WHERE. */
 		public boolean isHaving; // having/where
+		/** Start offset of the condition in the original query string. */
 		public int conditionStart;
+		/** End offset of the condition in the original query string. */
 		public int conditionEnd;
+		/** The minimum position at which a WHERE clause could be inserted. */
 		public Pair<Integer, Integer> minimumWherePos;
+		/** The original (unmodified) query string. */
 		public String originalQuery;
+		/** <code>true</code> if this is a simple single-table select. */
 		public boolean isSimpleSelect = true;
 		private boolean isDistinct;
-		
+
+		/**
+		 * Gets the set of alternative names for a given column expression.
+		 *
+		 * @param name the column expression
+		 * @return the set of alternative names, or <code>null</code> if none
+		 */
 		public Set<String> getAlternativeNames(String name) {
 			Set<String> names = alternativeNames.get(name);
 			if (names == null) {
@@ -188,6 +206,12 @@ public class WCTypeAnalyser {
 			return names;
 		}
 		
+		/**
+		 * Adds an optional suffix to all existing alternative names for a given column expression.
+		 *
+		 * @param name the column expression
+		 * @param suffix the suffix to add
+		 */
 		public void addOptSuffixToAlternativeNames(String name, String suffix) {
 			Set<String> names = alternativeNames.get(name);
 			if (names == null) {
@@ -298,6 +322,12 @@ public class WCTypeAnalyser {
 			return level == 0;
 		}
 		
+		/**
+		 * Registers an alias for a column expression so both names are treated as equivalent.
+		 *
+		 * @param name the original column expression
+		 * @param alias the alias name
+		 */
 		public void addAlias(String name, String alias) {
 			Set<String> names = alternativeNames.get(name);
 			if (names == null) {
@@ -321,7 +351,9 @@ public class WCTypeAnalyser {
 	 * Parses a SQL query and tries to find out the type.
 	 *
 	 * @param rawSqlSelect the query
-	 * @return the type or <code>null</code>
+	 * @param metaDataSource the meta data source for table lookups
+	 * @param quoting the quoting helper for identifier comparison
+	 * @return the result, or <code>null</code> if the type cannot be determined
 	 */
 	public static Result getType(String rawSqlSelect, MetaDataSource metaDataSource, Quoting quoting) {
 		String sqlSelect = rawSqlSelect.replace((char) 160, ' '); // nbsp

@@ -73,8 +73,9 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 	private final JTable table;
 	
     /**
-     * Creates new form FullTextSearchPanel
-     * @param table 
+     * Creates new form FullTextSearchPanel.
+     *
+     * @param table the table to search in
      */
     public FullTextSearchPanel(JTable table) {
     	this.table = table;
@@ -258,6 +259,11 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 
     private boolean updatePending = false;
 
+	/**
+	 * Opens the search panel without displaying it visibly if not already open.
+	 *
+	 * @return {@code true} if the panel was newly opened, {@code false} if it was already visible
+	 */
 	public boolean openSilently() {
 		if (!isVisible()) {
 			setVisible(true);
@@ -270,10 +276,18 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 		}
 	}
 	
+	/**
+	 * Returns whether the search field is currently empty.
+	 *
+	 * @return {@code true} if the search text is empty
+	 */
 	public boolean isSilent() {
 		return searchField.getText().isEmpty();
 	}
 		
+	/**
+	 * Opens the search panel and gives focus to the search field.
+	 */
 	public void open() {
 		if (!isVisible()) {
 			setVisible(true);
@@ -284,6 +298,9 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 		searchField.grabFocus();
 	}
 
+	/**
+	 * Opens the search panel permanently (without a close button).
+	 */
 	public void openPermanently() {
 		if (!isVisible()) {
 			setVisible(true);
@@ -292,6 +309,9 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 		closeButton.setVisible(false);
 	}
 
+	/**
+	 * Closes the search panel, or clears the search field if the panel is permanently open.
+	 */
 	public void close() {
 		if (closeButton.isVisible()) {
 			setVisible(false);
@@ -301,6 +321,11 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 		}
 	}
 
+	/**
+	 * Copies the search state from a predecessor panel into this panel.
+	 *
+	 * @param predecessor the panel whose search state is to be copied
+	 */
 	public void updateFromPredecessor(FullTextSearchPanel predecessor) {
 		try {
 			inUpdate = true;
@@ -520,6 +545,14 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 		table.repaint();
 	}
 	
+	/**
+	 * Highlights search occurrences in a table cell renderer label.
+	 *
+	 * @param render the cell renderer label
+	 * @param x the column index (view coordinates)
+	 * @param y the row index (model coordinates)
+	 * @return the (possibly wrapped) component with highlighted occurrences
+	 */
 	public Component markOccurrence(JLabel render, int x, int y) {
 		if (inUpdate || !isVisible()) {
 			return render;
@@ -739,10 +772,20 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 
 	private JTable transposedTable;
 	
+	/**
+	 * Sets the transposed (column-oriented) table to synchronize scroll position with.
+	 *
+	 * @param transposedTable the transposed table, or {@code null} to disable synchronization
+	 */
 	public void setTransposedTable(ColumnsTable transposedTable) {
 		this.transposedTable = transposedTable;
 	}
 	
+	/**
+	 * Shows or hides the warning icon indicating that the occurrence limit was exceeded.
+	 *
+	 * @param limitExceeded {@code true} if the limit was exceeded
+	 */
 	public void setLimitExceeded(boolean limitExceeded) {
 		warnLabel.setVisible(limitExceeded);
 	}
@@ -761,6 +804,11 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 	private javax.swing.JLabel warnLabel;
     // End of variables declaration//GEN-END:variables
     
+    /**
+     * Returns the search input field.
+     *
+     * @return the search text field
+     */
     public javax.swing.JTextField getSearchField() {
 		return searchField;
 	}

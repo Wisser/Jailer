@@ -33,9 +33,13 @@ import net.sf.jailer.ui.UIUtil;
  */
 public class SbEDialog extends javax.swing.JDialog {
 
-	/** Creates new form SbEDialog 
-	 * @param message 
-	 * @param message2 */
+	/**
+	 * Creates new form SbEDialog.
+	 *
+	 * @param window the parent window
+	 * @param message the main message text
+	 * @param message2 the secondary message text (shown in red)
+	 */
 	public SbEDialog(Window window, String message, String message2) {
 		super(window, ModalityType.DOCUMENT_MODAL);
 		initComponents(); UIUtil.initComponents(this);

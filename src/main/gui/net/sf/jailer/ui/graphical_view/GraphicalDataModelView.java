@@ -196,8 +196,11 @@ public class GraphicalDataModelView extends JPanel {
 	 *
 	 * @param model the restricted data model
 	 * @param modelEditor enclosing model editor
-	 * @param width
-	 * @param height initial size
+	 * @param subject the subject (root) table
+	 * @param expandSubject <code>true</code> to initially expand the subject table
+	 * @param width initial width
+	 * @param height initial height
+	 * @param executionContext the execution context
 	 */
 	public GraphicalDataModelView(final DataModel model, ExtractionModelEditor modelEditor, Table subject, boolean expandSubject, int width, int height, ExecutionContext executionContext) {
 		super(new BorderLayout());
@@ -736,6 +739,7 @@ public class GraphicalDataModelView extends JPanel {
 	 *
 	 * @param table the table for which the menu pops up
 	 * @param findPathMenuItem additional menu item
+	 * @param withNavigation <code>true</code> to include the "Show Associated Table" navigation submenu
 	 * @return the popup menu
 	 */
 	public JPopupMenu createPopupMenu(final Table table, JMenuItem findPathMenuItem, boolean withNavigation) {
@@ -1202,7 +1206,8 @@ public class GraphicalDataModelView extends JPanel {
 
 	/**
 	 * Closes the view.
-	 * @param storeLayout
+	 * @param storeLayout <code>true</code> to save the current table layout before closing
+	 * @param removeLayout <code>true</code> to delete the stored layout
 	 */
 	public void close(boolean storeLayout, boolean removeLayout) {
 		if (storeLayout) {
@@ -1227,6 +1232,7 @@ public class GraphicalDataModelView extends JPanel {
 
 	/**
 	 * Zooms to fit.
+	 * @param duration the animation duration in milliseconds
 	 */
 	public void zoomToFit(long duration) {
 		zoomToFitControl.zoomToFit(duration);
@@ -1345,6 +1351,10 @@ public class GraphicalDataModelView extends JPanel {
 		}
 	}
 
+	/**
+	 * Starts a timer that scrolls the view to make the given table visible.
+	 * @param destination the table to scroll to
+	 */
 	public void startScrollTimer(final Table destination) {
 		startScrollTimer(destination, 50, 10);
 	}
@@ -1560,7 +1570,9 @@ public class GraphicalDataModelView extends JPanel {
 	}
 
 	/**
-	 * Creates visible node for given table.
+	 * Creates a visible node for the given destination table and connects it to the source table.
+	 * @param source the source table
+	 * @param destination the table to make visible
 	 */
 	public void showTable(Table source, Table destination) {
 		synchronized (visualization) {
@@ -1994,6 +2006,8 @@ public class GraphicalDataModelView extends JPanel {
 
 	/**
 	 * Expands all tables.
+	 * @param expandOnlyVisibleTables <code>true</code> to expand only tables already visible in the graph
+	 * @param withLimit <code>true</code> to stop expansion after reaching the expansion limit
 	 */
 	public void expandAll(final boolean expandOnlyVisibleTables, boolean withLimit) {
 		modelEditor.captureLayout();
@@ -2184,6 +2198,12 @@ public class GraphicalDataModelView extends JPanel {
 	private static DisplayExporter displayExporter = new DisplayExporter();
 	public boolean inImageExport = false;
 
+	/**
+	 * Exports the current display to image and HTML map files.
+	 * @param overviewImg the target image file
+	 * @param overviewHtml the target HTML map file, or <code>null</code>
+	 * @throws Exception if the export fails
+	 */
 	public void exportDisplayToImage(File overviewImg, File overviewHtml) throws Exception {
 		Association oldAssociation = selectedAssociation;
 		Map<String, Integer> oldTablesOnPath = tablesOnPath;

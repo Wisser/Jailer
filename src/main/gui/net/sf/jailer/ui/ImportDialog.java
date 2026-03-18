@@ -46,8 +46,8 @@ import javax.swing.text.StyleConstants;
 import net.sf.jailer.util.CancellationHandler;
 
 /**
- * Data Export Dialog.
- * 
+ * Data Import Dialog.
+ *
  * @author Ralf Wisser
  */
 public class ImportDialog extends javax.swing.JDialog {
@@ -477,6 +477,11 @@ public class ImportDialog extends javax.swing.JDialog {
 		dispose();
 	}// GEN-LAST:event_cancelButtonActionPerformed
 
+	/**
+	 * Returns whether the user confirmed the import dialog.
+	 *
+	 * @return {@code true} if the import was confirmed, {@code false} if cancelled
+	 */
 	public boolean isOk() {
 		return isOk;
 	}

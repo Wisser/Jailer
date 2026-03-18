@@ -55,9 +55,12 @@ public class XmlSketchBuilder {
 
 	/**
 	 * Builds XML sketches for given table.
-	 * 
+	 *
 	 * @param table the table
-	 * @return xml sketch for table 
+	 * @param depth the current recursion depth
+	 * @param scriptFormat the script format
+	 * @param executionContext the execution context
+	 * @return xml sketch for table
 	 */
 	public static String buildSketch(Table table, int depth, ScriptFormat scriptFormat, ExecutionContext executionContext) throws Exception {
 		if (table == null) {
@@ -184,9 +187,10 @@ public class XmlSketchBuilder {
 
 	/**
 	 * Builds XML sketches for given table.
-	 * 
+	 *
 	 * @param table the table
-	 * @return xml sketch for table 
+	 * @param depth the current recursion depth
+	 * @return xml sketch for table
 	 */
 	public static String buildSketch2(Table table, int depth) {
 		StringBuilder sb = new StringBuilder();

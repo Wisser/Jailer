@@ -72,12 +72,12 @@ public class AssociationEditor extends javax.swing.JDialog {
 
 	private RSyntaxTextAreaWithSQLSyntaxStyle joinCondition;
 	
-	/** 
+	/**
 	 * Creates new form TableEditor
-	 * 
+	 *
 	 * @param tables all tables (as csv-lines)
-	 * @param associations all associations (as csv-line)
-	 * @param columns 
+	 * @param associations all associations (as csv-lines)
+	 * @param columns map of table name to column CSV line
 	 */
 	public AssociationEditor(java.awt.Dialog parent, Collection<Line> tables, List<Line> associations, Map<String, Line> columns) {
 		super(parent, true);

@@ -156,10 +156,10 @@ public abstract class Settings  {
 	}
 
 	/**
-	 * Stores the text value of the given field entry into the setting map.
+	 * Stores the text value of the given form field entry into the setting map.
 	 *
 	 * @param setting the setting map to update
-	 * @param entry the form field entry whose value is to be stored
+	 * @param entry the form field entry whose text value is to be stored
 	 */
 	public void putValue(Map<String, String> setting, Map.Entry<String, JComponent> entry) {
 		setting.put(entry.getKey(), ((JTextField) entry.getValue()).getText());

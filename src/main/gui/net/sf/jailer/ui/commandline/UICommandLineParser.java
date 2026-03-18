@@ -35,9 +35,10 @@ public class UICommandLineParser {
 	
 	/**
 	 * Parses arguments and initializes the parser.
-	 * 
+	 *
 	 * @param args the arguments
 	 * @param silent if <code>true</code>, no error messages will be written
+	 * @return the parsed command line
 	 */
 	public static UICommandLine parse(String[] args, boolean silent) throws Exception {
 		UICommandLine commandLine = new UICommandLine();
@@ -103,6 +104,8 @@ public class UICommandLineParser {
 
 	/**
 	 * Prints out usage.
+	 *
+	 * @param out the stream to print usage information to
 	 */
 	public static void printUsage(PrintStream out) {
 		String cmd = "sh jailerGUI.sh";

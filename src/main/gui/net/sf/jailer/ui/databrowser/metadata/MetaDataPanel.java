@@ -453,6 +453,14 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 
 	private Map<String, MemorizedResultSet> proceduresPerSchema = Collections.synchronizedMap(new HashMap<String, MemorizedResultSet>());
 
+	/**
+	 * Gets the procedures for a given schema.
+	 * @param session the database session
+	 * @param schema the schema name
+	 * @param context the name pattern used to filter procedures
+	 * @return a result set of procedures
+	 * @throws SQLException if a database error occurs
+	 */
 	public ResultSet getProcedures(Session session, String schema, String context) throws SQLException {
 		synchronized (proceduresPerSchema) {
 			MemorizedResultSet rs = proceduresPerSchema.get(schema);
@@ -489,10 +497,13 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     }
 
     /**
-     * Creates new form MetaDataPanel
+     * Creates new form MetaDataPanel.
      *
+     * @param parent the owner frame
      * @param metaDataSource the meta data source
-     * @param dataModel the data mmodel
+     * @param metaDataDetailsPanel the panel showing metadata details
+     * @param dataModel the data model
+     * @param executionContext the execution context
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public MetaDataPanel(Frame parent, MetaDataSource metaDataSource, MetaDataDetailsPanel metaDataDetailsPanel, final DataModel dataModel, ExecutionContext executionContext) {
@@ -1326,6 +1337,9 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     private int inResetCount = 0;
 	private static AtomicInteger pendingCount = new AtomicInteger();
 
+    /**
+     * Resets the metadata panel, clearing all caches and reloading the tree.
+     */
     public void reset() {
     	if (pendingCount.get() > 0) {
     		return;
@@ -1421,6 +1435,10 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		thread.start();
     }
 
+    /**
+     * Selects and reveals the given table in the metadata tree.
+     * @param table the table to select
+     */
     public void select(Table table) {
     	MDSchema mdSchema = metaDataSource.getSchemaOfTable(table);
     	if (mdSchema != null && !mdSchema.isLoaded()) {
@@ -1430,6 +1448,10 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     	select(metaDataSource.toMDTable(table));
     }
 
+    /**
+     * Selects and reveals the given metadata table in the metadata tree.
+     * @param mdTable the metadata table to select
+     */
     public void select(MDTable mdTable) {
         if (mdTable != null) {
             TreePath path = find(metaDataTree.getModel().getRoot(), mdTable);
@@ -1590,6 +1612,15 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         });
     }
 
+	/**
+	 * Creates a category node in the metadata tree under the given schema node.
+	 * @param schemaChild the parent schema tree node
+	 * @param finalLeafs the leaf objects to add under the category node
+	 * @param category the category object used as the node label
+	 * @param hasDetails <code>true</code> if the leaves have expandable details
+	 * @param queueId the queue identifier for background loading
+	 * @return the newly created category tree node
+	 */
 	public DefaultMutableTreeNode createCategoryNode(final DefaultMutableTreeNode schemaChild, final Iterable<Object> finalLeafs,
 			Object category, boolean hasDetails, final int queueId) {
 		final DefaultMutableTreeNode schemaViewsChild = new DefaultMutableTreeNode(category);
@@ -1666,10 +1697,19 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		return schemaViewsChild;
 	}
 
+    /**
+     * Selects and reveals the given schema in the metadata tree, scrolling to it.
+     * @param mdSchema the schema to select
+     */
     public void selectSchema(MDSchema mdSchema) {
         selectSchema(mdSchema, true);
     }
 
+    /**
+     * Selects and reveals the given schema in the metadata tree.
+     * @param mdSchema the schema to select
+     * @param scrollToNode <code>true</code> to scroll the tree to the selected node
+     */
     public void selectSchema(MDSchema mdSchema, boolean scrollToNode) {
         if (mdSchema != null) {
             DefaultMutableTreeNode node = treeNodePerSchema.get(mdSchema);
@@ -2032,6 +2072,11 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 
     private int indexOfInfoAtCaret = -1;
 
+    /**
+     * Sets the outline table list and highlights the entry at the caret position.
+     * @param outlineTables the list of outline entries to display
+     * @param indexOfInfoAtCaret the index of the entry at the current caret position, or -1 if none
+     */
     public void setOutline(List<OutlineInfo> outlineTables, int indexOfInfoAtCaret) {
         this.outlineTables = new ArrayList<OutlineInfo>(outlineTables);
         this.indexOfInfoAtCaret = indexOfInfoAtCaret;
@@ -2072,24 +2117,51 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     }
 
 
+    /**
+     * Holds information about a single entry in the SQL outline view.
+     */
     public static class OutlineInfo {
+		/** The metadata table referenced by this outline entry. */
 		public final MDTable mdTable;
+        /** The alias used for this table in the SQL query, or <code>null</code>. */
         public final String alias;
+        /** The nesting level of this entry in the outline. */
         public int level;
+        /** The character position of this entry in the SQL editor. */
         public int position;
+        /** A string describing the scope in which this entry appears. */
         public String scopeDescriptor;
+        /** <code>true</code> if this entry has additional context information. */
         public boolean withContext = false;
+        /** The character position of the context information. */
         public int contextPosition;
+        /** The context text, or <code>null</code>. */
         public String context;
+        /** The tooltip text for this entry, or <code>null</code>. */
         public String tooltip;
+		/** The end position of the context in the SQL editor. */
 		public int contextEnd = 0;
+		/** <code>true</code> if this entry is a Common Table Expression (CTE). */
 		public boolean isCTE;
+		/** <code>true</code> if this entry marks the beginning of a block. */
 		public boolean isBegin;
+		/** <code>true</code> if this entry marks the end of a block. */
 		public boolean isEnd;
+        /** <code>true</code> if a visual separator should be shown before this entry. */
         public boolean withSeparator;
+		/** The row count associated with this table in the outline. */
 		public int rowCount;
+		/** The original character position before any adjustments. */
 		public int origPosition;
 
+        /**
+         * Constructor.
+         * @param mdTable the metadata table
+         * @param alias the table alias used in the SQL query, or <code>null</code>
+         * @param level the nesting level
+         * @param position the character position in the SQL editor
+         * @param scopeDescriptor a string describing the scope
+         */
         public OutlineInfo(MDTable mdTable, String alias, int level, int position, String scopeDescriptor) {
             this.mdTable = mdTable;
             this.alias = alias;
@@ -2143,6 +2215,9 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 	protected abstract Map<String, String> getSchemaMapping();
 
 
+    /**
+     * Handles selection of a table from the tables combo box, selecting it in the metadata tree.
+     */
     public void onSelectTable() {
         Object item = tablesComboBox.getSelectedItem();
         if (item != null) {
@@ -2165,6 +2240,9 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 
     private boolean repaintPending = false;
     
+    /**
+     * Schedules a deferred repaint of the metadata tree.
+     */
     public void doRepaint() {
     	if (!repaintPending) {
     		repaintPending = true;
@@ -2179,6 +2257,9 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     	}
     }
     
+    /**
+     * Refreshes the panel by repainting it.
+     */
     public void refresh() {
     	repaint();
     }

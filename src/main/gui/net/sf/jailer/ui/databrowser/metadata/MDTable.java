@@ -87,7 +87,9 @@ public class MDTable extends MDObject {
      * Constructor.
      *
      * @param name table name
-     * @param schema the tables schema
+     * @param schema the table's schema
+     * @param isView <code>true</code> if this table is a view
+     * @param isSynonym <code>true</code> if this table is a synonym
      */
     public MDTable(String name, MDSchema schema, boolean isView, boolean isSynonym) {
         super(name, schema != null? schema.getMetaDataSource() : null);
@@ -128,6 +130,7 @@ public class MDTable extends MDObject {
     /**
      * Gets columns of table
      *
+     * @param cached <code>true</code> to use cached metadata
      * @return columns of table
      */
     public List<String> getColumns(boolean cached) throws SQLException {
@@ -189,6 +192,7 @@ public class MDTable extends MDObject {
     /**
      * Gets primary key columns of table
      *
+     * @param cached <code>true</code> to use cached metadata
      * @return primary key columns of table
      */
     public List<String> getPrimaryKeyColumns(boolean cached) throws SQLException {

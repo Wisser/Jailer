@@ -14,7 +14,7 @@ import javax.swing.ImageIcon;
 public class WelcomePanel extends javax.swing.JPanel {
 
     /**
-     * Creates new form WelcomePanel
+     * Creates new form WelcomePanel.
      */
     public WelcomePanel() {
         initComponents(); UIUtil.initComponents(this);

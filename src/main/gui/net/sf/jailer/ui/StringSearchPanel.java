@@ -107,30 +107,126 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		JComponent create(StringSearchPanel searchPanel);
 	}
 
+	/**
+	 * Creates a search toggle button that opens a {@link StringSearchPanel} popup for the given combo box.
+	 *
+	 * @param owner the owner window, or <code>null</code>
+	 * @param comboBox the combo box to search and select from
+	 * @param titel the title for the search popup
+	 * @param onSuccess the callback invoked when the user selects a value, or <code>null</code>
+	 * @return the search toggle button
+	 */
 	public static JToggleButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess) {
 		return createSearchButton(owner, comboBox, titel, onSuccess, false);
 	}
 
+	/**
+	 * Creates a search toggle button that opens a {@link StringSearchPanel} popup for the given combo box.
+	 *
+	 * @param owner the owner window, or <code>null</code>
+	 * @param comboBox the combo box to search and select from
+	 * @param titel the title for the search popup
+	 * @param onSuccess the callback invoked when the user selects a value, or <code>null</code>
+	 * @param alternativeIcon if <code>true</code>, use the alternative search icon
+	 * @return the search toggle button
+	 */
 	public static JToggleButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, boolean alternativeIcon) {
 		return createSearchButton(owner, comboBox, titel, onSuccess, null, alternativeIcon);
 	}
-	
+
+	/**
+	 * Creates a search toggle button that opens a {@link StringSearchPanel} popup for the given combo box.
+	 *
+	 * @param owner the owner window, or <code>null</code>
+	 * @param comboBox the combo box to search and select from
+	 * @param titel the title for the search popup
+	 * @param onSuccess the callback invoked when the user selects a value, or <code>null</code>
+	 * @param prepare the prepare callback invoked when schema selection changes, or <code>null</code>
+	 * @param alternativeIcon if <code>true</code>, use the alternative search icon
+	 * @return the search toggle button
+	 */
 	public static JToggleButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, boolean alternativeIcon) {
 		return createSearchButton(owner, comboBox, titel, onSuccess, null, null, null, alternativeIcon, null, true);
 	}
-	
+
+	/**
+	 * Creates a search toggle button that opens a {@link StringSearchPanel} popup for the given combo box.
+	 *
+	 * @param owner the owner window, or <code>null</code>
+	 * @param comboBox the combo box to search and select from
+	 * @param titel the title for the search popup
+	 * @param onSuccess the callback invoked when the user selects a value, or <code>null</code>
+	 * @param prepare the prepare callback invoked when schema selection changes, or <code>null</code>
+	 * @param metaDataSource the metadata source for schema selection, or <code>null</code>
+	 * @param dataModel the data model, or <code>null</code>
+	 * @return the search toggle button
+	 */
 	public static JToggleButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel) {
 		return createSearchButton(owner, comboBox, titel, onSuccess, prepare, metaDataSource, dataModel, false, null, true);
 	}
-	
+
+	/**
+	 * Creates a search toggle button that opens a {@link StringSearchPanel} popup for the given combo box.
+	 *
+	 * @param owner the owner window, or <code>null</code>
+	 * @param comboBox the combo box to search and select from
+	 * @param titel the title for the search popup
+	 * @param onSuccess the callback invoked when the user selects a value, or <code>null</code>
+	 * @param prepare the prepare callback invoked when schema selection changes, or <code>null</code>
+	 * @param metaDataSource the metadata source for schema selection, or <code>null</code>
+	 * @param dataModel the data model, or <code>null</code>
+	 * @param alternativeIcon if <code>true</code>, use the alternative search icon
+	 * @param additionalComponentFactory factory for an additional component to display in the popup, or <code>null</code>
+	 * @param locateUnderButton if <code>true</code>, the popup is located below the button
+	 * @return the search toggle button
+	 */
 	public static JToggleButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel, boolean alternativeIcon, final AdditionalComponentFactory additionalComponentFactory, final boolean locateUnderButton) {
 		return createSearchButton(owner, comboBox, titel, onSuccess, prepare, metaDataSource, dataModel, alternativeIcon, additionalComponentFactory, locateUnderButton, false, null, false, null);
 	}
-	
+
+	/**
+	 * Creates a search toggle button that opens a {@link StringSearchPanel} popup for the given combo box.
+	 *
+	 * @param owner the owner window, or <code>null</code>
+	 * @param comboBox the combo box to search and select from
+	 * @param titel the title for the search popup
+	 * @param onSuccess the callback invoked when the user selects a value, or <code>null</code>
+	 * @param prepare the prepare callback invoked when schema selection changes, or <code>null</code>
+	 * @param metaDataSource the metadata source for schema selection, or <code>null</code>
+	 * @param dataModel the data model, or <code>null</code>
+	 * @param alternativeIcon if <code>true</code>, use the alternative search icon
+	 * @param additionalComponentFactory factory for an additional component to display in the popup, or <code>null</code>
+	 * @param locateUnderButton if <code>true</code>, the popup is located below the button
+	 * @param keepSearchText if <code>true</code>, the search text is preserved between popup openings
+	 * @param renderConsumer optional map of item-specific label render consumers, or <code>null</code>
+	 * @param closeOwner if <code>true</code>, the owner window is closed when the popup closes
+	 * @param rowCountSuppier supplier for per-item row counts to display, or <code>null</code>
+	 * @return the search toggle button
+	 */
 	public static JToggleButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel, boolean alternativeIcon, final AdditionalComponentFactory additionalComponentFactory, final boolean locateUnderButton, final boolean keepSearchText, final Map<String, Consumer<JLabel>> renderConsumer, boolean closeOwner, Supplier<Map<String, Integer>> rowCountSuppier) {
 		return createSearchButton(owner, 4, comboBox, titel, onSuccess, prepare, metaDataSource, dataModel, alternativeIcon, additionalComponentFactory, locateUnderButton, keepSearchText, renderConsumer, closeOwner, rowCountSuppier);
 	}
 
+	/**
+	 * Creates a search toggle button that opens a {@link StringSearchPanel} popup for the given combo box.
+	 *
+	 * @param owner the owner window, or <code>null</code>
+	 * @param ticks the number of event-dispatch ticks to delay before showing the popup
+	 * @param comboBox the combo box to search and select from
+	 * @param titel the title for the search popup
+	 * @param onSuccess the callback invoked when the user selects a value, or <code>null</code>
+	 * @param prepare the prepare callback invoked when schema selection changes, or <code>null</code>
+	 * @param metaDataSource the metadata source for schema selection, or <code>null</code>
+	 * @param dataModel the data model, or <code>null</code>
+	 * @param alternativeIcon if <code>true</code>, use the alternative search icon
+	 * @param additionalComponentFactory factory for an additional component to display in the popup, or <code>null</code>
+	 * @param locateUnderButton if <code>true</code>, the popup is located below the button
+	 * @param keepSearchText if <code>true</code>, the search text is preserved between popup openings
+	 * @param renderConsumer optional map of item-specific label render consumers, or <code>null</code>
+	 * @param closeOwner if <code>true</code>, the owner window is closed when the popup closes
+	 * @param rowCountSuppier supplier for per-item row counts to display, or <code>null</code>
+	 * @return the search toggle button
+	 */
 	public static JToggleButton createSearchButton(final Window owner, final int ticks, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel, boolean alternativeIcon, final AdditionalComponentFactory additionalComponentFactory, final boolean locateUnderButton, final boolean keepSearchText, final Map<String, Consumer<JLabel>> renderConsumer, boolean closeOwner, Supplier<Map<String, Integer>> rowCountSuppier) {
 		final JToggleButton button = new JToggleButton();
 		button.setIcon(getSearchIcon(alternativeIcon, button));
@@ -207,6 +303,13 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	private static ImageIcon sIcon = null;
 	private static ImageIcon sIcon2 = null;
 	
+	/**
+	 * Returns the search icon, scaling it for the given component.
+	 *
+	 * @param alternativeIcon if <code>true</code>, return the alternative search icon
+	 * @param button the component used for scaling the icon
+	 * @return the search icon
+	 */
 	public static ImageIcon getSearchIcon(boolean alternativeIcon, final JComponent button) {
 		if (alternativeIcon) {
 			if (sIcon2 == null) {
@@ -1379,10 +1482,20 @@ public class StringSearchPanel extends javax.swing.JPanel {
 
     private boolean explictlyClosed = false;
     
+	/**
+	 * Returns whether the panel was explicitly closed by the user (as opposed to being dismissed automatically).
+	 *
+	 * @return <code>true</code> if the panel was explicitly closed
+	 */
 	public boolean isExplictlyClosed() {
 		return explictlyClosed;
 	}
 
+	/**
+	 * Closes the search panel popup.
+	 *
+	 * @param explictlyClosed <code>true</code> if the close was triggered explicitly by the user
+	 */
 	public void close(boolean explictlyClosed) {
 		this.explictlyClosed = explictlyClosed;
 		onClose(searchTextField.getText());
@@ -1421,10 +1534,20 @@ public class StringSearchPanel extends javax.swing.JPanel {
     private String stringCountLeftPad = null;
     private boolean lightCounters = false;
     
+	/**
+	 * Sets whether row counters are displayed in a lighter style.
+	 *
+	 * @param lightCounters if <code>true</code>, row counters are rendered in a lighter color
+	 */
 	public void setLightCounters(boolean lightCounters) {
 		this.lightCounters = lightCounters;
 	}
 
+	/**
+	 * Sets the per-item row count map used to display counts next to each list item.
+	 *
+	 * @param stringCount map from item string to its row count
+	 */
 	public void setStringCount(Map<String, Integer> stringCount) {
 		this.stringCount = stringCount;
 		this.stringCountLeftPad = null;
@@ -1445,14 +1568,29 @@ public class StringSearchPanel extends javax.swing.JPanel {
 
 	private boolean closeOwner;
 	
+	/**
+	 * Returns whether the owner window is closed when this panel closes.
+	 *
+	 * @return <code>true</code> if the owner window is closed on panel close
+	 */
     public boolean isCloseOwner() {
 		return closeOwner;
 	}
 
+	/**
+	 * Sets whether the owner window should be closed when this panel closes.
+	 *
+	 * @param closeOwner if <code>true</code>, the owner window is closed on panel close
+	 */
 	public void setCloseOwner(boolean closeOwner) {
 		this.closeOwner = closeOwner;
 	}
-	
+
+	/**
+	 * Adds a component to the bottom area of the panel.
+	 *
+	 * @param component the component to add
+	 */
 	public void addBottomcomponent(JComponent component) {
 		bottomComponentsPanel.add(component, java.awt.BorderLayout.CENTER);
 	}
@@ -1488,6 +1626,11 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		}
 	}
 	
+	/**
+	 * Returns the search result list.
+	 *
+	 * @return the search result list
+	 */
     public javax.swing.JList<String> getSearchList() {
 		return searchList;
 	}

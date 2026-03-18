@@ -68,6 +68,7 @@ public class AssociationRenderer extends EdgeRenderer {
 	/**
 	 * Constructor.
 	 *
+	 * @param dataModel the data model
 	 * @param reversed <code>true</code> for reversed rendering
 	 */
 	public AssociationRenderer(DataModel dataModel, boolean reversed) {
@@ -77,7 +78,9 @@ public class AssociationRenderer extends EdgeRenderer {
 	}
 
 	/**
-	 * Constructor.
+	 * Constructor for full rendering (used for setting bounds).
+	 *
+	 * @param dataModel the data model
 	 */
 	public AssociationRenderer(DataModel dataModel) {
 		this.dataModel = dataModel;

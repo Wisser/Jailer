@@ -108,12 +108,25 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	private boolean initialized = false;
 	private Consumer<Boolean> pendingUpdate;
 
-	/** Creates new form DetailsView 
-	 * @param rowSorter 
-	 * @param showSelectButton 
-	 * @param deselect 
-	 * @param alternativeColumnLabelsFull 
-	*/
+	/**
+	 * Creates new form DetailsView.
+	 *
+	 * @param rows the rows to display
+	 * @param size the total number of rows
+	 * @param dataModel the data model
+	 * @param table the table whose rows are displayed
+	 * @param rowIndex the initially selected row index
+	 * @param rowSorter the row sorter for the table
+	 * @param showSpinner if {@code true}, shows a row navigation spinner
+	 * @param showSelectButton if {@code true}, shows a select button
+	 * @param rowIdSupport the row ID support
+	 * @param deselect if {@code true}, allows deselecting the current row
+	 * @param alternativeColumnLabels alternative short column labels, or {@code null}
+	 * @param alternativeColumnLabelsFull alternative full column labels, or {@code null}
+	 * @param session the database session
+	 * @param browserContentCellEditor the cell editor
+	 * @param tableModel the table model
+	 */
 	public DetailsView(List<Row> rows, int size, DataModel dataModel, Table table, int rowIndex, RowSorter<? extends TableModel> rowSorter, boolean showSpinner, boolean showSelectButton, RowIdSupport rowIdSupport, boolean deselect, String[] alternativeColumnLabels, String[] alternativeColumnLabelsFull, Session session, BrowserContentCellEditor browserContentCellEditor, TableModel tableModel) {
 		this.table = table;
 		this.rows = rows;

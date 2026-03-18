@@ -122,16 +122,22 @@ public class PathGraph {
 	
 	/**
      * Returns <code>true</code> if this graph is empty.
+     *
+     * @return <code>true</code> if this graph contains no nodes
      */
 	public boolean isEmpty() {
 		return nodePerTable.isEmpty();
 	}
     
-	   /**
+	/**
      * Creates new Graph.
-     * @param excludedTables 
-     * @param pathStations 
-     * @param considerRestrictions 
+     *
+     * @param dataModel the data model
+     * @param source the source table
+     * @param destination the destination table
+     * @param excludedTables tables to exclude from the path
+     * @param pathStations required intermediate tables on the path
+     * @param considerRestrictions <code>true</code> to respect association restrictions
      */
     public PathGraph(DataModel dataModel, Table source, Table destination, Set<Table> excludedTables, List<Table> pathStations, boolean considerRestrictions) {
     	this(dataModel, source, destination, excludedTables, pathStations, considerRestrictions, false);
@@ -139,9 +145,14 @@ public class PathGraph {
     
 	/**
      * Creates new Graph.
-     * @param excludedTables 
-     * @param pathStations 
-     * @param considerRestrictions 
+     *
+     * @param dataModel the data model
+     * @param source the source table
+     * @param destination the destination table
+     * @param excludedTables tables to exclude from the path
+     * @param pathStations required intermediate tables on the path
+     * @param considerRestrictions <code>true</code> to respect association restrictions
+     * @param strict <code>true</code> to require all path stations to be present
      */
     public PathGraph(DataModel dataModel, Table source, Table destination, Set<Table> excludedTables, List<Table> pathStations, boolean considerRestrictions, boolean strict) {
     	this.source = source;
@@ -274,6 +285,11 @@ public class PathGraph {
     	visitedExTables.addAll(lastVisitedExTables);
     }
 
+	/**
+	 * Gets the set of excluded tables that were visited during graph construction.
+	 *
+	 * @return the set of visited excluded tables
+	 */
 	public Set<Table> getVisitedExcludedTables() {
 		return visitedExcludedTables;
 	}

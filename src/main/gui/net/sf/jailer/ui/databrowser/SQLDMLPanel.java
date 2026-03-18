@@ -69,10 +69,18 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 	private final SQLConsole sqlConsole;
 	private final JDialog dialog;
 
-	/** Creates new form SQLPanel
-	 * @param sql
-	 * @param metaDataSource
-	 * @param dialog */
+	/**
+	 * Creates new form SQLDMLPanel.
+	 *
+	 * @param sql the initial SQL/DML statement to display
+	 * @param sqlConsole the SQL console for switching to console mode
+	 * @param session the database session
+	 * @param metaDataSource the meta data source for SQL completion
+	 * @param afterExecution callback to run after successful execution
+	 * @param switchToConsole callback to switch to the SQL console view
+	 * @param dialog the enclosing dialog
+	 * @param executionContext the execution context
+	 */
 	@SuppressWarnings("serial")
 	public SQLDMLPanel(String sql, SQLConsole sqlConsole, Session session, MetaDataSource metaDataSource, Runnable afterExecution, Runnable switchToConsole, JDialog dialog, ExecutionContext executionContext) {
 		this.executionContext = executionContext;
@@ -326,6 +334,11 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 		doExecute();
 	}//GEN-LAST:event_executeButtonActionPerformed
 	
+	/**
+	 * Replaces the content of the SQL editor with the given SQL text.
+	 *
+	 * @param sql the new SQL text to display
+	 */
 	public void setContent(String sql) {
 		Point pos = scrollPane.getViewport().getViewPosition();
 		UIUtil.invokeLater(() -> {
@@ -336,6 +349,9 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 		});
 	}
 
+	/**
+	 * Prompts the user for confirmation and executes the SQL statements in the editor.
+	 */
 	protected void doExecute() {
 		if (!UIUtil.canRunJailer()) {
 			return;

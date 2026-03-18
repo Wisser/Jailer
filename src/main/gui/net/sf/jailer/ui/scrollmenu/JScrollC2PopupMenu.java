@@ -52,10 +52,18 @@ public class JScrollC2PopupMenu extends JPopupMenu {
 	private static final int C2WIDTH = 50;
 	private static final String PLACEHOLDERTEXT = "Type partial value to search";
 	
+	/**
+	 * Constructs a new <code>JScrollC2PopupMenu</code> with no label.
+	 */
 	public JScrollC2PopupMenu() {
 		this(null);
 	}
 
+	/**
+	 * Constructs a new <code>JScrollC2PopupMenu</code> with the given label.
+	 *
+	 * @param label the string that a UI may use to display as a description of the popup menu
+	 */
 	public JScrollC2PopupMenu(String label) {
 		super(label);
 		setLayout(new ScrollPopupMenuLayout());
@@ -327,10 +335,20 @@ public class JScrollC2PopupMenu extends JPopupMenu {
 		return popupScrollBar;
 	}
 
+	/**
+	 * Gets the maximum number of visible rows before a scrollbar appears.
+	 *
+	 * @return the maximum number of visible rows
+	 */
 	public int getMaximumVisibleRows() {
 		return maximumVisibleRows;
 	}
 
+	/**
+	 * Sets the maximum number of visible rows before a scrollbar appears.
+	 *
+	 * @param maximumVisibleRows the maximum number of visible rows
+	 */
 	public void setMaximumVisibleRows(int maximumVisibleRows) {
 		this.maximumVisibleRows = maximumVisibleRows;
 	}

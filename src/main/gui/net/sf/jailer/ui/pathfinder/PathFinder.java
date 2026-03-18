@@ -42,11 +42,27 @@ public class PathFinder {
 	private List<Table> path;
 	private boolean expand;
 	
+	/**
+	 * The result of a path-finding operation.
+	 */
 	public class Result {
+		/** The found path as a list of tables. */
 		public List<Table> path;
+		/** <code>true</code> if the tables on the path should be expanded. */
 		public boolean expand;
 	}
 
+	/**
+	 * Opens the PathFinder dialog and finds a path between two tables.
+	 *
+	 * @param source the source table
+	 * @param destination the destination table
+	 * @param dataModel the data model
+	 * @param withOpenTablesButton <code>true</code> to show the open-tables button
+	 * @param fromHistory <code>true</code> if this is invoked from the history
+	 * @param owner the owner frame
+	 * @return the result, or <code>null</code> if the dialog was cancelled
+	 */
 	public Result find(Table source, Table destination, DataModel dataModel, boolean withOpenTablesButton, boolean fromHistory, Frame owner) {
 		final EscapableDialog dialog = new EscapableDialog(owner, "PathFinder", true) {
 			private static final long serialVersionUID = 1L;

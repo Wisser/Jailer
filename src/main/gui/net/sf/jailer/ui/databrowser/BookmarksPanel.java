@@ -68,7 +68,12 @@ public class BookmarksPanel extends javax.swing.JPanel {public static final Stri
 	private final JMenu bookmarksMenu;
 	
 	/**
-	 * Creates new form BookmarksPanel
+	 * Creates new form BookmarksPanel.
+	 *
+	 * @param owner the parent frame
+	 * @param bookmarksMenu the bookmarks menu to populate
+	 * @param desktop the desktop
+	 * @param executionContext the execution context
 	 */
 	public BookmarksPanel(Frame owner, JMenu bookmarksMenu, Desktop desktop, ExecutionContext executionContext) {
 		this.owner = owner;
@@ -420,6 +425,9 @@ public class BookmarksPanel extends javax.swing.JPanel {public static final Stri
     private JComboBox2<String> nameFieldCB = new JComboBox2<>();
 
     /**
+     * Returns the folder containing bookmarks for the current data model.
+     *
+     * @param executionContext the execution context
      * @return folder containing bookmarks for current data model
      */
 	public static File getBookmarksFolder(ExecutionContext executionContext) {
@@ -435,7 +443,10 @@ public class BookmarksPanel extends javax.swing.JPanel {public static final Stri
 	}
 
 	/**
+     * Returns the file containing the bookmark with the given name.
+     *
      * @param bookmark bookmark name
+     * @param executionContext the execution context
      * @return file containing bookmark with given name or <code>null</code>, if no such bookmark exists
      */
 	public static File getBookmarksFile(String bookmark, ExecutionContext executionContext) {
@@ -695,8 +706,9 @@ public class BookmarksPanel extends javax.swing.JPanel {public static final Stri
 
 	/**
 	 * Gets all bookmarks in a given data model.
-	 * 
-	 * @param model the data model
+	 *
+	 * @param model the data model folder name
+	 * @param executionContext the execution context
 	 * @return all bookmarks in a given data model folder
 	 */
 	public static List<String> getAllBookmarks(String model, ExecutionContext executionContext) {

@@ -35,7 +35,11 @@ public abstract class RestrictedDependenciesListDialog extends ClosureBorderDial
 
 	private static final long serialVersionUID = -7151994890007647782L;
 
-	/** Creates new form ClosureBorderDialog */
+	/**
+	 * Creates new form RestrictedDependenciesListDialog.
+	 *
+	 * @param parent the parent frame
+	 */
 	public RestrictedDependenciesListDialog(java.awt.Frame parent) {
 		super(parent, false);
 		setTitle("Restricted Dependencies");

@@ -37,6 +37,7 @@ import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.util.SqlUtil;
 
 /**
+ * Panel for displaying and selecting an association path between tables.
  *
  * @author RalfW
  */

@@ -82,8 +82,19 @@ public class TabContentPanel extends javax.swing.JPanel {
 	private final boolean silent;
 	
 	/**
-     * Creates new form TabContentPanel
-     * @param caretDotMark 
+     * Creates new form TabContentPanel.
+     *
+     * @param rowBrowser the browser content pane providing the row data
+     * @param rowsCount label to display the row count
+     * @param theRowsTable the rows table to display
+     * @param metaDataDetails the meta data details component
+     * @param type the result type identifier
+     * @param explain <code>true</code> if this panel shows an explain plan
+     * @param shimPanel optional shim panel, or <code>null</code>
+     * @param caretDotMark caret position marker as a pair of line and column, or <code>null</code>
+     * @param rowColumnTypes the SQL types of the row columns
+     * @param onlySelectedCells <code>true</code> to show only selected cells
+     * @param silent <code>true</code> to suppress user interaction
      */
     public TabContentPanel(BrowserContentPane rowBrowser, JLabel rowsCount, JTable theRowsTable, JComponent metaDataDetails, String type, boolean explain, javax.swing.JPanel shimPanel, Pair<Integer, Integer> caretDotMark, List<Integer> rowColumnTypes, boolean onlySelectedCells, boolean silent) {
     	this.rowBrowser = rowBrowser;

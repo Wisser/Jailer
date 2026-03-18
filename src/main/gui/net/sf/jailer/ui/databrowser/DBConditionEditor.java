@@ -392,10 +392,18 @@ public abstract class DBConditionEditor extends EscapableDialog {
 	
 	/**
 	 * Edits a given condition.
-	 * 
-	 * @param condition the condition
-	 * @param neighbors 
-	 * @return new condition or <code>null</code>, if user canceled the editor
+	 *
+	 * @param condition the condition to edit
+	 * @param table1label label for the first table
+	 * @param table1alias alias for the first table
+	 * @param table1 the first table
+	 * @param table2label label for the second table
+	 * @param table2alias alias for the second table
+	 * @param table2 the second table, or {@code null} if not applicable
+	 * @param addPseudoColumns if {@code true}, pseudo-columns are offered for completion
+	 * @param addConvertSubqueryButton if {@code true}, the "to Subquery" button is shown
+	 * @param neighbors neighboring associations available for scalar subquery insertion
+	 * @param dataModel the data model
 	 */
 	public void edit(String condition, String table1label, String table1alias, Table table1, String table2label, String table2alias, Table table2, boolean addPseudoColumns, boolean addConvertSubqueryButton, Set<Association> neighbors, DataModel dataModel) {
 		if (!isVisible() && condition.length() > 60 || Pattern.compile("(\\bselect\\b)|(^\\s*\\()", Pattern.CASE_INSENSITIVE|Pattern.DOTALL).matcher(condition).find()) {
@@ -455,6 +463,12 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		setVisible(true);
 	}
 
+	/**
+	 * Sets the dialog location relative to the given position and fits it within the screen.
+	 *
+	 * @param pos the desired screen position
+	 * @param maxXW the maximum right edge (x + width) the dialog should not exceed
+	 */
 	public void setLocationAndFit(Point pos, int maxXW) {
 		setLocation(new Point(pos.x + 1, pos.y + 2));
 		UIUtil.fit(this);
@@ -545,6 +559,14 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		editorPane.getDocument().addDocumentListener(clearButtonDocListener);
 	}
 	
+	/**
+	 * Attaches mouse and keyboard listeners to a text field so that clicking or pressing
+	 * Ctrl+Space opens the condition editor.
+	 *
+	 * @param textfield the text field to observe
+	 * @param open consumer that opens the editor with the given condition text
+	 * @param openAndDoCompletion runnable that opens the editor and triggers code completion
+	 */
 	public static void initialObserve(final JTextField textfield, Consumer<String> open, Runnable openAndDoCompletion) {
 		textfield.addMouseListener(new MouseAdapter() {
 			final long MAX_PTIME_DIFF = 250;
@@ -602,6 +624,12 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		am.put(a, a);
 	}
 
+	/**
+	 * Attaches a Ctrl+Space keyboard listener to a text field that triggers code completion in the editor.
+	 *
+	 * @param textfield the text field to observe
+	 * @param open consumer that opens the editor with the given condition text
+	 */
 	public void observe(final JTextField textfield, final Consumer<String> open) {
 		InputMap im = textfield.getInputMap();
 		@SuppressWarnings("serial")
@@ -617,6 +645,13 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		am.put(a, a);
 	}
 	
+	/**
+	 * Opens the condition editor for the given text field, optionally triggering code completion.
+	 *
+	 * @param textfield the text field whose content is to be edited
+	 * @param open consumer that opens the editor with the given condition text
+	 * @param withCompletion if {@code true}, triggers code completion after opening
+	 */
 	public void doCompletion(final JTextField textfield, final Consumer<String> open, boolean withCompletion) {
 		String origText = textfield.getText();
 		int origPos = textfield.getCaretPosition();

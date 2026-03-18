@@ -43,6 +43,9 @@ public class DisplayExporter {
 
 	//~--- Constructors -------------------------------------------------------
 
+	/**
+	 * Constructor.
+	 */
 	public DisplayExporter() {
 	}
 
@@ -77,11 +80,12 @@ public class DisplayExporter {
 	}
 
 	/**
-	 * This method lets the user select the target file and exports the <code>Display</code>
-	 * @param model 
-	 * 
-	 * @paran display the <code>Display</code> to export
+	 * Lets the user select the target file and exports the <code>Display</code>.
 	 *
+	 * @param display the <code>Display</code> to export
+	 * @param img the target image file, or <code>null</code> to show a file chooser dialog
+	 * @param mapHtmlFile the target HTML map file, or <code>null</code>
+	 * @param model the data model
 	 */
 	public void export(Display display, File img, File mapHtmlFile, DataModel model) throws Exception {
 
