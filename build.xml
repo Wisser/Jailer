@@ -181,7 +181,7 @@ available targets:
 	<target name="all" depends="package">
 		<zip destfile="${JAR-ENGINE-SRC}" basedir="${SRC_DIR}/main/engine">
 		</zip>
-		<javadoc packagenames="net.sf.jailer.*" sourcepath="src/main/engine" defaultexcludes="yes" destdir="docs/api" author="true" version="true" use="true" windowtitle="Jailer Subsetter API">
+		<javadoc locale="en_US" packagenames="net.sf.jailer.*" sourcepath="src/main/engine" defaultexcludes="yes" destdir="docs/api" author="true" version="true" use="true" windowtitle="Jailer Subsetter API">
 			<classpath>
 				<path refid="default.classpath" />
 			</classpath>
