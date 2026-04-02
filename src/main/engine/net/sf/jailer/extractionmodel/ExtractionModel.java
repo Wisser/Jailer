@@ -140,12 +140,20 @@ public class ExtractionModel {
 			this.subjectLimitDefinition = subjectLimitDefinition;
 		}
 
+		/**
+		 * Constructor.
+		 *
+		 * @param subject the additional subject table
+		 * @param condition the SQL WHERE condition to restrict the subject rows, or empty string for no restriction
+		 * @param subjectLimitDefinition optional row limit and ordering, or a default instance for no limit
+		 */
 		public AdditionalSubject(Table subject, String condition, SubjectLimitDefinition subjectLimitDefinition) {
 			this.subject = subject;
 			this.condition = condition;
 			this.subjectLimitDefinition = subjectLimitDefinition;
 		}
-		
+
+		/** {@inheritDoc} */
 		@Override
 		public int hashCode() {
 			final int prime = 31;
@@ -155,6 +163,7 @@ public class ExtractionModel {
 			result = prime * result + ((subjectLimitDefinition == null) ? 0 : subjectLimitDefinition.hashCode());
 			return result;
 		}
+		/** {@inheritDoc} */
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj)
@@ -205,8 +214,9 @@ public class ExtractionModel {
 	
 	/**
 	 * Constructor for empty restriction models.
-	 * 
+	 *
 	 * @param dataModel the data model to restrict
+	 * @param executionContext the execution context
 	 */
 	public ExtractionModel(DataModel dataModel, ExecutionContext executionContext) {
 		this.dataModel = dataModel;
@@ -219,9 +229,11 @@ public class ExtractionModel {
 
 	/**
 	 * Constructor.
-	 *  
+	 *
 	 * @param fileName the name of the model-file
-	 * @param parameters apply this parameter-value mapping to all restriction conditions, XML templates and filters 
+	 * @param sourceSchemaMapping mapping of source schema names, applied to all table references
+	 * @param parameters parameter-value mapping applied to all restriction conditions, XML templates and filters
+	 * @param executionContext the execution context
 	 */
 	public ExtractionModel(String fileName, Map<String, String> sourceSchemaMapping, Map<String, String> parameters, ExecutionContext executionContext) throws IOException {
 		this(new File(fileName).toURI().toURL(), sourceSchemaMapping, parameters, executionContext, false);
@@ -229,9 +241,12 @@ public class ExtractionModel {
 
 	/**
 	 * Constructor.
-	 *  
+	 *
 	 * @param modelURL the URL of the model-file
-	 * @param parameters apply this parameter-value mapping to all restriction conditions, XML templates and filters 
+	 * @param sourceSchemaMapping mapping of source schema names, applied to all table references
+	 * @param parameters parameter-value mapping applied to all restriction conditions, XML templates and filters
+	 * @param executionContext the execution context
+	 * @param failOnMissingSubject if <code>true</code>, throw {@link IncompatibleModelException} when the subject table is not found in the data model
 	 */
 	public ExtractionModel(URL modelURL, Map<String, String> sourceSchemaMapping, Map<String, String> parameters, ExecutionContext executionContext, boolean failOnMissingSubject) throws IOException {
 		String csvLocation = modelURL.toString();
@@ -358,6 +373,8 @@ public class ExtractionModel {
 				}
 				if (col == null) {
 					_log.warn("unknown table" + name + "." + column);
+				} else if (xmLine.cells.size() < 5) {
+					_log.warn("malformed filter definition at " + xmLine.location);
 				} else {
 					String type = xmLine.cells.get(4);
 					if (type.trim().length() == 0) {
@@ -365,7 +382,7 @@ public class ExtractionModel {
 					}
 					Filter theFilter = new Filter(ParameterHandler.assignParameterValues(filter, parameters), type, false, null);
 					theFilter.setApplyAtExport(!"Import".equalsIgnoreCase(xmLine.cells.get(3)));
-					
+
 					col.setFilter(theFilter);
 				}
 			}

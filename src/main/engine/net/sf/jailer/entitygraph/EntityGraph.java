@@ -80,7 +80,15 @@ public abstract class EntityGraph {
 	 */
 	public abstract void setBirthdayOfSubject(int birthdayOfSubject);
 
+	/**
+	 * The data model this graph operates on.
+	 */
 	public final DataModel dataModel;
+
+	/**
+	 * <code>true</code> if the working tables (JAILER_ENTITY, JAILER_DEPENDENCY, JAILER_GRAPH)
+	 * have already been physically truncated, so subsequent deletion can be skipped.
+	 */
 	protected boolean isTruncated = false;
 
 	/**
@@ -88,6 +96,11 @@ public abstract class EntityGraph {
 	 */
 	protected final ExecutionContext executionContext;
 
+	/**
+	 * <code>true</code> if the graph is operating in delete mode.
+	 *
+	 * @see #setDeleteMode(boolean)
+	 */
 	protected boolean inDeleteMode = false;
 
 	/**
@@ -95,6 +108,13 @@ public abstract class EntityGraph {
 	 */
 	public final int graphID;
 
+	/**
+	 * Constructor.
+	 *
+	 * @param graphID unique ID for this graph instance
+	 * @param dataModel the data model this graph operates on
+	 * @param executionContext the execution context
+	 */
 	protected EntityGraph(int graphID, DataModel dataModel, ExecutionContext executionContext) {
 		this.executionContext = executionContext;
 		this.graphID = graphID;

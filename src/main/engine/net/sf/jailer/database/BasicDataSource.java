@@ -168,7 +168,7 @@ public class BasicDataSource implements DataSource {
 	/**
 	 * Wraps a Jdbc-Driver.
 	 */
-	public static class DriverShim implements Driver {
+	static class DriverShim implements Driver {
 		private Driver driver;
 
 		/**
@@ -179,30 +179,41 @@ public class BasicDataSource implements DataSource {
 		public DriverShim(Driver d) {
 			this.driver = d;
 		}
+		/** {@inheritDoc} */
 		@Override
 		public boolean acceptsURL(String u) throws SQLException {
 			return this.driver.acceptsURL(u);
 		}
+		/** {@inheritDoc} */
 		@Override
 		public Connection connect(String u, Properties p) throws SQLException {
 			return this.driver.connect(u, p);
 		}
+		/** {@inheritDoc} */
 		@Override
 		public int getMajorVersion() {
 			return this.driver.getMajorVersion();
 		}
+		/** {@inheritDoc} */
 		@Override
 		public int getMinorVersion() {
 			return this.driver.getMinorVersion();
 		}
+		/** {@inheritDoc} */
 		@Override
 		public DriverPropertyInfo[] getPropertyInfo(String u, Properties p) throws SQLException {
 			return this.driver.getPropertyInfo(u, p);
 		}
+		/** {@inheritDoc} */
 		@Override
 		public boolean jdbcCompliant() {
 			return this.driver.jdbcCompliant();
 		}
+		/**
+		 * Not supported — this shim does not expose a parent logger.
+		 *
+		 * @throws SQLFeatureNotSupportedException always
+		 */
 		@Override
 		public java.util.logging.Logger getParentLogger() throws SQLFeatureNotSupportedException {
 			throw new SQLFeatureNotSupportedException();
@@ -465,48 +476,64 @@ public class BasicDataSource implements DataSource {
 	 */
 	private static Map<String, DBMS> perUrl = Collections.synchronizedMap(new HashMap<String, DBMS>());
 
+	/**
+	 * Returns a connection from the pool, creating one if the pool is empty.
+	 *
+	 * @return a JDBC connection for the configured database
+	 * @throws SQLException if a connection cannot be obtained
+	 */
 	@Override
 	public Connection getConnection() throws SQLException {
 		return getConnection(dbms, true);
 	}
 
+	/** @return <code>null</code> — log writer is not supported */
 	@Override
 	public PrintWriter getLogWriter() throws SQLException {
-		throw new UnsupportedOperationException();
+		return null;
 	}
 
+	/** @return <code>0</code> — login timeout is not configured */
 	@Override
 	public int getLoginTimeout() throws SQLException {
-		throw new UnsupportedOperationException();
+		return 0;
 	}
 
+	/**
+	 * Not supported.
+	 *
+	 * @throws SQLFeatureNotSupportedException always
+	 */
 	@Override
 	public java.util.logging.Logger getParentLogger() throws SQLFeatureNotSupportedException {
-		throw new UnsupportedOperationException();
+		throw new SQLFeatureNotSupportedException();
 	}
 
+	/** Ignored — log writer is not supported. */
 	@Override
 	public void setLogWriter(PrintWriter arg0) throws SQLException {
-		throw new UnsupportedOperationException();
-		
 	}
 
+	/** Ignored — login timeout is not configurable on this implementation. */
 	@Override
 	public void setLoginTimeout(int arg0) throws SQLException {
-		throw new UnsupportedOperationException();
-		
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isWrapperFor(Class<?> arg0) throws SQLException {
 		return false;
 	}
 
+	/**
+	 * @throws SQLException always, as this data source does not wrap another object
+	 */
 	@Override
 	public <T> T unwrap(Class<T> arg0) throws SQLException {
-		throw new UnsupportedOperationException();
+		throw new SQLException(getClass().getName() + " does not implement " + arg0.getName());
 	}
 
+	/** Not supported — use {@link #getConnection()} instead. @throws UnsupportedOperationException always */
 	@Override
 	public Connection getConnection(String username, String password) throws SQLException {
 		throw new UnsupportedOperationException();

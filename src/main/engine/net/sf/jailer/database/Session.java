@@ -95,7 +95,14 @@ public class Session {
 	 */
 	private Map<Connection, Long> lastConnectionActiviyTimeStamp = Collections.synchronizedMap(new HashMap<Connection, Long>());
 
+	/**
+	 * <code>true</code> if the session operates in transactional mode.
+	 */
 	private final boolean transactional;
+
+	/**
+	 * Tracks the number of active connections per thread (by thread ID).
+	 */
 	private Map<Long, Integer> connectionCount = new HashMap<Long, Integer>();
 	
 	/**
@@ -231,7 +238,7 @@ public class Session {
 	public final DBMS dbms;
 
 	/**
-	 * The DBMS.
+	 * The fully-qualified JDBC driver class name.
 	 */
 	public final String driverClassName;
 
@@ -577,6 +584,7 @@ public class Session {
 	 * @param sqlQuery the query in SQL
 	 * @param reader the reader for the result
 	 * @param withExplicitCommit if <code>true</code>, switch of autocommit and commit explicitly
+	 * @return the number of rows read
 	 */
 	public long executeQuery(String sqlQuery, ResultSetReader reader, boolean withExplicitCommit) throws SQLException {
 		return executeQuery(sqlQuery, reader, null, null, 0, withExplicitCommit);
@@ -587,6 +595,7 @@ public class Session {
 	 *
 	 * @param sqlQuery the query in SQL
 	 * @param reader the reader for the result
+	 * @return the number of rows read
 	 */
 	public long executeQuery(String sqlQuery, ResultSetReader reader) throws SQLException {
 		return executeQuery(sqlQuery, reader, null, null, 0, false);
@@ -601,6 +610,7 @@ public class Session {
 	 * @param context cancellation context
 	 * @param limit row limit, 0 for unlimited
 	 * @param withExplicitCommit if <code>true</code>, switch of autocommit and commit explicitly
+	 * @return the number of rows read
 	 */
 	public long executeQuery(String sqlQuery, ResultSetReader reader, String alternativeSQL, Object context, long limit, boolean withExplicitCommit) throws SQLException {
 		return executeQuery(sqlQuery, reader, alternativeSQL, context, limit, 0, withExplicitCommit);
@@ -614,6 +624,7 @@ public class Session {
 	 * @param alternativeSQL query to be executed if sqlQuery fails
 	 * @param context cancellation context
 	 * @param limit row limit, 0 for unlimited
+	 * @return the number of rows read
 	 */
 	public long executeQuery(String sqlQuery, ResultSetReader reader, String alternativeSQL, Object context, long limit) throws SQLException {
 		return executeQuery(sqlQuery, reader, alternativeSQL, context, limit, 0, false);
@@ -757,8 +768,9 @@ public class Session {
 	 * @param alternativeSQL query to be executed if sqlQuery fails
 	 * @param limit row limit, 0 for unlimited
 	 * @param context cancellation context
-	 * @param timeout the timeout in sec
+	 * @param timeout the timeout in seconds, 0 for no timeout
 	 * @param withExplicitCommit if <code>true</code>, switch of autocommit and commit explicitly
+	 * @return the number of rows read
 	 */
 	public long executeQuery(String sqlQuery, ResultSetReader reader, String alternativeSQL, Object context, long limit, int timeout, boolean withExplicitCommit) throws SQLException {
 		if (getLogStatements()) {

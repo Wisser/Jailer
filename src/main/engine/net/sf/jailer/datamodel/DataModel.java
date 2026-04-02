@@ -88,12 +88,12 @@ public class DataModel {
 	private Map<Table, String> displayName = new HashMap<Table, String>();
 
 	/**
-	 * Maps association-names to associations;
+	 * Maps association names to associations.
 	 */
 	public Map<String, Association> namedAssociations = new TreeMap<String, Association>();
 
 	/**
-	 * Set of names of associations for which no decision has been made.
+	 * Names of associations for which the user has not yet decided whether to include or exclude them.
 	 */
 	public Set<String> decisionPending = new HashSet<String>();
 
@@ -103,14 +103,17 @@ public class DataModel {
 	private RestrictionModel restrictionModel;
 
 	/**
-	 * Order priority of a column.
+	 * Display-order priority of a column in the data browser.
 	 */
 	public enum ColumnOrderPriority {
-		HI, LO
+		/** Column is shown before normal-priority columns. */
+		HI,
+		/** Column is shown after normal-priority columns. */
+		LO
 	}
 
 	/**
-	 * Maps normalized column name to order priority.
+	 * Maps normalized column names to their display-order priority ({@code HI} columns appear before {@code LO} columns in the data browser).
 	 */
 	public final Map<String, ColumnOrderPriority> columnOrderPrio = new TreeMap<String, ColumnOrderPriority>();
 
