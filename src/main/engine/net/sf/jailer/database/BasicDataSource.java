@@ -463,7 +463,7 @@ public class BasicDataSource implements DataSource {
 	/**
 	 * Holds configurations.
 	 */
-	private static Map<String, DBMS> perUrl = new HashMap<String, DBMS>();
+	private static Map<String, DBMS> perUrl = Collections.synchronizedMap(new HashMap<String, DBMS>());
 
 	@Override
 	public Connection getConnection() throws SQLException {

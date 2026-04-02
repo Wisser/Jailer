@@ -4121,15 +4121,15 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		String currentStatement = editorPane.getCurrentStatement(false);
 		File tempFile = Configuration.getInstance().createTempFile();
 		try {
-			BufferedWriter out = new BufferedWriter(new FileWriter(tempFile));
-			Pair<Integer, Integer> loc = editorPane.getCurrentStatementLocation(false, false, null, false);
-			if (loc != null) {
-				for (int i = 0; i < loc.a; ++i) {
-					out.write("\n");
+			try (BufferedWriter out = new BufferedWriter(new FileWriter(tempFile))) {
+				Pair<Integer, Integer> loc = editorPane.getCurrentStatementLocation(false, false, null, false);
+				if (loc != null) {
+					for (int i = 0; i < loc.a; ++i) {
+						out.write("\n");
+					}
 				}
+				out.write(currentStatement);
 			}
-			out.write(currentStatement);
-			out.close();
 			AssociationProposerView associationProposer = new AssociationProposerView(getOwner(), datamodel.get(), tempFile, 6, executionContext);
 			if (associationProposer.isAccepted()) {
 				openDataModelEditor(true);
@@ -4196,16 +4196,21 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			Charset encoding = SqlUtil.retrieveEncoding(path);
 			InputStream inputStream = new FileInputStream(file);
 			BufferedReader in = null;
-			if (path.toLowerCase(Locale.ENGLISH).endsWith(".gz")) {
-				in = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream), encoding));
-			} else if (path.toLowerCase(Locale.ENGLISH).endsWith(".zip")){
-				ZipInputStream zis = new ZipInputStream(inputStream); // lgtm [java/input-resource-leak]
-				zis.getNextEntry();
-				in = new BufferedReader(new InputStreamReader(zis, encoding));
-			} else {
-				in = new BufferedReader(new InputStreamReader(inputStream, encoding));
+			try {
+				if (path.toLowerCase(Locale.ENGLISH).endsWith(".gz")) {
+					in = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream), encoding));
+				} else if (path.toLowerCase(Locale.ENGLISH).endsWith(".zip")) {
+					ZipInputStream zis = new ZipInputStream(inputStream);
+					zis.getNextEntry();
+					in = new BufferedReader(new InputStreamReader(zis, encoding));
+				} else {
+					in = new BufferedReader(new InputStreamReader(inputStream, encoding));
+				}
+			} catch (IOException e) {
+				inputStream.close();
+				throw e;
 			}
-			
+
 			StringBuilder sb = new StringBuilder();
 			try {
 				int c;
@@ -4442,12 +4447,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			if (file == null) {
 				File contentFile = contentFile();
 				if (contentFile.exists()) {
-					ObjectInputStream in = new ObjectInputStream(new FileInputStream(contentFile)); // lgtm [java/input-resource-leak]
-					String content = in.readObject().toString();
-					editorPane.setText(content);
-					editorPane.discardAllEdits();
-					setCaretPosition(content.length());
-					in.close();
+					try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(contentFile))) {
+						String content = in.readObject().toString();
+						editorPane.setText(content);
+						editorPane.discardAllEdits();
+						setCaretPosition(content.length());
+					}
 				}
 			}
 		} catch (Throwable t) {
@@ -4478,9 +4483,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			if (contentLoaded && contentModified && file == null && editorPane.getDocument().getLength() < MAX_DOC_LENGTH) {
 				File contentFile = contentFile();
 				contentFile.getParentFile().mkdirs();
-				ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(contentFile)); // lgtm [java/output-resource-leak]
-				out.writeObject(editorPane.getText());
-				out.close();
+				try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(contentFile))) {
+					out.writeObject(editorPane.getText());
+				}
 			}
 		} catch (Throwable t) {
 			t.printStackTrace();

@@ -475,7 +475,7 @@ public class DataModel {
 							Column c = Column.parse(col);
 							newName = knownIdentifiers.getColumnName(line.cells.get(0), c.name);
 						} catch (Exception e) {
-							// ignore
+							_log.debug("unable to resolve column name for '" + col + "'", e);
 						}
 					}
 					try {
@@ -536,7 +536,7 @@ public class DataModel {
 								Column c = Column.parse(col);
 								newName = knownIdentifiers.getColumnName(Quoting.normalizeIdentifier(line.cells.get(0)), c.name);
 							} catch (Exception e) {
-								// ignore
+								_log.debug("unable to resolve column name for '" + col + "'", e);
 							}
 						}
 						try {
@@ -688,7 +688,7 @@ public class DataModel {
 				new CsvFile(is, null, commentFile.getPath(), null).getLines().forEach(l -> comments.put(l.cells.get(0), l.cells.get(1)));
 			}
 		} catch (Exception e) {
-			// ignore
+			_log.debug("unable to load comments", e);
 		}
 	}
 

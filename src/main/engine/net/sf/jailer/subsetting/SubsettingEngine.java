@@ -684,15 +684,22 @@ public class SubsettingEngine {
 		if (parentFile != null) {
 			parentFile.mkdirs();
 		}
-		OutputStream outputStream = new FileOutputStream(file);
-		if (sqlScriptFile.toLowerCase(Locale.ENGLISH).endsWith(".zip")) {
-			outputStream = new ZipOutputStream(outputStream); // lgtm [java/output-resource-leak]
-			String zipFileName = file.getName();
-			((ZipOutputStream)outputStream).putNextEntry(new ZipEntry(zipFileName.substring(0, zipFileName.length() - 4)));
-		} else {
-			if (sqlScriptFile.toLowerCase(Locale.ENGLISH).endsWith(".gz")) {
-				outputStream = new GZIPOutputStream(outputStream); // lgtm [java/output-resource-leak]
+		FileOutputStream base = new FileOutputStream(file);
+		OutputStream outputStream;
+		try {
+			if (sqlScriptFile.toLowerCase(Locale.ENGLISH).endsWith(".zip")) {
+				ZipOutputStream zipOut = new ZipOutputStream(base);
+				String zipFileName = file.getName();
+				zipOut.putNextEntry(new ZipEntry(zipFileName.substring(0, zipFileName.length() - 4)));
+				outputStream = zipOut;
+			} else if (sqlScriptFile.toLowerCase(Locale.ENGLISH).endsWith(".gz")) {
+				outputStream = new GZIPOutputStream(base);
+			} else {
+				outputStream = base;
 			}
+		} catch (IOException e) {
+			base.close();
+			throw e;
 		}
 		TransformerHandler transformerHandler = null;
 		ImportFilterManager importFilterManager = null;
