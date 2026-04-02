@@ -18,6 +18,7 @@ package net.sf.jailer.extractionmodel;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -234,7 +235,10 @@ public class ExtractionModel {
 	 */
 	public ExtractionModel(URL modelURL, Map<String, String> sourceSchemaMapping, Map<String, String> parameters, ExecutionContext executionContext, boolean failOnMissingSubject) throws IOException {
 		String csvLocation = modelURL.toString();
-		CsvFile csvFile = new CsvFile(modelURL.openStream(), CsvFile.ALL_BLOCKS, csvLocation, null);
+		CsvFile csvFile;
+		try (InputStream modelStream = modelURL.openStream()) {
+			csvFile = new CsvFile(modelStream, CsvFile.ALL_BLOCKS, csvLocation, null);
+		}
 		List<CsvFile.Line> csv = csvFile.getLines();
 		if (csv.isEmpty()) {
 			throw new RuntimeException(modelURL + "' is empty");

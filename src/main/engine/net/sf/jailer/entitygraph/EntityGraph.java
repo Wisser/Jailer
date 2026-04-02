@@ -41,12 +41,17 @@ import net.sf.jailer.importfilter.ImportFilterManager;
 import net.sf.jailer.subsetting.TransformerFactory;
 import net.sf.jailer.util.JobManager;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Persistent graph of entities.
  *
  * @author Ralf Wisser
  */
 public abstract class EntityGraph {
+
+	private static final Logger _log = LoggerFactory.getLogger(EntityGraph.class);
 
 	/**
 	 * Name of the graph-table.
@@ -589,7 +594,7 @@ public abstract class EntityGraph {
 				} while (c > 0 && c == limitTransactionSize.getLimit());
 				return rc;
 			} catch (Exception e) {
-				// fall back
+				_log.warn("limited delete failed, falling back to full delete", e);
 			}
 		}
 

@@ -542,7 +542,7 @@ public class DataModel {
 						try {
 							columns.add(Column.parse(newName, col));
 						} catch (Throwable e) {
-							e.printStackTrace();
+							_log.warn("unable to parse column", e);
 							// ignore
 						}
 					}

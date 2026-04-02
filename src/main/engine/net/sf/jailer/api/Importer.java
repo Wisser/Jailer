@@ -54,7 +54,11 @@ public class Importer {
 	 */
 	public void execute(File inputScript) throws IOException, SQLException {
 		Session session = new Session(getDataSource(), null, isolationLevel, null, getTransactional());
-		new SqlScriptExecutor(session, getNumberOfThreads(), false).executeScript(inputScript.getPath(), getTransactional());
+		try {
+			new SqlScriptExecutor(session, getNumberOfThreads(), false).executeScript(inputScript.getPath(), getTransactional());
+		} finally {
+			session.shutDown();
+		}
 	}
 	
 	/**

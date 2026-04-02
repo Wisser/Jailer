@@ -81,9 +81,6 @@ public class PrimaryKey {
 					if (assignedUPKColumns.contains(i)) {
 						continue;
 					}
-					if (i >= primaryKey.getColumns().size()) {
-						break;
-					}
 					Column otherColumn = primaryKey.getColumns().get(i);
 					if (isAssignable(column, otherColumn)) {
 						match.put(column, otherColumn);
@@ -102,14 +99,14 @@ public class PrimaryKey {
 				if (isAssignable(column, otherColumn)) {
 					match.put(column, otherColumn);
 					++i;
-					if (i >= primaryKey.columns.size()) {
+					if (i >= primaryKey.getColumns().size()) {
 						break;
 					}
 				}
 			}
 		}
 		
-		if (match.size() != primaryKey.columns.size()) {
+		if (match.size() != primaryKey.getColumns().size()) {
 			throw new IllegalStateException("incomplete PK-UPK-match (" + Configuration.getInstance().getDoMinimizeUPK() + ", " + !primaryKey.needsOrderedMatch + ")\n"
 					+ "PK: " + primaryKey.toSQL(null) + "\n"
 					+ "UPK: " + toSQL(null) + "\n"

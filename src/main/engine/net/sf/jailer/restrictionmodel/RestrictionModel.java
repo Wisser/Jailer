@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.restrictionmodel;
 
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -125,7 +126,9 @@ public class RestrictionModel {
 	 * @param parameters apply this parameter-value mapping to all restriction conditions
 	 */
 	public void addRestrictionDefinition(URL extractionModelURL, Map<String, String> parameters) throws Exception {
-		addRestrictionDefinition(new CsvFile(extractionModelURL.openStream(), null, extractionModelURL.toString(), null), extractionModelURL.toString(), parameters);
+		try (InputStream stream = extractionModelURL.openStream()) {
+			addRestrictionDefinition(new CsvFile(stream, null, extractionModelURL.toString(), null), extractionModelURL.toString(), parameters);
+		}
 	}
 
 	/**

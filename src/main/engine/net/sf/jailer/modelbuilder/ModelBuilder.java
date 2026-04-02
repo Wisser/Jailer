@@ -554,9 +554,9 @@ public class ModelBuilder {
 		if (!f.exists()) {
 			f.getParentFile().mkdirs();
 		}
-		PrintWriter out = new PrintWriter(new FileOutputStream(f));
-		out.print(content);
-		out.close();
+		try (PrintWriter out = new PrintWriter(new FileOutputStream(f))) {
+			out.print(content);
+		}
 		_log.info("file '" + fileName + "' written");
 	}
 

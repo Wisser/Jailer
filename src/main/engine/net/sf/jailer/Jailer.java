@@ -107,7 +107,8 @@ public class Jailer {
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
-						e.printStackTrace();
+						Thread.currentThread().interrupt();
+						break;
 					}
 				}
 			}
@@ -126,6 +127,7 @@ public class Jailer {
 					renderer.setOutputFolder(new File(home, renderer.getOutputFolder()).getAbsolutePath());
 				}
 			} catch (Exception e) {
+				getLogger().warn("failed to configure renderer output folder", e);
 			}
 		} else {
 			LogUtil.initLog4jConfig(null);
@@ -134,6 +136,7 @@ public class Jailer {
 		try {
 			System.setProperty("db2.jcc.charsetDecoderEncoder", "3");
 		} catch (Exception e) {
+			getLogger().warn("failed to set DB2 charset property", e);
 		}
 		boolean ok = true;
 		try {

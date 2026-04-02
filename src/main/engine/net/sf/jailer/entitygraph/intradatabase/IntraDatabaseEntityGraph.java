@@ -226,12 +226,11 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	@Override
 	public void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, DBMS targetConfiguration, boolean inSourceSchema, String reason) throws SQLException {
 		File tmp = Configuration.getInstance().createTempFile();
-		OutputStreamWriter tmpFileWriter;
 		try {
-			tmpFileWriter = new FileWriter(tmp);
-			UpdateTransformer reader = new UpdateTransformer(table, columns, tmpFileWriter, executionContext.getNumberOfEntities(), getSession(), getSession().dbms, importFilterManager, inSourceSchema, reason, executionContext);
-			readEntities(table, false, reader);
-			tmpFileWriter.close();
+			try (OutputStreamWriter tmpFileWriter = new FileWriter(tmp)) {
+				UpdateTransformer reader = new UpdateTransformer(table, columns, tmpFileWriter, executionContext.getNumberOfEntities(), getSession(), getSession().dbms, importFilterManager, inSourceSchema, reason, executionContext);
+				readEntities(table, false, reader);
+			}
 			new SqlScriptExecutor(getSession(), executionContext.getNumberOfThreads()).executeScript(tmp.getPath());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
@@ -706,18 +705,17 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			int numberOfEntities, final Session targetSession, final DBMS targetDBMSConfiguration, DBMS dbmsConfiguration) throws IOException, SQLException {
 		if (importFilterManager != null) {
 			File tmp = Configuration.getInstance().createTempFile();
-			OutputStreamWriter tmpFileWriter;
-			tmpFileWriter = new FileWriter(tmp);
-			importFilterManager.createMappingTables(dbmsConfiguration, tmpFileWriter);
-			tmpFileWriter.close();
+			try (OutputStreamWriter tmpFileWriter = new FileWriter(tmp)) {
+				importFilterManager.createMappingTables(dbmsConfiguration, tmpFileWriter);
+			}
 			new SqlScriptExecutor(getSession(), executionContext.getNumberOfThreads()).executeScript(tmp.getPath());
 			tmp.delete();
 
 			tmp = Configuration.getInstance().createTempFile();
-			tmpFileWriter = new FileWriter(tmp);
-			tmpFileWriter.write("-- sync\n");
-			importFilterManager.fillAndWriteMappingTables(this, jobManager, tmpFileWriter, numberOfEntities, targetSession, targetDBMSConfiguration);
-			tmpFileWriter.close();
+			try (OutputStreamWriter tmpFileWriter = new FileWriter(tmp)) {
+				tmpFileWriter.write("-- sync\n");
+				importFilterManager.fillAndWriteMappingTables(this, jobManager, tmpFileWriter, numberOfEntities, targetSession, targetDBMSConfiguration);
+			}
 			new SqlScriptExecutor(getSession(), executionContext.getNumberOfThreads()).executeScript(tmp.getPath());
 			tmp.delete();
 		}
@@ -740,10 +738,9 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	public void dropMappingTables(OutputStreamWriter result, DBMS targetDBMSConfiguration) throws IOException, SQLException {
 		if (importFilterManager != null) {
 			File tmp = Configuration.getInstance().createTempFile();
-			OutputStreamWriter tmpFileWriter;
-			tmpFileWriter = new FileWriter(tmp);
-			importFilterManager.dropMappingTables(tmpFileWriter);
-			tmpFileWriter.close();
+			try (OutputStreamWriter tmpFileWriter = new FileWriter(tmp)) {
+				importFilterManager.dropMappingTables(tmpFileWriter);
+			}
 			new SqlScriptExecutor(getSession(), executionContext.getNumberOfThreads()).executeScript(tmp.getPath());
 			tmp.delete();
 		}

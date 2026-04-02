@@ -450,7 +450,7 @@ public class Session {
 	 * @param con the connection
 	 */
 	public void markConnectionAsPotentiallyInvalid(Connection con) {
-		lastConnectionActiviyTimeStamp.put(con, System.currentTimeMillis() - 1000L * 60 * 24 * 31);
+		lastConnectionActiviyTimeStamp.put(con, System.currentTimeMillis() - ONE_MONTH_MS);
 	}
 
 	protected void init() throws SQLException {
@@ -798,15 +798,12 @@ public class Session {
 	 */
 	public void executeQuery(File sqlFile, ResultSetReader reader, boolean withExplicitCommit) throws SQLException {
 		StringBuffer result = new StringBuffer();
-		try {
-			BufferedReader in = new BufferedReader(new FileReader(sqlFile));
-
+		try (BufferedReader in = new BufferedReader(new FileReader(sqlFile))) {
 			String line;
 			while ((line = in.readLine()) != null) {
 				result.append(line);
 				result.append(System.getProperty("line.separator", "\n"));
 			}
-			in.close();
 		} catch (IOException e) {
 			throw new RuntimeException("Failed to load content of file", e);
 		}
@@ -817,6 +814,8 @@ public class Session {
 	/**
 	 * Prevention of livelocks.
 	 */
+	private static final long ONE_MONTH_MS = 1000L * 60 * 60 * 24 * 31;
+
 	private static final int PERMITS = Integer.MAX_VALUE / 4;
 	private Semaphore semaphore = new Semaphore(PERMITS);
 
@@ -991,36 +990,7 @@ public class Session {
 	 * @param length the length of the CLOB data in characters
 	 */
 	public void insertClob(String table, String column, String where, File lobFile, long length) throws SQLException, IOException {
-		String sqlUpdate = "Update " + table + " set " + column + "=? where " + where;
-		if (getLogStatements()) {
-			_log.info(logPrefix + sqlUpdate);
-		}
-		PreparedStatement statement = null;
-		Connection con = null;
-		try {
-			con = connectionFactory.getConnection();
-			statement = con.prepareStatement(sqlUpdate);
-			begin(statement, null);
-			InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(lobFile), "UTF-8"); // lgtm [java/input-resource-leak]
-			statement.setCharacterStream(1, inputStreamReader, (int) length);
-			statement.execute();
-			inputStreamReader.close();
-		} catch (SQLException e) {
-			if (con != null) {
-				markConnectionAsPotentiallyInvalid(con);
-			}
-			checkKilled();
-			CancellationHandler.checkForCancellation(null);
-			throw e;
-		} finally {
-			if (statement != null) {
-				try {
-					statement.close();
-					end(statement, null);
-				} catch (SQLException e) {
-				}
-			}
-		}
+		insertCharacterLob(table, column, where, lobFile, length);
 	}
 
 	/**
@@ -1033,18 +1003,24 @@ public class Session {
 	 * @param length the length of the XML data in characters
 	 */
 	public void insertSQLXML(String table, String column, String where, File lobFile, long length) throws SQLException, IOException {
+		insertCharacterLob(table, column, where, lobFile, length);
+	}
+
+	private void insertCharacterLob(String table, String column, String where, File lobFile, long length) throws SQLException, IOException {
 		String sqlUpdate = "Update " + table + " set " + column + "=? where " + where;
-		_log.info(logPrefix + sqlUpdate);
+		if (getLogStatements()) {
+			_log.info(logPrefix + sqlUpdate);
+		}
 		PreparedStatement statement = null;
 		Connection con = null;
 		try {
 			con = connectionFactory.getConnection();
 			statement = con.prepareStatement(sqlUpdate);
 			begin(statement, null);
-			InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(lobFile), "UTF-8"); // lgtm [java/input-resource-leak]
-			statement.setCharacterStream(1, inputStreamReader, (int) length);
-			statement.execute();
-			inputStreamReader.close();
+			try (InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(lobFile), "UTF-8")) {
+				statement.setCharacterStream(1, inputStreamReader, (int) length);
+				statement.execute();
+			}
 		} catch (SQLException e) {
 			if (con != null) {
 				markConnectionAsPotentiallyInvalid(con);
@@ -1080,10 +1056,10 @@ public class Session {
 			con = connectionFactory.getConnection();
 			statement = con.prepareStatement(sqlUpdate);
 			begin(statement, null);
-			FileInputStream fileInputStream = new FileInputStream(lobFile);
-			statement.setBinaryStream(1, fileInputStream, (int) lobFile.length());
-			statement.execute();
-			fileInputStream.close();
+			try (FileInputStream fileInputStream = new FileInputStream(lobFile)) {
+				statement.setBinaryStream(1, fileInputStream, (int) lobFile.length());
+				statement.execute();
+			}
 		} catch (SQLException e) {
 			if (con != null) {
 				markConnectionAsPotentiallyInvalid(con);
@@ -1464,7 +1440,7 @@ public class Session {
 	 */
 	private String password;
 
-	private final Object CLI_LOCK = new String("CLI_LOCK");
+	private final Object CLI_LOCK = new Object();
 
 	/**
 	 * Gets connection password (UI support).

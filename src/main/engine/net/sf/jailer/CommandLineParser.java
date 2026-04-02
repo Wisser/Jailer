@@ -95,9 +95,10 @@ public class CommandLineParser {
 		List<String> result = new ArrayList<String>();
 		for (int i = 0; i < cArgs.length; ++i) {
 			if ("-file-lookup".equals(cArgs[i]) && i < cArgs.length - 1) {
-				BufferedReader in = new BufferedReader(new FileReader(new File(cArgs[i + 1])));
-				String line = in.readLine();
-				in.close();
+				String line;
+				try (BufferedReader in = new BufferedReader(new FileReader(new File(cArgs[i + 1])))) {
+					line = in.readLine();
+				}
 				if (line == null) {
 					throw new RuntimeException("File \"" + cArgs[i + 1] + "\" is empty");
 				}
