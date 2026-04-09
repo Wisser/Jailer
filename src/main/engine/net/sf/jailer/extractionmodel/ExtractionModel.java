@@ -68,7 +68,7 @@ public class ExtractionModel {
 	public final Table subject;
 
 	/**
-	 * Subject Limit Definition
+	 * Defines an optional row limit and ordering for the subject table.
 	 */
 	public SubjectLimitDefinition subjectLimitDefinition = new SubjectLimitDefinition(null, null);
 	

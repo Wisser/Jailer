@@ -1,3 +1,12 @@
+16.12
+  - Fixed: Session was not closed on exception in Importer.execute().
+  - Fixed resource leaks: streams and writers are now properly closed via try-with-resources
+    in ExtractionModel, RestrictionModel, CommandLineParser, ModelBuilder,
+    IntraDatabaseEntityGraph and SQLConsole.
+  - Fixed: InterruptedException in shutdown hook now restores the interrupt flag and exits the wait loop.
+  - Fixed: LOB insert methods (insertClob, insertSQLXML) refactored to eliminate duplicate code;
+    resource leak in stream handling corrected.
+
 16.11.3
   - Minor improvements to the user interface.
 
