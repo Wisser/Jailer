@@ -25,7 +25,7 @@ public class JailerVersion {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "16.12";
+	public static final String VERSION = "16.12.0.1";
 
 	/**
 	 * The Jailer working tables version.
@@ -47,3 +47,6 @@ public class JailerVersion {
 	}
 
 }
+
+// TODO
+// TODO include javadoc into release artifacts and improve it
