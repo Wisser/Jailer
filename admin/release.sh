@@ -22,7 +22,7 @@ sed "s/stateOffset = 0/stateOffset = 100/g" src/main/gui/net/sf/jailer/ui/Enviro
 rm maven-artifacts/dummy
 mv jailer-engine* maven-artifacts
 
-rm -rf docs/api
+# rm -rf docs/api
 rm -rf docs/animated
 rm -rf out
 
