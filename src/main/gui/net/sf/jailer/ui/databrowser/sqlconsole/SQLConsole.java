@@ -512,6 +512,22 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         scaledExplainIcon = UIUtil.scaleIcon(this, explainIcon);
         explainButton.setIcon(scaledExplainIcon);
 
+        JButton aiButton = new JButton("Ask AI");
+        aiButton.setFocusable(false);
+        aiButton.setToolTipText("Generate SQL from plain language using AI");
+        aiButton.addActionListener(e -> {
+            DataModel dm = datamodel.get();
+            if (dm == null) {
+                JOptionPane.showMessageDialog(SQLConsole.this, "No data model available.", "Ask AI", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            String dbmsName = session.dbms != null ? session.dbms.getDisplayName() : "SQL";
+            new AIQueryDialog(SwingUtilities.getWindowAncestor(SQLConsole.this), dm, dbmsName,
+                    sql -> editorPane.setText(sql)).setVisible(true);
+        });
+//        jToolBar1.add(aiButton, 4); TODO
+        jToolBar1.add(new JToolBar.Separator(), 5);
+
         limitComboBox.setModel(new DefaultComboBoxModel(DataBrowser.ROW_LIMITS));
         limitComboBox.setSelectedItem(1000);
 
@@ -4543,4 +4559,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     // "Select distinct ... from ... left join ..." with a non-comparable column in select clause (for example BLOB) fails. Make the problem go away.
     // idea: give SQLConsole an "ErrorHandler" who will be consulted if query fails and will ask user to skip "distinct" and try again.
 
+	// TODO
+	// TODO AKI Integration: /** Ask AI: give me data...
+	// */
+	// Select ...
+	// TODO ASK AI Integration: item in PopUp + Shortcut + Button in Statusbar with Shortcut mentioned in tooltip.
+	
 }
