@@ -43,6 +43,7 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.ai.AIProviderConfig.ProviderType;
+import net.sf.jailer.util.SqlUtil;
 
 /**
  * Sends a natural-language question together with the current data-model schema
@@ -280,6 +281,7 @@ public class AIQueryAssistant {
     static String buildSchemaDescription(DataModel dataModel) {
         List<Table> tables = new ArrayList<>(dataModel.getSortedTables());
         StringBuilder sb = new StringBuilder();
+        StringBuilder fkSb = new StringBuilder();
         int count = Math.min(tables.size(), MAX_TABLES);
         for (int i = 0; i < count; i++) {
             Table table = tables.get(i);
@@ -306,25 +308,68 @@ public class AIQueryAssistant {
                     sb.append(" PK");
                 }
             }
-            sb.append(")");
+            sb.append(")\n");
 
             for (Association assoc : table.associations) {
                 if (!assoc.reversed) {
-                    String joinCond = assoc.getUnrestrictedJoinCondition();
-                    if (joinCond != null) {
-                        String resolved = joinCond
-                            .replace("A.", assoc.source.getName() + ".")
-                            .replace("B.", assoc.destination.getName() + ".");
-                        sb.append(" -- FK: ").append(resolved.trim());
+                    String fk = buildFkConstraint(assoc);
+                    if (fk != null) {
+                        fkSb.append(fk).append("\n");
                     }
                 }
             }
-            sb.append("\n");
         }
         if (tables.size() > MAX_TABLES) {
             sb.append("... and ").append(tables.size() - MAX_TABLES).append(" more tables\n");
         }
+        if (fkSb.length() > 0) {
+            sb.append("\nForeign keys:\n").append(fkSb);
+        }
         return sb.toString();
+    }
+
+    private static String buildFkConstraint(Association assoc) {
+        String joinCond = assoc.getUnrestrictedJoinCondition();
+        if (joinCond == null) return null;
+
+        String srcName = assoc.source.getName();
+        String dstName = assoc.destination.getName();
+
+        String[] parts = joinCond.split("(?i)\\s+and\\s+");
+        List<String> srcCols = new ArrayList<>();
+        List<String> dstCols = new ArrayList<>();
+
+        for (String part : parts) {
+            String[] sides = part.split("\\s*=\\s*", 2);
+            if (sides.length != 2) return joinFallback(srcName, dstName, joinCond);
+
+            String leftR  = SqlUtil.replaceAliases(sides[0].trim(), srcName, dstName);
+            String rightR = SqlUtil.replaceAliases(sides[1].trim(), srcName, dstName);
+
+            String srcCol = colAfterTable(leftR, srcName);
+            if (srcCol == null) srcCol = colAfterTable(rightR, srcName);
+            String dstCol = colAfterTable(leftR, dstName);
+            if (dstCol == null) dstCol = colAfterTable(rightR, dstName);
+
+            if (srcCol == null || dstCol == null) return joinFallback(srcName, dstName, joinCond);
+            srcCols.add(srcCol);
+            dstCols.add(dstCol);
+        }
+
+        if (srcCols.isEmpty()) return joinFallback(srcName, dstName, joinCond);
+        return "ALTER TABLE " + srcName
+            + " ADD FOREIGN KEY (" + String.join(", ", srcCols) + ")"
+            + " REFERENCES " + dstName + "(" + String.join(", ", dstCols) + ");";
+    }
+
+    private static String joinFallback(String srcName, String dstName, String joinCond) {
+        String resolvedCond = SqlUtil.replaceAliases(joinCond, srcName, dstName);
+        return "-- SELECT * FROM " + srcName + " JOIN " + dstName + " ON " + resolvedCond.trim() + ";";
+    }
+
+    private static String colAfterTable(String expr, String tableName) {
+        String prefix = tableName + ".";
+        return expr.startsWith(prefix) ? expr.substring(prefix.length()) : null;
     }
 }
 

@@ -25,11 +25,25 @@
 	        </Policies>
 	        <DefaultRolloverStrategy max="10"/>
    		</RollingFile>
+        <RollingFile name="AI" fileName="${sys:logdir:-}ai_api.log"
+                    filePattern="${sys:logdir:-}ai_api-%i.log">
+	        <PatternLayout>
+	            <Pattern>%d [%t] %-5p - %m%n</Pattern>
+	        </PatternLayout>
+	        <Policies>
+				<OnStartupTriggeringPolicy />
+	            <SizeBasedTriggeringPolicy size="2 MB"/>
+	        </Policies>
+	        <DefaultRolloverStrategy max="10"/>
+   		</RollingFile>
     </Appenders>
     <Loggers>
         <Root level="error">
             <AppenderRef ref="A1" />
         </Root>
+        <Logger  name="ai_api" level="debug" additivity="false">
+            <AppenderRef ref="AI" />
+        </Logger >
         <Logger  name="net.sf.jailer" level="info" additivity="false">
             <AppenderRef ref="A1" />
             <AppenderRef ref="A3"/>
