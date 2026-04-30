@@ -65,9 +65,30 @@ public class AIQueryAssistant {
         ObjectNode body = buildRequestBody(question, history, schema, dbmsName, config, isAnthropic);
         JsonNode response = post(config.apiUrl, config.apiKey, body, isAnthropic);
         if (isAnthropic) {
-            return response.path("content").get(0).path("text").asText("").trim();
+            JsonNode contentNode = response.path("content");
+            if (contentNode.isArray() && contentNode.size() > 0) {
+                return contentNode.get(0).path("text").asText("").trim();
+            }
+            throw new IOException("Unexpected response format: missing 'content' array. Response: " + response.toString());
         } else {
-            return response.path("choices").get(0).path("message").path("content").asText("").trim();
+            // OpenAI-compatible: choices[0].message.content
+            JsonNode choicesNode = response.path("choices");
+            if (choicesNode.isArray() && choicesNode.size() > 0) {
+                JsonNode messageNode = choicesNode.get(0).path("message");
+                String content = messageNode.path("content").asText("");
+                if (!content.isEmpty()) {
+                    return content.trim();
+                }
+            }
+            // Ollama-compatible: message.content (streaming response, single object)
+            JsonNode messageNode = response.path("message");
+            if (!messageNode.isMissingNode() && !messageNode.isNull()) {
+                String content = messageNode.path("content").asText("");
+                if (!content.isEmpty()) {
+                    return content.trim();
+                }
+            }
+            throw new IOException("Unexpected response format: missing 'choices' or 'message'. Response: " + response.toString());
         }
     }
 
@@ -79,7 +100,7 @@ public class AIQueryAssistant {
             String schema, String dbmsName, AIProviderConfig config, boolean isAnthropic) {
         ObjectNode body = MAPPER.createObjectNode();
         body.put("model", config.model);
-        body.put("max_tokens", 1024);
+        body.put("max_tokens", config.maxTokens);
         // Schema lives in the system prompt so it is sent once, not repeated per user message.
         String systemPrompt = buildSystemPrompt(schema, dbmsName);
 
@@ -165,15 +186,66 @@ public class AIQueryAssistant {
                 byte[] responseBytes;
                 if (status >= 400) {
                     InputStream es = conn.getErrorStream();
-                    responseBytes = (es != null) ? readAllBytes(es) : new byte[0];
+                    if (es != null) {
+                        responseBytes = readAllBytes(es);
+                    } else {
+                        try (InputStream is = conn.getInputStream()) {
+                            responseBytes = readAllBytes(is);
+                        } catch (IOException ignored) {
+                            responseBytes = new byte[0];
+                        }
+                    }
                 } else {
                     try (InputStream is = conn.getInputStream()) {
                         responseBytes = readAllBytes(is);
                     }
                 }
-                _log.debug("RESPONSE {}\n  Body: {}", status, new String(responseBytes, StandardCharsets.UTF_8).trim());
+                String responseBody = new String(responseBytes, StandardCharsets.UTF_8).trim();
+                _log.debug("RESPONSE {}\n  Body: {}", status, responseBody);
                 if (status >= 400) {
                     throw new IOException("API error " + status + ": " + parseErrorMessage(responseBytes, status));
+                }
+                // Check if response is streamed (multiple JSON objects, one per line)
+                String[] lines = responseBody.split("\\r?\\n");
+                if (lines.length > 1 && responseBody.contains("\"done\":")) {
+                    // Streaming response - concatenate all message contents until done
+                    StringBuilder fullContent = new StringBuilder();
+                    for (String line : lines) {
+                        line = line.trim();
+                        if (line.isEmpty()) continue;
+                        try {
+                            JsonNode lineNode = MAPPER.readTree(line);
+                            JsonNode doneNode = lineNode.path("done");
+                            if (doneNode.asBoolean()) {
+                                // Last chunk, stop here
+                                break;
+                            }
+                            JsonNode messageNode = lineNode.path("message");
+                            String content = messageNode.path("content").asText("");
+                            if (!content.isEmpty()) {
+                                fullContent.append(content);
+                            }
+                        } catch (IOException e) {
+                            // skip invalid line
+                        }
+                    }
+                    // Build synthetic response matching expected format
+                    ObjectNode synthResponse = MAPPER.createObjectNode();
+                    if (isAnthropic) {
+                        // Anthropic: content is an array of text blocks
+                        ArrayNode contentArray = synthResponse.putArray("content");
+                        ObjectNode textBlock = contentArray.addObject();
+                        textBlock.put("type", "text");
+                        textBlock.put("text", fullContent.toString());
+                    } else {
+                        // OpenAI-compatible: choices[0].message.content
+                        ArrayNode choices = synthResponse.putArray("choices");
+                        ObjectNode choice = choices.addObject();
+                        ObjectNode message = choice.putObject("message");
+                        message.put("role", "assistant");
+                        message.put("content", fullContent.toString());
+                    }
+                    return synthResponse;
                 }
                 return MAPPER.readTree(responseBytes);
             } finally {
@@ -188,6 +260,7 @@ public class AIQueryAssistant {
         List<String> cmd = new ArrayList<>();
         cmd.add("curl");
         cmd.add("-s");
+        cmd.add("-f");
         cmd.add("-X"); cmd.add("POST");
         cmd.add("-H"); cmd.add("Content-Type: application/json");
         if (isAnthropic) {
@@ -212,6 +285,16 @@ public class AIQueryAssistant {
             if (!finished) {
                 process.destroy();
                 throw new IOException("curl timed out");
+            }
+            int exitCode = process.exitValue();
+            if (exitCode != 0) {
+                byte[] errBytes = readAllBytes(process.getErrorStream());
+                String errStr = new String(errBytes, StandardCharsets.UTF_8).trim();
+                if (errStr.length() > 0) {
+                    _log.debug("RESPONSE (curl) exitCode={} Body: {}", exitCode, errStr);
+                    throw new IOException("API error " + exitCode + ": " + errStr);
+                }
+                throw new IOException("curl failed with exit code " + exitCode);
             }
             if (responseBytes.length == 0) {
                 byte[] errBytes = readAllBytes(process.getErrorStream());
@@ -247,19 +330,25 @@ public class AIQueryAssistant {
         if (responseBytes.length == 0) {
             return "HTTP " + status;
         }
+        String responseJson = new String(responseBytes, StandardCharsets.UTF_8);
         try {
             JsonNode node = MAPPER.readTree(responseBytes);
             String msg = node.path("error").path("message").asText(null);
             if (msg == null) {
+                msg = node.path("error").asText(null);
+            }
+            if (msg == null) {
                 msg = node.path("message").asText(null);
             }
             if (msg != null && !msg.isEmpty()) {
-                return msg;
+                return msg + " (" + status + ")";
             }
+            // Include full response body if no specific message found
+            return responseJson.trim() + " (" + status + ")";
         } catch (IOException ignored) {
             // not JSON — fall through
         }
-        String raw = new String(responseBytes, StandardCharsets.UTF_8).trim();
+        String raw = responseJson.trim();
         if (raw.startsWith("<") || raw.toLowerCase(Locale.ROOT).contains("<html")) {
             File htmlFile = new File(System.getProperty("java.io.tmpdir"), "jailer-ai-error.html");
             try (FileOutputStream fos = new FileOutputStream(htmlFile)) {
@@ -268,7 +357,8 @@ public class AIQueryAssistant {
             }
             return "HTTP " + status + " (HTML response saved to: " + htmlFile.getAbsolutePath() + ")";
         }
-        return raw.length() > 300 ? raw.substring(0, 300) + "..." : raw;
+        // Include full response body in error message
+        return "HTTP " + status + " - Response: " + raw;
     }
 
     private static String buildSystemPrompt(String schema, String dbmsName) {
@@ -374,4 +464,4 @@ public class AIQueryAssistant {
 }
 
 // TODO 
-// TODO put comments into context
+// TODO session management: if the provider supports it, we could keep a session ID and reuse it for subsequent calls to maintain context without resending the full schema each time.

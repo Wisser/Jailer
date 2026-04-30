@@ -525,7 +525,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             new AIQueryDialog(SwingUtilities.getWindowAncestor(SQLConsole.this), dm, dbmsName,
                     sql -> editorPane.setText(sql)).setVisible(true);
         });
-//        jToolBar1.add(aiButton, 4); TODO
+        jToolBar1.add(aiButton, 4);
         jToolBar1.add(new JToolBar.Separator(), 5);
 
         limitComboBox.setModel(new DefaultComboBoxModel(DataBrowser.ROW_LIMITS));

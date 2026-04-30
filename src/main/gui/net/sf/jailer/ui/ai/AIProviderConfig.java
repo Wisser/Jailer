@@ -54,11 +54,13 @@ public class AIProviderConfig {
     public final String apiUrl;
     public final String apiKey;
     public final String model;
+    public final int maxTokens;
 
-    public AIProviderConfig(ProviderType providerType, String apiUrl, String apiKey, String model) {
+    public AIProviderConfig(ProviderType providerType, String apiUrl, String apiKey, String model, int maxTokens) {
         this.providerType = providerType;
         this.apiUrl = (apiUrl != null && !apiUrl.isEmpty()) ? apiUrl : providerType.defaultApiUrl;
         this.apiKey = apiKey != null ? apiKey : "";
         this.model = (model != null && !model.isEmpty()) ? model : providerType.defaultModel;
+        this.maxTokens = maxTokens > 0 ? maxTokens : 1024;
     }
 }

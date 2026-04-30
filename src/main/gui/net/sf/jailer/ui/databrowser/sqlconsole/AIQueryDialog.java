@@ -49,6 +49,7 @@ import org.fife.ui.rtextarea.RTextScrollPane;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.ai.AIProviderConfig;
 import net.sf.jailer.ui.ai.AIProviderConfig.ProviderType;
 import net.sf.jailer.ui.ai.AIQueryAssistant;
@@ -67,6 +68,7 @@ public class AIQueryDialog extends JDialog {
     private static final String SETTING_PROVIDER        = "aiProviderType";
     private static final String SETTING_API_URL         = "aiApiUrl";
     private static final String SETTING_MODEL           = "aiModel";
+    private static final String SETTING_MAX_TOKENS      = "aiMaxTokens";
     private static final String SETTING_API_KEY_PREFIX  = "aiApiKey_";
 
     private final DataModel dataModel;
@@ -86,6 +88,7 @@ public class AIQueryDialog extends JDialog {
     private JComboBox<ProviderType> providerCombo;
     private JTextField urlField;
     private JTextField modelField;
+    private JTextField maxTokensField;
     private JPasswordField apiKeyField;
     private JCheckBox saveBox;
 
@@ -121,12 +124,31 @@ public class AIQueryDialog extends JDialog {
         questionPanel.add(new JScrollPane(questionArea), BorderLayout.CENTER);
 
         generateButton = new JButton("Generate SQL");
+        generateButton.setEnabled(false);
         statusLabel = new JLabel(" ");
         generateButton.addActionListener(e -> onGenerate());
         JPanel genRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
         genRow.add(generateButton);
         genRow.add(statusLabel);
         questionPanel.add(genRow, BorderLayout.SOUTH);
+
+        questionArea.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                updateGenerateButton();
+            }
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                updateGenerateButton();
+            }
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                updateGenerateButton();
+            }
+            private void updateGenerateButton() {
+                generateButton.setEnabled(!questionArea.getText().trim().isEmpty());
+            }
+        });
 
         // SQL result area
         JPanel resultPanel = new JPanel(new BorderLayout(4, 4));
@@ -162,7 +184,9 @@ public class AIQueryDialog extends JDialog {
         insertButton.addActionListener(e -> {
             String sql = sqlArea.getText().trim();
             if (!sql.isEmpty()) {
-                sqlConsumer.accept(sql);
+                String comment = buildCommentForHistory();
+                String combined = comment + "\n" + sql;
+                sqlConsumer.accept(combined);
                 dispose();
             }
         });
@@ -201,6 +225,10 @@ public class AIQueryDialog extends JDialog {
 
         urlField   = new JTextField(savedUrl   != null ? savedUrl   : savedProvider.defaultApiUrl, 36);
         modelField = new JTextField(savedModel != null ? savedModel : savedProvider.defaultModel,   18);
+        maxTokensField = new JTextField((String) UISettings.restore(SETTING_MAX_TOKENS), 6);
+        if (maxTokensField.getText().isEmpty()) {
+            maxTokensField.setText("1024");
+        }
         apiKeyField = new JPasswordField(36);
         if (savedKey != null) {
             apiKeyField.setText(savedKey);
@@ -218,6 +246,9 @@ public class AIQueryDialog extends JDialog {
         fc.gridx = 1; fc.gridy = 1; fc.gridwidth = 4; fc.weightx = 1.0; panel.add(apiKeyField, fc);
         fc.gridwidth = 1; fc.weightx = 0;
         fc.gridx = 5; fc.gridy = 1; panel.add(saveBox, fc);
+
+        lc.gridx = 0; lc.gridy = 2; panel.add(new JLabel("Max Tokens:"), lc);
+        fc.gridx = 1; fc.gridy = 2; panel.add(maxTokensField, fc);
 
         ProviderType[] prev = { savedProvider };
         providerCombo.addItemListener(e -> {
@@ -252,17 +283,29 @@ public class AIQueryDialog extends JDialog {
             return;
         }
 
+        int maxTokens = 1024;
+        try {
+            maxTokens = Integer.parseInt(maxTokensField.getText().trim());
+            if (maxTokens <= 0) {
+                maxTokens = 1024;
+            }
+        } catch (NumberFormatException e) {
+            // ignore, use default
+        }
+
         AIProviderConfig config = new AIProviderConfig(
             (ProviderType) providerCombo.getSelectedItem(),
             urlField.getText().trim(),
             apiKey,
-            modelField.getText().trim()
+            modelField.getText().trim(),
+            maxTokens
         );
 
         if (saveBox.isSelected()) {
             UISettings.store(SETTING_PROVIDER, config.providerType.name());
             UISettings.store(SETTING_API_URL,  config.apiUrl);
             UISettings.store(SETTING_MODEL,    config.model);
+            UISettings.store(SETTING_MAX_TOKENS, String.valueOf(config.maxTokens));
             UISettings.store(SETTING_API_KEY_PREFIX + config.providerType.name(), config.apiKey);
         }
 
@@ -295,11 +338,9 @@ public class AIQueryDialog extends JDialog {
                         updateHistoryDisplay();
                     }
                 } catch (ExecutionException ex) {
-                    String msg = ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage();
-                    sqlArea.setText("Error: " + msg);
+                    UIUtil.showException(AIQueryDialog.this, "SQL Generation Error", ex);
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
-                    sqlArea.setText("Request interrupted.");
                 }
             }
         }.execute();
@@ -353,5 +394,34 @@ public class AIQueryDialog extends JDialog {
         }
         Object legacy = UISettings.restore("aiApiKey");
         return legacy instanceof String ? (String) legacy : null;
+    }
+
+    private String buildCommentForHistory() {
+        // Collect only user messages
+        List<String> userMessages = new ArrayList<>();
+        for (ConversationMessage msg : conversationHistory) {
+            if ("user".equals(msg.role)) {
+                // Replace newlines with spaces to keep each message on one line in the comment
+                String cleanedContent = msg.content.replaceAll("[\\r\\n]+", " ");
+                userMessages.add(cleanedContent);
+            }
+        }
+        if (userMessages.isEmpty()) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("/* Ask AI:\n");
+        if (userMessages.size() == 1) {
+            sb.append(userMessages.get(0));
+        } else {
+            for (String msg : userMessages) {
+                sb.append("- ").append(msg).append("\n");
+            }
+            // Remove trailing newline
+            sb.setLength(sb.length() - 1);
+        }
+        sb.append("\n */");
+        return sb.toString();
     }
 }

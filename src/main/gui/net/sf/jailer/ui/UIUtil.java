@@ -863,7 +863,7 @@ public class UIUtil {
     	if (!(t instanceof CancellationException)) {
             t.printStackTrace();
     	}
-        if (!(t instanceof ClassNotFoundException)) {
+        if (!(t instanceof ClassNotFoundException) && !(t instanceof IOException)) {
             while (t.getCause() != null && t != t.getCause() && !(t instanceof SqlException)) {
                 t = t.getCause();
             }
