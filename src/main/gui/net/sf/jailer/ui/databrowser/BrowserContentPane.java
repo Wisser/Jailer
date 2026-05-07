@@ -7853,6 +7853,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			if (maxY < d.getY()) {
 				int deltaH = Math.min(d.getY() - maxY, (int) (0.30 * d.getHeight()));
 				maxY += deltaH;
+				if (maxY < p.getY()) {
+					deltaH = p.getY() - maxY;
+					maxY = p.getY();
+				}
 				d.setSize(d.getWidth(), d.getHeight() - deltaH);
 				d.setLocation(d.getX(), maxY);
 			}

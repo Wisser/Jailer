@@ -60,9 +60,15 @@ public class AIQueryAssistant {
 
     public static String generateSQL(String question, List<ConversationMessage> history,
             DataModel dataModel, String dbmsName, AIProviderConfig config) throws IOException {
+        return generateSQL(question, history, dataModel, dbmsName, config, null);
+    }
+
+    public static String generateSQL(String question, List<ConversationMessage> history,
+            DataModel dataModel, String dbmsName, AIProviderConfig config,
+            String systemPromptTemplate) throws IOException {
         String schema = buildSchemaDescription(dataModel);
         boolean isAnthropic = config.providerType == ProviderType.ANTHROPIC;
-        ObjectNode body = buildRequestBody(question, history, schema, dbmsName, config, isAnthropic);
+        ObjectNode body = buildRequestBody(question, history, schema, dbmsName, config, isAnthropic, systemPromptTemplate);
         JsonNode response = post(config.apiUrl, config.apiKey, body, isAnthropic);
         if (isAnthropic) {
             JsonNode contentNode = response.path("content");
@@ -93,16 +99,17 @@ public class AIQueryAssistant {
     }
 
     public static String generateSQL(String question, DataModel dataModel, String dbmsName, AIProviderConfig config) throws IOException {
-        return generateSQL(question, Collections.emptyList(), dataModel, dbmsName, config);
+        return generateSQL(question, Collections.emptyList(), dataModel, dbmsName, config, null);
     }
 
     private static ObjectNode buildRequestBody(String question, List<ConversationMessage> history,
-            String schema, String dbmsName, AIProviderConfig config, boolean isAnthropic) {
+            String schema, String dbmsName, AIProviderConfig config, boolean isAnthropic,
+            String systemPromptTemplate) {
         ObjectNode body = MAPPER.createObjectNode();
         body.put("model", config.model);
         body.put("max_tokens", config.maxTokens);
         // Schema lives in the system prompt so it is sent once, not repeated per user message.
-        String systemPrompt = buildSystemPrompt(schema, dbmsName);
+        String systemPrompt = buildSystemPrompt(schema, dbmsName, systemPromptTemplate);
 
         ArrayNode messages = body.putArray("messages");
         if (isAnthropic) {
@@ -361,11 +368,11 @@ public class AIQueryAssistant {
         return "HTTP " + status + " - Response: " + raw;
     }
 
-    private static String buildSystemPrompt(String schema, String dbmsName) {
-        return "You are a SQL expert for " + dbmsName + ".\n"
-            + "Database schema:\n" + schema + "\n"
-            + "Return ONLY raw SQL - no explanation, no code fences, no trailing semicolon. "
-            + "Use only tables and columns from the schema above.";
+    private static String buildSystemPrompt(String schema, String dbmsName, String template) {
+        String t = (template != null && !template.isEmpty())
+            ? template
+            : SystemPromptPanel.DEFAULT_TEMPLATE;
+        return t.replace("{schema}", schema).replace("{dbmsName}", dbmsName);
     }
 
     static String buildSchemaDescription(DataModel dataModel) {

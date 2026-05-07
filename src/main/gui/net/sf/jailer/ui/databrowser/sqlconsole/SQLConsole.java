@@ -261,8 +261,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
      * Creates new form SQLConsole
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public SQLConsole(Session session, MetaDataSource metaDataSource, Reference<DataModel> datamodel, ExecutionContext executionContext) throws SQLException {
-        this.session = session;
+    public SQLConsole(Session theSession, MetaDataSource metaDataSource, Reference<DataModel> datamodel, ExecutionContext executionContext) throws SQLException {
+        this.session = theSession;
         this.metaDataSource = metaDataSource;
         this.datamodel = datamodel;
         this.executionContext = executionContext;
@@ -512,13 +512,19 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         scaledExplainIcon = UIUtil.scaleIcon(this, explainIcon);
         explainButton.setIcon(scaledExplainIcon);
 
-        JButton aiButton = new JButton("Ask AI");
+        ImageIcon aiIcon = UIUtil.scaleIcon(this, UIUtil.readImage("/ask_ai.png"));
+        // TODO
+        // TODO use NetBeans to add the button to the toolbar (and remove the hard-coded index)
+        JButton aiButton = new JButton("AI Assistant");
+        if (aiIcon != null) {
+            aiButton.setIcon(UIUtil.scaleIcon(aiButton, aiIcon));
+        }
         aiButton.setFocusable(false);
-        aiButton.setToolTipText("Generate SQL from plain language using AI");
+        aiButton.setToolTipText("AI Assistant \"Generate SQL from plain language\"");
         aiButton.addActionListener(e -> {
             DataModel dm = datamodel.get();
             if (dm == null) {
-                JOptionPane.showMessageDialog(SQLConsole.this, "No data model available.", "Ask AI", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(SQLConsole.this, "No data model available.", "AI Assistant", JOptionPane.WARNING_MESSAGE);
                 return;
             }
             String dbmsName = session.dbms != null ? session.dbms.getDisplayName() : "SQL";

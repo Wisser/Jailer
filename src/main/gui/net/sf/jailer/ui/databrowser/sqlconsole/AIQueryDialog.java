@@ -19,29 +19,22 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.Window;
-import java.awt.event.ItemEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 
 import org.fife.ui.rtextarea.RTextScrollPane;
@@ -51,10 +44,10 @@ import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.ai.AIProviderConfig;
-import net.sf.jailer.ui.ai.AIProviderConfig.ProviderType;
+import net.sf.jailer.ui.ai.AIProviderPanel;
 import net.sf.jailer.ui.ai.AIQueryAssistant;
 import net.sf.jailer.ui.ai.ConversationMessage;
-import net.sf.jailer.ui.util.UISettings;
+import net.sf.jailer.ui.ai.SystemPromptPanel;
 
 /**
  * Modal dialog that lets the user have a multi-turn conversation with an AI
@@ -64,12 +57,6 @@ import net.sf.jailer.ui.util.UISettings;
 public class AIQueryDialog extends JDialog {
 
     private static final long serialVersionUID = 1L;
-
-    private static final String SETTING_PROVIDER        = "aiProviderType";
-    private static final String SETTING_API_URL         = "aiApiUrl";
-    private static final String SETTING_MODEL           = "aiModel";
-    private static final String SETTING_MAX_TOKENS      = "aiMaxTokens";
-    private static final String SETTING_API_KEY_PREFIX  = "aiApiKey_";
 
     private final DataModel dataModel;
     private final String dbmsName;
@@ -85,15 +72,11 @@ public class AIQueryDialog extends JDialog {
     private JButton insertButton;
     private JButton newConversationButton;
     private JLabel statusLabel;
-    private JComboBox<ProviderType> providerCombo;
-    private JTextField urlField;
-    private JTextField modelField;
-    private JTextField maxTokensField;
-    private JPasswordField apiKeyField;
-    private JCheckBox saveBox;
+    private AIProviderPanel providerPanel;
+    private SystemPromptPanel systemPromptPanel;
 
     public AIQueryDialog(Window owner, DataModel dataModel, String dbmsName, Consumer<String> sqlConsumer) {
-        super(owner, "Ask AI - Natural Language to SQL", ModalityType.APPLICATION_MODAL);
+        super(owner, "AI Assistant - Natural Language to SQL", ModalityType.APPLICATION_MODAL);
         this.dataModel = dataModel;
         this.dbmsName = dbmsName;
         this.sqlConsumer = sqlConsumer;
@@ -118,12 +101,16 @@ public class AIQueryDialog extends JDialog {
         // Question area
         JPanel questionPanel = new JPanel(new BorderLayout(4, 4));
         questionPanel.add(new JLabel("Describe the query in plain language:"), BorderLayout.NORTH);
-        questionArea = new JTextArea(3, 60);
+        questionArea = new JTextArea(6, 60);
         questionArea.setLineWrap(true);
         questionArea.setWrapStyleWord(true);
         questionPanel.add(new JScrollPane(questionArea), BorderLayout.CENTER);
 
         generateButton = new JButton("Generate SQL");
+        ImageIcon aiIcon = UIUtil.scaleIcon(generateButton, UIUtil.readImage("/ask_ai.png"));
+        if (aiIcon != null) {
+            generateButton.setIcon(UIUtil.scaleIcon(generateButton, aiIcon));
+        }
         generateButton.setEnabled(false);
         statusLabel = new JLabel(" ");
         generateButton.addActionListener(e -> onGenerate());
@@ -173,6 +160,8 @@ public class AIQueryDialog extends JDialog {
         JPanel settingsPanel = buildSettingsPanel();
         settingsPanel.setBorder(BorderFactory.createTitledBorder("AI Provider"));
 
+        systemPromptPanel = new SystemPromptPanel();
+
         // Buttons
         newConversationButton = new JButton("New Conversation");
         newConversationButton.setToolTipText("Clear history and start a new conversation");
@@ -193,10 +182,20 @@ public class AIQueryDialog extends JDialog {
         JButton closeButton = new JButton("Close");
         closeButton.addActionListener(e -> dispose());
 
-        JPanel buttonRow = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 4));
-        buttonRow.add(newConversationButton);
-        buttonRow.add(insertButton);
-        buttonRow.add(closeButton);
+        JButton systemPromptButton = new JButton("System Prompt...");
+        systemPromptButton.addActionListener(e -> openSystemPromptDialog());
+
+        JPanel leftButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
+        leftButtons.add(systemPromptButton);
+
+        JPanel rightButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 4));
+        rightButtons.add(newConversationButton);
+        rightButtons.add(insertButton);
+        rightButtons.add(closeButton);
+
+        JPanel buttonRow = new JPanel(new BorderLayout());
+        buttonRow.add(leftButtons, BorderLayout.WEST);
+        buttonRow.add(rightButtons, BorderLayout.EAST);
 
         JPanel southPanel = new JPanel(new BorderLayout(4, 4));
         southPanel.add(settingsPanel, BorderLayout.CENTER);
@@ -207,67 +206,27 @@ public class AIQueryDialog extends JDialog {
     }
 
     private JPanel buildSettingsPanel() {
-        JPanel panel = new JPanel(new GridBagLayout());
-        GridBagConstraints lc = new GridBagConstraints();
-        lc.anchor = GridBagConstraints.WEST;
-        lc.insets = new Insets(2, 4, 2, 4);
-        GridBagConstraints fc = new GridBagConstraints();
-        fc.fill = GridBagConstraints.HORIZONTAL;
-        fc.insets = new Insets(2, 0, 2, 8);
+        providerPanel = new AIProviderPanel();
+        return providerPanel;
+    }
 
-        ProviderType savedProvider = loadProviderType();
-        String savedUrl   = (String) UISettings.restore(SETTING_API_URL);
-        String savedModel = (String) UISettings.restore(SETTING_MODEL);
-        String savedKey   = loadApiKey(savedProvider);
+    private void openSystemPromptDialog() {
+        JDialog d = new JDialog(this, "System Prompt", true);
+        d.getContentPane().add(systemPromptPanel, BorderLayout.CENTER);
 
-        providerCombo = new JComboBox<>(ProviderType.values());
-        providerCombo.setSelectedItem(savedProvider);
-
-        urlField   = new JTextField(savedUrl   != null ? savedUrl   : savedProvider.defaultApiUrl, 36);
-        modelField = new JTextField(savedModel != null ? savedModel : savedProvider.defaultModel,   18);
-        maxTokensField = new JTextField((String) UISettings.restore(SETTING_MAX_TOKENS), 6);
-        if (maxTokensField.getText().isEmpty()) {
-            maxTokensField.setText("1024");
-        }
-        apiKeyField = new JPasswordField(36);
-        if (savedKey != null) {
-            apiKeyField.setText(savedKey);
-        }
-        saveBox = new JCheckBox("Save", savedKey != null && !savedKey.isEmpty());
-
-        lc.gridx = 0; lc.gridy = 0; panel.add(new JLabel("Provider:"), lc);
-        fc.gridx = 1; fc.gridy = 0; panel.add(providerCombo, fc);
-        lc.gridx = 2; lc.gridy = 0; panel.add(new JLabel("URL:"), lc);
-        fc.gridx = 3; fc.gridy = 0; fc.weightx = 1.0; panel.add(urlField, fc); fc.weightx = 0;
-        lc.gridx = 4; lc.gridy = 0; panel.add(new JLabel("Model:"), lc);
-        fc.gridx = 5; fc.gridy = 0; panel.add(modelField, fc);
-
-        lc.gridx = 0; lc.gridy = 1; panel.add(new JLabel("API Key:"), lc);
-        fc.gridx = 1; fc.gridy = 1; fc.gridwidth = 4; fc.weightx = 1.0; panel.add(apiKeyField, fc);
-        fc.gridwidth = 1; fc.weightx = 0;
-        fc.gridx = 5; fc.gridy = 1; panel.add(saveBox, fc);
-
-        lc.gridx = 0; lc.gridy = 2; panel.add(new JLabel("Max Tokens:"), lc);
-        fc.gridx = 1; fc.gridy = 2; panel.add(maxTokensField, fc);
-
-        ProviderType[] prev = { savedProvider };
-        providerCombo.addItemListener(e -> {
-            if (e.getStateChange() != ItemEvent.SELECTED) {
-                return;
-            }
-            ProviderType next = (ProviderType) providerCombo.getSelectedItem();
-            if (urlField.getText().trim().equals(prev[0].defaultApiUrl)) {
-                urlField.setText(next.defaultApiUrl);
-            }
-            if (modelField.getText().trim().equals(prev[0].defaultModel)) {
-                modelField.setText(next.defaultModel);
-            }
-            String key = loadApiKey(next);
-            apiKeyField.setText(key != null ? key : "");
-            prev[0] = next;
+        JButton okButton = new JButton("OK");
+        okButton.addActionListener(e -> {
+            systemPromptPanel.saveSettings();
+            d.dispose();
         });
+        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 4));
+        bottom.add(okButton);
+        d.getContentPane().add(bottom, BorderLayout.SOUTH);
 
-        return panel;
+        d.pack();
+        d.setSize(d.getWidth() + 120, d.getHeight() + 100);
+        d.setLocationRelativeTo(this);
+        d.setVisible(true);
     }
 
     private void onGenerate() {
@@ -276,38 +235,15 @@ public class AIQueryDialog extends JDialog {
             JOptionPane.showMessageDialog(this, "Please describe the query.", "Input Required", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        String apiKey = new String(apiKeyField.getPassword()).trim();
+        String apiKey = providerPanel.getApiKey();
         if (apiKey.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Please enter an API key.", "API Key Required", JOptionPane.WARNING_MESSAGE);
-            apiKeyField.requestFocusInWindow();
+            providerPanel.getApiKeyComponent().requestFocusInWindow();
             return;
         }
 
-        int maxTokens = 1024;
-        try {
-            maxTokens = Integer.parseInt(maxTokensField.getText().trim());
-            if (maxTokens <= 0) {
-                maxTokens = 1024;
-            }
-        } catch (NumberFormatException e) {
-            // ignore, use default
-        }
-
-        AIProviderConfig config = new AIProviderConfig(
-            (ProviderType) providerCombo.getSelectedItem(),
-            urlField.getText().trim(),
-            apiKey,
-            modelField.getText().trim(),
-            maxTokens
-        );
-
-        if (saveBox.isSelected()) {
-            UISettings.store(SETTING_PROVIDER, config.providerType.name());
-            UISettings.store(SETTING_API_URL,  config.apiUrl);
-            UISettings.store(SETTING_MODEL,    config.model);
-            UISettings.store(SETTING_MAX_TOKENS, String.valueOf(config.maxTokens));
-            UISettings.store(SETTING_API_KEY_PREFIX + config.providerType.name(), config.apiKey);
-        }
+        AIProviderConfig config = providerPanel.getConfig();
+        providerPanel.saveSettings();
 
         generateButton.setEnabled(false);
         insertButton.setEnabled(false);
@@ -319,7 +255,8 @@ public class AIQueryDialog extends JDialog {
         new SwingWorker<String, Void>() {
             @Override
             protected String doInBackground() throws Exception {
-                return AIQueryAssistant.generateSQL(question, historySnapshot, dataModel, dbmsName, config);
+                return AIQueryAssistant.generateSQL(question, historySnapshot, dataModel, dbmsName, config,
+                        systemPromptPanel.getTemplate());
             }
 
             @Override
@@ -376,26 +313,6 @@ public class AIQueryDialog extends JDialog {
         pack();
     }
 
-    private ProviderType loadProviderType() {
-        Object stored = UISettings.restore(SETTING_PROVIDER);
-        if (stored instanceof String) {
-            try {
-                return ProviderType.valueOf((String) stored);
-            } catch (IllegalArgumentException ignored) {
-            }
-        }
-        return ProviderType.ANTHROPIC;
-    }
-
-    private String loadApiKey(ProviderType providerType) {
-        Object perProvider = UISettings.restore(SETTING_API_KEY_PREFIX + providerType.name());
-        if (perProvider instanceof String && !((String) perProvider).isEmpty()) {
-            return (String) perProvider;
-        }
-        Object legacy = UISettings.restore("aiApiKey");
-        return legacy instanceof String ? (String) legacy : null;
-    }
-
     private String buildCommentForHistory() {
         // Collect only user messages
         List<String> userMessages = new ArrayList<>();
@@ -411,12 +328,12 @@ public class AIQueryDialog extends JDialog {
         }
 
         StringBuilder sb = new StringBuilder();
-        sb.append("/* Ask AI:\n");
+        sb.append("/* AI:\n");
         if (userMessages.size() == 1) {
-            sb.append(userMessages.get(0));
+            sb.append("   " + userMessages.get(0));
         } else {
             for (String msg : userMessages) {
-                sb.append("- ").append(msg).append("\n");
+                sb.append("   - ").append(msg).append("\n");
             }
             // Remove trailing newline
             sb.setLength(sb.length() - 1);
