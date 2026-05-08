@@ -27,8 +27,14 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BooleanSupplier;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -55,7 +61,6 @@ import net.sf.jailer.util.SqlUtil;
 public class AIQueryAssistant {
 
     private static final Logger _log = LoggerFactory.getLogger("ai_api");
-    private static final int MAX_TABLES = 120;
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     public static String generateSQL(String question, List<ConversationMessage> history,
@@ -66,36 +71,154 @@ public class AIQueryAssistant {
     public static String generateSQL(String question, List<ConversationMessage> history,
             DataModel dataModel, String dbmsName, AIProviderConfig config,
             String systemPromptTemplate) throws IOException {
-        String schema = buildSchemaDescription(dataModel);
+        return generateSQL(question, history, dataModel, dbmsName, config, systemPromptTemplate, false, false);
+    }
+
+    public static String generateSQL(String question, List<ConversationMessage> history,
+            DataModel dataModel, String dbmsName, AIProviderConfig config,
+            String systemPromptTemplate, boolean smartSelection) throws IOException {
+        return generateSQL(question, history, dataModel, dbmsName, config, systemPromptTemplate, smartSelection, false);
+    }
+
+    public static String generateSQL(String question, List<ConversationMessage> history,
+            DataModel dataModel, String dbmsName, AIProviderConfig config,
+            String systemPromptTemplate, boolean smartSelection, boolean omitColumnTypes) throws IOException {
+        return generateSQL(question, history, dataModel, dbmsName, config, systemPromptTemplate, smartSelection, omitColumnTypes, null);
+    }
+
+    public static String generateSQL(String question, List<ConversationMessage> history,
+            DataModel dataModel, String dbmsName, AIProviderConfig config,
+            String systemPromptTemplate, boolean smartSelection, boolean omitColumnTypes,
+            AtomicReference<Runnable> abortRef) throws IOException {
+        return generateSQL(question, history, dataModel, dbmsName, config, systemPromptTemplate,
+                smartSelection, omitColumnTypes, abortRef, null);
+    }
+
+    public static String generateSQL(String question, List<ConversationMessage> history,
+            DataModel dataModel, String dbmsName, AIProviderConfig config,
+            String systemPromptTemplate, boolean smartSelection, boolean omitColumnTypes,
+            AtomicReference<Runnable> abortRef, BooleanSupplier confirmFullSchema) throws IOException {
+        Set<String> relevantTables = null;
+        if (smartSelection) {
+            try {
+                relevantTables = selectRelevantTables(question, history, dataModel, dbmsName, config, abortRef);
+            } catch (IOException e) {
+                if (Thread.currentThread().isInterrupted()) {
+                    return "";
+                }
+                throw e;
+            }
+            if (relevantTables == null && !Thread.currentThread().isInterrupted()) {
+                if (confirmFullSchema != null && !confirmFullSchema.getAsBoolean()) {
+                    return "";
+                }
+            }
+        }
+        String schema = buildSchemaDescription(dataModel, relevantTables, omitColumnTypes);
         boolean isAnthropic = config.providerType == ProviderType.ANTHROPIC;
         ObjectNode body = buildRequestBody(question, history, schema, dbmsName, config, isAnthropic, systemPromptTemplate);
-        JsonNode response = post(config.apiUrl, config.apiKey, body, isAnthropic);
+        JsonNode response = post(config.apiUrl, config.apiKey, body, isAnthropic, abortRef);
+        return extractText(response, isAnthropic);
+    }
+
+    private static String extractText(JsonNode response, boolean isAnthropic) throws IOException {
         if (isAnthropic) {
             JsonNode contentNode = response.path("content");
             if (contentNode.isArray() && contentNode.size() > 0) {
                 return contentNode.get(0).path("text").asText("").trim();
             }
             throw new IOException("Unexpected response format: missing 'content' array. Response: " + response.toString());
-        } else {
-            // OpenAI-compatible: choices[0].message.content
-            JsonNode choicesNode = response.path("choices");
-            if (choicesNode.isArray() && choicesNode.size() > 0) {
-                JsonNode messageNode = choicesNode.get(0).path("message");
-                String content = messageNode.path("content").asText("");
-                if (!content.isEmpty()) {
-                    return content.trim();
-                }
-            }
-            // Ollama-compatible: message.content (streaming response, single object)
-            JsonNode messageNode = response.path("message");
-            if (!messageNode.isMissingNode() && !messageNode.isNull()) {
-                String content = messageNode.path("content").asText("");
-                if (!content.isEmpty()) {
-                    return content.trim();
-                }
-            }
-            throw new IOException("Unexpected response format: missing 'choices' or 'message'. Response: " + response.toString());
         }
+        // OpenAI-compatible: choices[0].message.content
+        JsonNode choicesNode = response.path("choices");
+        if (choicesNode.isArray() && choicesNode.size() > 0) {
+            String content = choicesNode.get(0).path("message").path("content").asText("");
+            if (!content.isEmpty()) {
+                return content.trim();
+            }
+        }
+        // Ollama-compatible: message.content
+        JsonNode messageNode = response.path("message");
+        if (!messageNode.isMissingNode() && !messageNode.isNull()) {
+            String content = messageNode.path("content").asText("");
+            if (!content.isEmpty()) {
+                return content.trim();
+            }
+        }
+        throw new IOException("Unexpected response format: missing 'choices' or 'message'. Response: " + response.toString());
+    }
+
+    private static Set<String> selectRelevantTables(String question, List<ConversationMessage> history,
+            DataModel dataModel, String dbmsName, AIProviderConfig config,
+            AtomicReference<Runnable> abortRef) throws IOException {
+        List<Table> allTables = new ArrayList<>(dataModel.getSortedTables());
+        StringBuilder tableList = new StringBuilder();
+        for (Table t : allTables) {
+            tableList.append(t.getName()).append("\n");
+        }
+
+        String systemPrompt = "You are a SQL expert for " + dbmsName + ". "
+            + "Given a list of database table names and a natural-language question, "
+            + "respond with ONLY the table names needed to answer the question. "
+            + "One table name per line. No explanation, no other text.";
+
+        boolean isAnthropic = config.providerType == ProviderType.ANTHROPIC;
+        ObjectNode body = MAPPER.createObjectNode();
+        body.put("model", config.model);
+        body.put("max_tokens", 512);
+
+        ArrayNode messages = body.putArray("messages");
+        if (isAnthropic) {
+            body.put("system", systemPrompt);
+        } else {
+            ObjectNode sysMsg = messages.addObject();
+            sysMsg.put("role", "system");
+            sysMsg.put("content", systemPrompt);
+        }
+        for (ConversationMessage msg : history) {
+            ObjectNode m = messages.addObject();
+            m.put("role", msg.role);
+            m.put("content", msg.content);
+        }
+        ObjectNode userMsg = messages.addObject();
+        userMsg.put("role", "user");
+        userMsg.put("content", "Tables:\n" + tableList + "\nQuestion: " + question);
+
+        JsonNode response = post(config.apiUrl, config.apiKey, body, isAnthropic, abortRef);
+        String responseText = extractText(response, isAnthropic);
+
+        Map<String, String> lowerToActual = new HashMap<>();
+        for (Table t : allTables) {
+            lowerToActual.put(t.getName().toLowerCase(Locale.ROOT), t.getName());
+        }
+
+        Set<String> selected = new LinkedHashSet<>();
+        for (String line : responseText.split("\\r?\\n")) {
+            String name = line.trim();
+            if (name.isEmpty()) continue;
+            String actual = lowerToActual.get(name.toLowerCase(Locale.ROOT));
+            if (actual != null) {
+                selected.add(actual);
+            }
+        }
+
+        if (selected.isEmpty()) {
+            _log.warn("Smart table selection returned no matching tables, falling back to full schema");
+            return null;
+        }
+        return expandWithFkNeighbors(dataModel, selected);
+    }
+
+    private static Set<String> expandWithFkNeighbors(DataModel dataModel, Set<String> tableNames) {
+        Set<String> expanded = new LinkedHashSet<>(tableNames);
+        for (Table table : dataModel.getSortedTables()) {
+            if (tableNames.contains(table.getName())) {
+                for (Association assoc : table.associations) {
+                    expanded.add(assoc.destination.getName());
+                }
+            }
+        }
+        return expanded;
     }
 
     public static String generateSQL(String question, DataModel dataModel, String dbmsName, AIProviderConfig config) throws IOException {
@@ -132,16 +255,23 @@ public class AIQueryAssistant {
 
     // Tries HttpURLConnection first; falls back to curl if the Authorization header
     // was silently dropped by a proxy (common in corporate environments).
-    private static JsonNode post(String apiUrl, String apiKey, ObjectNode body, boolean isAnthropic) throws IOException {
+    private static JsonNode post(String apiUrl, String apiKey, ObjectNode body, boolean isAnthropic,
+            AtomicReference<Runnable> abortRef) throws IOException {
+        if (Thread.currentThread().isInterrupted()) {
+            throw new IOException("Request cancelled");
+        }
         byte[] bodyBytes = MAPPER.writeValueAsBytes(body);
         IOException urlConnError;
         try {
-            return postWithHttpURLConnection(apiUrl, apiKey, bodyBytes, isAnthropic);
+            return postWithHttpURLConnection(apiUrl, apiKey, bodyBytes, isAnthropic, abortRef);
         } catch (IOException e) {
+            if (Thread.currentThread().isInterrupted()) {
+                throw e;
+            }
             urlConnError = e;
         }
         try {
-            return postWithCurl(apiUrl, apiKey, bodyBytes, isAnthropic);
+            return postWithCurl(apiUrl, apiKey, bodyBytes, isAnthropic, abortRef);
         } catch (IOException curlError) {
             // If curl produced a real API error, prefer that message; otherwise use original.
             if (curlError.getMessage() != null && curlError.getMessage().startsWith("API error")) {
@@ -152,7 +282,7 @@ public class AIQueryAssistant {
     }
 
     private static JsonNode postWithHttpURLConnection(String apiUrl, String apiKey,
-            byte[] bodyBytes, boolean isAnthropic) throws IOException {
+            byte[] bodyBytes, boolean isAnthropic, AtomicReference<Runnable> abortRef) throws IOException {
         String currentUrl = apiUrl;
         for (int redirects = 0; redirects < 5; redirects++) {
             URL url = new URL(currentUrl);
@@ -171,6 +301,12 @@ public class AIQueryAssistant {
                 conn.setDoOutput(true);
                 conn.setConnectTimeout(15000);
                 conn.setReadTimeout(60000);
+                if (abortRef != null) {
+                    abortRef.set(conn::disconnect);
+                }
+                if (Thread.currentThread().isInterrupted()) {
+                    throw new IOException("Request cancelled");
+                }
 
                 String maskedKey = apiKey.length() > 8 ? apiKey.substring(0, 8) + "..." : "***";
                 String authHeader = isAnthropic ? "x-api-key: " + maskedKey : "Authorization: Bearer " + maskedKey;
@@ -256,6 +392,9 @@ public class AIQueryAssistant {
                 }
                 return MAPPER.readTree(responseBytes);
             } finally {
+                if (abortRef != null) {
+                    abortRef.set(null);
+                }
                 conn.disconnect();
             }
         }
@@ -263,7 +402,7 @@ public class AIQueryAssistant {
     }
 
     private static JsonNode postWithCurl(String apiUrl, String apiKey,
-            byte[] bodyBytes, boolean isAnthropic) throws IOException {
+            byte[] bodyBytes, boolean isAnthropic, AtomicReference<Runnable> abortRef) throws IOException {
         List<String> cmd = new ArrayList<>();
         cmd.add("curl");
         cmd.add("-s");
@@ -283,6 +422,9 @@ public class AIQueryAssistant {
                 new String(bodyBytes, StandardCharsets.UTF_8));
 
         Process process = new ProcessBuilder(cmd).start();
+        if (abortRef != null) {
+            abortRef.set(process::destroy);
+        }
         try {
             try (OutputStream os = process.getOutputStream()) {
                 os.write(bodyBytes);
@@ -318,8 +460,13 @@ public class AIQueryAssistant {
             }
             return response;
         } catch (InterruptedException e) {
+            process.destroy();
             Thread.currentThread().interrupt();
             throw new IOException("curl process interrupted");
+        } finally {
+            if (abortRef != null) {
+                abortRef.set(null);
+            }
         }
     }
 
@@ -375,12 +522,22 @@ public class AIQueryAssistant {
         return t.replace("{schema}", schema).replace("{dbmsName}", dbmsName);
     }
 
-    static String buildSchemaDescription(DataModel dataModel) {
+    public static String buildSchemaDescription(DataModel dataModel) {
+        return buildSchemaDescription(dataModel, null, false);
+    }
+
+    public static String buildSchemaDescription(DataModel dataModel, Set<String> relevantTables) {
+        return buildSchemaDescription(dataModel, relevantTables, false);
+    }
+
+    public static String buildSchemaDescription(DataModel dataModel, Set<String> relevantTables, boolean omitColumnTypes) {
         List<Table> tables = new ArrayList<>(dataModel.getSortedTables());
+        if (relevantTables != null) {
+            tables.removeIf(t -> !relevantTables.contains(t.getName()));
+        }
         StringBuilder sb = new StringBuilder();
         StringBuilder fkSb = new StringBuilder();
-        int count = Math.min(tables.size(), MAX_TABLES);
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < tables.size(); i++) {
             Table table = tables.get(i);
             sb.append(table.getName()).append("(");
 
@@ -398,7 +555,7 @@ public class AIQueryAssistant {
                 }
                 Column col = columns.get(j);
                 sb.append(col.name);
-                if (col.type != null && !col.type.isEmpty()) {
+                if (!omitColumnTypes && col.type != null && !col.type.isEmpty()) {
                     sb.append(" ").append(col.type);
                 }
                 if (pkNames.contains(col.name)) {
@@ -416,9 +573,7 @@ public class AIQueryAssistant {
                 }
             }
         }
-        if (tables.size() > MAX_TABLES) {
-            sb.append("... and ").append(tables.size() - MAX_TABLES).append(" more tables\n");
-        }
+
         if (fkSb.length() > 0) {
             sb.append("\nForeign keys:\n").append(fkSb);
         }
@@ -472,3 +627,7 @@ public class AIQueryAssistant {
 
 // TODO 
 // TODO session management: if the provider supports it, we could keep a session ID and reuse it for subsequent calls to maintain context without resending the full schema each time.
+
+// TODO
+// TODO test: are 500 Tables feasible?
+

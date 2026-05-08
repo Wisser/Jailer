@@ -20,14 +20,17 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Window;
+import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -35,11 +38,13 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 import org.fife.ui.rtextarea.RTextScrollPane;
 
-import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.ui.UIUtil;
@@ -48,6 +53,7 @@ import net.sf.jailer.ui.ai.AIProviderPanel;
 import net.sf.jailer.ui.ai.AIQueryAssistant;
 import net.sf.jailer.ui.ai.ConversationMessage;
 import net.sf.jailer.ui.ai.SystemPromptPanel;
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 
 /**
  * Modal dialog that lets the user have a multi-turn conversation with an AI
@@ -57,6 +63,7 @@ import net.sf.jailer.ui.ai.SystemPromptPanel;
 public class AIQueryDialog extends JDialog {
 
     private static final long serialVersionUID = 1L;
+    private static final Logger _log = LoggerFactory.getLogger(AIQueryDialog.class);
 
     private final DataModel dataModel;
     private final String dbmsName;
@@ -74,6 +81,12 @@ public class AIQueryDialog extends JDialog {
     private JLabel statusLabel;
     private AIProviderPanel providerPanel;
     private SystemPromptPanel systemPromptPanel;
+    private JCheckBox smartSelectionBox;
+    private JCheckBox omitColumnTypesBox;
+    private JLabel contextEstimateLabel;
+    private JButton cancelButton;
+    private SwingWorker<String, Void> currentWorker;
+    private final AtomicReference<Runnable> abortRef = new AtomicReference<>();
 
     public AIQueryDialog(Window owner, DataModel dataModel, String dbmsName, Consumer<String> sqlConsumer) {
         super(owner, "AI Assistant - Natural Language to SQL", ModalityType.APPLICATION_MODAL);
@@ -81,6 +94,7 @@ public class AIQueryDialog extends JDialog {
         this.dbmsName = dbmsName;
         this.sqlConsumer = sqlConsumer;
         initUI();
+        UIUtil.initComponents(this);
         pack();
         setLocationRelativeTo(owner);
     }
@@ -114,9 +128,58 @@ public class AIQueryDialog extends JDialog {
         generateButton.setEnabled(false);
         statusLabel = new JLabel(" ");
         generateButton.addActionListener(e -> onGenerate());
-        JPanel genRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
-        genRow.add(generateButton);
-        genRow.add(statusLabel);
+
+        cancelButton = new JButton("Cancel");
+        cancelButton.setEnabled(false);
+        cancelButton.addActionListener(e -> {
+            Runnable abort = abortRef.get();
+            if (abort != null) {
+                abort.run();
+            }
+            if (currentWorker != null) {
+                currentWorker.cancel(true);
+            }
+        });
+
+        boolean manyTables = dataModel.getSortedTables().size() > 500;
+
+        smartSelectionBox = new JCheckBox("Relevant tables only (reduces context)");
+        smartSelectionBox.setSelected(manyTables);
+        smartSelectionBox.setToolTipText("<html>Reduces the AI context size for large schemas.<br>"
+            + "A first AI call selects only the tables relevant to your question;<br>"
+            + "a second call then generates the SQL using only those tables.<br>"
+            + "Adds one extra API call per query.</html>");
+
+        omitColumnTypesBox = new JCheckBox("Omit column types");
+        omitColumnTypesBox.setToolTipText("<html>Reduces the AI context size by omitting column type information<br>"
+            + "from the schema description sent to the AI.<br>"
+            + "Table and column names, primary keys and foreign keys are still included.</html>");
+
+        contextEstimateLabel = new JLabel();
+        contextEstimateLabel.setFont(contextEstimateLabel.getFont().deriveFont(
+                contextEstimateLabel.getFont().getSize2D() - 1f));
+        contextEstimateLabel.setForeground(java.awt.Color.GRAY);
+
+        ItemListener contextUpdater = e -> updateContextEstimate();
+        omitColumnTypesBox.addItemListener(contextUpdater);
+        smartSelectionBox.addItemListener(contextUpdater);
+        updateContextEstimate();
+
+        JPanel genLeft = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        genLeft.add(generateButton);
+        genLeft.add(cancelButton);
+        genLeft.add(statusLabel);
+        JPanel checkboxRow = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        checkboxRow.add(omitColumnTypesBox);
+        checkboxRow.add(smartSelectionBox);
+        JPanel estimateRow = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 2));
+        estimateRow.add(contextEstimateLabel);
+        JPanel genRight = new JPanel(new BorderLayout());
+        genRight.add(checkboxRow, BorderLayout.NORTH);
+        genRight.add(estimateRow, BorderLayout.SOUTH);
+        JPanel genRow = new JPanel(new BorderLayout());
+        genRow.add(genLeft, BorderLayout.WEST);
+        genRow.add(genRight, BorderLayout.EAST);
         questionPanel.add(genRow, BorderLayout.SOUTH);
 
         questionArea.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
@@ -210,6 +273,22 @@ public class AIQueryDialog extends JDialog {
         return providerPanel;
     }
 
+    private void updateContextEstimate() {
+        boolean omit  = omitColumnTypesBox.isSelected();
+        boolean smart = smartSelectionBox.isSelected();
+        String schema = AIQueryAssistant.buildSchemaDescription(dataModel, null, omit);
+        int totalTokens = schema.length() / 4;
+        String text;
+        if (smart) {
+            int tableCount = dataModel.getSortedTables().size();
+            int perTable = tableCount > 0 ? totalTokens / tableCount : 0;
+            text = String.format("Estimated context size: ~%,d tokens per relevant table", perTable);
+        } else {
+            text = String.format("Estimated context size: ~%,d tokens", totalTokens);
+        }
+        contextEstimateLabel.setText(text);
+    }
+
     private void openSystemPromptDialog() {
         JDialog d = new JDialog(this, "System Prompt", true);
         d.getContentPane().add(systemPromptPanel, BorderLayout.CENTER);
@@ -251,18 +330,45 @@ public class AIQueryDialog extends JDialog {
         statusLabel.setText("Generating...");
 
         List<ConversationMessage> historySnapshot = new ArrayList<>(conversationHistory);
+        boolean smartSelection = smartSelectionBox.isSelected();
+        boolean omitColumnTypes = omitColumnTypesBox.isSelected();
 
-        new SwingWorker<String, Void>() {
+        currentWorker = new SwingWorker<String, Void>() {
             @Override
             protected String doInBackground() throws Exception {
                 return AIQueryAssistant.generateSQL(question, historySnapshot, dataModel, dbmsName, config,
-                        systemPromptPanel.getTemplate());
+                        systemPromptPanel.getTemplate(), smartSelection, omitColumnTypes, abortRef, () -> {
+                    boolean[] result = { false };
+                    try {
+                        SwingUtilities.invokeAndWait(() -> {
+                            int choice = JOptionPane.showConfirmDialog(
+                                AIQueryDialog.this,
+                                "<html>No relevant tables could be identified for your question.<br>"
+                                + "(It may help to rephrase your question using table names and be more specific.)<br><br>"
+                                + "Proceed with the full schema?</html>",
+                                "No Relevant Tables Found",
+                                JOptionPane.YES_NO_OPTION,
+                                JOptionPane.WARNING_MESSAGE);
+                            result[0] = choice == JOptionPane.YES_OPTION;
+                        });
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                    } catch (java.lang.reflect.InvocationTargetException ex) {
+                        _log.warn("Confirmation dialog failed", ex);
+                    }
+                    return result[0];
+                });
             }
 
             @Override
             protected void done() {
+                cancelButton.setEnabled(false);
+                currentWorker = null;
                 generateButton.setEnabled(true);
                 statusLabel.setText(" ");
+                if (isCancelled()) {
+                    return;
+                }
                 try {
                     String sql = get();
                     sqlArea.setText(sql);
@@ -280,7 +386,9 @@ public class AIQueryDialog extends JDialog {
                     Thread.currentThread().interrupt();
                 }
             }
-        }.execute();
+        };
+        cancelButton.setEnabled(true);
+        currentWorker.execute();
     }
 
     private void updateHistoryDisplay() {

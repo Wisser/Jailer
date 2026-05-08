@@ -50,6 +50,8 @@ public class AIProviderConfig {
         }
     }
 
+    public static final int DEFAULT_MAX_TOKENS = 8192;
+
     public final ProviderType providerType;
     public final String apiUrl;
     public final String apiKey;
@@ -61,6 +63,6 @@ public class AIProviderConfig {
         this.apiUrl = (apiUrl != null && !apiUrl.isEmpty()) ? apiUrl : providerType.defaultApiUrl;
         this.apiKey = apiKey != null ? apiKey : "";
         this.model = (model != null && !model.isEmpty()) ? model : providerType.defaultModel;
-        this.maxTokens = maxTokens > 0 ? maxTokens : 1024;
+        this.maxTokens = maxTokens > 0 ? maxTokens : DEFAULT_MAX_TOKENS;
     }
 }

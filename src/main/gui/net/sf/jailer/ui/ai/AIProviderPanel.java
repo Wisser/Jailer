@@ -27,7 +27,9 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
 
 import net.sf.jailer.ui.ai.AIProviderConfig.ProviderType;
 import net.sf.jailer.ui.util.UISettings;
@@ -40,39 +42,38 @@ public class AIProviderPanel extends JPanel {
 
     private static final long serialVersionUID = 1L;
 
-    static final String SETTING_PROVIDER       = "aiProviderType";
-    static final String SETTING_API_URL        = "aiApiUrl";
-    static final String SETTING_MODEL          = "aiModel";
-    static final String SETTING_MAX_TOKENS     = "aiMaxTokens";
-    static final String SETTING_API_KEY_PREFIX = "aiApiKey_";
+    static final String SETTING_PROVIDER        = "aiProviderType";
+    static final String SETTING_API_URL         = "aiApiUrl";
+    static final String SETTING_MODEL           = "aiModel";
+    static final String SETTING_API_KEY_PREFIX  = "aiApiKey_";
+    static final String SETTING_MAX_TOKENS      = "aiMaxTokens";
 
     private final JComboBox<ProviderType> providerCombo;
     private final JTextField urlField;
     private final JTextField modelField;
-    private final JTextField maxTokensField;
     private final JPasswordField apiKeyField;
+    private final JSpinner maxTokensSpinner;
 
     public AIProviderPanel() {
         super(new GridBagLayout());
 
         ProviderType savedProvider = loadProviderType();
-        String savedUrl   = (String) UISettings.restore(SETTING_API_URL);
-        String savedModel = (String) UISettings.restore(SETTING_MODEL);
-        String savedKey   = loadApiKey(savedProvider);
+        String savedUrl       = (String) UISettings.restore(SETTING_API_URL);
+        String savedModel     = (String) UISettings.restore(SETTING_MODEL);
+        String savedKey       = loadApiKey(savedProvider);
+        int    savedMaxTokens = loadMaxTokens();
 
         providerCombo  = new JComboBox<>(ProviderType.values());
         providerCombo.setSelectedItem(savedProvider);
 
-        urlField       = new JTextField(savedUrl   != null ? savedUrl   : savedProvider.defaultApiUrl, 36);
-        modelField     = new JTextField(savedModel != null ? savedModel : savedProvider.defaultModel,   18);
-        maxTokensField = new JTextField((String) UISettings.restore(SETTING_MAX_TOKENS), 6);
-        if (maxTokensField.getText().isEmpty()) {
-            maxTokensField.setText("1024");
-        }
+        urlField    = new JTextField(savedUrl   != null ? savedUrl   : savedProvider.defaultApiUrl, 36);
+        modelField  = new JTextField(savedModel != null ? savedModel : savedProvider.defaultModel,   18);
         apiKeyField = new JPasswordField(36);
         if (savedKey != null) {
             apiKeyField.setText(savedKey);
         }
+        maxTokensSpinner = new JSpinner(new SpinnerNumberModel(savedMaxTokens, 256, 32768, 256));
+        ((JSpinner.NumberEditor) maxTokensSpinner.getEditor()).getTextField().setColumns(5);
 
         GridBagConstraints lc = new GridBagConstraints();
         lc.anchor = GridBagConstraints.WEST;
@@ -87,9 +88,11 @@ public class AIProviderPanel extends JPanel {
         fc.gridx = 3; fc.gridy = 0; fc.weightx = 1.0; add(urlField, fc); fc.weightx = 0;
         lc.gridx = 4; lc.gridy = 0; add(new JLabel("Model:"), lc);
         fc.gridx = 5; fc.gridy = 0; add(modelField, fc);
+        lc.gridx = 6; lc.gridy = 0; add(new JLabel("Max. response tokens:"), lc);
+        fc.gridx = 7; fc.gridy = 0; add(maxTokensSpinner, fc);
 
         lc.gridx = 0; lc.gridy = 1; add(new JLabel("API Key:"), lc);
-        fc.gridx = 1; fc.gridy = 1; fc.gridwidth = 5; fc.weightx = 1.0; add(apiKeyField, fc);
+        fc.gridx = 1; fc.gridy = 1; fc.gridwidth = 6; fc.weightx = 1.0; add(apiKeyField, fc);
         fc.gridwidth = 1; fc.weightx = 0;
 
         JButton resetButton = new JButton("Reset to Default");
@@ -105,15 +108,12 @@ public class AIProviderPanel extends JPanel {
             ProviderType current = (ProviderType) providerCombo.getSelectedItem();
             urlField.setText(current.defaultApiUrl);
             modelField.setText(current.defaultModel);
-            maxTokensField.setText("1024");
             apiKeyField.setText("");
+            maxTokensSpinner.setValue(AIProviderConfig.DEFAULT_MAX_TOKENS);
         });
 
-        lc.gridx = 0; lc.gridy = 2; add(new JLabel("Max Tokens:"), lc);
-        fc.gridx = 1; fc.gridy = 2; add(maxTokensField, fc);
-
         GridBagConstraints rc = new GridBagConstraints();
-        rc.gridx = 5; rc.gridy = 2;
+        rc.gridx = 7; rc.gridy = 1;
         rc.anchor = GridBagConstraints.EAST;
         rc.insets = new Insets(2, 0, 2, 0);
         add(resetButton, rc);
@@ -148,20 +148,12 @@ public class AIProviderPanel extends JPanel {
 
     /** Builds an {@link AIProviderConfig} from the current field values. */
     public AIProviderConfig getConfig() {
-        int maxTokens = 1024;
-        try {
-            maxTokens = Integer.parseInt(maxTokensField.getText().trim());
-            if (maxTokens <= 0) {
-                maxTokens = 1024;
-            }
-        } catch (NumberFormatException ignored) {
-        }
         return new AIProviderConfig(
             (ProviderType) providerCombo.getSelectedItem(),
             urlField.getText().trim(),
             getApiKey(),
             modelField.getText().trim(),
-            maxTokens
+            (Integer) maxTokensSpinner.getValue()
         );
     }
 
@@ -184,6 +176,18 @@ public class AIProviderPanel extends JPanel {
             }
         }
         return ProviderType.ANTHROPIC;
+    }
+
+    private int loadMaxTokens() {
+        Object stored = UISettings.restore(SETTING_MAX_TOKENS);
+        if (stored instanceof String) {
+            try {
+                int v = Integer.parseInt((String) stored);
+                if (v >= 256 && v <= 32768) return v;
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return AIProviderConfig.DEFAULT_MAX_TOKENS;
     }
 
     private String loadApiKey(ProviderType providerType) {
