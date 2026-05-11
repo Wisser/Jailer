@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -67,7 +66,7 @@ public class AIQueryDialog extends JDialog {
 
     private final DataModel dataModel;
     private final String dbmsName;
-    private final Consumer<String> sqlConsumer;
+    private final SQLConsole sqlConsole;
 
     private final List<ConversationMessage> conversationHistory = new ArrayList<>();
 
@@ -88,14 +87,15 @@ public class AIQueryDialog extends JDialog {
     private SwingWorker<String, Void> currentWorker;
     private final AtomicReference<Runnable> abortRef = new AtomicReference<>();
 
-    public AIQueryDialog(Window owner, DataModel dataModel, String dbmsName, Consumer<String> sqlConsumer) {
+    public AIQueryDialog(Window owner, DataModel dataModel, String dbmsName, SQLConsole sqlConsole) {
         super(owner, "AI Assistant - Natural Language to SQL", ModalityType.APPLICATION_MODAL);
         this.dataModel = dataModel;
         this.dbmsName = dbmsName;
-        this.sqlConsumer = sqlConsumer;
+        this.sqlConsole = sqlConsole;
         initUI();
         UIUtil.initComponents(this);
         pack();
+        setSize(getWidth(), getHeight() + 40);
         setLocationRelativeTo(owner);
     }
 
@@ -108,14 +108,14 @@ public class AIQueryDialog extends JDialog {
         historyArea.setEditable(false);
         historyArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
         historyScrollPane = new JScrollPane(historyArea);
-        historyScrollPane.setPreferredSize(new Dimension(700, 160));
+        historyScrollPane.setPreferredSize(new Dimension(700, 120));
         historyScrollPane.setBorder(BorderFactory.createTitledBorder("Conversation"));
         historyScrollPane.setVisible(false);
 
         // Question area
         JPanel questionPanel = new JPanel(new BorderLayout(4, 4));
-        questionPanel.add(new JLabel("Describe the query in plain language:"), BorderLayout.NORTH);
-        questionArea = new JTextArea(6, 60);
+        questionPanel.add(new JLabel("Describe the query in plain language"), BorderLayout.NORTH);
+        questionArea = new JTextArea(8, 60);
         questionArea.setLineWrap(true);
         questionArea.setWrapStyleWord(true);
         questionPanel.add(new JScrollPane(questionArea), BorderLayout.CENTER);
@@ -130,6 +130,10 @@ public class AIQueryDialog extends JDialog {
         generateButton.addActionListener(e -> onGenerate());
 
         cancelButton = new JButton("Cancel");
+        ImageIcon cancelIcon = UIUtil.readImage("/Cancel.png");
+        if (cancelIcon != null) {
+            cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
+        }
         cancelButton.setEnabled(false);
         cancelButton.addActionListener(e -> {
             Runnable abort = abortRef.get();
@@ -165,9 +169,35 @@ public class AIQueryDialog extends JDialog {
         smartSelectionBox.addItemListener(contextUpdater);
         updateContextEstimate();
 
+        newConversationButton = new JButton("New Conversation");
+        ImageIcon clearIcon = UIUtil.readImage("/clear.png");
+        if (clearIcon != null) {
+            newConversationButton.setIcon(UIUtil.scaleIcon(newConversationButton, clearIcon));
+        }
+        newConversationButton.setToolTipText("Clear history and start a new conversation");
+        newConversationButton.setEnabled(false);
+        newConversationButton.addActionListener(e -> clearHistory());
+
+        insertButton = new JButton("Insert into Editor");
+        ImageIcon insertIcon = UIUtil.readImage("/runall.png");
+        if (insertIcon != null) {
+            insertButton.setIcon(UIUtil.scaleIcon(insertButton, insertIcon));
+        }
+        insertButton.setEnabled(false);
+        insertButton.addActionListener(e -> {
+            String sql = sqlArea.getText().trim();
+            if (!sql.isEmpty()) {
+                String comment = buildCommentForHistory();
+                String combined = comment.isEmpty() ? sql : comment + "\n" + sql;
+                sqlConsole.appendStatement(combined, true);
+                dispose();
+            }
+        });
+
         JPanel genLeft = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
         genLeft.add(generateButton);
         genLeft.add(cancelButton);
+        genLeft.add(newConversationButton);
         genLeft.add(statusLabel);
         JPanel checkboxRow = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         checkboxRow.add(omitColumnTypesBox);
@@ -202,7 +232,7 @@ public class AIQueryDialog extends JDialog {
 
         // SQL result area
         JPanel resultPanel = new JPanel(new BorderLayout(4, 4));
-        resultPanel.add(new JLabel("Generated SQL:"), BorderLayout.NORTH);
+        resultPanel.add(new JLabel("Generated SQL"), BorderLayout.NORTH);
         sqlArea = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false);
         sqlArea.setEditable(false);
         sqlArea.setRows(8);
@@ -210,6 +240,9 @@ public class AIQueryDialog extends JDialog {
         RTextScrollPane sqlScrollPane = new RTextScrollPane();
         sqlScrollPane.setViewportView(sqlArea);
         resultPanel.add(sqlScrollPane, BorderLayout.CENTER);
+        JPanel insertRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 2));
+        insertRow.add(insertButton);
+        resultPanel.add(insertRow, BorderLayout.SOUTH);
 
         JPanel questionResultPanel = new JPanel(new BorderLayout(4, 8));
         questionResultPanel.add(questionPanel, BorderLayout.NORTH);
@@ -221,46 +254,36 @@ public class AIQueryDialog extends JDialog {
 
         // Settings section
         JPanel settingsPanel = buildSettingsPanel();
-        settingsPanel.setBorder(BorderFactory.createTitledBorder("AI Provider"));
+        settingsPanel.setBorder(BorderFactory.createEmptyBorder(8, 0, 2, 0));
 
         systemPromptPanel = new SystemPromptPanel();
 
         // Buttons
-        newConversationButton = new JButton("New Conversation");
-        newConversationButton.setToolTipText("Clear history and start a new conversation");
-        newConversationButton.setEnabled(false);
-        newConversationButton.addActionListener(e -> clearHistory());
-
-        insertButton = new JButton("Insert into Editor");
-        insertButton.setEnabled(false);
-        insertButton.addActionListener(e -> {
-            String sql = sqlArea.getText().trim();
-            if (!sql.isEmpty()) {
-                String comment = buildCommentForHistory();
-                String combined = comment + "\n" + sql;
-                sqlConsumer.accept(combined);
-                dispose();
-            }
-        });
         JButton closeButton = new JButton("Close");
+        ImageIcon closeIcon = UIUtil.readImage("/buttoncancel.png");
+        if (closeIcon != null) {
+            closeButton.setIcon(UIUtil.scaleIcon(closeButton, closeIcon));
+        }
         closeButton.addActionListener(e -> dispose());
 
         JButton systemPromptButton = new JButton("System Prompt...");
+        ImageIcon editIcon = UIUtil.readImage("/ieditdetails_64.png");
+        if (editIcon != null) {
+            systemPromptButton.setIcon(UIUtil.scaleIcon(systemPromptButton, editIcon));
+        }
         systemPromptButton.addActionListener(e -> openSystemPromptDialog());
 
         JPanel leftButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
         leftButtons.add(systemPromptButton);
 
         JPanel rightButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 4));
-        rightButtons.add(newConversationButton);
-        rightButtons.add(insertButton);
         rightButtons.add(closeButton);
 
         JPanel buttonRow = new JPanel(new BorderLayout());
         buttonRow.add(leftButtons, BorderLayout.WEST);
         buttonRow.add(rightButtons, BorderLayout.EAST);
 
-        JPanel southPanel = new JPanel(new BorderLayout(4, 4));
+        JPanel southPanel = new JPanel(new BorderLayout(0, 4));
         southPanel.add(settingsPanel, BorderLayout.CENTER);
         southPanel.add(buttonRow, BorderLayout.SOUTH);
 
@@ -314,14 +337,13 @@ public class AIQueryDialog extends JDialog {
             JOptionPane.showMessageDialog(this, "Please describe the query.", "Input Required", JOptionPane.WARNING_MESSAGE);
             return;
         }
+        AIProviderConfig config = providerPanel.getConfig();
         String apiKey = providerPanel.getApiKey();
-        if (apiKey.isEmpty()) {
+        if (apiKey.isEmpty() && config.providerType != AIProviderConfig.ProviderType.OLLAMA) {
             JOptionPane.showMessageDialog(this, "Please enter an API key.", "API Key Required", JOptionPane.WARNING_MESSAGE);
             providerPanel.getApiKeyComponent().requestFocusInWindow();
             return;
         }
-
-        AIProviderConfig config = providerPanel.getConfig();
         providerPanel.saveSettings();
 
         generateButton.setEnabled(false);

@@ -529,7 +529,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             }
             String dbmsName = session.dbms != null ? session.dbms.getDisplayName() : "SQL";
             new AIQueryDialog(SwingUtilities.getWindowAncestor(SQLConsole.this), dm, dbmsName,
-                    sql -> editorPane.setText(sql)).setVisible(true);
+                    SQLConsole.this).setVisible(true);
         });
         jToolBar1.add(aiButton, 4);
         jToolBar1.add(new JToolBar.Separator(), 5);

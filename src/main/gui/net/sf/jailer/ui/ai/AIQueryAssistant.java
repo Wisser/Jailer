@@ -117,7 +117,7 @@ public class AIQueryAssistant {
         String schema = buildSchemaDescription(dataModel, relevantTables, omitColumnTypes);
         boolean isAnthropic = config.providerType == ProviderType.ANTHROPIC;
         ObjectNode body = buildRequestBody(question, history, schema, dbmsName, config, isAnthropic, systemPromptTemplate);
-        JsonNode response = post(config.apiUrl, config.apiKey, body, isAnthropic, abortRef);
+        JsonNode response = post(config, body, abortRef);
         return extractText(response, isAnthropic);
     }
 
@@ -166,6 +166,7 @@ public class AIQueryAssistant {
         ObjectNode body = MAPPER.createObjectNode();
         body.put("model", config.model);
         body.put("max_tokens", 512);
+        body.put("stream", false);
 
         ArrayNode messages = body.putArray("messages");
         if (isAnthropic) {
@@ -184,7 +185,7 @@ public class AIQueryAssistant {
         userMsg.put("role", "user");
         userMsg.put("content", "Tables:\n" + tableList + "\nQuestion: " + question);
 
-        JsonNode response = post(config.apiUrl, config.apiKey, body, isAnthropic, abortRef);
+        JsonNode response = post(config, body, abortRef);
         String responseText = extractText(response, isAnthropic);
 
         Map<String, String> lowerToActual = new HashMap<>();
@@ -225,12 +226,34 @@ public class AIQueryAssistant {
         return generateSQL(question, Collections.emptyList(), dataModel, dbmsName, config, null);
     }
 
+    public static void testConnection(AIProviderConfig config, AtomicReference<Runnable> abortRef) throws IOException {
+        boolean isAnthropic = config.providerType == ProviderType.ANTHROPIC;
+        ObjectNode body = MAPPER.createObjectNode();
+        body.put("model", config.model);
+        body.put("max_tokens", 16);
+        body.put("stream", false);
+        ArrayNode messages = body.putArray("messages");
+        if (isAnthropic) {
+            body.put("system", "You are a helpful assistant.");
+        } else {
+            ObjectNode sysMsg = messages.addObject();
+            sysMsg.put("role", "system");
+            sysMsg.put("content", "You are a helpful assistant.");
+        }
+        ObjectNode userMsg = messages.addObject();
+        userMsg.put("role", "user");
+        userMsg.put("content", "Reply with just the word OK.");
+        JsonNode response = post(config, body, abortRef);
+        extractText(response, isAnthropic);
+    }
+
     private static ObjectNode buildRequestBody(String question, List<ConversationMessage> history,
             String schema, String dbmsName, AIProviderConfig config, boolean isAnthropic,
             String systemPromptTemplate) {
         ObjectNode body = MAPPER.createObjectNode();
         body.put("model", config.model);
         body.put("max_tokens", config.maxTokens);
+        body.put("stream", false);
         // Schema lives in the system prompt so it is sent once, not repeated per user message.
         String systemPrompt = buildSystemPrompt(schema, dbmsName, systemPromptTemplate);
 
@@ -255,15 +278,17 @@ public class AIQueryAssistant {
 
     // Tries HttpURLConnection first; falls back to curl if the Authorization header
     // was silently dropped by a proxy (common in corporate environments).
-    private static JsonNode post(String apiUrl, String apiKey, ObjectNode body, boolean isAnthropic,
+    private static JsonNode post(AIProviderConfig config, ObjectNode body,
             AtomicReference<Runnable> abortRef) throws IOException {
         if (Thread.currentThread().isInterrupted()) {
             throw new IOException("Request cancelled");
         }
+        boolean isAnthropic = config.providerType == ProviderType.ANTHROPIC;
+        String apiKey = config.apiKey;
         byte[] bodyBytes = MAPPER.writeValueAsBytes(body);
         IOException urlConnError;
         try {
-            return postWithHttpURLConnection(apiUrl, apiKey, bodyBytes, isAnthropic, abortRef);
+            return postWithHttpURLConnection(config.apiUrl, apiKey, bodyBytes, isAnthropic, abortRef);
         } catch (IOException e) {
             if (Thread.currentThread().isInterrupted()) {
                 throw e;
@@ -271,7 +296,7 @@ public class AIQueryAssistant {
             urlConnError = e;
         }
         try {
-            return postWithCurl(apiUrl, apiKey, bodyBytes, isAnthropic, abortRef);
+            return postWithCurl(config.apiUrl, apiKey, bodyBytes, isAnthropic, abortRef);
         } catch (IOException curlError) {
             // If curl produced a real API error, prefer that message; otherwise use original.
             if (curlError.getMessage() != null && curlError.getMessage().startsWith("API error")) {

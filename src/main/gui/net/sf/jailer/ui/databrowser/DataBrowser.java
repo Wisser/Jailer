@@ -6700,6 +6700,8 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		}
 	}// GEN-LAST:event_saveScriptMenuItemActionPerformed
 
+	private javax.swing.JMenuItem aiAssistantMenuItem;
+
 	private void initMenu() {
 		int mask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 		if (mask != InputEvent.CTRL_MASK) {
@@ -6717,6 +6719,15 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 				}
 			}
 		}
+		aiAssistantMenuItem = new JMenuItem("AI Assistant...");
+		aiAssistantMenuItem.setAccelerator(KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, mask | InputEvent.SHIFT_DOWN_MASK));
+		javax.swing.ImageIcon aiIcon = net.sf.jailer.ui.UIUtil.readImage("/ask_ai.png");
+		if (aiIcon != null) {
+			aiAssistantMenuItem.setIcon(net.sf.jailer.ui.UIUtil.scaleIcon(aiAssistantMenuItem, aiIcon));
+		}
+		aiAssistantMenuItem.addActionListener(e -> openAIAssistant());
+		jMenu2.addSeparator();
+		jMenu2.add(aiAssistantMenuItem);
 	}
 
 	private void saveScriptAsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_saveScriptAsMenuItemActionPerformed
@@ -6820,6 +6831,22 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 
 	private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_refreshButtonActionPerformed
 	}// GEN-LAST:event_refreshButtonActionPerformed
+
+	private void openAIAssistant() {
+		DataModel dm = datamodel.get();
+		if (dm == null) {
+			javax.swing.JOptionPane.showMessageDialog(this, "No data model available.", "AI Assistant", javax.swing.JOptionPane.WARNING_MESSAGE);
+			return;
+		}
+		net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole sqlConsole = getCurrentSQLConsole();
+		if (sqlConsole == null) {
+			javax.swing.JOptionPane.showMessageDialog(this, "Please open a SQL Console first.", "AI Assistant", javax.swing.JOptionPane.WARNING_MESSAGE);
+			return;
+		}
+		setSelectedWorkbenchTab(sqlConsole);
+		String dbmsName = session != null && session.dbms != null ? session.dbms.getDisplayName() : "SQL";
+		new net.sf.jailer.ui.databrowser.sqlconsole.AIQueryDialog(this, dm, dbmsName, sqlConsole).setVisible(true);
+	}
 
 	private void createCLIItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_createCLIItemActionPerformed
 		String mapping = desktop.getRawSchemaMapping();

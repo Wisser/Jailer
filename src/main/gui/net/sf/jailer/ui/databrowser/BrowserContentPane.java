@@ -3525,7 +3525,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			}
 		});
 		JMenuItem sqlConsole = new JMenuItem("SQL Console");
-		setMenuItemName(sqlConsole, "runall_32.png");
+		setMenuItemName(sqlConsole, "runall.png");
 		sqlConsole.setAccelerator(KS_SQLCONSOLE);
 		popup.add(sqlConsole);
 		sqlConsole.addActionListener(new ActionListener() {

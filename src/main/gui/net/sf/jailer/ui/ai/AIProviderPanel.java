@@ -15,12 +15,15 @@
  */
 package net.sf.jailer.ui.ai;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.util.concurrent.atomic.AtomicReference;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ItemEvent;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -30,7 +33,10 @@ import javax.swing.JPasswordField;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingWorker;
+import javax.swing.UIManager;
 
+import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.ai.AIProviderConfig.ProviderType;
 import net.sf.jailer.ui.util.UISettings;
 
@@ -53,6 +59,7 @@ public class AIProviderPanel extends JPanel {
     private final JTextField modelField;
     private final JPasswordField apiKeyField;
     private final JSpinner maxTokensSpinner;
+    private final JLabel apiKeyLabel;
 
     public AIProviderPanel() {
         super(new GridBagLayout());
@@ -67,7 +74,7 @@ public class AIProviderPanel extends JPanel {
         providerCombo.setSelectedItem(savedProvider);
 
         urlField    = new JTextField(savedUrl   != null ? savedUrl   : savedProvider.defaultApiUrl, 36);
-        modelField  = new JTextField(savedModel != null ? savedModel : savedProvider.defaultModel,   18);
+        modelField  = new JTextField(savedModel != null ? savedModel : savedProvider.defaultModel,   20);
         apiKeyField = new JPasswordField(36);
         if (savedKey != null) {
             apiKeyField.setText(savedKey);
@@ -82,20 +89,27 @@ public class AIProviderPanel extends JPanel {
         fc.fill = GridBagConstraints.HORIZONTAL;
         fc.insets = new Insets(2, 0, 2, 8);
 
-        lc.gridx = 0; lc.gridy = 0; add(new JLabel("Provider:"), lc);
+        lc.gridx = 0; lc.gridy = 0; add(new JLabel("Provider"), lc);
         fc.gridx = 1; fc.gridy = 0; add(providerCombo, fc);
-        lc.gridx = 2; lc.gridy = 0; add(new JLabel("URL:"), lc);
+        lc.gridx = 2; lc.gridy = 0; add(new JLabel("URL"), lc);
         fc.gridx = 3; fc.gridy = 0; fc.weightx = 1.0; add(urlField, fc); fc.weightx = 0;
-        lc.gridx = 4; lc.gridy = 0; add(new JLabel("Model:"), lc);
-        fc.gridx = 5; fc.gridy = 0; add(modelField, fc);
-        lc.gridx = 6; lc.gridy = 0; add(new JLabel("Max. response tokens:"), lc);
-        fc.gridx = 7; fc.gridy = 0; add(maxTokensSpinner, fc);
+        lc.gridx = 4; lc.gridy = 0; add(new JLabel("Model"), lc);
+        fc.gridx = 5; fc.gridy = 0; fc.weightx = 0.3; add(modelField, fc); fc.weightx = 0;
+        lc.gridx = 6; lc.gridy = 0; add(new JLabel("Max. response tokens"), lc);
+        GridBagConstraints sc = new GridBagConstraints();
+        sc.gridx = 7; sc.gridy = 0; sc.insets = new Insets(2, 0, 2, 8); sc.anchor = GridBagConstraints.WEST;
+        add(maxTokensSpinner, sc);
 
-        lc.gridx = 0; lc.gridy = 1; add(new JLabel("API Key:"), lc);
+        apiKeyLabel = new JLabel(apiKeyLabelText(savedProvider));
+        lc.gridx = 0; lc.gridy = 1; add(apiKeyLabel, lc);
         fc.gridx = 1; fc.gridy = 1; fc.gridwidth = 6; fc.weightx = 1.0; add(apiKeyField, fc);
         fc.gridwidth = 1; fc.weightx = 0;
 
         JButton resetButton = new JButton("Reset to Default");
+        ImageIcon resetIcon = UIUtil.readImage("/reset_64.png");
+        if (resetIcon != null) {
+            resetButton.setIcon(UIUtil.scaleIcon(resetButton, resetIcon));
+        }
         resetButton.addActionListener(e -> {
             int choice = JOptionPane.showConfirmDialog(
                 this,
@@ -115,8 +129,70 @@ public class AIProviderPanel extends JPanel {
         GridBagConstraints rc = new GridBagConstraints();
         rc.gridx = 7; rc.gridy = 1;
         rc.anchor = GridBagConstraints.EAST;
-        rc.insets = new Insets(2, 0, 2, 0);
+        rc.weightx = 1.0;
+        rc.insets = new Insets(2, 8, 2, 8);
         add(resetButton, rc);
+
+        JButton testButton = new JButton("Test Connection");
+        JButton cancelTestButton = new JButton("Cancel");
+        cancelTestButton.setVisible(false);
+        JLabel testStatusLabel = new JLabel();
+
+        AtomicReference<Runnable> abortRef = new AtomicReference<>();
+        SwingWorker<?,?>[] workerHolder = { null };
+
+        cancelTestButton.addActionListener(e -> {
+            Runnable abort = abortRef.get();
+            if (abort != null) abort.run();
+            if (workerHolder[0] != null) workerHolder[0].cancel(true);
+        });
+
+        testButton.addActionListener(e -> {
+            testButton.setEnabled(false);
+            cancelTestButton.setVisible(true);
+            testStatusLabel.setForeground(UIManager.getColor("Label.foreground"));
+            testStatusLabel.setText("Testing...");
+            AIProviderConfig cfg = getConfig();
+            SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+                @Override
+                protected Void doInBackground() throws Exception {
+                    AIQueryAssistant.testConnection(cfg, abortRef);
+                    return null;
+                }
+                @Override
+                protected void done() {
+                    testButton.setEnabled(true);
+                    cancelTestButton.setVisible(false);
+                    try {
+                        get();
+                        testStatusLabel.setForeground(new Color(0, 140, 0));
+                        testStatusLabel.setText("Connection successful");
+                    } catch (java.util.concurrent.CancellationException ex) {
+                        testStatusLabel.setForeground(UIManager.getColor("Label.foreground"));
+                        testStatusLabel.setText("Cancelled");
+                    } catch (Exception ex) {
+                        testStatusLabel.setForeground(Color.RED);
+                        testStatusLabel.setText("Connection failed");
+                        Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
+                        UIUtil.showException(AIProviderPanel.this, "Test Connection", cause);
+                    }
+                }
+            };
+            workerHolder[0] = worker;
+            worker.execute();
+        });
+
+        JPanel testRow = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 4, 0));
+        testRow.setOpaque(false);
+        testRow.add(testButton);
+        testRow.add(cancelTestButton);
+        testRow.add(testStatusLabel);
+
+        GridBagConstraints trc = new GridBagConstraints();
+        trc.gridx = 0; trc.gridy = 2; trc.gridwidth = 8;
+        trc.fill = GridBagConstraints.HORIZONTAL; trc.weightx = 1.0;
+        trc.insets = new Insets(4, 0, 2, 0);
+        add(testRow, trc);
 
         ProviderType[] prev = { savedProvider };
         providerCombo.addItemListener(e -> {
@@ -130,10 +206,15 @@ public class AIProviderPanel extends JPanel {
             if (modelField.getText().trim().equals(prev[0].defaultModel)) {
                 modelField.setText(next.defaultModel);
             }
+            apiKeyLabel.setText(apiKeyLabelText(next));
             String key = loadApiKey(next);
             apiKeyField.setText(key != null ? key : "");
             prev[0] = next;
         });
+    }
+
+    private static String apiKeyLabelText(ProviderType type) {
+        return "API Key";
     }
 
     /** Returns the API key currently entered (trimmed). */
@@ -199,13 +280,6 @@ public class AIProviderPanel extends JPanel {
         return legacy instanceof String ? (String) legacy : null;
     }
 }
-
-
-// TODO
-// TODO check: is GitHub-Copilot-Chat an OpenAI-compatible provider? If yes, add it to the enum with its defaults. If no, consider how to support it (custom provider type with some special handling?).
-
-// TODO
-// TODO menu item in "Tools": "AI-Assistant". Switches to default console.
 
 // TODO
 // TODO make existing SQL-Statements available as context for the AI assistant for improvement suggestions.

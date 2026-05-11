@@ -32,7 +32,11 @@ public class AIProviderConfig {
         OPENROUTER(
             "OpenRouter",
             "https://openrouter.ai/api/v1/chat/completions",
-            "meta-llama/llama-3.1-8b-instruct:free");
+            "meta-llama/llama-3.1-8b-instruct:free"),
+        OLLAMA(
+            "Ollama (local)",
+            "http://localhost:11434/v1/chat/completions",
+            "llama3.2");
 
         public final String displayName;
         public final String defaultApiUrl;

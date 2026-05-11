@@ -19,12 +19,14 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Font;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
+import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.util.UISettings;
 
 /**
@@ -62,6 +64,10 @@ public class SystemPromptPanel extends JPanel {
         hint.setFont(hint.getFont().deriveFont(hint.getFont().getSize2D() - 1f));
 
         JButton resetButton = new JButton("Reset to Default");
+        ImageIcon resetIcon = UIUtil.readImage("/reset_64.png");
+        if (resetIcon != null) {
+            resetButton.setIcon(UIUtil.scaleIcon(resetButton, resetIcon));
+        }
         resetButton.addActionListener(e -> promptArea.setText(DEFAULT_TEMPLATE));
 
         JPanel bottomRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
