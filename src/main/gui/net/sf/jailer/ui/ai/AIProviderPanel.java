@@ -371,3 +371,6 @@ public class AIProviderPanel extends JPanel {
 // TODO make existing SQL-Statements available as context for the AI assistant for improvement suggestions.
 // TODO support multiple "profiles" for use cases, allowing users to switch between them easily.
 // TODO add option to save multiple provider configurations and switch between them (e.g. for different projects or use cases).
+
+// TODO
+// TODO menu item "Layout": switch to Navigation
