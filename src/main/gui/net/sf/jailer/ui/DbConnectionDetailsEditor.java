@@ -447,6 +447,10 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		this.dataModelAware = dataModelAware;
 		initComponents(); UIUtil.initComponents(this);
 
+		ImageIcon syncIcon = UIUtil.readImage("/sync.png");
+		if (syncIcon != null) {
+			testConnectionButton.setIcon(UIUtil.scaleIcon(testConnectionButton, syncIcon));
+		}
 
 		initialDBMSURLPattern = initUialUrl != null? UIUtil.getDBMSURLPattern(initUialUrl) + "[?<" + PROP_PARAMETER + ">]" : null;
         settingsDialog = createSettingsDialog(true);

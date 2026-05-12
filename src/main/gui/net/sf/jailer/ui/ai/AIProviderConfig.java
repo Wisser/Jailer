@@ -21,20 +21,20 @@ package net.sf.jailer.ui.ai;
 public class AIProviderConfig {
 
     public enum ProviderType {
-        ANTHROPIC(
-            "Anthropic",
-            "https://api.anthropic.com/v1/messages",
-            "claude-haiku-4-5-20251001"),
         OPENAI_COMPATIBLE(
             "OpenAI-compatible",
             "https://api.openai.com/v1/chat/completions",
             "gpt-4o-mini"),
+        ANTHROPIC(
+        		"Anthropic",
+                "https://api.anthropic.com/v1/messages",
+                "claude-haiku-4-5-20251001"),
         OPENROUTER(
             "OpenRouter",
             "https://openrouter.ai/api/v1/chat/completions",
             "meta-llama/llama-3.1-8b-instruct:free"),
         OLLAMA(
-            "Ollama (local)",
+            "Ollama",
             "http://localhost:11434/v1/chat/completions",
             "llama3.2");
 

@@ -6845,7 +6845,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		}
 		setSelectedWorkbenchTab(sqlConsole);
 		String dbmsName = session != null && session.dbms != null ? session.dbms.getDisplayName() : "SQL";
-		new net.sf.jailer.ui.databrowser.sqlconsole.AIQueryDialog(this, dm, dbmsName, sqlConsole).setVisible(true);
+		new net.sf.jailer.ui.databrowser.sqlconsole.AIQueryDialog(this, dm, dbmsName, sqlConsole, executionContext).setVisible(true);
 	}
 
 	private void createCLIItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_createCLIItemActionPerformed

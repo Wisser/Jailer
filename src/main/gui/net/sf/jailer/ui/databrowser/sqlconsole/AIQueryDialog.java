@@ -41,10 +41,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 import org.fife.ui.rtextarea.RTextScrollPane;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.ai.AIProviderConfig;
@@ -53,6 +53,7 @@ import net.sf.jailer.ui.ai.AIQueryAssistant;
 import net.sf.jailer.ui.ai.ConversationMessage;
 import net.sf.jailer.ui.ai.SystemPromptPanel;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
+import net.sf.jailer.ui.util.UISettings;
 
 /**
  * Modal dialog that lets the user have a multi-turn conversation with an AI
@@ -67,6 +68,7 @@ public class AIQueryDialog extends JDialog {
     private final DataModel dataModel;
     private final String dbmsName;
     private final SQLConsole sqlConsole;
+    private final ExecutionContext executionContext;
 
     private final List<ConversationMessage> conversationHistory = new ArrayList<>();
 
@@ -87,15 +89,17 @@ public class AIQueryDialog extends JDialog {
     private SwingWorker<String, Void> currentWorker;
     private final AtomicReference<Runnable> abortRef = new AtomicReference<>();
 
-    public AIQueryDialog(Window owner, DataModel dataModel, String dbmsName, SQLConsole sqlConsole) {
+    public AIQueryDialog(Window owner, DataModel dataModel, String dbmsName, SQLConsole sqlConsole, ExecutionContext executionContext) {
         super(owner, "AI Assistant - Natural Language to SQL", ModalityType.APPLICATION_MODAL);
         this.dataModel = dataModel;
         this.dbmsName = dbmsName;
         this.sqlConsole = sqlConsole;
+        this.executionContext = executionContext;
         initUI();
+        getRootPane().setDefaultButton(insertButton);
         UIUtil.initComponents(this);
         pack();
-        setSize(getWidth(), getHeight() + 40);
+        setSize(getWidth() + 120, getHeight() + 40);
         setLocationRelativeTo(owner);
     }
 
@@ -178,7 +182,8 @@ public class AIQueryDialog extends JDialog {
         newConversationButton.setEnabled(false);
         newConversationButton.addActionListener(e -> clearHistory());
 
-        insertButton = new JButton("Insert into Editor");
+        insertButton = new JButton("Insert into SQL Console");
+        insertButton.setFont(insertButton.getFont().deriveFont(java.awt.Font.BOLD));
         ImageIcon insertIcon = UIUtil.readImage("/runall.png");
         if (insertIcon != null) {
             insertButton.setIcon(UIUtil.scaleIcon(insertButton, insertIcon));
@@ -187,6 +192,7 @@ public class AIQueryDialog extends JDialog {
         insertButton.addActionListener(e -> {
             String sql = sqlArea.getText().trim();
             if (!sql.isEmpty()) {
+                saveCheckboxStates(providerPanel.getConfig());
                 String comment = buildCommentForHistory();
                 String combined = comment.isEmpty() ? sql : comment + "\n" + sql;
                 sqlConsole.appendStatement(combined, true);
@@ -255,6 +261,7 @@ public class AIQueryDialog extends JDialog {
         // Settings section
         JPanel settingsPanel = buildSettingsPanel();
         settingsPanel.setBorder(BorderFactory.createEmptyBorder(8, 0, 2, 0));
+        restoreCheckboxStates(providerPanel.getConfig());
 
         systemPromptPanel = new SystemPromptPanel();
 
@@ -318,7 +325,6 @@ public class AIQueryDialog extends JDialog {
 
         JButton okButton = new JButton("OK");
         okButton.addActionListener(e -> {
-            systemPromptPanel.saveSettings();
             d.dispose();
         });
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 4));
@@ -344,8 +350,6 @@ public class AIQueryDialog extends JDialog {
             providerPanel.getApiKeyComponent().requestFocusInWindow();
             return;
         }
-        providerPanel.saveSettings();
-
         generateButton.setEnabled(false);
         insertButton.setEnabled(false);
         sqlArea.setText("");
@@ -397,12 +401,15 @@ public class AIQueryDialog extends JDialog {
                     sqlArea.setCaretPosition(0);
                     insertButton.setEnabled(!sql.isEmpty());
                     if (!sql.isEmpty()) {
+                        providerPanel.markConnectionVerified();
+                        saveCheckboxStates(config);
                         conversationHistory.add(new ConversationMessage("user", question));
                         conversationHistory.add(new ConversationMessage("assistant", sql));
                         questionArea.setText("");
                         updateHistoryDisplay();
                     }
                 } catch (ExecutionException ex) {
+                    providerPanel.markConnectionFailed();
                     UIUtil.showException(AIQueryDialog.this, "SQL Generation Error", ex);
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
@@ -429,7 +436,7 @@ public class AIQueryDialog extends JDialog {
         if (!historyScrollPane.isVisible()) {
             historyScrollPane.setVisible(true);
             newConversationButton.setEnabled(true);
-            pack();
+            repackKeepingWidth();
         }
     }
 
@@ -440,7 +447,12 @@ public class AIQueryDialog extends JDialog {
         newConversationButton.setEnabled(false);
         sqlArea.setText("");
         insertButton.setEnabled(false);
+        repackKeepingWidth();
+    }
+
+    private void repackKeepingWidth() {
         pack();
+        setSize(getWidth() + 120, getHeight());
     }
 
     private String buildCommentForHistory() {
@@ -470,5 +482,24 @@ public class AIQueryDialog extends JDialog {
         }
         sb.append("\n */");
         return sb.toString();
+    }
+
+    private String checkboxSettingsKey(AIProviderConfig config) {
+        String folder = executionContext != null ? executionContext.getQualifiedDatamodelFolder() : "";
+        return config.apiUrl + "|" + config.model + "|" + (folder != null ? folder : "");
+    }
+
+    private void saveCheckboxStates(AIProviderConfig config) {
+        String key = checkboxSettingsKey(config);
+        UISettings.store("aiOmitTypes_" + key, omitColumnTypesBox.isSelected());
+        UISettings.store("aiSmartSelection_" + key, smartSelectionBox.isSelected());
+    }
+
+    private void restoreCheckboxStates(AIProviderConfig config) {
+        String key = checkboxSettingsKey(config);
+        Object omit  = UISettings.restore("aiOmitTypes_" + key);
+        Object smart = UISettings.restore("aiSmartSelection_" + key);
+        if (omit  instanceof Boolean) omitColumnTypesBox.setSelected((Boolean) omit);
+        if (smart instanceof Boolean) smartSelectionBox.setSelected((Boolean) smart);
     }
 }

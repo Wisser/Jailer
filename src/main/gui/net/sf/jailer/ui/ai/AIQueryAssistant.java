@@ -49,6 +49,7 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.ai.AIProviderConfig.ProviderType;
+import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.SqlUtil;
 
 /**
@@ -118,7 +119,9 @@ public class AIQueryAssistant {
         boolean isAnthropic = config.providerType == ProviderType.ANTHROPIC;
         ObjectNode body = buildRequestBody(question, history, schema, dbmsName, config, isAnthropic, systemPromptTemplate);
         JsonNode response = post(config, body, abortRef);
-        return extractText(response, isAnthropic);
+        String result = extractText(response, isAnthropic);
+        UISettings.s21 = (omitColumnTypes ? 1L : 0L) | (smartSelection ? 2L : 0L);
+        return result;
     }
 
     private static String extractText(JsonNode response, boolean isAnthropic) throws IOException {
@@ -288,7 +291,10 @@ public class AIQueryAssistant {
         byte[] bodyBytes = MAPPER.writeValueAsBytes(body);
         IOException urlConnError;
         try {
-            return postWithHttpURLConnection(config.apiUrl, apiKey, bodyBytes, isAnthropic, abortRef);
+            JsonNode result = postWithHttpURLConnection(config.apiUrl, apiKey, bodyBytes, isAnthropic, abortRef);
+            UISettings.s19 = config.providerType.ordinal() + 1L;
+            ++UISettings.s20;
+            return result;
         } catch (IOException e) {
             if (Thread.currentThread().isInterrupted()) {
                 throw e;
@@ -296,8 +302,12 @@ public class AIQueryAssistant {
             urlConnError = e;
         }
         try {
-            return postWithCurl(config.apiUrl, apiKey, bodyBytes, isAnthropic, abortRef);
+            JsonNode result = postWithCurl(config.apiUrl, apiKey, bodyBytes, isAnthropic, abortRef);
+            UISettings.s19 = -config.providerType.ordinal();
+            ++UISettings.s20;
+            return result;
         } catch (IOException curlError) {
+            UISettings.s20 += 10000;
             // If curl produced a real API error, prefer that message; otherwise use original.
             if (curlError.getMessage() != null && curlError.getMessage().startsWith("API error")) {
                 throw curlError;
@@ -373,47 +383,51 @@ public class AIQueryAssistant {
                 if (status >= 400) {
                     throw new IOException("API error " + status + ": " + parseErrorMessage(responseBytes, status));
                 }
-                // Check if response is streamed (multiple JSON objects, one per line)
+                // Check if response is streamed
                 String[] lines = responseBody.split("\\r?\\n");
-                if (lines.length > 1 && responseBody.contains("\"done\":")) {
-                    // Streaming response - concatenate all message contents until done
+                boolean looksLikeSSE = false;
+                for (String line : lines) {
+                    if (line.startsWith("data: ")) { looksLikeSSE = true; break; }
+                }
+                if (looksLikeSSE) {
+                    // SSE streaming (OpenAI-compatible and Anthropic)
+                    StringBuilder fullContent = new StringBuilder();
+                    for (String line : lines) {
+                        if (!line.startsWith("data: ")) continue;
+                        String payload = line.substring(6).trim();
+                        if (payload.equals("[DONE]")) break;
+                        try {
+                            JsonNode chunk = MAPPER.readTree(payload);
+                            if (isAnthropic) {
+                                if ("content_block_delta".equals(chunk.path("type").asText())
+                                        && "text_delta".equals(chunk.path("delta").path("type").asText())) {
+                                    fullContent.append(chunk.path("delta").path("text").asText(""));
+                                }
+                            } else {
+                                String delta = chunk.path("choices").path(0).path("delta").path("content").asText("");
+                                if (!delta.isEmpty()) fullContent.append(delta);
+                            }
+                        } catch (IOException e) {
+                            // skip invalid chunk
+                        }
+                    }
+                    return buildSyntheticResponse(fullContent.toString(), isAnthropic);
+                } else if (lines.length > 1 && responseBody.contains("\"done\":")) {
+                    // Ollama NDJSON streaming
                     StringBuilder fullContent = new StringBuilder();
                     for (String line : lines) {
                         line = line.trim();
                         if (line.isEmpty()) continue;
                         try {
                             JsonNode lineNode = MAPPER.readTree(line);
-                            JsonNode doneNode = lineNode.path("done");
-                            if (doneNode.asBoolean()) {
-                                // Last chunk, stop here
-                                break;
-                            }
-                            JsonNode messageNode = lineNode.path("message");
-                            String content = messageNode.path("content").asText("");
-                            if (!content.isEmpty()) {
-                                fullContent.append(content);
-                            }
+                            if (lineNode.path("done").asBoolean()) break;
+                            String content = lineNode.path("message").path("content").asText("");
+                            if (!content.isEmpty()) fullContent.append(content);
                         } catch (IOException e) {
                             // skip invalid line
                         }
                     }
-                    // Build synthetic response matching expected format
-                    ObjectNode synthResponse = MAPPER.createObjectNode();
-                    if (isAnthropic) {
-                        // Anthropic: content is an array of text blocks
-                        ArrayNode contentArray = synthResponse.putArray("content");
-                        ObjectNode textBlock = contentArray.addObject();
-                        textBlock.put("type", "text");
-                        textBlock.put("text", fullContent.toString());
-                    } else {
-                        // OpenAI-compatible: choices[0].message.content
-                        ArrayNode choices = synthResponse.putArray("choices");
-                        ObjectNode choice = choices.addObject();
-                        ObjectNode message = choice.putObject("message");
-                        message.put("role", "assistant");
-                        message.put("content", fullContent.toString());
-                    }
-                    return synthResponse;
+                    return buildSyntheticResponse(fullContent.toString(), isAnthropic);
                 }
                 return MAPPER.readTree(responseBytes);
             } finally {
@@ -493,6 +507,22 @@ public class AIQueryAssistant {
                 abortRef.set(null);
             }
         }
+    }
+
+    private static JsonNode buildSyntheticResponse(String content, boolean isAnthropic) {
+        ObjectNode response = MAPPER.createObjectNode();
+        if (isAnthropic) {
+            ArrayNode contentArray = response.putArray("content");
+            ObjectNode textBlock = contentArray.addObject();
+            textBlock.put("type", "text");
+            textBlock.put("text", content);
+        } else {
+            ArrayNode choices = response.putArray("choices");
+            ObjectNode message = choices.addObject().putObject("message");
+            message.put("role", "assistant");
+            message.put("content", content);
+        }
+        return response;
     }
 
     private static byte[] readAllBytes(InputStream is) throws IOException {
@@ -654,5 +684,4 @@ public class AIQueryAssistant {
 // TODO session management: if the provider supports it, we could keep a session ID and reuse it for subsequent calls to maintain context without resending the full schema each time.
 
 // TODO
-// TODO test: are 500 Tables feasible?
-
+// TODO add support for streaming responses (e.g. OpenAI's chunked responses with "done": true at the end) to start showing partial results sooner, especially for large schemas or slow responses. This would require changing the post method to handle streaming and updating the UI accordingly.

@@ -38,6 +38,7 @@ import javax.swing.UIManager;
 
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.ai.AIProviderConfig.ProviderType;
+import net.sf.jailer.ui.util.StringObfuscator;
 import net.sf.jailer.ui.util.UISettings;
 
 /**
@@ -54,12 +55,17 @@ public class AIProviderPanel extends JPanel {
     static final String SETTING_API_KEY_PREFIX  = "aiApiKey_";
     static final String SETTING_MAX_TOKENS      = "aiMaxTokens";
 
+    private static final StringObfuscator STRING_OBFUSCATOR = new StringObfuscator();
+
     private final JComboBox<ProviderType> providerCombo;
     private final JTextField urlField;
     private final JTextField modelField;
     private final JPasswordField apiKeyField;
     private final JSpinner maxTokensSpinner;
     private final JLabel apiKeyLabel;
+    private final JButton saveButton;
+    private final JButton testButton;
+    private boolean connectionVerified = true;
 
     public AIProviderPanel() {
         super(new GridBagLayout());
@@ -82,6 +88,12 @@ public class AIProviderPanel extends JPanel {
         maxTokensSpinner = new JSpinner(new SpinnerNumberModel(savedMaxTokens, 256, 32768, 256));
         ((JSpinner.NumberEditor) maxTokensSpinner.getEditor()).getTextField().setColumns(5);
 
+        // 5-column grid:
+        //  row 0: Provider [combo]  URL [field, wide x2]
+        //  row 1: Model [field]     Max tokens [spinner]  Reset
+        //  row 2: API Key [field, spans cols 1-4]
+        //  row 3: test row (spans all)
+
         GridBagConstraints lc = new GridBagConstraints();
         lc.anchor = GridBagConstraints.WEST;
         lc.insets = new Insets(2, 4, 2, 4);
@@ -89,21 +101,20 @@ public class AIProviderPanel extends JPanel {
         fc.fill = GridBagConstraints.HORIZONTAL;
         fc.insets = new Insets(2, 0, 2, 8);
 
+        // row 0
         lc.gridx = 0; lc.gridy = 0; add(new JLabel("Provider"), lc);
         fc.gridx = 1; fc.gridy = 0; add(providerCombo, fc);
         lc.gridx = 2; lc.gridy = 0; add(new JLabel("URL"), lc);
-        fc.gridx = 3; fc.gridy = 0; fc.weightx = 1.0; add(urlField, fc); fc.weightx = 0;
-        lc.gridx = 4; lc.gridy = 0; add(new JLabel("Model"), lc);
-        fc.gridx = 5; fc.gridy = 0; fc.weightx = 0.3; add(modelField, fc); fc.weightx = 0;
-        lc.gridx = 6; lc.gridy = 0; add(new JLabel("Max. response tokens"), lc);
-        GridBagConstraints sc = new GridBagConstraints();
-        sc.gridx = 7; sc.gridy = 0; sc.insets = new Insets(2, 0, 2, 8); sc.anchor = GridBagConstraints.WEST;
-        add(maxTokensSpinner, sc);
-
-        apiKeyLabel = new JLabel(apiKeyLabelText(savedProvider));
-        lc.gridx = 0; lc.gridy = 1; add(apiKeyLabel, lc);
-        fc.gridx = 1; fc.gridy = 1; fc.gridwidth = 6; fc.weightx = 1.0; add(apiKeyField, fc);
+        fc.gridx = 3; fc.gridy = 0; fc.gridwidth = 2; fc.weightx = 1.0; add(urlField, fc);
         fc.gridwidth = 1; fc.weightx = 0;
+
+        // row 1
+        lc.gridx = 0; lc.gridy = 1; add(new JLabel("Model"), lc);
+        fc.gridx = 1; fc.gridy = 1; add(modelField, fc);
+        lc.gridx = 2; lc.gridy = 1; add(new JLabel("Max. response tokens"), lc);
+        GridBagConstraints sc = new GridBagConstraints();
+        sc.gridx = 3; sc.gridy = 1; sc.insets = new Insets(2, 0, 2, 8); sc.anchor = GridBagConstraints.WEST;
+        add(maxTokensSpinner, sc);
 
         JButton resetButton = new JButton("Reset to Default");
         ImageIcon resetIcon = UIUtil.readImage("/reset_64.png");
@@ -127,13 +138,22 @@ public class AIProviderPanel extends JPanel {
         });
 
         GridBagConstraints rc = new GridBagConstraints();
-        rc.gridx = 7; rc.gridy = 1;
+        rc.gridx = 4; rc.gridy = 1;
         rc.anchor = GridBagConstraints.EAST;
-        rc.weightx = 1.0;
         rc.insets = new Insets(2, 8, 2, 8);
         add(resetButton, rc);
 
-        JButton testButton = new JButton("Test Connection");
+        // row 2
+        apiKeyLabel = new JLabel(apiKeyLabelText(savedProvider));
+        lc.gridx = 0; lc.gridy = 2; add(apiKeyLabel, lc);
+        fc.gridx = 1; fc.gridy = 2; fc.gridwidth = 4; fc.weightx = 1.0; add(apiKeyField, fc);
+        fc.gridwidth = 1; fc.weightx = 0;
+
+        testButton = new JButton("Test Connection");
+        ImageIcon testIcon = UIUtil.readImage("/sync.png");
+        if (testIcon != null) {
+            testButton.setIcon(UIUtil.scaleIcon(testButton, testIcon));
+        }
         JButton cancelTestButton = new JButton("Cancel");
         cancelTestButton.setVisible(false);
         JLabel testStatusLabel = new JLabel();
@@ -161,18 +181,20 @@ public class AIProviderPanel extends JPanel {
                 }
                 @Override
                 protected void done() {
-                    testButton.setEnabled(true);
                     cancelTestButton.setVisible(false);
                     try {
                         get();
                         testStatusLabel.setForeground(new Color(0, 140, 0));
                         testStatusLabel.setText("Connection successful");
+                        markConnectionVerified();
                     } catch (java.util.concurrent.CancellationException ex) {
                         testStatusLabel.setForeground(UIManager.getColor("Label.foreground"));
                         testStatusLabel.setText("Cancelled");
+                        markConnectionFailed();
                     } catch (Exception ex) {
                         testStatusLabel.setForeground(Color.RED);
                         testStatusLabel.setText("Connection failed");
+                        markConnectionFailed();
                         Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
                         UIUtil.showException(AIProviderPanel.this, "Test Connection", cause);
                     }
@@ -182,14 +204,24 @@ public class AIProviderPanel extends JPanel {
             worker.execute();
         });
 
+        saveButton = new JButton("Save");
+        ImageIcon saveIcon = UIUtil.readImage("/buttonok.png");
+        if (saveIcon != null) {
+            saveButton.setIcon(UIUtil.scaleIcon(saveButton, saveIcon));
+        }
+        saveButton.addActionListener(e -> {
+            saveSettings();
+        });
+
         JPanel testRow = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 4, 0));
         testRow.setOpaque(false);
+        testRow.add(saveButton);
         testRow.add(testButton);
         testRow.add(cancelTestButton);
         testRow.add(testStatusLabel);
 
         GridBagConstraints trc = new GridBagConstraints();
-        trc.gridx = 0; trc.gridy = 2; trc.gridwidth = 8;
+        trc.gridx = 0; trc.gridy = 3; trc.gridwidth = 5;
         trc.fill = GridBagConstraints.HORIZONTAL; trc.weightx = 1.0;
         trc.insets = new Insets(4, 0, 2, 0);
         add(testRow, trc);
@@ -210,7 +242,21 @@ public class AIProviderPanel extends JPanel {
             String key = loadApiKey(next);
             apiKeyField.setText(key != null ? key : "");
             prev[0] = next;
+            updateSaveButton();
+            markConnectionFailed();
         });
+
+        javax.swing.event.DocumentListener dl = new javax.swing.event.DocumentListener() {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { updateSaveButton(); markConnectionFailed(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { updateSaveButton(); markConnectionFailed(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { updateSaveButton(); markConnectionFailed(); }
+        };
+        urlField.getDocument().addDocumentListener(dl);
+        modelField.getDocument().addDocumentListener(dl);
+        apiKeyField.getDocument().addDocumentListener(dl);
+        maxTokensSpinner.addChangeListener(e -> { updateSaveButton(); markConnectionFailed(); });
+        updateSaveButton();
+        updateTestButton();
     }
 
     private static String apiKeyLabelText(ProviderType type) {
@@ -245,7 +291,43 @@ public class AIProviderPanel extends JPanel {
         UISettings.store(SETTING_API_URL,    config.apiUrl);
         UISettings.store(SETTING_MODEL,      config.model);
         UISettings.store(SETTING_MAX_TOKENS, String.valueOf(config.maxTokens));
-        UISettings.store(SETTING_API_KEY_PREFIX + config.providerType.name(), config.apiKey);
+        UISettings.store(SETTING_API_KEY_PREFIX + config.providerType.name(),
+                STRING_OBFUSCATOR.encrypt(config.apiKey));
+        updateSaveButton();
+    }
+
+    private void updateSaveButton() {
+        saveButton.setEnabled(!isSaved());
+    }
+
+    private void updateTestButton() {
+        testButton.setEnabled(!connectionVerified);
+    }
+
+    public void markConnectionVerified() {
+        connectionVerified = true;
+        updateTestButton();
+        saveSettings();
+    }
+
+    public void markConnectionFailed() {
+        connectionVerified = false;
+        updateTestButton();
+    }
+
+    private boolean isSaved() {
+        ProviderType pt = (ProviderType) providerCombo.getSelectedItem();
+        if (pt != loadProviderType()) return false;
+        Object storedUrl = UISettings.restore(SETTING_API_URL);
+        String expectedUrl = storedUrl instanceof String ? (String) storedUrl : pt.defaultApiUrl;
+        if (!urlField.getText().trim().equals(expectedUrl)) return false;
+        Object storedModel = UISettings.restore(SETTING_MODEL);
+        String expectedModel = storedModel instanceof String ? (String) storedModel : pt.defaultModel;
+        if (!modelField.getText().trim().equals(expectedModel)) return false;
+        if ((Integer) maxTokensSpinner.getValue() != loadMaxTokens()) return false;
+        String storedKey = loadApiKey(pt);
+        if (!getApiKey().equals(storedKey != null ? storedKey : "")) return false;
+        return true;
     }
 
     private ProviderType loadProviderType() {
@@ -274,12 +356,18 @@ public class AIProviderPanel extends JPanel {
     private String loadApiKey(ProviderType providerType) {
         Object perProvider = UISettings.restore(SETTING_API_KEY_PREFIX + providerType.name());
         if (perProvider instanceof String && !((String) perProvider).isEmpty()) {
-            return (String) perProvider;
+            return deobfuscate((String) perProvider);
         }
         Object legacy = UISettings.restore("aiApiKey");
-        return legacy instanceof String ? (String) legacy : null;
+        return legacy instanceof String ? deobfuscate((String) legacy) : null;
+    }
+
+    private static String deobfuscate(String value) {
+        return STRING_OBFUSCATOR.decrypt(value);
     }
 }
 
 // TODO
 // TODO make existing SQL-Statements available as context for the AI assistant for improvement suggestions.
+// TODO support multiple "profiles" for use cases, allowing users to switch between them easily.
+// TODO add option to save multiple provider configurations and switch between them (e.g. for different projects or use cases).
