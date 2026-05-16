@@ -275,6 +275,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         this.executionContext = executionContext;
         initComponents(); UIUtil.initComponents(this);
         jToolBar1.setFloatable(false);
+        aiSilentStatusPanel.setVisible(false);
+        aiSilentCancelButton.setIcon(UIUtil.scaleIcon(this, cancelIcon));
 
         initMenuItems();
         historyComboBox.setMaximumRowCount(25);
@@ -2793,6 +2795,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         continueButton = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         cancelInStautusbarButton = new javax.swing.JButton();
+        aiSilentStatusPanel = new javax.swing.JPanel();
+        jLabel4 = new javax.swing.JLabel();
+        aiSilentCancelButton = new javax.swing.JButton();
+        jPanel9 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jLabel2 = new javax.swing.JLabel();
@@ -2968,6 +2974,33 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 20, 0, 4);
         jPanel6.add(cancelInStautusbarButton, gridBagConstraints);
 
+        aiSilentStatusPanel.setLayout(new java.awt.GridBagLayout());
+
+        jLabel4.setText("Re-generating SQL using AI");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 20);
+        aiSilentStatusPanel.add(jLabel4, gridBagConstraints);
+
+        aiSilentCancelButton.setText("Cancel");
+        aiSilentCancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                aiSilentCancelButtonActionPerformed(evt);
+            }
+        });
+        aiSilentStatusPanel.add(aiSilentCancelButton, new java.awt.GridBagConstraints());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.weightx = 1.0;
+        aiSilentStatusPanel.add(jPanel9, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(2, 4, 2, 0);
+        jPanel6.add(aiSilentStatusPanel, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -3033,7 +3066,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     	}
     }//GEN-LAST:event_continueButtonActionPerformed
 
+    private void aiSilentCancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aiSilentCancelButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_aiSilentCancelButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton aiSilentCancelButton;
+    private javax.swing.JPanel aiSilentStatusPanel;
     private javax.swing.JButton cancelButton;
     private javax.swing.JButton cancelInStautusbarButton;
     private javax.swing.JButton clearButton;
@@ -3044,6 +3083,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -3051,6 +3091,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
+    private javax.swing.JPanel jPanel9;
     private javax.swing.JToolBar.Separator jSeparator1;
     private javax.swing.JToolBar.Separator jSeparator2;
     private javax.swing.JToolBar.Separator jSeparator3;
