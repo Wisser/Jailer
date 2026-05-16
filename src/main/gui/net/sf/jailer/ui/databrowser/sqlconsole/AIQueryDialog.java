@@ -16,16 +16,20 @@
 package net.sf.jailer.ui.databrowser.sqlconsole;
 
 import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -37,6 +41,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
@@ -67,7 +72,7 @@ public class AIQueryDialog extends JDialog {
 
     private final DataModel dataModel;
     private final String dbmsName;
-    private final SQLConsole sqlConsole;
+    private final Consumer<String> insertAction;
     private final ExecutionContext executionContext;
 
     private final List<ConversationMessage> conversationHistory = new ArrayList<>();
@@ -86,16 +91,32 @@ public class AIQueryDialog extends JDialog {
     private JCheckBox omitColumnTypesBox;
     private JLabel contextEstimateLabel;
     private JButton cancelButton;
+    private JButton closeButton;
+    private JButton systemPromptButton;
     private SwingWorker<String, Void> currentWorker;
     private final AtomicReference<Runnable> abortRef = new AtomicReference<>();
 
-    public AIQueryDialog(Window owner, DataModel dataModel, String dbmsName, SQLConsole sqlConsole, ExecutionContext executionContext) {
+    public AIQueryDialog(Window owner, DataModel dataModel, String dbmsName, Consumer<String> insertAction, ExecutionContext executionContext, String initialPrompt, boolean silent, String initialSql) {
         super(owner, "AI Assistant - Natural Language to SQL", ModalityType.APPLICATION_MODAL);
         this.dataModel = dataModel;
         this.dbmsName = dbmsName;
-        this.sqlConsole = sqlConsole;
+        this.insertAction = insertAction;
         this.executionContext = executionContext;
         initUI();
+        if (initialPrompt != null) {
+            questionArea.setText(initialPrompt);
+            if (silent) {
+                historyArea.setText(initialPrompt);
+                if (generateButton.isEnabled()) {
+                    UIUtil.invokeLater(() -> onGenerate());
+                }
+            }
+        }
+        if (initialSql != null) {
+            String sql = initialSql.replaceFirst("(?s)\\A\\s*/\\*.*?\\*/\\s*", "");
+            sqlArea.setText(sql);
+            sqlArea.setCaretPosition(0);
+        }
         getRootPane().setDefaultButton(insertButton);
         UIUtil.initComponents(this);
         pack();
@@ -107,14 +128,14 @@ public class AIQueryDialog extends JDialog {
         ((JComponent) getContentPane()).setBorder(BorderFactory.createEmptyBorder(12, 12, 8, 12));
         setLayout(new BorderLayout(8, 8));
 
-        // Conversation history (hidden until first exchange)
         historyArea = new JTextArea();
         historyArea.setEditable(false);
+        historyArea.setEnabled(false);
+        historyArea.setText("No conversation yet");
         historyArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
         historyScrollPane = new JScrollPane(historyArea);
         historyScrollPane.setPreferredSize(new Dimension(700, 120));
         historyScrollPane.setBorder(BorderFactory.createTitledBorder("Conversation"));
-        historyScrollPane.setVisible(false);
 
         // Question area
         JPanel questionPanel = new JPanel(new BorderLayout(4, 4));
@@ -122,6 +143,14 @@ public class AIQueryDialog extends JDialog {
         questionArea = new JTextArea(8, 60);
         questionArea.setLineWrap(true);
         questionArea.setWrapStyleWord(true);
+        KeyStroke ctrlEnter = KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ENTER, java.awt.event.InputEvent.CTRL_DOWN_MASK);
+        questionArea.getInputMap(JComponent.WHEN_FOCUSED).put(ctrlEnter, "generateSQL");
+        questionArea.getActionMap().put("generateSQL", new AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                generateButton.doClick();
+            }
+        });
         questionPanel.add(new JScrollPane(questionArea), BorderLayout.CENTER);
 
         generateButton = new JButton("Generate SQL");
@@ -130,6 +159,7 @@ public class AIQueryDialog extends JDialog {
             generateButton.setIcon(UIUtil.scaleIcon(generateButton, aiIcon));
         }
         generateButton.setEnabled(false);
+        generateButton.setToolTipText("Generate SQL (Ctrl+Enter)");
         statusLabel = new JLabel(" ");
         generateButton.addActionListener(e -> onGenerate());
 
@@ -183,7 +213,7 @@ public class AIQueryDialog extends JDialog {
         newConversationButton.addActionListener(e -> clearHistory());
 
         insertButton = new JButton("Insert into SQL Console");
-        insertButton.setFont(insertButton.getFont().deriveFont(java.awt.Font.BOLD));
+        insertButton.setMargin(new Insets(4, 10, 4, 10));
         ImageIcon insertIcon = UIUtil.readImage("/runall.png");
         if (insertIcon != null) {
             insertButton.setIcon(UIUtil.scaleIcon(insertButton, insertIcon));
@@ -195,7 +225,7 @@ public class AIQueryDialog extends JDialog {
                 saveCheckboxStates(providerPanel.getConfig());
                 String comment = buildCommentForHistory();
                 String combined = comment.isEmpty() ? sql : comment + "\n" + sql;
-                sqlConsole.appendStatement(combined, true);
+                insertAction.accept(combined);
                 dispose();
             }
         });
@@ -266,14 +296,14 @@ public class AIQueryDialog extends JDialog {
         systemPromptPanel = new SystemPromptPanel();
 
         // Buttons
-        JButton closeButton = new JButton("Close");
+        closeButton = new JButton("Close");
         ImageIcon closeIcon = UIUtil.readImage("/buttoncancel.png");
         if (closeIcon != null) {
             closeButton.setIcon(UIUtil.scaleIcon(closeButton, closeIcon));
         }
         closeButton.addActionListener(e -> dispose());
 
-        JButton systemPromptButton = new JButton("System Prompt...");
+        systemPromptButton = new JButton("System Prompt...");
         ImageIcon editIcon = UIUtil.readImage("/ieditdetails_64.png");
         if (editIcon != null) {
             systemPromptButton.setIcon(UIUtil.scaleIcon(systemPromptButton, editIcon));
@@ -337,10 +367,34 @@ public class AIQueryDialog extends JDialog {
         d.setVisible(true);
     }
 
+    private void setGenerating(boolean generating) {
+        generateButton.setEnabled(!generating);
+        insertButton.setEnabled(!generating);
+        newConversationButton.setEnabled(!generating && !conversationHistory.isEmpty());
+        questionArea.setEnabled(!generating);
+        providerPanel.setEnabled(!generating);
+        smartSelectionBox.setEnabled(!generating);
+        omitColumnTypesBox.setEnabled(!generating);
+        systemPromptButton.setEnabled(!generating);
+        cancelButton.setEnabled(generating);
+        setCursor(generating ? Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR) : Cursor.getDefaultCursor());
+    }
+
     private void onGenerate() {
         String question = questionArea.getText().trim();
         if (question.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Please describe the query.", "Input Required", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        if (question.startsWith("echo ")) {
+            String sql = question.substring("echo ".length());
+            sqlArea.setText(sql);
+            sqlArea.setCaretPosition(0);
+            insertButton.setEnabled(!sql.isEmpty());
+            conversationHistory.add(new ConversationMessage("user", question));
+            conversationHistory.add(new ConversationMessage("assistant", sql));
+            questionArea.setText("");
+            updateHistoryDisplay();
             return;
         }
         AIProviderConfig config = providerPanel.getConfig();
@@ -350,8 +404,7 @@ public class AIQueryDialog extends JDialog {
             providerPanel.getApiKeyComponent().requestFocusInWindow();
             return;
         }
-        generateButton.setEnabled(false);
-        insertButton.setEnabled(false);
+        setGenerating(true);
         sqlArea.setText("");
         statusLabel.setText("Generating...");
 
@@ -388,9 +441,8 @@ public class AIQueryDialog extends JDialog {
 
             @Override
             protected void done() {
-                cancelButton.setEnabled(false);
                 currentWorker = null;
-                generateButton.setEnabled(true);
+                setGenerating(false);
                 statusLabel.setText(" ");
                 if (isCancelled()) {
                     return;
@@ -407,6 +459,7 @@ public class AIQueryDialog extends JDialog {
                         conversationHistory.add(new ConversationMessage("assistant", sql));
                         questionArea.setText("");
                         updateHistoryDisplay();
+                        insertButton.requestFocusInWindow();
                     }
                 } catch (ExecutionException ex) {
                     providerPanel.markConnectionFailed();
@@ -416,7 +469,6 @@ public class AIQueryDialog extends JDialog {
                 }
             }
         };
-        cancelButton.setEnabled(true);
         currentWorker.execute();
     }
 
@@ -426,33 +478,23 @@ public class AIQueryDialog extends JDialog {
             if (i > 0) {
                 sb.append("\n");
             }
-            sb.append("You: ").append(conversationHistory.get(i).content).append("\n");
+            sb.append("You:\n").append(conversationHistory.get(i).content).append("\n");
             sb.append("----\n");
             sb.append(conversationHistory.get(i + 1).content).append("\n");
         }
+        historyArea.setEnabled(true);
         historyArea.setText(sb.toString());
         historyArea.setCaretPosition(historyArea.getDocument().getLength());
-
-        if (!historyScrollPane.isVisible()) {
-            historyScrollPane.setVisible(true);
-            newConversationButton.setEnabled(true);
-            repackKeepingWidth();
-        }
+        newConversationButton.setEnabled(true);
     }
 
     private void clearHistory() {
         conversationHistory.clear();
-        historyArea.setText("");
-        historyScrollPane.setVisible(false);
+        historyArea.setEnabled(false);
+        historyArea.setText("No conversation yet");
         newConversationButton.setEnabled(false);
         sqlArea.setText("");
         insertButton.setEnabled(false);
-        repackKeepingWidth();
-    }
-
-    private void repackKeepingWidth() {
-        pack();
-        setSize(getWidth() + 120, getHeight());
     }
 
     private String buildCommentForHistory() {
@@ -503,3 +545,7 @@ public class AIQueryDialog extends JDialog {
         if (smart instanceof Boolean) smartSelectionBox.setSelected((Boolean) smart);
     }
 }
+
+// TODO
+// TODO Anleitung zur Einrichtung eines API Keys mit Ollama oder OpenRouter in die Dokumentation aufnehmen
+// TODO README/Docs ergänzen

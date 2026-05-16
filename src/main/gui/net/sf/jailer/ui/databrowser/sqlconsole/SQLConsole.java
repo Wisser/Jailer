@@ -26,11 +26,14 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -111,6 +114,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.RowSorter;
 import javax.swing.RowSorter.SortKey;
@@ -159,6 +163,7 @@ import net.sf.jailer.ui.SessionForUI;
 import net.sf.jailer.ui.StringSearchPanel.StringSearchDialog;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.UIUtil.PLAF;
+import net.sf.jailer.ui.ai.AIQueryAssistant;
 import net.sf.jailer.ui.associationproposer.AssociationProposerView;
 import net.sf.jailer.ui.databrowser.BrowserContentCellEditor;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
@@ -233,6 +238,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	private JMenuItem menuItemToSingleLine;
 	private JMenuItem menuItemSubstituteVariables;
 	private JMenuItem menuItemAnalyse;
+	private JMenuItem menuItemAIAssistant;
+	private JMenuItem menuItemAIAssistantSilent;
 	private int initialTabbedPaneSelection = 0;
 	private List<? extends SortKey> initialSortKeys = null;
 	private Map<String, FullTextSearchPanel> fullTextSearchPanel = new WeakHashMap<String, FullTextSearchPanel>();
@@ -405,6 +412,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         		menu.add(menuItemSubstituteVariables);
         		menu.add(new JSeparator());
         		menu.add(menuItemAnalyse);
+        		menu.add(new JSeparator());
+        		menu.add(menuItemAIAssistant);
+        		menu.add(menuItemAIAssistantSilent);
         	}
 
         };
@@ -520,19 +530,26 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             aiButton.setIcon(UIUtil.scaleIcon(aiButton, aiIcon));
         }
         aiButton.setFocusable(false);
-        aiButton.setToolTipText("AI Assistant \"Generate SQL from plain language\"");
+        KeyStroke aiKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_A,
+                Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() | InputEvent.SHIFT_MASK);
+        aiButton.setToolTipText("AI Assistant (" + KeyEvent.getKeyModifiersText(aiKeyStroke.getModifiers()) + "+" + KeyEvent.getKeyText(aiKeyStroke.getKeyCode()) + ")");
         aiButton.addActionListener(e -> {
-            DataModel dm = datamodel.get();
-            if (dm == null) {
-                JOptionPane.showMessageDialog(SQLConsole.this, "No data model available.", "AI Assistant", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-            String dbmsName = session.dbms != null ? session.dbms.getDisplayName() : "SQL";
-            new AIQueryDialog(SwingUtilities.getWindowAncestor(SQLConsole.this), dm, dbmsName,
-                    SQLConsole.this, executionContext).setVisible(true);
+            openAIAssistant(false);
         });
         jToolBar1.add(aiButton, 4);
         jToolBar1.add(new JToolBar.Separator(), 5);
+
+        KeyStroke aiSilentKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_S,
+                Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() | InputEvent.SHIFT_MASK);
+        editorPane.getInputMap(javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW).put(aiSilentKeyStroke, "openAIAssistantSilent");
+        editorPane.getActionMap().put("openAIAssistantSilent", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                if (menuItemAIAssistantSilent != null && menuItemAIAssistantSilent.isEnabled()) {
+                    openAIAssistant(true);
+                }
+            }
+        });
 
         limitComboBox.setModel(new DefaultComboBoxModel(DataBrowser.ROW_LIMITS));
         limitComboBox.setSelectedItem(1000);
@@ -646,8 +663,73 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			}
 		});
 		item.setToolTipText("Analyzes selected SQL and proposes association definitions.");
+
+		item = new JMenuItem("AI Assistant");
+		menuItemAIAssistant = item;
+		ImageIcon aiMenuIcon = UIUtil.readImage("/ask_ai.png");
+		if (aiMenuIcon != null) {
+			item.setIcon(UIUtil.scaleIcon(item, aiMenuIcon));
+		}
+		KeyStroke aiKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_A,
+				Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() | InputEvent.SHIFT_MASK);
+		item.setAccelerator(aiKeyStroke);
+		item.setToolTipText("Generate SQL from plain language.");
+		item.addActionListener(e -> openAIAssistant(false));
+
+		item = new JMenuItem("AI Assistant (Silent)");
+		menuItemAIAssistantSilent = item;
+		ImageIcon aiSilentIcon = UIUtil.readImage("/ask_ai.png");
+		if (aiSilentIcon != null) {
+			item.setIcon(UIUtil.scaleIcon(item, aiSilentIcon));
+		}
+		KeyStroke aiSilentKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_S,
+				Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() | InputEvent.SHIFT_MASK);
+		item.setAccelerator(aiSilentKeyStroke);
+		item.setToolTipText("<html>Re-generates SQL using the AI prompt of the selected statement<br>without opening the dialog.</html>");
+		item.addActionListener(e -> openAIAssistant(true));
 	}
 
+	public void openAIAssistant(boolean silent) {
+		DataModel dm = datamodel.get();
+		if (dm == null) {
+			JOptionPane.showMessageDialog(SQLConsole.this, "No data model available.", "AI Assistant", JOptionPane.WARNING_MESSAGE);
+			return;
+		}
+		String statement = editorPane.getCurrentStatement(true);
+		if (statement.trim().length() == 0) {
+			int pos = editorPane.getCaretPosition();
+			int l = editorPane.getLineStartOffsetOfCurrentLine();
+			if (l > 0) {
+				setCaretPosition(l - 1);
+				statement = editorPane.getCurrentStatement(true);
+				if (statement.trim().length() == 0) {
+					setCaretPosition(pos);
+					return;
+				}
+			}
+		}
+		String currentStatement = statement;
+		String prompt = AIQueryAssistant.extractPrompt(currentStatement);
+		
+		String dbmsName = session.dbms != null ? session.dbms.getDisplayName() : "SQL";
+		new AIQueryDialog(SwingUtilities.getWindowAncestor(SQLConsole.this), dm, dbmsName,
+				sql -> {
+					if (prompt != null) {
+						if (!currentStatement.trim().equals(sql.trim())) {
+							Pattern pattern = Pattern.compile(".*?[^;](\\s*)$", Pattern.DOTALL);
+							Matcher matcher = pattern.matcher(currentStatement);
+							String tail = matcher.matches() ? matcher.group(1) : "";
+							editorPane.replaceCurrentStatement(sql.trim() + ";\n", true);
+							UIUtil.invokeLater(() -> {
+								executeSelectedStatements(false, null, true);
+							});
+						}
+					} else {
+						appendStatement(sql, true);
+					}
+				}, executionContext, prompt, silent, prompt != null? currentStatement : null).setVisible(true);
+	}
+	
 	private void updateMenuItems(boolean isTextSelected) {
     	if (menuItemToggle != null) {
     		menuItemToggle.setEnabled(isTextSelected);
@@ -661,6 +743,25 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     	if (menuItemAnalyse != null) {
     		menuItemAnalyse.setEnabled(isTextSelected);
     	}
+		if (menuItemAIAssistantSilent != null && editorPane != null) {
+			String currentStatement = editorPane.getCurrentStatement(true);
+			if (currentStatement.trim().length() == 0) {
+				int pos = editorPane.getCaretPosition();
+				int l = editorPane.getLineStartOffsetOfCurrentLine();
+				if (l > 0) {
+					try {
+						editorPane.virtualCaretPosition = l - 1;
+						currentStatement = editorPane.getCurrentStatement(true);
+					} finally {
+						editorPane.virtualCaretPosition = null;
+					}
+				}
+			}
+			menuItemAIAssistantSilent.setEnabled(AIQueryAssistant.extractPrompt(currentStatement) != null);
+			// TODO
+			
+//			menuItemAIAssistantSilent.setEnabled(true);
+		}
 	}
 
 	private static int threadNum = 1;

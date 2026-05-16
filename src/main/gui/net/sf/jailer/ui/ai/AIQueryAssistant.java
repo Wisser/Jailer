@@ -33,6 +33,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BooleanSupplier;
 
@@ -63,6 +65,9 @@ public class AIQueryAssistant {
 
     private static final Logger _log = LoggerFactory.getLogger("ai_api");
     private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final Pattern AI_COMMENT_PATTERN = Pattern.compile(
+            "\\A\\s*/\\*\\s*AI:\\s*(.*?)\\s*\\*/",
+            Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 
     public static String generateSQL(String question, List<ConversationMessage> history,
             DataModel dataModel, String dbmsName, AIProviderConfig config) throws IOException {
@@ -555,7 +560,7 @@ public class AIQueryAssistant {
             // Include full response body if no specific message found
             return responseJson.trim() + " (" + status + ")";
         } catch (IOException ignored) {
-            // not JSON — fall through
+            // not JSON fall through
         }
         String raw = responseJson.trim();
         if (raw.startsWith("<") || raw.toLowerCase(Locale.ROOT).contains("<html")) {
@@ -677,6 +682,27 @@ public class AIQueryAssistant {
     private static String colAfterTable(String expr, String tableName) {
         String prefix = tableName + ".";
         return expr.startsWith(prefix) ? expr.substring(prefix.length()) : null;
+    }
+
+    /**
+     * Extracts the AI prompt from the comment header of a generated SQL statement.
+     * Returns the last prompt line (stripped of list prefix), or null if none is found.
+     */
+    public static String extractPrompt(String sql) {
+        if (sql == null) return null;
+        Matcher m = AI_COMMENT_PATTERN.matcher(sql);
+        if (!m.find()) return null;
+        String body = m.group(1);
+        List<String> lines = new ArrayList<>();
+        for (String line : body.split("\\r?\\n")) {
+            String t = line.replaceFirst("^\\s+", "");
+            if (!t.isEmpty()) {
+                lines.add(t);
+            }
+        }
+        if (lines.isEmpty()) return null;
+        String result = String.join("\n", lines);
+        return result.isEmpty() ? null : result;
     }
 }
 

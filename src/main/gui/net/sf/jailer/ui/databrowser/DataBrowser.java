@@ -194,6 +194,7 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataDetailsPanel;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel.OutlineInfo;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
+import net.sf.jailer.ui.databrowser.sqlconsole.AIQueryDialog;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.ui.databrowser.whereconditioneditor.WhereConditionEditorPanel;
 import net.sf.jailer.ui.ddl_script_generator.DDLScriptGeneratorPanel;
@@ -6833,6 +6834,12 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	}// GEN-LAST:event_refreshButtonActionPerformed
 
 	private void openAIAssistant() {
+		Component sc = getSelectedWorkbenchTab();
+		if (sc instanceof SQLConsole) {
+			((SQLConsole) sc).openAIAssistant(false);
+			return;
+		}
+
 		DataModel dm = datamodel.get();
 		if (dm == null) {
 			javax.swing.JOptionPane.showMessageDialog(this, "No data model available.", "AI Assistant", javax.swing.JOptionPane.WARNING_MESSAGE);
@@ -6845,7 +6852,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		}
 		setSelectedWorkbenchTab(sqlConsole);
 		String dbmsName = session != null && session.dbms != null ? session.dbms.getDisplayName() : "SQL";
-		new net.sf.jailer.ui.databrowser.sqlconsole.AIQueryDialog(this, dm, dbmsName, sqlConsole, executionContext).setVisible(true);
+		new AIQueryDialog(this, dm, dbmsName, sql -> sqlConsole.appendStatement(sql, true), executionContext, null, true, null).setVisible(true);
 	}
 
 	private void createCLIItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_createCLIItemActionPerformed

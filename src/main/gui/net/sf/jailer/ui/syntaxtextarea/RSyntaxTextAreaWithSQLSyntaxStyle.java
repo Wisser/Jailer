@@ -49,6 +49,8 @@ import javax.swing.UIManager;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
+import javax.swing.text.DefaultCaret;
 import javax.swing.text.Segment;
 
 import org.fife.rsta.ui.search.FindDialog;
@@ -502,8 +504,8 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 	 * @return pair of (start and end line number) and (begin- end-offset)
 	 */
 	public Pair<Pair<Integer, Integer>, Pair<Integer, Integer>> getCurrentStatementFragmentLocation() {
-		int begin = Math.min(getCaret().getDot(), getCaret().getMark());
-		int end = Math.max(getCaret().getDot(), getCaret().getMark());
+		int begin = Math.min(getCaretDot(), getCaretMark());
+		int end = Math.max(getCaretDot(), getCaretMark());
 		if (begin == end || end - begin > 1000000) {
 			return null;
 		}
@@ -531,7 +533,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 	 * @return pair of start and end line number
 	 */
 	public Pair<Integer, Integer> getCurrentStatementLocation(Set<Integer> eosLines) {
-		return getCurrentStatementLocation(getCaret().getDot() != getCaret().getMark(), false, eosLines, false);
+		return getCurrentStatementLocation(getCaretDot() != getCaretMark(), false, eosLines, false);
 	}
 
 	/**
@@ -545,7 +547,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 	 */
 	public Pair<Integer, Integer> getCurrentStatementLocation(boolean singleStatement, boolean currentLineMayBeEmpty, Set<Integer> eosLines, boolean startAtLineAbove) {
 		try {
-			int y = getLineOfOffset(Math.min(getCaret().getDot(), getCaret().getMark()));
+			int y = getLineOfOffset(Math.min(getCaretDot(), getCaretMark()));
 			int caretBegin = y;
 			int start = y;
 			while (start > 0) {
@@ -571,7 +573,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 				--start;
 			}
 			
-			int end = getLineOfOffset(Math.max(getCaret().getDot(), getCaret().getMark()));
+			int end = getLineOfOffset(Math.max(getCaretDot(), getCaretMark()));
 			int caretEnd = end;
 			int lineCount = getLineCount();
 			
@@ -1207,6 +1209,36 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 	}
 
 	protected void updateMenuItems(boolean isTextSelected) {
+	}
+	
+	public Integer virtualCaretPosition = null;
+	
+	@Override
+	public void setCaretPosition(int position) {
+		virtualCaretPosition = null;
+		super.setCaretPosition(position);
+	}
+
+	@Override
+	public int getCaretPosition() {
+		if (virtualCaretPosition != null) {
+			return virtualCaretPosition;
+		}
+		return super.getCaretPosition();
+	}
+
+	public int getCaretDot() {
+		if (virtualCaretPosition != null) {
+			return virtualCaretPosition;
+		}
+		return super.getCaret().getDot();
+	}
+	
+	public int getCaretMark() {
+		if (virtualCaretPosition != null) {
+			return virtualCaretPosition;
+		}
+		return super.getCaret().getMark();
 	}
 
 	private ImageIcon icon;
