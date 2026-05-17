@@ -24,28 +24,34 @@ public class AIProviderConfig {
         OPENAI_COMPATIBLE(
             "OpenAI-compatible",
             "https://api.openai.com/v1/chat/completions",
-            "gpt-4o-mini"),
+            "gpt-4o-mini",
+            true),
         ANTHROPIC(
         		"Anthropic",
                 "https://api.anthropic.com/v1/messages",
-                "claude-haiku-4-5-20251001"),
+                "claude-haiku-4-5-20251001",
+                true),
         OPENROUTER(
             "OpenRouter",
             "https://openrouter.ai/api/v1/chat/completions",
-            "meta-llama/llama-3.1-8b-instruct:free"),
+            "meta-llama/llama-3.1-8b-instruct:free",
+            true),
         OLLAMA(
             "Ollama",
             "http://localhost:11434/v1/chat/completions",
-            "llama3.2");
+            "llama3.2",
+            false);
 
         public final String displayName;
         public final String defaultApiUrl;
         public final String defaultModel;
+        public final boolean requiresApiKey;
 
-        ProviderType(String displayName, String defaultApiUrl, String defaultModel) {
+        ProviderType(String displayName, String defaultApiUrl, String defaultModel, boolean requiresApiKey) {
             this.displayName = displayName;
             this.defaultApiUrl = defaultApiUrl;
             this.defaultModel = defaultModel;
+            this.requiresApiKey = requiresApiKey;
         }
 
         @Override

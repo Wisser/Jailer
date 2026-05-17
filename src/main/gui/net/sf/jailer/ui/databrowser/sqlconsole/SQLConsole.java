@@ -79,7 +79,9 @@ import java.util.WeakHashMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -119,6 +121,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.RowSorter;
 import javax.swing.RowSorter.SortKey;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.Timer;
 import javax.swing.border.LineBorder;
 import javax.swing.event.CaretEvent;
@@ -163,7 +166,9 @@ import net.sf.jailer.ui.SessionForUI;
 import net.sf.jailer.ui.StringSearchPanel.StringSearchDialog;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.UIUtil.PLAF;
+import net.sf.jailer.ui.ai.AIProviderConfig;
 import net.sf.jailer.ui.ai.AIQueryAssistant;
+import net.sf.jailer.ui.ai.ConversationMessage;
 import net.sf.jailer.ui.associationproposer.AssociationProposerView;
 import net.sf.jailer.ui.databrowser.BrowserContentCellEditor;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
@@ -714,24 +719,73 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		String prompt = AIQueryAssistant.extractPrompt(currentStatement);
 		
 		String dbmsName = session.dbms != null ? session.dbms.getDisplayName() : "SQL";
+		if (silent && prompt != null) {
+			runSilentAIQuery(dm, dbmsName, currentStatement, prompt);
+			return;
+		}
 		new AIQueryDialog(SwingUtilities.getWindowAncestor(SQLConsole.this), dm, dbmsName,
 				sql -> {
 					if (prompt != null) {
 						if (!currentStatement.trim().equals(sql.trim())) {
-							Pattern pattern = Pattern.compile(".*?[^;](\\s*)$", Pattern.DOTALL);
-							Matcher matcher = pattern.matcher(currentStatement);
-							String tail = matcher.matches() ? matcher.group(1) : "";
-							editorPane.replaceCurrentStatement(sql.trim() + ";\n", true);
-							UIUtil.invokeLater(() -> {
-								executeSelectedStatements(false, null, true);
-							});
+							replaceAndExecute(sql);
 						}
 					} else {
 						appendStatement(sql, true);
 					}
 				}, executionContext, prompt, silent, prompt != null? currentStatement : null).setVisible(true);
 	}
-	
+
+	private void runSilentAIQuery(DataModel dm, String dbmsName, String currentStatement, String prompt) {
+		AIProviderConfig config = AIQueryAssistant.loadConfig();
+		AtomicReference<Runnable> abortRef = new AtomicReference<>();
+		AtomicReference<SwingWorker<String, Void>> workerRef = new AtomicReference<>();
+
+		ActionListener cancelListener = e -> {
+			Runnable abort = abortRef.get();
+			if (abort != null) abort.run();
+			SwingWorker<String, Void> w = workerRef.get();
+			if (w != null) w.cancel(true);
+			aiSilentStatusPanel.setVisible(false);
+		};
+		aiSilentCancelButton.addActionListener(cancelListener);
+
+		aiSilentStatusPanel.setVisible(true);
+		SwingWorker<String, Void> worker = new SwingWorker<String, Void>() {
+			@Override
+			protected String doInBackground() throws Exception {
+				return AIQueryAssistant.generateSQL(prompt, Collections.emptyList(),
+						dm, dbmsName, config, executionContext, abortRef);
+			}
+			@Override
+			protected void done() {
+				aiSilentStatusPanel.setVisible(false);
+				aiSilentCancelButton.removeActionListener(cancelListener);
+				if (isCancelled()) {
+					return;
+				}
+				try {
+					String sql = get();
+					if (sql != null && !sql.isEmpty() && !currentStatement.trim().equals(sql.trim())) {
+						String comment = AIQueryAssistant.buildPromptComment(
+								Collections.singletonList(new ConversationMessage("user", prompt)));
+						replaceAndExecute(comment + "\n" + sql);
+					}
+				} catch (ExecutionException ex) {
+					UIUtil.showException(SQLConsole.this, "AI Generation Error", ex);
+				} catch (InterruptedException ex) {
+					Thread.currentThread().interrupt();
+				}
+			}
+		};
+		workerRef.set(worker);
+		worker.execute();
+	}
+
+	private void replaceAndExecute(String sql) {
+		editorPane.replaceCurrentStatement(sql.trim() + ";\n", true);
+		UIUtil.invokeLater(() -> executeSelectedStatements(false, null, true));
+	}
+
 	private void updateMenuItems(boolean isTextSelected) {
     	if (menuItemToggle != null) {
     		menuItemToggle.setEnabled(isTextSelected);
@@ -3067,7 +3121,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     }//GEN-LAST:event_continueButtonActionPerformed
 
     private void aiSilentCancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aiSilentCancelButtonActionPerformed
-        // TODO add your handling code here:
     }//GEN-LAST:event_aiSilentCancelButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

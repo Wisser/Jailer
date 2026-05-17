@@ -58,7 +58,6 @@ import net.sf.jailer.ui.ai.AIQueryAssistant;
 import net.sf.jailer.ui.ai.ConversationMessage;
 import net.sf.jailer.ui.ai.SystemPromptPanel;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
-import net.sf.jailer.ui.util.UISettings;
 
 /**
  * Modal dialog that lets the user have a multi-turn conversation with an AI
@@ -222,7 +221,8 @@ public class AIQueryDialog extends JDialog {
         insertButton.addActionListener(e -> {
             String sql = sqlArea.getText().trim();
             if (!sql.isEmpty()) {
-                saveCheckboxStates(providerPanel.getConfig());
+                AIProviderConfig cfg = providerPanel.getConfig();
+                AIQueryAssistant.saveCheckboxStates(cfg, executionContext, omitColumnTypesBox.isSelected(), smartSelectionBox.isSelected());
                 String comment = buildCommentForHistory();
                 String combined = comment.isEmpty() ? sql : comment + "\n" + sql;
                 insertAction.accept(combined);
@@ -291,7 +291,9 @@ public class AIQueryDialog extends JDialog {
         // Settings section
         JPanel settingsPanel = buildSettingsPanel();
         settingsPanel.setBorder(BorderFactory.createEmptyBorder(8, 0, 2, 0));
-        restoreCheckboxStates(providerPanel.getConfig());
+        AIProviderConfig initialConfig = providerPanel.getConfig();
+        omitColumnTypesBox.setSelected(AIQueryAssistant.loadOmitColumnTypes(initialConfig, executionContext));
+        smartSelectionBox.setSelected(AIQueryAssistant.loadSmartSelection(initialConfig, executionContext, dataModel.getSortedTables().size()));
 
         systemPromptPanel = new SystemPromptPanel();
 
@@ -399,7 +401,7 @@ public class AIQueryDialog extends JDialog {
         }
         AIProviderConfig config = providerPanel.getConfig();
         String apiKey = providerPanel.getApiKey();
-        if (apiKey.isEmpty() && config.providerType != AIProviderConfig.ProviderType.OLLAMA) {
+        if (apiKey.isEmpty() && config.providerType.requiresApiKey) {
             JOptionPane.showMessageDialog(this, "Please enter an API key.", "API Key Required", JOptionPane.WARNING_MESSAGE);
             providerPanel.getApiKeyComponent().requestFocusInWindow();
             return;
@@ -454,7 +456,7 @@ public class AIQueryDialog extends JDialog {
                     insertButton.setEnabled(!sql.isEmpty());
                     if (!sql.isEmpty()) {
                         providerPanel.markConnectionVerified();
-                        saveCheckboxStates(config);
+                        AIQueryAssistant.saveCheckboxStates(config, executionContext, omitColumnTypes, smartSelection);
                         conversationHistory.add(new ConversationMessage("user", question));
                         conversationHistory.add(new ConversationMessage("assistant", sql));
                         questionArea.setText("");
@@ -498,52 +500,9 @@ public class AIQueryDialog extends JDialog {
     }
 
     private String buildCommentForHistory() {
-        // Collect only user messages
-        List<String> userMessages = new ArrayList<>();
-        for (ConversationMessage msg : conversationHistory) {
-            if ("user".equals(msg.role)) {
-                // Replace newlines with spaces to keep each message on one line in the comment
-                String cleanedContent = msg.content.replaceAll("[\\r\\n]+", " ");
-                userMessages.add(cleanedContent);
-            }
-        }
-        if (userMessages.isEmpty()) {
-            return "";
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("/* AI:\n");
-        if (userMessages.size() == 1) {
-            sb.append("   " + userMessages.get(0));
-        } else {
-            for (String msg : userMessages) {
-                sb.append("   - ").append(msg).append("\n");
-            }
-            // Remove trailing newline
-            sb.setLength(sb.length() - 1);
-        }
-        sb.append("\n */");
-        return sb.toString();
+        return AIQueryAssistant.buildPromptComment(conversationHistory);
     }
 
-    private String checkboxSettingsKey(AIProviderConfig config) {
-        String folder = executionContext != null ? executionContext.getQualifiedDatamodelFolder() : "";
-        return config.apiUrl + "|" + config.model + "|" + (folder != null ? folder : "");
-    }
-
-    private void saveCheckboxStates(AIProviderConfig config) {
-        String key = checkboxSettingsKey(config);
-        UISettings.store("aiOmitTypes_" + key, omitColumnTypesBox.isSelected());
-        UISettings.store("aiSmartSelection_" + key, smartSelectionBox.isSelected());
-    }
-
-    private void restoreCheckboxStates(AIProviderConfig config) {
-        String key = checkboxSettingsKey(config);
-        Object omit  = UISettings.restore("aiOmitTypes_" + key);
-        Object smart = UISettings.restore("aiSmartSelection_" + key);
-        if (omit  instanceof Boolean) omitColumnTypesBox.setSelected((Boolean) omit);
-        if (smart instanceof Boolean) smartSelectionBox.setSelected((Boolean) smart);
-    }
 }
 
 // TODO
