@@ -720,7 +720,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		
 		String dbmsName = session.dbms != null ? session.dbms.getDisplayName() : "SQL";
 		if (silent && prompt != null) {
-			runSilentAIQuery(dm, dbmsName, currentStatement, prompt);
+			runSilentAIQuery(dm, dbmsName, currentStatement, prompt, editorPane.getCaretPosition());
 			return;
 		}
 		new AIQueryDialog(SwingUtilities.getWindowAncestor(SQLConsole.this), dm, dbmsName,
@@ -735,7 +735,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				}, executionContext, prompt, silent, prompt != null? currentStatement : null).setVisible(true);
 	}
 
-	private void runSilentAIQuery(DataModel dm, String dbmsName, String currentStatement, String prompt) {
+	private void runSilentAIQuery(DataModel dm, String dbmsName, String currentStatement, String prompt, int caretPos) {
 		AIProviderConfig config = AIQueryAssistant.loadConfig();
 		AtomicReference<Runnable> abortRef = new AtomicReference<>();
 		AtomicReference<SwingWorker<String, Void>> workerRef = new AtomicReference<>();
@@ -768,6 +768,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 					if (sql != null && !sql.isEmpty() && !currentStatement.trim().equals(sql.trim())) {
 						String comment = AIQueryAssistant.buildPromptComment(
 								Collections.singletonList(new ConversationMessage("user", prompt)));
+						editorPane.setCaretPosition(caretPos);
 						replaceAndExecute(comment + "\n" + sql);
 					}
 				} catch (ExecutionException ex) {
