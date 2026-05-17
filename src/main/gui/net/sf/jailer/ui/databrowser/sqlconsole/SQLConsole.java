@@ -282,6 +282,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         jToolBar1.setFloatable(false);
         aiSilentStatusPanel.setVisible(false);
         aiSilentCancelButton.setIcon(UIUtil.scaleIcon(this, cancelIcon));
+        jLabel5.setFont(jLabel5.getFont().deriveFont(jLabel5.getFont().getStyle(), (jLabel5.getFont().getSize() * 14) / 10));
 
         initMenuItems();
         historyComboBox.setMaximumRowCount(25);
@@ -768,8 +769,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 					if (sql != null && !sql.isEmpty() && !currentStatement.trim().equals(sql.trim())) {
 						String comment = AIQueryAssistant.buildPromptComment(
 								Collections.singletonList(new ConversationMessage("user", prompt)));
-						editorPane.setCaretPosition(caretPos);
 						replaceAndExecute(comment + "\n" + sql);
+						try {
+							editorPane.setCaretPosition(caretPos);
+							editorPane.grabFocus();
+						} catch (Exception e) {
+							// ignore
+						}
 					}
 				} catch (ExecutionException ex) {
 					UIUtil.showException(SQLConsole.this, "AI Generation Error", ex);
@@ -3030,6 +3036,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
         aiSilentStatusPanel.setLayout(new java.awt.GridBagLayout());
 
+        jLabel5.setFont(jLabel5.getFont().deriveFont(jLabel5.getFont().getSize()+2f));
         jLabel5.setText("Re-generating SQL using AI");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 8);
@@ -4756,6 +4763,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	// TODO ASK AI Integration: item in PopUp + Shortcut + Button in Statusbar with Shortcut mentioned in tooltip.
 	
 	// TODO
-	// TODO silent: clear status bar, grab focus afterwards
+	// TODO silent: clear status bar, grab focus afterwards, disable console
 	
 }
