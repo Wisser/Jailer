@@ -46,6 +46,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
@@ -98,6 +99,22 @@ public class AIQueryAssistant {
             AtomicReference<Runnable> abortRef) throws IOException {
         return generateSQL(question, history, dataModel, dbmsName, config, systemPromptTemplate,
                 smartSelection, omitColumnTypes, abortRef, null);
+    }
+
+    public static String generateSQL(String question, List<ConversationMessage> history,
+            DataModel dataModel, String dbmsName, AIProviderConfig config,
+            ExecutionContext executionContext, AtomicReference<Runnable> abortRef) throws IOException {
+        validateConfig(config);
+        boolean omitColumnTypes = loadOmitColumnTypes(config, executionContext);
+        boolean smartSelection  = loadSmartSelection(config, executionContext, dataModel.getSortedTables().size());
+        return generateSQL(question, history, dataModel, dbmsName, config,
+                loadSystemPromptTemplate(), smartSelection, omitColumnTypes, abortRef);
+    }
+
+    public static void validateConfig(AIProviderConfig config) throws IOException {
+        if (config.apiKey.isEmpty() && config.providerType.requiresApiKey) {
+            throw new IOException("No API key configured. Please enter an API key in the AI Assistant settings.");
+        }
     }
 
     public static String generateSQL(String question, List<ConversationMessage> history,
@@ -682,6 +699,60 @@ public class AIQueryAssistant {
     private static String colAfterTable(String expr, String tableName) {
         String prefix = tableName + ".";
         return expr.startsWith(prefix) ? expr.substring(prefix.length()) : null;
+    }
+
+    public static String buildPromptComment(List<ConversationMessage> history) {
+        List<String> userMessages = new ArrayList<>();
+        for (ConversationMessage msg : history) {
+            if ("user".equals(msg.role)) {
+                userMessages.add(msg.content.replaceAll("[\\r\\n]+", " "));
+            }
+        }
+        if (userMessages.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder("/* AI:\n");
+        if (userMessages.size() == 1) {
+            sb.append("   ").append(userMessages.get(0));
+        } else {
+            for (String msg : userMessages) {
+                sb.append("   - ").append(msg).append("\n");
+            }
+            sb.setLength(sb.length() - 1);
+        }
+        sb.append("\n */");
+        return sb.toString();
+    }
+
+    /** Loads the saved AI provider config from UISettings. */
+    public static AIProviderConfig loadConfig() {
+        return new AIProviderPanel().getConfig();
+    }
+
+    private static String checkboxSettingsKey(AIProviderConfig config, ExecutionContext executionContext) {
+        String folder = executionContext != null ? executionContext.getQualifiedDatamodelFolder() : "";
+        return config.apiUrl + "|" + config.model + "|" + (folder != null ? folder : "");
+    }
+
+    public static boolean loadSmartSelection(AIProviderConfig config, ExecutionContext executionContext, int tableCount) {
+        Object stored = UISettings.restore("aiSmartSelection_" + checkboxSettingsKey(config, executionContext));
+        return stored instanceof Boolean ? (Boolean) stored : tableCount > 500;
+    }
+
+    public static boolean loadOmitColumnTypes(AIProviderConfig config, ExecutionContext executionContext) {
+        Object stored = UISettings.restore("aiOmitTypes_" + checkboxSettingsKey(config, executionContext));
+        return stored instanceof Boolean ? (Boolean) stored : false;
+    }
+
+    public static void saveCheckboxStates(AIProviderConfig config, ExecutionContext executionContext, boolean omitColumnTypes, boolean smartSelection) {
+        String key = checkboxSettingsKey(config, executionContext);
+        UISettings.store("aiOmitTypes_" + key, omitColumnTypes);
+        UISettings.store("aiSmartSelection_" + key, smartSelection);
+    }
+
+    public static String loadSystemPromptTemplate() {
+        String saved = (String) UISettings.restore(SystemPromptPanel.SETTING_SYSTEM_PROMPT);
+        return (saved != null && !saved.isEmpty()) ? saved : null;
     }
 
     /**

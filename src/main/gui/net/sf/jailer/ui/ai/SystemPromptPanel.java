@@ -38,7 +38,7 @@ public class SystemPromptPanel extends JPanel {
 
     private static final long serialVersionUID = 1L;
 
-    private static final String SETTING_SYSTEM_PROMPT = "aiSystemPrompt";
+    static final String SETTING_SYSTEM_PROMPT = "aiSystemPrompt";
 
     /** Default template that mirrors the hard-coded prompt used before this panel existed. */
     public static final String DEFAULT_TEMPLATE =
