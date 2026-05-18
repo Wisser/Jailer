@@ -23,7 +23,7 @@ https://user-images.githubusercontent.com/861721/142761281-299bddc4-eea7-4f26-8c
  - Generates topologically sorted SQL-DML, hierarchically structured JSON, YAML, XML and DbUnit datasets.
  - Data Browsing. Navigate bidirectionally through the database by following foreign-key-based or user-defined relationships.
  - SQL Console with code completion, syntax highlighting and database metadata visualization.
- - AI Query Assistant. Generate SQL from natural language questions using Anthropic or OpenAI-compatible APIs with smart table selection for large schemas.
+ - Coming Soon: AI Query Assistant. Generate SQL from natural language questions using Anthropic or OpenAI-compatible APIs with smart table selection for large schemas.
  - A demo database is included with which you can get a first impression without any configuration effort.
 
 ## Supported Databases
@@ -46,7 +46,7 @@ Thanks to the JDBC technology used, any DMBS is in principle supported. For best
 
 ## News
 
- - 2026-05-15    AI Query Assistant: Generate SQL from natural language questions using Anthropic or OpenAI-compatible APIs (OpenAI, Azure, Groq, Ollama, OpenRouter, etc.) with smart table selection for large schemas.
+ - 2026-05-15    Coming Soon: AI Query Assistant: Generate SQL from natural language questions using Anthropic or OpenAI-compatible APIs (OpenAI, Azure, Groq, Ollama, OpenRouter, etc.) with smart table selection for large schemas.
  - 2024-07-04    Data can now also be exported as structured JSON and YAML files.
  - 2024-06-26    A dark UI theme has been introduced that improves readability in low light environments.
  - 2024-04-18    DDL scripts for creating database objects can now be generated thanks to an integration of the [Liquibase](https://www.liquibase.com) tool. This makes it possible to create subset databases from scratch using only on-board means.
