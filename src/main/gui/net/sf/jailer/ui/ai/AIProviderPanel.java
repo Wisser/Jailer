@@ -17,11 +17,11 @@ package net.sf.jailer.ui.ai;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.util.concurrent.atomic.AtomicReference;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ItemEvent;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;

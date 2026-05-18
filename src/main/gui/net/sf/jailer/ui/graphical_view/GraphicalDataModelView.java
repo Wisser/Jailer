@@ -40,7 +40,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -93,7 +92,6 @@ import prefuse.data.tuple.TupleSet;
 import prefuse.render.Renderer;
 import prefuse.render.RendererFactory;
 import prefuse.render.ShapeRenderer;
-import prefuse.util.ColorLib;
 import prefuse.util.GraphicsLib;
 import prefuse.util.display.DisplayLib;
 import prefuse.util.force.Force;

@@ -59,10 +59,10 @@ Thanks to the JDBC technology used, any DMBS is in principle supported. For best
  - 2018-03-06    SQL Console with code completion, syntax highlighting and database metadata visualization.
  - 2017-05-10    New API provides programmatic access to the data export and import functionality. https://wisser.github.io/Jailer/api.html
  - 2017-03-30    Improved filter management. Templates allows you to define rules for assigning filters to columns. Filters on primary key columns will automatically be propagated to the corresponding foreign key columns. https://wisser.github.io/Jailer/filters.html
- - 2015-12-04    Data can now also be exported directly to a schema of the same database. This ensures optimal performance.
- - 2015-10-23    Rows can alternatively be collected in a separate embedded database. This allows exporting data from read-only databases.
- - 2014-07-20    Implemented the "Subset by Example" feature: Use the Data Browser to collect all the rows to be extracted and let Jailer create a model for that subset. https://wisser.github.io/Jailer/subset-by-example.html
- - 2014-04-15    A Data Browser has been introduced. Navigate bidirectionally through the database by following foreign-key-based or user-defined relationships.
+ - 2016-12-04    Data can now also be exported directly to a schema of the same database. This ensures optimal performance.
+ - 2016-10-23    Rows can alternatively be collected in a separate embedded database. This allows exporting data from read-only databases.
+ - 2016-07-20    Implemented the "Subset by Example" feature: Use the Data Browser to collect all the rows to be extracted and let Jailer create a model for that subset. https://wisser.github.io/Jailer/subset-by-example.html
+ - 2016-04-15    A Data Browser has been introduced. Navigate bidirectionally through the database by following foreign-key-based or user-defined relationships.
 
 
 

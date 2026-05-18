@@ -16,7 +16,6 @@
 package net.sf.jailer.ui.ai;
 
 import java.awt.BorderLayout;
-import java.awt.FlowLayout;
 import java.awt.Font;
 
 import javax.swing.BorderFactory;

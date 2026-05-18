@@ -16,7 +16,6 @@
 package net.sf.jailer.ui.util;
 
 import java.awt.Color;
-import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 

@@ -64,7 +64,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.Jailer;
 import net.sf.jailer.JailerVersion;
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.database.BasicDataSource;
