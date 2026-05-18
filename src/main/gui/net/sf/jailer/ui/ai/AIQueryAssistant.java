@@ -808,3 +808,7 @@ public class AIQueryAssistant {
 
 // TODO 
 // TODO session management: if the provider supports it, we could keep a session ID and reuse it for subsequent calls to maintain context without resending the full schema each time.
+
+// TODO
+// TODO add comments (table/column, test w. table comment is available) to datamodel context of API call. Offer "omit" checkbox. 
+// TODO ? add support for function calls (e.g. OpenAI function calling) to allow the model to return structured data (e.g. list of relevant tables) without needing to parse text responses. This would be more robust than relying on the model to format its output correctly for the smart table selection step.

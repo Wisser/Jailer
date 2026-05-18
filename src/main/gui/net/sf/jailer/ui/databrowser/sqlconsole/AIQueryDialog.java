@@ -393,8 +393,8 @@ public class AIQueryDialog extends JDialog {
             JOptionPane.showMessageDialog(this, "Please describe the query.", "Input Required", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        if (question.startsWith("echo ")) {
-            String sql = question.substring("echo ".length());
+        if (question.startsWith("!echo ")) {
+            String sql = question.substring("!echo ".length());
             sqlArea.setText(sql);
             sqlArea.setCaretPosition(0);
             insertButton.setEnabled(!sql.isEmpty());
