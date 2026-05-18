@@ -98,17 +98,25 @@ public class AIQueryAssistant {
             String systemPromptTemplate, boolean smartSelection, boolean omitColumnTypes,
             AtomicReference<Runnable> abortRef) throws IOException {
         return generateSQL(question, history, dataModel, dbmsName, config, systemPromptTemplate,
-                smartSelection, omitColumnTypes, abortRef, null);
+                smartSelection, omitColumnTypes, abortRef, null, null);
     }
 
     public static String generateSQL(String question, List<ConversationMessage> history,
             DataModel dataModel, String dbmsName, AIProviderConfig config,
             ExecutionContext executionContext, AtomicReference<Runnable> abortRef) throws IOException {
+        return generateSQL(question, history, dataModel, dbmsName, config, executionContext, abortRef, null);
+    }
+
+    public static String generateSQL(String question, List<ConversationMessage> history,
+            DataModel dataModel, String dbmsName, AIProviderConfig config,
+            ExecutionContext executionContext, AtomicReference<Runnable> abortRef,
+            BooleanSupplier confirmFullSchema) throws IOException {
         validateConfig(config);
         boolean omitColumnTypes = loadOmitColumnTypes(config, executionContext);
         boolean smartSelection  = loadSmartSelection(config, executionContext, dataModel.getSortedTables().size());
         return generateSQL(question, history, dataModel, dbmsName, config,
-                loadSystemPromptTemplate(), smartSelection, omitColumnTypes, abortRef);
+                loadSystemPromptTemplate(), smartSelection, omitColumnTypes, abortRef, confirmFullSchema,
+                loadFirstPassSystemPromptTemplate());
     }
 
     public static void validateConfig(AIProviderConfig config) throws IOException {
@@ -121,10 +129,20 @@ public class AIQueryAssistant {
             DataModel dataModel, String dbmsName, AIProviderConfig config,
             String systemPromptTemplate, boolean smartSelection, boolean omitColumnTypes,
             AtomicReference<Runnable> abortRef, BooleanSupplier confirmFullSchema) throws IOException {
+        return generateSQL(question, history, dataModel, dbmsName, config, systemPromptTemplate,
+                smartSelection, omitColumnTypes, abortRef, confirmFullSchema, null);
+    }
+
+    public static String generateSQL(String question, List<ConversationMessage> history,
+            DataModel dataModel, String dbmsName, AIProviderConfig config,
+            String systemPromptTemplate, boolean smartSelection, boolean omitColumnTypes,
+            AtomicReference<Runnable> abortRef, BooleanSupplier confirmFullSchema,
+            String firstPassSystemPromptTemplate) throws IOException {
         Set<String> relevantTables = null;
         if (smartSelection) {
             try {
-                relevantTables = selectRelevantTables(question, history, dataModel, dbmsName, config, abortRef);
+                relevantTables = selectRelevantTables(question, history, dataModel, dbmsName, config, abortRef,
+                        firstPassSystemPromptTemplate);
             } catch (IOException e) {
                 if (Thread.currentThread().isInterrupted()) {
                     return "";
@@ -141,7 +159,10 @@ public class AIQueryAssistant {
         boolean isAnthropic = config.providerType == ProviderType.ANTHROPIC;
         ObjectNode body = buildRequestBody(question, history, schema, dbmsName, config, isAnthropic, systemPromptTemplate);
         JsonNode response = post(config, body, abortRef);
-        String result = extractText(response, isAnthropic);
+        String result = extractText(response, isAnthropic).trim();
+        if (result.endsWith(";")) {
+			result = result.substring(0, result.length() - 1).trim();
+		}
         UISettings.s21 = (omitColumnTypes ? 1L : 0L) | (smartSelection ? 2L : 0L);
         return result;
     }
@@ -175,17 +196,20 @@ public class AIQueryAssistant {
 
     private static Set<String> selectRelevantTables(String question, List<ConversationMessage> history,
             DataModel dataModel, String dbmsName, AIProviderConfig config,
-            AtomicReference<Runnable> abortRef) throws IOException {
+            AtomicReference<Runnable> abortRef, String firstPassSystemPromptTemplate) throws IOException {
         List<Table> allTables = new ArrayList<>(dataModel.getSortedTables());
         StringBuilder tableList = new StringBuilder();
         for (Table t : allTables) {
             tableList.append(t.getName()).append("\n");
         }
 
-        String systemPrompt = "You are a SQL expert for " + dbmsName + ". "
-            + "Given a list of database table names and a natural-language question, "
-            + "respond with ONLY the table names needed to answer the question. "
-            + "One table name per line. No explanation, no other text.";
+        String template = (firstPassSystemPromptTemplate != null && !firstPassSystemPromptTemplate.isEmpty())
+                ? firstPassSystemPromptTemplate
+                : loadFirstPassSystemPromptTemplate();
+        if (template == null) {
+            template = SystemPromptPanel.DEFAULT_FIRST_PASS_TEMPLATE;
+        }
+        String systemPrompt = template.replace("{dbmsName}", dbmsName);
 
         boolean isAnthropic = config.providerType == ProviderType.ANTHROPIC;
         ObjectNode body = MAPPER.createObjectNode();
@@ -755,6 +779,11 @@ public class AIQueryAssistant {
         return (saved != null && !saved.isEmpty()) ? saved : null;
     }
 
+    public static String loadFirstPassSystemPromptTemplate() {
+        String saved = (String) UISettings.restore(SystemPromptPanel.SETTING_FIRST_PASS_SYSTEM_PROMPT);
+        return (saved != null && !saved.isEmpty()) ? saved : null;
+    }
+
     /**
      * Extracts the AI prompt from the comment header of a generated SQL statement.
      * Returns the last prompt line (stripped of list prefix), or null if none is found.
@@ -779,6 +808,3 @@ public class AIQueryAssistant {
 
 // TODO 
 // TODO session management: if the provider supports it, we could keep a session ID and reuse it for subsequent calls to maintain context without resending the full schema each time.
-
-// TODO
-// TODO add support for streaming responses (e.g. OpenAI's chunked responses with "done": true at the end) to start showing partial results sooner, especially for large schemas or slow responses. This would require changing the post method to handle streaming and updating the UI accordingly.

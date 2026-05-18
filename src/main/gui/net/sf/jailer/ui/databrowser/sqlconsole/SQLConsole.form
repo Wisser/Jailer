@@ -278,7 +278,7 @@
                           <Properties>
                             <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
                               <FontInfo relative="true">
-                                <Font component="jLabel5" property="font" relativeSize="true" size="2"/>
+                                <Font component="jLabel5" property="font" relativeSize="true" size="3"/>
                               </FontInfo>
                             </Property>
                             <Property name="text" type="java.lang.String" value="Re-generating SQL using AI"/>

@@ -16,6 +16,7 @@
 package net.sf.jailer.ui.databrowser.sqlconsole;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -282,8 +283,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         jToolBar1.setFloatable(false);
         aiSilentStatusPanel.setVisible(false);
         aiSilentCancelButton.setIcon(UIUtil.scaleIcon(this, cancelIcon));
-        jLabel5.setFont(jLabel5.getFont().deriveFont(jLabel5.getFont().getStyle(), (jLabel5.getFont().getSize() * 14) / 10));
-
+        
         initMenuItems();
         historyComboBox.setMaximumRowCount(25);
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -705,15 +705,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		}
 		String statement = editorPane.getCurrentStatement(true);
 		if (statement.trim().length() == 0) {
-			int pos = editorPane.getCaretPosition();
 			int l = editorPane.getLineStartOffsetOfCurrentLine();
 			if (l > 0) {
 				setCaretPosition(l - 1);
 				statement = editorPane.getCurrentStatement(true);
-				if (statement.trim().length() == 0) {
-					setCaretPosition(pos);
-					return;
-				}
 			}
 		}
 		String currentStatement = statement;
@@ -737,6 +732,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	}
 
 	private void runSilentAIQuery(DataModel dm, String dbmsName, String currentStatement, String prompt, int caretPos) {
+		resetStatus();
 		AIProviderConfig config = AIQueryAssistant.loadConfig();
 		AtomicReference<Runnable> abortRef = new AtomicReference<>();
 		AtomicReference<SwingWorker<String, Void>> workerRef = new AtomicReference<>();
@@ -747,18 +743,93 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			SwingWorker<String, Void> w = workerRef.get();
 			if (w != null) w.cancel(true);
 			aiSilentStatusPanel.setVisible(false);
+			editorPane.setEnabled(true);
+			editorPane.grabFocus();
 		};
 		aiSilentCancelButton.addActionListener(cancelListener);
 
 		aiSilentStatusPanel.setVisible(true);
+		editorPane.setEnabled(false);
+		consoleContainerPanel.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		aiSilentCancelButton.setCursor(Cursor.getDefaultCursor());
 		SwingWorker<String, Void> worker = new SwingWorker<String, Void>() {
+			ChangeListener cl = new ChangeListener() {
+				@Override
+				public void stateChanged(ChangeEvent e) {
+					jTabbedPane1.removeChangeListener(cl);
+					if (isCancelled()) {
+						return;
+					}
+					UIUtil.invokeLater(() -> {
+						try {
+							editorPane.setCaretPosition(caretPos);
+							editorPane.grabFocus();
+						} catch (Exception ex) {
+							// ignore
+						}
+					});
+				}
+			};
+			boolean running = true;
+			int time;
+			Color startColor = Colors.Color_0_100_0;
+			Timer timer = new Timer(50, new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					if (running) {
+						++time;
+						double x = Math.sin(2 * Math.PI * time / 15.0);
+						double f = (Math.pow(Math.abs(x), 0.5) * Math.signum(x) + 1) / 2;
+						Color c = UIUtil.plaf == PLAF.FLATDARK?
+								new Color(mid(f, startColor.getRed(), 255), mid(f, startColor.getGreen(), 0), mid(f, startColor.getBlue(), 0))
+								:
+								new Color(mid(f, startColor.getRed(), 255), mid(f, startColor.getGreen(), 0), startColor.getBlue());
+						jLabel5.setForeground(c);
+					} else if (timer != null){
+						timer.stop();
+					}
+				}
+				private int mid(double f, int s, int d) {
+					return (int) (s + f * (d - s));
+				}
+			});
+			{
+				jLabel5.setForeground(startColor);
+				timer.setInitialDelay(1000);
+        		timer.setRepeats(true);
+        		timer.start();
+			}
+			
 			@Override
 			protected String doInBackground() throws Exception {
 				return AIQueryAssistant.generateSQL(prompt, Collections.emptyList(),
-						dm, dbmsName, config, executionContext, abortRef);
+						dm, dbmsName, config, executionContext, abortRef, () -> {
+					boolean[] result = { false };
+					try {
+						SwingUtilities.invokeAndWait(() -> {
+							int choice = JOptionPane.showConfirmDialog(
+								SwingUtilities.getWindowAncestor(SQLConsole.this),
+								"<html>No relevant tables could be identified for your question.<br>"
+								+ "(It may help to rephrase your question using table names and be more specific.)<br><br>"
+								+ "Proceed with the full schema?</html>",
+								"No Relevant Tables Found",
+								JOptionPane.YES_NO_OPTION,
+								JOptionPane.WARNING_MESSAGE);
+							result[0] = choice == JOptionPane.YES_OPTION;
+						});
+					} catch (InterruptedException ex) {
+						Thread.currentThread().interrupt();
+					} catch (java.lang.reflect.InvocationTargetException ex) {
+						logger.warn("Confirmation dialog failed", ex);
+					}
+					return result[0];
+				});
 			}
 			@Override
 			protected void done() {
+				running = false;
+				editorPane.setEnabled(true);
+				consoleContainerPanel.setCursor(Cursor.getDefaultCursor());
 				aiSilentStatusPanel.setVisible(false);
 				aiSilentCancelButton.removeActionListener(cancelListener);
 				if (isCancelled()) {
@@ -769,13 +840,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 					if (sql != null && !sql.isEmpty() && !currentStatement.trim().equals(sql.trim())) {
 						String comment = AIQueryAssistant.buildPromptComment(
 								Collections.singletonList(new ConversationMessage("user", prompt)));
+						jTabbedPane1.addChangeListener(cl);
 						replaceAndExecute(comment + "\n" + sql);
-						try {
-							editorPane.setCaretPosition(caretPos);
-							editorPane.grabFocus();
-						} catch (Exception e) {
-							// ignore
-						}
 					}
 				} catch (ExecutionException ex) {
 					UIUtil.showException(SQLConsole.this, "AI Generation Error", ex);
@@ -3036,7 +3102,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
         aiSilentStatusPanel.setLayout(new java.awt.GridBagLayout());
 
-        jLabel5.setFont(jLabel5.getFont().deriveFont(jLabel5.getFont().getSize()+2f));
+        jLabel5.setFont(jLabel5.getFont().deriveFont(jLabel5.getFont().getSize()+3f));
         jLabel5.setText("Re-generating SQL using AI");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 8);
@@ -4756,13 +4822,4 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     // "Select distinct ... from ... left join ..." with a non-comparable column in select clause (for example BLOB) fails. Make the problem go away.
     // idea: give SQLConsole an "ErrorHandler" who will be consulted if query fails and will ask user to skip "distinct" and try again.
 
-	// TODO
-	// TODO AKI Integration: /** Ask AI: give me data...
-	// */
-	// Select ...
-	// TODO ASK AI Integration: item in PopUp + Shortcut + Button in Statusbar with Shortcut mentioned in tooltip.
-	
-	// TODO
-	// TODO silent: clear status bar, grab focus afterwards, disable console
-	
 }

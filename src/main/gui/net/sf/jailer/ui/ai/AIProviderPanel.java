@@ -30,6 +30,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JSeparator;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
@@ -101,19 +102,22 @@ public class AIProviderPanel extends JPanel {
         fc.fill = GridBagConstraints.HORIZONTAL;
         fc.insets = new Insets(2, 0, 2, 8);
 
+        GridBagConstraints sec = new GridBagConstraints();
+        sec.gridx = 0; sec.gridy = 0; sec.gridwidth = 5; sec.insets = new Insets(2, 0, 2, 8); sec.fill = GridBagConstraints.HORIZONTAL; add(new JSeparator(), sec);
+        
         // row 0
-        lc.gridx = 0; lc.gridy = 0; add(new JLabel("Provider"), lc);
-        fc.gridx = 1; fc.gridy = 0; add(providerCombo, fc);
-        lc.gridx = 2; lc.gridy = 0; add(new JLabel("URL"), lc);
-        fc.gridx = 3; fc.gridy = 0; fc.gridwidth = 2; fc.weightx = 1.0; add(urlField, fc);
+        lc.gridx = 0; lc.gridy = 1; add(new JLabel("Provider"), lc);
+        fc.gridx = 1; fc.gridy = 1; add(providerCombo, fc);
+        lc.gridx = 2; lc.gridy = 1; add(new JLabel("URL"), lc);
+        fc.gridx = 3; fc.gridy = 1; fc.gridwidth = 2; fc.weightx = 1.0; add(urlField, fc);
         fc.gridwidth = 1; fc.weightx = 0;
 
         // row 1
-        lc.gridx = 0; lc.gridy = 1; add(new JLabel("Model"), lc);
-        fc.gridx = 1; fc.gridy = 1; add(modelField, fc);
-        lc.gridx = 2; lc.gridy = 1; add(new JLabel("Max. response tokens"), lc);
+        lc.gridx = 0; lc.gridy = 2; add(new JLabel("Model"), lc);
+        fc.gridx = 1; fc.gridy = 2; add(modelField, fc);
+        lc.gridx = 2; lc.gridy = 2; add(new JLabel("Max. response tokens"), lc);
         GridBagConstraints sc = new GridBagConstraints();
-        sc.gridx = 3; sc.gridy = 1; sc.insets = new Insets(2, 0, 2, 8); sc.anchor = GridBagConstraints.WEST;
+        sc.gridx = 3; sc.gridy = 2; sc.insets = new Insets(2, 0, 2, 8); sc.anchor = GridBagConstraints.WEST;
         add(maxTokensSpinner, sc);
 
         JButton resetButton = new JButton("Reset to Default");
@@ -138,15 +142,15 @@ public class AIProviderPanel extends JPanel {
         });
 
         GridBagConstraints rc = new GridBagConstraints();
-        rc.gridx = 4; rc.gridy = 1;
+        rc.gridx = 4; rc.gridy = 2;
         rc.anchor = GridBagConstraints.EAST;
         rc.insets = new Insets(2, 8, 2, 8);
         add(resetButton, rc);
 
         // row 2
         apiKeyLabel = new JLabel(apiKeyLabelText(savedProvider));
-        lc.gridx = 0; lc.gridy = 2; add(apiKeyLabel, lc);
-        fc.gridx = 1; fc.gridy = 2; fc.gridwidth = 4; fc.weightx = 1.0; add(apiKeyField, fc);
+        lc.gridx = 0; lc.gridy = 3; add(apiKeyLabel, lc);
+        fc.gridx = 1; fc.gridy = 3; fc.gridwidth = 4; fc.weightx = 1.0; add(apiKeyField, fc);
         fc.gridwidth = 1; fc.weightx = 0;
 
         testButton = new JButton("Test Connection");
@@ -221,7 +225,7 @@ public class AIProviderPanel extends JPanel {
         testRow.add(testStatusLabel);
 
         GridBagConstraints trc = new GridBagConstraints();
-        trc.gridx = 0; trc.gridy = 3; trc.gridwidth = 5;
+        trc.gridx = 0; trc.gridy = 4; trc.gridwidth = 5;
         trc.fill = GridBagConstraints.HORIZONTAL; trc.weightx = 1.0;
         trc.insets = new Insets(4, 0, 2, 0);
         add(testRow, trc);
@@ -367,10 +371,3 @@ public class AIProviderPanel extends JPanel {
     }
 }
 
-// TODO
-// TODO make existing SQL-Statements available as context for the AI assistant for improvement suggestions.
-// TODO support multiple "profiles" for use cases, allowing users to switch between them easily.
-// TODO add option to save multiple provider configurations and switch between them (e.g. for different projects or use cases).
-
-// TODO
-// TODO menu item "Layout": switch to Navigation

@@ -119,7 +119,7 @@ public class AIQueryDialog extends JDialog {
         getRootPane().setDefaultButton(insertButton);
         UIUtil.initComponents(this);
         pack();
-        setSize(getWidth() + 120, getHeight() + 40);
+        setSize(getWidth() + 120, getHeight());
         setLocationRelativeTo(owner);
     }
 
@@ -271,7 +271,7 @@ public class AIQueryDialog extends JDialog {
         resultPanel.add(new JLabel("Generated SQL"), BorderLayout.NORTH);
         sqlArea = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false);
         sqlArea.setEditable(false);
-        sqlArea.setRows(8);
+        sqlArea.setRows(5);
         sqlArea.setColumns(60);
         RTextScrollPane sqlScrollPane = new RTextScrollPane();
         sqlScrollPane.setViewportView(sqlArea);
@@ -356,7 +356,12 @@ public class AIQueryDialog extends JDialog {
         d.getContentPane().add(systemPromptPanel, BorderLayout.CENTER);
 
         JButton okButton = new JButton("OK");
+        ImageIcon okIcon = UIUtil.readImage("/buttonok.png");
+        if (okIcon != null) {
+            okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
+        }
         okButton.addActionListener(e -> {
+            systemPromptPanel.saveSettings();
             d.dispose();
         });
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 4));
@@ -438,7 +443,7 @@ public class AIQueryDialog extends JDialog {
                         _log.warn("Confirmation dialog failed", ex);
                     }
                     return result[0];
-                });
+                }, systemPromptPanel.getFirstPassTemplate());
             }
 
             @Override

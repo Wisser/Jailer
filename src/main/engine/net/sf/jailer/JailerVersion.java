@@ -47,6 +47,3 @@ public class JailerVersion {
 	}
 
 }
-
-// TODO
-// TODO include javadoc into release artifacts and improve it

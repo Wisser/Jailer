@@ -19,6 +19,8 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Font;
 
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -30,24 +32,34 @@ import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.util.UISettings;
 
 /**
- * Reusable Swing panel for editing the AI system prompt template.
- * The template may contain the placeholders {@code {schema}} and {@code {dbmsName}},
- * which are replaced at request time. Loads from and saves to {@link UISettings}.
+ * Reusable Swing panel for editing the AI system prompt templates.
+ * The main template may contain the placeholders {@code {schema}} and {@code {dbmsName}};
+ * the first-pass (table-selection) template supports {@code {dbmsName}}.
+ * Both templates are loaded from and saved to {@link UISettings}.
  */
 public class SystemPromptPanel extends JPanel {
 
     private static final long serialVersionUID = 1L;
 
     static final String SETTING_SYSTEM_PROMPT = "aiSystemPrompt";
+    static final String SETTING_FIRST_PASS_SYSTEM_PROMPT = "aiFirstPassSystemPrompt";
 
-    /** Default template that mirrors the hard-coded prompt used before this panel existed. */
+    /** Default template for SQL generation (second AI call). */
     public static final String DEFAULT_TEMPLATE =
         "You are a SQL expert for {dbmsName}.\n"
         + "Database schema: {schema}\n"
         + "Return ONLY raw SQL - no explanation, no code fences, no trailing semicolon. "
         + "Use only tables and columns from the schema above.";
 
+    /** Default template for table selection (first AI call / smart selection). */
+    public static final String DEFAULT_FIRST_PASS_TEMPLATE =
+        "You are a SQL expert for {dbmsName}.\n"
+        + "Given a list of database table names and a natural-language question, "
+        + "respond with ONLY the table names needed to answer the question. "
+        + "One table name per line. No explanation, no other text.";
+
     private final JTextArea promptArea;
+    private final JTextArea firstPassPromptArea;
 
     public SystemPromptPanel() {
         super(new BorderLayout(4, 4));
@@ -55,12 +67,48 @@ public class SystemPromptPanel extends JPanel {
         String saved = (String) UISettings.restore(SETTING_SYSTEM_PROMPT);
         String initial = (saved != null && !saved.isEmpty()) ? saved : DEFAULT_TEMPLATE;
 
+        String savedFP = (String) UISettings.restore(SETTING_FIRST_PASS_SYSTEM_PROMPT);
+        String initialFP = (savedFP != null && !savedFP.isEmpty()) ? savedFP : DEFAULT_FIRST_PASS_TEMPLATE;
+
         promptArea = new JTextArea(initial, 5, 60);
         promptArea.setLineWrap(true);
         promptArea.setWrapStyleWord(true);
         promptArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
 
-        JLabel hint = new JLabel("Placeholders: {schema}, {dbmsName}");
+        firstPassPromptArea = new JTextArea(initialFP, 4, 60);
+        firstPassPromptArea.setLineWrap(true);
+        firstPassPromptArea.setWrapStyleWord(true);
+        firstPassPromptArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
+
+        JPanel mainSection = buildSection(
+            "SQL Generation",
+            promptArea,
+            "Placeholders: {schema}, {dbmsName}",
+            DEFAULT_TEMPLATE);
+
+        JPanel firstPassSection = buildSection(
+            "Table Selection (Relevant Tables Only)",
+            firstPassPromptArea,
+            "Placeholder: {dbmsName}",
+            DEFAULT_FIRST_PASS_TEMPLATE);
+
+        firstPassSection.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createEmptyBorder(20, 0, 0, 0),
+            firstPassSection.getBorder()));
+
+        JPanel both = new JPanel();
+        both.setLayout(new BoxLayout(both, BoxLayout.Y_AXIS));
+        both.add(mainSection);
+        both.add(firstPassSection);
+
+        add(both, BorderLayout.CENTER);
+    }
+
+    private JPanel buildSection(String title, JTextArea area, String hintText, String defaultText) {
+        JPanel section = new JPanel(new BorderLayout(4, 4));
+        section.setBorder(BorderFactory.createTitledBorder(title));
+
+        JLabel hint = new JLabel(hintText);
         hint.setFont(hint.getFont().deriveFont(hint.getFont().getSize2D() - 1f));
 
         JButton resetButton = new JButton("Reset to Default");
@@ -68,27 +116,36 @@ public class SystemPromptPanel extends JPanel {
         if (resetIcon != null) {
             resetButton.setIcon(UIUtil.scaleIcon(resetButton, resetIcon));
         }
-        resetButton.addActionListener(e -> promptArea.setText(DEFAULT_TEMPLATE));
+        resetButton.addActionListener(e -> area.setText(defaultText));
 
-        JPanel bottomRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
-        bottomRow.add(hint);
-        bottomRow.add(resetButton);
+        JPanel bottomRow = new JPanel(new BorderLayout(6, 0));
+        bottomRow.add(hint, BorderLayout.WEST);
+        bottomRow.add(resetButton, BorderLayout.EAST);
 
-        add(new JScrollPane(promptArea), BorderLayout.CENTER);
-        add(bottomRow, BorderLayout.SOUTH);
+        section.add(new JScrollPane(area), BorderLayout.CENTER);
+        section.add(bottomRow, BorderLayout.SOUTH);
+        return section;
     }
 
     /**
-     * Returns the current template text, or {@code null} if it equals the default
-     * (so callers can skip passing it and rely on the built-in default).
+     * Returns the current SQL-generation template, or {@code null} if empty.
      */
     public String getTemplate() {
         String text = promptArea.getText().trim();
         return text.isEmpty() ? null : text;
     }
 
-    /** Persists the template to {@link UISettings}. */
+    /**
+     * Returns the current table-selection (first-pass) template, or {@code null} if empty.
+     */
+    public String getFirstPassTemplate() {
+        String text = firstPassPromptArea.getText().trim();
+        return text.isEmpty() ? null : text;
+    }
+
+    /** Persists both templates to {@link UISettings}. */
     public void saveSettings() {
         UISettings.store(SETTING_SYSTEM_PROMPT, promptArea.getText().trim());
+        UISettings.store(SETTING_FIRST_PASS_SYSTEM_PROMPT, firstPassPromptArea.getText().trim());
     }
 }
