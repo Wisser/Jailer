@@ -813,5 +813,6 @@ public class AIQueryAssistant {
 // TODO remove Coming Soon: 
 
 // TODO
-// TODO add comments (table/column, test w. table comment is available) to datamodel context of API call. Offer "omit" checkbox. 
+// TODO add comments to datamodel context of API call. Offer "omit" checkbox. 
+// TODO the estemated token count for the schema with all options enabled is a better limit than "500 tables"
 // TODO ? add support for function calls (e.g. OpenAI function calling) to allow the model to return structured data (e.g. list of relevant tables) without needing to parse text responses. This would be more robust than relying on the model to format its output correctly for the smart table selection step.
