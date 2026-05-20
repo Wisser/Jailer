@@ -838,6 +838,7 @@ public class AIQueryAssistant {
 
 // TODO
 // TODO cntrl-shft-A: improve prompt stablility
+// TODO flatten the bullet points?
 
 // TODO
 // TODO add comments to datamodel context of API call. Offer "omit" checkbox. 
