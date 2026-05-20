@@ -48,7 +48,9 @@ public class SystemPromptPanel extends JPanel {
         "You are a SQL expert for {dbmsName}.\n"
         + "Database schema: {schema}\n"
         + "Return ONLY raw SQL - no explanation, no code fences, no trailing semicolon. "
-        + "Use only tables and columns from the schema above.";
+        + "Use only tables and columns from the schema above.\n"
+        + "\n"
+        + "Use aliases for complex expressions in select clauses.";
 
     /** Default template for table selection (first AI call / smart selection). */
     public static final String DEFAULT_FIRST_PASS_TEMPLATE =
