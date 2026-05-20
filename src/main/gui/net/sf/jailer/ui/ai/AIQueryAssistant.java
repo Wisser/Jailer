@@ -159,7 +159,7 @@ public class AIQueryAssistant {
         boolean isAnthropic = config.providerType == ProviderType.ANTHROPIC;
         ObjectNode body = buildRequestBody(question, history, schema, dbmsName, config, isAnthropic, systemPromptTemplate);
         JsonNode response = post(config, body, abortRef);
-        String result = extractText(response, isAnthropic).trim();
+        String result = stripMarkdownCodeFence(extractText(response, isAnthropic).trim());
         if (result.endsWith(";")) {
 			result = result.substring(0, result.length() - 1).trim();
 		}
@@ -390,8 +390,16 @@ public class AIQueryAssistant {
                 }
 
                 String maskedKey = apiKey.length() > 8 ? apiKey.substring(0, 8) + "..." : "***";
-                String authHeader = isAnthropic ? "x-api-key: " + maskedKey : "Authorization: Bearer " + maskedKey;
-                _log.debug("REQUEST POST {}\n  {}\n  Body: {}", currentUrl, authHeader,
+                StringBuilder headers = new StringBuilder();
+                headers.append("Content-Type: application/json\n  ");
+                if (isAnthropic) {
+                    headers.append("x-api-key: ").append(maskedKey).append("\n  ");
+                    headers.append("anthropic-version: 2023-06-01\n  ");
+                } else {
+                    headers.append("Authorization: Bearer ").append(maskedKey).append("\n  ");
+                }
+                headers.append("User-Agent: Application");
+                _log.debug("REQUEST POST {}\n  {}\n  Body: {}", currentUrl, headers,
                         new String(bodyBytes, StandardCharsets.UTF_8));
 
                 try (OutputStream os = conn.getOutputStream()) {
@@ -427,7 +435,11 @@ public class AIQueryAssistant {
                 String responseBody = new String(responseBytes, StandardCharsets.UTF_8).trim();
                 _log.debug("RESPONSE {}\n  Body: {}", status, responseBody);
                 if (status >= 400) {
-                    throw new IOException("API error " + status + ": " + parseErrorMessage(responseBytes, status));
+                    String msg = "API error " + status + ": " + parseErrorMessage(responseBytes, status);
+                    if (status == 401) {
+                        msg += " (check your API key)";
+                    }
+                    throw new IOException(msg);
                 }
                 // Check if response is streamed
                 String[] lines = responseBody.split("\\r?\\n");
@@ -503,7 +515,16 @@ public class AIQueryAssistant {
         cmd.add("--data-binary"); cmd.add("@-");
         cmd.add(apiUrl);
 
-        _log.debug("REQUEST (curl fallback) POST {}\n  Body: {}", apiUrl,
+        String maskedKeyCurl = apiKey.length() > 8 ? apiKey.substring(0, 8) + "..." : "***";
+        StringBuilder headersCurl = new StringBuilder();
+        headersCurl.append("Content-Type: application/json\n  ");
+        if (isAnthropic) {
+            headersCurl.append("x-api-key: ").append(maskedKeyCurl).append("\n  ");
+            headersCurl.append("anthropic-version: 2023-06-01\n  ");
+        } else {
+            headersCurl.append("Authorization: Bearer ").append(maskedKeyCurl).append("\n  ");
+        }
+        _log.debug("REQUEST (curl fallback) POST {}\n  {}\n  Body: {}", apiUrl, headersCurl,
                 new String(bodyBytes, StandardCharsets.UTF_8));
 
         Process process = new ProcessBuilder(cmd).start();
@@ -729,7 +750,7 @@ public class AIQueryAssistant {
         List<String> userMessages = new ArrayList<>();
         for (ConversationMessage msg : history) {
             if ("user".equals(msg.role)) {
-                userMessages.add(msg.content.replaceAll("[\\r\\n]+", " "));
+                userMessages.add(msg.content);
             }
         }
         if (userMessages.isEmpty()) {
@@ -737,10 +758,16 @@ public class AIQueryAssistant {
         }
         StringBuilder sb = new StringBuilder("/* AI:\n");
         if (userMessages.size() == 1) {
-            sb.append("   ").append(userMessages.get(0));
+            String[] lines = userMessages.get(0).replaceAll("\\r", "").split("\n", -1);
+            for (int i = 0; i < lines.length; i++) {
+                sb.append("   ").append(lines[i].replaceAll("^\\s+", ""));
+                if (i < lines.length - 1) {
+                    sb.append("\n");
+                }
+            }
         } else {
             for (String msg : userMessages) {
-                sb.append("   - ").append(msg).append("\n");
+                sb.append("   - ").append(msg.replaceAll("[ \\t]*[\\r\\n]+[ \\t]*", " ").trim()).append("\n");
             }
             sb.setLength(sb.length() - 1);
         }
@@ -784,6 +811,14 @@ public class AIQueryAssistant {
         return (saved != null && !saved.isEmpty()) ? saved : null;
     }
 
+    private static final Pattern CODE_FENCE_PATTERN = Pattern.compile(
+            "(?s)\\A([`~]{3})[a-zA-Z-]*[ \\t]*\\r?\\n(.+?)\\r?\\n\\1\\z");
+
+    private static String stripMarkdownCodeFence(String text) {
+        Matcher m = CODE_FENCE_PATTERN.matcher(text);
+        return m.matches() ? m.group(2).trim() : text;
+    }
+
     /**
      * Extracts the AI prompt from the comment header of a generated SQL statement.
      * Returns the last prompt line (stripped of list prefix), or null if none is found.
@@ -796,11 +831,13 @@ public class AIQueryAssistant {
     }
 }
 
-// TODO 
 // TODO session management: if the provider supports it, we could keep a session ID and reuse it for subsequent calls to maintain context without resending the full schema each time.
 
 // TODO 
 // TODO remove Coming Soon: 
+
+// TODO
+// TODO cntrl-shft-A: improve prompt stablility
 
 // TODO
 // TODO add comments to datamodel context of API call. Offer "omit" checkbox. 

@@ -103,7 +103,19 @@ public class AIQueryDialog extends JDialog {
         this.executionContext = executionContext;
         initUI();
         if (initialPrompt != null) {
-            questionArea.setText(initialPrompt);
+            String displayPrompt = initialPrompt;
+            int nlIdx = displayPrompt.indexOf('\n');
+            if (nlIdx >= 0) {
+                String rest = displayPrompt.substring(nlIdx + 1);
+                int indent = 0;
+                while (indent < rest.length() && rest.charAt(indent) == ' ') indent++;
+                if (indent > 0) {
+                    StringBuilder prefix = new StringBuilder();
+                    for (int i = 0; i < indent; i++) prefix.append(' ');
+                    displayPrompt = prefix.toString() + displayPrompt;
+                }
+            }
+            questionArea.setText(displayPrompt);
             if (silent) {
                 historyArea.setText(initialPrompt);
                 if (generateButton.isEnabled()) {
@@ -509,6 +521,3 @@ public class AIQueryDialog extends JDialog {
 
 }
 
-// TODO
-// TODO Anleitung zur Einrichtung eines API Keys mit Ollama oder OpenRouter in die Dokumentation aufnehmen
-// TODO README/Docs erg�nzen

@@ -24,7 +24,7 @@ public class AIProviderConfig {
         OPENROUTER(
                 "OpenRouter",
                 "https://openrouter.ai/api/v1/chat/completions",
-                "meta-llama/llama-3.3-70b-instruct",
+                "google/gemma-3-27b-it",
                 true),
         OPENAI_COMPATIBLE(
             "OpenAI-compatible",

@@ -140,7 +140,7 @@
 								</tr>
 								<tr class="b">
 									<td nowrap><code>meta-llama/llama-3.1-8b-instruct</code></td>
-									<td>Default model. Fast, good SQL quality.</td>
+									<td>Fast, good SQL quality.</td>
 								</tr>
 								<tr class="a">
 									<td nowrap><code>meta-llama/llama-3.3-70b-instruct</code></td>
@@ -152,11 +152,12 @@
 								</tr>
 								<tr class="a">
 									<td nowrap><code>google/gemma-3-27b-it</code></td>
-									<td>Google Gemma 3 27B &mdash; strong reasoning, good for complex schemas.</td>
+									<td>Google Gemma 3 27B &mdash; strong reasoning, good for complex schemas. <b>Default model.</b></td>
 								</tr>
 								<tr class="b">
 									<td nowrap><code>deepseek/deepseek-r1</code></td>
-									<td>DeepSeek R1 &mdash; excellent SQL generation, large context window.</td>
+									<td>DeepSeek R1 &mdash; <b>best SQL quality</b>, large context window.
+									Slower than the models above. <b>Recommended</b> when result quality matters.</td>
 								</tr>
 							</tbody>
 						</table>
@@ -165,6 +166,31 @@
 						<a href="https://openrouter.ai/models">openrouter.ai/models</a>.
 						Filter by <b>Free</b> to see zero-cost options.
 						Paid models require credits which can be topped up in your account.</p>
+
+						<h4>Usage limits for free models</h4>
+
+						<p>Free models are subject to the following limits
+						<i>(as of May 2026 &mdash; check <a href="https://openrouter.ai/docs">openrouter.ai/docs</a> for current values)</i>:</p>
+
+						<table border="0" cellspacing="5" cellpadding="4">
+							<tbody>
+								<tr class="a">
+									<td nowrap><b>20 requests / minute</b></td>
+									<td>Rate limit per free model.</td>
+								</tr>
+								<tr class="b">
+									<td nowrap><b>200 requests / day</b></td>
+									<td>Daily limit per free model.</td>
+								</tr>
+								<tr class="a">
+									<td nowrap><b>Lower priority</b></td>
+									<td>Free requests are served with lower priority than paid usage &mdash;
+									response times may be higher under load.</td>
+								</tr>
+							</tbody>
+						</table>
+
+						<p>Paid models have no daily request limit; usage is charged against your account credits.</p>
 
 						<p><b>Tip:</b> If a free model returns an error about context length, enable
 						<b>Smart Table Selection</b> in the settings (see the
