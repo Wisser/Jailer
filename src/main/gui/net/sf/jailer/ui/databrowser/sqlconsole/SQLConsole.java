@@ -750,6 +750,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
 		aiSilentStatusPanel.setVisible(true);
 		editorPane.setEnabled(false);
+		int initialCPos = editorPane.getCaretPosition();
 		consoleContainerPanel.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		aiSilentCancelButton.setCursor(Cursor.getDefaultCursor());
 		SwingWorker<String, Void> worker = new SwingWorker<String, Void>() {
@@ -829,6 +830,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			protected void done() {
 				running = false;
 				editorPane.setEnabled(true);
+				editorPane.setCaretPosition(initialCPos);
 				consoleContainerPanel.setCursor(Cursor.getDefaultCursor());
 				aiSilentStatusPanel.setVisible(false);
 				aiSilentCancelButton.removeActionListener(cancelListener);
@@ -838,8 +840,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				try {
 					String sql = get();
 					if (sql != null && !sql.isEmpty() && !currentStatement.trim().equals(sql.trim())) {
-						String comment = AIQueryAssistant.buildPromptComment(
-								Collections.singletonList(new ConversationMessage("user", prompt)));
+						String comment = "/* AI:\n   " + prompt + "\n*/";
 						jTabbedPane1.addChangeListener(cl);
 						replaceAndExecute(comment + "\n" + sql);
 					}

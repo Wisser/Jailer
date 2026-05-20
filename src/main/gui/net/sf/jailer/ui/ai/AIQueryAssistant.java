@@ -792,17 +792,7 @@ public class AIQueryAssistant {
         if (sql == null) return null;
         Matcher m = AI_COMMENT_PATTERN.matcher(sql);
         if (!m.find()) return null;
-        String body = m.group(1);
-        List<String> lines = new ArrayList<>();
-        for (String line : body.split("\\r?\\n")) {
-            String t = line.replaceFirst("^\\s+", "");
-            if (!t.isEmpty()) {
-                lines.add(t);
-            }
-        }
-        if (lines.isEmpty()) return null;
-        String result = String.join("\n", lines);
-        return result.isEmpty() ? null : result;
+        return m.group(1);
     }
 }
 
