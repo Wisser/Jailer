@@ -1693,6 +1693,14 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 					return true;
 				}
 			}
+			String textBeforeCaret = doc.getText(0, caretPosition);
+			int lastBlockStart = textBeforeCaret.lastIndexOf("/*");
+			if (lastBlockStart >= 0) {
+				String fromStart = textBeforeCaret.substring(lastBlockStart);
+				if (!fromStart.contains("*/") && fromStart.matches("(?s)/\\*\\s*AI:.*")) {
+					return false;
+				}
+			}
 		} catch (/*BadLocation*/Exception ble) { // Never happens
 			LogUtil.warn(ble);
 			ble.printStackTrace();
