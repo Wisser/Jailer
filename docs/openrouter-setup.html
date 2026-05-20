@@ -1,0 +1,191 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>Jailer - Example Setup</title>
+	<meta content="text/html; charset=us-ascii" http-equiv="Content-Type" />
+	<meta content="Data Export Tool" name="description" />
+	<link href="favicon.ico" rel="shortcut icon" />
+	<meta content="data export referential integrity java jdbc dbms" name="keywords" />
+	<link href="styles.css" rel="stylesheet" type="text/css" />
+</head>
+<body left-margin="0" top-margin="0">
+<div align="left">
+<table border="0" cellpadding="0" cellspacing="0" height="407" style="left: 0pt; top: 0pt; text-align: left; position: absolute;" width="100%">
+	<tbody>
+		<tr>
+			<td class="bannerbackground" colspan="2" height="33" width="100%">
+			<table border="0" cellpadding="4" cellspacing="0" width="100%">
+				<tbody>
+					<tr>
+						<td><a href="https://github.com/Wisser/Jailer"><img src="logo.png" hspace="10" /></td> <td class="slogan" width="100%"></a>
+
+						<td style="width: 100%; text-align: right;">
+						<table border="0" cellpadding="0" cellspacing="0" width="100%">
+							<tbody>
+								<tr>
+									 <td><a href="https://github.com/Wisser/Jailer"><img src="GitHub-Mark-64px.png" title="GitHub" /></a> </td></tr><tr style="height: 100%;"><td>&nbsp;</td>
+								</tr>
+							</tbody>
+						</table>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			</td>
+		</tr>
+		<tr>
+			<td class="nav1background" colspan="2"  width="100%">&nbsp; <b><font color="#ffffff"><a class="tlink" href="home.htm" target="_self">&nbsp;Home&nbsp;</a> <a class="tlink" href="quicktour.htm" target="_self">&nbsp;Quick Tour&nbsp;</a> <a class="tlink" href="exporting-data.htm" target="_self">&nbsp;Tutorial&nbsp;</a> <a class="tlinkA" href="data-browsing.html" target="_self">&nbsp;Data Browser&nbsp;</a> <a class="tlink" href="videos.html" target="_self">&nbsp;Videos&nbsp;</a> <a class="tlink" href="faq.html" target="_self">&nbsp;FAQ&nbsp;</a> <a class="tlink" href="api.html" target="_self">&nbsp;API&nbsp;</a> <a class="tlink" href="design.htm" target="_self">&nbsp;Documentation&nbsp;</a> <a class="tlink" href="http://sourceforge.net/forum/?group_id=197260" target="_self">&nbsp;Forum&nbsp;</a> <a class="tlink" href="http://sourceforge.net/project/showfiles.php?group_id=197260" target="_self">&nbsp;Download&nbsp;</a>  &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</font></b></td>
+		</tr>
+		<tr>
+			<td class="spacer" colspan="2" width="100%"></td> </tr><tr><td class="lmenucontainer">&nbsp;</td>
+		</tr>
+		<tr>
+			<td class="lmenucontainer" height="100%" valign="top" width="14%">
+			<div align="center">
+			<center>
+			<table border="0" cellpadding="0" cellspacing="0" width="100%">
+				<tbody>
+					<tr>
+						<td height="6px" width="100%"> </td>
+					</tr>
+				</tbody>
+			</table>
+			</center>
+			</div>
+
+			<ul>
+                <li><a class="mlink" href="data-browsing.html" target="_self">Data&nbsp;Browser<br>and&nbsp;SQL&nbsp;Console</a></li>
+            </ul><ul>
+                <li><a href="ai-assistant.html" target="_self" class="mlinkA">AI&nbsp;Assistant</a>
+                    <ul>
+                        <li><a href="openrouter-setup.html" target="_self" class="llinkA">Example&nbsp;Setup</a></li>
+                    </ul>
+                </li>
+			</ul>
+
+			<table border="0" cellpadding="0" cellspacing="0" width="100%">
+				<tbody>
+					<tr>
+						<td class="content2background"><img alt="" src="architecture-Dateien/vgradp.gif" style="width: 160px; height: 1px;" /></td>
+					</tr>
+				</tbody>
+			</table>
+
+			<p>&nbsp;</p>
+			</td>
+			<td class="contentbackground" height="418" valign="top" width="86%">
+			<div align="right">
+			<table border="0" cellpadding="0" cellspacing="0" height="542" width="98%">
+				<tbody>
+					<tr>
+						<td class="contentbackground" height="21" width="100%">&nbsp;</td>
+					</tr>
+					<tr>
+						<td class="content" height="520" valign="top" width="100%">
+						<h3>Example Setup</h3>
+
+						<p>This guide walks you through a concrete setup of the AI Assistant using
+						<a href="https://openrouter.ai">OpenRouter</a> as the AI provider.</p>
+
+						<p>OpenRouter is used here as the example because it is the quickest way to get started:</p>
+						<ul>
+							<li><b>Free models available</b> &mdash; several capable models require no payment at all.</li>
+							<li><b>No credit card required</b> to use the free tier.</li>
+							<li><b>Single endpoint</b> for hundreds of models from different providers
+							(Meta, Google, Mistral, DeepSeek, and more) &mdash; switch models by changing one field.</li>
+							<li><b>Easy sign-up</b> via Google, GitHub, or e-mail.</li>
+						</ul>
+
+						<p>Once you are familiar with the setup, you can switch to any other supported provider
+						(Anthropic, OpenAI-compatible, or Ollama) in the same dialog.</p>
+
+						<h4>Step 1 &mdash; Create an OpenRouter account</h4>
+
+						<ol>
+							<li>Open <a href="https://openrouter.ai">openrouter.ai</a> in your browser.</li>
+							<li>Click <b>Sign In</b> and create a free account (Google, GitHub, or e-mail).</li>
+						</ol>
+
+						<h4>Step 2 &mdash; Generate an API key</h4>
+
+						<ol>
+							<li>After logging in, go to <b>Settings &rarr; API Keys</b>
+							(direct link: <code>openrouter.ai/settings/keys</code>).</li>
+							<li>Click <b>Create Key</b>, give it a name (e.g. &ldquo;Jailer&rdquo;), and confirm.</li>
+							<li>Copy the key that is shown &mdash; it starts with <code>sk-or-</code>.
+							<b>Store it safely;</b> it will not be shown again.</li>
+						</ol>
+
+						<h4>Step 3 &mdash; Configure Jailer</h4>
+
+						<ol>
+							<li>Open the AI Assistant dialog via <b>Edit &rarr; AI Assistant</b>, or via the
+							<b>AI Assistant</b> button in the SQL Console toolbar (Data Browser).</li>
+							<li>At the bottom of the dialog, set <b>Provider</b> to <b>OpenRouter</b>.<br />
+							The API URL is filled in automatically:
+							<code>https://openrouter.ai/api/v1/chat/completions</code></li>
+							<li>Paste your API key into the <b>API Key</b> field.</li>
+							<li>Enter the <b>Model</b> identifier (see table below).</li>
+						</ol>
+
+						<h4>Step 4 &mdash; Choose a model</h4>
+
+						<p>OpenRouter uses the format <code>provider/model-name</code>.
+						The following models are available free of charge (no credits required):</p>
+
+						<table border="0" cellspacing="5" cellpadding="4">
+							<tbody>
+								<tr class="a">
+									<td nowrap><b>Model identifier</b></td>
+									<td><b>Notes</b></td>
+								</tr>
+								<tr class="b">
+									<td nowrap><code>meta-llama/llama-3.1-8b-instruct:free</code></td>
+									<td>Default model. Fast, good SQL quality. <b>Recommended starting point.</b></td>
+								</tr>
+								<tr class="a">
+									<td nowrap><code>meta-llama/llama-3.3-70b-instruct:free</code></td>
+									<td>Larger Llama 3.3 variant &mdash; higher quality, slightly slower.</td>
+								</tr>
+								<tr class="b">
+									<td nowrap><code>mistralai/mistral-7b-instruct:free</code></td>
+									<td>Mistral 7B &mdash; compact and capable for standard queries.</td>
+								</tr>
+								<tr class="a">
+									<td nowrap><code>google/gemma-3-27b-it:free</code></td>
+									<td>Google Gemma 3 27B &mdash; strong reasoning, good for complex schemas.</td>
+								</tr>
+								<tr class="b">
+									<td nowrap><code>deepseek/deepseek-r1:free</code></td>
+									<td>DeepSeek R1 &mdash; excellent SQL generation, large context window.</td>
+								</tr>
+							</tbody>
+						</table>
+
+						<p>The full list of available (including free) models is at
+						<a href="https://openrouter.ai/models">openrouter.ai/models</a>.
+						Filter by <b>Free</b> to see zero-cost options.
+						Paid models require credits which can be topped up in your account.</p>
+
+						<p><b>Tip:</b> If a free model returns an error about context length, enable
+						<b>Smart Table Selection</b> in the settings (see the
+						<a href="ai-assistant.html">AI Assistant page</a>) or try a model with a larger
+						context window.</p>
+
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			</div>
+
+			<p>&nbsp;</p>
+			</td>
+		</tr>
+		<tr>
+			<td height="12" valign="top" width="14%">&nbsp;</td>
+			<td>&nbsp;</td>
+		</tr>
+	</tbody>
+</table>
+</div>
+</body>
+</html>

@@ -21,6 +21,11 @@ package net.sf.jailer.ui.ai;
 public class AIProviderConfig {
 
     public enum ProviderType {
+        OPENROUTER(
+                "OpenRouter",
+                "https://openrouter.ai/api/v1/chat/completions",
+                "meta-llama/llama-3.3-70b-instruct",
+                true),
         OPENAI_COMPATIBLE(
             "OpenAI-compatible",
             "https://api.openai.com/v1/chat/completions",
@@ -31,11 +36,6 @@ public class AIProviderConfig {
                 "https://api.anthropic.com/v1/messages",
                 "claude-haiku-4-5-20251001",
                 true),
-        OPENROUTER(
-            "OpenRouter",
-            "https://openrouter.ai/api/v1/chat/completions",
-            "meta-llama/llama-3.1-8b-instruct:free",
-            true),
         OLLAMA(
             "Ollama",
             "http://localhost:11434/v1/chat/completions",

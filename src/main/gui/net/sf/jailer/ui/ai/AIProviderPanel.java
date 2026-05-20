@@ -50,11 +50,11 @@ public class AIProviderPanel extends JPanel {
 
     private static final long serialVersionUID = 1L;
 
-    static final String SETTING_PROVIDER        = "aiProviderType";
-    static final String SETTING_API_URL         = "aiApiUrl";
-    static final String SETTING_MODEL           = "aiModel";
-    static final String SETTING_API_KEY_PREFIX  = "aiApiKey_";
-    static final String SETTING_MAX_TOKENS      = "aiMaxTokens";
+    static final String SETTING_PROVIDER        = "AiProviderType";
+    static final String SETTING_API_URL         = "AiApiUrl";
+    static final String SETTING_MODEL           = "AiModel";
+    static final String SETTING_API_KEY_PREFIX  = "AiApiKey_";
+    static final String SETTING_MAX_TOKENS      = "AiMaxTokens";
 
     private static final StringObfuscator STRING_OBFUSCATOR = new StringObfuscator();
 
@@ -342,7 +342,7 @@ public class AIProviderPanel extends JPanel {
             } catch (IllegalArgumentException ignored) {
             }
         }
-        return ProviderType.ANTHROPIC;
+        return ProviderType.OPENROUTER;
     }
 
     private int loadMaxTokens() {

@@ -270,7 +270,6 @@ public class AIQueryDialog extends JDialog {
         JPanel resultPanel = new JPanel(new BorderLayout(4, 4));
         resultPanel.add(new JLabel("Generated SQL"), BorderLayout.NORTH);
         sqlArea = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false);
-        sqlArea.setEditable(false);
         sqlArea.setRows(5);
         sqlArea.setColumns(60);
         RTextScrollPane sqlScrollPane = new RTextScrollPane();
