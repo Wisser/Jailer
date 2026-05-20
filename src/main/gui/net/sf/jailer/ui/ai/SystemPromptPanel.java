@@ -50,7 +50,8 @@ public class SystemPromptPanel extends JPanel {
         + "Return ONLY raw SQL - no explanation, no code fences, no trailing semicolon. "
         + "Use only tables and columns from the schema above.\n"
         + "\n"
-        + "Use aliases for complex expressions in select clauses.";
+        + "Use aliases for complex expressions in select clauses.\n"
+        + "Format SQL.";
 
     /** Default template for table selection (first AI call / smart selection). */
     public static final String DEFAULT_FIRST_PASS_TEMPLATE =
