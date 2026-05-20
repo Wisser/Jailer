@@ -812,7 +812,7 @@ public class AIQueryAssistant {
     }
 
     private static final Pattern CODE_FENCE_PATTERN = Pattern.compile(
-            "(?s)\\A([`~]{3})[a-zA-Z-]*[ \\t]*\\r?\\n(.+?)\\r?\\n\\1\\z");
+            "(?s)\\A([`~]{3})[a-zA-Z0-9-]*[ \\t]*\\r?\\n(.+?)\\r?\\n\\1\\z");
 
     private static String stripMarkdownCodeFence(String text) {
         Matcher m = CODE_FENCE_PATTERN.matcher(text);
