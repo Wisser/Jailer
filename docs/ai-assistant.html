@@ -207,10 +207,19 @@ SELECT * FROM orders WHERE order_date &gt;= CURRENT_DATE - 30</pre>
 
 						<br><h3>Custom System Prompt</h3>
 
-						<p>Advanced users can customize the instructions sent to the AI before each conversation.
-						Click the <b>System Prompt&hellip;</b> button at the bottom of the AI Assistant dialog.
-						This allows you to add database-specific conventions, preferred SQL dialects, or
-						output formatting rules.</p>
+						<p>The system prompt lets you set standing instructions that are sent to the AI before every
+						conversation. Click the <b>System Prompt&hellip;</b> button at the bottom of the AI Assistant
+						dialog to edit it.</p>
+
+						<p>It is a good place to establish general rules for SQL generation, for example:</p>
+						<ul>
+							<li><b>Aliases for complex expressions</b> &mdash; instruct the AI to always assign
+							a meaningful column alias to calculated fields, e.g.
+							<code>SUM(amount) AS total_amount</code> instead of an unnamed expression.</li>
+							<li>Preferred SQL dialect or syntax conventions for your database.</li>
+							<li>Formatting rules such as uppercase keywords or a specific indentation style.</li>
+							<li>Database-specific constraints or naming conventions the AI should respect.</li>
+						</ul>
 
 						</td>
 					</tr>
