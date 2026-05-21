@@ -52,6 +52,7 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.ai.AIProviderConfig.ProviderType;
+import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.SqlUtil;
 
@@ -163,6 +164,7 @@ public class AIQueryAssistant {
         if (result.endsWith(";")) {
 			result = result.substring(0, result.length() - 1).trim();
 		}
+        result = new BasicFormatterImpl().format(result);
         UISettings.s21 = (omitColumnTypes ? 1L : 0L) | (smartSelection ? 2L : 0L);
         return result;
     }
