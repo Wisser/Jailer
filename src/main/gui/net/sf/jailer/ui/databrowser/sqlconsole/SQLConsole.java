@@ -876,7 +876,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		if (menuItemAIAssistantSilent != null && editorPane != null) {
 			String currentStatement = editorPane.getCurrentStatement(true);
 			if (currentStatement.trim().length() == 0) {
-				int pos = editorPane.getCaretPosition();
 				int l = editorPane.getLineStartOffsetOfCurrentLine();
 				if (l > 0) {
 					try {
@@ -888,9 +887,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				}
 			}
 			menuItemAIAssistantSilent.setEnabled(AIQueryAssistant.extractPrompt(currentStatement) != null);
-			// TODO
-			
-//			menuItemAIAssistantSilent.setEnabled(true);
 		}
 	}
 
