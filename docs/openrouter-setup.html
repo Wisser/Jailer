@@ -97,7 +97,8 @@
 
 						<p>Once you are familiar with the setup, you can switch to any other supported provider
 						(Anthropic, OpenAI-compatible, or Ollama) in the same dialog.</p>
-
+                        <br>
+                        
 						<h4>Step 1 &mdash; Create an OpenRouter account</h4>
 
 						<ol>
@@ -105,6 +106,7 @@
 							<li>Click <b>Sign In</b> and create a free account (Google, GitHub, or e-mail).</li>
 						</ol>
 
+                        <br>
 						<h4>Step 2 &mdash; Generate an API key</h4>
 
 						<ol>
@@ -115,6 +117,7 @@
 							<b>Store it safely;</b> it will not be shown again.</li>
 						</ol>
 
+                        <br>
 						<h4>Step 3 &mdash; Configure Jailer</h4>
 
 						<ol>
@@ -127,6 +130,7 @@
 							<li>Enter the <b>Model</b> identifier (see table below).</li>
 						</ol>
 
+                        <br>
 						<h4>Step 4 &mdash; Choose a model</h4>
 
 						<p>OpenRouter uses the format <code>provider/model-name</code>.
@@ -164,38 +168,23 @@
 
 						<p>The full list of available (including free) models is at
 						<a href="https://openrouter.ai/models">openrouter.ai/models</a>.
-						Filter by <b>Free</b> to see zero-cost options.
-						Paid models require credits which can be topped up in your account.</p>
-
-						<h4>Usage limits for free models</h4>
-
-						<p>Free models are subject to the following limits
-						<i>(as of May 2026 &mdash; check <a href="https://openrouter.ai/docs">openrouter.ai/docs</a> for current values)</i>:</p>
-
-						<table border="0" cellspacing="5" cellpadding="4">
-							<tbody>
-								<tr class="a">
-									<td nowrap><b>20 requests / minute</b></td>
-									<td>Rate limit per free model.</td>
-								</tr>
-								<tr class="b">
-									<td nowrap><b>200 requests / day</b></td>
-									<td>Daily limit per free model.</td>
-								</tr>
-								<tr class="a">
-									<td nowrap><b>Lower priority</b></td>
-									<td>Free requests are served with lower priority than paid usage &mdash;
-									response times may be higher under load.</td>
-								</tr>
-							</tbody>
-						</table>
-
-						<p>Paid models have no daily request limit; usage is charged against your account credits.</p>
-
-						<p><b>Tip:</b> If a free model returns an error about context length, enable
+						</p>
+						<br>
+						<p><b>Note:</b> Free models are a convenient way to get started, but they are usually
+						subject to usage limits (rate limits, daily request caps, lower response priority).<br>
+						Paid models often deliver significantly better results &mdash; in SQL quality,
+						reasoning accuracy, and handling of complex schemas. <br>
+						If you already have a paid
+						subscription with another provider (e.g. Anthropic or OpenAI), it is recommended
+						to use that instead.</p>
+						<br>
+						<p><b>Tip:</b> If a model returns an error about context length, enable
 						<b>Smart Table Selection</b> in the settings (see the
 						<a href="ai-assistant.html">AI Assistant page</a>) or try a model with a larger
 						context window.</p>
+                        <br>
+                        <br>
+                        <br>
 
 						</td>
 					</tr>

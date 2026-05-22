@@ -827,7 +827,7 @@ public class AIQueryAssistant {
      */
     public static String extractPrompt(String sql) {
         if (sql == null) return null;
-        Matcher m = AI_COMMENT_PATTERN.matcher(sql);
+        Matcher m = AI_COMMENT_PATTERN.matcher(sql + "*/"); // add fake closing comment to allow matching unterminated comments
         if (!m.find()) return null;
         return m.group(1);
     }

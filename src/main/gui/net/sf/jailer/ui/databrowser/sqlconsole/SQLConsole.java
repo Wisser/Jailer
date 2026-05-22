@@ -830,7 +830,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			protected void done() {
 				running = false;
 				editorPane.setEnabled(true);
-				editorPane.setCaretPosition(initialCPos);
+				try {
+					editorPane.setCaretPosition(initialCPos);
+				} catch (Exception e) {
+					// ignore
+				}
 				consoleContainerPanel.setCursor(Cursor.getDefaultCursor());
 				aiSilentStatusPanel.setVisible(false);
 				aiSilentCancelButton.removeActionListener(cancelListener);
@@ -4809,6 +4813,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	public boolean isTempFileBased() {
 		return tempFileBased;
 	}
+	
+	// TODO
+	// TODO while AI-Call: disable toolbar too, and popup
 	
 	// TODO 2
 	// TODO ordering per column: break down to SQL?
