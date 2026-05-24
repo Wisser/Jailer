@@ -246,6 +246,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	private JMenuItem menuItemAnalyse;
 	private JMenuItem menuItemAIAssistant;
 	private JMenuItem menuItemAIAssistantSilent;
+	private JButton aiButton;
+	private boolean aiCallRunning;
+	private boolean[] toolbarEnabledState;
 	private int initialTabbedPaneSelection = 0;
 	private List<? extends SortKey> initialSortKeys = null;
 	private Map<String, FullTextSearchPanel> fullTextSearchPanel = new WeakHashMap<String, FullTextSearchPanel>();
@@ -413,6 +416,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             }
 
         	@Override
+        	protected JPopupMenu createPopupMenu() {
+        		if (aiCallRunning) return null;
+        		return super.createPopupMenu();
+        	}
+
+        	@Override
         	protected void appendPopupMenu(JPopupMenu menu) {
         		menu.add(new JSeparator());
         		menu.add(menuItemToSingleLine);
@@ -512,7 +521,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         cancelButton.addPropertyChangeListener("enabled", e -> {
         	if (cancelButton.isEnabled()) {
         		Timer timer = new Timer(500, ev -> {
-        			cancelInStautusbarButton.setVisible(cancelButton.isEnabled());
+        			if (!aiCallRunning) {
+        				cancelInStautusbarButton.setVisible(cancelButton.isEnabled());
+        			}
         		});
         		timer.setRepeats(false);
         		timer.start();
@@ -533,7 +544,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         ImageIcon aiIcon = UIUtil.scaleIcon(this, UIUtil.readImage("/ask_ai.png"));
         // TODO
         // TODO use NetBeans to add the button to the toolbar (and remove the hard-coded index)
-        JButton aiButton = new JButton("AI Assistant");
+        aiButton = new JButton("AI Assistant");
         if (aiIcon != null) {
             aiButton.setIcon(UIUtil.scaleIcon(aiButton, aiIcon));
         }
@@ -737,11 +748,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		AtomicReference<Runnable> abortRef = new AtomicReference<>();
 		AtomicReference<SwingWorker<String, Void>> workerRef = new AtomicReference<>();
 
+		ActionListener[] savedCancelListeners = cancelButton.getActionListeners();
 		ActionListener cancelListener = e -> {
 			Runnable abort = abortRef.get();
 			if (abort != null) abort.run();
 			SwingWorker<String, Void> w = workerRef.get();
 			if (w != null) w.cancel(true);
+			restoreCancelButton(savedCancelListeners);
+			setAICallRunning(false);
 			aiSilentStatusPanel.setVisible(false);
 			editorPane.setEnabled(true);
 			editorPane.grabFocus();
@@ -750,6 +764,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
 		aiSilentStatusPanel.setVisible(true);
 		editorPane.setEnabled(false);
+		setAICallRunning(true);
+		for (ActionListener al : savedCancelListeners) cancelButton.removeActionListener(al);
+		cancelButton.addActionListener(cancelListener);
+		cancelButton.setEnabled(true);
 		int initialCPos = editorPane.getCaretPosition();
 		consoleContainerPanel.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		aiSilentCancelButton.setCursor(Cursor.getDefaultCursor());
@@ -829,6 +847,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			@Override
 			protected void done() {
 				running = false;
+				restoreCancelButton(savedCancelListeners);
+				cancelButton.removeActionListener(cancelListener);
+				setAICallRunning(false);
 				editorPane.setEnabled(true);
 				try {
 					editorPane.setCaretPosition(initialCPos);
@@ -857,6 +878,44 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		};
 		workerRef.set(worker);
 		worker.execute();
+	}
+
+	private void setAICallRunning(boolean running) {
+		aiCallRunning = running;
+		java.util.List<java.awt.Component> allComponents = new java.util.ArrayList<>();
+		collectComponents(jPanel5, allComponents);
+		if (running) {
+			toolbarEnabledState = new boolean[allComponents.size()];
+			for (int i = 0; i < allComponents.size(); i++) {
+				toolbarEnabledState[i] = allComponents.get(i).isEnabled();
+				allComponents.get(i).setEnabled(false);
+			}
+		} else {
+			if (toolbarEnabledState != null) {
+				for (int i = 0; i < allComponents.size() && i < toolbarEnabledState.length; i++) {
+					allComponents.get(i).setEnabled(toolbarEnabledState[i]);
+				}
+				toolbarEnabledState = null;
+			}
+		}
+	}
+
+	private void restoreCancelButton(ActionListener[] savedListeners) {
+		for (ActionListener al : cancelButton.getActionListeners()) {
+			cancelButton.removeActionListener(al);
+		}
+		for (ActionListener al : savedListeners) {
+			cancelButton.addActionListener(al);
+		}
+	}
+
+	private void collectComponents(java.awt.Container container, java.util.List<java.awt.Component> result) {
+		for (java.awt.Component c : container.getComponents()) {
+			result.add(c);
+			if (c instanceof java.awt.Container) {
+				collectComponents((java.awt.Container) c, result);
+			}
+		}
 	}
 
 	private void replaceAndExecute(String sql) {
