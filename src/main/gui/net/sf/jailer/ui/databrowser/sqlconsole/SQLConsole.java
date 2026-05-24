@@ -439,6 +439,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         clearButton.setToolTipText("Clear Console");
         clearButton.setIcon(UIUtil.scaleIcon(clearButton, clearIcon));
         clearButton.setEnabled(editorPane.getDocument().getLength() > 0);
+        clearButton.addActionListener(e -> resetStatus());
         editorPane.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
 			public void removeUpdate(DocumentEvent e) {
