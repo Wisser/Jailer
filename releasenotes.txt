@@ -1,3 +1,11 @@
+17.1
+  - AI Query Assistant
+    — a full integration of AI-powered SQL generation directly into the SQL Console.
+      - You describe what you want in plain English, and the assistant writes the SQL — schema-aware, so it only uses tables and columns that actually exist in your database.
+      - Silent Mode: Every AI-generated statement gets a /* AI: ... */ header that records the original question.
+        When your cursor is inside such a statement, Ctrl+Shift+S regenerates the SQL in place and runs it immediately —
+        no dialog, no friction. Edit the comment to refine the question, hit the shortcut, done.
+
 16.12
   - Fixed: Session was not closed on exception in Importer.execute().
   - Fixed resource leaks: streams and writers are now properly closed via try-with-resources
