@@ -36,6 +36,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.geom.AffineTransform;
@@ -78,6 +80,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -670,9 +673,32 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         jPanel13.add(deselButton, gridBagConstraints);
         
-		moduleSubsetterToggleButton.setBorder(null);
-		moduleDataBrowserToggleButton.setBorder(null);
-	
+        Border nb = new LineBorder(new Color(0, 0, 0, 0));
+        Border bb = new LineBorder(new Color(0, 0, 0, 60));
+		moduleSubsetterToggleButton.setBorder(nb);
+		moduleDataBrowserToggleButton.setBorder(nb);
+		moduleSubsetterToggleButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseExited(MouseEvent e) {
+				moduleSubsetterToggleButton.setBorder(nb);
+			}
+			
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				moduleSubsetterToggleButton.setBorder(selectedModule.get() != 0? nb : bb);
+			}
+		});
+		moduleDataBrowserToggleButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseExited(MouseEvent e) {
+				moduleDataBrowserToggleButton.setBorder(nb);
+			}
+			
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				moduleDataBrowserToggleButton.setBorder(selectedModule.get() != 0? nb : bb);
+			}
+		});
 		moduleSubsetteSubrPanel.add(moduleSubsetterToggleButton);
 
 		moduleDataBrowserToggleButton.setFont(moduleDataBrowserToggleButton.getFont()

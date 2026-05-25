@@ -835,9 +835,6 @@ public class AIQueryAssistant {
 
 // TODO session management: if the provider supports it, we could keep a session ID and reuse it for subsequent calls to maintain context without resending the full schema each time.
 
-// TODO 
-// TODO remove Coming Soon: 
-
 // TODO
 // TODO add comments to datamodel context of API call. Offer "omit" checkbox. 
 // TODO the estemated token count for the schema with all options enabled is a better limit than "500 tables"

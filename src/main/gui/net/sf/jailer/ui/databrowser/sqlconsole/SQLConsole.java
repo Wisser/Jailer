@@ -4874,9 +4874,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		return tempFileBased;
 	}
 	
-	// TODO
-	// TODO while AI-Call: disable toolbar too, and popup
-	
 	// TODO 2
 	// TODO ordering per column: break down to SQL?
 		
