@@ -513,6 +513,7 @@ public class AIQueryDialog extends JDialog {
         newConversationButton.setEnabled(false);
         sqlArea.setText("");
         insertButton.setEnabled(false);
+        statusLabel.setText(" ");
     }
 
     private String buildCommentForHistory() {

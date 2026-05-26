@@ -735,10 +735,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				sql -> {
 					if (prompt != null) {
 						if (!currentStatement.trim().equals(sql.trim())) {
-							replaceAndExecute(sql);
+							replaceCurrentStatement(sql);
 						}
 					} else {
-						appendStatement(sql, true);
+						appendStatement(sql, false);
 					}
 				}, executionContext, prompt, silent, prompt != null? currentStatement : null).setVisible(true);
 	}
@@ -868,7 +868,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 					if (sql != null && !sql.isEmpty() && !currentStatement.trim().equals(sql.trim())) {
 						String comment = "/* AI:\n   " + prompt + "\n*/";
 						jTabbedPane1.addChangeListener(cl);
-						replaceAndExecute(comment + "\n" + sql);
+						replaceCurrentStatement(comment + "\n" + sql);
 					}
 				} catch (ExecutionException ex) {
 					UIUtil.showException(SQLConsole.this, "AI Generation Error", ex);
@@ -919,9 +919,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		}
 	}
 
-	private void replaceAndExecute(String sql) {
+	private void replaceCurrentStatement(String sql) {
 		editorPane.replaceCurrentStatement(sql.trim() + ";\n", true);
-		UIUtil.invokeLater(() -> executeSelectedStatements(false, null, true));
 	}
 
 	private void updateMenuItems(boolean isTextSelected) {

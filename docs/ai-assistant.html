@@ -124,9 +124,15 @@ SELECT * FROM orders WHERE order_date &gt;= CURRENT_DATE - 30</pre>
 
                         <p>When the cursor is inside such a statement, the <b>AI Assistant (Silent)</b> action
                         becomes available. It re-generates the SQL directly in the editor &mdash; without opening
-                        the dialog &mdash; and executes it immediately. A typical use is to edit the
+                        the dialog. A typical use is to edit the
                         <code>/* AI: ... */</code> comment to refine or extend the question and then
-                        let the AI update the query in place.</p>
+                        let the AI update the query in place.
+                        <p>
+                        </p>
+                        <small>(Note that for security reasons, the statement is not executed automatically.
+                        Check it first and, if everything is correct, press Ctrl+Enter to execute it.)
+                        </small>
+                        </p>
 
                         <p>Trigger silent mode via:</p>
                         <ul>
