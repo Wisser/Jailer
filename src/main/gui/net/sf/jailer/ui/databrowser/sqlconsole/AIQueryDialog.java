@@ -40,8 +40,10 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
@@ -96,7 +98,7 @@ public class AIQueryDialog extends JDialog {
     private final AtomicReference<Runnable> abortRef = new AtomicReference<>();
 
     public AIQueryDialog(Window owner, DataModel dataModel, String dbmsName, Consumer<String> insertAction, ExecutionContext executionContext, String initialPrompt, boolean silent, String initialSql) {
-        super(owner, "AI Assistant - Natural Language to SQL", ModalityType.APPLICATION_MODAL);
+        super(owner, "AI Assistant", ModalityType.APPLICATION_MODAL);
         this.dataModel = dataModel;
         this.dbmsName = dbmsName;
         this.insertAction = insertAction;
@@ -131,12 +133,12 @@ public class AIQueryDialog extends JDialog {
         getRootPane().setDefaultButton(insertButton);
         UIUtil.initComponents(this);
         pack();
-        setSize(getWidth() + 120, getHeight());
+        setSize(getWidth() + 120, getHeight() + 200);
         setLocationRelativeTo(owner);
     }
 
     private void initUI() {
-        ((JComponent) getContentPane()).setBorder(BorderFactory.createEmptyBorder(12, 12, 8, 12));
+        ((JComponent) getContentPane()).setBorder(BorderFactory.createEmptyBorder(0, 12, 8, 12));
         setLayout(new BorderLayout(8, 8));
 
         historyArea = new JTextArea();
@@ -145,8 +147,7 @@ public class AIQueryDialog extends JDialog {
         historyArea.setText("No conversation yet");
         historyArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
         historyScrollPane = new JScrollPane(historyArea);
-        historyScrollPane.setPreferredSize(new Dimension(700, 120));
-        historyScrollPane.setBorder(BorderFactory.createTitledBorder("Conversation"));
+        historyScrollPane.setPreferredSize(new Dimension(700, 200));
 
         // Question area
         JPanel questionPanel = new JPanel(new BorderLayout(4, 4));
@@ -295,9 +296,44 @@ public class AIQueryDialog extends JDialog {
         questionResultPanel.add(questionPanel, BorderLayout.NORTH);
         questionResultPanel.add(resultPanel, BorderLayout.CENTER);
 
+        JButton historyToggleButton = new JButton("\u25BC Conversation");
+        historyToggleButton.setBorderPainted(false);
+        historyToggleButton.setContentAreaFilled(false);
+        historyToggleButton.setFocusPainted(false);
+        historyToggleButton.setHorizontalAlignment(SwingConstants.LEFT);
+        historyToggleButton.setMargin(new Insets(2, 0, 2, 0));
+        historyToggleButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        historyToggleButton.setFont(historyToggleButton.getFont().deriveFont(Font.BOLD));
+        historyToggleButton.setToolTipText("Click to collapse or expand the conversation history");
+        JPanel conversationPanel = new JPanel(new BorderLayout());
+        conversationPanel.setBorder(BorderFactory.createEtchedBorder());
+        conversationPanel.add(historyScrollPane, BorderLayout.CENTER);
+        conversationPanel.setVisible(false);
+
+        historyToggleButton.addActionListener(e -> {
+            boolean show = !conversationPanel.isVisible();
+            conversationPanel.setVisible(show);
+            historyToggleButton.setText((show ? "\u25B2" : "\u25BC") + " Conversation");
+        });
+
+        JPanel conversationWrapper = new JPanel(new BorderLayout(0, 2));
+        conversationWrapper.add(historyToggleButton, BorderLayout.NORTH);
+        conversationWrapper.add(conversationPanel, BorderLayout.CENTER);
+
         JPanel centerPanel = new JPanel(new BorderLayout(4, 8));
-        centerPanel.add(historyScrollPane, BorderLayout.NORTH);
+        centerPanel.add(conversationWrapper, BorderLayout.NORTH);
         centerPanel.add(questionResultPanel, BorderLayout.CENTER);
+
+        JPanel advisorPanel = new JPanel(new BorderLayout());
+        advisorPanel.add(new JLabel("<html><br><center><i>SQL Advisor &ndash; coming soon</i></center></html>", JLabel.CENTER), BorderLayout.CENTER);
+
+        JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane.addTab("Generate SQL", centerPanel);
+        tabbedPane.setToolTipTextAt(0, "<html>Generate SQL from a plain-language description.<br>"
+                + "Describe what you need and let the AI write the query for you.</html>");
+        tabbedPane.addTab("SQL Advisor", advisorPanel);
+        tabbedPane.setToolTipTextAt(1, "<html>Analyze, explain, and refactor existing SQL queries.<br>"
+                + "Paste a query and ask the AI to explain, optimize, or rewrite it.</html>");
 
         // Settings section
         JPanel settingsPanel = buildSettingsPanel();
@@ -337,7 +373,7 @@ public class AIQueryDialog extends JDialog {
         southPanel.add(settingsPanel, BorderLayout.CENTER);
         southPanel.add(buttonRow, BorderLayout.SOUTH);
 
-        add(centerPanel, BorderLayout.CENTER);
+        add(tabbedPane, BorderLayout.CENTER);
         add(southPanel, BorderLayout.SOUTH);
     }
 

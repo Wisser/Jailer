@@ -151,3 +151,6 @@ public class SystemPromptPanel extends JPanel {
         UISettings.store(SETTING_FIRST_PASS_SYSTEM_PROMPT, firstPassPromptArea.getText().trim());
     }
 }
+
+// TODO
+// TODO "Optimize following Query, respond with SQL result first, followed by a line "-- END", followed by explanation:"
