@@ -19,6 +19,7 @@ import java.awt.BorderLayout;
 import java.awt.Font;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.border.TitledBorder;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -114,44 +115,51 @@ public class SystemPromptPanel extends JPanel {
             "SQL Generation",
             promptArea,
             "Placeholders: {schema}, {dbmsName}",
-            DEFAULT_TEMPLATE);
+            DEFAULT_TEMPLATE,
+            "<html>System prompt for generating SQL from a natural-language description.<br>"
+            + "<b>{schema}</b> &mdash; database schema DDL<br>"
+            + "<b>{dbmsName}</b> &mdash; DBMS name</html>");
 
         JPanel advisorSection = buildSection(
             "SQL Advisor",
             advisorPromptArea,
             "Placeholders: {schema}, {dbmsName}, {separator}, {SQL}",
-            DEFAULT_ADVISOR_TEMPLATE);
+            DEFAULT_ADVISOR_TEMPLATE,
+            "<html>System prompt for analyzing, explaining, or optimizing existing SQL.<br>"
+            + "<b>{schema}</b> &mdash; database schema DDL<br>"
+            + "<b>{dbmsName}</b> &mdash; DBMS name<br>"
+            + "<b>{SQL}</b> &mdash; current SQL from the editor<br>"
+            + "<b>{separator}</b> &mdash; separator line between SQL result and explanation</html>");
 
         JPanel firstPassSection = buildSection(
             "Table Selection (Relevant Tables Only)",
             firstPassPromptArea,
             "Placeholder: {dbmsName}",
-            DEFAULT_FIRST_PASS_TEMPLATE);
-
-        advisorSection.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createEmptyBorder(20, 0, 0, 0),
-            advisorSection.getBorder()));
-
-        firstPassSection.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createEmptyBorder(20, 0, 0, 0),
-            firstPassSection.getBorder()));
+            DEFAULT_FIRST_PASS_TEMPLATE,
+            "<html>System prompt for the first AI call that selects only the relevant tables<br>"
+            + "from the full schema before generating SQL (smart selection).<br>"
+            + "<b>{dbmsName}</b> &mdash; DBMS name</html>");
 
         JPanel both = new JPanel();
         both.setLayout(new BoxLayout(both, BoxLayout.Y_AXIS));
         both.add(mainSection);
+        both.add(Box.createVerticalStrut(8));
         both.add(advisorSection);
+        both.add(Box.createVerticalStrut(8));
         both.add(firstPassSection);
 
         add(both, BorderLayout.CENTER);
     }
 
-    private JPanel buildSection(String title, JTextArea area, String hintText, String defaultText) {
+    private JPanel buildSection(String title, JTextArea area, String hintText, String defaultText, String tooltip) {
         JPanel section = new JPanel(new BorderLayout(4, 4));
         TitledBorder tb = BorderFactory.createTitledBorder(title);
         tb.setTitleFont(section.getFont().deriveFont(Font.BOLD));
         section.setBorder(tb);
+        section.setToolTipText(tooltip);
 
         JLabel hint = new JLabel(hintText);
+        hint.setToolTipText(tooltip);
         hint.setFont(hint.getFont().deriveFont(hint.getFont().getSize2D() - 1f));
 
         JButton resetButton = new JButton("Reset to Default");

@@ -629,6 +629,7 @@ public class AIQueryDialog extends JDialog {
         bottom.add(okButton);
         d.getContentPane().add(bottom, BorderLayout.SOUTH);
 
+        UIUtil.initComponents(d);
         d.pack();
         d.setSize(d.getWidth() + 120, Math.min(d.getHeight() + 100, 800));
         d.setLocationRelativeTo(this);
