@@ -139,6 +139,16 @@ public class AIQueryAssistant {
             String systemPromptTemplate, boolean smartSelection, boolean omitColumnTypes,
             AtomicReference<Runnable> abortRef, BooleanSupplier confirmFullSchema,
             String firstPassSystemPromptTemplate) throws IOException {
+        return generateSQL(question, history, dataModel, dbmsName, config, systemPromptTemplate,
+                smartSelection, omitColumnTypes, abortRef, confirmFullSchema,
+                firstPassSystemPromptTemplate, null);
+    }
+
+    public static String generateSQL(String question, List<ConversationMessage> history,
+            DataModel dataModel, String dbmsName, AIProviderConfig config,
+            String systemPromptTemplate, boolean smartSelection, boolean omitColumnTypes,
+            AtomicReference<Runnable> abortRef, BooleanSupplier confirmFullSchema,
+            String firstPassSystemPromptTemplate, AtomicReference<String> rawResponseRef) throws IOException {
         Set<String> relevantTables = null;
         if (smartSelection) {
             try {
@@ -160,7 +170,9 @@ public class AIQueryAssistant {
         boolean isAnthropic = config.providerType == ProviderType.ANTHROPIC;
         ObjectNode body = buildRequestBody(question, history, schema, dbmsName, config, isAnthropic, systemPromptTemplate);
         JsonNode response = post(config, body, abortRef);
-        String result = stripMarkdownCodeFence(extractText(response, isAnthropic).trim());
+        String rawText = extractText(response, isAnthropic).trim();
+        if (rawResponseRef != null) rawResponseRef.set(rawText);
+        String result = stripMarkdownCodeFence(rawText);
         if (result.endsWith(";")) {
 			result = result.substring(0, result.length() - 1).trim();
 		}
@@ -643,7 +655,8 @@ public class AIQueryAssistant {
         String t = (template != null && !template.isEmpty())
             ? template
             : SystemPromptPanel.DEFAULT_TEMPLATE;
-        return t.replace("{schema}", schema).replace("{dbmsName}", dbmsName);
+        return t.replace("{schema}", schema).replace("{dbmsName}", dbmsName)
+                .replace("{separator}", SystemPromptPanel.ADVISOR_SQL_ANSWER_SEPARATOR);
     }
 
     public static String buildSchemaDescription(DataModel dataModel) {

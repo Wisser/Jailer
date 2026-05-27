@@ -40,6 +40,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
@@ -60,6 +61,7 @@ import net.sf.jailer.ui.ai.AIQueryAssistant;
 import net.sf.jailer.ui.ai.ConversationMessage;
 import net.sf.jailer.ui.ai.SystemPromptPanel;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithTheme;
 
 /**
  * Modal dialog with two tabs: "Generate SQL" (natural language to SQL) and
@@ -107,7 +109,11 @@ public class AIQueryDialog extends JDialog {
         SwingWorker<String, Void> currentWorker;
         final AtomicReference<Runnable> abortRef = new AtomicReference<>();
 
-        JPanel buildPanel() {
+        boolean isAdvisor;
+        RSyntaxTextAreaWithTheme answerArea;
+
+        JPanel buildPanel(boolean isAdvisor) {
+            this.isAdvisor = isAdvisor;
             historyArea = new JTextArea();
             historyArea.setEditable(false);
             historyArea.setEnabled(false);
@@ -247,16 +253,41 @@ public class AIQueryDialog extends JDialog {
             });
 
             // SQL result area
-            JPanel resultPanel = new JPanel(new BorderLayout(4, 4));
-            resultPanel.add(new JLabel("Generated SQL"), BorderLayout.NORTH);
             sqlArea = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false);
             sqlArea.setRows(5);
             sqlArea.setColumns(60);
             RTextScrollPane sqlScrollPane = new RTextScrollPane();
             sqlScrollPane.setViewportView(sqlArea);
-            resultPanel.add(sqlScrollPane, BorderLayout.CENTER);
             JPanel insertRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 2));
             insertRow.add(insertButton);
+            JPanel resultPanel = new JPanel(new BorderLayout(4, 4));
+            if (isAdvisor) {
+                JPanel sqlPanel = new JPanel(new BorderLayout(4, 4));
+                sqlPanel.add(new JLabel("SQL"), BorderLayout.NORTH);
+                sqlPanel.add(sqlScrollPane, BorderLayout.CENTER);
+                answerArea = new RSyntaxTextAreaWithTheme();
+                answerArea.setEditable(false);
+                RTextScrollPane answerScrollPane = new RTextScrollPane();
+                answerScrollPane.setViewportView(answerArea);
+                JPanel answerPanel = new JPanel(new BorderLayout(4, 4));
+                answerPanel.add(new JLabel("Answer"), BorderLayout.NORTH);
+                answerPanel.add(answerScrollPane, BorderLayout.CENTER);
+                JSplitPane resultSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, sqlPanel, answerPanel);
+                resultSplitPane.setResizeWeight(0.5);
+                resultSplitPane.addHierarchyListener(new java.awt.event.HierarchyListener() {
+                    public void hierarchyChanged(java.awt.event.HierarchyEvent e) {
+                        if ((e.getChangeFlags() & java.awt.event.HierarchyEvent.SHOWING_CHANGED) != 0
+                                && resultSplitPane.isShowing()) {
+                            resultSplitPane.setDividerLocation(0.5);
+                            resultSplitPane.removeHierarchyListener(this);
+                        }
+                    }
+                });
+                resultPanel.add(resultSplitPane, BorderLayout.CENTER);
+            } else {
+                resultPanel.add(new JLabel("Generated SQL"), BorderLayout.NORTH);
+                resultPanel.add(sqlScrollPane, BorderLayout.CENTER);
+            }
             resultPanel.add(insertRow, BorderLayout.SOUTH);
 
             JPanel questionResultPanel = new JPanel(new BorderLayout(4, 8));
@@ -352,6 +383,7 @@ public class AIQueryDialog extends JDialog {
                 providerPanel.getApiKeyComponent().requestFocusInWindow();
                 return;
             }
+            final String sqlContent = isAdvisor ? sqlArea.getText().trim() : null;
             setGenerating(true);
             sqlArea.setText("");
             statusLabel.setText("Generating...");
@@ -360,11 +392,16 @@ public class AIQueryDialog extends JDialog {
             boolean smartSelection = smartSelectionBox.isSelected();
             boolean omitColumnTypes = omitColumnTypesBox.isSelected();
 
+            final AtomicReference<String> rawResponseRef = isAdvisor ? new AtomicReference<>("") : null;
             currentWorker = new SwingWorker<String, Void>() {
                 @Override
                 protected String doInBackground() throws Exception {
+                    String template = isAdvisor ? systemPromptPanel.getAdvisorTemplate() : systemPromptPanel.getTemplate();
+                    if (isAdvisor && sqlContent != null && template != null) {
+                        template = template.replace("{SQL}", sqlContent);
+                    }
                     return AIQueryAssistant.generateSQL(question, historySnapshot, dataModel, dbmsName, config,
-                            systemPromptPanel.getTemplate(), smartSelection, omitColumnTypes, abortRef, () -> {
+                            template, smartSelection, omitColumnTypes, abortRef, () -> {
                         boolean[] result = { false };
                         try {
                             SwingUtilities.invokeAndWait(() -> {
@@ -384,7 +421,7 @@ public class AIQueryDialog extends JDialog {
                             _log.warn("Confirmation dialog failed", ex);
                         }
                         return result[0];
-                    }, systemPromptPanel.getFirstPassTemplate());
+                    }, systemPromptPanel.getFirstPassTemplate(), rawResponseRef);
                 }
 
                 @Override
@@ -397,8 +434,21 @@ public class AIQueryDialog extends JDialog {
                     }
                     try {
                         String sql = get();
+                        String answerText = null;
+                        if (isAdvisor) {
+                            int sep = sql.indexOf(SystemPromptPanel.ADVISOR_SQL_ANSWER_SEPARATOR);
+                            if (sep >= 0) {
+                                answerText = sql.substring(sep + SystemPromptPanel.ADVISOR_SQL_ANSWER_SEPARATOR.length()).trim();
+                                sql = sql.substring(0, sep).trim();
+                            } else if (rawResponseRef != null) {
+                                answerText = rawResponseRef.get();
+                            }
+                        }
                         sqlArea.setText(sql);
                         sqlArea.setCaretPosition(0);
+                        if (answerArea != null && answerText != null) {
+                            answerArea.setText(answerText);
+                        }
                         insertButton.setEnabled(!sql.isEmpty());
                         if (!sql.isEmpty()) {
                             providerPanel.markConnectionVerified();
@@ -442,6 +492,7 @@ public class AIQueryDialog extends JDialog {
             historyArea.setText("No conversation yet");
             newConversationButton.setEnabled(false);
             sqlArea.setText("");
+            if (answerArea != null) answerArea.setText("");
             insertButton.setEnabled(false);
             statusLabel.setText(" ");
         }
@@ -502,8 +553,8 @@ public class AIQueryDialog extends JDialog {
         generateTab = new ConversationTab();
         advisorTab  = new ConversationTab();
 
-        JPanel generatePanel = generateTab.buildPanel();
-        JPanel advisorPanel  = advisorTab.buildPanel();
+        JPanel generatePanel = generateTab.buildPanel(false);
+        JPanel advisorPanel  = advisorTab.buildPanel(true);
 
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Generate SQL", generatePanel);
@@ -530,7 +581,7 @@ public class AIQueryDialog extends JDialog {
         }
         closeButton.addActionListener(e -> dispose());
 
-        systemPromptButton = new JButton("System Prompt...");
+        systemPromptButton = new JButton("System Prompts...");
         ImageIcon editIcon = UIUtil.readImage("/ieditdetails_64.png");
         if (editIcon != null) {
             systemPromptButton.setIcon(UIUtil.scaleIcon(systemPromptButton, editIcon));
@@ -561,7 +612,8 @@ public class AIQueryDialog extends JDialog {
     }
 
     private void openSystemPromptDialog() {
-        JDialog d = new JDialog(this, "System Prompt", true);
+        JDialog d = new JDialog(this, "System Prompts", true);
+        ((javax.swing.JComponent) d.getContentPane()).setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 0));
         d.getContentPane().add(systemPromptPanel, BorderLayout.CENTER);
 
         JButton okButton = new JButton("OK");
@@ -578,7 +630,7 @@ public class AIQueryDialog extends JDialog {
         d.getContentPane().add(bottom, BorderLayout.SOUTH);
 
         d.pack();
-        d.setSize(d.getWidth() + 120, d.getHeight() + 100);
+        d.setSize(d.getWidth() + 120, Math.min(d.getHeight() + 100, 800));
         d.setLocationRelativeTo(this);
         d.setVisible(true);
     }

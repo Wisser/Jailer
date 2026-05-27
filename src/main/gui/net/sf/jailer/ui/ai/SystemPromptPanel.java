@@ -19,6 +19,7 @@ import java.awt.BorderLayout;
 import java.awt.Font;
 
 import javax.swing.BorderFactory;
+import javax.swing.border.TitledBorder;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -42,6 +43,10 @@ public class SystemPromptPanel extends JPanel {
 
     static final String SETTING_SYSTEM_PROMPT = "aiSystemPrompt";
     static final String SETTING_FIRST_PASS_SYSTEM_PROMPT = "aiFirstPassSystemPrompt";
+    static final String SETTING_ADVISOR_SYSTEM_PROMPT = "aiAdvisorSystemPrompt";
+
+    /** Separator line the advisor AI must emit between the SQL result and the explanation. */
+    public static final String ADVISOR_SQL_ANSWER_SEPARATOR = "-- END OF SQL";
 
     /** Default template for SQL generation (second AI call). */
     public static final String DEFAULT_TEMPLATE =
@@ -53,6 +58,20 @@ public class SystemPromptPanel extends JPanel {
         + "Use aliases for complex expressions in select clauses.\n"
         + "Aliases will use the same uppercase convention as all other identifiers.\n";
 
+    /** Default template for the SQL Advisor (analysis / optimization). */
+    public static final String DEFAULT_ADVISOR_TEMPLATE =
+        "You are a SQL expert for {dbmsName}.\n"
+        + "Database schema: {schema}\n"
+        + "SQL to analyze or optimize:\n{SQL}\n"
+        + "Analyze, explain, or optimize the SQL query provided by the user.\n"
+        + "First output only the resulting SQL - no code fences, no trailing semicolon.\n"
+        + "Then output a line containing exactly: \"{separator}\"\n"
+        + "Then provide a plain-text explanation of the changes or analysis.\n"
+        + "Use only tables and columns from the schema above.\n"
+        + "\n"
+        + "Use aliases for complex expressions in select clauses.\n"
+        + "Aliases will use the same uppercase convention as all other identifiers.";
+
     /** Default template for table selection (first AI call / smart selection). */
     public static final String DEFAULT_FIRST_PASS_TEMPLATE =
         "You are a SQL expert for {dbmsName}.\n"
@@ -62,6 +81,7 @@ public class SystemPromptPanel extends JPanel {
 
     private final JTextArea promptArea;
     private final JTextArea firstPassPromptArea;
+    private final JTextArea advisorPromptArea;
 
     public SystemPromptPanel() {
         super(new BorderLayout(4, 4));
@@ -71,6 +91,9 @@ public class SystemPromptPanel extends JPanel {
 
         String savedFP = (String) UISettings.restore(SETTING_FIRST_PASS_SYSTEM_PROMPT);
         String initialFP = (savedFP != null && !savedFP.isEmpty()) ? savedFP : DEFAULT_FIRST_PASS_TEMPLATE;
+
+        String savedAdv = (String) UISettings.restore(SETTING_ADVISOR_SYSTEM_PROMPT);
+        String initialAdv = (savedAdv != null && !savedAdv.isEmpty()) ? savedAdv : DEFAULT_ADVISOR_TEMPLATE;
 
         promptArea = new JTextArea(initial, 5, 60);
         promptArea.setLineWrap(true);
@@ -82,17 +105,32 @@ public class SystemPromptPanel extends JPanel {
         firstPassPromptArea.setWrapStyleWord(true);
         firstPassPromptArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
 
+        advisorPromptArea = new JTextArea(initialAdv, 5, 60);
+        advisorPromptArea.setLineWrap(true);
+        advisorPromptArea.setWrapStyleWord(true);
+        advisorPromptArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
+
         JPanel mainSection = buildSection(
             "SQL Generation",
             promptArea,
             "Placeholders: {schema}, {dbmsName}",
             DEFAULT_TEMPLATE);
 
+        JPanel advisorSection = buildSection(
+            "SQL Advisor",
+            advisorPromptArea,
+            "Placeholders: {schema}, {dbmsName}, {separator}, {SQL}",
+            DEFAULT_ADVISOR_TEMPLATE);
+
         JPanel firstPassSection = buildSection(
             "Table Selection (Relevant Tables Only)",
             firstPassPromptArea,
             "Placeholder: {dbmsName}",
             DEFAULT_FIRST_PASS_TEMPLATE);
+
+        advisorSection.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createEmptyBorder(20, 0, 0, 0),
+            advisorSection.getBorder()));
 
         firstPassSection.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createEmptyBorder(20, 0, 0, 0),
@@ -101,6 +139,7 @@ public class SystemPromptPanel extends JPanel {
         JPanel both = new JPanel();
         both.setLayout(new BoxLayout(both, BoxLayout.Y_AXIS));
         both.add(mainSection);
+        both.add(advisorSection);
         both.add(firstPassSection);
 
         add(both, BorderLayout.CENTER);
@@ -108,7 +147,9 @@ public class SystemPromptPanel extends JPanel {
 
     private JPanel buildSection(String title, JTextArea area, String hintText, String defaultText) {
         JPanel section = new JPanel(new BorderLayout(4, 4));
-        section.setBorder(BorderFactory.createTitledBorder(title));
+        TitledBorder tb = BorderFactory.createTitledBorder(title);
+        tb.setTitleFont(section.getFont().deriveFont(Font.BOLD));
+        section.setBorder(tb);
 
         JLabel hint = new JLabel(hintText);
         hint.setFont(hint.getFont().deriveFont(hint.getFont().getSize2D() - 1f));
@@ -138,6 +179,14 @@ public class SystemPromptPanel extends JPanel {
     }
 
     /**
+     * Returns the current SQL Advisor template, or {@code null} if empty.
+     */
+    public String getAdvisorTemplate() {
+        String text = advisorPromptArea.getText().trim();
+        return text.isEmpty() ? null : text;
+    }
+
+    /**
      * Returns the current table-selection (first-pass) template, or {@code null} if empty.
      */
     public String getFirstPassTemplate() {
@@ -145,12 +194,10 @@ public class SystemPromptPanel extends JPanel {
         return text.isEmpty() ? null : text;
     }
 
-    /** Persists both templates to {@link UISettings}. */
+    /** Persists all templates to {@link UISettings}. */
     public void saveSettings() {
         UISettings.store(SETTING_SYSTEM_PROMPT, promptArea.getText().trim());
+        UISettings.store(SETTING_ADVISOR_SYSTEM_PROMPT, advisorPromptArea.getText().trim());
         UISettings.store(SETTING_FIRST_PASS_SYSTEM_PROMPT, firstPassPromptArea.getText().trim());
     }
 }
-
-// TODO
-// TODO "Optimize following Query, respond with SQL result first, followed by a line "-- END", followed by explanation:"
