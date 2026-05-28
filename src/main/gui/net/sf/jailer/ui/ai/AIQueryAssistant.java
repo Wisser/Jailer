@@ -70,7 +70,7 @@ public class AIQueryAssistant {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     /** Round-robin mock: enable via -Djailer.ai.mock=true or set programmatically. */
-    public static volatile boolean MOCK_ENABLED = true;
+    public static volatile boolean MOCK_ENABLED = Boolean.getBoolean("jailer.ai.mock");
     private static final AtomicInteger MOCK_INDEX = new AtomicInteger(0);
     private static final String[] MOCK_SQL = {
         "SELECT\r\n"
