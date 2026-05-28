@@ -33,6 +33,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BooleanSupplier;
 import java.util.regex.Matcher;
@@ -67,6 +68,35 @@ public class AIQueryAssistant {
 
     private static final Logger _log = LoggerFactory.getLogger("ai_api");
     private static final ObjectMapper MAPPER = new ObjectMapper();
+
+    /** Round-robin mock: enable via -Djailer.ai.mock=true or set programmatically. */
+    public static volatile boolean MOCK_ENABLED = true;
+    private static final AtomicInteger MOCK_INDEX = new AtomicInteger(0);
+    private static final String[] MOCK_SQL = {
+        "SELECT\r\n"
+        + "     A.ACTOR_ID,\r\n"
+        + "     A.FIRST_NAME,\r\n"
+        + "     A.LAST_NAME,\r\n"
+        + "     COUNT(R.RENTAL_ID) AS RENTAL_COUNT\r\n"
+        + "FROM\r\n"
+        + "     ACTOR A\r\n"
+        + "JOIN FILM_ACTOR FA ON FA.ACTOR_ID = A.ACTOR_ID\r\n"
+        + "     JOIN FILM F ON F.FILM_ID = FA.FILM_ID\r\n"
+        + "     JOIN INVENTORY I ON I.FILM_ID = F.FILM_ID\r\n"
+        + "     JOIN RENTAL R ON R.INVENTORY_ID = I.INVENTORY_ID\r\n"
+        + "GROUP BY\r\n"
+        + "     A.ACTOR_ID,\r\n"
+        + "     A.FIRST_NAME,\r\n"
+        + "     A.LAST_NAME"
+        + "--ENDOFSQL\n"
+        + "The SQL query calculates the number of employees associated with each role in a project.It joins the `PROJECT_PARTICIPATION` table with the `ROLE` table on their respective `ROLE_ID` columns.It then groups the results by `ROLE_DESCRIPTION`\r\n"
+        + "and counts the number of employees (`EMPNO`) within each role,\r\n"
+        + "presenting the role description\r\n"
+        + "and employee count as `ROLE_DESCRIPTION`\r\n"
+        + "and `EMPLOYEE_COUNT` respectively.Essentially,\r\n"
+        + "it provides a summary of how many employees are assigned to each role across all projects.",
+        "x",
+    };
     private static final Pattern AI_COMMENT_PATTERN = Pattern.compile(
             "\\A\\s*/\\*\\s*AI:\\s*(.*?)\\s*\\*/",
             Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
@@ -149,6 +179,17 @@ public class AIQueryAssistant {
             String systemPromptTemplate, boolean smartSelection, boolean omitColumnTypes,
             AtomicReference<Runnable> abortRef, BooleanSupplier confirmFullSchema,
             String firstPassSystemPromptTemplate, AtomicReference<String> rawResponseRef) throws IOException {
+        if (MOCK_ENABLED) {
+            int idx = MOCK_INDEX.getAndIncrement() % MOCK_SQL.length;
+            _log.debug("MOCK mode: returning MOCK_SQL[{}]", idx);
+            try {
+				Thread.sleep(200);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} // Simulate latency
+            if (rawResponseRef != null) rawResponseRef.set(MOCK_SQL[idx]);
+            return MOCK_SQL[idx];
+        }
         Set<String> relevantTables = null;
         if (smartSelection) {
             try {
@@ -176,7 +217,10 @@ public class AIQueryAssistant {
         if (result.endsWith(";")) {
 			result = result.substring(0, result.length() - 1).trim();
 		}
-        result = new BasicFormatterImpl().format(result);
+        if (rawResponseRef == null) {
+        	result = new BasicFormatterImpl().format(result);
+        	UISettings.s21 += 10;
+        }
         UISettings.s21 = (omitColumnTypes ? 1L : 0L) | (smartSelection ? 2L : 0L);
         return result;
     }
@@ -829,7 +873,7 @@ public class AIQueryAssistant {
     private static final Pattern CODE_FENCE_PATTERN = Pattern.compile(
             "(?s)\\A([`~]{3})[a-zA-Z0-9-]*[ \\t]*\\r?\\n(.+?)\\r?\\n\\1\\z");
 
-    private static String stripMarkdownCodeFence(String text) {
+    public static String stripMarkdownCodeFence(String text) {
         Matcher m = CODE_FENCE_PATTERN.matcher(text);
         return m.matches() ? m.group(2).trim() : text;
     }

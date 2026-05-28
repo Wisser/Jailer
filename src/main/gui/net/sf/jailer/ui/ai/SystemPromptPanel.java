@@ -47,7 +47,7 @@ public class SystemPromptPanel extends JPanel {
     static final String SETTING_ADVISOR_SYSTEM_PROMPT = "aiAdvisorSystemPrompt";
 
     /** Separator line the advisor AI must emit between the SQL result and the explanation. */
-    public static final String ADVISOR_SQL_ANSWER_SEPARATOR = "-- END OF SQL";
+    public static final String ADVISOR_SQL_ANSWER_SEPARATOR = "--ENDOFSQL";
 
     /** Default template for SQL generation (second AI call). */
     public static final String DEFAULT_TEMPLATE =
@@ -63,15 +63,16 @@ public class SystemPromptPanel extends JPanel {
     public static final String DEFAULT_ADVISOR_TEMPLATE =
         "You are a SQL expert for {dbmsName}.\n"
         + "Database schema: {schema}\n"
-        + "SQL to analyze or optimize:\n{SQL}\n"
         + "Analyze, explain, or optimize the SQL query provided by the user.\n"
         + "First output only the resulting SQL - no code fences, no trailing semicolon.\n"
-        + "Then output a line containing exactly: \"{separator}\"\n"
+        + "Then output a new line containing exactly: \"{separator}\"\n"
         + "Then provide a plain-text explanation of the changes or analysis.\n"
         + "Use only tables and columns from the schema above.\n"
         + "\n"
         + "Use aliases for complex expressions in select clauses.\n"
-        + "Aliases will use the same uppercase convention as all other identifiers.";
+        + "Aliases will use the same uppercase convention as all other identifiers.\n"
+        + "\n"
+        + "SQL provided by the user:\n{SQL}";
 
     /** Default template for table selection (first AI call / smart selection). */
     public static final String DEFAULT_FIRST_PASS_TEMPLATE =

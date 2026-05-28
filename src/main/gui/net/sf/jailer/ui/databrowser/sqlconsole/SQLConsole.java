@@ -740,7 +740,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 					} else {
 						appendStatement(sql, false);
 					}
-				}, executionContext, prompt, silent, prompt != null? currentStatement : null).setVisible(true);
+				}, executionContext, prompt, silent, prompt != null? currentStatement : null, currentStatement.trim().isEmpty()? null : currentStatement).setVisible(true);
 	}
 
 	private void runSilentAIQuery(DataModel dm, String dbmsName, String currentStatement, String prompt, int caretPos) {

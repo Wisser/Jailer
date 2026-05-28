@@ -17,6 +17,8 @@ package net.sf.jailer.ui.databrowser.sqlconsole;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -37,6 +39,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -85,6 +88,9 @@ public class AIQueryDialog extends JDialog {
 
     private ConversationTab generateTab;
     private ConversationTab advisorTab;
+    private JTabbedPane tabbedPane;
+
+    private static int lastSelectedTab = 0;
 
     // -------------------------------------------------------------------------
     // Inner class: one self-contained conversation tab
@@ -111,6 +117,7 @@ public class AIQueryDialog extends JDialog {
 
         boolean isAdvisor;
         RSyntaxTextAreaWithTheme answerArea;
+        JLabel placeholderLabel;
 
         JPanel buildPanel(boolean isAdvisor) {
             this.isAdvisor = isAdvisor;
@@ -118,13 +125,16 @@ public class AIQueryDialog extends JDialog {
             historyArea.setEditable(false);
             historyArea.setEnabled(false);
             historyArea.setText("No conversation yet");
+            historyArea.setCaretPosition(0);
             historyArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
+            historyArea.setLineWrap(true);
+            historyArea.setWrapStyleWord(true);
             historyScrollPane = new JScrollPane(historyArea);
             historyScrollPane.setPreferredSize(new Dimension(700, 200));
 
             // Question area
-            JPanel questionPanel = new JPanel(new BorderLayout(4, 4));
-            questionPanel.add(new JLabel("Describe the query in plain language"), BorderLayout.NORTH);
+            JPanel questionPanel = new JPanel(new GridBagLayout());
+            JLabel questionTitleLabel = new JLabel(isAdvisor ? "What would you like to know or change?" : "Describe the query in plain language");
             questionArea = new JTextArea(8, 60);
             questionArea.setLineWrap(true);
             questionArea.setWrapStyleWord(true);
@@ -136,7 +146,80 @@ public class AIQueryDialog extends JDialog {
                     generateButton.doClick();
                 }
             });
-            questionPanel.add(new JScrollPane(questionArea), BorderLayout.CENTER);
+            JScrollPane questionScrollPane = new JScrollPane(questionArea);
+            placeholderLabel = new JLabel();
+            placeholderLabel.setEnabled(false);
+            placeholderLabel.setFont(questionArea.getFont());
+            placeholderLabel.setVerticalAlignment(SwingConstants.TOP);
+            placeholderLabel.setVisible(false);
+            JLayeredPane questionLayered = new JLayeredPane() {
+                @Override
+                public void doLayout() {
+                    questionScrollPane.setBounds(0, 0, getWidth(), getHeight());
+                    java.awt.Insets spIns = questionScrollPane.getInsets();
+                    java.awt.Insets vpIns = questionScrollPane.getViewport().getInsets();
+                    java.awt.Insets taIns = questionArea.getInsets();
+                    int x = spIns.left + vpIns.left + taIns.left;
+                    int y = spIns.top  + vpIns.top  + taIns.top;
+                    placeholderLabel.setBounds(x, y,
+                            getWidth()  - x - spIns.right  - vpIns.right  - taIns.right,
+                            getHeight() - y - spIns.bottom - vpIns.bottom - taIns.bottom);
+                }
+                @Override
+                public Dimension getPreferredSize() {
+                    return questionScrollPane.getPreferredSize();
+                }
+            };
+            questionLayered.add(questionScrollPane, JLayeredPane.DEFAULT_LAYER);
+            questionLayered.add(placeholderLabel, JLayeredPane.PALETTE_LAYER);
+
+            // Label: row 0, col 0
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.gridx = 0; gbc.gridy = 0;
+            gbc.weightx = 1; gbc.weighty = 0;
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.insets = new Insets(0, 0, 4, 0);
+            questionPanel.add(questionTitleLabel, gbc);
+
+            // Question area: row 1, cols 0+1
+            gbc = new GridBagConstraints();
+            gbc.gridx = 0; gbc.gridy = 1;
+            gbc.gridwidth = 2;
+            gbc.weightx = 1; gbc.weighty = 1;
+            gbc.fill = GridBagConstraints.BOTH;
+            questionPanel.add(questionLayered, gbc);
+
+            // Combobox (advisor only): col 1, spans rows 0+1 → does not affect row 0 height
+            if (isAdvisor) {
+                javax.swing.JComboBox<String> suggestionsBox = new javax.swing.JComboBox<>(new String[]{
+                    "Suggestions…",
+                    "Explain this query",
+                    "Find potential performance issues",
+                    "Optimize this query for performance",
+                    "Rewrite using CTEs",
+                    "Convert subqueries to joins",
+                    "Make this query more readable",
+                    "Add comments to explain the query",
+                    "What indexes would help this query?"
+                });
+                suggestionsBox.addActionListener(e -> {
+                    int idx = suggestionsBox.getSelectedIndex();
+                    if (idx > 0) {
+                        questionArea.setText((String) suggestionsBox.getSelectedItem());
+                        questionArea.setCaretPosition(0);
+                        suggestionsBox.setSelectedIndex(0);
+                        questionArea.requestFocusInWindow();
+                    }
+                });
+                gbc = new GridBagConstraints();
+                gbc.gridx = 1; gbc.gridy = 0;
+                gbc.gridheight = 2;
+                gbc.weightx = 0; gbc.weighty = 0;
+                gbc.fill = GridBagConstraints.NONE;
+                gbc.anchor = GridBagConstraints.NORTHEAST;
+                gbc.insets = new Insets(0, 2, 2, 0);
+                questionPanel.add(suggestionsBox, gbc);
+            }
 
             generateButton = new JButton("Generate SQL");
             ImageIcon aiIcon = UIUtil.scaleIcon(generateButton, UIUtil.readImage("/ask_ai.png"));
@@ -232,11 +315,23 @@ public class AIQueryDialog extends JDialog {
             JPanel genRow = new JPanel(new BorderLayout());
             genRow.add(genLeft, BorderLayout.WEST);
             genRow.add(genRight, BorderLayout.EAST);
-            questionPanel.add(genRow, BorderLayout.SOUTH);
+            GridBagConstraints gbcGenRow = new GridBagConstraints();
+            gbcGenRow.gridx = 0; gbcGenRow.gridy = 2;
+            gbcGenRow.gridwidth = 2;
+            gbcGenRow.weightx = 1; gbcGenRow.weighty = 0;
+            gbcGenRow.fill = GridBagConstraints.HORIZONTAL;
+            questionPanel.add(genRow, gbcGenRow);
 
+            questionArea.addFocusListener(new java.awt.event.FocusAdapter() {
+                @Override
+                public void focusGained(java.awt.event.FocusEvent e) {
+                    if (placeholderLabel != null) placeholderLabel.setVisible(false);
+                }
+            });
             questionArea.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
                 @Override
                 public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                    if (placeholderLabel != null) placeholderLabel.setVisible(false);
                     updateGenerateButton();
                 }
                 @Override
@@ -267,6 +362,8 @@ public class AIQueryDialog extends JDialog {
                 sqlPanel.add(sqlScrollPane, BorderLayout.CENTER);
                 answerArea = new RSyntaxTextAreaWithTheme();
                 answerArea.setEditable(false);
+                answerArea.setLineWrap(true);
+                answerArea.setWrapStyleWord(true);
                 RTextScrollPane answerScrollPane = new RTextScrollPane();
                 answerScrollPane.setViewportView(answerArea);
                 JPanel answerPanel = new JPanel(new BorderLayout(4, 4));
@@ -367,8 +464,6 @@ public class AIQueryDialog extends JDialog {
             }
             if (question.startsWith("!echo ")) {
                 String sql = question.substring("!echo ".length());
-                sqlArea.setText(sql);
-                sqlArea.setCaretPosition(0);
                 insertButton.setEnabled(!sql.isEmpty());
                 conversationHistory.add(new ConversationMessage("user", question));
                 conversationHistory.add(new ConversationMessage("assistant", sql));
@@ -385,7 +480,6 @@ public class AIQueryDialog extends JDialog {
             }
             final String sqlContent = isAdvisor ? sqlArea.getText().trim() : null;
             setGenerating(true);
-            sqlArea.setText("");
             statusLabel.setText("Generating...");
 
             List<ConversationMessage> historySnapshot = new ArrayList<>(conversationHistory);
@@ -436,26 +530,46 @@ public class AIQueryDialog extends JDialog {
                         String sql = get();
                         String answerText = null;
                         if (isAdvisor) {
-                            int sep = sql.indexOf(SystemPromptPanel.ADVISOR_SQL_ANSWER_SEPARATOR);
+                            String bare   = SystemPromptPanel.ADVISOR_SQL_ANSWER_SEPARATOR;
+                            String quoted = "\"" + bare + "\"";
+                            int sep    = sql.indexOf(quoted);
+                            int sepLen = quoted.length();
+                            if (sep < 0) {
+                                sep    = sql.indexOf(bare);
+                                sepLen = bare.length();
+                            }
                             if (sep >= 0) {
-                                answerText = sql.substring(sep + SystemPromptPanel.ADVISOR_SQL_ANSWER_SEPARATOR.length()).trim();
-                                sql = sql.substring(0, sep).trim();
-                            } else if (rawResponseRef != null) {
-                                answerText = rawResponseRef.get();
+                                answerText = sql.substring(sep + sepLen).trim();
+                                sql = AIQueryAssistant.stripMarkdownCodeFence(sql.substring(0, sep).trim());
+                                if (sql.endsWith(";")) {
+                                	sql = sql.substring(0, sql.length() - 1).trim();
+                        		}
+                            } else {
+                                answerText = rawResponseRef != null ? rawResponseRef.get() : sql;
+                                sql = sqlContent != null ? sqlContent : "";
                             }
                         }
-                        sqlArea.setText(sql);
-                        sqlArea.setCaretPosition(0);
+                        if (!sqlArea.getText().equals(sql) && !sql.isEmpty()) {
+    						sqlArea.setText(sql);
+    						sqlArea.setCaretPosition(0);
+                        }
                         if (answerArea != null && answerText != null) {
                             answerArea.setText(answerText);
+                            answerArea.setCaretPosition(0);
                         }
                         insertButton.setEnabled(!sql.isEmpty());
                         if (!sql.isEmpty()) {
                             providerPanel.markConnectionVerified();
                             AIQueryAssistant.saveCheckboxStates(config, executionContext, omitColumnTypes, smartSelection);
+                            String rawForHistory = (rawResponseRef != null && rawResponseRef.get() != null && !rawResponseRef.get().isEmpty())
+                                    ? rawResponseRef.get() : sql;
                             conversationHistory.add(new ConversationMessage("user", question));
-                            conversationHistory.add(new ConversationMessage("assistant", sql));
+                            conversationHistory.add(new ConversationMessage("assistant", rawForHistory));
                             questionArea.setText("");
+                            questionArea.setCaretPosition(0);
+                            String escaped = question.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\n", "<br>");
+                            placeholderLabel.setText("<html>" + escaped + "</html>");
+                            placeholderLabel.setVisible(true);
                             updateHistoryDisplay();
                             insertButton.requestFocusInWindow();
                         }
@@ -490,11 +604,14 @@ public class AIQueryDialog extends JDialog {
             conversationHistory.clear();
             historyArea.setEnabled(false);
             historyArea.setText("No conversation yet");
+            historyArea.setCaretPosition(0);
             newConversationButton.setEnabled(false);
             sqlArea.setText("");
-            if (answerArea != null) answerArea.setText("");
+            sqlArea.setCaretPosition(0);
+            if (answerArea != null) { answerArea.setText(""); answerArea.setCaretPosition(0); }
             insertButton.setEnabled(false);
             statusLabel.setText(" ");
+            placeholderLabel.setVisible(false);
         }
 
         String buildCommentForHistory() {
@@ -506,7 +623,7 @@ public class AIQueryDialog extends JDialog {
     // Dialog
     // -------------------------------------------------------------------------
 
-    public AIQueryDialog(Window owner, DataModel dataModel, String dbmsName, Consumer<String> insertAction, ExecutionContext executionContext, String initialPrompt, boolean silent, String initialSql) {
+    public AIQueryDialog(Window owner, DataModel dataModel, String dbmsName, Consumer<String> insertAction, ExecutionContext executionContext, String initialPrompt, boolean silent, String initialSql, String sql) {
         super(owner, "AI Assistant", ModalityType.APPLICATION_MODAL);
         this.dataModel = dataModel;
         this.dbmsName = dbmsName;
@@ -527,22 +644,38 @@ public class AIQueryDialog extends JDialog {
                 }
             }
             generateTab.questionArea.setText(displayPrompt);
+            generateTab.questionArea.setCaretPosition(0);
             if (silent) {
                 generateTab.historyArea.setText(initialPrompt);
+                generateTab.historyArea.setCaretPosition(0);
                 if (generateTab.generateButton.isEnabled()) {
                     UIUtil.invokeLater(() -> generateTab.onGenerate());
                 }
             }
         }
         if (initialSql != null) {
-            String sql = initialSql.replaceFirst("(?s)\\A\\s*/\\*.*?\\*/\\s*", "");
-            generateTab.sqlArea.setText(sql);
+            String strippedSql = initialSql.replaceFirst("(?s)\\A\\s*/\\*.*?\\*/\\s*", "");
+            generateTab.sqlArea.setText(strippedSql);
             generateTab.sqlArea.setCaretPosition(0);
         }
-        getRootPane().setDefaultButton(generateTab.insertButton);
+        if (sql != null) {
+            advisorTab.sqlArea.setText(sql);
+            advisorTab.sqlArea.setCaretPosition(0);
+        }
+        boolean hasPrompt = initialPrompt != null;
+        boolean hasSql    = sql != null;
+        tabbedPane.setEnabledAt(1, hasSql);
+        if (hasPrompt != hasSql) {
+            tabbedPane.setEnabledAt(0, hasPrompt);
+            tabbedPane.setSelectedIndex(hasSql ? 1 : 0);
+        } else {
+            tabbedPane.setSelectedIndex(!hasSql && lastSelectedTab == 1 ? 0 : lastSelectedTab);
+            tabbedPane.addChangeListener(e -> lastSelectedTab = tabbedPane.getSelectedIndex());
+        }
+        UIUtil.invokeLater(2, () -> { (tabbedPane.getSelectedIndex() != 0? advisorTab : generateTab).questionArea.grabFocus(); });
         UIUtil.initComponents(this);
         pack();
-        setSize(getWidth() + 120, getHeight() + 200);
+        setSize(getWidth() + 320, getHeight() + 200);
         setLocationRelativeTo(owner);
     }
 
@@ -556,13 +689,15 @@ public class AIQueryDialog extends JDialog {
         JPanel generatePanel = generateTab.buildPanel(false);
         JPanel advisorPanel  = advisorTab.buildPanel(true);
 
-        JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Generate SQL", generatePanel);
         tabbedPane.setToolTipTextAt(0, "<html>Generate SQL from a plain-language description.<br>"
                 + "Describe what you need and let the AI write the query for you.</html>");
         tabbedPane.addTab("SQL Advisor", advisorPanel);
         tabbedPane.setToolTipTextAt(1, "<html>Analyze, explain, and refactor existing SQL queries.<br>"
                 + "Paste a query and ask the AI to explain, optimize, or rewrite it.</html>");
+        tabbedPane.addChangeListener(e -> UIUtil.invokeLater(
+                () -> (tabbedPane.getSelectedIndex() != 0 ? advisorTab : generateTab).questionArea.grabFocus()));
 
         // Shared settings
         JPanel settingsPanel = buildSettingsPanel();
