@@ -70,9 +70,34 @@ public class AIQueryAssistant {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     /** Round-robin mock: enable via -Djailer.ai.mock=true or set programmatically. */
-    public static volatile boolean MOCK_ENABLED = Boolean.getBoolean("jailer.ai.mock");
+    public static volatile boolean MOCK_ENABLED = Boolean.parseBoolean(System.getProperty("jailer.ai.mock"));
     private static final AtomicInteger MOCK_INDEX = new AtomicInteger(0);
     private static final String[] MOCK_SQL = {
+    		"Potential performance issues remain consistent with the previous analysis, but let's elaborate with some H2 specifics:\r\n"
+    		+ "\r\n"
+    		+ "1. **Lack of Indexes (Critical):**  As stated before, lacking indexes on join columns will severely hurt performance, especially in H2.  The query optimizer relies heavily on indexes for efficient execution.  Specifically, indexes are needed on `PROJECT_PARTICIPATION.EMPNO` and `PROJECT_PARTICIPATION.ROLE_ID`.\r\n"
+    		+ "\r\n"
+    		+ "2. **H2's In-Memory Nature:** H2 is often used as an in-memory database. While this provides fast access, the entire dataset *must* fit into memory. If the tables involved (particularly `PROJECT_PARTICIPATION`) are very large and cause memory pressure, performance will degrade drastically due to swapping to disk.\r\n"
+    		+ "\r\n"
+    		+ "3. **H2's Limited Query Optimizer:** H2's query optimizer is not as sophisticated as those found in larger database systems like PostgreSQL or Oracle. This means it might not always choose the optimal execution plan, even with indexes in place.  Complex queries might benefit from manual optimization or restructuring.\r\n"
+    		+ "\r\n"
+    		+ "4. **Table Statistics:** H2 relies on table statistics to estimate the cost of different execution plans. If these statistics are outdated (e.g., after a significant data load), the optimizer may make poor decisions.  Running `ANALYZE TABLE EMPLOYEE; ANALYZE TABLE PROJECT_PARTICIPATION; ANALYZE TABLE ROLE;` can help.  However, H2's ANALYZE TABLE isn't as robust as that of more mature database systems.\r\n"
+    		+ "\r\n"
+    		+ "5. **GROUP BY Performance:** The `GROUP BY E.EMPNO, R.DESCRIPTION` operation can be a bottleneck if there are a large number of unique combinations of employee numbers and role descriptions. H2's sorting and hashing algorithms might become inefficient with a very large number of groups.\r\n"
+    		+ "\r\n"
+    		+ "6. **Cardinality Concerns:** A high cardinality in either `EMPNO` or `ROLE_ID` within their respective tables could increase the resources needed for the joins and grouping.\r\n"
+    		+ "\r\n"
+    		+ "\r\n"
+    		+ "\r\n"
+    		+ "Optimization Suggestions (H2 Focused):\r\n"
+    		+ "\r\n"
+    		+ "*   **Indexes (Highest Priority):**  Create indexes on  `PROJECT_PARTICIPATION.EMPNO` and `PROJECT_PARTICIPATION.ROLE_ID`.\r\n"
+    		+ "*   **ANALYZE TABLE:** Run `ANALYZE TABLE EMPLOYEE; ANALYZE TABLE PROJECT_PARTICIPATION; ANALYZE TABLE ROLE;` to update table statistics.  Run this after large data modifications.\r\n"
+    		+ "*   **Data Size:** If possible, reduce the size of the `PROJECT_PARTICIPATION` table by archiving or summarizing old data if it's not frequently needed.\r\n"
+    		+ "*   **H2 Configuration:** Review H2's configuration parameters related to memory allocation (`-Xmx`) and caching.  Ensure sufficient memory is allocated to H2.\r\n"
+    		+ "* **Consider alternative database:** If performance remains unacceptable, and scalability is paramount, migrating to a more robust database system with a more sophisticated query optimizer might be necessary.\r\n"
+    		+ "\r\n"
+    		+ "",
         "SELECT\r\n"
         + "     A.ACTOR_ID,\r\n"
         + "     A.FIRST_NAME,\r\n"

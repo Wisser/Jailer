@@ -788,3 +788,10 @@ public class AIQueryDialog extends JDialog {
 
 // TODO
 // TODO suggest box 4px higher
+
+
+// TODO respones from AI-API-calls often answers with: "Optimization Suggestions (H2 Focused):
+// TODO  *   **Indexes (Highest Priority):**  Create indexes on  `PROJECT_PARTICIPATION.EMPNO` and `PROJECT_PARTICIPATION.ROLE_ID`.
+// TODO 	  *   **ANALYZE TABLE:** Run `ANALYZE TABLE EMPLOYEE; ANALYZE TABLE PROJECT_PARTICIPATION; ANALYZE TABLE ROLE;` to update table statistics.  Run this after large data modifications.
+// TODO 	  *   **Data Size:** If possible, reduce the size of the `PROJECT_PARTICIPATION` table by archiving or " what about the stars?
+
