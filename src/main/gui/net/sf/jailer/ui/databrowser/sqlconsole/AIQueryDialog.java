@@ -188,7 +188,7 @@ public class AIQueryDialog extends JDialog {
             gbc.gridwidth = 2;
             gbc.weightx = 1; gbc.weighty = 1;
             gbc.fill = GridBagConstraints.BOTH;
-            gbc.insets = new Insets(4, 0, 0, 0);
+            gbc.insets = new Insets(2, 0, 0, 0);
             questionPanel.add(questionLayered, gbc);
 
             // Combobox (advisor only): col 1, spans rows 0+1 → does not affect row 0 height
@@ -216,7 +216,7 @@ public class AIQueryDialog extends JDialog {
                 });
                 gbc = new GridBagConstraints();
                 gbc.gridx = 1; gbc.gridy = 0;
-                gbc.gridheight = 2;
+                gbc.gridheight = 1;
                 gbc.weightx = 0; gbc.weighty = 0;
                 gbc.fill = GridBagConstraints.NONE;
                 gbc.anchor = GridBagConstraints.NORTHEAST;
