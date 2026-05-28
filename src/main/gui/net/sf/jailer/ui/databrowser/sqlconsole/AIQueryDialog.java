@@ -299,11 +299,16 @@ public class AIQueryDialog extends JDialog {
                 }
             });
 
-            JPanel genLeft = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
-            genLeft.add(generateButton);
-            genLeft.add(cancelButton);
-            genLeft.add(newConversationButton);
-            genLeft.add(statusLabel);
+            JPanel genLeft = new JPanel(new GridBagLayout());
+            {
+                GridBagConstraints gbcL = new GridBagConstraints();
+                gbcL.gridy = 0; gbcL.anchor = GridBagConstraints.WEST;
+                gbcL.insets = new Insets(0, 0, 0, 6);
+                gbcL.gridx = 0; genLeft.add(generateButton, gbcL);
+                gbcL.gridx = 1; genLeft.add(cancelButton, gbcL);
+                gbcL.gridx = 2; genLeft.add(newConversationButton, gbcL);
+                gbcL.gridx = 3; gbcL.insets = new Insets(0, 0, 0, 0); genLeft.add(statusLabel, gbcL);
+            }
             JPanel checkboxRow = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
             checkboxRow.add(omitColumnTypesBox);
             checkboxRow.add(smartSelectionBox);
@@ -353,8 +358,16 @@ public class AIQueryDialog extends JDialog {
             sqlArea.setColumns(60);
             RTextScrollPane sqlScrollPane = new RTextScrollPane();
             sqlScrollPane.setViewportView(sqlArea);
-            JPanel insertRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 2));
-            insertRow.add(insertButton);
+            JPanel insertRow = new JPanel(new GridBagLayout());
+            {
+                GridBagConstraints gbcI = new GridBagConstraints();
+                gbcI.gridx = 0; gbcI.gridy = 0;
+                gbcI.anchor = GridBagConstraints.WEST;
+                gbcI.insets = new Insets(2, 0, 2, 0);
+                insertRow.add(insertButton, gbcI);
+                gbcI.gridx = 1; gbcI.weightx = 1; gbcI.fill = GridBagConstraints.HORIZONTAL;
+                insertRow.add(new JLabel(), gbcI);
+            }
             JPanel resultPanel = new JPanel(new BorderLayout(4, 4));
             if (isAdvisor) {
                 JPanel sqlPanel = new JPanel(new BorderLayout(4, 4));
@@ -772,3 +785,6 @@ public class AIQueryDialog extends JDialog {
     }
 
 }
+
+// TODO
+// TODO suggest box 4px higher
