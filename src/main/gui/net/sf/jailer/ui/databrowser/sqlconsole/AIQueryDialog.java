@@ -179,6 +179,7 @@ public class AIQueryDialog extends JDialog {
             gbc.weightx = 1; gbc.weighty = 0;
             gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.insets = new Insets(0, 0, 4, 0);
+            gbc.anchor = GridBagConstraints.SOUTHWEST;
             questionPanel.add(questionTitleLabel, gbc);
 
             // Question area: row 1, cols 0+1
@@ -187,6 +188,7 @@ public class AIQueryDialog extends JDialog {
             gbc.gridwidth = 2;
             gbc.weightx = 1; gbc.weighty = 1;
             gbc.fill = GridBagConstraints.BOTH;
+            gbc.insets = new Insets(4, 0, 0, 0);
             questionPanel.add(questionLayered, gbc);
 
             // Combobox (advisor only): col 1, spans rows 0+1 → does not affect row 0 height
@@ -209,6 +211,7 @@ public class AIQueryDialog extends JDialog {
                         questionArea.setCaretPosition(0);
                         suggestionsBox.setSelectedIndex(0);
                         questionArea.requestFocusInWindow();
+                        generateButton.doClick();
                     }
                 });
                 gbc = new GridBagConstraints();
@@ -217,7 +220,6 @@ public class AIQueryDialog extends JDialog {
                 gbc.weightx = 0; gbc.weighty = 0;
                 gbc.fill = GridBagConstraints.NONE;
                 gbc.anchor = GridBagConstraints.NORTHEAST;
-                gbc.insets = new Insets(0, 2, 2, 0);
                 questionPanel.add(suggestionsBox, gbc);
             }
 
@@ -788,10 +790,13 @@ public class AIQueryDialog extends JDialog {
 
 // TODO
 // TODO suggest box 4px higher
+// TODO more suggestions
+// TODO keep orig prompt comment
+// TODO suggestionbox disabled during call
+// TODO adv: initially empty quest area
 
-
-// TODO respones from AI-API-calls often answers with: "Optimization Suggestions (H2 Focused):
-// TODO  *   **Indexes (Highest Priority):**  Create indexes on  `PROJECT_PARTICIPATION.EMPNO` and `PROJECT_PARTICIPATION.ROLE_ID`.
+// TODO 
+// TODO  handle markdown: *   **Indexes (Highest Priority):**  Create indexes on  `PROJECT_PARTICIPATION.EMPNO` and `PROJECT_PARTICIPATION.ROLE_ID`.
 // TODO 	  *   **ANALYZE TABLE:** Run `ANALYZE TABLE EMPLOYEE; ANALYZE TABLE PROJECT_PARTICIPATION; ANALYZE TABLE ROLE;` to update table statistics.  Run this after large data modifications.
 // TODO 	  *   **Data Size:** If possible, reduce the size of the `PROJECT_PARTICIPATION` table by archiving or " what about the stars?
 
