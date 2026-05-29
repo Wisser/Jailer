@@ -53,7 +53,7 @@ public class SystemPromptPanel extends JPanel {
     public static final String DEFAULT_TEMPLATE =
         "You are a SQL expert for {dbmsName}.\n"
         + "Database schema: {schema}\n"
-        + "Return ONLY raw SQL - no explanation, no code fences, no trailing semicolon. "
+        + "Return ONLY raw SQL - no explanation, no code fences, no markdown, no trailing semicolon. "
         + "Use only tables and columns from the schema above.\n"
         + "\n"
         + "Use aliases for complex expressions in select clauses.\n"
@@ -65,7 +65,8 @@ public class SystemPromptPanel extends JPanel {
         + "Database schema: {schema}\n"
         + "Analyze, explain, or optimize the SQL query provided by the user.\n"
         + "First output only the resulting SQL - no code fences, no trailing semicolon.\n"
-        + "Then output a new line containing exactly: \"{separator}\"\n"
+        + "Retain comments.\n"
+        + "Then output a new line containing exactly: \"{separator}\".\n"
         + "Then provide a plain-text explanation of the changes or analysis.\n"
         + "Use only tables and columns from the schema above.\n"
         + "\n"

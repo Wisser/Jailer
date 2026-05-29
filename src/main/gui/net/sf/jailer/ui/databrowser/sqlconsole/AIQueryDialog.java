@@ -16,6 +16,7 @@
 package net.sf.jailer.ui.databrowser.sqlconsole;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -45,12 +46,15 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JComboBox;
+import javax.swing.JEditorPane;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -116,7 +120,10 @@ public class AIQueryDialog extends JDialog {
         final AtomicReference<Runnable> abortRef = new AtomicReference<>();
 
         boolean isAdvisor;
-        RSyntaxTextAreaWithTheme answerArea;
+        JComboBox<String> suggestionsBox;
+        JButton diffButton;
+        String lastOriginalSql;
+        JEditorPane answerArea;
         JLabel placeholderLabel;
 
         JPanel buildPanel(boolean isAdvisor) {
@@ -178,7 +185,7 @@ public class AIQueryDialog extends JDialog {
             gbc.gridx = 0; gbc.gridy = 0;
             gbc.weightx = 1; gbc.weighty = 0;
             gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.insets = new Insets(0, 0, 4, 0);
+            gbc.insets = new Insets(4, 0, 2, 0);
             gbc.anchor = GridBagConstraints.SOUTHWEST;
             questionPanel.add(questionTitleLabel, gbc);
 
@@ -193,17 +200,25 @@ public class AIQueryDialog extends JDialog {
 
             // Combobox (advisor only): col 1, spans rows 0+1 → does not affect row 0 height
             if (isAdvisor) {
-                javax.swing.JComboBox<String> suggestionsBox = new javax.swing.JComboBox<>(new String[]{
+                suggestionsBox = new JComboBox<>(new String[]{
                     "Suggestions…",
                     "Explain this query",
+                    "Add comments to explain the query",
+                    "Make this query more readable",
+                    "Identify columns that could be renamed for clarity",
                     "Find potential performance issues",
                     "Optimize this query for performance",
+                    "What indexes would help this query?",
                     "Rewrite using CTEs",
+                    "Extract repeated expressions as CTEs",
                     "Convert subqueries to joins",
-                    "Make this query more readable",
-                    "Add comments to explain the query",
-                    "What indexes would help this query?"
+                    "Rewrite using window functions",
+                    "Convert IN to EXISTS",
+                    "Simplify redundant conditions",
+                    "Extract repeated expressions as CTEs",
+                    "Check for NULL handling issues"
                 });
+                suggestionsBox.setMaximumRowCount(16);
                 suggestionsBox.addActionListener(e -> {
                     int idx = suggestionsBox.getSelectedIndex();
                     if (idx > 0) {
@@ -223,13 +238,13 @@ public class AIQueryDialog extends JDialog {
                 questionPanel.add(suggestionsBox, gbc);
             }
 
-            generateButton = new JButton("Generate SQL");
+            generateButton = new JButton(isAdvisor ? "Ask AI" : "Generate SQL");
             ImageIcon aiIcon = UIUtil.scaleIcon(generateButton, UIUtil.readImage("/ask_ai.png"));
             if (aiIcon != null) {
                 generateButton.setIcon(UIUtil.scaleIcon(generateButton, aiIcon));
             }
             generateButton.setEnabled(false);
-            generateButton.setToolTipText("Generate SQL (Ctrl+Enter)");
+            generateButton.setToolTipText(isAdvisor ? "Ask AI (Ctrl+Enter)" : "Generate SQL (Ctrl+Enter)");
             statusLabel = new JLabel(" ");
             generateButton.addActionListener(e -> onGenerate());
 
@@ -294,8 +309,13 @@ public class AIQueryDialog extends JDialog {
                 if (!sql.isEmpty()) {
                     AIProviderConfig cfg = providerPanel.getConfig();
                     AIQueryAssistant.saveCheckboxStates(cfg, executionContext, omitColumnTypesBox.isSelected(), smartSelectionBox.isSelected());
-                    String comment = buildCommentForHistory();
-                    String combined = comment.isEmpty() ? sql : comment + "\n" + sql;
+                    String combined;
+                    if (isAdvisor) {
+                        combined = sql;
+                    } else {
+                        String comment = buildCommentForHistory();
+                        combined = comment.isEmpty() ? sql : comment + "\n" + sql;
+                    }
                     insertAction.accept(combined);
                     dispose();
                 }
@@ -367,7 +387,22 @@ public class AIQueryDialog extends JDialog {
                 gbcI.anchor = GridBagConstraints.WEST;
                 gbcI.insets = new Insets(2, 0, 2, 0);
                 insertRow.add(insertButton, gbcI);
-                gbcI.gridx = 1; gbcI.weightx = 1; gbcI.fill = GridBagConstraints.HORIZONTAL;
+                if (isAdvisor) {
+                    gbcI.gridx = 1; gbcI.weightx = 0; gbcI.fill = GridBagConstraints.NONE;
+                    gbcI.insets = new Insets(2, 6, 2, 0);
+                    diffButton = new JButton("Show Diff");
+                    diffButton.setEnabled(false);
+                    diffButton.setToolTipText("Compare original SQL with AI-modified version");
+                    diffButton.addActionListener(e -> {
+                        if (lastOriginalSql != null)
+                            showDiffDialog(AIQueryDialog.this, lastOriginalSql, sqlArea.getText().trim());
+                    });
+                    insertRow.add(diffButton, gbcI);
+                    gbcI.gridx = 2; gbcI.insets = new Insets(2, 0, 2, 0);
+                } else {
+                    gbcI.gridx = 1;
+                }
+                gbcI.weightx = 1; gbcI.fill = GridBagConstraints.HORIZONTAL;
                 insertRow.add(new JLabel(), gbcI);
             }
             JPanel resultPanel = new JPanel(new BorderLayout(4, 4));
@@ -375,12 +410,10 @@ public class AIQueryDialog extends JDialog {
                 JPanel sqlPanel = new JPanel(new BorderLayout(4, 4));
                 sqlPanel.add(new JLabel("SQL"), BorderLayout.NORTH);
                 sqlPanel.add(sqlScrollPane, BorderLayout.CENTER);
-                answerArea = new RSyntaxTextAreaWithTheme();
+                answerArea = new JEditorPane("text/html", "");
                 answerArea.setEditable(false);
-                answerArea.setLineWrap(true);
-                answerArea.setWrapStyleWord(true);
-                RTextScrollPane answerScrollPane = new RTextScrollPane();
-                answerScrollPane.setViewportView(answerArea);
+                answerArea.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+                JScrollPane answerScrollPane = new JScrollPane(answerArea);
                 JPanel answerPanel = new JPanel(new BorderLayout(4, 4));
                 answerPanel.add(new JLabel("Answer"), BorderLayout.NORTH);
                 answerPanel.add(answerScrollPane, BorderLayout.CENTER);
@@ -467,6 +500,8 @@ public class AIQueryDialog extends JDialog {
             smartSelectionBox.setEnabled(!generating);
             omitColumnTypesBox.setEnabled(!generating);
             systemPromptButton.setEnabled(!generating);
+            if (suggestionsBox != null) suggestionsBox.setEnabled(!generating);
+            if (diffButton != null) diffButton.setEnabled(!generating && lastOriginalSql != null && !lastOriginalSql.equals(sqlArea.getText().trim()));
             cancelButton.setEnabled(generating);
             setCursor(generating ? Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR) : Cursor.getDefaultCursor());
         }
@@ -494,6 +529,10 @@ public class AIQueryDialog extends JDialog {
                 return;
             }
             final String sqlContent = isAdvisor ? sqlArea.getText().trim() : null;
+            java.util.regex.Matcher _cm = java.util.regex.Pattern
+                    .compile("(?s)\\A\\s*(/\\*\\s*AI:.*?\\*/)")
+                    .matcher(isAdvisor ? sqlArea.getText() : "");
+            final String existingAiComment = _cm.find() ? _cm.group(1) : "";
             setGenerating(true);
             statusLabel.setText("Generating...");
 
@@ -545,34 +584,98 @@ public class AIQueryDialog extends JDialog {
                         String sql = get();
                         String answerText = null;
                         if (isAdvisor) {
-                            String bare   = SystemPromptPanel.ADVISOR_SQL_ANSWER_SEPARATOR;
-                            String quoted = "\"" + bare + "\"";
-                            int sep    = sql.indexOf(quoted);
-                            int sepLen = quoted.length();
-                            if (sep < 0) {
-                                sep    = sql.indexOf(bare);
-                                sepLen = bare.length();
+                            // Point 5: mask code-block contents so separator search ignores them
+                            java.util.regex.Matcher maskM = java.util.regex.Pattern.compile("(?s)```.*?```").matcher(sql);
+                            StringBuffer maskedBuf = new StringBuffer(sql.length());
+                            int maskPos = 0;
+                            while (maskM.find()) {
+                                maskedBuf.append(sql, maskPos, maskM.start());
+                                for (int i = maskM.start(); i < maskM.end(); i++) maskedBuf.append('\0');
+                                maskPos = maskM.end();
                             }
+                            maskedBuf.append(sql, maskPos, sql.length());
+                            String masked = maskedBuf.toString();
+
+                            // Point 1: fuzzy separator matching (--ENDOFSQL / -- END OF SQL / "..." variants)
+                            java.util.regex.Matcher sepM = java.util.regex.Pattern
+                                    .compile("(?i)\"?--\\s*end\\s*(?:of\\s*)?sql\"?")
+                                    .matcher(masked);
+                            int sep = -1, sepLen = 0;
+                            if (sepM.find()) { sep = sepM.start(); sepLen = sepM.end() - sepM.start(); }
+
                             if (sep >= 0) {
                                 answerText = sql.substring(sep + sepLen).trim();
                                 sql = AIQueryAssistant.stripMarkdownCodeFence(sql.substring(0, sep).trim());
-                                if (sql.endsWith(";")) {
-                                	sql = sql.substring(0, sql.length() - 1).trim();
-                        		}
+                                if (sql.endsWith(";")) sql = sql.substring(0, sql.length() - 1).trim();
                             } else {
-                                answerText = rawResponseRef != null ? rawResponseRef.get() : sql;
-                                sql = sqlContent != null ? sqlContent : "";
+                                // Heuristic fallback: extract last markdown code block as SQL
+                                String raw = rawResponseRef != null ? rawResponseRef.get() : "";
+                                java.util.regex.Matcher cm2 = java.util.regex.Pattern
+                                        .compile("(?s)```(?:sql|SQL)?\\s*\\n(.*?)```")
+                                        .matcher(raw);
+                                String lastBlock = null; int lastStart = -1, lastEnd = -1;
+                                while (cm2.find()) { lastBlock = cm2.group(1).trim(); lastStart = cm2.start(); lastEnd = cm2.end(); }
+                                if (lastBlock != null && !lastBlock.isEmpty()) {
+                                    sql = lastBlock.endsWith(";") ? lastBlock.substring(0, lastBlock.length() - 1).trim() : lastBlock;
+                                    String before = raw.substring(0, lastStart).trim();
+                                    String after  = raw.substring(lastEnd).trim();
+                                    answerText = before.isEmpty() ? after : after.isEmpty() ? before : before + "\n" + after;
+                                } else {
+                                    // Point 2: bare SQL (no code fence) — response starts with SQL keyword
+                                    String rawTrimmed = raw.trim();
+                                    java.util.regex.Matcher sqlKw = java.util.regex.Pattern
+                                            .compile("(?si)^\\s*(?:(?:--[^\\n]*|/\\*.*?\\*/)\\s*)*(SELECT|WITH|UPDATE|INSERT|DELETE|CREATE|ALTER|DROP|MERGE)\\b")
+                                            .matcher(rawTrimmed);
+                                    if (sqlKw.find()) {
+                                        java.util.regex.Matcher blankM = java.util.regex.Pattern
+                                                .compile("(\r?\n){2,}").matcher(rawTrimmed);
+                                        if (blankM.find()) {
+                                            sql = rawTrimmed.substring(0, blankM.start()).trim();
+                                            answerText = rawTrimmed.substring(blankM.end()).trim();
+                                            if (sql.endsWith(";")) sql = sql.substring(0, sql.length() - 1).trim();
+                                        } else {
+                                            java.util.regex.Matcher semiM = java.util.regex.Pattern
+                                                    .compile(";[ \\t]*(\\r?\\n)").matcher(rawTrimmed);
+                                            int lastSemiPos = -1, lastSemiEnd = -1;
+                                            while (semiM.find()) { lastSemiPos = semiM.start(); lastSemiEnd = semiM.end(); }
+                                            if (lastSemiEnd > 0) {
+                                                sql = rawTrimmed.substring(0, lastSemiPos).trim();
+                                                answerText = rawTrimmed.substring(lastSemiEnd).trim();
+                                                if (answerText.isEmpty()) answerText = null;
+                                            } else {
+                                                sql = rawTrimmed;
+                                                if (sql.endsWith(";")) sql = sql.substring(0, sql.length() - 1).trim();
+                                                answerText = null;
+                                            }
+                                        }
+                                    } else {
+                                        answerText = raw.isEmpty() ? sql : raw;
+                                        sql = sqlContent != null ? sqlContent : "";
+                                    }
+                                }
                             }
                         }
-                        if (!sqlArea.getText().equals(sql) && !sql.isEmpty()) {
-    						sqlArea.setText(sql);
-    						sqlArea.setCaretPosition(0);
+                        String displaySql = (isAdvisor && !existingAiComment.isEmpty()
+                                && AIQueryAssistant.extractPrompt(sql) == null)
+                                ? existingAiComment + "\n" + sql : sql;
+                        if (!sqlArea.getText().equals(displaySql) && !displaySql.isEmpty()) {
+                            sqlArea.beginAtomicEdit();
+                            try {
+                                sqlArea.setText(displaySql);
+                            } finally {
+                                sqlArea.endAtomicEdit();
+                            }
+                            sqlArea.setCaretPosition(0);
                         }
                         if (answerArea != null && answerText != null) {
-                            answerArea.setText(answerText);
+                            answerArea.setText(markdownToHtml(answerText));
                             answerArea.setCaretPosition(0);
                         }
                         insertButton.setEnabled(!sql.isEmpty());
+                        if (isAdvisor && diffButton != null && !sql.isEmpty()) {
+                            lastOriginalSql = sqlContent;
+                            diffButton.setEnabled(!lastOriginalSql.equals(sqlArea.getText().trim()));
+                        }
                         if (!sql.isEmpty()) {
                             providerPanel.markConnectionVerified();
                             AIQueryAssistant.saveCheckboxStates(config, executionContext, omitColumnTypes, smartSelection);
@@ -623,7 +726,8 @@ public class AIQueryDialog extends JDialog {
             newConversationButton.setEnabled(false);
             sqlArea.setText("");
             sqlArea.setCaretPosition(0);
-            if (answerArea != null) { answerArea.setText(""); answerArea.setCaretPosition(0); }
+            if (answerArea != null) { answerArea.setText("<html><body></body></html>"); answerArea.setCaretPosition(0); }
+            if (diffButton != null) { diffButton.setEnabled(false); lastOriginalSql = null; }
             insertButton.setEnabled(false);
             statusLabel.setText(" ");
             placeholderLabel.setVisible(false);
@@ -761,6 +865,174 @@ public class AIQueryDialog extends JDialog {
         return providerPanel;
     }
 
+    private static void showDiffDialog(Window owner, String originalSql, String modifiedSql) {
+        boolean dark = UIUtil.plaf == UIUtil.PLAF.FLATDARK;
+        Color delColor = dark ? new Color(0x60, 0x20, 0x20) : new Color(0xFF, 0xD0, 0xD0);
+        Color addColor = dark ? new Color(0x1a, 0x4a, 0x1a) : new Color(0xD0, 0xFF, 0xD0);
+
+        String[] orig = originalSql.replace("\r\n", "\n").split("\n", -1);
+        String[] mod  = modifiedSql.replace("\r\n", "\n").split("\n", -1);
+        List<String> diff = computeDiff(orig, mod);
+
+        RSyntaxTextAreaWithTheme textArea = new RSyntaxTextAreaWithTheme();
+        textArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
+        textArea.setAutoIndentEnabled(true);
+        textArea.setBracketMatchingEnabled(false);
+        textArea.setHighlightCurrentLine(false);
+        textArea.setEditable(false);
+        textArea.setEnabled(false);
+        StringBuilder sb = new StringBuilder();
+        for (String entry : diff) {
+            char type = entry.charAt(0);
+            sb.append(type == '-' ? "- " : type == '+' ? "+ " : "  ").append(entry.substring(1)).append("\n");
+        }
+        textArea.setText(sb.toString());
+        textArea.setCaretPosition(0);
+        int lineIdx = 0;
+        for (String entry : diff) {
+            char type = entry.charAt(0);
+            if (type != '=') {
+                try { textArea.addLineHighlight(lineIdx, type == '-' ? delColor : addColor); }
+                catch (javax.swing.text.BadLocationException ex) { _log.warn("diff highlight", ex); }
+            }
+            lineIdx++;
+        }
+
+        JDialog d = new JDialog(owner);
+        d.setTitle("SQL Diff — Original vs. AI");
+        d.getContentPane().add(new RTextScrollPane(textArea), BorderLayout.CENTER);
+        JButton closeBtn = new JButton("Close");
+        ImageIcon closeIcon = UIUtil.readImage("/buttoncancel.png");
+        if (closeIcon != null) closeBtn.setIcon(UIUtil.scaleIcon(closeBtn, closeIcon));
+        closeBtn.addActionListener(e -> d.dispose());
+        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 4));
+        bottom.add(closeBtn);
+        d.getContentPane().add(bottom, BorderLayout.SOUTH);
+        UIUtil.initComponents(d);
+        d.pack();
+        d.setSize(Math.max(d.getWidth(), 900), Math.max(d.getHeight(), 600));
+        d.setLocationRelativeTo(owner);
+        d.setVisible(true);
+    }
+
+    private static List<String> computeDiff(String[] orig, String[] mod) {
+        int m = Math.min(orig.length, 800), n = Math.min(mod.length, 800);
+        int[][] dp = new int[m + 1][n + 1];
+        for (int i = m - 1; i >= 0; i--)
+            for (int j = n - 1; j >= 0; j--)
+                dp[i][j] = orig[i].equals(mod[j]) ? dp[i+1][j+1] + 1 : Math.max(dp[i+1][j], dp[i][j+1]);
+        List<String> result = new ArrayList<>();
+        int i = 0, j = 0;
+        while (i < m || j < n) {
+            if (i < m && j < n && orig[i].equals(mod[j])) {
+                result.add("=" + orig[i]); i++; j++;
+            } else if (j < n && (i >= m || dp[i][j+1] >= dp[i+1][j])) {
+                result.add("+" + mod[j]); j++;
+            } else {
+                result.add("-" + orig[i]); i++;
+            }
+        }
+        while (i < orig.length) { result.add("-" + orig[i]); i++; }
+        while (j < mod.length)  { result.add("+" + mod[j]);  j++; }
+        return result;
+    }
+
+    private static String markdownToHtml(String text) {
+        if (text == null || text.isEmpty()) return "<html><body></body></html>";
+        boolean dark = UIUtil.plaf == UIUtil.PLAF.FLATDARK;
+        String codeBg  = dark ? "#1e1e1e" : "#f5f5f5";
+        String codeBd  = dark ? "#555"    : "#ccc";
+        String qtColor = dark ? "#aaa"    : "#555";
+        String qtBd    = dark ? "#666"    : "#aaa";
+        StringBuilder sb = new StringBuilder();
+        sb.append("<html><head><style>");
+        sb.append("body{margin:4px}");
+        sb.append("pre{background:").append(codeBg).append(";border:1px solid ").append(codeBd).append(";padding:6px;white-space:pre-wrap}");
+        sb.append("code,tt{font-family:monospace}");
+        sb.append("blockquote{border-left:3px solid ").append(qtBd).append(";margin-left:4px;padding-left:8px;color:").append(qtColor).append("}");
+        sb.append("h1{font-size:1.3em;margin:6px 0}h2{font-size:1.15em;margin:5px 0}h3{font-size:1.05em;margin:4px 0}");
+        sb.append("</style></head><body>");
+        boolean inCode = false, inUl = false, inOl = false, inBq = false;
+        for (String line : text.split("\n", -1)) {
+            if (line.trim().startsWith("```")) {
+                if (!inCode) {
+                    if (inUl) { sb.append("</ul>"); inUl = false; }
+                    if (inOl) { sb.append("</ol>"); inOl = false; }
+                    if (inBq) { sb.append("</blockquote>"); inBq = false; }
+                    sb.append("<pre><code>"); inCode = true;
+                } else {
+                    sb.append("</code></pre>"); inCode = false;
+                }
+                continue;
+            }
+            if (inCode) { sb.append(mdEscape(line)).append("\n"); continue; }
+            if (line.trim().isEmpty()) {
+                if (inUl) { sb.append("</ul>"); inUl = false; }
+                if (inOl) { sb.append("</ol>"); inOl = false; }
+                if (inBq) { sb.append("</blockquote>"); inBq = false; }
+                sb.append("<br>"); continue;
+            }
+            if (line.matches("[-*_]{3,}\\s*")) {
+                if (inUl) { sb.append("</ul>"); inUl = false; }
+                if (inOl) { sb.append("</ol>"); inOl = false; }
+                if (inBq) { sb.append("</blockquote>"); inBq = false; }
+                sb.append("<hr>"); continue;
+            }
+            if (line.startsWith("### ")) {
+                if (inUl) { sb.append("</ul>"); inUl = false; } if (inOl) { sb.append("</ol>"); inOl = false; } if (inBq) { sb.append("</blockquote>"); inBq = false; }
+                sb.append("<h3>").append(mdInline(line.substring(4))).append("</h3>"); continue;
+            }
+            if (line.startsWith("## ")) {
+                if (inUl) { sb.append("</ul>"); inUl = false; } if (inOl) { sb.append("</ol>"); inOl = false; } if (inBq) { sb.append("</blockquote>"); inBq = false; }
+                sb.append("<h2>").append(mdInline(line.substring(3))).append("</h2>"); continue;
+            }
+            if (line.startsWith("# ")) {
+                if (inUl) { sb.append("</ul>"); inUl = false; } if (inOl) { sb.append("</ol>"); inOl = false; } if (inBq) { sb.append("</blockquote>"); inBq = false; }
+                sb.append("<h1>").append(mdInline(line.substring(2))).append("</h1>"); continue;
+            }
+            if (line.startsWith("> ")) {
+                if (inUl) { sb.append("</ul>"); inUl = false; } if (inOl) { sb.append("</ol>"); inOl = false; }
+                if (!inBq) { sb.append("<blockquote>"); inBq = true; }
+                sb.append(mdInline(line.substring(2))).append("<br>"); continue;
+            }
+            if (line.startsWith("- ") || line.startsWith("* ")) {
+                if (inBq) { sb.append("</blockquote>"); inBq = false; } if (inOl) { sb.append("</ol>"); inOl = false; }
+                if (!inUl) { sb.append("<ul>"); inUl = true; }
+                sb.append("<li>").append(mdInline(line.substring(2))).append("</li>"); continue;
+            }
+            java.util.regex.Matcher nm = java.util.regex.Pattern.compile("^\\d+\\.\\s+(.+)").matcher(line);
+            if (nm.matches()) {
+                if (inBq) { sb.append("</blockquote>"); inBq = false; } if (inUl) { sb.append("</ul>"); inUl = false; }
+                if (!inOl) { sb.append("<ol>"); inOl = true; }
+                sb.append("<li>").append(mdInline(nm.group(1))).append("</li>"); continue;
+            }
+            if (inBq) { sb.append("</blockquote>"); inBq = false; }
+            if (inUl) { sb.append("</ul>"); inUl = false; }
+            if (inOl) { sb.append("</ol>"); inOl = false; }
+            sb.append(mdInline(line)).append("<br>");
+        }
+        if (inUl) sb.append("</ul>");
+        if (inOl) sb.append("</ol>");
+        if (inBq) sb.append("</blockquote>");
+        if (inCode) sb.append("</code></pre>");
+        sb.append("</body></html>");
+        return sb.toString();
+    }
+
+    private static String mdEscape(String s) {
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
+
+    private static String mdInline(String text) {
+        String s = mdEscape(text);
+        s = s.replaceAll("\\*\\*([^*\n]+?)\\*\\*", "<b>$1</b>");
+        s = s.replaceAll("~~([^\n]+?)~~", "<s>$1</s>");
+        s = s.replaceAll("\\*([^*\n]+?)\\*", "<i>$1</i>");
+        s = s.replaceAll("(?<![\\w_])_([^_\n]+?)_(?![\\w_])", "<i>$1</i>");
+        s = s.replaceAll("`([^`\n]+?)`", "<tt>$1</tt>");
+        return s;
+    }
+
     private void openSystemPromptDialog() {
         JDialog d = new JDialog(this, "System Prompts", true);
         ((javax.swing.JComponent) d.getContentPane()).setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 0));
@@ -788,15 +1060,15 @@ public class AIQueryDialog extends JDialog {
 
 }
 
-// TODO
-// TODO suggest box 4px higher
-// TODO more suggestions
-// TODO keep orig prompt comment
-// TODO suggestionbox disabled during call
-// TODO adv: initially empty quest area
-
 // TODO 
-// TODO  handle markdown: *   **Indexes (Highest Priority):**  Create indexes on  `PROJECT_PARTICIPATION.EMPNO` and `PROJECT_PARTICIPATION.ROLE_ID`.
-// TODO 	  *   **ANALYZE TABLE:** Run `ANALYZE TABLE EMPLOYEE; ANALYZE TABLE PROJECT_PARTICIPATION; ANALYZE TABLE ROLE;` to update table statistics.  Run this after large data modifications.
-// TODO 	  *   **Data Size:** If possible, reduce the size of the `PROJECT_PARTICIPATION` table by archiving or " what about the stars?
+// TODO test with various models
+// TODO TEST heuristik
+// TODO doku: new video, new genSql-video, 2nd-level menu items for each video in in "Videos" page
+// TODO diff: inplace diff view (layered pane) with switch (togglebutton at position of current button) for showing diff or new sql (default is show diff, if user switches, store that preference statically))
+// TODO "insert into Console":
+// TODO     - if switched from "genSQL" to "Advisor", "append SQL" might be useful (too?)
+// TODO      - or: in all cases offer "insert" and "append" buttons in advisor?
 
+// TODO
+// TODO first pass: heuristik: assign each line in result to table with best match (fuzzy)
+// TODO first pass: heuristik: cope with results not beening a list of lines
