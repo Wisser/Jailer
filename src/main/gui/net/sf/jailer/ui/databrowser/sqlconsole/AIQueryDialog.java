@@ -1099,5 +1099,6 @@ public class AIQueryDialog extends JDialog {
 
 // TODO 
 // TODO test with various models
+// TODO test first pass strategy
 // TODO doku: new video, new genSql-video, 2nd-level menu items for each video in in "Videos" page
 // TODO remove "Comming soon"

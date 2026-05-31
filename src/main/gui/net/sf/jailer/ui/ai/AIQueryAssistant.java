@@ -238,7 +238,7 @@ public class AIQueryAssistant {
             if (rawResponseRef != null) rawResponseRef.set(MOCK_SQL[idx]);
             return MOCK_SQL[idx];
         }
-        Set<String> relevantTables = null;
+        Set<Table> relevantTables = null;
         if (smartSelection) {
             try {
                 relevantTables = selectRelevantTables(question, history, dataModel, dbmsName, config, abortRef,
@@ -309,13 +309,19 @@ public class AIQueryAssistant {
         throw new IOException("Unexpected response format: missing 'choices' or 'message'. Response: " + response.toString());
     }
 
-    private static Set<String> selectRelevantTables(String question, List<ConversationMessage> history,
+    private static Set<Table> selectRelevantTables(String question, List<ConversationMessage> history,
             DataModel dataModel, String dbmsName, AIProviderConfig config,
             AtomicReference<Runnable> abortRef, String firstPassSystemPromptTemplate) throws IOException {
         List<Table> allTables = new ArrayList<>(dataModel.getSortedTables());
+        LinkedHashSet<String> seen = new LinkedHashSet<>();
         StringBuilder tableList = new StringBuilder();
         for (Table t : allTables) {
-            tableList.append(t.getName()).append("\n");
+            String raw = t.getName();
+            int dot = raw.lastIndexOf('.');
+            String simple = unquote(dot >= 0 ? raw.substring(dot + 1) : raw);
+            if (seen.add(simple)) {
+                tableList.append('"').append(simple).append('"').append("\n");
+            }
         }
 
         String template = (firstPassSystemPromptTemplate != null && !firstPassSystemPromptTemplate.isEmpty())
@@ -329,7 +335,7 @@ public class AIQueryAssistant {
         boolean isAnthropic = config.providerType == ProviderType.ANTHROPIC;
         ObjectNode body = MAPPER.createObjectNode();
         body.put("model", config.model);
-        body.put("max_tokens", 512);
+        body.put("max_tokens", config.maxTokens);
         body.put("stream", false);
 
         ArrayNode messages = body.putArray("messages");
@@ -352,30 +358,19 @@ public class AIQueryAssistant {
         JsonNode response = post(config, body, abortRef);
         String responseText = extractText(response, isAnthropic);
 
-        Map<String, String> normalizedToActual = new HashMap<>();
+        Map<String, Table> normalizedToActual = new HashMap<>();
         for (Table t : allTables) {
-            String key = unquote(t.getName()).toUpperCase(Locale.ENGLISH);
-            normalizedToActual.put(key, t.getName());
-            int dot = key.lastIndexOf('.');
-            if (dot >= 0) {
-                normalizedToActual.putIfAbsent(key.substring(dot + 1), t.getName());
-            }
+            String raw = t.getName();
+            int dot = raw.lastIndexOf('.');
+            String simpleKey = unquote(dot >= 0 ? raw.substring(dot + 1) : raw).toUpperCase(Locale.ENGLISH);
+            normalizedToActual.putIfAbsent(simpleKey, t);
         }
 
-        Set<String> selected = new LinkedHashSet<>();
+        Set<Table> selected = new LinkedHashSet<>();
         String reIdentifier = "(?:[\"][^\"]+[\"])|(?:[`][^`]+[`])|(?:['][^']+['])|(?:[\\w]+)";
         Matcher wm = Pattern.compile("(?:(" + reIdentifier + ")\\s*\\.\\s*)?(" + reIdentifier + ")").matcher(responseText);
         while (wm.find()) {
-            String schema   = wm.group(1);
-            String table    = wm.group(2);
-            String tableKey = unquote(table).toUpperCase(Locale.ENGLISH);
-            String actual   = null;
-            if (schema != null) {
-                actual = normalizedToActual.get(unquote(schema).toUpperCase(Locale.ENGLISH) + "." + tableKey);
-            }
-            if (actual == null) {
-                actual = normalizedToActual.get(tableKey);
-            }
+            Table actual = normalizedToActual.get(unquote(wm.group(2)).toUpperCase(Locale.ENGLISH));
             if (actual != null) selected.add(actual);
         }
 
@@ -386,13 +381,11 @@ public class AIQueryAssistant {
         return expandWithFkNeighbors(dataModel, selected);
     }
 
-    private static Set<String> expandWithFkNeighbors(DataModel dataModel, Set<String> tableNames) {
-        Set<String> expanded = new LinkedHashSet<>(tableNames);
-        for (Table table : dataModel.getSortedTables()) {
-            if (tableNames.contains(table.getName())) {
-                for (Association assoc : table.associations) {
-                    expanded.add(assoc.destination.getName());
-                }
+    private static Set<Table> expandWithFkNeighbors(DataModel dataModel, Set<Table> tables) {
+        Set<Table> expanded = new LinkedHashSet<>(tables);
+        for (Table table : tables) {
+            for (Association assoc : table.associations) {
+                expanded.add(assoc.destination);
             }
         }
         return expanded;
@@ -776,14 +769,14 @@ public class AIQueryAssistant {
         return buildSchemaDescription(dataModel, null, false);
     }
 
-    public static String buildSchemaDescription(DataModel dataModel, Set<String> relevantTables) {
+    public static String buildSchemaDescription(DataModel dataModel, Set<Table> relevantTables) {
         return buildSchemaDescription(dataModel, relevantTables, false);
     }
 
-    public static String buildSchemaDescription(DataModel dataModel, Set<String> relevantTables, boolean omitColumnTypes) {
+    public static String buildSchemaDescription(DataModel dataModel, Set<Table> relevantTables, boolean omitColumnTypes) {
         List<Table> tables = new ArrayList<>(dataModel.getSortedTables());
         if (relevantTables != null) {
-            tables.removeIf(t -> !relevantTables.contains(t.getName()));
+            tables.removeIf(t -> !relevantTables.contains(t));
         }
         StringBuilder sb = new StringBuilder();
         StringBuilder fkSb = new StringBuilder();
