@@ -506,7 +506,7 @@ public class AIQueryDialog extends JDialog {
 
         void loadCheckboxStates(AIProviderConfig config) {
             omitColumnTypesBox.setSelected(AIQueryAssistant.loadOmitColumnTypes(config, executionContext));
-            smartSelectionBox.setSelected(AIQueryAssistant.loadSmartSelection(config, executionContext, dataModel.getSortedTables().size()));
+            smartSelectionBox.setSelected(AIQueryAssistant.loadSmartSelection(config, executionContext));
         }
 
         void updateContextEstimate() {
@@ -575,6 +575,7 @@ public class AIQueryDialog extends JDialog {
             boolean omitColumnTypes = omitColumnTypesBox.isSelected();
 
             final AtomicReference<String> rawResponseRef = isAdvisor ? new AtomicReference<>("") : null;
+            final AtomicReference<Boolean> smartSelectionFallbackRef = new AtomicReference<>(Boolean.FALSE);
             currentWorker = new SwingWorker<String, Void>() {
                 @Override
                 protected String doInBackground() throws Exception {
@@ -603,7 +604,7 @@ public class AIQueryDialog extends JDialog {
                             _log.warn("Confirmation dialog failed", ex);
                         }
                         return result[0];
-                    }, systemPromptPanel.getFirstPassTemplate(), rawResponseRef, session);
+                    }, systemPromptPanel.getFirstPassTemplate(), rawResponseRef, session, smartSelectionFallbackRef);
                 }
 
                 @Override
@@ -721,7 +722,18 @@ public class AIQueryDialog extends JDialog {
                         }
                         if (!sql.isEmpty()) {
                             providerPanel.markConnectionVerified();
-                            AIQueryAssistant.saveCheckboxStates(config, executionContext, omitColumnTypes, smartSelection);
+                            if (Boolean.TRUE.equals(smartSelectionFallbackRef.get())) {
+                                smartSelectionBox.setSelected(true);
+                                AIQueryAssistant.saveCheckboxStates(config, executionContext, omitColumnTypes, true);
+                                JOptionPane.showMessageDialog(AIQueryDialog.this,
+                                    "<html>The full schema was too large for the AI model.<br>"
+                                    + "The query was generated using <b>smart table selection</b>.<br>"
+                                    + "The option has been enabled for future requests.</html>",
+                                    "Smart Table Selection activated",
+                                    JOptionPane.INFORMATION_MESSAGE);
+                            } else {
+                                AIQueryAssistant.saveCheckboxStates(config, executionContext, omitColumnTypes, smartSelection);
+                            }
                             String rawForHistory = (rawResponseRef != null && rawResponseRef.get() != null && !rawResponseRef.get().isEmpty())
                                     ? rawResponseRef.get() : sql;
                             conversationHistory.add(new ConversationMessage("user", question));
@@ -1102,5 +1114,6 @@ public class AIQueryDialog extends JDialog {
 // TODO 
 // TODO test with various models
 // TODO test first pass strategy, esp.: no unnecessary quoting (but quoting of keyword) of simple table names, no lU changes
+// TODO how about data model > 500 tables? relevant-tables-strategy might be unnecessary, or even counterproductive in that case.
 // TODO doku: new video, new genSql-video, 2nd-level menu items for each video in in "Videos" page
 // TODO remove "Comming soon"

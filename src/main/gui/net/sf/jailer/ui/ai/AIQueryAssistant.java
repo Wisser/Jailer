@@ -33,6 +33,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -195,7 +197,7 @@ public class AIQueryAssistant {
             BooleanSupplier confirmFullSchema, Session session) throws IOException, SQLException {
         validateConfig(config);
         boolean omitColumnTypes = loadOmitColumnTypes(config, executionContext);
-        boolean smartSelection  = loadSmartSelection(config, executionContext, dataModel.getSortedTables().size());
+        boolean smartSelection  = loadSmartSelection(config, executionContext);
         return generateSQL(question, history, dataModel, dbmsName, config,
                 loadSystemPromptTemplate(), smartSelection, omitColumnTypes, abortRef, confirmFullSchema,
                 loadFirstPassSystemPromptTemplate(), session);
@@ -230,6 +232,17 @@ public class AIQueryAssistant {
             String systemPromptTemplate, boolean smartSelection, boolean omitColumnTypes,
             AtomicReference<Runnable> abortRef, BooleanSupplier confirmFullSchema,
             String firstPassSystemPromptTemplate, AtomicReference<String> rawResponseRef, Session session) throws IOException, SQLException {
+        return generateSQL(question, history, dataModel, dbmsName, config, systemPromptTemplate,
+                smartSelection, omitColumnTypes, abortRef, confirmFullSchema,
+                firstPassSystemPromptTemplate, rawResponseRef, session, null);
+    }
+
+    public static String generateSQL(String question, List<ConversationMessage> history,
+            DataModel dataModel, String dbmsName, AIProviderConfig config,
+            String systemPromptTemplate, boolean smartSelection, boolean omitColumnTypes,
+            AtomicReference<Runnable> abortRef, BooleanSupplier confirmFullSchema,
+            String firstPassSystemPromptTemplate, AtomicReference<String> rawResponseRef,
+            Session session, AtomicReference<Boolean> smartSelectionFallbackRef) throws IOException, SQLException {
         if (MOCK_ENABLED) {
             int idx = MOCK_INDEX.getAndIncrement() % MOCK_SQL.length;
             _log.debug("MOCK mode: returning MOCK_SQL[{}]", idx);
@@ -261,7 +274,33 @@ public class AIQueryAssistant {
         String schema = buildSchemaDescription(dataModel, relevantTables, omitColumnTypes);
         boolean isAnthropic = config.providerType == ProviderType.ANTHROPIC;
         ObjectNode body = buildRequestBody(question, history, schema, dbmsName, config, isAnthropic, systemPromptTemplate);
-        JsonNode response = post(config, body, abortRef);
+        JsonNode response;
+        try {
+            response = post(config, body, abortRef);
+        } catch (IOException e) {
+            if (!smartSelection && !Thread.currentThread().isInterrupted() && isContextLengthError(e)) {
+                _log.warn("Context length exceeded with full schema — retrying with smart table selection ({})", e.getMessage());
+                Set<Table> smartTables = null;
+                try {
+                    smartTables = selectRelevantTables(question, history, dataModel, dbmsName, config, abortRef, firstPassSystemPromptTemplate, session);
+                } catch (IOException | SQLException ex) {
+                    throw e;
+                }
+                if (smartTables == null) throw e;
+                schema = buildSchemaDescription(dataModel, smartTables, omitColumnTypes);
+                body = buildRequestBody(question, history, schema, dbmsName, config, isAnthropic, systemPromptTemplate);
+                response = post(config, body, abortRef);
+                if (smartSelectionFallbackRef != null) smartSelectionFallbackRef.set(Boolean.TRUE);
+            } else {
+                if (!smartSelection && !Thread.currentThread().isInterrupted()
+                        && likelySchemaOverload(schema, dataModel, fetchContextWindowTokens(config))) {
+                    throw new IOException(e.getMessage()
+                        + "\n\nHint: The schema sent to the AI is large."
+                        + " Enabling \"Relevant tables only\" (smart table selection) may resolve this issue.", e);
+                }
+                throw e;
+            }
+        }
         String rawText = extractText(response, isAnthropic).trim();
         if (rawResponseRef != null) rawResponseRef.set(rawText);
         String result = stripMarkdownCodeFence(rawText);
@@ -274,6 +313,31 @@ public class AIQueryAssistant {
         }
         UISettings.s21 = (omitColumnTypes ? 1L : 0L) | (smartSelection ? 2L : 0L);
         return result;
+    }
+
+    /**
+     * Returns true when the schema is likely large enough that smart table selection could help.
+     * Uses 80% of the known context window when available; falls back to the 500-table heuristic.
+     *
+     * @param maxContextTokens provider context-window size in tokens, or null if unknown
+     */
+    static boolean likelySchemaOverload(String schema, DataModel dataModel, Integer maxContextTokens) {
+        if (maxContextTokens != null) {
+            return schema.length() / 4 > maxContextTokens * 0.8;
+        }
+        return dataModel.getSortedTables().size() > 500;
+    }
+
+    private static boolean isContextLengthError(IOException e) {
+        String msg = e.getMessage();
+        if (msg == null) return false;
+        String lower = msg.toLowerCase(Locale.ENGLISH);
+        return lower.contains("context_length_exceeded")
+            || lower.contains("too long")
+            || lower.contains("maximum context length")
+            || lower.contains("context window")
+            || lower.contains("prompt is too long")
+            || lower.contains("reduce the length");
     }
 
     private static String unquote(String name) {
@@ -393,6 +457,111 @@ public class AIQueryAssistant {
             }
         }
         return expanded;
+    }
+
+    // -------------------------------------------------------------------------
+    // Context-window discovery
+    // -------------------------------------------------------------------------
+
+    private static final ConcurrentHashMap<String, Optional<Integer>> CONTEXT_WINDOW_CACHE = new ConcurrentHashMap<>();
+
+    static Integer fetchContextWindowTokens(AIProviderConfig config) {
+        String key = config.providerType.name() + ":" + config.apiUrl + ":" + config.model;
+        Optional<Integer> cached = CONTEXT_WINDOW_CACHE.get(key);
+        if (cached != null) return cached.orElse(null);
+        Integer result = null;
+        try {
+            java.net.URL u = new java.net.URL(config.apiUrl);
+            String base = u.getProtocol() + "://" + u.getHost() + (u.getPort() > 0 ? ":" + u.getPort() : "");
+            switch (config.providerType) {
+                case ANTHROPIC:
+                    result = fetchAnthropicContextWindow(base, config.model, config.apiKey);
+                    break;
+                case OPENROUTER:
+                    result = fetchOpenRouterContextWindow(base, config.model, config.apiKey);
+                    break;
+                case OLLAMA:
+                    result = fetchOllamaContextWindow(base, config.model);
+                    break;
+                default:
+                    break;
+            }
+        } catch (Exception e) {
+            _log.debug("Could not fetch context window for {} {}: {}", config.providerType, config.model, e.getMessage());
+        }
+        CONTEXT_WINDOW_CACHE.put(key, Optional.ofNullable(result));
+        return result;
+    }
+
+    private static Integer fetchAnthropicContextWindow(String base, String model, String apiKey) throws IOException {
+        JsonNode resp = getJson(base + "/v1/models/" + model, apiKey, true);
+        if (resp == null) return null;
+        JsonNode cw = resp.path("context_window");
+        return cw.isNumber() ? cw.intValue() : null;
+    }
+
+    private static Integer fetchOpenRouterContextWindow(String base, String model, String apiKey) throws IOException {
+        JsonNode resp = getJson(base + "/api/v1/models", apiKey, false);
+        if (resp == null) return null;
+        JsonNode data = resp.path("data");
+        if (data.isArray()) {
+            for (JsonNode m : data) {
+                if (model.equals(m.path("id").asText())) {
+                    JsonNode cl = m.path("context_length");
+                    if (cl.isNumber()) return cl.intValue();
+                }
+            }
+        }
+        return null;
+    }
+
+    private static Integer fetchOllamaContextWindow(String base, String model) throws IOException {
+        ObjectNode body = MAPPER.createObjectNode();
+        body.put("model", model);
+        HttpURLConnection conn = (HttpURLConnection) new java.net.URL(base + "/api/show").openConnection();
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", "application/json");
+        conn.setConnectTimeout(5000);
+        conn.setReadTimeout(10000);
+        conn.setDoOutput(true);
+        try (OutputStream os = conn.getOutputStream()) {
+            os.write(MAPPER.writeValueAsBytes(body));
+        }
+        if (conn.getResponseCode() >= 400) return null;
+        JsonNode resp;
+        try (InputStream is = conn.getInputStream()) {
+            resp = MAPPER.readTree(readAllBytes(is));
+        }
+        JsonNode info = resp.path("model_info");
+        if (info.isObject()) {
+            java.util.Iterator<java.util.Map.Entry<String, JsonNode>> fields = info.fields();
+            while (fields.hasNext()) {
+                java.util.Map.Entry<String, JsonNode> e = fields.next();
+                if (e.getKey().endsWith(".context_length") && e.getValue().isNumber()) {
+                    return e.getValue().intValue();
+                }
+            }
+        }
+        Matcher m = Pattern.compile("num_ctx\\s+(\\d+)").matcher(resp.path("parameters").asText(""));
+        return m.find() ? Integer.parseInt(m.group(1)) : null;
+    }
+
+    private static JsonNode getJson(String url, String apiKey, boolean isAnthropic) throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) new java.net.URL(url).openConnection();
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Content-Type", "application/json");
+        if (isAnthropic) {
+            conn.setRequestProperty("x-api-key", apiKey);
+            conn.setRequestProperty("anthropic-version", "2023-06-01");
+        } else if (apiKey != null && !apiKey.isEmpty()) {
+            conn.setRequestProperty("Authorization", "Bearer " + apiKey);
+        }
+        conn.setConnectTimeout(5000);
+        conn.setReadTimeout(10000);
+        if (conn.getResponseCode() >= 400) return null;
+        try (InputStream is = conn.getInputStream()) {
+            return MAPPER.readTree(readAllBytes(is));
+        }
     }
 
     public static String generateSQL(String question, DataModel dataModel, String dbmsName, AIProviderConfig config, Session session) throws IOException, SQLException {
@@ -910,9 +1079,9 @@ public class AIQueryAssistant {
         return config.apiUrl + "|" + config.model + "|" + (folder != null ? folder : "");
     }
 
-    public static boolean loadSmartSelection(AIProviderConfig config, ExecutionContext executionContext, int tableCount) {
+    public static boolean loadSmartSelection(AIProviderConfig config, ExecutionContext executionContext) {
         Object stored = UISettings.restore("aiSmartSelection_" + checkboxSettingsKey(config, executionContext));
-        return stored instanceof Boolean ? (Boolean) stored : tableCount > 500;
+        return stored instanceof Boolean ? (Boolean) stored : false;
     }
 
     public static boolean loadOmitColumnTypes(AIProviderConfig config, ExecutionContext executionContext) {
@@ -960,5 +1129,4 @@ public class AIQueryAssistant {
 
 // TODO
 // TODO add comments to datamodel context of API call. Offer "omit" checkbox. 
-// TODO the estemated token count for the schema with all options enabled is a better limit than "500 tables"
 // TODO ? add support for function calls (e.g. OpenAI function calling) to allow the model to return structured data (e.g. list of relevant tables) without needing to parse text responses. This would be more robust than relying on the model to format its output correctly for the smart table selection step.
