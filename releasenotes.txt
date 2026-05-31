@@ -1,3 +1,16 @@
+17.1.2
+  - AI Query Assistant: SQL Advisor
+    - A second tab in the AI assistant dialog, dedicated to analyzing and improving existing SQL queries.
+      - Paste any query and ask the AI to explain it, optimize it for performance, rewrite it using CTEs or
+        window functions, add comments, find NULL-handling issues, and more.
+      - A built-in suggestions menu offers one-click prompts for the most common advisor tasks.
+      - The result is shown as a split view: the AI-revised SQL on the left, a formatted explanation on the right.
+      - "Show Diff" toggle: overlays an inline diff (red for removed lines, green for added lines) directly on
+        top of the SQL area, so you can see exactly what the AI changed. The toggle state is remembered.
+      - Workflow integration: whenever a query is generated in the "Generate SQL" tab, the SQL Advisor
+        automatically starts a new conversation pre-loaded with that query and its /* AI: ... */ context comment,
+        so you can immediately switch to the Advisor to refine or explain the result.
+
 17.1.1
   - AI Query Assistant
     - a full integration of AI-powered SQL generation directly into the SQL Console.

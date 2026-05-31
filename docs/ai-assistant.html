@@ -57,6 +57,8 @@
             </ul><ul>
                 <li><a href="ai-assistant.html" target="_self" class="mlinkA">AI&nbsp;Assistant</a>
 					<ul>
+						<li><a href="ai-assistant.html#generate" target="_self" class="llink">Generate&nbsp;SQL</a></li>
+						<li><a href="ai-assistant.html#advisor" target="_self" class="llink">SQL&nbsp;Advisor&nbsp;<i>(soon)</i></a></li>
 						<li><a href="openrouter-setup.html" target="_self" class="llink">Example&nbsp;Setup</a></li>
 					</ul>
 				</li>
@@ -81,7 +83,7 @@
 					</tr>
 					<tr>
 						<td class="content" height="520" valign="top" width="100%">
-						<h3>AI Query Assistant</h3>
+						<h3><a name="generate"></a>AI Query Assistant</h3>
 
 						<p>The AI Query Assistant lets you generate SQL queries from natural language questions.
 						Simply describe what you want to know about your data, and the assistant writes the SQL for you &mdash;
@@ -90,6 +92,15 @@
 						<p>The assistant is integrated into the <b>SQL Console</b> of the Data Browser.
 						Open the SQL Console (<b>Ctrl+Enter</b> from any table window, or via the menu) and look for the
 						"AI Assistant" button in the toolbar.</p>
+
+						<table border="0" cellpadding="8" cellspacing="0" width="90%" style="background:#fff8e1;border-left:4px solid #f0a000;margin:8px 0 12px 0;">
+							<tr><td>
+							&#9888;&nbsp;<b>AI-generated SQL is never executed automatically.</b>
+							Every query produced by the assistant &mdash; in any mode &mdash; is placed into the
+							SQL Console for your review first. You decide when and whether to run it.
+							</td></tr>
+						</table>
+
                         <a class="tlink" href="videoAI.html" target="_self">&nbsp;<img src="video.png">&nbsp;</a>
 
                         <br><h3>Conversation Mode</h3>
@@ -111,6 +122,50 @@
                         
                         <img src="AIQueryDialog.png" /><br>
 
+                        <br><h3><a name="advisor"></a>SQL Advisor <small><i>(Coming soon)</i></small></h3>
+
+                        <p>The <b>SQL Advisor</b> is the second tab in the AI Assistant dialog.
+                        Where the <b>Generate SQL</b> tab creates queries from scratch,
+                        the Advisor works with an existing query &mdash; paste it in and ask the AI to
+                        explain, improve, or rewrite it.</p>
+
+                        <p>Open the SQL Advisor by switching to the <b>SQL Advisor</b> tab in the AI Assistant dialog.
+                        The current SQL Console statement is pre-loaded automatically when you open the dialog
+                        from the toolbar or context menu.
+                        Whenever you generate a query in the Generate SQL tab, the Advisor tab
+                        is updated automatically so you can switch over and refine the result straight away.</p>
+
+                        <br><h4>Suggestions Menu</h4>
+
+                        <p>A built-in dropdown provides one-click prompts for the most common advisor tasks &mdash;
+                        no typing required:</p>
+
+                        <ul>
+                            <li>Explain this query</li>
+                            <li>Add comments to explain the query</li>
+                            <li>Make this query more readable</li>
+                            <li>Find potential performance issues &nbsp;/&nbsp; Optimize this query for performance</li>
+                            <li>What indexes would help this query?</li>
+                            <li>Rewrite using CTEs &nbsp;/&nbsp; Extract repeated expressions as CTEs</li>
+                            <li>Convert subqueries to joins &nbsp;/&nbsp; Rewrite using window functions</li>
+                            <li>Simplify redundant conditions &nbsp;/&nbsp; Check for NULL handling issues</li>
+                        </ul>
+
+                        <br><h4>Result View</h4>
+
+                        <p>The response is shown as a side-by-side split view:</p>
+                        <ul>
+                            <li><b>Left &mdash; SQL:</b> the AI-revised query, ready to insert into the SQL Console with
+                            the <b>Insert into SQL Console</b> button.</li>
+                            <li><b>Right &mdash; Answer:</b> the AI&rsquo;s explanation, rendered as formatted text.</li>
+                        </ul>
+
+                        <br><h4>Inline Diff</h4>
+
+                        <p>The <b>Show Diff</b> toggle button overlays a live diff directly on the SQL area,
+                        highlighting exactly what the AI changed: removed lines appear in red, added lines in green.
+                        Toggle it on or off at any time; the setting is remembered across sessions.</p>
+
                         <br><h3>Silent Mode</h3>
 
                         <p>Silent mode is a deep integration of the AI assistant into the SQL Console workflow.
@@ -127,12 +182,8 @@ SELECT * FROM orders WHERE order_date &gt;= CURRENT_DATE - 30</pre>
                         the dialog. A typical use is to edit the
                         <code>/* AI: ... */</code> comment to refine or extend the question and then
                         let the AI update the query in place.
-                        <p>
-                        </p>
-                        <small>(Note that for security reasons, the statement is not executed automatically.
-                        Check it first and, if everything is correct, press Ctrl+Enter to execute it.)
-                        </small>
-                        </p>
+                        <p>As with all other modes, the regenerated statement is placed into the SQL Console for review
+                        and is never executed automatically. Inspect it, then press <b>Ctrl+Enter</b> to run it.</p>
 
                         <p>Trigger silent mode via:</p>
                         <ul>

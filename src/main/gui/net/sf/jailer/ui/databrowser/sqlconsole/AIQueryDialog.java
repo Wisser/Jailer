@@ -1099,13 +1099,5 @@ public class AIQueryDialog extends JDialog {
 
 // TODO 
 // TODO test with various models
-// TODO TEST heuristik
 // TODO doku: new video, new genSql-video, 2nd-level menu items for each video in in "Videos" page
-// TODO diff: inplace diff view (layered pane) with switch (togglebutton at position of current button) for showing diff or new sql (default is show diff, if user switches, store that preference statically))
-// TODO "insert into Console":
-// TODO     - if switched from "genSQL" to "Advisor", "append SQL" might be useful (too?)
-// TODO      - or: in all cases offer "insert" and "append" buttons in advisor?
-
-// TODO
-// TODO first pass: heuristik: assign each line in result to table with best match (fuzzy)
-// TODO first pass: heuristik: cope with results not beening a list of lines
+// TODO remove "Comming soon"

@@ -24,6 +24,7 @@ https://user-images.githubusercontent.com/861721/142761281-299bddc4-eea7-4f26-8c
  - Data Browsing. Navigate bidirectionally through the database by following foreign-key-based or user-defined relationships.
  - SQL Console with code completion, syntax highlighting and database metadata visualization.
  - AI Query Assistant. Generate SQL from natural language questions using Anthropic or OpenAI-compatible APIs with smart table selection for large schemas.
+ - SQL Advisor *(coming soon)*. Analyze, explain, and refactor existing SQL queries with AI assistance — inline diff view shows exactly what changed.
  - A demo database is included with which you can get a first impression without any configuration effort.
 
 ## Supported Databases
@@ -46,6 +47,7 @@ Thanks to the JDBC technology used, any DMBS is in principle supported. For best
 
 ## News
 
+ - 2026-05-31    SQL Advisor *(coming soon)*: Analyze, explain, and refactor existing SQL queries with AI assistance. A suggestions menu covers the most common tasks (explain, optimize, rewrite as CTEs, find NULL issues, and more). Results are shown as a split view with the revised SQL on the left and a formatted explanation on the right. An inline diff toggle highlights removed and added lines directly in the SQL area.
  - 2026-05-15    AI Query Assistant: Generate SQL from natural language questions using Anthropic or OpenAI-compatible APIs (OpenAI, Azure, Groq, Ollama, OpenRouter, etc.) with smart table selection for large schemas.
  - 2024-07-04    Data can now also be exported as structured JSON and YAML files.
  - 2024-06-26    A dark UI theme has been introduced that improves readability in low light environments.
