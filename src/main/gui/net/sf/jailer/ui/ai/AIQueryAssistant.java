@@ -358,20 +358,20 @@ public class AIQueryAssistant {
         JsonNode response = post(config, body, abortRef);
         String responseText = extractText(response, isAnthropic);
 
-        Map<String, Table> normalizedToActual = new HashMap<>();
+        Map<String, List<Table>> normalizedToActual = new HashMap<>();
         for (Table t : allTables) {
             String raw = t.getName();
             int dot = raw.lastIndexOf('.');
             String simpleKey = unquote(dot >= 0 ? raw.substring(dot + 1) : raw).toUpperCase(Locale.ENGLISH);
-            normalizedToActual.putIfAbsent(simpleKey, t);
+            normalizedToActual.computeIfAbsent(simpleKey, k -> new ArrayList<>()).add(t);
         }
 
         Set<Table> selected = new LinkedHashSet<>();
         String reIdentifier = "(?:[\"][^\"]+[\"])|(?:[`][^`]+[`])|(?:['][^']+['])|(?:[\\w]+)";
         Matcher wm = Pattern.compile("(?:(" + reIdentifier + ")\\s*\\.\\s*)?(" + reIdentifier + ")").matcher(responseText);
         while (wm.find()) {
-            Table actual = normalizedToActual.get(unquote(wm.group(2)).toUpperCase(Locale.ENGLISH));
-            if (actual != null) selected.add(actual);
+            List<Table> matches = normalizedToActual.get(unquote(wm.group(2)).toUpperCase(Locale.ENGLISH));
+            if (matches != null) selected.addAll(matches);
         }
 
         if (selected.isEmpty()) {
