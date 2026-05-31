@@ -1477,7 +1477,7 @@ public class SubsettingEngine {
 	private synchronized void runstats() {
 		if (entityGraph != null) {
 			Session session = entityGraph.getSession();
-			if (lastRunstats == 0 || (lastRunstats * 2 <= entityGraph.getTotalRowcount() && entityGraph.getTotalRowcount() > 1000)) {
+			if (lastRunstats == 0 || (lastRunstats * 4 <= entityGraph.getTotalRowcount() && entityGraph.getTotalRowcount() > 1000)) {
 				lastRunstats = entityGraph.getTotalRowcount();
 
 				StatisticRenovator statisticRenovator = session.dbms.getStatisticRenovator();
