@@ -740,7 +740,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 					} else {
 						appendStatement(sql, false);
 					}
-				}, executionContext, prompt, silent, prompt != null? currentStatement : null, currentStatement.trim().isEmpty()? null : currentStatement).setVisible(true);
+				}, executionContext, prompt, silent, prompt != null? currentStatement : null, currentStatement.trim().isEmpty()? null : currentStatement, session).setVisible(true);
 	}
 
 	private void runSilentAIQuery(DataModel dm, String dbmsName, String currentStatement, String prompt, int caretPos) {
@@ -843,7 +843,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						logger.warn("Confirmation dialog failed", ex);
 					}
 					return result[0];
-				});
+				}, session);
 			}
 			@Override
 			protected void done() {

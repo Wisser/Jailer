@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -48,6 +49,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
@@ -55,6 +57,7 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.ai.AIProviderConfig.ProviderType;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.util.UISettings;
+import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
 /**
@@ -150,52 +153,52 @@ public class AIQueryAssistant {
             Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 
     public static String generateSQL(String question, List<ConversationMessage> history,
-            DataModel dataModel, String dbmsName, AIProviderConfig config) throws IOException {
-        return generateSQL(question, history, dataModel, dbmsName, config, null);
+            DataModel dataModel, String dbmsName, AIProviderConfig config, Session session) throws IOException, SQLException {
+        return generateSQL(question, history, dataModel, dbmsName, config, null, session);
     }
 
     public static String generateSQL(String question, List<ConversationMessage> history,
             DataModel dataModel, String dbmsName, AIProviderConfig config,
-            String systemPromptTemplate) throws IOException {
-        return generateSQL(question, history, dataModel, dbmsName, config, systemPromptTemplate, false, false);
+            String systemPromptTemplate, Session session) throws IOException, SQLException {
+        return generateSQL(question, history, dataModel, dbmsName, config, systemPromptTemplate, false, false, session);
     }
 
     public static String generateSQL(String question, List<ConversationMessage> history,
             DataModel dataModel, String dbmsName, AIProviderConfig config,
-            String systemPromptTemplate, boolean smartSelection) throws IOException {
-        return generateSQL(question, history, dataModel, dbmsName, config, systemPromptTemplate, smartSelection, false);
+            String systemPromptTemplate, boolean smartSelection, Session session) throws IOException, SQLException {
+        return generateSQL(question, history, dataModel, dbmsName, config, systemPromptTemplate, smartSelection, false, session);
     }
 
     public static String generateSQL(String question, List<ConversationMessage> history,
             DataModel dataModel, String dbmsName, AIProviderConfig config,
-            String systemPromptTemplate, boolean smartSelection, boolean omitColumnTypes) throws IOException {
-        return generateSQL(question, history, dataModel, dbmsName, config, systemPromptTemplate, smartSelection, omitColumnTypes, null);
+            String systemPromptTemplate, boolean smartSelection, boolean omitColumnTypes, Session session) throws IOException, SQLException {
+        return generateSQL(question, history, dataModel, dbmsName, config, systemPromptTemplate, smartSelection, omitColumnTypes, null, session);
     }
 
     public static String generateSQL(String question, List<ConversationMessage> history,
             DataModel dataModel, String dbmsName, AIProviderConfig config,
             String systemPromptTemplate, boolean smartSelection, boolean omitColumnTypes,
-            AtomicReference<Runnable> abortRef) throws IOException {
+            AtomicReference<Runnable> abortRef, Session session) throws IOException, SQLException {
         return generateSQL(question, history, dataModel, dbmsName, config, systemPromptTemplate,
-                smartSelection, omitColumnTypes, abortRef, null, null);
+                smartSelection, omitColumnTypes, abortRef, null, null, session);
     }
 
     public static String generateSQL(String question, List<ConversationMessage> history,
             DataModel dataModel, String dbmsName, AIProviderConfig config,
-            ExecutionContext executionContext, AtomicReference<Runnable> abortRef) throws IOException {
-        return generateSQL(question, history, dataModel, dbmsName, config, executionContext, abortRef, null);
+            ExecutionContext executionContext, AtomicReference<Runnable> abortRef, Session session) throws IOException, SQLException {
+        return generateSQL(question, history, dataModel, dbmsName, config, executionContext, abortRef, null, session);
     }
 
     public static String generateSQL(String question, List<ConversationMessage> history,
             DataModel dataModel, String dbmsName, AIProviderConfig config,
             ExecutionContext executionContext, AtomicReference<Runnable> abortRef,
-            BooleanSupplier confirmFullSchema) throws IOException {
+            BooleanSupplier confirmFullSchema, Session session) throws IOException, SQLException {
         validateConfig(config);
         boolean omitColumnTypes = loadOmitColumnTypes(config, executionContext);
         boolean smartSelection  = loadSmartSelection(config, executionContext, dataModel.getSortedTables().size());
         return generateSQL(question, history, dataModel, dbmsName, config,
                 loadSystemPromptTemplate(), smartSelection, omitColumnTypes, abortRef, confirmFullSchema,
-                loadFirstPassSystemPromptTemplate());
+                loadFirstPassSystemPromptTemplate(), session);
     }
 
     public static void validateConfig(AIProviderConfig config) throws IOException {
@@ -207,26 +210,26 @@ public class AIQueryAssistant {
     public static String generateSQL(String question, List<ConversationMessage> history,
             DataModel dataModel, String dbmsName, AIProviderConfig config,
             String systemPromptTemplate, boolean smartSelection, boolean omitColumnTypes,
-            AtomicReference<Runnable> abortRef, BooleanSupplier confirmFullSchema) throws IOException {
+            AtomicReference<Runnable> abortRef, BooleanSupplier confirmFullSchema, Session session) throws IOException, SQLException {
         return generateSQL(question, history, dataModel, dbmsName, config, systemPromptTemplate,
-                smartSelection, omitColumnTypes, abortRef, confirmFullSchema, null);
+                smartSelection, omitColumnTypes, abortRef, confirmFullSchema, null, session);
     }
 
     public static String generateSQL(String question, List<ConversationMessage> history,
             DataModel dataModel, String dbmsName, AIProviderConfig config,
             String systemPromptTemplate, boolean smartSelection, boolean omitColumnTypes,
             AtomicReference<Runnable> abortRef, BooleanSupplier confirmFullSchema,
-            String firstPassSystemPromptTemplate) throws IOException {
+            String firstPassSystemPromptTemplate, Session session) throws IOException, SQLException {
         return generateSQL(question, history, dataModel, dbmsName, config, systemPromptTemplate,
                 smartSelection, omitColumnTypes, abortRef, confirmFullSchema,
-                firstPassSystemPromptTemplate, null);
+                firstPassSystemPromptTemplate, null, session);
     }
 
     public static String generateSQL(String question, List<ConversationMessage> history,
             DataModel dataModel, String dbmsName, AIProviderConfig config,
             String systemPromptTemplate, boolean smartSelection, boolean omitColumnTypes,
             AtomicReference<Runnable> abortRef, BooleanSupplier confirmFullSchema,
-            String firstPassSystemPromptTemplate, AtomicReference<String> rawResponseRef) throws IOException {
+            String firstPassSystemPromptTemplate, AtomicReference<String> rawResponseRef, Session session) throws IOException, SQLException {
         if (MOCK_ENABLED) {
             int idx = MOCK_INDEX.getAndIncrement() % MOCK_SQL.length;
             _log.debug("MOCK mode: returning MOCK_SQL[{}]", idx);
@@ -242,7 +245,7 @@ public class AIQueryAssistant {
         if (smartSelection) {
             try {
                 relevantTables = selectRelevantTables(question, history, dataModel, dbmsName, config, abortRef,
-                        firstPassSystemPromptTemplate);
+                        firstPassSystemPromptTemplate, session);
             } catch (IOException e) {
                 if (Thread.currentThread().isInterrupted()) {
                     return "";
@@ -311,16 +314,17 @@ public class AIQueryAssistant {
 
     private static Set<Table> selectRelevantTables(String question, List<ConversationMessage> history,
             DataModel dataModel, String dbmsName, AIProviderConfig config,
-            AtomicReference<Runnable> abortRef, String firstPassSystemPromptTemplate) throws IOException {
+            AtomicReference<Runnable> abortRef, String firstPassSystemPromptTemplate, Session session) throws IOException, SQLException {
         List<Table> allTables = new ArrayList<>(dataModel.getSortedTables());
         LinkedHashSet<String> seen = new LinkedHashSet<>();
         StringBuilder tableList = new StringBuilder();
+        Quoting quoting = new Quoting(session);
         for (Table t : allTables) {
             String raw = t.getName();
             int dot = raw.lastIndexOf('.');
             String simple = unquote(dot >= 0 ? raw.substring(dot + 1) : raw);
             if (seen.add(simple)) {
-                tableList.append('"').append(simple).append('"').append("\n");
+                tableList.append(quoting.quote(simple)).append("\n");
             }
         }
 
@@ -391,8 +395,8 @@ public class AIQueryAssistant {
         return expanded;
     }
 
-    public static String generateSQL(String question, DataModel dataModel, String dbmsName, AIProviderConfig config) throws IOException {
-        return generateSQL(question, Collections.emptyList(), dataModel, dbmsName, config, null);
+    public static String generateSQL(String question, DataModel dataModel, String dbmsName, AIProviderConfig config, Session session) throws IOException, SQLException {
+        return generateSQL(question, Collections.emptyList(), dataModel, dbmsName, config, null, session);
     }
 
     public static void testConnection(AIProviderConfig config, AtomicReference<Runnable> abortRef) throws IOException {

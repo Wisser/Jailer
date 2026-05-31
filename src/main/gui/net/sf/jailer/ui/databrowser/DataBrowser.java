@@ -6852,7 +6852,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		}
 		setSelectedWorkbenchTab(sqlConsole);
 		String dbmsName = session != null && session.dbms != null ? session.dbms.getDisplayName() : "SQL";
-		new AIQueryDialog(this, dm, dbmsName, sql -> sqlConsole.appendStatement(sql, false), executionContext, null, true, null, null).setVisible(true);
+		new AIQueryDialog(this, dm, dbmsName, sql -> sqlConsole.appendStatement(sql, false), executionContext, null, true, null, null, session).setVisible(true);
 	}
 
 	private void createCLIItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_createCLIItemActionPerformed

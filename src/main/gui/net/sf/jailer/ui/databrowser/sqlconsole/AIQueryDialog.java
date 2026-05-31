@@ -18,11 +18,11 @@ package net.sf.jailer.ui.databrowser.sqlconsole;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ItemListener;
@@ -37,8 +37,10 @@ import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.JOptionPane;
@@ -46,10 +48,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JToggleButton;
-import javax.swing.JComboBox;
-import javax.swing.JEditorPane;
 import javax.swing.JTextArea;
+import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -61,6 +61,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.ai.AIProviderConfig;
@@ -85,7 +86,7 @@ public class AIQueryDialog extends JDialog {
     private final String dbmsName;
     private final Consumer<String> insertAction;
     private final ExecutionContext executionContext;
-
+    private final Session session;
     private AIProviderPanel providerPanel;
     private SystemPromptPanel systemPromptPanel;
     private JButton closeButton;
@@ -602,7 +603,7 @@ public class AIQueryDialog extends JDialog {
                             _log.warn("Confirmation dialog failed", ex);
                         }
                         return result[0];
-                    }, systemPromptPanel.getFirstPassTemplate(), rawResponseRef);
+                    }, systemPromptPanel.getFirstPassTemplate(), rawResponseRef, session);
                 }
 
                 @Override
@@ -829,11 +830,12 @@ public class AIQueryDialog extends JDialog {
     // Dialog
     // -------------------------------------------------------------------------
 
-    public AIQueryDialog(Window owner, DataModel dataModel, String dbmsName, Consumer<String> insertAction, ExecutionContext executionContext, String initialPrompt, boolean silent, String initialSql, String sql) {
+    public AIQueryDialog(Window owner, DataModel dataModel, String dbmsName, Consumer<String> insertAction, ExecutionContext executionContext, String initialPrompt, boolean silent, String initialSql, String sql, Session session) {
         super(owner, "AI Assistant", ModalityType.APPLICATION_MODAL);
         this.dataModel = dataModel;
         this.dbmsName = dbmsName;
         this.insertAction = insertAction;
+        this.session = session;
         this.executionContext = executionContext;
         initUI();
         if (initialPrompt != null) {
@@ -1099,6 +1101,6 @@ public class AIQueryDialog extends JDialog {
 
 // TODO 
 // TODO test with various models
-// TODO test first pass strategy
+// TODO test first pass strategy, esp.: no unnecessary quoting (but quoting of keyword) of simple table names, no lU changes
 // TODO doku: new video, new genSql-video, 2nd-level menu items for each video in in "Videos" page
 // TODO remove "Comming soon"
