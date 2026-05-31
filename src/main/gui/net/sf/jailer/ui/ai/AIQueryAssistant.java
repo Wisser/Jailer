@@ -323,7 +323,7 @@ public class AIQueryAssistant {
      */
     static boolean likelySchemaOverload(String schema, DataModel dataModel, Integer maxContextTokens) {
         if (maxContextTokens != null) {
-            return schema.length() / 4 > maxContextTokens * 0.8;
+            return schema.length() / 4 > maxContextTokens * 0.6; // Heuristic: average 4 chars per token, and schema should be well under context limit to leave room for question and answer.
         }
         return dataModel.getSortedTables().size() > 500;
     }
