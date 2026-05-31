@@ -279,7 +279,7 @@ public class AIQueryAssistant {
             response = post(config, body, abortRef);
         } catch (IOException e) {
             if (!smartSelection && !Thread.currentThread().isInterrupted() && isContextLengthError(e)) {
-                _log.warn("Context length exceeded with full schema — retrying with smart table selection ({})", e.getMessage());
+                _log.warn("Context length exceeded with full schema - retrying with smart table selection ({})", e.getMessage());
                 Set<Table> smartTables = null;
                 try {
                     smartTables = selectRelevantTables(question, history, dataModel, dbmsName, config, abortRef, firstPassSystemPromptTemplate, session);

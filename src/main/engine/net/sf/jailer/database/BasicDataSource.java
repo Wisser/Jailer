@@ -210,7 +210,7 @@ public class BasicDataSource implements DataSource {
 			return this.driver.jdbcCompliant();
 		}
 		/**
-		 * Not supported — this shim does not expose a parent logger.
+		 * Not supported - this shim does not expose a parent logger.
 		 *
 		 * @throws SQLFeatureNotSupportedException always
 		 */
@@ -487,13 +487,13 @@ public class BasicDataSource implements DataSource {
 		return getConnection(dbms, true);
 	}
 
-	/** @return <code>null</code> — log writer is not supported */
+	/** @return <code>null</code> - log writer is not supported */
 	@Override
 	public PrintWriter getLogWriter() throws SQLException {
 		return null;
 	}
 
-	/** @return <code>0</code> — login timeout is not configured */
+	/** @return <code>0</code> - login timeout is not configured */
 	@Override
 	public int getLoginTimeout() throws SQLException {
 		return 0;
@@ -509,12 +509,12 @@ public class BasicDataSource implements DataSource {
 		throw new SQLFeatureNotSupportedException();
 	}
 
-	/** Ignored — log writer is not supported. */
+	/** Ignored - log writer is not supported. */
 	@Override
 	public void setLogWriter(PrintWriter arg0) throws SQLException {
 	}
 
-	/** Ignored — login timeout is not configurable on this implementation. */
+	/** Ignored - login timeout is not configurable on this implementation. */
 	@Override
 	public void setLoginTimeout(int arg0) throws SQLException {
 	}
@@ -533,7 +533,7 @@ public class BasicDataSource implements DataSource {
 		throw new SQLException(getClass().getName() + " does not implement " + arg0.getName());
 	}
 
-	/** Not supported — use {@link #getConnection()} instead. @throws UnsupportedOperationException always */
+	/** Not supported - use {@link #getConnection()} instead. @throws UnsupportedOperationException always */
 	@Override
 	public Connection getConnection(String username, String password) throws SQLException {
 		throw new UnsupportedOperationException();
