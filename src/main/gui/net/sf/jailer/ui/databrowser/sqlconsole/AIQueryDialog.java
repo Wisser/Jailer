@@ -46,6 +46,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JToggleButton;
 import javax.swing.JComboBox;
 import javax.swing.JEditorPane;
 import javax.swing.JTextArea;
@@ -95,6 +96,7 @@ public class AIQueryDialog extends JDialog {
     private JTabbedPane tabbedPane;
 
     private static int lastSelectedTab = 0;
+    private static boolean diffShownPreference = true;
 
     // -------------------------------------------------------------------------
     // Inner class: one self-contained conversation tab
@@ -121,7 +123,10 @@ public class AIQueryDialog extends JDialog {
 
         boolean isAdvisor;
         JComboBox<String> suggestionsBox;
-        JButton diffButton;
+        JToggleButton diffToggleButton;
+        RSyntaxTextAreaWithTheme diffArea;
+        JScrollPane diffScrollPane;
+        JLayeredPane sqlLayeredPane;
         String lastOriginalSql;
         JEditorPane answerArea;
         JLabel placeholderLabel;
@@ -387,29 +392,57 @@ public class AIQueryDialog extends JDialog {
                 gbcI.anchor = GridBagConstraints.WEST;
                 gbcI.insets = new Insets(2, 0, 2, 0);
                 insertRow.add(insertButton, gbcI);
-                if (isAdvisor) {
-                    gbcI.gridx = 1; gbcI.weightx = 0; gbcI.fill = GridBagConstraints.NONE;
-                    gbcI.insets = new Insets(2, 6, 2, 0);
-                    diffButton = new JButton("Show Diff");
-                    diffButton.setEnabled(false);
-                    diffButton.setToolTipText("Compare original SQL with AI-modified version");
-                    diffButton.addActionListener(e -> {
-                        if (lastOriginalSql != null)
-                            showDiffDialog(AIQueryDialog.this, lastOriginalSql, sqlArea.getText().trim());
-                    });
-                    insertRow.add(diffButton, gbcI);
-                    gbcI.gridx = 2; gbcI.insets = new Insets(2, 0, 2, 0);
-                } else {
-                    gbcI.gridx = 1;
-                }
+                gbcI.gridx = 1; gbcI.weightx = 0; gbcI.fill = GridBagConstraints.NONE;
+                gbcI.insets = new Insets(2, 6, 2, 0);
+                diffToggleButton = new JToggleButton("Show Diff");
+                diffToggleButton.setEnabled(false);
+                diffToggleButton.setSelected(diffShownPreference);
+                diffToggleButton.setToolTipText("Toggle inline diff view: original vs. AI-modified SQL");
+                diffToggleButton.setIcon(UIUtil.scaleIcon(diffToggleButton, UIUtil.readImage("/diff.png")));
+                diffToggleButton.addActionListener(e -> {
+                    diffShownPreference = diffToggleButton.isSelected();
+                    boolean show = diffShownPreference && lastOriginalSql != null;
+                    if (show) updateDiffArea();
+                    diffScrollPane.setVisible(show);
+                    sqlLayeredPane.revalidate();
+                    sqlLayeredPane.repaint();
+                });
+                insertRow.add(diffToggleButton, gbcI);
+                gbcI.gridx = 2; gbcI.insets = new Insets(2, 0, 2, 0);
                 gbcI.weightx = 1; gbcI.fill = GridBagConstraints.HORIZONTAL;
                 insertRow.add(new JLabel(), gbcI);
             }
+            diffArea = new RSyntaxTextAreaWithTheme();
+            diffArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
+            diffArea.setBracketMatchingEnabled(false);
+            diffArea.setHighlightCurrentLine(false);
+            diffArea.setEditable(false);
+            diffScrollPane = new JScrollPane(diffArea);
+            diffScrollPane.setVisible(false);
+            final RTextScrollPane sqlScrollPaneFinal = sqlScrollPane;
+            sqlLayeredPane = new JLayeredPane() {
+                @Override
+                public void doLayout() {
+                    for (java.awt.Component c : getComponents()) {
+                        c.setBounds(0, 0, getWidth(), getHeight());
+                    }
+                }
+                @Override
+                public Dimension getPreferredSize() {
+                    return sqlScrollPaneFinal.getPreferredSize();
+                }
+                @Override
+                public Dimension getMinimumSize() {
+                    return sqlScrollPaneFinal.getMinimumSize();
+                }
+            };
+            sqlLayeredPane.add(sqlScrollPane, JLayeredPane.DEFAULT_LAYER);
+            sqlLayeredPane.add(diffScrollPane, JLayeredPane.PALETTE_LAYER);
             JPanel resultPanel = new JPanel(new BorderLayout(4, 4));
             if (isAdvisor) {
                 JPanel sqlPanel = new JPanel(new BorderLayout(4, 4));
                 sqlPanel.add(new JLabel("SQL"), BorderLayout.NORTH);
-                sqlPanel.add(sqlScrollPane, BorderLayout.CENTER);
+                sqlPanel.add(sqlLayeredPane, BorderLayout.CENTER);
                 answerArea = new JEditorPane("text/html", "");
                 answerArea.setEditable(false);
                 answerArea.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
@@ -431,7 +464,7 @@ public class AIQueryDialog extends JDialog {
                 resultPanel.add(resultSplitPane, BorderLayout.CENTER);
             } else {
                 resultPanel.add(new JLabel("Generated SQL"), BorderLayout.NORTH);
-                resultPanel.add(sqlScrollPane, BorderLayout.CENTER);
+                resultPanel.add(sqlLayeredPane, BorderLayout.CENTER);
             }
             resultPanel.add(insertRow, BorderLayout.SOUTH);
 
@@ -501,7 +534,7 @@ public class AIQueryDialog extends JDialog {
             omitColumnTypesBox.setEnabled(!generating);
             systemPromptButton.setEnabled(!generating);
             if (suggestionsBox != null) suggestionsBox.setEnabled(!generating);
-            if (diffButton != null) diffButton.setEnabled(!generating && lastOriginalSql != null && !lastOriginalSql.equals(sqlArea.getText().trim()));
+            if (diffToggleButton != null) diffToggleButton.setEnabled(!generating && lastOriginalSql != null && !lastOriginalSql.equals(sqlArea.getText().trim()));
             cancelButton.setEnabled(generating);
             setCursor(generating ? Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR) : Cursor.getDefaultCursor());
         }
@@ -528,7 +561,7 @@ public class AIQueryDialog extends JDialog {
                 providerPanel.getApiKeyComponent().requestFocusInWindow();
                 return;
             }
-            final String sqlContent = isAdvisor ? sqlArea.getText().trim() : null;
+            final String sqlContent = sqlArea.getText().trim();
             java.util.regex.Matcher _cm = java.util.regex.Pattern
                     .compile("(?s)\\A\\s*(/\\*\\s*AI:.*?\\*/)")
                     .matcher(isAdvisor ? sqlArea.getText() : "");
@@ -672,9 +705,18 @@ public class AIQueryDialog extends JDialog {
                             answerArea.setCaretPosition(0);
                         }
                         insertButton.setEnabled(!sql.isEmpty());
-                        if (isAdvisor && diffButton != null && !sql.isEmpty()) {
+                        if (diffToggleButton != null && !sql.isEmpty()) {
                             lastOriginalSql = sqlContent;
-                            diffButton.setEnabled(!lastOriginalSql.equals(sqlArea.getText().trim()));
+                            boolean hasDiff = !lastOriginalSql.equals(sqlArea.getText().trim());
+                            diffToggleButton.setEnabled(hasDiff);
+                            if (hasDiff && diffToggleButton.isSelected()) {
+                                updateDiffArea();
+                                diffScrollPane.setVisible(true);
+                            } else if (!hasDiff) {
+                                diffScrollPane.setVisible(false);
+                            }
+                            sqlLayeredPane.revalidate();
+                            sqlLayeredPane.repaint();
                         }
                         if (!sql.isEmpty()) {
                             providerPanel.markConnectionVerified();
@@ -690,6 +732,18 @@ public class AIQueryDialog extends JDialog {
                             placeholderLabel.setVisible(true);
                             updateHistoryDisplay();
                             insertButton.requestFocusInWindow();
+                            if (!isAdvisor) {
+                                advisorTab.clearHistory();
+                                String aiComment = buildCommentForHistory();
+                                String sqlWithComment = aiComment.isEmpty() ? sql : aiComment + "\n" + sql;
+                                advisorTab.sqlArea.setText(sqlWithComment);
+                                advisorTab.sqlArea.setCaretPosition(0);
+                                advisorTab.insertButton.setEnabled(true);
+                                advisorTab.conversationHistory.add(new ConversationMessage("user", question));
+                                advisorTab.conversationHistory.add(new ConversationMessage("assistant", sql));
+                                advisorTab.updateHistoryDisplay();
+                                tabbedPane.setEnabledAt(1, true);
+                            }
                         }
                     } catch (ExecutionException ex) {
                         providerPanel.markConnectionFailed();
@@ -727,10 +781,43 @@ public class AIQueryDialog extends JDialog {
             sqlArea.setText("");
             sqlArea.setCaretPosition(0);
             if (answerArea != null) { answerArea.setText("<html><body></body></html>"); answerArea.setCaretPosition(0); }
-            if (diffButton != null) { diffButton.setEnabled(false); lastOriginalSql = null; }
+            if (diffToggleButton != null) {
+                diffToggleButton.setEnabled(false);
+                lastOriginalSql = null;
+                diffScrollPane.setVisible(false);
+                sqlLayeredPane.revalidate();
+                sqlLayeredPane.repaint();
+            }
             insertButton.setEnabled(false);
             statusLabel.setText(" ");
             placeholderLabel.setVisible(false);
+        }
+
+        void updateDiffArea() {
+            if (lastOriginalSql == null) return;
+            boolean dark = UIUtil.plaf == UIUtil.PLAF.FLATDARK;
+            Color delColor = dark ? new Color(0x60, 0x20, 0x20) : new Color(0xFF, 0xD0, 0xD0);
+            Color addColor = dark ? new Color(0x1a, 0x4a, 0x1a) : new Color(0xD0, 0xFF, 0xD0);
+            String[] orig = lastOriginalSql.replace("\r\n", "\n").split("\n", -1);
+            String[] mod  = sqlArea.getText().trim().replace("\r\n", "\n").split("\n", -1);
+            List<String> diff = computeDiff(orig, mod);
+            StringBuilder sb = new StringBuilder();
+            for (String entry : diff) {
+                char type = entry.charAt(0);
+                sb.append(type == '-' ? "- " : type == '+' ? "+ " : "  ").append(entry.substring(1)).append("\n");
+            }
+            diffArea.setText(sb.toString());
+            diffArea.setCaretPosition(0);
+            diffArea.removeAllLineHighlights();
+            int lineIdx = 0;
+            for (String entry : diff) {
+                char type = entry.charAt(0);
+                if (type != '=') {
+                    try { diffArea.addLineHighlight(lineIdx, type == '-' ? delColor : addColor); }
+                    catch (javax.swing.text.BadLocationException ex) { _log.warn("diff highlight", ex); }
+                }
+                lineIdx++;
+            }
         }
 
         String buildCommentForHistory() {
@@ -863,56 +950,6 @@ public class AIQueryDialog extends JDialog {
     private JPanel buildSettingsPanel() {
         providerPanel = new AIProviderPanel();
         return providerPanel;
-    }
-
-    private static void showDiffDialog(Window owner, String originalSql, String modifiedSql) {
-        boolean dark = UIUtil.plaf == UIUtil.PLAF.FLATDARK;
-        Color delColor = dark ? new Color(0x60, 0x20, 0x20) : new Color(0xFF, 0xD0, 0xD0);
-        Color addColor = dark ? new Color(0x1a, 0x4a, 0x1a) : new Color(0xD0, 0xFF, 0xD0);
-
-        String[] orig = originalSql.replace("\r\n", "\n").split("\n", -1);
-        String[] mod  = modifiedSql.replace("\r\n", "\n").split("\n", -1);
-        List<String> diff = computeDiff(orig, mod);
-
-        RSyntaxTextAreaWithTheme textArea = new RSyntaxTextAreaWithTheme();
-        textArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
-        textArea.setAutoIndentEnabled(true);
-        textArea.setBracketMatchingEnabled(false);
-        textArea.setHighlightCurrentLine(false);
-        textArea.setEditable(false);
-        textArea.setEnabled(false);
-        StringBuilder sb = new StringBuilder();
-        for (String entry : diff) {
-            char type = entry.charAt(0);
-            sb.append(type == '-' ? "- " : type == '+' ? "+ " : "  ").append(entry.substring(1)).append("\n");
-        }
-        textArea.setText(sb.toString());
-        textArea.setCaretPosition(0);
-        int lineIdx = 0;
-        for (String entry : diff) {
-            char type = entry.charAt(0);
-            if (type != '=') {
-                try { textArea.addLineHighlight(lineIdx, type == '-' ? delColor : addColor); }
-                catch (javax.swing.text.BadLocationException ex) { _log.warn("diff highlight", ex); }
-            }
-            lineIdx++;
-        }
-
-        JDialog d = new JDialog(owner);
-        d.setTitle("SQL Diff — Original vs. AI");
-        d.getContentPane().add(new RTextScrollPane(textArea), BorderLayout.CENTER);
-        JButton closeBtn = new JButton("Close");
-        ImageIcon closeIcon = UIUtil.readImage("/buttoncancel.png");
-        if (closeIcon != null) closeBtn.setIcon(UIUtil.scaleIcon(closeBtn, closeIcon));
-        closeBtn.addActionListener(e -> d.dispose());
-        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 4));
-        bottom.add(closeBtn);
-        d.getContentPane().add(bottom, BorderLayout.SOUTH);
-        UIUtil.initComponents(d);
-        d.pack();
-        d.setSize(Math.max(d.getWidth(), 900), Math.max(d.getHeight(), 600));
-        d.setLocationRelativeTo(owner);
-        d.setVisible(true);
     }
 
     private static List<String> computeDiff(String[] orig, String[] mod) {

@@ -99,9 +99,7 @@ public class AIQueryAssistant {
     		+ "\r\n"
     		+ "",
     		
-    		"xyz",
-    		
-            "SELECT\r\n"
+    		"SELECT\r\n"
                     + "     A.ACTOR_ID,\r\n"
                     + "     A.FIRST_NAME,\r\n"
                     + "     A.LAST_NAME,\r\n"
@@ -127,7 +125,6 @@ public class AIQueryAssistant {
                     "SELECT\r\n"
                             + "     A.ACTOR_ID,\r\n"
                             + "     A.FIRST_NAME,\r\n"
-                            + "     A.LAST_NAME,\r\n"
                             + "     COUNT(R.RENTAL_ID) AS RENTAL_COUNT\r\n"
                             + "FROM\r\n"
                             + "     ACTOR A\r\n"
@@ -276,6 +273,15 @@ public class AIQueryAssistant {
         return result;
     }
 
+    private static String unquote(String name) {
+        if (name == null || name.length() < 2) return "";
+        char first = name.charAt(0), last = name.charAt(name.length() - 1);
+        if ((first == '"' && last == '"') || (first == '`' && last == '`') || (first == '[' && last == ']')) {
+            return name.substring(1, name.length() - 1);
+        }
+        return name;
+    }
+
     private static String extractText(JsonNode response, boolean isAnthropic) throws IOException {
         if (isAnthropic) {
             JsonNode contentNode = response.path("content");
@@ -346,19 +352,31 @@ public class AIQueryAssistant {
         JsonNode response = post(config, body, abortRef);
         String responseText = extractText(response, isAnthropic);
 
-        Map<String, String> lowerToActual = new HashMap<>();
+        Map<String, String> normalizedToActual = new HashMap<>();
         for (Table t : allTables) {
-            lowerToActual.put(t.getName().toLowerCase(Locale.ROOT), t.getName());
+            String key = unquote(t.getName()).toUpperCase(Locale.ENGLISH);
+            normalizedToActual.put(key, t.getName());
+            int dot = key.lastIndexOf('.');
+            if (dot >= 0) {
+                normalizedToActual.putIfAbsent(key.substring(dot + 1), t.getName());
+            }
         }
 
         Set<String> selected = new LinkedHashSet<>();
-        for (String line : responseText.split("\\r?\\n")) {
-            String name = line.trim();
-            if (name.isEmpty()) continue;
-            String actual = lowerToActual.get(name.toLowerCase(Locale.ROOT));
-            if (actual != null) {
-                selected.add(actual);
+        String reIdentifier = "(?:[\"][^\"]+[\"])|(?:[`][^`]+[`])|(?:['][^']+['])|(?:[\\w]+)";
+        Matcher wm = Pattern.compile("(?:(" + reIdentifier + ")\\s*\\.\\s*)?(" + reIdentifier + ")").matcher(responseText);
+        while (wm.find()) {
+            String schema   = wm.group(1);
+            String table    = wm.group(2);
+            String tableKey = unquote(table).toUpperCase(Locale.ENGLISH);
+            String actual   = null;
+            if (schema != null) {
+                actual = normalizedToActual.get(unquote(schema).toUpperCase(Locale.ENGLISH) + "." + tableKey);
             }
+            if (actual == null) {
+                actual = normalizedToActual.get(tableKey);
+            }
+            if (actual != null) selected.add(actual);
         }
 
         if (selected.isEmpty()) {
@@ -734,7 +752,7 @@ public class AIQueryAssistant {
             // not JSON fall through
         }
         String raw = responseJson.trim();
-        if (raw.startsWith("<") || raw.toLowerCase(Locale.ROOT).contains("<html")) {
+        if (raw.startsWith("<") || raw.toLowerCase(Locale.ENGLISH).contains("<html")) {
             File htmlFile = new File(System.getProperty("java.io.tmpdir"), "jailer-ai-error.html");
             try (FileOutputStream fos = new FileOutputStream(htmlFile)) {
                 fos.write(responseBytes);

@@ -403,7 +403,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	            						return schema.find(tableName);
 		                    		}
 		                    		try {
-		                    			Thread.sleep(100);
+		                    			Thread.sleep(1000);
 		                    		} catch (InterruptedException e) {
 		                    			// ignore
 		                    		}
