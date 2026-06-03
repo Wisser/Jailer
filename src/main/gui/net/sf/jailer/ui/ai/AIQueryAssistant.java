@@ -77,7 +77,7 @@ public class AIQueryAssistant {
     /** Round-robin mock: enable via -Djailer.ai.mock=true or set programmatically. */
     public static volatile boolean MOCK_ENABLED = Boolean.parseBoolean(System.getProperty("jailer.ai.mock"));
     private static final AtomicInteger MOCK_INDEX = new AtomicInteger(0);
-    private static final String[] MOCK_SQL = {
+    private static String[] MOCK_SQL = {
     		"Potential performance issues remain consistent with the previous analysis, but let's elaborate with some H2 specifics:\r\n"
     		+ "\r\n"
     		+ "1. **Lack of Indexes (Critical):**  As stated before, lacking indexes on join columns will severely hurt performance, especially in H2.  The query optimizer relies heavily on indexes for efficient execution.  Specifically, indexes are needed on `PROJECT_PARTICIPATION.EMPNO` and `PROJECT_PARTICIPATION.ROLE_ID`.\r\n"
@@ -150,6 +150,78 @@ public class AIQueryAssistant {
                             + "it provides a summary of how many employees are assigned to each role across all projects.",
                             "x",
     };
+    static {
+    	MOCK_SQL = new String[] {
+    			"SELECT\r\n"
+    			+ "     C.FIRST_NAME AS CUSTOMER_FIRST_NAME,\r\n"
+    			+ "     C.LAST_NAME AS CUSTOMER_LAST_NAME,\r\n"
+    			+ "     SUM(P.AMOUNT) AS TOTAL_REVENUE\r\n"
+    			+ "FROM\r\n"
+    			+ "     CUSTOMER AS C\r\n"
+    			+ "     JOIN PAYMENT AS P ON C.CUSTOMER_ID = P.CUSTOMER_ID\r\n"
+    			+ "GROUP BY\r\n"
+    			+ "     C.CUSTOMER_ID,\r\n"
+    			+ "     C.FIRST_NAME,\r\n"
+    			+ "     C.LAST_NAME\r\n"
+    			+ "ORDER BY\r\n"
+    			+ "     TOTAL_REVENUE DESC\r\n"
+    			+ "LIMIT\r\n"
+    			+ "     10;",
+    			"SELECT\r\n"
+    			+ "     C.FIRST_NAME AS CUSTOMER_FIRST_NAME,\r\n"
+    			+ "     C.LAST_NAME AS CUSTOMER_LAST_NAME,\r\n"
+    			+ "     SUM(P.AMOUNT) AS TOTAL_REVENUE,\r\n"
+    			+ "     COUNT(R.RENTAL_ID) AS NUMBER_OF_RENTALS\r\n"
+    			+ "FROM\r\n"
+    			+ "     CUSTOMER AS C\r\n"
+    			+ "     JOIN PAYMENT AS P ON C.CUSTOMER_ID = P.CUSTOMER_ID\r\n"
+    			+ "     LEFT JOIN RENTAL AS R ON C.CUSTOMER_ID = R.CUSTOMER_ID\r\n"
+    			+ "GROUP BY\r\n"
+    			+ "     C.FIRST_NAME,\r\n"
+    			+ "     C.LAST_NAME\r\n"
+    			+ "ORDER BY\r\n"
+    			+ "     TOTAL_REVENUE DESC\r\n"
+    			+ "LIMIT\r\n"
+    			+ "     10;\r\n"
+    			+ "",
+    			"SELECT\r\n"
+    			+ "     C.FIRST_NAME AS CUSTOMER_FIRST_NAME,\r\n"
+    			+ "     C.LAST_NAME AS CUSTOMER_LAST_NAME,\r\n"
+    			+ "     SUM(P.AMOUNT) AS TOTAL_REVENUE,\r\n"
+    			+ "     COUNT(R.RENTAL_ID) AS NUMBER_OF_RENTALS,\r\n"
+    			+ "     CI.CITY AS CUSTOMER_CITY\r\n"
+    			+ "FROM\r\n"
+    			+ "     CUSTOMER AS C\r\n"
+    			+ "     JOIN PAYMENT AS P ON C.CUSTOMER_ID = P.CUSTOMER_ID\r\n"
+    			+ "     LEFT JOIN RENTAL AS R ON C.CUSTOMER_ID = R.CUSTOMER_ID\r\n"
+    			+ "     LEFT JOIN ADDRESS AS A ON C.ADDRESS_ID = A.ADDRESS_ID\r\n"
+    			+ "     LEFT JOIN CITY AS CI ON A.CITY_ID = CI.CITY_ID\r\n"
+    			+ "GROUP BY\r\n"
+    			+ "     C.FIRST_NAME,\r\n"
+    			+ "     C.LAST_NAME,\r\n"
+    			+ "     CI.CITY\r\n"
+    			+ "ORDER BY\r\n"
+    			+ "     TOTAL_REVENUE DESC\r\n"
+    			+ "LIMIT\r\n"
+    			+ "     10",
+"This SQL query retrieves the top 10 customers based on their total revenue generated from payments, along with the number of rentals they've made and the city they reside in.  "
++ "\nIt starts by joining five tables: CUSTOMER, PAYMENT, RENTAL, ADDRESS, and CITY. The joins connect customers to their payments, rentals, addresses, and finally to the cities.  "
++ "\nThe query calculates the total revenue for each customer using SUM(P.AMOUNT) and the number of rentals using COUNT(R.RENTAL_ID). These calculations are aliased as TOTAL_REVENUE and NUMBER_OF_RENTALS, respectively.  "
++ "\nThe GROUP BY clause groups the results by customer first name, last name, and city, ensuring that revenue and rental counts are aggregated per unique customer and city combination.  "
++ "\nThe ORDER BY clause sorts the results in descending order based on the TOTAL_REVENUE, putting the highest-spending customers first.  "
++ "\nFinally, the LIMIT clause restricts the output to the top 10 customers. The query returns the customer's first name, last name, total revenue, number of rentals, and city. "   	
+
+    	,"/* AI:\r\n"
+    			+ "   Retrieve top customers by revenue.\r\n"
+    			+ "   Also show the number of rentals\r\n"
+    			+ "   and the customers' cities.\r\n"
+    			+ " */\r\n"
+    			+ "WITH CustomerRevenue AS (\n    SELECT\n        C.CUSTOMER_ID,\n        SUM(P.AMOUNT) AS TOTAL_REVENUE\n    FROM\n        CUSTOMER AS C\n    JOIN\n        PAYMENT AS P ON C.CUSTOMER_ID = P.CUSTOMER_ID\n    GROUP BY\n        C.CUSTOMER_ID\n),\nCustomerRentalCount AS (\n    SELECT\n        C.CUSTOMER_ID,\n        COUNT(R.RENTAL_ID) AS NUMBER_OF_RENTALS\n    FROM\n        CUSTOMER AS C\n    LEFT JOIN\n        RENTAL AS R ON C.CUSTOMER_ID = R.CUSTOMER_ID\n    GROUP BY\n        C.CUSTOMER_ID\n),\nCustomerInfo AS (\n    SELECT\n        C.CUSTOMER_ID,\n        C.FIRST_NAME,\n        C.LAST_NAME,\n        A.CITY_ID,\n        CI.CITY\n    FROM\n        CUSTOMER AS C\n    LEFT JOIN\n        ADDRESS AS A ON C.ADDRESS_ID = A.ADDRESS_ID\n    LEFT JOIN\n        CITY AS CI ON A.CITY_ID = CI.CITY_ID\n)\nSELECT\n    CI.FIRST_NAME AS CUSTOMER_FIRST_NAME,\n    CI.LAST_NAME AS CUSTOMER_LAST_NAME,\n    CR.TOTAL_REVENUE,\n    COALESCE(NRC.NUMBER_OF_RENTALS, 0) AS NUMBER_OF_RENTALS,\n    CI.CITY AS CUSTOMER_CITY\nFROM\n    CustomerInfo AS CI\nJOIN\n    CustomerRevenue AS CR ON CI.CUSTOMER_ID = CR.CUSTOMER_ID\nLEFT JOIN\n    CustomerRentalCount AS NRC ON CI.CUSTOMER_ID = NRC.CUSTOMER_ID\nORDER BY\n    CR.TOTAL_REVENUE DESC\nLIMIT\n    10;\n--ENDOFSQL\nThe query was rewritten using Common Table Expressions (CTEs) to improve readability and organization.\n\n1.  `CustomerRevenue`: Calculates the total revenue for each customer.\n2.  `CustomerRentalCount`: Calculates the number of rentals for each customer.\n3.  `CustomerInfo`: Retrieves customer information, including their city.\n\nThe final SELECT statement joins these CTEs to produce the desired output. COALESCE is used in case a customer has not rented any films (and NRC.NUMBER\\\\_OF\\\\_RENTALS would be NULL). This replaces any null rental counts with 0.\",\"refusal\":null,\"reasoning\":null}}],\"usage\":{\"prompt_tokens\":2102,\"completion_tokens\":521,\"total_tokens\":2623,\"cost\":0.00040261,\"is_byok\":false,\"prompt_tokens_details\":{\"cached_tokens\":0,\"cache_write_tokens\":0,\"audio_tokens\":0,\"video_tokens\":0},\"cost_details\":{\"upstream_inference_cost\":0.00040261,\"upstream_inference_prompt_cost\":0.00016816,\"upstream_inference_completions_cost\":0.00023445},\"completion_tokens_details\":{\"reasoning_tokens\":0,\"image_tokens\":0,\"audio_tokens\":0}}}\r\n"
+    			+ ""
+    	
+    	};
+    }
+    
     private static final Pattern AI_COMMENT_PATTERN = Pattern.compile(
             "\\A\\s*/\\*\\s*AI:\\s*(.*?)\\s*\\*/",
             Pattern.DOTALL | Pattern.CASE_INSENSITIVE);

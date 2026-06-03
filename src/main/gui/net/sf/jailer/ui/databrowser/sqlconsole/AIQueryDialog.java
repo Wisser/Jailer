@@ -97,7 +97,7 @@ public class AIQueryDialog extends JDialog {
     private JTabbedPane tabbedPane;
 
     private static int lastSelectedTab = 0;
-    private static boolean diffShownPreference = true;
+    private boolean diffShownPreference = false;
 
     // -------------------------------------------------------------------------
     // Inner class: one self-contained conversation tab
@@ -1116,4 +1116,9 @@ public class AIQueryDialog extends JDialog {
 // TODO test first pass strategy, esp.: no unnecessary quoting (but quoting of keyword) of simple table names, no lU changes
 // TODO how about data model > 500 tables? relevant-tables-strategy might be unnecessary, or even counterproductive in that case.
 // TODO doku: new video, new genSql-video, 2nd-level menu items for each video in in "Videos" page
+
+// TODO 
 // TODO remove "Comming soon"
+
+// TODO
+// TODO "Format" button instead of auto-format on generation? (but maybe not worth the extra click, and some models do a good job with formatting)
