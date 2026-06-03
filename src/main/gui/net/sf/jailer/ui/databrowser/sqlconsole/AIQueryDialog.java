@@ -130,6 +130,8 @@ public class AIQueryDialog extends JDialog {
         JLayeredPane sqlLayeredPane;
         String lastOriginalSql;
         JEditorPane answerArea;
+        String answerRawText;
+        JButton copyAnswerButton;
         JLabel placeholderLabel;
 
         JPanel buildPanel(boolean isAdvisor) {
@@ -386,6 +388,19 @@ public class AIQueryDialog extends JDialog {
             sqlArea.setColumns(60);
             RTextScrollPane sqlScrollPane = new RTextScrollPane();
             sqlScrollPane.setViewportView(sqlArea);
+            diffToggleButton = new JToggleButton("Show Diff");
+            diffToggleButton.setEnabled(false);
+            diffToggleButton.setSelected(diffShownPreference);
+            diffToggleButton.setToolTipText("Toggle inline diff view: original vs. AI-modified SQL");
+            diffToggleButton.setIcon(UIUtil.scaleIcon(diffToggleButton, UIUtil.readImage("/diff.png")));
+            diffToggleButton.addActionListener(e -> {
+                diffShownPreference = diffToggleButton.isSelected();
+                boolean show = diffShownPreference && lastOriginalSql != null;
+                if (show) updateDiffArea();
+                diffScrollPane.setVisible(show);
+                sqlLayeredPane.revalidate();
+                sqlLayeredPane.repaint();
+            });
             JPanel insertRow = new JPanel(new GridBagLayout());
             {
                 GridBagConstraints gbcI = new GridBagConstraints();
@@ -395,19 +410,6 @@ public class AIQueryDialog extends JDialog {
                 insertRow.add(insertButton, gbcI);
                 gbcI.gridx = 1; gbcI.weightx = 0; gbcI.fill = GridBagConstraints.NONE;
                 gbcI.insets = new Insets(2, 6, 2, 0);
-                diffToggleButton = new JToggleButton("Show Diff");
-                diffToggleButton.setEnabled(false);
-                diffToggleButton.setSelected(diffShownPreference);
-                diffToggleButton.setToolTipText("Toggle inline diff view: original vs. AI-modified SQL");
-                diffToggleButton.setIcon(UIUtil.scaleIcon(diffToggleButton, UIUtil.readImage("/diff.png")));
-                diffToggleButton.addActionListener(e -> {
-                    diffShownPreference = diffToggleButton.isSelected();
-                    boolean show = diffShownPreference && lastOriginalSql != null;
-                    if (show) updateDiffArea();
-                    diffScrollPane.setVisible(show);
-                    sqlLayeredPane.revalidate();
-                    sqlLayeredPane.repaint();
-                });
                 insertRow.add(diffToggleButton, gbcI);
                 gbcI.gridx = 2; gbcI.insets = new Insets(2, 0, 2, 0);
                 gbcI.weightx = 1; gbcI.fill = GridBagConstraints.HORIZONTAL;
@@ -441,16 +443,39 @@ public class AIQueryDialog extends JDialog {
             sqlLayeredPane.add(diffScrollPane, JLayeredPane.PALETTE_LAYER);
             JPanel resultPanel = new JPanel(new BorderLayout(4, 4));
             if (isAdvisor) {
+                JPanel sqlButtonRow = new JPanel(new GridBagLayout());
+                {
+                    GridBagConstraints gbcS = new GridBagConstraints();
+                    gbcS.gridx = 0; gbcS.gridy = 0;
+                    gbcS.anchor = GridBagConstraints.WEST;
+                    gbcS.insets = new Insets(2, 0, 2, 0);
+                    sqlButtonRow.add(insertButton, gbcS);
+                    gbcS.gridx = 1; gbcS.insets = new Insets(2, 6, 2, 0);
+                    sqlButtonRow.add(diffToggleButton, gbcS);
+                    gbcS.gridx = 2; gbcS.weightx = 1; gbcS.fill = GridBagConstraints.HORIZONTAL;
+                    gbcS.insets = new Insets(0, 0, 0, 0);
+                    sqlButtonRow.add(new JLabel(), gbcS);
+                }
                 JPanel sqlPanel = new JPanel(new BorderLayout(4, 4));
                 sqlPanel.add(new JLabel("SQL"), BorderLayout.NORTH);
                 sqlPanel.add(sqlLayeredPane, BorderLayout.CENTER);
+                sqlPanel.add(sqlButtonRow, BorderLayout.SOUTH);
                 answerArea = new JEditorPane("text/html", "");
                 answerArea.setEditable(false);
                 answerArea.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
                 JScrollPane answerScrollPane = new JScrollPane(answerArea);
+                copyAnswerButton = new JButton("Copy");
+                ImageIcon copyIcon = UIUtil.readImage("/copy.png");
+                if (copyIcon != null) copyAnswerButton.setIcon(UIUtil.scaleIcon(copyAnswerButton, copyIcon));
+                copyAnswerButton.setEnabled(false);
+                copyAnswerButton.setToolTipText("Copy answer to clipboard (HTML and plain text)");
+                copyAnswerButton.addActionListener(e -> copyAnswerToClipboard());
+                JPanel answerButtonRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 2));
+                answerButtonRow.add(copyAnswerButton);
                 JPanel answerPanel = new JPanel(new BorderLayout(4, 4));
                 answerPanel.add(new JLabel("Answer"), BorderLayout.NORTH);
                 answerPanel.add(answerScrollPane, BorderLayout.CENTER);
+                answerPanel.add(answerButtonRow, BorderLayout.SOUTH);
                 JSplitPane resultSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, sqlPanel, answerPanel);
                 resultSplitPane.setResizeWeight(0.5);
                 resultSplitPane.addHierarchyListener(new java.awt.event.HierarchyListener() {
@@ -466,8 +491,8 @@ public class AIQueryDialog extends JDialog {
             } else {
                 resultPanel.add(new JLabel("Generated SQL"), BorderLayout.NORTH);
                 resultPanel.add(sqlLayeredPane, BorderLayout.CENTER);
+                resultPanel.add(insertRow, BorderLayout.SOUTH);
             }
-            resultPanel.add(insertRow, BorderLayout.SOUTH);
 
             JPanel questionResultPanel = new JPanel(new BorderLayout(4, 8));
             questionResultPanel.add(questionPanel, BorderLayout.NORTH);
@@ -703,8 +728,14 @@ public class AIQueryDialog extends JDialog {
                             sqlArea.setCaretPosition(0);
                         }
                         if (answerArea != null && answerText != null) {
+                            java.util.regex.Matcher outerFence = java.util.regex.Pattern
+                                    .compile("(?s)\\A```[a-zA-Z]*\\r?\\n(.*)\\r?\\n```\\z")
+                                    .matcher(answerText.trim());
+                            if (outerFence.matches()) answerText = outerFence.group(1);
+                            answerRawText = answerText;
                             answerArea.setText(markdownToHtml(answerText));
                             answerArea.setCaretPosition(0);
+                            if (copyAnswerButton != null) copyAnswerButton.setEnabled(true);
                         }
                         insertButton.setEnabled(!sql.isEmpty());
                         if (diffToggleButton != null && !sql.isEmpty()) {
@@ -794,6 +825,8 @@ public class AIQueryDialog extends JDialog {
             sqlArea.setText("");
             sqlArea.setCaretPosition(0);
             if (answerArea != null) { answerArea.setText("<html><body></body></html>"); answerArea.setCaretPosition(0); }
+            answerRawText = null;
+            if (copyAnswerButton != null) copyAnswerButton.setEnabled(false);
             if (diffToggleButton != null) {
                 diffToggleButton.setEnabled(false);
                 lastOriginalSql = null;
@@ -804,6 +837,43 @@ public class AIQueryDialog extends JDialog {
             insertButton.setEnabled(false);
             statusLabel.setText(" ");
             placeholderLabel.setVisible(false);
+        }
+
+        void copyAnswerToClipboard() {
+            if (answerArea == null) return;
+            String html = answerArea.getText();
+            String plain = answerRawText != null ? answerRawText : "";
+            java.awt.datatransfer.DataFlavor htmlFlavorTmp;
+            try {
+                htmlFlavorTmp = new java.awt.datatransfer.DataFlavor("text/html;class=java.lang.String");
+            } catch (ClassNotFoundException ex) {
+                htmlFlavorTmp = null;
+            }
+            final java.awt.datatransfer.DataFlavor htmlFlavor = htmlFlavorTmp;
+            final String htmlContent = html;
+            final String plainContent = plain;
+            java.awt.datatransfer.Transferable t = new java.awt.datatransfer.Transferable() {
+                @Override
+                public java.awt.datatransfer.DataFlavor[] getTransferDataFlavors() {
+                    if (htmlFlavor != null) {
+                        return new java.awt.datatransfer.DataFlavor[]{htmlFlavor, java.awt.datatransfer.DataFlavor.stringFlavor};
+                    }
+                    return new java.awt.datatransfer.DataFlavor[]{java.awt.datatransfer.DataFlavor.stringFlavor};
+                }
+                @Override
+                public boolean isDataFlavorSupported(java.awt.datatransfer.DataFlavor flavor) {
+                    if (htmlFlavor != null && htmlFlavor.equals(flavor)) return true;
+                    return java.awt.datatransfer.DataFlavor.stringFlavor.equals(flavor);
+                }
+                @Override
+                public Object getTransferData(java.awt.datatransfer.DataFlavor flavor)
+                        throws java.awt.datatransfer.UnsupportedFlavorException, java.io.IOException {
+                    if (htmlFlavor != null && htmlFlavor.equals(flavor)) return htmlContent;
+                    if (java.awt.datatransfer.DataFlavor.stringFlavor.equals(flavor)) return plainContent;
+                    throw new java.awt.datatransfer.UnsupportedFlavorException(flavor);
+                }
+            };
+            java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(t, null);
         }
 
         void updateDiffArea() {

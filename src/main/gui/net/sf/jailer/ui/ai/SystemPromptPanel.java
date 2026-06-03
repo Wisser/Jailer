@@ -67,7 +67,7 @@ public class SystemPromptPanel extends JPanel {
         + "First output only the resulting SQL - no code fences, no trailing semicolon.\n"
         + "Retain comments.\n"
         + "Then output a new line containing exactly: \"{separator}\".\n"
-        + "Then provide a plain-text explanation of the changes or analysis.\n"
+        + "Then provide a markdown if possible or a plain-text explanation of the changes or analysis.\n"
         + "Use only tables and columns from the schema above.\n"
         + "\n"
         + "Use aliases for complex expressions in select clauses.\n"

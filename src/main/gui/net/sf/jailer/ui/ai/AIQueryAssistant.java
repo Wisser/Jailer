@@ -152,6 +152,10 @@ public class AIQueryAssistant {
     };
     static {
     	MOCK_SQL = new String[] {
+    			
+    			"\n```markdown\n## Explanation of the SQL Query:\n\nThe query `SELECT * FROM FILM_CATEGORY;` is a straightforward SQL statement that retrieves all data from the `FILM_CATEGORY` table.\n\n**Breakdown:**\n\n*   `SELECT *`:  This part instructs the database to select all columns present in the table. The asterisk (`*`) is a wildcard character representing all columns.\n*   `FROM FILM_CATEGORY`: This specifies the table from which the data should be retrieved, which in this case is `FILM_CATEGORY`.\n\n**Purpose:**\n\nThe `FILM_CATEGORY` table acts as a junction table (or associating entity) to implement a many-to-many relationship between `FILM` and `CATEGORY` tables.  Each row in this table represents a particular film being associated with a specific category.  Therefore, running this query returns a list of all film-category associations in the database.  The resulting output would contain `FILM_ID` and `CATEGORY_ID` for each association, along with a timestamp indicating the last update.\n```",
+    			
+    			
     			"SELECT\r\n"
     			+ "     C.FIRST_NAME AS CUSTOMER_FIRST_NAME,\r\n"
     			+ "     C.LAST_NAME AS CUSTOMER_LAST_NAME,\r\n"
@@ -380,7 +384,6 @@ public class AIQueryAssistant {
 			result = result.substring(0, result.length() - 1).trim();
 		}
         if (rawResponseRef == null) {
-        	result = new BasicFormatterImpl().format(result);
         	UISettings.s21 += 10;
         }
         UISettings.s21 = (omitColumnTypes ? 1L : 0L) | (smartSelection ? 2L : 0L);
