@@ -813,6 +813,7 @@ public class AIQueryAssistant {
                     if (status == 401) {
                         msg += " (check your API key)";
                     }
+                    msg += "\n  Headers: " + headers + "\n  Request: " + new String(bodyBytes, StandardCharsets.UTF_8);
                     throw new IOException(msg);
                 }
                 // Check if response is streamed
