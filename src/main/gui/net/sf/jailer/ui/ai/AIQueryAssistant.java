@@ -153,6 +153,7 @@ public class AIQueryAssistant {
     static {
     	MOCK_SQL = new String[] {
     			
+    			"Select 1;\n--endofsql\n\n\n```markdown\n## Explanation of the SQL Query:\n\nThe query `SELECT * FROM FILM_CATEGORY;` is a straightforward SQL statement that retrieves all data from the `FILM_CATEGORY` table.\n\n**Breakdown:**\n\n*   `SELECT *`:  This part instructs the database to select all columns present in the table. The asterisk (`*`) is a wildcard character representing all columns.\n*   `FROM FILM_CATEGORY`: This specifies the table from which the data should be retrieved, which in this case is `FILM_CATEGORY`.\n\n**Purpose:**\n\nThe `FILM_CATEGORY` table acts as a junction table (or associating entity) to implement a many-to-many relationship between `FILM` and `CATEGORY` tables.  Each row in this table represents a particular film being associated with a specific category.  Therefore, running this query returns a list of all film-category associations in the database.  The resulting output would contain `FILM_ID` and `CATEGORY_ID` for each association, along with a timestamp indicating the last update.\n```",
     			"\n```markdown\n## Explanation of the SQL Query:\n\nThe query `SELECT * FROM FILM_CATEGORY;` is a straightforward SQL statement that retrieves all data from the `FILM_CATEGORY` table.\n\n**Breakdown:**\n\n*   `SELECT *`:  This part instructs the database to select all columns present in the table. The asterisk (`*`) is a wildcard character representing all columns.\n*   `FROM FILM_CATEGORY`: This specifies the table from which the data should be retrieved, which in this case is `FILM_CATEGORY`.\n\n**Purpose:**\n\nThe `FILM_CATEGORY` table acts as a junction table (or associating entity) to implement a many-to-many relationship between `FILM` and `CATEGORY` tables.  Each row in this table represents a particular film being associated with a specific category.  Therefore, running this query returns a list of all film-category associations in the database.  The resulting output would contain `FILM_ID` and `CATEGORY_ID` for each association, along with a timestamp indicating the last update.\n```",
     			
     			
@@ -435,9 +436,15 @@ public class AIQueryAssistant {
         // OpenAI-compatible: choices[0].message.content
         JsonNode choicesNode = response.path("choices");
         if (choicesNode.isArray() && choicesNode.size() > 0) {
-            String content = choicesNode.get(0).path("message").path("content").asText("");
+            JsonNode firstChoice = choicesNode.get(0);
+            JsonNode messageNode = firstChoice.path("message");
+            String content = messageNode.path("content").asText("");
             if (!content.isEmpty()) {
                 return content.trim();
+            }
+            String finishReason = firstChoice.path("finish_reason").asText("");
+            if ("length".equals(finishReason)) {
+                throw new IOException("Model response was cut off (finish_reason=length). Consider increasing the max_tokens limit.");
             }
         }
         // Ollama-compatible: message.content
@@ -448,7 +455,7 @@ public class AIQueryAssistant {
                 return content.trim();
             }
         }
-        throw new IOException("Unexpected response format: missing 'choices' or 'message'. Response: " + response.toString());
+        throw new IOException("Unexpected response format: empty or missing content. Response: " + response.toString());
     }
 
     private static Set<Table> selectRelevantTables(String question, List<ConversationMessage> history,
@@ -647,7 +654,7 @@ public class AIQueryAssistant {
         boolean isAnthropic = config.providerType == ProviderType.ANTHROPIC;
         ObjectNode body = MAPPER.createObjectNode();
         body.put("model", config.model);
-        body.put("max_tokens", 16);
+        body.put("max_tokens", config.maxTokens);
         body.put("stream", false);
         ArrayNode messages = body.putArray("messages");
         if (isAnthropic) {
@@ -659,9 +666,8 @@ public class AIQueryAssistant {
         }
         ObjectNode userMsg = messages.addObject();
         userMsg.put("role", "user");
-        userMsg.put("content", "Reply with just the word OK.");
-        JsonNode response = post(config, body, abortRef);
-        extractText(response, isAnthropic);
+        userMsg.put("content", "Reply with just the word: \"OK\".");
+        post(config, body, abortRef);
     }
 
     private static ObjectNode buildRequestBody(String question, List<ConversationMessage> history,

@@ -1190,5 +1190,3 @@ public class AIQueryDialog extends JDialog {
 // TODO 
 // TODO remove "Comming soon"
 
-// TODO
-// TODO "Format" button instead of auto-format on generation? (but maybe not worth the extra click, and some models do a good job with formatting)
