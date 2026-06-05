@@ -31,11 +31,6 @@ public class AIProviderConfig {
             "https://api.openai.com/v1/chat/completions",
             "gpt-4o-mini",
             true),
-        GITHUB_COPILOT(
-            "GitHub Copilot",
-            "https://api.githubcopilot.com/chat/completions",
-            "gpt-4o",
-            true),
         ANTHROPIC(
         		"Anthropic",
                 "https://api.anthropic.com/v1/messages",
