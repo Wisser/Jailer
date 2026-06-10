@@ -869,6 +869,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						String comment = "/* AI:\n   " + prompt + "\n*/";
 						jTabbedPane1.addChangeListener(cl);
 						replaceCurrentStatement(comment + "\n" + sql);
+						try {
+							editorPane.setCaretPosition(caretPos);
+							editorPane.grabFocus();
+						} catch (Exception ex) {
+							// ignore
+						}
 					}
 				} catch (ExecutionException ex) {
 					UIUtil.showException(SQLConsole.this, "AI Generation Error", ex);
@@ -2488,7 +2494,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                if (context.length() > MAX_CONTEXT_LENGTH) {
 	                    context = context.substring(0, MAX_CONTEXT_LENGTH) + "...";
 	                }
-	                rlInfo.context = UIUtil.toHTML(context, 0);
+	                rlInfo.context = UIUtil.toHTMLFragment(context, 0);
 	                rlInfo.tooltip = UIUtil.toHTML(sql.substring(info.position, ttEnd), MAX_TOOLTIP_LENGTH);
                 }
             }

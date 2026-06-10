@@ -133,6 +133,8 @@ public class AIQueryDialog extends JDialog {
         String answerRawText;
         JButton copyAnswerButton;
         JLabel placeholderLabel;
+        JPanel questionResultPanel;
+        JPanel conversationWrapper;
 
         JPanel buildPanel(boolean isAdvisor) {
             this.isAdvisor = isAdvisor;
@@ -472,8 +474,24 @@ public class AIQueryDialog extends JDialog {
                 copyAnswerButton.addActionListener(e -> copyAnswerToClipboard());
                 JPanel answerButtonRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 2));
                 answerButtonRow.add(copyAnswerButton);
+                boolean dark = UIUtil.plaf == UIUtil.PLAF.FLATDARK;
+                ImageIcon maximizeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/maximize.png"));
+                ImageIcon unmaximizeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/unmaximize.png"));
+                ImageIcon maximizeDarkIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/maximize_dark.png"));
+                ImageIcon unmaximizeDarkIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/unmaximize_dark.png"));
+                ImageIcon maxIcon = dark ? maximizeDarkIcon : maximizeIcon;
+                ImageIcon unmaxIcon = dark ? unmaximizeDarkIcon : unmaximizeIcon;
+                JToggleButton maximizeAnswerButton = new JToggleButton(maxIcon);
+                maximizeAnswerButton.setMargin(new Insets(1, 2, 1, 2));
+                maximizeAnswerButton.setBorderPainted(false);
+                maximizeAnswerButton.setContentAreaFilled(false);
+                maximizeAnswerButton.setFocusPainted(false);
+                maximizeAnswerButton.setToolTipText("Maximize answer area");
+                JPanel answerHeader = new JPanel(new BorderLayout());
+                answerHeader.add(new JLabel("Answer"), BorderLayout.WEST);
+                answerHeader.add(maximizeAnswerButton, BorderLayout.EAST);
                 JPanel answerPanel = new JPanel(new BorderLayout(4, 4));
-                answerPanel.add(new JLabel("Answer"), BorderLayout.NORTH);
+                answerPanel.add(answerHeader, BorderLayout.NORTH);
                 answerPanel.add(answerScrollPane, BorderLayout.CENTER);
                 answerPanel.add(answerButtonRow, BorderLayout.SOUTH);
                 JSplitPane resultSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, sqlPanel, answerPanel);
@@ -487,6 +505,22 @@ public class AIQueryDialog extends JDialog {
                         }
                     }
                 });
+                maximizeAnswerButton.addActionListener(e -> {
+                    if (maximizeAnswerButton.isSelected()) {
+                        if (conversationWrapper != null) conversationWrapper.setVisible(false);
+                        questionPanel.setVisible(false);
+                        sqlPanel.setMinimumSize(new Dimension(0, 0));
+                        resultSplitPane.setDividerLocation(0);
+                        maximizeAnswerButton.setIcon(unmaxIcon);
+                        maximizeAnswerButton.setToolTipText("Restore split view");
+                    } else {
+                        if (conversationWrapper != null) conversationWrapper.setVisible(true);
+                        questionPanel.setVisible(true);
+                        resultSplitPane.setDividerLocation(0.5);
+                        maximizeAnswerButton.setIcon(maxIcon);
+                        maximizeAnswerButton.setToolTipText("Maximize answer area");
+                    }
+                });
                 resultPanel.add(resultSplitPane, BorderLayout.CENTER);
             } else {
                 resultPanel.add(new JLabel("Generated SQL"), BorderLayout.NORTH);
@@ -497,6 +531,7 @@ public class AIQueryDialog extends JDialog {
             JPanel questionResultPanel = new JPanel(new BorderLayout(4, 8));
             questionResultPanel.add(questionPanel, BorderLayout.NORTH);
             questionResultPanel.add(resultPanel, BorderLayout.CENTER);
+            this.questionResultPanel = questionResultPanel;
 
             JButton historyToggleButton = new JButton("\u25BC Conversation");
             historyToggleButton.setBorderPainted(false);
@@ -521,6 +556,7 @@ public class AIQueryDialog extends JDialog {
             JPanel conversationWrapper = new JPanel(new BorderLayout(0, 2));
             conversationWrapper.add(historyToggleButton, BorderLayout.NORTH);
             conversationWrapper.add(conversationPanel, BorderLayout.CENTER);
+            this.conversationWrapper = conversationWrapper;
 
             JPanel centerPanel = new JPanel(new BorderLayout(4, 8));
             centerPanel.add(conversationWrapper, BorderLayout.NORTH);
@@ -1074,9 +1110,14 @@ public class AIQueryDialog extends JDialog {
         sb.append("h1{font-size:1.3em;margin:6px 0}h2{font-size:1.15em;margin:5px 0}h3{font-size:1.05em;margin:4px 0}");
         sb.append("</style></head><body>");
         boolean inCode = false, inUl = false, inOl = false, inBq = false;
+        boolean inNestedUl = false, inOlLi = false;
+        java.util.regex.Pattern olPat = java.util.regex.Pattern.compile("^\\d+\\.\\s+(.+)");
+        java.util.regex.Pattern nestedBulletPat = java.util.regex.Pattern.compile("^\\s+[-*]\\s+(.+)");
         for (String line : text.split("\n", -1)) {
             if (line.trim().startsWith("```")) {
                 if (!inCode) {
+                    if (inNestedUl) { sb.append("</ul>"); inNestedUl = false; }
+                    if (inOlLi) { sb.append("</li>"); inOlLi = false; }
                     if (inUl) { sb.append("</ul>"); inUl = false; }
                     if (inOl) { sb.append("</ol>"); inOl = false; }
                     if (inBq) { sb.append("</blockquote>"); inBq = false; }
@@ -1088,50 +1129,78 @@ public class AIQueryDialog extends JDialog {
             }
             if (inCode) { sb.append(mdEscape(line)).append("\n"); continue; }
             if (line.trim().isEmpty()) {
+                if (inNestedUl) { sb.append("</ul>"); inNestedUl = false; }
+                if (inOlLi) { sb.append("</li>"); inOlLi = false; }
                 if (inUl) { sb.append("</ul>"); inUl = false; }
                 if (inOl) { sb.append("</ol>"); inOl = false; }
                 if (inBq) { sb.append("</blockquote>"); inBq = false; }
                 sb.append("<br>"); continue;
             }
             if (line.matches("[-*_]{3,}\\s*")) {
+                if (inNestedUl) { sb.append("</ul>"); inNestedUl = false; }
+                if (inOlLi) { sb.append("</li>"); inOlLi = false; }
                 if (inUl) { sb.append("</ul>"); inUl = false; }
                 if (inOl) { sb.append("</ol>"); inOl = false; }
                 if (inBq) { sb.append("</blockquote>"); inBq = false; }
                 sb.append("<hr>"); continue;
             }
             if (line.startsWith("### ")) {
+                if (inNestedUl) { sb.append("</ul>"); inNestedUl = false; }
+                if (inOlLi) { sb.append("</li>"); inOlLi = false; }
                 if (inUl) { sb.append("</ul>"); inUl = false; } if (inOl) { sb.append("</ol>"); inOl = false; } if (inBq) { sb.append("</blockquote>"); inBq = false; }
                 sb.append("<h3>").append(mdInline(line.substring(4))).append("</h3>"); continue;
             }
             if (line.startsWith("## ")) {
+                if (inNestedUl) { sb.append("</ul>"); inNestedUl = false; }
+                if (inOlLi) { sb.append("</li>"); inOlLi = false; }
                 if (inUl) { sb.append("</ul>"); inUl = false; } if (inOl) { sb.append("</ol>"); inOl = false; } if (inBq) { sb.append("</blockquote>"); inBq = false; }
                 sb.append("<h2>").append(mdInline(line.substring(3))).append("</h2>"); continue;
             }
             if (line.startsWith("# ")) {
+                if (inNestedUl) { sb.append("</ul>"); inNestedUl = false; }
+                if (inOlLi) { sb.append("</li>"); inOlLi = false; }
                 if (inUl) { sb.append("</ul>"); inUl = false; } if (inOl) { sb.append("</ol>"); inOl = false; } if (inBq) { sb.append("</blockquote>"); inBq = false; }
                 sb.append("<h1>").append(mdInline(line.substring(2))).append("</h1>"); continue;
             }
             if (line.startsWith("> ")) {
+                if (inNestedUl) { sb.append("</ul>"); inNestedUl = false; }
+                if (inOlLi) { sb.append("</li>"); inOlLi = false; }
                 if (inUl) { sb.append("</ul>"); inUl = false; } if (inOl) { sb.append("</ol>"); inOl = false; }
                 if (!inBq) { sb.append("<blockquote>"); inBq = true; }
                 sb.append(mdInline(line.substring(2))).append("<br>"); continue;
             }
+            java.util.regex.Matcher nm = olPat.matcher(line);
+            if (nm.matches()) {
+                if (inBq) { sb.append("</blockquote>"); inBq = false; } if (inUl) { sb.append("</ul>"); inUl = false; }
+                if (inNestedUl) { sb.append("</ul>"); inNestedUl = false; }
+                if (inOlLi) { sb.append("</li>"); inOlLi = false; }
+                if (!inOl) { sb.append("<ol>"); inOl = true; }
+                sb.append("<li>").append(mdInline(nm.group(1)));
+                inOlLi = true;
+                continue;
+            }
+            java.util.regex.Matcher nbm = nestedBulletPat.matcher(line);
+            if (inOl && nbm.matches()) {
+                if (!inNestedUl) { sb.append("<ul>"); inNestedUl = true; }
+                sb.append("<li>").append(mdInline(nbm.group(1))).append("</li>"); continue;
+            }
             if (line.startsWith("- ") || line.startsWith("* ")) {
-                if (inBq) { sb.append("</blockquote>"); inBq = false; } if (inOl) { sb.append("</ol>"); inOl = false; }
+                if (inBq) { sb.append("</blockquote>"); inBq = false; }
+                if (inNestedUl) { sb.append("</ul>"); inNestedUl = false; }
+                if (inOlLi) { sb.append("</li>"); inOlLi = false; }
+                if (inOl) { sb.append("</ol>"); inOl = false; }
                 if (!inUl) { sb.append("<ul>"); inUl = true; }
                 sb.append("<li>").append(mdInline(line.substring(2))).append("</li>"); continue;
             }
-            java.util.regex.Matcher nm = java.util.regex.Pattern.compile("^\\d+\\.\\s+(.+)").matcher(line);
-            if (nm.matches()) {
-                if (inBq) { sb.append("</blockquote>"); inBq = false; } if (inUl) { sb.append("</ul>"); inUl = false; }
-                if (!inOl) { sb.append("<ol>"); inOl = true; }
-                sb.append("<li>").append(mdInline(nm.group(1))).append("</li>"); continue;
-            }
             if (inBq) { sb.append("</blockquote>"); inBq = false; }
+            if (inNestedUl) { sb.append("</ul>"); inNestedUl = false; }
+            if (inOlLi) { sb.append("</li>"); inOlLi = false; }
             if (inUl) { sb.append("</ul>"); inUl = false; }
             if (inOl) { sb.append("</ol>"); inOl = false; }
             sb.append(mdInline(line)).append("<br>");
         }
+        if (inNestedUl) sb.append("</ul>");
+        if (inOlLi) sb.append("</li>");
         if (inUl) sb.append("</ul>");
         if (inOl) sb.append("</ol>");
         if (inBq) sb.append("</blockquote>");

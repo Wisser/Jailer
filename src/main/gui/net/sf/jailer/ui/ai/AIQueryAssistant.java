@@ -32,8 +32,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -57,7 +57,6 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.ai.AIProviderConfig.ProviderType;
-import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
@@ -78,6 +77,7 @@ public class AIQueryAssistant {
     public static volatile boolean MOCK_ENABLED = Boolean.parseBoolean(System.getProperty("jailer.ai.mock"));
     private static final AtomicInteger MOCK_INDEX = new AtomicInteger(0);
     private static String[] MOCK_SQL = {
+    		"\n```sql\nSELECT\n     C.FIRST_NAME AS CUSTOMER_FIRST_NAME,\n     C.LAST_NAME AS CUSTOMER_LAST_NAME,\n     SUM(P.AMOUNT) AS TOTAL_REVENUE,\n     COUNT(R.RENTAL_ID) AS NUMBER_OF_RENTALS,\n     CI.CITY AS CUSTOMER_CITY\nFROM\n     CUSTOMER AS C\n     JOIN PAYMENT AS P ON C.CUSTOMER_ID = P.CUSTOMER_ID\n     LEFT JOIN RENTAL AS R ON C.CUSTOMER_ID = R.CUSTOMER_ID\n     LEFT JOIN ADDRESS AS A ON C.ADDRESS_ID = A.ADDRESS_ID\n     LEFT JOIN CITY AS CI ON A.CITY_ID = CI.CITY_ID\nGROUP BY\n     C.FIRST_NAME,\n     C.LAST_NAME,\n     CI.CITY\nORDER BY\n     TOTAL_REVENUE DESC\nLIMIT\n     10;\n```\n--ENDOFSQL\n\nThe SQL query retrieves the top 10 customers based on their total revenue generated through payments. Let's break down the query step-by-step:\n\n1. **`SELECT` Clause:**\n   - `C.FIRST_NAME AS CUSTOMER_FIRST_NAME`: Selects the first name of the customer and aliases it as `CUSTOMER_FIRST_NAME`.\n   - `C.LAST_NAME AS CUSTOMER_LAST_NAME`: Selects the last name of the customer and aliases it as `CUSTOMER_LAST_NAME`.\n   - `SUM(P.AMOUNT) AS TOTAL_REVENUE`: Calculates the sum of the `AMOUNT` column from the `PAYMENT` table (aliased as `P`) for each customer, representing their total revenue, and aliases it as `TOTAL_REVENUE`.\n   - `COUNT(R.RENTAL_ID) AS NUMBER_OF_RENTALS`: Counts the number of rentals (`RENTAL_ID` from the `RENTAL` table, aliased as `R`) for each customer and aliases it as `NUMBER_OF_RENTALS`.  Because of the `LEFT JOIN`, even customers without rentals will be included and will have a rental count of 0.\n   - `CI.CITY AS CUSTOMER_CITY`: Selects the city name from the `CITY` table (aliased as `CI`) where the customer's address is located, and aliases it as `CUSTOMER_CITY`.\n\n2. **`FROM` and `JOIN` Clauses:**\n   - `FROM CUSTOMER AS C`: Starts the query from the `CUSTOMER` table, aliased as `C`.\n   - `JOIN PAYMENT AS P ON C.CUSTOMER_ID = P.CUSTOMER_ID`:  Performs an inner join between the `CUSTOMER` and `PAYMENT` tables based on the matching `CUSTOMER_ID`.  This ensures that only customers who have made payments are included in the results.\n   - `LEFT JOIN RENTAL AS R ON C.CUSTOMER_ID = R.CUSTOMER_ID`: Performs a left join between the `CUSTOMER` and `RENTAL` tables based on the matching `CUSTOMER_ID`. This includes all customers, even those without any rentals, by including the rental details when available. If a customer hasn't made any rentals, the rental-related columns will contain `NULL` values.\n   - `LEFT JOIN ADDRESS AS A ON C.ADDRESS_ID = A.ADDRESS_ID`: Performs a left join between the `CUSTOMER` and `ADDRESS` tables based on the matching `ADDRESS_ID`. This links customers to their addresses.\n   - `LEFT JOIN CITY AS CI ON A.CITY_ID = CI.CITY_ID`: Performs a left join between the `ADDRESS` and `CITY` tables based on the matching `CITY_ID`. This links addresses to the cities they are located in.\n\n3. **`GROUP BY` Clause:**\n   - `GROUP BY C.FIRST_NAME, C.LAST_NAME, CI.CITY`: Groups the results by the customer's first name, last name, and city. This is necessary because of the aggregate functions (`SUM` and `COUNT`) used in the `SELECT` clause.  The grouping ensures that the revenue and rental count are calculated for each unique customer and city combination.\n\n4. **`ORDER BY` Clause:**\n   - `ORDER BY TOTAL_REVENUE DESC`: Sorts the results in descending order based on the `TOTAL_REVENUE`, placing the customers with the highest revenue at the top.\n\n5. **`LIMIT` Clause:**\n   - `LIMIT 10`: Limits the output to the top 10 customers with the highest revenue.\n",
     		"Potential performance issues remain consistent with the previous analysis, but let's elaborate with some H2 specifics:\r\n"
     		+ "\r\n"
     		+ "1. **Lack of Indexes (Critical):**  As stated before, lacking indexes on join columns will severely hurt performance, especially in H2.  The query optimizer relies heavily on indexes for efficient execution.  Specifically, indexes are needed on `PROJECT_PARTICIPATION.EMPNO` and `PROJECT_PARTICIPATION.ROLE_ID`.\r\n"
@@ -149,86 +149,15 @@ public class AIQueryAssistant {
                             + "and `EMPLOYEE_COUNT` respectively.Essentially,\r\n"
                             + "it provides a summary of how many employees are assigned to each role across all projects.",
                             "x",
+                			
+                			"Select 1;\n--endofsql\n\n\n```markdown\n## Explanation of the SQL Query:\n\nThe query `SELECT * FROM FILM_CATEGORY;` is a straightforward SQL statement that retrieves all data from the `FILM_CATEGORY` table.\n\n**Breakdown:**\n\n*   `SELECT *`:  This part instructs the database to select all columns present in the table. The asterisk (`*`) is a wildcard character representing all columns.\n*   `FROM FILM_CATEGORY`: This specifies the table from which the data should be retrieved, which in this case is `FILM_CATEGORY`.\n\n**Purpose:**\n\nThe `FILM_CATEGORY` table acts as a junction table (or associating entity) to implement a many-to-many relationship between `FILM` and `CATEGORY` tables.  Each row in this table represents a particular film being associated with a specific category.  Therefore, running this query returns a list of all film-category associations in the database.  The resulting output would contain `FILM_ID` and `CATEGORY_ID` for each association, along with a timestamp indicating the last update.\n```",
+                			"\n```markdown\n## Explanation of the SQL Query:\n\nThe query `SELECT * FROM FILM_CATEGORY;` is a straightforward SQL statement that retrieves all data from the `FILM_CATEGORY` table.\n\n**Breakdown:**\n\n*   `SELECT *`:  This part instructs the database to select all columns present in the table. The asterisk (`*`) is a wildcard character representing all columns.\n*   `FROM FILM_CATEGORY`: This specifies the table from which the data should be retrieved, which in this case is `FILM_CATEGORY`.\n\n**Purpose:**\n\nThe `FILM_CATEGORY` table acts as a junction table (or associating entity) to implement a many-to-many relationship between `FILM` and `CATEGORY` tables.  Each row in this table represents a particular film being associated with a specific category.  Therefore, running this query returns a list of all film-category associations in the database.  The resulting output would contain `FILM_ID` and `CATEGORY_ID` for each association, along with a timestamp indicating the last update.\n```",
+                			
+                			
     };
-    static {
-    	MOCK_SQL = new String[] {
-    			
-    			"Select 1;\n--endofsql\n\n\n```markdown\n## Explanation of the SQL Query:\n\nThe query `SELECT * FROM FILM_CATEGORY;` is a straightforward SQL statement that retrieves all data from the `FILM_CATEGORY` table.\n\n**Breakdown:**\n\n*   `SELECT *`:  This part instructs the database to select all columns present in the table. The asterisk (`*`) is a wildcard character representing all columns.\n*   `FROM FILM_CATEGORY`: This specifies the table from which the data should be retrieved, which in this case is `FILM_CATEGORY`.\n\n**Purpose:**\n\nThe `FILM_CATEGORY` table acts as a junction table (or associating entity) to implement a many-to-many relationship between `FILM` and `CATEGORY` tables.  Each row in this table represents a particular film being associated with a specific category.  Therefore, running this query returns a list of all film-category associations in the database.  The resulting output would contain `FILM_ID` and `CATEGORY_ID` for each association, along with a timestamp indicating the last update.\n```",
-    			"\n```markdown\n## Explanation of the SQL Query:\n\nThe query `SELECT * FROM FILM_CATEGORY;` is a straightforward SQL statement that retrieves all data from the `FILM_CATEGORY` table.\n\n**Breakdown:**\n\n*   `SELECT *`:  This part instructs the database to select all columns present in the table. The asterisk (`*`) is a wildcard character representing all columns.\n*   `FROM FILM_CATEGORY`: This specifies the table from which the data should be retrieved, which in this case is `FILM_CATEGORY`.\n\n**Purpose:**\n\nThe `FILM_CATEGORY` table acts as a junction table (or associating entity) to implement a many-to-many relationship between `FILM` and `CATEGORY` tables.  Each row in this table represents a particular film being associated with a specific category.  Therefore, running this query returns a list of all film-category associations in the database.  The resulting output would contain `FILM_ID` and `CATEGORY_ID` for each association, along with a timestamp indicating the last update.\n```",
-    			
-    			
-    			"SELECT\r\n"
-    			+ "     C.FIRST_NAME AS CUSTOMER_FIRST_NAME,\r\n"
-    			+ "     C.LAST_NAME AS CUSTOMER_LAST_NAME,\r\n"
-    			+ "     SUM(P.AMOUNT) AS TOTAL_REVENUE\r\n"
-    			+ "FROM\r\n"
-    			+ "     CUSTOMER AS C\r\n"
-    			+ "     JOIN PAYMENT AS P ON C.CUSTOMER_ID = P.CUSTOMER_ID\r\n"
-    			+ "GROUP BY\r\n"
-    			+ "     C.CUSTOMER_ID,\r\n"
-    			+ "     C.FIRST_NAME,\r\n"
-    			+ "     C.LAST_NAME\r\n"
-    			+ "ORDER BY\r\n"
-    			+ "     TOTAL_REVENUE DESC\r\n"
-    			+ "LIMIT\r\n"
-    			+ "     10;",
-    			"SELECT\r\n"
-    			+ "     C.FIRST_NAME AS CUSTOMER_FIRST_NAME,\r\n"
-    			+ "     C.LAST_NAME AS CUSTOMER_LAST_NAME,\r\n"
-    			+ "     SUM(P.AMOUNT) AS TOTAL_REVENUE,\r\n"
-    			+ "     COUNT(R.RENTAL_ID) AS NUMBER_OF_RENTALS\r\n"
-    			+ "FROM\r\n"
-    			+ "     CUSTOMER AS C\r\n"
-    			+ "     JOIN PAYMENT AS P ON C.CUSTOMER_ID = P.CUSTOMER_ID\r\n"
-    			+ "     LEFT JOIN RENTAL AS R ON C.CUSTOMER_ID = R.CUSTOMER_ID\r\n"
-    			+ "GROUP BY\r\n"
-    			+ "     C.FIRST_NAME,\r\n"
-    			+ "     C.LAST_NAME\r\n"
-    			+ "ORDER BY\r\n"
-    			+ "     TOTAL_REVENUE DESC\r\n"
-    			+ "LIMIT\r\n"
-    			+ "     10;\r\n"
-    			+ "",
-    			"SELECT\r\n"
-    			+ "     C.FIRST_NAME AS CUSTOMER_FIRST_NAME,\r\n"
-    			+ "     C.LAST_NAME AS CUSTOMER_LAST_NAME,\r\n"
-    			+ "     SUM(P.AMOUNT) AS TOTAL_REVENUE,\r\n"
-    			+ "     COUNT(R.RENTAL_ID) AS NUMBER_OF_RENTALS,\r\n"
-    			+ "     CI.CITY AS CUSTOMER_CITY\r\n"
-    			+ "FROM\r\n"
-    			+ "     CUSTOMER AS C\r\n"
-    			+ "     JOIN PAYMENT AS P ON C.CUSTOMER_ID = P.CUSTOMER_ID\r\n"
-    			+ "     LEFT JOIN RENTAL AS R ON C.CUSTOMER_ID = R.CUSTOMER_ID\r\n"
-    			+ "     LEFT JOIN ADDRESS AS A ON C.ADDRESS_ID = A.ADDRESS_ID\r\n"
-    			+ "     LEFT JOIN CITY AS CI ON A.CITY_ID = CI.CITY_ID\r\n"
-    			+ "GROUP BY\r\n"
-    			+ "     C.FIRST_NAME,\r\n"
-    			+ "     C.LAST_NAME,\r\n"
-    			+ "     CI.CITY\r\n"
-    			+ "ORDER BY\r\n"
-    			+ "     TOTAL_REVENUE DESC\r\n"
-    			+ "LIMIT\r\n"
-    			+ "     10",
-"This SQL query retrieves the top 10 customers based on their total revenue generated from payments, along with the number of rentals they've made and the city they reside in.  "
-+ "\nIt starts by joining five tables: CUSTOMER, PAYMENT, RENTAL, ADDRESS, and CITY. The joins connect customers to their payments, rentals, addresses, and finally to the cities.  "
-+ "\nThe query calculates the total revenue for each customer using SUM(P.AMOUNT) and the number of rentals using COUNT(R.RENTAL_ID). These calculations are aliased as TOTAL_REVENUE and NUMBER_OF_RENTALS, respectively.  "
-+ "\nThe GROUP BY clause groups the results by customer first name, last name, and city, ensuring that revenue and rental counts are aggregated per unique customer and city combination.  "
-+ "\nThe ORDER BY clause sorts the results in descending order based on the TOTAL_REVENUE, putting the highest-spending customers first.  "
-+ "\nFinally, the LIMIT clause restricts the output to the top 10 customers. The query returns the customer's first name, last name, total revenue, number of rentals, and city. "   	
-
-    	,"/* AI:\r\n"
-    			+ "   Retrieve top customers by revenue.\r\n"
-    			+ "   Also show the number of rentals\r\n"
-    			+ "   and the customers' cities.\r\n"
-    			+ " */\r\n"
-    			+ "WITH CustomerRevenue AS (\n    SELECT\n        C.CUSTOMER_ID,\n        SUM(P.AMOUNT) AS TOTAL_REVENUE\n    FROM\n        CUSTOMER AS C\n    JOIN\n        PAYMENT AS P ON C.CUSTOMER_ID = P.CUSTOMER_ID\n    GROUP BY\n        C.CUSTOMER_ID\n),\nCustomerRentalCount AS (\n    SELECT\n        C.CUSTOMER_ID,\n        COUNT(R.RENTAL_ID) AS NUMBER_OF_RENTALS\n    FROM\n        CUSTOMER AS C\n    LEFT JOIN\n        RENTAL AS R ON C.CUSTOMER_ID = R.CUSTOMER_ID\n    GROUP BY\n        C.CUSTOMER_ID\n),\nCustomerInfo AS (\n    SELECT\n        C.CUSTOMER_ID,\n        C.FIRST_NAME,\n        C.LAST_NAME,\n        A.CITY_ID,\n        CI.CITY\n    FROM\n        CUSTOMER AS C\n    LEFT JOIN\n        ADDRESS AS A ON C.ADDRESS_ID = A.ADDRESS_ID\n    LEFT JOIN\n        CITY AS CI ON A.CITY_ID = CI.CITY_ID\n)\nSELECT\n    CI.FIRST_NAME AS CUSTOMER_FIRST_NAME,\n    CI.LAST_NAME AS CUSTOMER_LAST_NAME,\n    CR.TOTAL_REVENUE,\n    COALESCE(NRC.NUMBER_OF_RENTALS, 0) AS NUMBER_OF_RENTALS,\n    CI.CITY AS CUSTOMER_CITY\nFROM\n    CustomerInfo AS CI\nJOIN\n    CustomerRevenue AS CR ON CI.CUSTOMER_ID = CR.CUSTOMER_ID\nLEFT JOIN\n    CustomerRentalCount AS NRC ON CI.CUSTOMER_ID = NRC.CUSTOMER_ID\nORDER BY\n    CR.TOTAL_REVENUE DESC\nLIMIT\n    10;\n--ENDOFSQL\nThe query was rewritten using Common Table Expressions (CTEs) to improve readability and organization.\n\n1.  `CustomerRevenue`: Calculates the total revenue for each customer.\n2.  `CustomerRentalCount`: Calculates the number of rentals for each customer.\n3.  `CustomerInfo`: Retrieves customer information, including their city.\n\nThe final SELECT statement joins these CTEs to produce the desired output. COALESCE is used in case a customer has not rented any films (and NRC.NUMBER\\\\_OF\\\\_RENTALS would be NULL). This replaces any null rental counts with 0.\",\"refusal\":null,\"reasoning\":null}}],\"usage\":{\"prompt_tokens\":2102,\"completion_tokens\":521,\"total_tokens\":2623,\"cost\":0.00040261,\"is_byok\":false,\"prompt_tokens_details\":{\"cached_tokens\":0,\"cache_write_tokens\":0,\"audio_tokens\":0,\"video_tokens\":0},\"cost_details\":{\"upstream_inference_cost\":0.00040261,\"upstream_inference_prompt_cost\":0.00016816,\"upstream_inference_completions_cost\":0.00023445},\"completion_tokens_details\":{\"reasoning_tokens\":0,\"image_tokens\":0,\"audio_tokens\":0}}}\r\n"
-    			+ ""
-    	
-    	};
-    }
     
     private static final Pattern AI_COMMENT_PATTERN = Pattern.compile(
-            "\\A\\s*/\\*\\s*AI:\\s*(.*?)\\s*\\*/",
+            "\\A\\s*/\\*\\s*AI:\\s*(.+?)\\s*\\*/",
             Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 
     public static String generateSQL(String question, List<ConversationMessage> history,
@@ -324,7 +253,7 @@ public class AIQueryAssistant {
             int idx = MOCK_INDEX.getAndIncrement() % MOCK_SQL.length;
             _log.debug("MOCK mode: returning MOCK_SQL[{}]", idx);
             try {
-				Thread.sleep(200);
+				Thread.sleep(1500);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			} // Simulate latency
@@ -803,6 +732,9 @@ public class AIQueryAssistant {
                     }
                 } else {
                     try (InputStream is = conn.getInputStream()) {
+                        if (abortRef != null) {
+                            abortRef.set(() -> { try { is.close(); } catch (IOException ignored2) {} conn.disconnect(); });
+                        }
                         responseBytes = readAllBytes(is);
                     }
                 }
@@ -972,6 +904,9 @@ public class AIQueryAssistant {
         byte[] buf = new byte[8192];
         int n;
         while ((n = is.read(buf)) != -1) {
+            if (Thread.currentThread().isInterrupted()) {
+                throw new IOException("Request cancelled");
+            }
             baos.write(buf, 0, n);
         }
         return baos.toByteArray();
