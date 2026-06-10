@@ -73,7 +73,14 @@
             </div>
 
             <ul>
-              <li><a href="faq.html" target="_self" class="llinkA">FAQ</a> </li>
+              <li>FAQ</li>
+              <ul>
+                <li><a href="faq.html" target="_self" class="llinkA">General Questions</a></li>
+                <li><a href="analyse-sql-script.html" target="_self" class="llink">Analyse SQL Script</a></li>
+                <li><a href="model-migration-tool.html" target="_self" class="llink">Model Migration Tool</a></li>
+                <li><a href="find-path.html" target="_self" class="llink">Find Path to...</a></li>
+                <li><a href="subset-by-example-faq.html" target="_self" class="llink">Subset by Example</a></li>
+              </ul>
             </ul>
 
             <table border="0" cellpadding="5" cellspacing="0" width="100%">
@@ -138,15 +145,14 @@
                             "exporting-data.htm">tutorial</a>  that explains these things.<br />
                             <br />
                             Instead of adding all restrictions you need, starting from
-                            the unrestricted model, you can also go the opposit way: at
+                            the unrestricted model, you can also go the opposite way: at
                             first disable all associations (except dependencies) via the menu item
-                            <span style="font-style: italic;">"Edit-&gt;Disable all
-                            associations</span>". Then remove restrictions
+                            <span style="font-style: italic;">"Edit&rarr;Disable all
+                            associations"</span>. Then remove restrictions
                             until you get all the rows you are looking for.<br />
                             &nbsp;<br />
-                            It is easier to get a working extraction model in this way, but it is more difficult to ensure that the model is not too restrictive, i.e. that you get <b>all</b> the rows you want.<br><br />
-
-                            In my experience the best way to define an extraction model
+                            It is easier to get a working extraction model in this way, but it is more difficult to ensure that the model is not too restrictive, i.e. that you get <b>all</b> the rows you want.<br /><br />
+                            The best way to define an extraction model
                             is to use the "<span style="font-weight: bold;">Closure</span>" view.<br />
                             &nbsp;<br />
                             The closure view lists all tables that are directly or
@@ -155,18 +161,18 @@
                             distance.<br />
                             &nbsp;<br />
                             Check each table of this list from top to bottom. If you
-                            don't want to have rows from the table to be exported, select
-                            the table and disable the association which will be automatically selected (the context menu of the table is also available here). The table disapears from the list as soon as
-                            it is no longer associated with the subject.&nbsp;<br />
+                            don't want rows from a table to be exported, select
+                            it and disable the association which will be automatically selected (the context menu of the table is also available here). The table disappears from the list as soon as
+                            it is no longer associated with the subject.<br />
                             <br />
-                            <b>You could also first check the tables with the highest degree (the degree of a table is the total number of adjacent tables that can be reached directly with an enabled association.) this way. These are often the tables that increase the closure significantly and therefore have many associations to be restricted.
+                            <b>You could also first check the tables with the highest degree (the degree of a table is the total number of adjacent tables that can be reached directly with an enabled association). These are often the tables that increase the closure significantly and therefore have many associations to be restricted.
                             </b><br />
                             <br />
-                            In this way, you simply get an extraction model that extracts rows only from tables from which you want to extract data.&nbsp;<br />
+                            In this way, you get an extraction model that extracts rows only from tables from which you want to export data.<br />
                             <br />
                             Finally, check all associations between the remaining
                             tables.<br />
-                            &nbsp;<br /></td>
+                            &nbsp;<br />&nbsp;<br /></td>
                           </tr>
 
                           <tr>
@@ -233,15 +239,13 @@
                                     <td>Is <i>true</i> during "Delete Reduction" stage, otherwise <i>false</i></td>
                                   </tr>
                                 </tbody>
-                              </table><br />
-                             
-                            </td>
+                              </table><br />&nbsp;<br />&nbsp;<br /></td>
                           </tr>
 							
 						  <tr>
                             <td style=
                             "background-color: rgb(242, 242, 242); font-weight: bold;">
-                            Q</td>
+                            Q&nbsp;</td>
 
                             <td style=
                             "background-color: rgb(242, 242, 242); font-weight: bold;">
@@ -251,18 +255,25 @@
                           <tr>
                             <td style="vertical-align: top;">A</td>
 
-                            <td>To update the data model, open the extraction model editor and select "Data Model" -> "Analyze Database". <br>If necessary, several times for each schema, if there are several. <br><br>
-When the data model is updated, each extraction model will be migrated on loading. <br>Tables and associations that no longer exist after the database changes are silently removed from the extraction models as well.<br><br>
-Associations that are newly added and are relevant to the extraction model (that is: directly or indirectly connected to a subject table) are listed in the "Model Migration Tool" dialog. (There is a button "Migration pending" at the top to open this dialog again after you have closed it).<br><br>
-In the "Model Migration Tool" each new association can be examined and either restricted or - with the "Checked" button - marked as checked. <br>When all associations have been checked or restricted, the migration is finished.<br><br>
-if you save an extraction model before migration is finished, you can continue the migration after loading it again.<br><br>
-  </td>
+                            <td>To update the data model, open the extraction model editor and select
+                            <span style="font-style: italic;">Data Model &rarr; Analyze Database</span>.
+                            If the database has several schemas, repeat this for each schema.<br /><br />
+                            When the data model is updated, each extraction model will be migrated on loading.
+                            Tables and associations that no longer exist after the database changes are silently removed from the extraction models as well.<br /><br />
+                            Associations that are newly added and relevant to the extraction model (that is: directly or indirectly connected to a subject table) are listed in the
+                            <span style="font-style: italic;">Model Migration Tool</span> dialog.
+                            A <span style="font-weight: bold;">Migration pending</span> button at the top of the editor reopens this dialog after you have closed it.<br /><br />
+                            In the Model Migration Tool each new association can be examined and either restricted or &mdash; with the
+                            <span style="font-weight: bold;">Checked</span> button &mdash; marked as reviewed.
+                            When all associations have been checked or restricted, the migration is finished.<br /><br />
+                            If you save an extraction model before migration is finished, you can continue the migration after loading it again.<br /><br />
+                            See also: <a href="model-migration-tool.html" target="_self">Model Migration Tool FAQ</a><br />&nbsp;<br />&nbsp;<br /></td>
                           </tr>
 
                           <tr>
                             <td style=
                             "background-color: rgb(242, 242, 242); font-weight: bold;">
-                            Q</td>
+                            Q&nbsp;</td>
 
                             <td style=
                             "background-color: rgb(242, 242, 242); font-weight: bold;">
@@ -306,14 +317,14 @@ if you save an extraction model before migration is finished, you can continue t
                             "font-style: italic;" />
                             would replace the SSN with a randomly chosen SSN from a table
                             holding test SSNs (IBM DB2)<br />
-                            &nbsp;<br /></td>
+                            &nbsp;<br />&nbsp;<br /></td>
                           </tr>
 
 
                           <tr>
                             <td style=
                             "background-color: rgb(242, 242, 242); font-weight: bold;">
-                            Q</td>
+                            Q&nbsp;</td>
 
                             <td style=
                             "background-color: rgb(242, 242, 242); font-weight: bold;">Is
@@ -324,19 +335,20 @@ if you save an extraction model before migration is finished, you can continue t
                           <tr>
                             <td style="vertical-align: top;">A</td>
 
-                            <td>Set the working-table scope to "local database" ("Data
-                            Export" dialog) to avoid the creation of that tables in your
-                            database. The tables will then be created in a local database
-                            (H2).<br />
-                            For DB2, Oracle and PostgreSQL, it is also possible to create
-                            the tables as temporary tables.<br />
-                            &nbsp;</td>
+                            <td>Set the working-table scope to
+                            <span style="font-style: italic;">local database</span>
+                            (in the <span style="font-style: italic;">Data Export</span>
+                            dialog) to avoid the creation of those tables in your
+                            database. The working tables will then be created in a local
+                            embedded database (H2).<br /><br />
+                            For DB2, Oracle, and PostgreSQL it is also possible to use
+                            session-scoped temporary tables instead.<br />&nbsp;<br />&nbsp;<br /></td>
                           </tr>
 
                           <tr>
                             <td style=
                             "background-color: rgb(242, 242, 242); font-weight: bold;">
-                            Q</td>
+                            Q&nbsp;</td>
 
                             <td style=
                             "background-color: rgb(242, 242, 242); font-weight: bold;">
@@ -348,41 +360,44 @@ if you save an extraction model before migration is finished, you can continue t
                             <td style="vertical-align: top;">A</td>
 
                             <td>Jailer cannot handle tables without a primary key.
-                            Exporting data is not possible if the subject table is associated with a table without a primary key. In this case, you should manually define a primary key in the data model of the tool (not in the database!) using the <i>Data Model Editor</i>. Note that a key must be unique.<br />
-                            <br />
-
-                            However, when working with Oracle or PostgreSQL, you can use the <i>rowid</i> respectively the <i>ctid</i> pseudo columns instead of primary keys. <br>
-                            See section <i>"Row identification"</i> in the <i>"Data Export"</i> dialog.
-                            <br />
-                            &nbsp;</td>
+                            Exporting data is not possible if the subject table is associated with a table without a primary key. In this case, you should manually define a primary key in the data model of the tool (not in the database!) using the
+                            <span style="font-style: italic;">Data Model Editor</span>.
+                            Note that a key must be unique.<br /><br />
+                            When working with Oracle or PostgreSQL, you can use the
+                            <span style="font-style: italic;">rowid</span> respectively the
+                            <span style="font-style: italic;">ctid</span>
+                            pseudo-columns instead of primary keys.<br />
+                            See section <span style="font-style: italic;">Row identification</span>
+                            in the <span style="font-style: italic;">Data Export</span> dialog.
+                            <br />&nbsp;<br />&nbsp;<br /></td>
                           </tr>
 
                           <tr>
                             <td style=
                             "background-color: rgb(242, 242, 242); font-weight: bold;">
-                            Q</td>
+                            Q&nbsp;</td>
 
                           <td style=
                             "background-color: rgb(242, 242, 242); font-weight: bold;">
-                            How can I safely export rows without their parents?<br /></td>
+                            How can I safely export rows without their parents?</td>
                           </tr>
 
                           <tr>
                             <td style="vertical-align: top;">A</td>
 
-                            <td>If a foreign key of a table is nullable, a "<i>null</i>" filter on it (resp. on all columns of a composite foreign key) causes only the foreign key columns of those rows to be filled with "<i>null</i>", whose parent row is not exported as well.<br>
-                            In the same way, only the foreign key columns of those rows are set to "<i>null</i>" when deleting, which are not deleted themselves but their parent.<br>
-                            See <a href="filters.html#nullfilter">filter documentation</a> <br /><br /></td>
+                            <td>If a foreign key of a table is nullable, a "<i>null</i>" filter on it (resp. on all columns of a composite foreign key) causes only the foreign key columns of those rows to be filled with "<i>null</i>", whose parent row is not exported as well.<br />
+                            In the same way, only the foreign key columns of those rows are set to "<i>null</i>" when deleting, which are not deleted themselves but their parent.<br />
+                            See <a href="filters.html#nullfilter">filter documentation</a> <br />&nbsp;<br />&nbsp;<br /></td>
                           </tr>
 
 <tr>
                             <td style=
                             "background-color: rgb(242, 242, 242); font-weight: bold;">
-                            Q</td>
+                            Q&nbsp;</td>
 
                             <td style=
                             "background-color: rgb(242, 242, 242); font-weight: bold;">
-                            The GUI is slow, what can I do?<br /></td>
+                            The GUI is slow, what can I do?</td>
                           </tr>
 
                           <tr>
@@ -396,17 +411,17 @@ if you save an extraction model before migration is finished, you can continue t
                             determines the minimum time (in ms) for one animation step.
                             Increasing that parameter (<span style=
                             "font-style: italic;">Settings-&gt;Animation step time</span>)
-                            will reduce the cpu utilization.<br /><br /></td>
+                            will reduce the CPU utilization.<br />&nbsp;<br />&nbsp;<br /></td>
                           </tr>
 
                           <tr id="multiuser">
                             <td style=
                             "background-color: rgb(242, 242, 242); font-weight: bold;">
-                            Q</td>
+                            Q&nbsp;</td>
 
                             <td style=
                             "background-color: rgb(242, 242, 242); font-weight: bold;">
-                            How do I setup multi-user mode?<br /></td>
+                            How do I set up multi-user mode?</td>
                           </tr>
 
                           <tr>
@@ -415,17 +430,17 @@ if you save an extraction model before migration is finished, you can continue t
                             <td>
                             Unzip the "jailer-version.zip" file and create an (empty) file ".multiuser" in the directory "jailer".
 All model and settings files are then stored in a folder named ".jailer" in the user's home directory.
-                            <br /><br /></td>
+                            <br />&nbsp;<br />&nbsp;<br /></td>
                           </tr>
 
                           <tr>
                             <td style=
                             "background-color: rgb(242, 242, 242); font-weight: bold;">
-                            Q</td>
+                            Q&nbsp;</td>
 
                             <td style=
                             "background-color: rgb(242, 242, 242); font-weight: bold;">
-                            Why do text and buttons on my Full HD, UHD or 4K displays look so small?<br /></td>
+                            Why do text and buttons on my Full HD, UHD or 4K display look so small?</td>
                           </tr>
 
                           <tr>
@@ -433,7 +448,7 @@ All model and settings files are then stored in a folder named ".jailer" in the 
 
                             <td>
                             Java JRE 8 does not support HiDPI graphics. Therefore it is strongly recommended to use Java <b>JRE 11</b> (or above).
-                            <br /><br /></td>
+                            <br />&nbsp;<br />&nbsp;<br /></td>
                           </tr>
                         </tbody>
                       </table>

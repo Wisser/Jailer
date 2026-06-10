@@ -1,0 +1,333 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+
+  <title>Jailer - Subset by Example</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii" />
+  <meta name="keywords" content="Data Export Tool" />
+  <meta name="description" content="data export referential integrity java jdbc dbms" />
+  <link rel="stylesheet" type="text/css" href="styles.css" />
+  <link rel="shortcut icon" href="favicon.ico" />
+</head>
+
+<body left-margin="0" top-margin="0">
+  <div align="left">
+    <table style="text-align: left; position: absolute; left: 0pt; top: 0pt;" border="0"
+    cellpadding="0" cellspacing="0" height="407" width="100%">
+      <tbody>
+        <tr>
+          <td colspan="2" class="bannerbackground" height="33" width="100%">
+            <table border="0" cellpadding="4" cellspacing="0" width="100%">
+              <tbody>
+                <tr>
+                  <td><a href="https://github.com/Wisser/Jailer"><img src="logo.png" hspace="10" /></td> <td class="slogan" width="100%"></a>
+
+
+
+                  <td style="text-align: right; width: 100%;"><table border="0" cellpadding="0" cellspacing="0">
+                      <tbody>
+                        <tr>
+                           <td><a href="https://github.com/Wisser/Jailer"><img src="GitHub-Mark-64px.png" title="GitHub" /></a> </td></tr><tr style="height: 100%;"><td>&nbsp;</td>
+                        </tr>
+                      </tbody>
+                    </table> </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td colspan="2" class="nav1background"  width="100%">&nbsp;
+          <b><font color="#FFFFFF"><a href="home.htm" target="_self" class=
+          "tlink">&nbsp;Home&nbsp;</a> <a href="quicktour.htm" target="_self"
+          class="tlink">&nbsp;Quick Tour&nbsp;</a> <a href="exporting-data.htm"
+          target="_self" class="tlink">&nbsp;Tutorial&nbsp;</a> <a href=
+          "data-browsing.html" target="_self" class="tlink">&nbsp;Data Browser&nbsp;</a> <a class="tlink" href="videos.html" target="_self">&nbsp;Videos&nbsp;</a>
+          <a href="faq.html" target="_self" class="tlinkA">&nbsp;FAQ&nbsp;</a>
+          <a href="api.html" target="_self" class="tlink">&nbsp;API&nbsp;</a>
+          <a href="design.htm" target="_self" class=
+          "tlink">&nbsp;Documentation&nbsp;</a> <a href=
+          "http://sourceforge.net/forum/?group_id=197260" target="_self" class=
+          "tlink">&nbsp;Forum&nbsp;</a> <a href=
+          "http://sourceforge.net/project/showfiles.php?group_id=197260" target="_self"
+          class="tlink">&nbsp;Download&nbsp;</a>  &nbsp;&nbsp;&nbsp;
+          &nbsp;&nbsp;&nbsp;</font></b></td>
+        </tr>
+
+        <tr>
+          <td colspan="2" class="spacer" width="100%"></td> </tr><tr><td class="lmenucontainer">&nbsp;</td>
+        </tr>
+
+        <tr>
+          <td class="lmenucontainer" height="100%" valign="top" width="14%">
+            <div align="center">
+              <center>
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                  <tbody>
+                    <tr>
+                      <td height="6px" width="100%"> </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </center>
+            </div>
+
+            <ul>
+              <li>FAQ</li>
+              <ul>
+                <li><a href="faq.html" target="_self" class="llink">General Questions</a></li>
+                <li><a href="analyse-sql-script.html" target="_self" class="llink">Analyse SQL Script</a></li>
+                <li><a href="model-migration-tool.html" target="_self" class="llink">Model Migration Tool</a></li>
+                <li><a href="find-path.html" target="_self" class="llink">Find Path to...</a></li>
+                <li><a href="subset-by-example-faq.html" target="_self" class="llinkA">Subset by Example</a></li>
+              </ul>
+            </ul>
+
+            <table border="0" cellpadding="5" cellspacing="0" width="100%">
+              <tbody>
+                <tr>
+                  <td class="content2background"><img style="width: 160px; height: 1px;"
+                  alt="" src="architecture-Dateien/vgradp.gif" /></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <p>&nbsp;</p>
+          </td>
+
+          <td class="contentbackground" height="418" valign="top" width="86%">
+            <div align="right">
+              <table border="0" cellpadding="0" cellspacing="0" height="542" width="98%">
+                <tbody>
+                  <tr>
+                    <td class="contentbackground" height="21" width="100%">&nbsp;</td>
+                  </tr>
+
+                  <tr>
+                    <td class="content" height="520" valign="top" width="100%">
+
+                      <big><span style="font-weight: bold;">Subset by Example<br />
+                      <br /></span></big>
+
+                      <span><span style="font-style: italic;">Subset by Example</span>
+                      is the fastest way to create an extraction model: instead of writing
+                      SQL conditions by hand, you browse the database in the Data Browser,
+                      and Jailer derives the extraction model from whatever you have
+                      navigated to. See also the
+                      <a href="subset-by-example.html" target="_self">step-by-step tutorial</a>
+                      with screenshots.<br /><br /></span>
+
+                      <table style="text-align: left;" border="0" cellpadding="3"
+                      cellspacing="0">
+                        <tbody>
+
+                          <!-- Q1 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">What is &quot;Subset by Example&quot; and when should I use it?&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>Defining an extraction model manually requires knowledge
+                            of the data model and careful crafting of SQL restriction
+                            conditions. <span style="font-style: italic;">Subset by
+                            Example</span> removes that burden: you use the Data Browser
+                            to navigate to the exact rows you want to export, then ask
+                            Jailer to turn that browsing session into a reusable
+                            extraction model.<br /><br />
+                            It is the right approach when:<br />
+                            <ul>
+                              <li>You want to export data that you can easily identify
+                              by browsing &#x2014; a specific customer, an order, a
+                              test dataset &#x2014; rather than by writing a WHERE
+                              clause.</li>
+                              <li>You want to create a first working model quickly and
+                              then refine it in the Extraction Model Editor.</li>
+                              <li>You need a one-off export and do not want to maintain
+                              a permanent extraction model.</li>
+                            </ul>
+                            <br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q2 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">How do I invoke the feature?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>Open the Data Browser and navigate to the subject table
+                            and its related tables. When you are satisfied with the data
+                            you see, right-click the subject table panel and choose one
+                            of:<br /><br />
+                            <table style="text-align: left;" border="0" cellpadding="3"
+                            cellspacing="0">
+                              <tbody>
+                                <tr>
+                                  <td style="vertical-align: top; white-space: nowrap;"><b>Create Extraction Model</b></td>
+                                  <td>Generates a <span style="font-style: italic;">.jm</span>
+                                  model file and opens it in the Extraction Model Editor
+                                  so you can inspect or further refine it before
+                                  exporting.</td>
+                                </tr>
+                                <tr>
+                                  <td style="vertical-align: top; white-space: nowrap;"><b>Export Data from here</b></td>
+                                  <td>Generates the model internally and opens the export
+                                  dialog immediately &#x2014; the Extraction Model Editor
+                                  is bypassed for a faster one-step export.</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                            <br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q3 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">What data does Jailer use to build the model?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>Jailer analyses only the associations you actually
+                            navigated during your browsing session. For each table panel
+                            you opened in the Data Browser, the rows currently visible in
+                            that panel &#x2014; including any active column filters &#x2014;
+                            become the restriction condition for that association.<br /><br />
+                            An association that was never followed may still be restricted:
+                            if one of its tables is visible in the browser but the other
+                            is not, the association is restricted in that direction.
+                            If neither table of an association was navigated to, that
+                            association is irrelevant for the result and does not affect
+                            the export. This means the model is as specific as your
+                            browsing was: the more precisely you navigated, the tighter
+                            the resulting restrictions.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q4 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">What is the &quot;Include parent tables&quot; option?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>When Jailer detects parent tables (tables referenced by
+                            a foreign key of the subject or an associated table) that
+                            were not explicitly browsed, it warns you in the confirmation
+                            dialog and highlights those tables in red.<br /><br />
+                            <table style="text-align: left;" border="0" cellpadding="3"
+                            cellspacing="0">
+                              <tbody>
+                                <tr>
+                                  <td style="vertical-align: top; white-space: nowrap;"><b>Checked (default)</b></td>
+                                  <td>Parent table associations are included in the
+                                  model. The export will follow those foreign keys and
+                                  include the referenced parent rows, keeping referential
+                                  integrity intact.</td>
+                                </tr>
+                                <tr>
+                                  <td style="vertical-align: top; white-space: nowrap;"><b>Unchecked</b></td>
+                                  <td>Parent table restrictions are removed from the
+                                  model. Use this when you intentionally want to export
+                                  rows without their parent rows, for example because
+                                  the parent data already exists at the target.</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                            <br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q5 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Where is the generated extraction model saved?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>The model is saved as a
+                            <span style="font-style: italic;">.jm</span> file under<br /><br />
+                            <span style="font-style: italic;">extractionmodel/by-example/SbE-&lt;TableName&gt;-&lt;Timestamp&gt;.jm</span><br /><br />
+                            The timestamp ensures each session produces a uniquely named
+                            file. You can rename or move the file afterwards; the content
+                            is independent of the filename.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q6 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Can I refine the generated model before exporting?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>Yes, if you chose
+                            <span style="font-weight: bold;">Create Extraction Model</span>.
+                            The generated model opens in the Extraction Model Editor,
+                            where you can:<br />
+                            <ul>
+                              <li>Review and edit restriction conditions for individual
+                              associations.</li>
+                              <li>Enable or disable additional associations that were not
+                              browsed.</li>
+                              <li>Add further subject tables or adjust the subject
+                              condition.</li>
+                              <li>Save the model under a different name for later
+                              reuse.</li>
+                            </ul>
+                            If you chose <span style="font-weight: bold;">Export Data
+                            from here</span>, the model is generated and the export dialog
+                            opens directly without showing the editor. You can still open
+                            the saved <span style="font-style: italic;">.jm</span> file
+                            later to review or modify it.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q7 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">What are the limitations of Subset by Example?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>The main limitation is that the feature derives
+                            restrictions only from associations you actually navigated
+                            in the Data Browser. An association is also restricted when
+                            one of its tables was visible but the other was not (in that
+                            direction). If neither table of an association was navigated
+                            to, that association is irrelevant for the result and does
+                            not affect the export. Always review
+                            the generated model in the Extraction Model Editor &#x2014;
+                            particularly the
+                            <span style="font-weight: bold;">Closure</span> view &#x2014;
+                            to check which tables are reachable and tighten any
+                            unintended unrestricted associations.<br /><br />
+                            Additionally, the model reflects the state of the Data
+                            Browser at the moment the feature was invoked. If the
+                            underlying data changes, you may need to regenerate or
+                            manually update the restriction conditions.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <p><br /></p>
+
+            <p><br /></p>
+
+            <p><br />
+            &nbsp;</p>
+          </td>
+        </tr>
+
+        <tr>
+          <td height="12" valign="top" width="14%"><br /></td>
+
+          <td><br /></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

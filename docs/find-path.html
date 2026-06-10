@@ -1,0 +1,375 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+
+  <title>Jailer - Find Path to...</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii" />
+  <meta name="keywords" content="Data Export Tool" />
+  <meta name="description" content="data export referential integrity java jdbc dbms" />
+  <link rel="stylesheet" type="text/css" href="styles.css" />
+  <link rel="shortcut icon" href="favicon.ico" />
+</head>
+
+<body left-margin="0" top-margin="0">
+  <div align="left">
+    <table style="text-align: left; position: absolute; left: 0pt; top: 0pt;" border="0"
+    cellpadding="0" cellspacing="0" height="407" width="100%">
+      <tbody>
+        <tr>
+          <td colspan="2" class="bannerbackground" height="33" width="100%">
+            <table border="0" cellpadding="4" cellspacing="0" width="100%">
+              <tbody>
+                <tr>
+                  <td><a href="https://github.com/Wisser/Jailer"><img src="logo.png" hspace="10" /></td> <td class="slogan" width="100%"></a>
+
+
+
+                  <td style="text-align: right; width: 100%;"><table border="0" cellpadding="0" cellspacing="0">
+                      <tbody>
+                        <tr>
+                           <td><a href="https://github.com/Wisser/Jailer"><img src="GitHub-Mark-64px.png" title="GitHub" /></a> </td></tr><tr style="height: 100%;"><td>&nbsp;</td>
+                        </tr>
+                      </tbody>
+                    </table> </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td colspan="2" class="nav1background"  width="100%">&nbsp;
+          <b><font color="#FFFFFF"><a href="home.htm" target="_self" class=
+          "tlink">&nbsp;Home&nbsp;</a> <a href="quicktour.htm" target="_self"
+          class="tlink">&nbsp;Quick Tour&nbsp;</a> <a href="exporting-data.htm"
+          target="_self" class="tlink">&nbsp;Tutorial&nbsp;</a> <a href=
+          "data-browsing.html" target="_self" class="tlink">&nbsp;Data Browser&nbsp;</a> <a class="tlink" href="videos.html" target="_self">&nbsp;Videos&nbsp;</a>
+          <a href="faq.html" target="_self" class="tlinkA">&nbsp;FAQ&nbsp;</a>
+          <a href="api.html" target="_self" class="tlink">&nbsp;API&nbsp;</a>
+          <a href="design.htm" target="_self" class=
+          "tlink">&nbsp;Documentation&nbsp;</a> <a href=
+          "http://sourceforge.net/forum/?group_id=197260" target="_self" class=
+          "tlink">&nbsp;Forum&nbsp;</a> <a href=
+          "http://sourceforge.net/project/showfiles.php?group_id=197260" target="_self"
+          class="tlink">&nbsp;Download&nbsp;</a>  &nbsp;&nbsp;&nbsp;
+          &nbsp;&nbsp;&nbsp;</font></b></td>
+        </tr>
+
+        <tr>
+          <td colspan="2" class="spacer" width="100%"></td> </tr><tr><td class="lmenucontainer">&nbsp;</td>
+        </tr>
+
+        <tr>
+          <td class="lmenucontainer" height="100%" valign="top" width="14%">
+            <div align="center">
+              <center>
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                  <tbody>
+                    <tr>
+                      <td height="6px" width="100%"> </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </center>
+            </div>
+
+            <ul>
+              <li>FAQ</li>
+              <ul>
+                <li><a href="faq.html" target="_self" class="llink">General Questions</a></li>
+                <li><a href="analyse-sql-script.html" target="_self" class="llink">Analyse SQL Script</a></li>
+                <li><a href="model-migration-tool.html" target="_self" class="llink">Model Migration Tool</a></li>
+                <li><a href="find-path.html" target="_self" class="llinkA">Find Path to...</a></li>
+                <li><a href="subset-by-example-faq.html" target="_self" class="llink">Subset by Example</a></li>
+              </ul>
+            </ul>
+
+            <table border="0" cellpadding="5" cellspacing="0" width="100%">
+              <tbody>
+                <tr>
+                  <td class="content2background"><img style="width: 160px; height: 1px;"
+                  alt="" src="architecture-Dateien/vgradp.gif" /></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <p>&nbsp;</p>
+          </td>
+
+          <td class="contentbackground" height="418" valign="top" width="86%">
+            <div align="right">
+              <table border="0" cellpadding="0" cellspacing="0" height="542" width="98%">
+                <tbody>
+                  <tr>
+                    <td class="contentbackground" height="21" width="100%">&nbsp;</td>
+                  </tr>
+
+                  <tr>
+                    <td class="content" height="520" valign="top" width="100%">
+
+                      <big><span style="font-weight: bold;">The &quot;Find Path to...&quot; Feature<br />
+                      <br /></span></big>
+
+                      <span>In a large data model with many tables and associations it can
+                      be difficult to understand how two tables are related. The
+                      <span style="font-style: italic;">Find Path to...</span> feature
+                      searches for the shortest connection between a source table and any
+                      target table in the data model, and lets you interactively refine
+                      the result before applying it to the Data Browser.<br /><br /></span>
+
+                      <table style="text-align: left;" border="0" cellpadding="3"
+                      cellspacing="0">
+                        <tbody>
+
+                          <!-- Q1 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">What is &quot;Find Path to...&quot; and when should I use it?&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>In a complex schema, two tables may be connected through
+                            several intermediate tables without an obvious direct foreign
+                            key. <span style="font-style: italic;">Find Path to...</span>
+                            computes the union of all shortest paths between a source and
+                            a destination table, displays the result as an interactive
+                            graph, and lets you choose which path to use.<br /><br />
+                            Typical use cases:<br />
+                            <ul>
+                              <li>Navigating from a table you already have open in the
+                              Data Browser to a distantly related table</li>
+                              <li>Understanding how two tables are connected in an
+                              unfamiliar schema</li>
+                              <li>Quickly opening a chain of related tables in one
+                              step</li>
+                            </ul>
+                            <br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q2 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">How do I invoke &quot;Find Path to...&quot;?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>Right-click on any table in the
+                            <span style="font-weight: bold;">Closure View</span> of the
+                            Data Browser. The context menu contains a
+                            <span style="font-weight: bold;">Find Path to&nbsp;&hellip;</span>
+                            sub-menu listing all tables that are reachable from the
+                            current table. Each entry shows the number of hops to the
+                            destination.<br /><br />
+                            Click a destination table to open the
+                            <span style="font-style: italic;">PathFinder</span>
+                            dialog.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q3 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">What does the PathFinder dialog show?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>The dialog is split into two panels:<br /><br />
+                            <b>Left panel &#x2014; Path graph.</b> Tables are arranged
+                            in columns from left (source, distance&nbsp;0) to right
+                            (destination). Each column holds all tables at that hop
+                            distance. Edges are colour-coded by association
+                            type:<br /><br />
+                            <table style="text-align: left;" border="0" cellpadding="3"
+                            cellspacing="0">
+                              <tbody>
+                                <tr>
+                                  <td style="vertical-align: top;"><b>Red</b></td>
+                                  <td>Parent association (destination is inserted before
+                                  source)</td>
+                                </tr>
+                                <tr>
+                                  <td style="vertical-align: top;"><b>Green</b></td>
+                                  <td>Child association (source is inserted before
+                                  destination)</td>
+                                </tr>
+                                <tr>
+                                  <td style="vertical-align: top;"><b>Blue</b></td>
+                                  <td>Standard association</td>
+                                </tr>
+                                <tr>
+                                  <td style="vertical-align: top;"><b>Grey</b></td>
+                                  <td>Restricted / ignored association (visible only when
+                                  <span style="font-style: italic;">Consider
+                                  restrictions</span> is unchecked)</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                            <br />
+                            <b>Right panel &#x2014; Excluded Tables.</b> Lists candidate
+                            tables with their name and neighbour count. Use the checkboxes
+                            to exclude individual tables from the path search.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q4 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">How do I narrow down the path?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>Several controls let you refine the result:<br /><br />
+                            <table style="text-align: left;" border="0" cellpadding="3"
+                            cellspacing="0">
+                              <tbody>
+                                <tr>
+                                  <td style="vertical-align: top; white-space: nowrap;"><b>Exclude a single table</b></td>
+                                  <td>Click the delete icon next to any intermediate
+                                  table in the graph, or tick its checkbox in the
+                                  right panel. The path is recomputed
+                                  immediately.</td>
+                                </tr>
+                                <tr>
+                                  <td style="vertical-align: top; white-space: nowrap;"><b>Exclude a whole distance level</b></td>
+                                  <td>Click the delete icon shown between two distance
+                                  columns to exclude all tables at that hop distance at
+                                  once.</td>
+                                </tr>
+                                <tr>
+                                  <td style="vertical-align: top; white-space: nowrap;"><b>Force a path station</b></td>
+                                  <td>Right-click an intermediate table in the graph and
+                                  choose one of its direct successors. This forces the
+                                  path to go through that specific edge. Forced stations
+                                  are highlighted in the graph.</td>
+                                </tr>
+                                <tr>
+                                  <td style="vertical-align: top; white-space: nowrap;"><b>Undo / Redo</b></td>
+                                  <td>Use the arrow buttons in the toolbar to step back or
+                                  forward through your exclusion and station
+                                  changes.</td>
+                                </tr>
+                                <tr>
+                                  <td style="vertical-align: top; white-space: nowrap;"><b>Reset</b></td>
+                                  <td>Clears all exclusions and forced stations and
+                                  restores the original shortest-path result.</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                            <br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q5 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">What does &quot;Consider restrictions&quot; do?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>Associations that have been restricted or disabled in the
+                            data model are normally ignored by the path search. Unchecking
+                            <span style="font-weight: bold;">Consider restrictions</span>
+                            forces the algorithm to treat all associations as active,
+                            regardless of any restriction conditions. Restricted
+                            associations then appear as grey edges in the graph.<br /><br />
+                            This option is useful when the path you are looking for runs
+                            through an association that was intentionally restricted for
+                            export purposes, but is still meaningful for navigation in the
+                            Data Browser.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q6 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">What if no path is found?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>When no path exists with the current exclusions and
+                            settings, the graph is empty and the
+                            <span style="font-weight: bold;">Show Path</span> buttons are
+                            disabled. To recover:<br /><br />
+                            <ul>
+                              <li>Use <span style="font-weight: bold;">Undo</span> to
+                              remove the last exclusion and check whether a path
+                              reappears.</li>
+                              <li>Click <span style="font-weight: bold;">Reset</span> to
+                              clear all exclusions at once.</li>
+                              <li>Uncheck <span style="font-weight: bold;">Consider
+                              restrictions</span> to allow restricted associations into
+                              the search.</li>
+                            </ul>
+                            <br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q7 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">How do I apply the found path to the Data Browser?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>Once a path is found, two buttons become active:<br /><br />
+                            <table style="text-align: left;" border="0" cellpadding="3"
+                            cellspacing="0">
+                              <tbody>
+                                <tr>
+                                  <td style="vertical-align: top; white-space: nowrap;"><b>Show Path</b></td>
+                                  <td>Closes the dialog and highlights the path in the
+                                  Closure View. The tables on the path are selected so
+                                  you can follow them visually.</td>
+                                </tr>
+                                <tr>
+                                  <td style="vertical-align: top; white-space: nowrap;"><b>Show Path and open Tables</b></td>
+                                  <td>Closes the dialog, highlights the path, and
+                                  additionally opens each intermediate table as a panel
+                                  in the Data Browser &#x2014; ready for immediate
+                                  row-level navigation.</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                            <br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q8 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Can I reuse a previously found path?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>Yes. Every path you accept is automatically saved to a
+                            history file. The next time you open the PathFinder dialog for
+                            the same source&#x2013;destination pair, click
+                            <span style="font-weight: bold;">From History</span> in the
+                            toolbar to restore the previously computed path including all
+                            exclusions and forced stations.<br /><br />
+                            The history also stores the reverse direction automatically:
+                            if you found a path from table&nbsp;A to table&nbsp;B, the
+                            same path is available when you later search from
+                            B&nbsp;to&nbsp;A.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <p><br /></p>
+
+            <p><br /></p>
+
+            <p><br />
+            &nbsp;</p>
+          </td>
+        </tr>
+
+        <tr>
+          <td height="12" valign="top" width="14%"><br /></td>
+
+          <td><br /></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

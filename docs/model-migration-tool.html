@@ -1,0 +1,285 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+
+  <title>Jailer - Model Migration Tool</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii" />
+  <meta name="keywords" content="Data Export Tool" />
+  <meta name="description" content="data export referential integrity java jdbc dbms" />
+  <link rel="stylesheet" type="text/css" href="styles.css" />
+  <link rel="shortcut icon" href="favicon.ico" />
+</head>
+
+<body left-margin="0" top-margin="0">
+  <div align="left">
+    <table style="text-align: left; position: absolute; left: 0pt; top: 0pt;" border="0"
+    cellpadding="0" cellspacing="0" height="407" width="100%">
+      <tbody>
+        <tr>
+          <td colspan="2" class="bannerbackground" height="33" width="100%">
+            <table border="0" cellpadding="4" cellspacing="0" width="100%">
+              <tbody>
+                <tr>
+                  <td><a href="https://github.com/Wisser/Jailer"><img src="logo.png" hspace="10" /></td> <td class="slogan" width="100%"></a>
+
+
+
+                  <td style="text-align: right; width: 100%;"><table border="0" cellpadding="0" cellspacing="0">
+                      <tbody>
+                        <tr>
+                           <td><a href="https://github.com/Wisser/Jailer"><img src="GitHub-Mark-64px.png" title="GitHub" /></a> </td></tr><tr style="height: 100%;"><td>&nbsp;</td>
+                        </tr>
+                      </tbody>
+                    </table> </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td colspan="2" class="nav1background"  width="100%">&nbsp;
+          <b><font color="#FFFFFF"><a href="home.htm" target="_self" class=
+          "tlink">&nbsp;Home&nbsp;</a> <a href="quicktour.htm" target="_self"
+          class="tlink">&nbsp;Quick Tour&nbsp;</a> <a href="exporting-data.htm"
+          target="_self" class="tlink">&nbsp;Tutorial&nbsp;</a> <a href=
+          "data-browsing.html" target="_self" class="tlink">&nbsp;Data Browser&nbsp;</a> <a class="tlink" href="videos.html" target="_self">&nbsp;Videos&nbsp;</a>
+          <a href="faq.html" target="_self" class="tlinkA">&nbsp;FAQ&nbsp;</a>
+          <a href="api.html" target="_self" class="tlink">&nbsp;API&nbsp;</a>
+          <a href="design.htm" target="_self" class=
+          "tlink">&nbsp;Documentation&nbsp;</a> <a href=
+          "http://sourceforge.net/forum/?group_id=197260" target="_self" class=
+          "tlink">&nbsp;Forum&nbsp;</a> <a href=
+          "http://sourceforge.net/project/showfiles.php?group_id=197260" target="_self"
+          class="tlink">&nbsp;Download&nbsp;</a>  &nbsp;&nbsp;&nbsp;
+          &nbsp;&nbsp;&nbsp;</font></b></td>
+        </tr>
+
+        <tr>
+          <td colspan="2" class="spacer" width="100%"></td> </tr><tr><td class="lmenucontainer">&nbsp;</td>
+        </tr>
+
+        <tr>
+          <td class="lmenucontainer" height="100%" valign="top" width="14%">
+            <div align="center">
+              <center>
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                  <tbody>
+                    <tr>
+                      <td height="6px" width="100%"> </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </center>
+            </div>
+
+            <ul>
+              <li>FAQ</li>
+              <ul>
+                <li><a href="faq.html" target="_self" class="llink">General Questions</a></li>
+                <li><a href="analyse-sql-script.html" target="_self" class="llink">Analyse SQL Script</a></li>
+                <li><a href="model-migration-tool.html" target="_self" class="llinkA">Model Migration Tool</a></li>
+                <li><a href="find-path.html" target="_self" class="llink">Find Path to...</a></li>
+                <li><a href="subset-by-example-faq.html" target="_self" class="llink">Subset by Example</a></li>
+              </ul>
+            </ul>
+
+            <table border="0" cellpadding="5" cellspacing="0" width="100%">
+              <tbody>
+                <tr>
+                  <td class="content2background"><img style="width: 160px; height: 1px;"
+                  alt="" src="architecture-Dateien/vgradp.gif" /></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <p>&nbsp;</p>
+          </td>
+
+          <td class="contentbackground" height="418" valign="top" width="86%">
+            <div align="right">
+              <table border="0" cellpadding="0" cellspacing="0" height="542" width="98%">
+                <tbody>
+                  <tr>
+                    <td class="contentbackground" height="21" width="100%">&nbsp;</td>
+                  </tr>
+
+                  <tr>
+                    <td class="content" height="520" valign="top" width="100%">
+
+                      <big><span style="font-weight: bold;">The Model Migration Tool<br />
+                      <br /></span></big>
+
+                      <span>When the underlying data model is updated &#x2014; for
+                      example after running <span style="font-weight: bold;">Data Model
+                      &rarr; Analyze Database</span> to pick up schema changes &#x2014;
+                      existing extraction models may be affected by newly discovered
+                      associations. The <span style="font-style: italic;">Model Migration
+                      Tool</span> guides you through a review of these new associations so
+                      that none of them silently affects your export without a conscious
+                      decision.<br /><br /></span>
+
+                      <table style="text-align: left;" border="0" cellpadding="3"
+                      cellspacing="0">
+                        <tbody>
+
+                          <!-- Q1 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">When does the Model Migration Tool appear?&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>The tool opens automatically the first time you load an
+                            extraction model after its data model has been updated. The
+                            trigger is the presence of associations that are new in the
+                            data model &#x2014; i.e. not recorded in the saved extraction
+                            model &#x2014; <b>and</b> that are directly or indirectly
+                            connected to one of the extraction model's subject
+                            tables.<br /><br />
+                            Associations that are not reachable from any subject table are
+                            not shown; they cannot affect the export result and require no
+                            decision.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q2 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">What does the dialog show?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>The dialog contains a table with one row per pending
+                            association. The columns are:<br />
+                            <table style="text-align: left; width: 100%;" border="0"
+                            cellpadding="4" cellspacing="0">
+                              <tbody>
+                                <tr>
+                                  <td style="font-weight: bold; vertical-align: top;">From</td>
+                                  <td>Source table of the association</td>
+                                </tr>
+                                <tr>
+                                  <td style="font-weight: bold; vertical-align: top;">To</td>
+                                  <td>Destination table of the association</td>
+                                </tr>
+                                <tr>
+                                  <td style="font-weight: bold; vertical-align: top;">Condition</td>
+                                  <td>The SQL join condition</td>
+                                </tr>
+                                <tr>
+                                  <td style="font-weight: bold; vertical-align: top;">Name</td>
+                                  <td>The association name as defined in the data model</td>
+                                </tr>
+                                <tr>
+                                  <td style="font-weight: bold; vertical-align: top;">Checked</td>
+                                  <td>Checkbox to confirm that a decision has been made
+                                  for this association</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                            <br />
+                            Clicking a row selects the association in the main editor
+                            view, where you can inspect the join condition in full
+                            context.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q3 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">How do I work through the list?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>For each association in the list, decide whether it should
+                            participate in future exports:<br />
+                            <ul>
+                              <li><b>Include without restriction</b> &#x2014; the
+                              association is already enabled by default. Simply tick the
+                              <span style="font-weight: bold;">Checked</span> checkbox to
+                              confirm your decision.</li>
+                              <li><b>Restrict or exclude</b> &#x2014; click the row to
+                              select the association in the editor, define a restriction
+                              condition (or set it to <span style="font-style: italic;">false</span>
+                              to exclude entirely), then tick
+                              <span style="font-weight: bold;">Checked</span>.</li>
+                            </ul>
+                            Use <span style="font-weight: bold;">"Check all"</span> to
+                            mark all remaining associations as reviewed in one step, if
+                            the defaults are acceptable for all of them.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q4 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">What if I close the dialog before I am done?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>Closing the dialog does not discard your progress. As long
+                            as unchecked associations remain, a red
+                            <span style="font-weight: bold;">"Migration pending"</span>
+                            button is shown in the toolbar at the top of the Extraction
+                            Model Editor. Click it to reopen the dialog at any
+                            time.<br /><br />
+                            The dialog can also be <b>docked</b> as a tab into the
+                            Closure View panel using the
+                            <span style="font-weight: bold;">"Dock"</span> button, so it
+                            stays visible while you work in the editor.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q5 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Can I save the extraction model before migration is complete?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>Yes. Saving an extraction model with pending associations
+                            is fully supported. The pending status of each unchecked
+                            association is stored in the model file. The next time you
+                            open the model, the Migration Tool reappears with the same
+                            remaining associations so you can continue from where you left
+                            off.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q6 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">When is the migration finished?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>Migration is complete when every association in the list
+                            has been checked off. At that point the dialog closes
+                            automatically, the <span style="font-weight: bold;">"Migration
+                            pending"</span> button disappears from the toolbar, and the
+                            extraction model is ready for use without any further
+                            action.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <p><br /></p>
+
+            <p><br /></p>
+
+            <p><br />
+            &nbsp;</p>
+          </td>
+        </tr>
+
+        <tr>
+          <td height="12" valign="top" width="14%"><br /></td>
+
+          <td><br /></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

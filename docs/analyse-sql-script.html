@@ -1,0 +1,377 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+
+  <title>Jailer - Analyse SQL Script</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii" />
+  <meta name="keywords" content="Data Export Tool" />
+  <meta name="description" content="data export referential integrity java jdbc dbms" />
+  <link rel="stylesheet" type="text/css" href="styles.css" />
+  <link rel="shortcut icon" href="favicon.ico" />
+</head>
+
+<body left-margin="0" top-margin="0">
+  <div align="left">
+    <table style="text-align: left; position: absolute; left: 0pt; top: 0pt;" border="0"
+    cellpadding="0" cellspacing="0" height="407" width="100%">
+      <tbody>
+        <tr>
+          <td colspan="2" class="bannerbackground" height="33" width="100%">
+            <table border="0" cellpadding="4" cellspacing="0" width="100%">
+              <tbody>
+                <tr>
+                  <td><a href="https://github.com/Wisser/Jailer"><img src="logo.png" hspace="10" /></td> <td class="slogan" width="100%"></a>
+
+
+
+                  <td style="text-align: right; width: 100%;"><table border="0" cellpadding="0" cellspacing="0">
+                      <tbody>
+                        <tr>
+                           <td><a href="https://github.com/Wisser/Jailer"><img src="GitHub-Mark-64px.png" title="GitHub" /></a> </td></tr><tr style="height: 100%;"><td>&nbsp;</td>
+                        </tr>
+                      </tbody>
+                    </table> </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td colspan="2" class="nav1background"  width="100%">&nbsp;
+          <b><font color="#FFFFFF"><a href="home.htm" target="_self" class=
+          "tlink">&nbsp;Home&nbsp;</a> <a href="quicktour.htm" target="_self"
+          class="tlink">&nbsp;Quick Tour&nbsp;</a> <a href="exporting-data.htm"
+          target="_self" class="tlink">&nbsp;Tutorial&nbsp;</a> <a href=
+          "data-browsing.html" target="_self" class="tlink">&nbsp;Data Browser&nbsp;</a> <a class="tlink" href="videos.html" target="_self">&nbsp;Videos&nbsp;</a>
+          <a href="faq.html" target="_self" class="tlinkA">&nbsp;FAQ&nbsp;</a>
+          <a href="api.html" target="_self" class="tlink">&nbsp;API&nbsp;</a>
+          <a href="design.htm" target="_self" class=
+          "tlink">&nbsp;Documentation&nbsp;</a> <a href=
+          "http://sourceforge.net/forum/?group_id=197260" target="_self" class=
+          "tlink">&nbsp;Forum&nbsp;</a> <a href=
+          "http://sourceforge.net/project/showfiles.php?group_id=197260" target="_self"
+          class="tlink">&nbsp;Download&nbsp;</a>  &nbsp;&nbsp;&nbsp;
+          &nbsp;&nbsp;&nbsp;</font></b></td>
+        </tr>
+
+        <tr>
+          <td colspan="2" class="spacer" width="100%"></td> </tr><tr><td class="lmenucontainer">&nbsp;</td>
+        </tr>
+
+        <tr>
+          <td class="lmenucontainer" height="100%" valign="top" width="14%">
+            <div align="center">
+              <center>
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                  <tbody>
+                    <tr>
+                      <td height="6px" width="100%"> </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </center>
+            </div>
+
+            <ul>
+              <li>FAQ</li>
+              <ul>
+                <li><a href="faq.html" target="_self" class="llink">General Questions</a></li>
+                <li><a href="analyse-sql-script.html" target="_self" class="llinkA">Analyse SQL Script</a></li>
+                <li><a href="model-migration-tool.html" target="_self" class="llink">Model Migration Tool</a></li>
+                <li><a href="find-path.html" target="_self" class="llink">Find Path to...</a></li>
+                <li><a href="subset-by-example-faq.html" target="_self" class="llink">Subset by Example</a></li>
+              </ul>
+            </ul>
+
+            <table border="0" cellpadding="5" cellspacing="0" width="100%">
+              <tbody>
+                <tr>
+                  <td class="content2background"><img style="width: 160px; height: 1px;"
+                  alt="" src="architecture-Dateien/vgradp.gif" /></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <p>&nbsp;</p>
+          </td>
+
+          <td class="contentbackground" height="418" valign="top" width="86%">
+            <div align="right">
+              <table border="0" cellpadding="0" cellspacing="0" height="542" width="98%">
+                <tbody>
+                  <tr>
+                    <td class="contentbackground" height="21" width="100%">&nbsp;</td>
+                  </tr>
+
+                  <tr>
+                    <td class="content" height="520" valign="top" width="100%">
+
+                      <big><span style="font-weight: bold;">Using &quot;Analyse SQL Script&quot; to Discover Associations<br />
+                      <br /></span></big>
+
+                      <span>When a database schema has no foreign key constraints defined,
+                      Jailer cannot automatically detect the associations between tables
+                      during model building. The <span style="font-style: italic;">Analyse
+                      SQL Script</span> tool helps fill that gap: it reads an existing SQL
+                      script and proposes associations derived from column-equality
+                      conditions found in JOIN and WHERE clauses.<br /><br /></span>
+
+                      <table style="text-align: left;" border="0" cellpadding="3"
+                      cellspacing="0">
+                        <tbody>
+
+                          <!-- Q1 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">What is the &quot;Analyse SQL Script&quot; feature and when should I use it?&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>Many legacy databases or databases managed by third-party
+                            applications do not declare foreign key constraints at the
+                            database level, even though the application clearly joins
+                            certain tables together. Without foreign keys, Jailer's
+                            <span style="font-style: italic;">Analyse Database</span>
+                            step cannot detect these relationships, and the data model
+                            will be missing all such associations.<br /><br />
+                            <span style="font-style: italic;">Analyse SQL Script</span>
+                            (found in the <span style="font-weight: bold;">Data Model</span>
+                            menu of the Extraction Model Editor) solves this by analysing
+                            an existing SQL file &#x2014; such as application query logs,
+                            ORM-generated SQL, migration scripts, or hand-written
+                            reports &#x2014; and proposing associations for every
+                            column-equality condition it finds between two different
+                            tables.<br /><br />
+                            Use this feature whenever the data model is incomplete due to
+                            absent foreign key definitions.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q2 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">What SQL scripts are suitable as input?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>The analyser looks for SELECT statements that join two or
+                            more tables. Any condition of the form
+                            <span style="font-style: italic;">TableA.col = TableB.col</span>
+                            &#x2014; whether in an ON clause or a WHERE clause &#x2014;
+                            is a candidate for a new association. Transitive equalities
+                            (A=B and B=C) are also resolved.<br /><br />
+                            Good sources for input scripts:<br />
+                            <ul>
+                              <li>Slow-query or general query logs captured from the
+                              database server</li>
+                              <li>SQL files generated by ORM frameworks (Hibernate,
+                              MyBatis, etc.)</li>
+                              <li>Manually written report or migration SQL scripts</li>
+                              <li>Stored procedure bodies exported as plain SQL</li>
+                            </ul>
+                            DML and DDL statements (INSERT, UPDATE, CREATE TABLE, &hellip;)
+                            are harmlessly ignored &#x2014; only SELECT statements are
+                            analysed. SQL comments starting with
+                            <span style="font-style: italic;">--</span> are stripped
+                            automatically.<br /><br />
+                            Statements must be delimited either by <b>empty lines</b>
+                            (the default) or by <b>semicolons</b> (;). A single file can
+                            contain thousands of statements; the tool processes them all
+                            in one pass.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q3 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">How do I open the tool?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>Open the Extraction Model Editor, then choose<br /><br />
+                            <span style="font-weight: bold;">Data Model &rarr; Analyse SQL Script</span><br /><br />
+                            The <span style="font-style: italic;">Analyse SQL</span>
+                            dialog opens. It has three tabs:
+                            <span style="font-weight: bold;">Proposals</span>,
+                            <span style="font-weight: bold;">Known</span>, and
+                            <span style="font-weight: bold;">Problems</span>.
+                            <br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q4 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">How do I load and analyse a SQL script?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>
+                              <ol>
+                                <li>Click <span style="font-weight: bold;">&quot;Load and
+                                Analyze SQL Script&quot;</span> in the dialog.</li>
+                                <li>Select the <span style="font-style: italic;">.sql</span>
+                                file (or any plain-text file containing SQL) in the file
+                                chooser.</li>
+                                <li>Choose the statement delimiter:
+                                  <ul>
+                                    <li><b>&#9745; Empty line separates statements</b>
+                                    (default) &#x2014; a blank line marks the boundary
+                                    between statements.</li>
+                                    <li>Unchecked &#x2014; each statement must end with a
+                                    semicolon (<span style="font-style: italic;">;</span>).</li>
+                                  </ul>
+                                </li>
+                                <li>The engine reads the file statement by statement.
+                                A progress bar shows the overall progress. Results appear
+                                in the tabs as they are found &#x2014; you do not have to
+                                wait for the full file to be processed.</li>
+                              </ol>
+                            &nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q5 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">How do I interpret the three result tabs?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>
+                              <table style="text-align: left; width: 100%;" border="0"
+                              cellpadding="4" cellspacing="0">
+                                <tbody>
+                                  <tr>
+                                    <td style="font-weight: bold; vertical-align: top;">Proposals</td>
+                                    <td>New associations that the analyser found and that
+                                    are not yet part of the data model. Each row shows the
+                                    two table names and the auto-generated join condition
+                                    (e.g.
+                                    <span style="font-style: italic;">A.customer_id=B.id</span>).
+                                    Use the checkbox in each row to decide which proposals
+                                    to accept.</td>
+                                  </tr>
+                                  <tr>
+                                    <td style="font-weight: bold; vertical-align: top;">Known</td>
+                                    <td>Associations that were detected in the script but
+                                    already exist in the data model. This tab is
+                                    informational only and requires no action.</td>
+                                  </tr>
+                                  <tr>
+                                    <td style="font-weight: bold; vertical-align: top;">Problems</td>
+                                    <td>SQL statements that the parser could not process,
+                                    listed with their line number and the error message.
+                                    Up to 1&#x202F;000 errors are shown. Any proposals
+                                    found before an error are still valid &#x2014; errors
+                                    only mean that those particular statements were
+                                    skipped.</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            <br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q6 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Can I refine a proposed join condition before accepting it?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>Yes. Click any row in the <span style="font-weight: bold;">Proposals</span>
+                            tab to select it. A <span style="font-weight: bold;">Condition Editor</span>
+                            panel appears below the table showing the current join
+                            condition as editable SQL.<br /><br />
+                            Edit the condition as needed &#x2014; for example to add a
+                            type cast, narrow the join with an extra predicate, or correct
+                            a false positive &#x2014; then click
+                            <span style="font-weight: bold;">Apply</span> to save the
+                            change. The updated condition is shown immediately in the
+                            table row.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q7 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">How do I accept proposals and add them to the data model?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>
+                              <ol>
+                                <li>Check the proposals you want to keep. Use
+                                <span style="font-weight: bold;">&quot;Select all&quot;</span>
+                                or <span style="font-weight: bold;">&quot;Deselect all&quot;</span>
+                                for bulk selection.</li>
+                                <li>Click <span style="font-weight: bold;">&quot;Accept
+                                selected proposals&quot;</span>.</li>
+                                <li>A confirmation message reports how many associations
+                                were added and how many were already known.</li>
+                                <li>The dialog closes and the Data Model Editor is
+                                refreshed. The new associations are immediately available
+                                and visible in the graphical view.</li>
+                              </ol>
+                            Each accepted association receives an auto-generated name of
+                            the form <span style="font-style: italic;">P_TableA_TableB</span>
+                            (with a numeric suffix if necessary to avoid duplicates).
+                            You can rename it later in the Data Model Editor.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q8 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">What should I do when there are many parsing errors?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>Parsing errors are normal with large or heterogeneous SQL
+                            files. The most common causes are:<br />
+                            <ul>
+                              <li>Vendor-specific SQL extensions or hints (e.g. Oracle
+                              <span style="font-style: italic;">/* + HINT */</span>,
+                              SQL Server
+                              <span style="font-style: italic;">WITH (NOLOCK)</span>)</li>
+                              <li>Very complex or deeply nested subqueries that exceed
+                              the 4-second parse timeout</li>
+                              <li>Missing semicolons when the semicolon-delimiter mode
+                              is selected</li>
+                              <li>Non-SQL content mixed into the file</li>
+                            </ul>
+                            Strategies to reduce errors:<br />
+                            <ul>
+                              <li>Pre-process the file to extract only standard SELECT
+                              statements and strip vendor-specific syntax.</li>
+                              <li>Switch to empty-line delimiter mode if statements lack
+                              semicolons.</li>
+                              <li>Split a large file into smaller chunks and analyse
+                              each chunk separately.</li>
+                            </ul>
+                            Even with many errors, proposals found in the
+                            successfully-parsed statements are fully valid and can be
+                            accepted normally.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <p><br /></p>
+
+            <p><br /></p>
+
+            <p><br />
+            &nbsp;</p>
+          </td>
+        </tr>
+
+        <tr>
+          <td height="12" valign="top" width="14%"><br /></td>
+
+          <td><br /></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
