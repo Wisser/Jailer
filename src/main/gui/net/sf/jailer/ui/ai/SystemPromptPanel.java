@@ -53,7 +53,8 @@ public class SystemPromptPanel extends JPanel {
     public static final String DEFAULT_TEMPLATE =
         "You are a SQL expert for {dbmsName}.\n"
         + "Database schema: {schema}\n"
-        + "Return ONLY raw SQL - no explanation, no code fences, no markdown, no trailing semicolon. "
+        + "Return ONLY raw SQL - no explanation, no code fences, no markdown, no trailing semicolon.\n"
+        + "Use tab characters for formatting.\n"
         + "Use only tables and columns from the schema above.\n"
         + "\n"
         + "Use aliases for complex expressions in select clauses.\n"
@@ -66,6 +67,7 @@ public class SystemPromptPanel extends JPanel {
         + "Analyze, explain, or optimize the SQL query provided by the user.\n"
         + "First output only the resulting SQL - no code fences, no trailing semicolon.\n"
         + "Retain comments.\n"
+        + "Use tab characters for formatting.\n"
         + "Then output a new line containing exactly: \"{separator}\".\n"
         + "Then provide a markdown, plain-text explanation of the changes or analysis.\n"
         + "Use only tables and columns from the schema above.\n"
@@ -211,33 +213,3 @@ public class SystemPromptPanel extends JPanel {
         UISettings.store(SETTING_FIRST_PASS_SYSTEM_PROMPT, firstPassPromptArea.getText().trim());
     }
 }
-
-// TODO
-// TODO add: "use tabs for indentation"
-
-// TODO
-// TODO no background coloring in sqlconsole result title:
-// SELECT
-//C.CUSTOMER_ID,
-//C.FIRST_NAME,
-//C.LAST_NAME,
-//SUM(P.AMOUNT) AS REVENUE,
-//COUNT(DISTINCT P.RENTAL_ID) AS RENTALS,
-//CC.CITY AS CUSTOMER_CITY,
-//SC.CITY AS STORE_CITY,  C.FIRST_NAME,
-//FROM
-//CUSTOMER C
-//LEFT JOIN PAYMENT P ON P.CUSTOMER_ID = C.CUSTOMER_ID
-//LEFT JOIN ADDRESS CA ON CA.ADDRESS_ID = C.ADDRESS_ID
-//LEFT JOIN CITY CC ON CC.CITY_ID = CA.CITY_ID
-//LEFT JOIN STORE S ON S.STORE_ID = C.STORE_ID
-//LEFT JOIN ADDRESS SA ON SA.ADDRESS_ID = S.ADDRESS_ID
-//LEFT JOIN CITY SC ON SC.CITY_ID = SA.CITY_ID
-//GROUP BY
-//C.CUSTOMER_ID,
-//C.FIRST_NAME,
-//C.LAST_NAME,
-//CC.CITY,
-//SC.CITY
-//ORDER BY
-//REVENUE DESC
