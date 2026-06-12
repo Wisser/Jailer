@@ -1,0 +1,387 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+
+  <title>Jailer - Query Builder</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii" />
+  <meta name="keywords" content="Data Export Tool" />
+  <meta name="description" content="data export referential integrity java jdbc dbms" />
+  <link rel="stylesheet" type="text/css" href="styles.css" />
+  <link rel="shortcut icon" href="favicon.ico" />
+</head>
+
+<body left-margin="0" top-margin="0">
+  <div align="left">
+    <table style="text-align: left; position: absolute; left: 0pt; top: 0pt;" border="0"
+    cellpadding="0" cellspacing="0" height="407" width="100%">
+      <tbody>
+        <tr>
+          <td colspan="2" class="bannerbackground" height="33" width="100%">
+            <table border="0" cellpadding="4" cellspacing="0" width="100%">
+              <tbody>
+                <tr>
+                  <td><a href="https://github.com/Wisser/Jailer"><img src="logo.png" hspace="10" /></td> <td class="slogan" width="100%"></a>
+
+
+
+                  <td style="text-align: right; width: 100%;"><table border="0" cellpadding="0" cellspacing="0">
+                      <tbody>
+                        <tr>
+                           <td><a href="https://github.com/Wisser/Jailer"><img src="GitHub-Mark-64px.png" title="GitHub" /></a> </td></tr><tr style="height: 100%;"><td>&nbsp;</td>
+                        </tr>
+                      </tbody>
+                    </table> </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td colspan="2" class="nav1background"  width="100%">&nbsp;
+          <b><font color="#FFFFFF"><a href="home.htm" target="_self" class=
+          "tlink">&nbsp;Home&nbsp;</a> <a href="quicktour.htm" target="_self"
+          class="tlink">&nbsp;Quick Tour&nbsp;</a> <a href="exporting-data.htm"
+          target="_self" class="tlink">&nbsp;Tutorial&nbsp;</a> <a href=
+          "data-browsing.html" target="_self" class="tlink">&nbsp;Data Browser&nbsp;</a> <a class="tlink" href="videos.html" target="_self">&nbsp;Videos&nbsp;</a>
+          <a href="faq.html" target="_self" class="tlinkA">&nbsp;FAQ&nbsp;</a>
+          <a href="api.html" target="_self" class="tlink">&nbsp;API&nbsp;</a>
+          <a href="design.htm" target="_self" class=
+          "tlink">&nbsp;Documentation&nbsp;</a> <a href=
+          "http://sourceforge.net/forum/?group_id=197260" target="_self" class=
+          "tlink">&nbsp;Forum&nbsp;</a> <a href=
+          "http://sourceforge.net/project/showfiles.php?group_id=197260" target="_self"
+          class="tlink">&nbsp;Download&nbsp;</a>  &nbsp;&nbsp;&nbsp;
+          &nbsp;&nbsp;&nbsp;</font></b></td>
+        </tr>
+
+        <tr>
+          <td colspan="2" class="spacer" width="100%"></td> </tr><tr><td class="lmenucontainer">&nbsp;</td>
+        </tr>
+
+        <tr>
+          <td class="lmenucontainer" height="100%" valign="top" width="14%">
+            <div align="center">
+              <center>
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                  <tbody>
+                    <tr>
+                      <td height="6px" width="100%"> </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </center>
+            </div>
+
+            <ul>
+              <li>FAQ</li>
+              <ul>
+                <li><a href="faq.html" target="_self" class="llink">General Questions</a></li>
+                <li><a href="analyse-sql-script.html" target="_self" class="llink">Analyse SQL Script</a></li>
+                <li><a href="model-migration-tool.html" target="_self" class="llink">Model Migration Tool</a></li>
+                <li><a href="find-path.html" target="_self" class="llink">Find Path to...</a></li>
+                <li><a href="subset-by-example-faq.html" target="_self" class="llink">Subset by Example</a></li>
+                <li><a href="query-builder-faq.html" target="_self" class="llinkA">Query Builder</a></li>
+              </ul>
+            </ul>
+
+            <table border="0" cellpadding="5" cellspacing="0" width="100%">
+              <tbody>
+                <tr>
+                  <td class="content2background"><img style="width: 160px; height: 1px;"
+                  alt="" src="architecture-Dateien/vgradp.gif" /></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <p>&nbsp;</p>
+          </td>
+
+          <td class="contentbackground" height="418" valign="top" width="86%">
+            <div align="right">
+              <table border="0" cellpadding="0" cellspacing="0" height="542" width="98%">
+                <tbody>
+                  <tr>
+                    <td class="contentbackground" height="21" width="100%">&nbsp;</td>
+                  </tr>
+
+                  <tr>
+                    <td class="content" height="520" valign="top" width="100%">
+
+                      <big><span style="font-weight: bold;">The Query Builder<br />
+                      <br /></span></big>
+
+                      <span>The <span style="font-style: italic;">Query Builder</span>
+                      is a feature of the <span style="font-weight: bold;">Data
+                      Browser</span>. It generates a SELECT statement for the selected
+                      table panel and can hand it straight to the SQL Console for
+                      immediate execution &#x2014; no dialog required. A full dialog
+                      is also available for refining the query with joins, column
+                      selection, and join types before executing.</span>
+                      <br /><br />
+                      <div class="info" style="padding: 8px 12px;">
+                      <span style="font-weight: bold;">The initially generated query always reflects what you see in the selected panel</span><br />
+                      What you see in the selected panel is what you get &#x2014;
+                      always. Joins toward the root table are INNER JOINs;
+                      joins toward child tables are LEFT JOINs.
+                      </div>
+                      <br /><br />
+
+                      <table style="text-align: left;" border="0" cellpadding="3"
+                      cellspacing="0">
+                        <tbody>
+
+                          <!-- Q1 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">What is the Query Builder and when should I use it?&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>The Query Builder is a visual tool for constructing SQL
+                            SELECT statements. Starting from a subject table you join
+                            further tables along their foreign-key associations, select
+                            columns, and choose join types. The generated SQL is
+                            displayed in real time and ready to copy or execute.<br /><br />
+                            It is most useful when:<br />
+                            <ul>
+                              <li>You want to query across several related tables without
+                              writing the JOIN syntax manually.</li>
+                              <li>You are exploring an unfamiliar schema and want to see
+                              which tables can be joined to the current one.</li>
+                              <li>You need a quick starting point that you can then
+                              extend with GROUP BY, ORDER BY, or other clauses in the
+                              SQL Console.</li>
+                            </ul>
+                            <br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q2 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">How do I open the Query Builder?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>Both entry points are available from the selected table
+                            panel in the <span style="font-weight: bold;">Data
+                            Browser</span>, via keyboard shortcut or the panel's
+                            context menu:<br /><br />
+                            <table style="text-align: left;" border="0" cellpadding="3"
+                            cellspacing="0">
+                              <tbody>
+                                <tr>
+                                  <td style="vertical-align: top; white-space: nowrap;"><b>SQL Console</b> (Ctrl+Enter)</td>
+                                  <td>The most common way. Jailer generates a SELECT
+                                  statement for the selected table panel and executes
+                                  it immediately &#x2014; no dialog required.</td>
+                                </tr>
+                                <tr>
+                                  <td style="vertical-align: top; white-space: nowrap;"><b>Query Builder</b> (Ctrl+Q)</td>
+                                  <td>Opens the full Query Builder dialog, where you
+                                  can extend the query with joins to related tables,
+                                  explicit column selection, and join-type choices
+                                  before sending it to the console.</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                            <br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q3 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">How do I build a query?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>The dialog is split into two panes. The left pane shows
+                            the join tree; the right pane displays the generated
+                            SQL.<br /><br />
+                            <ol>
+                              <li>The subject table appears as the first row in the join
+                              tree, labelled <span style="font-style: italic;">From</span>.
+                              </li>
+                              <li>To join an additional table, click the
+                              <span style="font-weight: bold;">+</span> button next to
+                              any table in the tree and select the target table from the
+                              dropdown. Only tables that have a defined association to
+                              the current table are offered.</li>
+                              <li>For each joined table, choose
+                              <span style="font-weight: bold;">Join</span> (inner) or
+                              <span style="font-weight: bold;">Left Join</span> from the
+                              dropdown on that row.</li>
+                              <li>Tick <span style="font-weight: bold;">select
+                              columns</span> on any table to include its columns
+                              explicitly in the SELECT list. If no table has this box
+                              checked, <span style="font-style: italic;">SELECT
+                              *</span> is used.</li>
+                              <li>Optionally assign a short alias in the
+                              <span style="font-style: italic;">as</span> field.
+                              Conflicting aliases are highlighted in red.</li>
+                              <li>The SQL in the right pane updates instantly. When you
+                              are satisfied, use one of the buttons at the bottom to copy
+                              or execute the query.</li>
+                            </ol>
+                            &nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q4 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">What is the difference between &quot;Join&quot; and &quot;Left Join&quot;?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td><b>Join</b> (inner join) returns only rows where a
+                            matching row exists in the joined table. Rows from the parent
+                            table that have no counterpart in the joined table are
+                            dropped.<br /><br />
+                            <b>Left Join</b> (left outer join) keeps all rows from the
+                            parent table, filling the joined table's columns with
+                            <span style="font-style: italic;">NULL</span> where no match
+                            exists. When a Left Join is used, the
+                            <span style="font-weight: bold;">distinct</span> keyword is
+                            added automatically to avoid duplicate rows caused by
+                            one-to-many relationships.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q5 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">How do I select specific columns instead of SELECT *?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>Tick the <span style="font-weight: bold;">select
+                            columns</span> checkbox on any table in the join tree. As
+                            soon as at least one table has this box checked, every
+                            checked table's columns are listed individually in the SELECT
+                            clause, fully qualified with the table alias (e.g.
+                            <span style="font-style: italic;">C.ID, C.NAME,
+                            O.ORDER_DATE</span>). Tables without the box checked
+                            contribute no columns to the explicit list.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q6 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">What does the &quot;distinct&quot; checkbox do?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>When checked, <span style="font-style: italic;">SELECT
+                            DISTINCT</span> is emitted instead of
+                            <span style="font-style: italic;">SELECT</span>, so duplicate
+                            rows are removed from the result. The checkbox is set
+                            automatically when a Left Join is added, because a
+                            one-to-many Left Join would otherwise multiply the parent
+                            rows. You can also set or clear it manually at any
+                            time.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q7 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">How do I use the generated SQL?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>Several buttons at the bottom of the dialog let you
+                            use the query:<br /><br />
+                            <table style="text-align: left;" border="0" cellpadding="3"
+                            cellspacing="0">
+                              <tbody>
+                                <tr>
+                                  <td style="vertical-align: top; white-space: nowrap;"><b>SQL Console</b></td>
+                                  <td>Sends the query to the SQL Console and executes it
+                                  immediately. Results appear in the console's result
+                                  grid.</td>
+                                </tr>
+                                <tr>
+                                  <td style="vertical-align: top; white-space: nowrap;"><b>Copy to Clipboard</b></td>
+                                  <td>Copies the formatted multi-line SQL to the
+                                  clipboard.</td>
+                                </tr>
+                                <tr>
+                                  <td style="vertical-align: top; white-space: nowrap;"><b>Copy as Single Line</b></td>
+                                  <td>Collapses the SQL to a single line before
+                                  copying &#x2014; useful for pasting into tools that
+                                  do not accept line breaks.</td>
+                                </tr>
+                                <tr>
+                                  <td style="vertical-align: top; white-space: nowrap;"><b>Save</b></td>
+                                  <td>Saves the SQL to a file.</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                            <br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q8 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Can I add ORDER BY, GROUP BY, or LIMIT to the query?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>The Query Builder UI does not have dedicated controls for
+                            ORDER BY, GROUP BY, HAVING, or LIMIT. The recommended
+                            approach is to click
+                            <span style="font-weight: bold;">SQL Console</span> to send
+                            the generated SQL to the console, and then append the desired
+                            clauses there before executing.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q9 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Are there any limitations I should know about?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>A few constraints apply:<br /><br />
+                            <ul>
+                              <li><b>Single root table.</b> Every query starts from one
+                              subject table. All joins must be reachable through
+                              defined associations from that root. Arbitrary cross-joins
+                              between unrelated tables are not supported.</li>
+                              <li><b>Association-based joins only.</b> The dropdown for
+                              adding a table shows only tables that have a defined
+                              foreign-key association to the current table in the data
+                              model. Tables without such an association cannot be joined
+                              through the UI.</li>
+                              <li><b>No per-column WHERE clauses in the UI.</b> Filter
+                              conditions are attached at the association level. For more
+                              complex WHERE expressions, send the query to the SQL
+                              Console and edit it there.</li>
+                            </ul>
+                            <br />&nbsp;<br /></td>
+                          </tr>
+
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <p><br /></p>
+
+            <p><br /></p>
+
+            <p><br />
+            &nbsp;</p>
+          </td>
+        </tr>
+
+        <tr>
+          <td height="12" valign="top" width="14%"><br /></td>
+
+          <td><br /></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
