@@ -30,18 +30,6 @@ rm -rf C:/tmp/jailer
 cp -r . C:/tmp/jailer/
 rm -rf C:/tmp/jailer/admin
 
-sed s/%VERSION%/$1/g admin/Jailer.nsi > admin/tmp.nsi
-cd admin
-
-pwd
-
-
-# makensis tmp.nsi
-cd ..
-rm admin/tmp.nsi
-
-mv admin/*nstall* ..
-
 dos2unix *.sh
 chmod a+x *.sh
 
