@@ -16,7 +16,7 @@ echo 2
 pwd
 
 sed "s/stateOffset = 100/stateOffset = 0/g" src/main/gui/net/sf/jailer/ui/Environment.java --in-place
-ant all &> ~/anterrtext
+/c/Tools/apache-ant-1.10.17/bin/ant all &> ~/anterrtext
 sed "s/stateOffset = 0/stateOffset = 100/g" src/main/gui/net/sf/jailer/ui/Environment.java --in-place
 
 rm maven-artifacts/dummy
