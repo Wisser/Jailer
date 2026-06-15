@@ -25,11 +25,15 @@ cd
 cd tmp
 rm -r _2$1
 mkdir _2$1
+ 
 wsl rm -rf /home/ralfw/jailer
+
 wsl unzip /mnt/c/Users/ralfw/tmp/jailer_$1.zip -d /home/ralfw
 wsl chmod a+x /home/ralfw/jailer/*.sh
+
 rm jailer_$1.zip
-wsl "cd; zip -r /mnt/c/Users/ralfw/tmp/jailer_$1.zip jailer"
+
+wsl bash -c "cd && zip -r /mnt/c/Users/ralfw/tmp/jailer_$1.zip jailer"
 
 cd
 cd tmp
@@ -104,5 +108,4 @@ echo $CP
 echo "$JAVA_HOME/bin/java" -Xmx1200M -cp $CP net.sf.jailer.ui.ExtractionModelFrame
 "$JAVA_HOME/bin/java" -Xmx1200M -cp $CP net.sf.jailer.ui.ExtractionModelFrame
 
- read -p "Press Enter to continue"
  
