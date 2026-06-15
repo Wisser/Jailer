@@ -1,0 +1,10 @@
+out/
+.metadata/
+.sonarlint/
+dist/
+*.class
+demo-db/*.trace.db
+jailer.jar
+jailer-engine*.jar
+admin/build-via-docker/
+admin/buildprotokoll.txt
