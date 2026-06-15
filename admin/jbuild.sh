@@ -25,15 +25,11 @@ cd
 cd tmp
 rm -r _2$1
 mkdir _2$1
-echo wsl rm -rf /home/ralfw/jailer > _.bat
-./_.bat
-echo wsl unzip /mnt/c/Users/ralfw/tmp/jailer_$1.zip -d /home/ralfw > _.bat
-./_.bat
-echo wsl chmod a+x /home/ralfw/jailer/*.sh > _.bat
-./_.bat
+wsl rm -rf /home/ralfw/jailer
+wsl unzip /mnt/c/Users/ralfw/tmp/jailer_$1.zip -d /home/ralfw
+wsl chmod a+x /home/ralfw/jailer/*.sh
 rm jailer_$1.zip
-echo "wsl cd; zip -r /mnt/c/Users/ralfw/tmp/jailer_$1.zip jailer" > _.bat
-./_.bat
+wsl cd; zip -r /mnt/c/Users/ralfw/tmp/jailer_$1.zip jailer
 
 cd
 cd tmp
