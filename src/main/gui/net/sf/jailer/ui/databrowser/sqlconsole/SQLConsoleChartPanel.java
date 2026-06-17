@@ -97,40 +97,46 @@ public class SQLConsoleChartPanel extends JPanel {
         yCheckPanel.setLayout(new BoxLayout(yCheckPanel, BoxLayout.Y_AXIS));
         JScrollPane yPopupScroll = new JScrollPane(yCheckPanel);
         yPopupScroll.setBorder(null);
-        yPopupScroll.setPreferredSize(new Dimension(160, 150));
+        yPopupScroll.setPreferredSize(new Dimension(200, 150));
         yPopup.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
         yPopup.add(yPopupScroll);
 
-        JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 2));
 
         JLabel chartTypeLabel = new JLabel("Chart type:");
         chartTypeLabel.setToolTipText("Select the type of chart to display");
         chartTypeCombo.setToolTipText("Select the type of chart to display");
+        toolbar.add(Box.createHorizontalStrut(4));
         toolbar.add(chartTypeLabel);
+        toolbar.add(Box.createHorizontalStrut(4));
         toolbar.add(chartTypeCombo);
-        toolbar.add(Box.createHorizontalStrut(8));
+        toolbar.add(Box.createHorizontalStrut(12));
 
         JLabel xLabel = new JLabel("X:");
         xLabel.setToolTipText("Column used as the X axis (category or horizontal value)");
         xColumnCombo.setToolTipText("Column used as the X axis (category or horizontal value)");
-        xColumnCombo.setPreferredSize(new Dimension(140, xColumnCombo.getPreferredSize().height));
+        xColumnCombo.setPreferredSize(new Dimension(150, xColumnCombo.getPreferredSize().height));
         toolbar.add(xLabel);
+        toolbar.add(Box.createHorizontalStrut(4));
         toolbar.add(xColumnCombo);
+        toolbar.add(Box.createHorizontalStrut(12));
 
         JLabel yLabel = new JLabel("Y:");
         yLabel.setToolTipText("Columns used as Y values (numeric) — click to select");
         yButton.setToolTipText("Columns used as Y values (numeric) — click to select");
-        yButton.setPreferredSize(new Dimension(140, yButton.getPreferredSize().height));
+        yButton.setPreferredSize(new Dimension(200, yButton.getPreferredSize().height));
         yButton.setHorizontalAlignment(SwingConstants.LEFT);
         yButton.addActionListener(e -> yPopup.show(yButton, 0, yButton.getHeight()));
         toolbar.add(yLabel);
+        toolbar.add(Box.createHorizontalStrut(4));
         toolbar.add(yButton);
+        toolbar.add(Box.createHorizontalStrut(12));
 
-        toolbar.add(Box.createHorizontalStrut(8));
         exportButton.setToolTipText("Export chart as image file or copy to clipboard");
         exportButton.setEnabled(false);
         exportButton.addActionListener(e -> showExportMenu());
         toolbar.add(exportButton);
+        toolbar.add(Box.createHorizontalStrut(4));
 
         add(toolbar, BorderLayout.NORTH);
         add(chartContainer, BorderLayout.CENTER);
