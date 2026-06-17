@@ -73,14 +73,23 @@ public class SQLConsoleChartPanel extends JPanel {
         setLayout(new BorderLayout());
 
         JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
-        toolbar.add(new JLabel("Chart type:"));
+        JLabel chartTypeLabel = new JLabel("Chart type:");
+        chartTypeLabel.setToolTipText("Select the type of chart to display");
+        chartTypeCombo.setToolTipText("Select the type of chart to display");
+        toolbar.add(chartTypeLabel);
         toolbar.add(chartTypeCombo);
         toolbar.add(Box.createHorizontalStrut(8));
-        toolbar.add(new JLabel("X:"));
+        JLabel xLabel = new JLabel("X:");
+        xLabel.setToolTipText("Column used as the X axis (category or horizontal value)");
+        xColumnCombo.setToolTipText("Column used as the X axis (category or horizontal value)");
         xColumnCombo.setPreferredSize(new Dimension(140, xColumnCombo.getPreferredSize().height));
+        toolbar.add(xLabel);
         toolbar.add(xColumnCombo);
-        toolbar.add(new JLabel("Y:"));
+        JLabel yLabel = new JLabel("Y:");
+        yLabel.setToolTipText("Column used as the Y axis (numeric value to plot)");
+        yColumnCombo.setToolTipText("Column used as the Y axis (numeric value to plot)");
         yColumnCombo.setPreferredSize(new Dimension(140, yColumnCombo.getPreferredSize().height));
+        toolbar.add(yLabel);
         toolbar.add(yColumnCombo);
 
         add(toolbar, BorderLayout.NORTH);
