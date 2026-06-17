@@ -80,6 +80,7 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.category.CategoryItemRenderer;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
+import org.jfree.data.Range;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.data.statistics.HistogramDataset;
@@ -182,6 +183,10 @@ public class SQLConsoleChartPanel extends JPanel {
     private JFreeChart   currentChart;
     private Chart3D      currentChart3D;
     private ViewPoint3D  initialViewPoint3D;
+    private String       currentChartType = null;
+    private Range        pendingDomainRange = null;
+    private Range        pendingRangeRange  = null;
+    private ViewPoint3D  pendingViewPoint3D = null;
     private final List<Integer> columnTypes;
     private boolean suppressUpdate = false;
 
@@ -594,11 +599,39 @@ public class SQLConsoleChartPanel extends JPanel {
 
         String type = (String) chartTypeCombo.getSelectedItem();
 
+        // Save current view state (only restore when chart type is unchanged)
+        Range savedDomainRange = null;
+        Range savedRangeRange = null;
+        ViewPoint3D savedViewPoint3D = null;
+        if (type.equals(currentChartType)) {
+            if (currentChart != null) {
+                if (currentChart.getPlot() instanceof XYPlot) {
+                    XYPlot xyPlot = (XYPlot) currentChart.getPlot();
+                    if (!xyPlot.getDomainAxis().isAutoRange()) savedDomainRange = xyPlot.getDomainAxis().getRange();
+                    if (!xyPlot.getRangeAxis().isAutoRange()) savedRangeRange = xyPlot.getRangeAxis().getRange();
+                } else if (currentChart.getPlot() instanceof CategoryPlot) {
+                    CategoryPlot catPlot = (CategoryPlot) currentChart.getPlot();
+                    if (!catPlot.getRangeAxis().isAutoRange()) savedRangeRange = catPlot.getRangeAxis().getRange();
+                }
+            }
+            if (currentChart3D != null) {
+                savedViewPoint3D = new ViewPoint3D(currentChart3D.getViewPoint());
+            }
+        }
+        currentChartType = type;
+
         if (CHART_BAR_3D.equals(type) || CHART_PIE_3D.equals(type)) {
             try {
                 Chart3D chart3d = CHART_BAR_3D.equals(type)
                     ? buildBar3DChart(model, sorter, rowCount, xModelCol, yModelCols, xLabel, yLabels)
                     : buildPie3DChart(model, sorter, rowCount, xModelCol, yModelCols[0]);
+                ViewPoint3D vp3d = pendingViewPoint3D != null ? pendingViewPoint3D : savedViewPoint3D;
+                pendingViewPoint3D = null;
+                pendingDomainRange = null;
+                pendingRangeRange  = null;
+                if (vp3d != null) {
+                    chart3d.setViewPoint(vp3d);
+                }
                 currentChart = null;
                 currentChart3D = chart3d;
                 exportButton.setEnabled(true);
@@ -631,6 +664,20 @@ public class SQLConsoleChartPanel extends JPanel {
         }
 
         applySettings(chart, type);
+
+        // Pending values (from copySettingsFrom) take priority over same-panel saved state
+        Range domainRange = pendingDomainRange != null ? pendingDomainRange : savedDomainRange;
+        Range rangeRange  = pendingRangeRange  != null ? pendingRangeRange  : savedRangeRange;
+        pendingDomainRange = null;
+        pendingRangeRange  = null;
+        pendingViewPoint3D = null;
+        if (chart.getPlot() instanceof XYPlot) {
+            XYPlot xyPlot = (XYPlot) chart.getPlot();
+            if (domainRange != null) xyPlot.getDomainAxis().setRange(domainRange);
+            if (rangeRange  != null) xyPlot.getRangeAxis().setRange(rangeRange);
+        } else if (chart.getPlot() instanceof CategoryPlot) {
+            if (rangeRange != null) ((CategoryPlot) chart.getPlot()).getRangeAxis().setRange(rangeRange);
+        }
 
         currentChart = chart;
         currentChart3D = null;
@@ -1099,9 +1146,25 @@ public class SQLConsoleChartPanel extends JPanel {
         } finally {
             suppressUpdate = false;
         }
-        if (currentTable != null) {
-            refreshColumnCombos();
+        // Copy view state (axis zoom / 3D viewpoint) from source panel
+        pendingDomainRange = null;
+        pendingRangeRange  = null;
+        pendingViewPoint3D = null;
+        if (other.currentChart != null) {
+            if (other.currentChart.getPlot() instanceof XYPlot) {
+                XYPlot xyPlot = (XYPlot) other.currentChart.getPlot();
+                if (!xyPlot.getDomainAxis().isAutoRange()) pendingDomainRange = xyPlot.getDomainAxis().getRange();
+                if (!xyPlot.getRangeAxis().isAutoRange())  pendingRangeRange  = xyPlot.getRangeAxis().getRange();
+            } else if (other.currentChart.getPlot() instanceof CategoryPlot) {
+                CategoryPlot catPlot = (CategoryPlot) other.currentChart.getPlot();
+                if (!catPlot.getRangeAxis().isAutoRange()) pendingRangeRange = catPlot.getRangeAxis().getRange();
+            }
         }
-        updateChart();
+        if (other.currentChart3D != null) {
+            pendingViewPoint3D = new ViewPoint3D(other.currentChart3D.getViewPoint());
+        }
+        // Don't call refreshColumnCombos()/updateChart() here:
+        // rb.rowsTable has no columns yet at this point (updateTableModel() runs later).
+        // setTable() will be triggered by updateColumnsAndTextView() once real data arrives.
     }
 }
