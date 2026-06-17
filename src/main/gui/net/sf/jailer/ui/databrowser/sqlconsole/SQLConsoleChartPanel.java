@@ -18,6 +18,13 @@ package net.sf.jailer.ui.databrowser.sqlconsole;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Toolkit;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,20 +33,26 @@ import java.util.regex.Pattern;
 
 import javax.swing.Box;
 import javax.swing.DefaultListModel;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter;
 import javax.swing.SwingConstants;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
+import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
@@ -65,8 +78,10 @@ public class SQLConsoleChartPanel extends JPanel {
     private final JComboBox<String> xColumnCombo   = new JComboBox<>();
     private final JList<String>     yColumnList    = new JList<>();
     private final JPanel chartContainer = new JPanel(new BorderLayout());
+    private final JButton exportButton  = new JButton("Export");
 
     private JTable currentTable;
+    private JFreeChart currentChart;
     private final List<Integer> columnTypes;
     private boolean suppressUpdate = false;
 
@@ -102,6 +117,11 @@ public class SQLConsoleChartPanel extends JPanel {
         yScrollPane.setToolTipText("<html>Columns used as Y values (numeric).<br>Ctrl+click to select multiple columns.</html>");
         toolbar.add(yLabel);
         toolbar.add(yScrollPane);
+        toolbar.add(Box.createHorizontalStrut(8));
+        exportButton.setToolTipText("Export chart as image file or copy to clipboard");
+        exportButton.setEnabled(false);
+        exportButton.addActionListener(e -> showExportMenu());
+        toolbar.add(exportButton);
 
         add(toolbar, BorderLayout.NORTH);
         add(chartContainer, BorderLayout.CENTER);
@@ -230,6 +250,8 @@ public class SQLConsoleChartPanel extends JPanel {
             return;
         }
 
+        currentChart = chart;
+        exportButton.setEnabled(true);
         ChartPanel cp = new ChartPanel(chart);
         cp.setMouseWheelEnabled(true);
         chartContainer.removeAll();
@@ -284,6 +306,66 @@ public class SQLConsoleChartPanel extends JPanel {
             return ChartFactory.createBarChart(null, xLabel, yAxisLabel, dataset, PlotOrientation.VERTICAL, legend, true, false);
         }
         return ChartFactory.createLineChart(null, xLabel, yAxisLabel, dataset, PlotOrientation.VERTICAL, legend, true, false);
+    }
+
+    private void showExportMenu() {
+        JPopupMenu menu = new JPopupMenu();
+
+        JMenuItem pngItem = new JMenuItem("Save as PNG...");
+        pngItem.setToolTipText("Save chart as PNG image file");
+        pngItem.addActionListener(e -> saveChartAs("png"));
+        menu.add(pngItem);
+
+        JMenuItem jpgItem = new JMenuItem("Save as JPEG...");
+        jpgItem.setToolTipText("Save chart as JPEG image file");
+        jpgItem.addActionListener(e -> saveChartAs("jpg"));
+        menu.add(jpgItem);
+
+        menu.addSeparator();
+
+        JMenuItem clipItem = new JMenuItem("Copy to Clipboard");
+        clipItem.setToolTipText("Copy chart as image to the system clipboard");
+        clipItem.addActionListener(e -> copyChartToClipboard());
+        menu.add(clipItem);
+
+        menu.show(exportButton, 0, exportButton.getHeight());
+    }
+
+    private void saveChartAs(String format) {
+        if (currentChart == null) return;
+        JFileChooser chooser = new JFileChooser();
+        chooser.setSelectedFile(new File("chart." + format));
+        boolean isPng = "png".equals(format);
+        chooser.setFileFilter(new FileNameExtensionFilter(
+                isPng ? "PNG Image (*.png)" : "JPEG Image (*.jpg, *.jpeg)", format, isPng ? null : "jpeg"));
+        if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) return;
+        File file = chooser.getSelectedFile();
+        int w = Math.max(chartContainer.getWidth(), 800);
+        int h = Math.max(chartContainer.getHeight(), 600);
+        try {
+            if (isPng) {
+                ChartUtils.saveChartAsPNG(file, currentChart, w, h);
+            } else {
+                ChartUtils.saveChartAsJPEG(file, currentChart, w, h);
+            }
+        } catch (IOException ex) {
+            UIUtil.showException(this, "Export Error", ex);
+        }
+    }
+
+    private void copyChartToClipboard() {
+        if (currentChart == null) return;
+        int w = Math.max(chartContainer.getWidth(), 800);
+        int h = Math.max(chartContainer.getHeight(), 600);
+        BufferedImage image = currentChart.createBufferedImage(w, h);
+        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new Transferable() {
+            @Override public DataFlavor[] getTransferDataFlavors() { return new DataFlavor[]{DataFlavor.imageFlavor}; }
+            @Override public boolean isDataFlavorSupported(DataFlavor f) { return DataFlavor.imageFlavor.equals(f); }
+            @Override public Object getTransferData(DataFlavor f) throws UnsupportedFlavorException {
+                if (!isDataFlavorSupported(f)) throw new UnsupportedFlavorException(f);
+                return image;
+            }
+        }, null);
     }
 
     private void showError(String msg) {
