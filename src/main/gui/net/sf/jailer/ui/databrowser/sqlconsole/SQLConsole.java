@@ -3320,15 +3320,15 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	
 	private SmartHighlightPainter highlightPainter = new SmartHighlightPainter(WhereConditionEditorPanel.HIGHLIGHT_COLOR);
 	private SmartHighlightPainter highlightPainterWOBorder = new SmartHighlightPainter(WhereConditionEditorPanel.HIGHLIGHT_COLOR);
-	private Object executedStmtHighlightTag = null;
-	private final SmartHighlightPainter executedStmtPainter = new SmartHighlightPainter(new Color(100, 100, 220, 34)); // TODO
+	private final List<Object> executedStmtHighlightTags = new ArrayList<>();
+	private static final Color executedStmtHighlightColor = new Color(100, 100, 220, 16);
 
 	private void updateExecutedStatementHighlight() {
 		UIUtil.invokeLater(() -> {
-			if (executedStmtHighlightTag != null) {
-				editorPane.getHighlighter().removeHighlight(executedStmtHighlightTag);
-				executedStmtHighlightTag = null;
+			for (Object tag : executedStmtHighlightTags) {
+				editorPane.removeLineHighlight(tag);
 			}
+			executedStmtHighlightTags.clear();
 			try {
 				Pair<Integer, Integer> loc = editorPane.getCurrentStatementLocation(true, true, null, false);
 				if (loc == null || loc.a < 0) return;
@@ -3343,7 +3343,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							String currentSQL = normalizeSQL(editorPane.getDocument().getText(startOffset, endOffset - startOffset));
 							if (tp.executedSQL.equals(currentSQL)) break;
 						}
-						executedStmtHighlightTag = editorPane.getHighlighter().addHighlight(startOffset, endOffset, executedStmtPainter);
+						for (int line = loc.a; line <= loc.b; line++) {
+							executedStmtHighlightTags.add(editorPane.addLineHighlight(line, executedStmtHighlightColor));
+						}
 						break;
 					}
 				}
