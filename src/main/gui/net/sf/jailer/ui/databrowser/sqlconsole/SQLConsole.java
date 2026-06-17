@@ -582,6 +582,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             @Override
             public void caretUpdate(CaretEvent e) {
                 updateOutline(false);
+                updateExecutedStatementHighlight();
                 if (!inSetCaretPosition) {
                 	continueButton.setVisible(false);
                 }
@@ -2134,11 +2135,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                        jTabbedPane1.add(rTabContainer);
 	                        updateResultUI();
 	                        TitelPanel tp;
-							jTabbedPane1.setTabComponentAt(jTabbedPane1.indexOfComponent(rTabContainer), tp = getTitlePanel(jTabbedPane1, rTabContainer, tabContentPanel, title, rb));
+							jTabbedPane1.setTabComponentAt(jTabbedPane1.indexOfComponent(rTabContainer), tp = getTitlePanel(jTabbedPane1, rTabContainer, tabContentPanel, title, rb, loc, rb.getStatementForReloading()));
 							tp.setToolTipText(tabContentPanel.statementLabel.getToolTipText());
 							tabContentPanel.statementLabel.addPropertyChangeListener("text", e -> tp.setToolTipText(tabContentPanel.statementLabel.getToolTipText()));
 							rowBrowserPerRTabContainer.put(rTabContainer, rb);
 							rowBrowserPerRTabContainer.put(tp, rb);
+							updateExecutedStatementHighlight();
 	                        
 	                        if (jTabbedPane1.getTabCount() > MAX_TAB_COUNT) {
 	                        	Component tab0 = jTabbedPane1.getTabComponentAt(0);
@@ -2154,6 +2156,18 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                            updateResultUI();
 	                        }
 	                        jTabbedPane1.setSelectedIndex(jTabbedPane1.getTabCount() - 1);
+                        }
+                        if (origTabContentPanel != null) {
+                        	int idx = jTabbedPane1.indexOfComponent(rTabContainer);
+                        	if (idx >= 0) {
+                        		Component tc = jTabbedPane1.getTabComponentAt(idx);
+                        		if (tc instanceof TitelPanel) {
+                        			TitelPanel tp = (TitelPanel) tc;
+                        			tp.statementLoc = loc;
+                        			String newSQL = rb.getStatementForReloading();
+                        			tp.executedSQL = normalizeSQL(newSQL);
+                        		}
+                        	}
                         }
                         rb.resetRowsTableContainer();
                         jTabbedPane1.repaint();
@@ -2894,7 +2908,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     	JComponent rTabContainer = new ErrorPanel(errorMessage, statement, errorPosition);
 		jTabbedPane1.add(rTabContainer);
 		updateResultUI();
-        jTabbedPane1.setTabComponentAt(jTabbedPane1.indexOfComponent(rTabContainer), getTitlePanel(jTabbedPane1, rTabContainer, null, "Error", null));
+        jTabbedPane1.setTabComponentAt(jTabbedPane1.indexOfComponent(rTabContainer), getTitlePanel(jTabbedPane1, rTabContainer, null, "Error", null, -1, null));
 
         if (jTabbedPane1.getTabCount() > MAX_TAB_COUNT) {
         	Component tab0 = jTabbedPane1.getTabComponentAt(0);
@@ -3306,10 +3320,52 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	
 	private SmartHighlightPainter highlightPainter = new SmartHighlightPainter(WhereConditionEditorPanel.HIGHLIGHT_COLOR);
 	private SmartHighlightPainter highlightPainterWOBorder = new SmartHighlightPainter(WhereConditionEditorPanel.HIGHLIGHT_COLOR);
+	private Object executedStmtHighlightTag = null;
+	private final SmartHighlightPainter executedStmtPainter = new SmartHighlightPainter(new Color(100, 100, 220, 34)); // TODO
+
+	private void updateExecutedStatementHighlight() {
+		UIUtil.invokeLater(() -> {
+			if (executedStmtHighlightTag != null) {
+				editorPane.getHighlighter().removeHighlight(executedStmtHighlightTag);
+				executedStmtHighlightTag = null;
+			}
+			try {
+				Pair<Integer, Integer> loc = editorPane.getCurrentStatementLocation(true, true, null, false);
+				if (loc == null || loc.a < 0) return;
+				int startOffset = editorPane.getLineStartOffset(loc.a);
+				int endOffset   = editorPane.getLineEndOffset(loc.b);
+				if (startOffset >= endOffset) return;
+				for (int i = jTabbedPane1.getTabCount() - 1; i >= 0; i--) {
+					Component tc = jTabbedPane1.getTabComponentAt(i);
+					if (tc instanceof TitelPanel && ((TitelPanel) tc).statementLoc == loc.a) {
+						TitelPanel tp = (TitelPanel) tc;
+						if (tp.executedSQL != null) {
+							String currentSQL = normalizeSQL(editorPane.getDocument().getText(startOffset, endOffset - startOffset));
+							if (tp.executedSQL.equals(currentSQL)) break;
+						}
+						executedStmtHighlightTag = editorPane.getHighlighter().addHighlight(startOffset, endOffset, executedStmtPainter);
+						break;
+					}
+				}
+			} catch (Exception e) {
+				// ignore
+			}
+		});
+	}
 	{
 		highlightPainter.setPaintBorder(true);
 	}
 	
+	private static String normalizeSQL(String sql) {
+		if (sql == null) return null;
+		return sql
+			.replaceAll("(?s)/\\*.*?\\*/", " ")
+			.replaceAll("--[^\n]*", " ")
+			.replaceAll("\\s+", " ")
+			.trim()
+			.replaceAll(";+\\s*$", "");
+	}
+
 	private void hightlight(RSyntaxTextAreaWithSQLSyntaxStyle editor, int a, int b) {
 		try {
 			if (currentHighlightTag != null) {
@@ -3566,6 +3622,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				if (pos != null) {
 					editorPane.replaceRange(statement, pos.a, pos.b);
 					latestSyncStatement = statement;
+					String normalized = normalizeSQL(statement);
+					for (int i = 0; i < jTabbedPane1.getTabCount(); i++) {
+						Component tc = jTabbedPane1.getTabComponentAt(i);
+						if (tc instanceof TitelPanel && ((TitelPanel) tc).rb == this) {
+							((TitelPanel) tc).executedSQL = normalized;
+							break;
+						}
+					}
 				}
 			}
 		}
@@ -4066,15 +4130,19 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     	public final JComponent rTabContainer;
     	public final TabContentPanel tabContentPanel;
     	public final ResultContentPane rb;
+    	public int statementLoc;
+    	public String executedSQL;
     	private final JLabel titleLbl;
     	private final JTabbedPane tabbedPane;
-    	
-    	public TitelPanel(final JTabbedPane tabbedPane, final JComponent rTabContainer, TabContentPanel tabContentPanel, String title, ResultContentPane rb) {
+
+    	public TitelPanel(final JTabbedPane tabbedPane, final JComponent rTabContainer, TabContentPanel tabContentPanel, String title, ResultContentPane rb, int statementLoc, String executedSQL) {
     		super(new FlowLayout(FlowLayout.LEFT, 0, 0));
     		this.tabbedPane = tabbedPane;
     		this.rTabContainer = rTabContainer;
     		this.tabContentPanel = tabContentPanel;
     		this.rb = rb;
+    		this.statementLoc = statementLoc;
+    		this.executedSQL = normalizeSQL(executedSQL);
     		setOpaque(false);
     		titleLbl = new JLabel(title);
     		titleLbl.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
@@ -4090,6 +4158,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     					rb.destroy();
     				}
     	            updateResultUI();
+    	            updateExecutedStatementHighlight();
     			}
     		};
     		add(closeButton);
@@ -4105,8 +4174,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		}
     }
     
-    private TitelPanel getTitlePanel(final JTabbedPane tabbedPane, final JComponent rTabContainer, TabContentPanel tabContentPanel, String title, ResultContentPane rb) {
-        return new TitelPanel(tabbedPane, rTabContainer, tabContentPanel, title, rb);
+    private TitelPanel getTitlePanel(final JTabbedPane tabbedPane, final JComponent rTabContainer, TabContentPanel tabContentPanel, String title, ResultContentPane rb, int loc, String executedSQL) {
+        return new TitelPanel(tabbedPane, rTabContainer, tabContentPanel, title, rb, loc, executedSQL);
     }
 
     @Override
