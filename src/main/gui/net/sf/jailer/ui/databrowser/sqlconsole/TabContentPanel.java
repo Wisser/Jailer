@@ -243,8 +243,15 @@ public class TabContentPanel extends javax.swing.JPanel {
 			if (metaDataDetails != null) {
 				metaPanel.add(metaDataDetails);
 			}
+			chartPanel = new SQLConsoleChartPanel(rowColumnTypes);
+			tabbedPane.addTab("Chart", chartPanel);
+			tabbedPane.addChangeListener(e -> {
+				if (tabbedPane.getSelectedComponent() == chartPanel && theRowsTable != null) {
+					chartPanel.setTable(theRowsTable);
+				}
+			});
 		}
-  		
+
 		this.shimPanel.removeAll();
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -393,6 +400,9 @@ public class TabContentPanel extends javax.swing.JPanel {
 
 	public void updateTextView(JTable rowsTable) {
     	theRowsTable = rowsTable;
+		if (chartPanel != null && tabbedPane.getSelectedComponent() == chartPanel) {
+			chartPanel.setTable(rowsTable);
+		}
 		Object sep = getSeparatorFromCombobox();
     	StringBuilder sb = createContent(rowsTable, sep, false, false, null, rowAndColumnsLimit, rowAndColumnsLimit, new boolean[2]);
 
@@ -1108,6 +1118,7 @@ public class TabContentPanel extends javax.swing.JPanel {
     	textArea.setDocument(new RSyntaxDocument(null, SyntaxConstants.SYNTAX_STYLE_NONE)); // prevent memory leak
     }
     
+    private SQLConsoleChartPanel chartPanel;
     private final RSyntaxTextAreaWithSQLSyntaxStyle textArea;
     final Pair<Integer, Integer> caretDotMark;
     private final List<Integer> rowColumnTypes;

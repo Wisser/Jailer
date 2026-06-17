@@ -31,5 +31,6 @@
 	<classpathentry kind="lib" path="lib/commons-text-1.11.0.jar"/>
 	<classpathentry kind="lib" path="lib/opencsv-5.9.jar"/>
 	<classpathentry kind="lib" path="lib/snakeyaml-2.2.jar"/>
+	<classpathentry kind="lib" path="lib/jfreechart-1.5.6.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
