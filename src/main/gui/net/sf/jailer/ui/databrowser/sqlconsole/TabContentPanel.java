@@ -244,7 +244,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 				metaPanel.add(metaDataDetails);
 			}
 			chartPanel = new SQLConsoleChartPanel(rowColumnTypes);
-			tabbedPane.addTab("Chart", chartPanel);
+			tabbedPane.insertTab("Chart", null, chartPanel, null, tabbedPane.indexOfComponent(metaTabPanel));
 			tabbedPane.addChangeListener(e -> {
 				if (tabbedPane.getSelectedComponent() == chartPanel && theRowsTable != null) {
 					chartPanel.setTable(theRowsTable);
