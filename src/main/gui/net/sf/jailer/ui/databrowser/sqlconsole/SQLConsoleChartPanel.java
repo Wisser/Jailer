@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -79,8 +80,17 @@ import org.jfree.chart.renderer.category.CategoryItemRenderer;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
+import org.jfree.data.statistics.HistogramDataset;
+import org.jfree.data.statistics.HistogramType;
+import org.jfree.data.xy.DefaultXYZDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+
+import com.orsoncharts.Chart3D;
+import com.orsoncharts.Chart3DFactory;
+import com.orsoncharts.Chart3DPanel;
+import com.orsoncharts.data.StandardPieDataset3D;
+import com.orsoncharts.data.category.StandardCategoryDataset3D;
 
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
@@ -91,13 +101,24 @@ import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
  */
 public class SQLConsoleChartPanel extends JPanel {
 
-    private static final String CHART_BAR  = "Bar";
-    private static final String CHART_LINE = "Line";
-    private static final String CHART_PIE  = "Pie";
-    private static final String CHART_XY   = "XY (Scatter)";
+    private static final String CHART_BAR          = "Bar";
+    private static final String CHART_LINE         = "Line";
+    private static final String CHART_AREA         = "Area";
+    private static final String CHART_STACKED_AREA = "Stacked Area";
+    private static final String CHART_PIE          = "Pie";
+    private static final String CHART_RING         = "Ring";
+    private static final String CHART_XY           = "XY (Scatter)";
+    private static final String CHART_BUBBLE       = "Bubble";
+    private static final String CHART_HISTOGRAM    = "Histogram";
+    private static final String CHART_BAR_3D       = "Bar 3D";
+    private static final String CHART_PIE_3D       = "Pie 3D";
 
     // --- Main controls ---
-    private final JComboBox<String> chartTypeCombo = new JComboBox<>(new String[]{CHART_BAR, CHART_LINE, CHART_PIE, CHART_XY});
+    private final JComboBox<String> chartTypeCombo = new JComboBox<>(new String[]{
+        CHART_BAR, CHART_LINE, CHART_AREA, CHART_STACKED_AREA,
+        CHART_PIE, CHART_RING, CHART_XY, CHART_BUBBLE, CHART_HISTOGRAM,
+        CHART_BAR_3D, CHART_PIE_3D
+    });
     private final JComboBox<String> xColumnCombo   = new JComboBox<>();
     private final JButton           yButton        = new JButton("(none)");
     private final JPopupMenu        yPopup         = new JPopupMenu();
@@ -115,10 +136,12 @@ public class SQLConsoleChartPanel extends JPanel {
     private final JTextField  titleField        = new JTextField(12);
     private final JCheckBox   legendCheckBox    = new JCheckBox("Legend", true);
     private final JCheckBox   dataLabelsCheckBox = new JCheckBox("Data Labels");
-    private final JCheckBox   gridCheckBox      = new JCheckBox("Grid", true);
+    private final JCheckBox   gridCheckBox           = new JCheckBox("Grid", false);
+    private final JCheckBox   chartTranspCheckBox    = new JCheckBox("Transp. Chart", true);
+    private final JCheckBox   plotTranspCheckBox     = new JCheckBox("Transp. Plot", true);
     private final JCheckBox   sortXCheckBox     = new JCheckBox("Sort X");
     private final JComboBox<String> aggregateCombo = new JComboBox<>(new String[]{"None", "Sum", "Average", "Count"});
-    private final JComboBox<String> rowLimitCombo  = new JComboBox<>(new String[]{"All", "100", "500", "1000", "5000"});
+    private final JComboBox<String> rowLimitCombo  = new JComboBox<>(new String[]{"All", "10", "50", "100", "500", "1000", "5000"});
     private final JComboBox<String> colorSchemeCombo = new JComboBox<>(new String[]{"Default", "Darkness", "Pastel", "Earth", "Colorblind", "Monochrome"});
     private final JLabel colorSchemeLabel = new JLabel("Colors:");
 
@@ -129,6 +152,8 @@ public class SQLConsoleChartPanel extends JPanel {
     private final JTextField  yMinField         = new JTextField(5);
     private final JTextField  yMaxField         = new JTextField(5);
     private final JCheckBox   logScaleCheckBox  = new JCheckBox("Log");
+    private final JComboBox<String> binsCombo   = new JComboBox<>(new String[]{"10", "20", "50", "100"});
+    private final JLabel            binsLabel   = new JLabel("Bins:");
 
     // --- Labels to enable/disable with controls ---
     private final JLabel orientationLabel = new JLabel("Orientation:");
@@ -178,6 +203,8 @@ public class SQLConsoleChartPanel extends JPanel {
         legendCheckBox.addActionListener(redraw);
         dataLabelsCheckBox.addActionListener(redraw);
         gridCheckBox.addActionListener(redraw);
+        chartTranspCheckBox.addActionListener(redraw);
+        plotTranspCheckBox.addActionListener(redraw);
         sortXCheckBox.addActionListener(redraw);
         aggregateCombo.addActionListener(redraw);
         rowLimitCombo.addActionListener(redraw);
@@ -186,6 +213,8 @@ public class SQLConsoleChartPanel extends JPanel {
         xRotateCombo.addActionListener(redraw);
         logScaleCheckBox.addActionListener(redraw);
         colorSchemeCombo.addActionListener(redraw);
+        binsCombo.setSelectedItem("20");
+        binsCombo.addActionListener(redraw);
 
         FocusAdapter boundsListener = new FocusAdapter() {
             @Override public void focusLost(FocusEvent e) { if (!suppressUpdate) updateChart(); }
@@ -242,6 +271,16 @@ public class SQLConsoleChartPanel extends JPanel {
         exportButton.setEnabled(false);
         exportButton.addActionListener(e -> showExportMenu());
         toolbar.add(exportButton);
+        toolbar.add(Box.createHorizontalStrut(12));
+
+        JLabel tipLabel = new JLabel("Tip");
+        tipLabel.setToolTipText("<html><b>Mouse interactions:</b><br>"
+                + "&#x2022; <b>Wheel</b>: zoom in/out<br>"
+                + "&#x2022; <b>Left drag</b>: zoom to selection<br>"
+                + "&#x2022; <b>Right-click</b>: zoom / reset options<br>"
+                + "&#x2022; <b>Double-click</b>: reset zoom</html>");
+        tipLabel.setForeground(tipLabel.getForeground().brighter());
+        toolbar.add(tipLabel);
         toolbar.add(Box.createHorizontalStrut(4));
 
         return toolbar;
@@ -269,6 +308,14 @@ public class SQLConsoleChartPanel extends JPanel {
 
         gridCheckBox.setToolTipText("Show or hide the grid lines");
         row.add(gridCheckBox);
+        row.add(Box.createHorizontalStrut(8));
+
+        chartTranspCheckBox.setToolTipText("Transparent chart background (outer area)");
+        row.add(chartTranspCheckBox);
+        row.add(Box.createHorizontalStrut(8));
+
+        plotTranspCheckBox.setToolTipText("Transparent plot background (inner area)");
+        row.add(plotTranspCheckBox);
         row.add(Box.createHorizontalStrut(8));
 
         sortXCheckBox.setToolTipText("Sort categories alphabetically by X value");
@@ -337,6 +384,13 @@ public class SQLConsoleChartPanel extends JPanel {
 
         logScaleCheckBox.setToolTipText("Use a logarithmic scale for the Y axis");
         row.add(logScaleCheckBox);
+        row.add(Box.createHorizontalStrut(12));
+
+        binsLabel.setToolTipText("Number of histogram bins");
+        binsCombo.setToolTipText("Number of histogram bins");
+        row.add(binsLabel);
+        row.add(Box.createHorizontalStrut(4));
+        row.add(binsCombo);
         row.add(Box.createHorizontalStrut(4));
 
         return row;
@@ -344,20 +398,24 @@ public class SQLConsoleChartPanel extends JPanel {
 
     private void updateSettingsForChartType() {
         String type = (String) chartTypeCombo.getSelectedItem();
-        boolean isBar  = CHART_BAR.equals(type);
-        boolean isCat  = isBar || CHART_LINE.equals(type);
-        boolean isPie  = CHART_PIE.equals(type);
-        boolean isXY   = CHART_XY.equals(type);
+        boolean is3D      = CHART_BAR_3D.equals(type) || CHART_PIE_3D.equals(type);
+        boolean isBar     = CHART_BAR.equals(type);
+        boolean isCat     = isBar || CHART_LINE.equals(type) || CHART_AREA.equals(type) || CHART_STACKED_AREA.equals(type);
+        boolean isPie     = CHART_PIE.equals(type) || CHART_RING.equals(type);
+        boolean isXYLike  = CHART_XY.equals(type) || CHART_BUBBLE.equals(type) || CHART_HISTOGRAM.equals(type);
+        boolean isHist    = CHART_HISTOGRAM.equals(type);
+        boolean hasStack  = isBar || CHART_LINE.equals(type) || CHART_AREA.equals(type);
 
-        setEnabled2(orientationLabel, orientationCombo, isBar);
-        setEnabled2(null, stackedCheckBox, isCat);
-        setEnabled2(xRotateLabel, xRotateCombo, isCat);
-        setEnabled2(yMinLabel, yMinField, !isPie);
-        setEnabled2(yMaxLabel, yMaxField, !isPie);
-        setEnabled2(null, logScaleCheckBox, !isPie);
-        setEnabled2(null, gridCheckBox, !isPie);
-        setEnabled2(aggregateLabel, aggregateCombo, !isXY);
-        setEnabled2(null, sortXCheckBox, !isXY);
+        setEnabled2(orientationLabel, orientationCombo, !is3D && (isCat || isHist));
+        setEnabled2(null, stackedCheckBox, !is3D && hasStack);
+        setEnabled2(xRotateLabel, xRotateCombo, !is3D && isCat);
+        setEnabled2(yMinLabel, yMinField, !is3D && !isPie);
+        setEnabled2(yMaxLabel, yMaxField, !is3D && !isPie);
+        setEnabled2(null, logScaleCheckBox, !is3D && !isPie);
+        setEnabled2(null, gridCheckBox, !is3D && !isPie);
+        setEnabled2(aggregateLabel, aggregateCombo, !is3D && (isCat || CHART_BAR_3D.equals(type)));
+        setEnabled2(null, sortXCheckBox, !is3D && isCat);
+        setEnabled2(binsLabel, binsCombo, isHist);
     }
 
     private void setEnabled2(JLabel label, java.awt.Component control, boolean enabled) {
@@ -488,12 +546,34 @@ public class SQLConsoleChartPanel extends JPanel {
         }
 
         String type = (String) chartTypeCombo.getSelectedItem();
+
+        if (CHART_BAR_3D.equals(type) || CHART_PIE_3D.equals(type)) {
+            try {
+                JPanel panel3d = CHART_BAR_3D.equals(type)
+                    ? buildBar3DChart(model, sorter, rowCount, xModelCol, yModelCols, xLabel, yLabels)
+                    : buildPie3DChart(model, sorter, rowCount, xModelCol, yModelCols[0]);
+                currentChart = null;
+                exportButton.setEnabled(false);
+                chartContainer.removeAll();
+                chartContainer.add(panel3d, BorderLayout.CENTER);
+                chartContainer.revalidate();
+                chartContainer.repaint();
+            } catch (Exception ex) {
+                showError(ex.getMessage());
+            }
+            return;
+        }
+
         JFreeChart chart;
         try {
-            if (CHART_PIE.equals(type)) {
-                chart = buildPieChart(model, sorter, rowCount, xModelCol, yModelCols[0]);
+            if (CHART_PIE.equals(type) || CHART_RING.equals(type)) {
+                chart = buildPieChart(type, model, sorter, rowCount, xModelCol, yModelCols[0]);
             } else if (CHART_XY.equals(type)) {
                 chart = buildXYChart(model, sorter, rowCount, xModelCol, yModelCols, xLabel, yLabels);
+            } else if (CHART_BUBBLE.equals(type)) {
+                chart = buildBubbleChart(model, sorter, rowCount, xModelCol, yModelCols, xLabel, yLabels);
+            } else if (CHART_HISTOGRAM.equals(type)) {
+                chart = buildHistogramChart(model, sorter, rowCount, yModelCols[0], yLabels[0]);
             } else {
                 chart = buildCategoryChart(type, model, sorter, rowCount, xModelCol, yModelCols, xLabel, yLabels);
             }
@@ -516,11 +596,15 @@ public class SQLConsoleChartPanel extends JPanel {
 
     // -------------------------------------------------------------------------
 
-    private JFreeChart buildPieChart(TableModel model, RowSorter<? extends TableModel> sorter, int rowCount, int xCol, int yCol) {
+    private JFreeChart buildPieChart(String type, TableModel model, RowSorter<? extends TableModel> sorter, int rowCount, int xCol, int yCol) {
         Map<String, Double> data = aggregateAndSort(model, sorter, rowCount, xCol, yCol);
         DefaultPieDataset dataset = new DefaultPieDataset();
         for (Map.Entry<String, Double> e : data.entrySet()) dataset.setValue(e.getKey(), e.getValue());
-        return ChartFactory.createPieChart(null, dataset, legendCheckBox.isSelected(), true, false);
+        boolean legend = legendCheckBox.isSelected();
+        if (CHART_RING.equals(type)) {
+            return ChartFactory.createRingChart(null, dataset, legend, true, false);
+        }
+        return ChartFactory.createPieChart(null, dataset, legend, true, false);
     }
 
     private JFreeChart buildXYChart(TableModel model, RowSorter<? extends TableModel> sorter, int rowCount, int xCol, int[] yCols, String xLabel, String[] yLabels) {
@@ -558,10 +642,92 @@ public class SQLConsoleChartPanel extends JPanel {
                     ? ChartFactory.createStackedBarChart(null, xLabel, yAxisLabel, dataset, orientation, legend, true, false)
                     : ChartFactory.createBarChart(null, xLabel, yAxisLabel, dataset, orientation, legend, true, false);
         }
+        if (CHART_AREA.equals(type)) {
+            return stacked
+                    ? ChartFactory.createStackedAreaChart(null, xLabel, yAxisLabel, dataset, orientation, legend, true, false)
+                    : ChartFactory.createAreaChart(null, xLabel, yAxisLabel, dataset, orientation, legend, true, false);
+        }
+        if (CHART_STACKED_AREA.equals(type)) {
+            return ChartFactory.createStackedAreaChart(null, xLabel, yAxisLabel, dataset, orientation, legend, true, false);
+        }
         // Line
         return stacked
                 ? ChartFactory.createStackedAreaChart(null, xLabel, yAxisLabel, dataset, orientation, legend, true, false)
                 : ChartFactory.createLineChart(null, xLabel, yAxisLabel, dataset, orientation, legend, true, false);
+    }
+
+    private JFreeChart buildBubbleChart(TableModel model, RowSorter<? extends TableModel> sorter, int rowCount, int xCol, int[] yCols, String xLabel, String[] yLabels) {
+        DefaultXYZDataset dataset = new DefaultXYZDataset();
+        int zCol = yCols.length > 1 ? yCols[1] : -1;
+        double[] xData = new double[rowCount];
+        double[] yData = new double[rowCount];
+        double[] zData = new double[rowCount];
+        int count = 0;
+        for (int i = 0; i < rowCount; i++) {
+            int row = sorter != null ? sorter.convertRowIndexToModel(i) : i;
+            double x = cellDouble(model.getValueAt(row, xCol));
+            double y = cellDouble(model.getValueAt(row, yCols[0]));
+            double z = zCol >= 0 ? cellDouble(model.getValueAt(row, zCol)) : 1.0;
+            if (!Double.isNaN(x) && !Double.isNaN(y)) {
+                xData[count] = x;
+                yData[count] = y;
+                zData[count] = Double.isNaN(z) ? 1.0 : z;
+                count++;
+            }
+        }
+        double[][] data = { Arrays.copyOf(xData, count), Arrays.copyOf(yData, count), Arrays.copyOf(zData, count) };
+        dataset.addSeries(yLabels[0], data);
+        return ChartFactory.createBubbleChart(null, xLabel, yLabels[0], dataset,
+                PlotOrientation.VERTICAL, legendCheckBox.isSelected(), true, false);
+    }
+
+    private JFreeChart buildHistogramChart(TableModel model, RowSorter<? extends TableModel> sorter, int rowCount, int yCol, String yLabel) {
+        List<Double> values = new ArrayList<>();
+        for (int i = 0; i < rowCount; i++) {
+            int row = sorter != null ? sorter.convertRowIndexToModel(i) : i;
+            double v = cellDouble(model.getValueAt(row, yCol));
+            if (!Double.isNaN(v)) values.add(v);
+        }
+        if (values.isEmpty()) throw new IllegalArgumentException("No numeric data in selected column");
+        double[] data = new double[values.size()];
+        for (int i = 0; i < data.length; i++) data[i] = values.get(i);
+        int bins = 20;
+        try { bins = Integer.parseInt((String) binsCombo.getSelectedItem()); } catch (NumberFormatException e) { /* ignore */ }
+        HistogramDataset dataset = new HistogramDataset();
+        dataset.setType(HistogramType.FREQUENCY);
+        dataset.addSeries(yLabel, data, bins);
+        boolean horizontal = "Horizontal".equals(orientationCombo.getSelectedItem());
+        PlotOrientation orientation = horizontal ? PlotOrientation.HORIZONTAL : PlotOrientation.VERTICAL;
+        return ChartFactory.createHistogram(null, yLabel, "Frequency", dataset, orientation, legendCheckBox.isSelected(), true, false);
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private JPanel buildBar3DChart(TableModel model, RowSorter<? extends TableModel> sorter, int rowCount, int xCol, int[] yCols, String xLabel, String[] yLabels) {
+        StandardCategoryDataset3D dataset = new StandardCategoryDataset3D();
+        for (int si = 0; si < yCols.length; si++) {
+            Map<String, Double> data = aggregateAndSort(model, sorter, rowCount, xCol, yCols[si]);
+            for (Map.Entry<String, Double> e : data.entrySet()) {
+                dataset.addValue(e.getValue(), yLabels[si], yLabels[si], e.getKey());
+            }
+        }
+        String yAxisLabel = yCols.length == 1 ? yLabels[0] : "Value";
+        Chart3D chart = Chart3DFactory.createBarChart(null, null, dataset, null, xLabel, yAxisLabel);
+        String title = titleField.getText().trim();
+        if (!title.isEmpty()) chart.setTitle(title);
+        if (!legendCheckBox.isSelected()) chart.setLegendBuilder(null);
+        return new Chart3DPanel(chart);
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private JPanel buildPie3DChart(TableModel model, RowSorter<? extends TableModel> sorter, int rowCount, int xCol, int yCol) {
+        Map<String, Double> data = aggregateAndSort(model, sorter, rowCount, xCol, yCol);
+        StandardPieDataset3D dataset = new StandardPieDataset3D();
+        for (Map.Entry<String, Double> e : data.entrySet()) dataset.add(e.getKey(), e.getValue());
+        Chart3D chart = Chart3DFactory.createPieChart(null, null, dataset);
+        String title = titleField.getText().trim();
+        if (!title.isEmpty()) chart.setTitle(title);
+        if (!legendCheckBox.isSelected()) chart.setLegendBuilder(null);
+        return new Chart3DPanel(chart);
     }
 
     // -------------------------------------------------------------------------
@@ -607,13 +773,19 @@ public class SQLConsoleChartPanel extends JPanel {
         String scheme = (String) colorSchemeCombo.getSelectedItem();
         if ("Darkness".equals(scheme)) StandardChartTheme.createDarknessTheme().apply(chart);
 
+        chart.setBackgroundPaint(chartTranspCheckBox.isSelected() ? null : Color.WHITE);
+        if (chart.getLegend() != null) chart.getLegend().setBackgroundPaint(chartTranspCheckBox.isSelected() ? null : Color.WHITE);
+        chart.getPlot().setBackgroundPaint(plotTranspCheckBox.isSelected() ? null : Color.WHITE);
+
         String title = titleField.getText().trim();
         chart.setTitle(title.isEmpty() ? null : title);
         if (chart.getLegend() != null) chart.getLegend().setVisible(legendCheckBox.isSelected());
 
-        if (CHART_PIE.equals(type)) {
+        boolean isPieLike = CHART_PIE.equals(type) || CHART_RING.equals(type);
+        boolean isXYLike  = CHART_XY.equals(type) || CHART_BUBBLE.equals(type) || CHART_HISTOGRAM.equals(type);
+        if (isPieLike) {
             applyPieSettings(chart);
-        } else if (CHART_XY.equals(type)) {
+        } else if (isXYLike) {
             applyXYSettings(chart);
         } else {
             applyCategorySettings(chart);
@@ -626,13 +798,15 @@ public class SQLConsoleChartPanel extends JPanel {
     private void applyColorScheme(JFreeChart chart, String type, String scheme) {
         Color[] palette = getPalette(scheme);
         if (palette == null) return;
-        if (CHART_PIE.equals(type)) {
+        boolean isPieLike = CHART_PIE.equals(type) || CHART_RING.equals(type);
+        boolean isXYLike  = CHART_XY.equals(type) || CHART_BUBBLE.equals(type) || CHART_HISTOGRAM.equals(type);
+        if (isPieLike) {
             PiePlot plot = (PiePlot) chart.getPlot();
             List keys = plot.getDataset().getKeys();
             for (int i = 0; i < keys.size(); i++) {
                 plot.setSectionPaint((Comparable) keys.get(i), palette[i % palette.length]);
             }
-        } else if (CHART_XY.equals(type)) {
+        } else if (isXYLike) {
             XYPlot plot = (XYPlot) chart.getPlot();
             XYItemRenderer renderer = plot.getRenderer();
             for (int i = 0; i < plot.getDataset().getSeriesCount(); i++) {
