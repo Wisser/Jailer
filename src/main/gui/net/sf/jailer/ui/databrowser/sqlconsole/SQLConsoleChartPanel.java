@@ -340,8 +340,8 @@ public class SQLConsoleChartPanel extends JPanel {
                 isPng ? "PNG Image (*.png)" : "JPEG Image (*.jpg, *.jpeg)", format, isPng ? null : "jpeg"));
         if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) return;
         File file = chooser.getSelectedFile();
-        int w = Math.max(chartContainer.getWidth(), 800);
-        int h = Math.max(chartContainer.getHeight(), 600);
+        int w = chartContainer.getWidth();
+        int h = chartContainer.getHeight();
         try {
             if (isPng) {
                 ChartUtils.saveChartAsPNG(file, currentChart, w, h);
@@ -355,8 +355,8 @@ public class SQLConsoleChartPanel extends JPanel {
 
     private void copyChartToClipboard() {
         if (currentChart == null) return;
-        int w = Math.max(chartContainer.getWidth(), 800);
-        int h = Math.max(chartContainer.getHeight(), 600);
+        int w = chartContainer.getWidth();
+        int h = chartContainer.getHeight();
         BufferedImage image = currentChart.createBufferedImage(w, h);
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new Transferable() {
             @Override public DataFlavor[] getTransferDataFlavors() { return new DataFlavor[]{DataFlavor.imageFlavor}; }
