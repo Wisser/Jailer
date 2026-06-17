@@ -47,3 +47,9 @@ public class JailerVersion {
 	}
 
 }
+
+
+// TODO
+// TODO sql console: indicate (using bg-color?) if statement under caret is executed. Look at results tab to determine if statement is executed. If not, then statement is not executed. If yes, then statement is executed. If statement is executed, then indicate that in sql console using bg-color or some other visual indicator. If statement is not executed, then do not indicate that in sql console. If statement is executed, then indicate that in sql console using bg-color or some other visual indicator. If statement is not executed, then do not indicate that in sql console.
+
+

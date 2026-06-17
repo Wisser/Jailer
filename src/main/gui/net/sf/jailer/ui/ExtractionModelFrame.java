@@ -261,6 +261,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 				}
 			}
 		}
+		JMenuItem aiExtractionModelItem = new JMenuItem("AI Extraction Model...");
+		aiExtractionModelItem.addActionListener(e -> new AIExtractionModelDialog(this, extractionModelEditor));
+		jMenu3.addSeparator();
+		jMenu3.add(aiExtractionModelItem);
 	}
 
 	private void initSandbox() {
