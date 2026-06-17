@@ -25,8 +25,6 @@ set CP=%CP%;%LIB%\jackson-annotations-2.16.1.jar
 set CP=%CP%;%LIB%\jackson-databind-2.16.1.jar
 set CP=%CP%;%LIB%\jsqlparser-3.2.jar
 set CP=%CP%;%LIB%\tablefilter-swing-5.3.1.jar
-set CP=%CP%;%LIB%\jfreechart-1.5.6.jar
-set CP=%CP%;%LIB%\orsoncharts-1.7.jar
 set CP=%CP%;jailer.jar
 
 start javaw -Xmx1200M -Djava.util.Arrays.useLegacyMergeSort=true -cp %CP% net.sf.jailer.ui.JailerUI %*

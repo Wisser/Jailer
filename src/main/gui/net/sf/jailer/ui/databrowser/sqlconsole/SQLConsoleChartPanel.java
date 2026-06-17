@@ -28,7 +28,9 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -85,12 +87,16 @@ import org.jfree.data.statistics.HistogramType;
 import org.jfree.data.xy.DefaultXYZDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.svg.SVGGraphics2D;
 
 import com.orsoncharts.Chart3D;
 import com.orsoncharts.Chart3DFactory;
 import com.orsoncharts.Chart3DPanel;
 import com.orsoncharts.data.StandardPieDataset3D;
 import com.orsoncharts.data.category.StandardCategoryDataset3D;
+import com.orsoncharts.plot.CategoryPlot3D;
+import com.orsoncharts.plot.PiePlot3D;
+import com.orsoncharts.renderer.category.AbstractCategoryRenderer3D;
 
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
@@ -142,7 +148,7 @@ public class SQLConsoleChartPanel extends JPanel {
     private final JCheckBox   sortXCheckBox     = new JCheckBox("Sort X");
     private final JComboBox<String> aggregateCombo = new JComboBox<>(new String[]{"None", "Sum", "Average", "Count"});
     private final JComboBox<String> rowLimitCombo  = new JComboBox<>(new String[]{"All", "10", "50", "100", "500", "1000", "5000"});
-    private final JComboBox<String> colorSchemeCombo = new JComboBox<>(new String[]{"Default", "Darkness", "Pastel", "Earth", "Colorblind", "Monochrome"});
+    private final JComboBox<String> colorSchemeCombo = new JComboBox<>(new String[]{"Default", "Pastel", "Earth", "Colorblind", "Monochrome", "Darkness"});
     private final JLabel colorSchemeLabel = new JLabel("Colors:");
 
     // --- Chart-specific settings ---
@@ -167,6 +173,7 @@ public class SQLConsoleChartPanel extends JPanel {
 
     private JTable currentTable;
     private JFreeChart currentChart;
+    private Chart3D    currentChart3D;
     private final List<Integer> columnTypes;
     private boolean suppressUpdate = false;
 
@@ -549,13 +556,14 @@ public class SQLConsoleChartPanel extends JPanel {
 
         if (CHART_BAR_3D.equals(type) || CHART_PIE_3D.equals(type)) {
             try {
-                JPanel panel3d = CHART_BAR_3D.equals(type)
+                Chart3D chart3d = CHART_BAR_3D.equals(type)
                     ? buildBar3DChart(model, sorter, rowCount, xModelCol, yModelCols, xLabel, yLabels)
                     : buildPie3DChart(model, sorter, rowCount, xModelCol, yModelCols[0]);
                 currentChart = null;
-                exportButton.setEnabled(false);
+                currentChart3D = chart3d;
+                exportButton.setEnabled(true);
                 chartContainer.removeAll();
-                chartContainer.add(panel3d, BorderLayout.CENTER);
+                chartContainer.add(new Chart3DPanel(chart3d), BorderLayout.CENTER);
                 chartContainer.revalidate();
                 chartContainer.repaint();
             } catch (Exception ex) {
@@ -585,6 +593,7 @@ public class SQLConsoleChartPanel extends JPanel {
         applySettings(chart, type);
 
         currentChart = chart;
+        currentChart3D = null;
         exportButton.setEnabled(true);
         ChartPanel cp = new ChartPanel(chart);
         cp.setMouseWheelEnabled(true);
@@ -702,7 +711,7 @@ public class SQLConsoleChartPanel extends JPanel {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private JPanel buildBar3DChart(TableModel model, RowSorter<? extends TableModel> sorter, int rowCount, int xCol, int[] yCols, String xLabel, String[] yLabels) {
+    private Chart3D buildBar3DChart(TableModel model, RowSorter<? extends TableModel> sorter, int rowCount, int xCol, int[] yCols, String xLabel, String[] yLabels) {
         StandardCategoryDataset3D dataset = new StandardCategoryDataset3D();
         for (int si = 0; si < yCols.length; si++) {
             Map<String, Double> data = aggregateAndSort(model, sorter, rowCount, xCol, yCols[si]);
@@ -715,11 +724,13 @@ public class SQLConsoleChartPanel extends JPanel {
         String title = titleField.getText().trim();
         if (!title.isEmpty()) chart.setTitle(title);
         if (!legendCheckBox.isSelected()) chart.setLegendBuilder(null);
-        return new Chart3DPanel(chart);
+        Color[] palette = getPalette((String) colorSchemeCombo.getSelectedItem());
+        if (palette != null) ((AbstractCategoryRenderer3D) ((CategoryPlot3D) chart.getPlot()).getRenderer()).setColors(palette);
+        return chart;
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private JPanel buildPie3DChart(TableModel model, RowSorter<? extends TableModel> sorter, int rowCount, int xCol, int yCol) {
+    private Chart3D buildPie3DChart(TableModel model, RowSorter<? extends TableModel> sorter, int rowCount, int xCol, int yCol) {
         Map<String, Double> data = aggregateAndSort(model, sorter, rowCount, xCol, yCol);
         StandardPieDataset3D dataset = new StandardPieDataset3D();
         for (Map.Entry<String, Double> e : data.entrySet()) dataset.add(e.getKey(), e.getValue());
@@ -727,7 +738,9 @@ public class SQLConsoleChartPanel extends JPanel {
         String title = titleField.getText().trim();
         if (!title.isEmpty()) chart.setTitle(title);
         if (!legendCheckBox.isSelected()) chart.setLegendBuilder(null);
-        return new Chart3DPanel(chart);
+        Color[] palette = getPalette((String) colorSchemeCombo.getSelectedItem());
+        if (palette != null) ((PiePlot3D) chart.getPlot()).setSectionColors(palette);
+        return chart;
     }
 
     // -------------------------------------------------------------------------
@@ -896,6 +909,10 @@ public class SQLConsoleChartPanel extends JPanel {
         jpgItem.addActionListener(e -> saveChartAs("jpg"));
         menu.add(jpgItem);
         menu.addSeparator();
+        JMenuItem svgItem = new JMenuItem("Save as SVG...");
+        svgItem.addActionListener(e -> saveChartAsSVG());
+        menu.add(svgItem);
+        menu.addSeparator();
         JMenuItem clipItem = new JMenuItem("Copy to Clipboard");
         clipItem.addActionListener(e -> copyChartToClipboard());
         menu.add(clipItem);
@@ -903,25 +920,57 @@ public class SQLConsoleChartPanel extends JPanel {
     }
 
     private void saveChartAs(String format) {
-        if (currentChart == null) return;
         JFileChooser chooser = new JFileChooser();
         chooser.setSelectedFile(new File("chart." + format));
         boolean isPng = "png".equals(format);
-        chooser.setFileFilter(new FileNameExtensionFilter(
-                isPng ? "PNG Image (*.png)" : "JPEG Image (*.jpg, *.jpeg)", format, isPng ? null : "jpeg"));
+        chooser.setFileFilter(isPng
+                ? new FileNameExtensionFilter("PNG Image (*.png)", "png")
+                : new FileNameExtensionFilter("JPEG Image (*.jpg, *.jpeg)", "jpg", "jpeg"));
         if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) return;
         int w = chartContainer.getWidth(), h = chartContainer.getHeight();
         try {
-            if (isPng) ChartUtils.saveChartAsPNG(chooser.getSelectedFile(), currentChart, w, h);
-            else       ChartUtils.saveChartAsJPEG(chooser.getSelectedFile(), currentChart, w, h);
+            if (currentChart != null) {
+                if (isPng) ChartUtils.saveChartAsPNG(chooser.getSelectedFile(), currentChart, w, h);
+                else       ChartUtils.saveChartAsJPEG(chooser.getSelectedFile(), currentChart, w, h);
+            } else if (currentChart3D != null) {
+                BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                currentChart3D.draw(img.createGraphics(), new java.awt.Rectangle(w, h));
+                javax.imageio.ImageIO.write(img, isPng ? "png" : "jpeg", chooser.getSelectedFile());
+            }
+        } catch (IOException ex) {
+            UIUtil.showException(this, "Export Error", ex);
+        }
+    }
+
+    private void saveChartAsSVG() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setSelectedFile(new File("chart.svg"));
+        chooser.setFileFilter(new FileNameExtensionFilter("SVG Image (*.svg)", "svg"));
+        if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) return;
+        int w = chartContainer.getWidth(), h = chartContainer.getHeight();
+        SVGGraphics2D g2 = new SVGGraphics2D(w, h);
+        java.awt.geom.Rectangle2D bounds = new java.awt.Rectangle(w, h);
+        if (currentChart != null)       currentChart.draw(g2, bounds);
+        else if (currentChart3D != null) currentChart3D.draw(g2, bounds);
+        else return;
+        try (FileWriter fw = new FileWriter(chooser.getSelectedFile(), StandardCharsets.UTF_8)) {
+            fw.write(g2.getSVGElement());
         } catch (IOException ex) {
             UIUtil.showException(this, "Export Error", ex);
         }
     }
 
     private void copyChartToClipboard() {
-        if (currentChart == null) return;
-        BufferedImage image = currentChart.createBufferedImage(chartContainer.getWidth(), chartContainer.getHeight());
+        int w = chartContainer.getWidth(), h = chartContainer.getHeight();
+        BufferedImage image;
+        if (currentChart != null) {
+            image = currentChart.createBufferedImage(w, h);
+        } else if (currentChart3D != null) {
+            image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+            currentChart3D.draw(image.createGraphics(), new java.awt.Rectangle(w, h));
+        } else {
+            return;
+        }
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new Transferable() {
             @Override public DataFlavor[] getTransferDataFlavors() { return new DataFlavor[]{DataFlavor.imageFlavor}; }
             @Override public boolean isDataFlavorSupported(DataFlavor f) { return DataFlavor.imageFlavor.equals(f); }

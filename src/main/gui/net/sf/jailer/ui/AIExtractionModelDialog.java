@@ -461,7 +461,9 @@ public class AIExtractionModelDialog extends JDialog {
 
 // TODO in answer area: erst explanation, dann rest.
 
-// TODO im systemprompt fordern, dass möglichst vieles "false" ist
+// TODO im systemprompt fordern, dass mï¿½glichst vieles "false" ist
 
-// TODO warnung wenn bei Öffnen des Dialogs schon ein additional Subjekt gesetzt ist
-// TODO hinweis, dass UNDO möglich ist auf AIExtractionModelDialog
+// TODO warnung wenn bei ï¿½ffnen des Dialogs schon ein additional Subjekt gesetzt ist
+// TODO hinweis, dass UNDO mï¿½glich ist auf AIExtractionModelDialog
+
+// TODO wenn API key vorhanden, AI Assistant in wizzard anbieten.
