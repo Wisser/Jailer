@@ -132,6 +132,7 @@ public class SQLConsoleChartPanel extends JPanel {
         toolbar.add(yButton);
         toolbar.add(Box.createHorizontalStrut(12));
 
+        exportButton.setIcon(UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/run.png")));
         exportButton.setToolTipText("Export chart as image file or copy to clipboard");
         exportButton.setEnabled(false);
         exportButton.addActionListener(e -> showExportMenu());
