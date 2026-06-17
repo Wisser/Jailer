@@ -1118,7 +1118,7 @@ public class TabContentPanel extends javax.swing.JPanel {
     	textArea.setDocument(new RSyntaxDocument(null, SyntaxConstants.SYNTAX_STYLE_NONE)); // prevent memory leak
     }
     
-    private SQLConsoleChartPanel chartPanel;
+    SQLConsoleChartPanel chartPanel;
     private final RSyntaxTextAreaWithSQLSyntaxStyle textArea;
     final Pair<Integer, Integer> caretDotMark;
     private final List<Integer> rowColumnTypes;

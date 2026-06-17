@@ -94,6 +94,7 @@ import com.orsoncharts.Chart3DFactory;
 import com.orsoncharts.Chart3DPanel;
 import com.orsoncharts.data.StandardPieDataset3D;
 import com.orsoncharts.data.category.StandardCategoryDataset3D;
+import com.orsoncharts.graphics3d.ViewPoint3D;
 import com.orsoncharts.plot.CategoryPlot3D;
 import com.orsoncharts.plot.PiePlot3D;
 import com.orsoncharts.renderer.category.AbstractCategoryRenderer3D;
@@ -158,8 +159,11 @@ public class SQLConsoleChartPanel extends JPanel {
     private final JTextField  yMinField         = new JTextField(5);
     private final JTextField  yMaxField         = new JTextField(5);
     private final JCheckBox   logScaleCheckBox  = new JCheckBox("Log");
-    private final JComboBox<String> binsCombo   = new JComboBox<>(new String[]{"10", "20", "50", "100"});
-    private final JLabel            binsLabel   = new JLabel("Bins:");
+    private final JComboBox<String> binsCombo       = new JComboBox<>(new String[]{"10", "20", "50", "100"});
+    private final JLabel            binsLabel       = new JLabel("Bins:");
+    private final JTextField        projField       = new JTextField("1500", 5);
+    private final JLabel            projLabel       = new JLabel("Proj:");
+    private final JButton           resetViewButton = new JButton("Reset View");
 
     // --- Labels to enable/disable with controls ---
     private final JLabel orientationLabel = new JLabel("Orientation:");
@@ -171,9 +175,13 @@ public class SQLConsoleChartPanel extends JPanel {
 
     private final JPanel chartContainer = new JPanel(new BorderLayout());
 
+    private String       pendingXColumn  = null;
+    private List<String> pendingYColumns = null;
+
     private JTable currentTable;
-    private JFreeChart currentChart;
-    private Chart3D    currentChart3D;
+    private JFreeChart   currentChart;
+    private Chart3D      currentChart3D;
+    private ViewPoint3D  initialViewPoint3D;
     private final List<Integer> columnTypes;
     private boolean suppressUpdate = false;
 
@@ -222,6 +230,19 @@ public class SQLConsoleChartPanel extends JPanel {
         colorSchemeCombo.addActionListener(redraw);
         binsCombo.setSelectedItem("20");
         binsCombo.addActionListener(redraw);
+
+        FocusAdapter projListener = new FocusAdapter() {
+            @Override public void focusLost(FocusEvent e) { applyProjection(); }
+        };
+        projField.addFocusListener(projListener);
+        projField.addActionListener(e -> applyProjection());
+
+        resetViewButton.addActionListener(e -> {
+            if (currentChart3D != null && initialViewPoint3D != null) {
+                currentChart3D.setViewPoint(new ViewPoint3D(initialViewPoint3D));
+                currentChart3D.setProjDistance(parseProjDistance());
+            }
+        });
 
         FocusAdapter boundsListener = new FocusAdapter() {
             @Override public void focusLost(FocusEvent e) { if (!suppressUpdate) updateChart(); }
@@ -398,6 +419,17 @@ public class SQLConsoleChartPanel extends JPanel {
         row.add(binsLabel);
         row.add(Box.createHorizontalStrut(4));
         row.add(binsCombo);
+        row.add(Box.createHorizontalStrut(12));
+
+        projLabel.setToolTipText("Projection distance — lower = wider angle, higher = more telephoto");
+        projField.setToolTipText("Projection distance — lower = wider angle, higher = more telephoto");
+        row.add(projLabel);
+        row.add(Box.createHorizontalStrut(4));
+        row.add(projField);
+        row.add(Box.createHorizontalStrut(8));
+
+        resetViewButton.setToolTipText("Reset 3D rotation and projection to default");
+        row.add(resetViewButton);
         row.add(Box.createHorizontalStrut(4));
 
         return row;
@@ -423,6 +455,8 @@ public class SQLConsoleChartPanel extends JPanel {
         setEnabled2(aggregateLabel, aggregateCombo, !is3D && (isCat || CHART_BAR_3D.equals(type)));
         setEnabled2(null, sortXCheckBox, !is3D && isCat);
         setEnabled2(binsLabel, binsCombo, isHist);
+        setEnabled2(projLabel, projField, is3D);
+        setEnabled2(null, resetViewButton, is3D);
     }
 
     private void setEnabled2(JLabel label, java.awt.Component control, boolean enabled) {
@@ -444,11 +478,17 @@ public class SQLConsoleChartPanel extends JPanel {
         TableColumnModel cm = currentTable.getColumnModel();
         int colCount = cm.getColumnCount();
 
-        String xSel = (String) xColumnCombo.getSelectedItem();
+        String xSel = pendingXColumn != null ? pendingXColumn : (String) xColumnCombo.getSelectedItem();
         List<String> ySel = new ArrayList<>();
-        for (JCheckBox cb : yCheckBoxes) {
-            if (cb.isSelected()) ySel.add(cb.getText());
+        if (pendingYColumns != null) {
+            ySel.addAll(pendingYColumns);
+        } else {
+            for (JCheckBox cb : yCheckBoxes) {
+                if (cb.isSelected()) ySel.add(cb.getText());
+            }
         }
+        pendingXColumn = null;
+        pendingYColumns = null;
 
         suppressUpdate = true;
         try {
@@ -726,6 +766,9 @@ public class SQLConsoleChartPanel extends JPanel {
         if (!legendCheckBox.isSelected()) chart.setLegendBuilder(null);
         Color[] palette = getPalette((String) colorSchemeCombo.getSelectedItem());
         if (palette != null) ((AbstractCategoryRenderer3D) ((CategoryPlot3D) chart.getPlot()).getRenderer()).setColors(palette);
+        chart.setAntiAlias(true);
+        chart.setProjDistance(parseProjDistance());
+        initialViewPoint3D = new ViewPoint3D(chart.getViewPoint());
         return chart;
     }
 
@@ -740,6 +783,9 @@ public class SQLConsoleChartPanel extends JPanel {
         if (!legendCheckBox.isSelected()) chart.setLegendBuilder(null);
         Color[] palette = getPalette((String) colorSchemeCombo.getSelectedItem());
         if (palette != null) ((PiePlot3D) chart.getPlot()).setSectionColors(palette);
+        chart.setAntiAlias(true);
+        chart.setProjDistance(parseProjDistance());
+        initialViewPoint3D = new ViewPoint3D(chart.getViewPoint());
         return chart;
     }
 
@@ -842,6 +888,14 @@ public class SQLConsoleChartPanel extends JPanel {
             case "Monochrome": return PALETTE_MONOCHROME;
             default:           return null;
         }
+    }
+
+    private double parseProjDistance() {
+        try { return Double.parseDouble(projField.getText().trim()); } catch (NumberFormatException e) { return 1500.0; }
+    }
+
+    private void applyProjection() {
+        if (currentChart3D != null) currentChart3D.setProjDistance(parseProjDistance());
     }
 
     private void applyPieSettings(JFreeChart chart) {
@@ -1012,5 +1066,42 @@ public class SQLConsoleChartPanel extends JPanel {
             return html.replaceAll("<[^>]*>", " ").replaceAll("\\s+", " ").trim();
         }
         return html;
+    }
+
+    public void copySettingsFrom(SQLConsoleChartPanel other) {
+        suppressUpdate = true;
+        try {
+            pendingXColumn = (String) other.xColumnCombo.getSelectedItem();
+            pendingYColumns = new ArrayList<>();
+            for (JCheckBox cb : other.yCheckBoxes) {
+                if (cb.isSelected()) pendingYColumns.add(cb.getText());
+            }
+            chartTypeCombo.setSelectedItem(other.chartTypeCombo.getSelectedItem());
+            titleField.setText(other.titleField.getText());
+            legendCheckBox.setSelected(other.legendCheckBox.isSelected());
+            dataLabelsCheckBox.setSelected(other.dataLabelsCheckBox.isSelected());
+            gridCheckBox.setSelected(other.gridCheckBox.isSelected());
+            chartTranspCheckBox.setSelected(other.chartTranspCheckBox.isSelected());
+            plotTranspCheckBox.setSelected(other.plotTranspCheckBox.isSelected());
+            sortXCheckBox.setSelected(other.sortXCheckBox.isSelected());
+            aggregateCombo.setSelectedItem(other.aggregateCombo.getSelectedItem());
+            rowLimitCombo.setSelectedItem(other.rowLimitCombo.getSelectedItem());
+            colorSchemeCombo.setSelectedItem(other.colorSchemeCombo.getSelectedItem());
+            orientationCombo.setSelectedItem(other.orientationCombo.getSelectedItem());
+            stackedCheckBox.setSelected(other.stackedCheckBox.isSelected());
+            xRotateCombo.setSelectedItem(other.xRotateCombo.getSelectedItem());
+            yMinField.setText(other.yMinField.getText());
+            yMaxField.setText(other.yMaxField.getText());
+            logScaleCheckBox.setSelected(other.logScaleCheckBox.isSelected());
+            binsCombo.setSelectedItem(other.binsCombo.getSelectedItem());
+            projField.setText(other.projField.getText());
+            updateSettingsForChartType();
+        } finally {
+            suppressUpdate = false;
+        }
+        if (currentTable != null) {
+            refreshColumnCombos();
+        }
+        updateChart();
     }
 }

@@ -250,6 +250,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	private boolean aiCallRunning;
 	private boolean[] toolbarEnabledState;
 	private int initialTabbedPaneSelection = 0;
+	private SQLConsoleChartPanel lastChartPanel = null;
 	private List<? extends SortKey> initialSortKeys = null;
 	private Map<String, FullTextSearchPanel> fullTextSearchPanel = new WeakHashMap<String, FullTextSearchPanel>();
 	private Point initialRowsTablesPos;
@@ -2063,7 +2064,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         final int loc = status != null && status.location != null? status.location.a : -1;
                         if (initialTabbedPaneSelection >= 0 && initialTabbedPaneSelectionLoc == loc) {
                         	if (initialTabbedPaneSelection < tabContentPanel.tabbedPane.getTabCount()) {
+                        		SQLConsoleChartPanel chartPanelToCopyFrom = lastChartPanel;
                         		tabContentPanel.tabbedPane.setSelectedIndex(initialTabbedPaneSelection);
+                        		String selTitle = tabContentPanel.tabbedPane.getTitleAt(initialTabbedPaneSelection);
+                        		if ("Chart".equals(selTitle) && chartPanelToCopyFrom != null && tabContentPanel.chartPanel != null
+                        				&& chartPanelToCopyFrom != tabContentPanel.chartPanel) {
+                        			tabContentPanel.chartPanel.copySettingsFrom(chartPanelToCopyFrom);
+                        			lastChartPanel = tabContentPanel.chartPanel;
+                        		}
                         	}
                         }
                 		try {
@@ -2088,7 +2096,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 			Container fullTextSearchPanelParent;
                 			@Override
 							public void stateChanged(ChangeEvent e) {
-								initialTabbedPaneSelection = tabContentPanel.tabbedPane.getSelectedIndex();
+								int sel = tabContentPanel.tabbedPane.getSelectedIndex();
+								initialTabbedPaneSelection = sel;
+								if ("Chart".equals(tabContentPanel.tabbedPane.getTitleAt(sel))) {
+									lastChartPanel = tabContentPanel.chartPanel;
+								}
 								initialTabbedPaneSelectionLoc = loc;
 								updateColumnsAndTextView(rb, tabContentPanel);
 								if (tabContentPanel.tabbedPane.getSelectedComponent() == tabContentPanel.columnsPanel) {
@@ -2204,6 +2216,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							tabContentPanel.updateTextView(rb.rowsTable);
 							tabContentPanel.textSortedStateLabel.setText("  " + tableSortAndFilterState);
 							tabContentPanel.textSortedStateLabel.setVisible(!tableSortAndFilterState.isEmpty());
+						}
+						if (tabContentPanel.chartPanel != null && tabContentPanel.tabbedPane.getSelectedComponent() == tabContentPanel.chartPanel) {
+							tabContentPanel.chartPanel.setTable(rb.rowsTable);
 						}
 					}
                 });
