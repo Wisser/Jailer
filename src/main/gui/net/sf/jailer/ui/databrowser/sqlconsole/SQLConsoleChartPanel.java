@@ -16,6 +16,7 @@
 package net.sf.jailer.ui.databrowser.sqlconsole;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Toolkit;
@@ -63,6 +64,7 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.StandardChartTheme;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.CategoryLabelPositions;
 import org.jfree.chart.axis.LogAxis;
@@ -103,6 +105,12 @@ public class SQLConsoleChartPanel extends JPanel {
     private final List<JCheckBox>   yCheckBoxes    = new ArrayList<>();
     private final JButton           exportButton   = new JButton("Export");
 
+    // --- Color palettes ---
+    private static final Color[] PALETTE_PASTEL      = { new Color(174,199,232), new Color(255,187,120), new Color(152,223,138), new Color(255,152,150), new Color(197,176,213), new Color(196,156,148) };
+    private static final Color[] PALETTE_EARTH       = { new Color(140, 86, 75), new Color(214,139, 74), new Color(188,189, 34), new Color( 23,190,207), new Color( 44,160, 44), new Color(127,127,127) };
+    private static final Color[] PALETTE_COLORBLIND  = { new Color(  0,114,178), new Color(230,159,  0), new Color(  0,158,115), new Color(213, 94,  0), new Color( 86,180,233), new Color(204,121,167), new Color(0,0,0), new Color(240,228,66) };
+    private static final Color[] PALETTE_MONOCHROME  = { new Color( 30, 30, 30), new Color( 80, 80, 80), new Color(130,130,130), new Color(180,180,180), new Color( 50, 50, 50), new Color(210,210,210) };
+
     // --- General settings ---
     private final JTextField  titleField        = new JTextField(12);
     private final JCheckBox   legendCheckBox    = new JCheckBox("Legend", true);
@@ -111,6 +119,8 @@ public class SQLConsoleChartPanel extends JPanel {
     private final JCheckBox   sortXCheckBox     = new JCheckBox("Sort X");
     private final JComboBox<String> aggregateCombo = new JComboBox<>(new String[]{"None", "Sum", "Average", "Count"});
     private final JComboBox<String> rowLimitCombo  = new JComboBox<>(new String[]{"All", "100", "500", "1000", "5000"});
+    private final JComboBox<String> colorSchemeCombo = new JComboBox<>(new String[]{"Default", "Darkness", "Pastel", "Earth", "Colorblind", "Monochrome"});
+    private final JLabel colorSchemeLabel = new JLabel("Colors:");
 
     // --- Chart-specific settings ---
     private final JComboBox<String> orientationCombo = new JComboBox<>(new String[]{"Vertical", "Horizontal"});
@@ -175,6 +185,7 @@ public class SQLConsoleChartPanel extends JPanel {
         stackedCheckBox.addActionListener(redraw);
         xRotateCombo.addActionListener(redraw);
         logScaleCheckBox.addActionListener(redraw);
+        colorSchemeCombo.addActionListener(redraw);
 
         FocusAdapter boundsListener = new FocusAdapter() {
             @Override public void focusLost(FocusEvent e) { if (!suppressUpdate) updateChart(); }
@@ -276,6 +287,13 @@ public class SQLConsoleChartPanel extends JPanel {
         row.add(rowLimitLabel);
         row.add(Box.createHorizontalStrut(4));
         row.add(rowLimitCombo);
+        row.add(Box.createHorizontalStrut(12));
+
+        colorSchemeLabel.setToolTipText("Color palette for the chart series");
+        colorSchemeCombo.setToolTipText("Color palette for the chart series");
+        row.add(colorSchemeLabel);
+        row.add(Box.createHorizontalStrut(4));
+        row.add(colorSchemeCombo);
         row.add(Box.createHorizontalStrut(4));
 
         return row;
@@ -586,6 +604,9 @@ public class SQLConsoleChartPanel extends JPanel {
     // -------------------------------------------------------------------------
 
     private void applySettings(JFreeChart chart, String type) {
+        String scheme = (String) colorSchemeCombo.getSelectedItem();
+        if ("Darkness".equals(scheme)) StandardChartTheme.createDarknessTheme().apply(chart);
+
         String title = titleField.getText().trim();
         chart.setTitle(title.isEmpty() ? null : title);
         if (chart.getLegend() != null) chart.getLegend().setVisible(legendCheckBox.isSelected());
@@ -596,6 +617,43 @@ public class SQLConsoleChartPanel extends JPanel {
             applyXYSettings(chart);
         } else {
             applyCategorySettings(chart);
+        }
+
+        applyColorScheme(chart, type, scheme);
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private void applyColorScheme(JFreeChart chart, String type, String scheme) {
+        Color[] palette = getPalette(scheme);
+        if (palette == null) return;
+        if (CHART_PIE.equals(type)) {
+            PiePlot plot = (PiePlot) chart.getPlot();
+            List keys = plot.getDataset().getKeys();
+            for (int i = 0; i < keys.size(); i++) {
+                plot.setSectionPaint((Comparable) keys.get(i), palette[i % palette.length]);
+            }
+        } else if (CHART_XY.equals(type)) {
+            XYPlot plot = (XYPlot) chart.getPlot();
+            XYItemRenderer renderer = plot.getRenderer();
+            for (int i = 0; i < plot.getDataset().getSeriesCount(); i++) {
+                renderer.setSeriesPaint(i, palette[i % palette.length]);
+            }
+        } else {
+            CategoryPlot plot = (CategoryPlot) chart.getPlot();
+            CategoryItemRenderer renderer = plot.getRenderer();
+            for (int i = 0; i < plot.getDataset().getRowCount(); i++) {
+                renderer.setSeriesPaint(i, palette[i % palette.length]);
+            }
+        }
+    }
+
+    private Color[] getPalette(String scheme) {
+        switch (scheme != null ? scheme : "Default") {
+            case "Pastel":     return PALETTE_PASTEL;
+            case "Earth":      return PALETTE_EARTH;
+            case "Colorblind": return PALETTE_COLORBLIND;
+            case "Monochrome": return PALETTE_MONOCHROME;
+            default:           return null;
         }
     }
 
