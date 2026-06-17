@@ -22,12 +22,17 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,8 +49,12 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.RowSorter;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
@@ -54,7 +63,18 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.CategoryLabelPositions;
+import org.jfree.chart.axis.LogAxis;
+import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
+import org.jfree.chart.labels.StandardXYItemLabelGenerator;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PiePlot;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.category.CategoryItemRenderer;
+import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.data.xy.XYSeries;
@@ -74,14 +94,41 @@ public class SQLConsoleChartPanel extends JPanel {
     private static final String CHART_PIE  = "Pie";
     private static final String CHART_XY   = "XY (Scatter)";
 
+    // --- Main controls ---
     private final JComboBox<String> chartTypeCombo = new JComboBox<>(new String[]{CHART_BAR, CHART_LINE, CHART_PIE, CHART_XY});
     private final JComboBox<String> xColumnCombo   = new JComboBox<>();
     private final JButton           yButton        = new JButton("(none)");
     private final JPopupMenu        yPopup         = new JPopupMenu();
     private final JPanel            yCheckPanel    = new JPanel();
     private final List<JCheckBox>   yCheckBoxes    = new ArrayList<>();
-    private final JPanel            chartContainer = new JPanel(new BorderLayout());
     private final JButton           exportButton   = new JButton("Export");
+
+    // --- General settings ---
+    private final JTextField  titleField        = new JTextField(12);
+    private final JCheckBox   legendCheckBox    = new JCheckBox("Legend", true);
+    private final JCheckBox   dataLabelsCheckBox = new JCheckBox("Data Labels");
+    private final JCheckBox   gridCheckBox      = new JCheckBox("Grid", true);
+    private final JCheckBox   sortXCheckBox     = new JCheckBox("Sort X");
+    private final JComboBox<String> aggregateCombo = new JComboBox<>(new String[]{"None", "Sum", "Average", "Count"});
+    private final JComboBox<String> rowLimitCombo  = new JComboBox<>(new String[]{"All", "100", "500", "1000", "5000"});
+
+    // --- Chart-specific settings ---
+    private final JComboBox<String> orientationCombo = new JComboBox<>(new String[]{"Vertical", "Horizontal"});
+    private final JCheckBox   stackedCheckBox   = new JCheckBox("Stacked");
+    private final JComboBox<String> xRotateCombo = new JComboBox<>(new String[]{"0°", "45°", "90°"});
+    private final JTextField  yMinField         = new JTextField(5);
+    private final JTextField  yMaxField         = new JTextField(5);
+    private final JCheckBox   logScaleCheckBox  = new JCheckBox("Log");
+
+    // --- Labels to enable/disable with controls ---
+    private final JLabel orientationLabel = new JLabel("Orientation:");
+    private final JLabel xRotateLabel     = new JLabel("X-Rotate:");
+    private final JLabel yMinLabel        = new JLabel("Y-Min:");
+    private final JLabel yMaxLabel        = new JLabel("Y-Max:");
+    private final JLabel aggregateLabel   = new JLabel("Aggregate:");
+    private final JLabel rowLimitLabel    = new JLabel("Rows:");
+
+    private final JPanel chartContainer = new JPanel(new BorderLayout());
 
     private JTable currentTable;
     private JFreeChart currentChart;
@@ -94,6 +141,7 @@ public class SQLConsoleChartPanel extends JPanel {
         this.columnTypes = columnTypes;
         setLayout(new BorderLayout());
 
+        // Y popup
         yCheckPanel.setLayout(new BoxLayout(yCheckPanel, BoxLayout.Y_AXIS));
         JScrollPane yPopupScroll = new JScrollPane(yCheckPanel);
         yPopupScroll.setBorder(null);
@@ -101,6 +149,52 @@ public class SQLConsoleChartPanel extends JPanel {
         yPopup.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
         yPopup.add(yPopupScroll);
 
+        JPanel northPanel = new JPanel();
+        northPanel.setLayout(new BoxLayout(northPanel, BoxLayout.Y_AXIS));
+        northPanel.add(buildMainToolbar());
+        northPanel.add(buildSettingsRow1());
+        northPanel.add(buildSettingsRow2());
+
+        add(northPanel, BorderLayout.NORTH);
+        add(chartContainer, BorderLayout.CENTER);
+        chartContainer.add(new JLabel("Select columns above to create a chart.", SwingConstants.CENTER));
+
+        // Listeners
+        ActionListener redraw = e -> { if (!suppressUpdate) updateChart(); };
+        chartTypeCombo.addActionListener(e -> { if (!suppressUpdate) { updateSettingsForChartType(); updateChart(); } });
+        xColumnCombo.addActionListener(redraw);
+        yCheckPanel.putClientProperty("redraw", redraw); // stored for use in buildCheckBox
+
+        legendCheckBox.addActionListener(redraw);
+        dataLabelsCheckBox.addActionListener(redraw);
+        gridCheckBox.addActionListener(redraw);
+        sortXCheckBox.addActionListener(redraw);
+        aggregateCombo.addActionListener(redraw);
+        rowLimitCombo.addActionListener(redraw);
+        orientationCombo.addActionListener(redraw);
+        stackedCheckBox.addActionListener(redraw);
+        xRotateCombo.addActionListener(redraw);
+        logScaleCheckBox.addActionListener(redraw);
+
+        FocusAdapter boundsListener = new FocusAdapter() {
+            @Override public void focusLost(FocusEvent e) { if (!suppressUpdate) updateChart(); }
+        };
+        yMinField.addFocusListener(boundsListener);
+        yMaxField.addFocusListener(boundsListener);
+        yMinField.addActionListener(redraw);
+        yMaxField.addActionListener(redraw);
+
+        titleField.getDocument().addDocumentListener(new DocumentListener() {
+            private void onChange() { if (!suppressUpdate) SwingUtilities.invokeLater(SQLConsoleChartPanel.this::updateChart); }
+            @Override public void insertUpdate(DocumentEvent e) { onChange(); }
+            @Override public void removeUpdate(DocumentEvent e) { onChange(); }
+            @Override public void changedUpdate(DocumentEvent e) { onChange(); }
+        });
+
+        updateSettingsForChartType();
+    }
+
+    private JPanel buildMainToolbar() {
         JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 2));
 
         JLabel chartTypeLabel = new JLabel("Chart type:");
@@ -122,8 +216,8 @@ public class SQLConsoleChartPanel extends JPanel {
         toolbar.add(Box.createHorizontalStrut(12));
 
         JLabel yLabel = new JLabel("Y:");
-        yLabel.setToolTipText("Columns used as Y values (numeric) — click to select");
-        yButton.setToolTipText("Columns used as Y values (numeric) — click to select");
+        yLabel.setToolTipText("Columns used as Y values — click to select");
+        yButton.setToolTipText("Columns used as Y values — click to select");
         yButton.setPreferredSize(new Dimension(200, yButton.getPreferredSize().height));
         yButton.setHorizontalAlignment(SwingConstants.LEFT);
         yButton.addActionListener(e -> yPopup.show(yButton, 0, yButton.getHeight()));
@@ -139,13 +233,121 @@ public class SQLConsoleChartPanel extends JPanel {
         toolbar.add(exportButton);
         toolbar.add(Box.createHorizontalStrut(4));
 
-        add(toolbar, BorderLayout.NORTH);
-        add(chartContainer, BorderLayout.CENTER);
-        chartContainer.add(new JLabel("Select columns above to create a chart.", SwingConstants.CENTER));
-
-        chartTypeCombo.addActionListener(e -> { if (!suppressUpdate) updateChart(); });
-        xColumnCombo.addActionListener(e -> { if (!suppressUpdate) updateChart(); });
+        return toolbar;
     }
+
+    private JPanel buildSettingsRow1() {
+        JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 1));
+
+        JLabel titleLabel = new JLabel("Title:");
+        titleLabel.setToolTipText("Optional chart title");
+        titleField.setToolTipText("Optional chart title");
+        row.add(Box.createHorizontalStrut(4));
+        row.add(titleLabel);
+        row.add(Box.createHorizontalStrut(4));
+        row.add(titleField);
+        row.add(Box.createHorizontalStrut(12));
+
+        legendCheckBox.setToolTipText("Show or hide the chart legend");
+        row.add(legendCheckBox);
+        row.add(Box.createHorizontalStrut(8));
+
+        dataLabelsCheckBox.setToolTipText("Show data values directly on the chart");
+        row.add(dataLabelsCheckBox);
+        row.add(Box.createHorizontalStrut(8));
+
+        gridCheckBox.setToolTipText("Show or hide the grid lines");
+        row.add(gridCheckBox);
+        row.add(Box.createHorizontalStrut(8));
+
+        sortXCheckBox.setToolTipText("Sort categories alphabetically by X value");
+        row.add(sortXCheckBox);
+        row.add(Box.createHorizontalStrut(12));
+
+        aggregateLabel.setToolTipText("Aggregate multiple rows with the same X value");
+        aggregateCombo.setToolTipText("Aggregate multiple rows with the same X value");
+        row.add(aggregateLabel);
+        row.add(Box.createHorizontalStrut(4));
+        row.add(aggregateCombo);
+        row.add(Box.createHorizontalStrut(12));
+
+        rowLimitLabel.setToolTipText("Maximum number of rows to include in the chart");
+        rowLimitCombo.setToolTipText("Maximum number of rows to include in the chart");
+        row.add(rowLimitLabel);
+        row.add(Box.createHorizontalStrut(4));
+        row.add(rowLimitCombo);
+        row.add(Box.createHorizontalStrut(4));
+
+        return row;
+    }
+
+    private JPanel buildSettingsRow2() {
+        JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 1));
+
+        orientationLabel.setToolTipText("Bar chart orientation");
+        orientationCombo.setToolTipText("Bar chart orientation");
+        row.add(Box.createHorizontalStrut(4));
+        row.add(orientationLabel);
+        row.add(Box.createHorizontalStrut(4));
+        row.add(orientationCombo);
+        row.add(Box.createHorizontalStrut(8));
+
+        stackedCheckBox.setToolTipText("Stack multiple series on top of each other");
+        row.add(stackedCheckBox);
+        row.add(Box.createHorizontalStrut(12));
+
+        xRotateLabel.setToolTipText("Rotation angle for X axis labels");
+        xRotateCombo.setToolTipText("Rotation angle for X axis labels");
+        row.add(xRotateLabel);
+        row.add(Box.createHorizontalStrut(4));
+        row.add(xRotateCombo);
+        row.add(Box.createHorizontalStrut(12));
+
+        yMinLabel.setToolTipText("Fixed lower bound for the Y axis (leave empty for auto)");
+        yMinField.setToolTipText("Fixed lower bound for the Y axis (leave empty for auto)");
+        row.add(yMinLabel);
+        row.add(Box.createHorizontalStrut(4));
+        row.add(yMinField);
+        row.add(Box.createHorizontalStrut(8));
+
+        yMaxLabel.setToolTipText("Fixed upper bound for the Y axis (leave empty for auto)");
+        yMaxField.setToolTipText("Fixed upper bound for the Y axis (leave empty for auto)");
+        row.add(yMaxLabel);
+        row.add(Box.createHorizontalStrut(4));
+        row.add(yMaxField);
+        row.add(Box.createHorizontalStrut(12));
+
+        logScaleCheckBox.setToolTipText("Use a logarithmic scale for the Y axis");
+        row.add(logScaleCheckBox);
+        row.add(Box.createHorizontalStrut(4));
+
+        return row;
+    }
+
+    private void updateSettingsForChartType() {
+        String type = (String) chartTypeCombo.getSelectedItem();
+        boolean isBar  = CHART_BAR.equals(type);
+        boolean isCat  = isBar || CHART_LINE.equals(type);
+        boolean isPie  = CHART_PIE.equals(type);
+        boolean isXY   = CHART_XY.equals(type);
+
+        setEnabled2(orientationLabel, orientationCombo, isBar);
+        setEnabled2(null, stackedCheckBox, isCat);
+        setEnabled2(xRotateLabel, xRotateCombo, isCat);
+        setEnabled2(yMinLabel, yMinField, !isPie);
+        setEnabled2(yMaxLabel, yMaxField, !isPie);
+        setEnabled2(null, logScaleCheckBox, !isPie);
+        setEnabled2(null, gridCheckBox, !isPie);
+        setEnabled2(aggregateLabel, aggregateCombo, !isXY);
+        setEnabled2(null, sortXCheckBox, !isXY);
+    }
+
+    private void setEnabled2(JLabel label, java.awt.Component control, boolean enabled) {
+        if (label != null) label.setEnabled(enabled);
+        control.setEnabled(enabled);
+    }
+
+    // -------------------------------------------------------------------------
 
     public void setTable(JTable table) {
         this.currentTable = table;
@@ -232,22 +434,17 @@ public class SQLConsoleChartPanel extends JPanel {
     private boolean isNumeric(int modelCol) {
         if (columnTypes != null && modelCol < columnTypes.size()) {
             switch (columnTypes.get(modelCol)) {
-                case Types.BIGINT:
-                case Types.DECIMAL:
-                case Types.DOUBLE:
-                case Types.FLOAT:
-                case Types.INTEGER:
-                case Types.NUMERIC:
-                case Types.REAL:
-                case Types.SMALLINT:
-                case Types.TINYINT:
+                case Types.BIGINT: case Types.DECIMAL: case Types.DOUBLE:
+                case Types.FLOAT:  case Types.INTEGER: case Types.NUMERIC:
+                case Types.REAL:   case Types.SMALLINT: case Types.TINYINT:
                     return true;
-                default:
-                    break;
+                default: break;
             }
         }
         return false;
     }
+
+    // -------------------------------------------------------------------------
 
     private void updateChart() {
         if (currentTable == null) return;
@@ -262,7 +459,8 @@ public class SQLConsoleChartPanel extends JPanel {
 
         int xModelCol = cm.getColumn(xView).getModelIndex();
         String xLabel = stripHtml(model.getColumnName(xModelCol));
-        int rowCount = sorter != null ? sorter.getViewRowCount() : model.getRowCount();
+        int totalRows = sorter != null ? sorter.getViewRowCount() : model.getRowCount();
+        int rowCount = getEffectiveRowCount(totalRows);
 
         int[] yModelCols = new int[yViews.length];
         String[] yLabels = new String[yViews.length];
@@ -286,6 +484,8 @@ public class SQLConsoleChartPanel extends JPanel {
             return;
         }
 
+        applySettings(chart, type);
+
         currentChart = chart;
         exportButton.setEnabled(true);
         ChartPanel cp = new ChartPanel(chart);
@@ -296,18 +496,13 @@ public class SQLConsoleChartPanel extends JPanel {
         chartContainer.repaint();
     }
 
+    // -------------------------------------------------------------------------
+
     private JFreeChart buildPieChart(TableModel model, RowSorter<? extends TableModel> sorter, int rowCount, int xCol, int yCol) {
+        Map<String, Double> data = aggregateAndSort(model, sorter, rowCount, xCol, yCol);
         DefaultPieDataset dataset = new DefaultPieDataset();
-        for (int i = 0; i < rowCount; i++) {
-            int row = sorter != null ? sorter.convertRowIndexToModel(i) : i;
-            String key = cellString(model.getValueAt(row, xCol));
-            double val = cellDouble(model.getValueAt(row, yCol));
-            if (!Double.isNaN(val)) {
-                Number existing = dataset.getValue(key);
-                dataset.setValue(key, existing != null ? existing.doubleValue() + val : val);
-            }
-        }
-        return ChartFactory.createPieChart(null, dataset, true, true, false);
+        for (Map.Entry<String, Double> e : data.entrySet()) dataset.setValue(e.getKey(), e.getValue());
+        return ChartFactory.createPieChart(null, dataset, legendCheckBox.isSelected(), true, false);
     }
 
     private JFreeChart buildXYChart(TableModel model, RowSorter<? extends TableModel> sorter, int rowCount, int xCol, int[] yCols, String xLabel, String[] yLabels) {
@@ -322,48 +517,156 @@ public class SQLConsoleChartPanel extends JPanel {
             }
             dataset.addSeries(series);
         }
-        boolean legend = yCols.length > 1;
-        return ChartFactory.createScatterPlot(null, xLabel, yCols.length == 1 ? yLabels[0] : "Value", dataset, PlotOrientation.VERTICAL, legend, true, false);
+        String yAxisLabel = yCols.length == 1 ? yLabels[0] : "Value";
+        return ChartFactory.createScatterPlot(null, xLabel, yAxisLabel, dataset,
+                PlotOrientation.VERTICAL, legendCheckBox.isSelected(), true, false);
     }
 
     private JFreeChart buildCategoryChart(String type, TableModel model, RowSorter<? extends TableModel> sorter, int rowCount, int xCol, int[] yCols, String xLabel, String[] yLabels) {
+        boolean stacked = stackedCheckBox.isSelected();
+        boolean horizontal = "Horizontal".equals(orientationCombo.getSelectedItem());
+        PlotOrientation orientation = horizontal ? PlotOrientation.HORIZONTAL : PlotOrientation.VERTICAL;
+        boolean legend = legendCheckBox.isSelected();
+        String yAxisLabel = yCols.length == 1 ? yLabels[0] : "Value";
+
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         for (int si = 0; si < yCols.length; si++) {
-            for (int i = 0; i < rowCount; i++) {
-                int row = sorter != null ? sorter.convertRowIndexToModel(i) : i;
-                String cat = cellString(model.getValueAt(row, xCol));
-                double val = cellDouble(model.getValueAt(row, yCols[si]));
-                if (!Double.isNaN(val)) dataset.addValue(val, yLabels[si], cat);
-            }
+            Map<String, Double> data = aggregateAndSort(model, sorter, rowCount, xCol, yCols[si]);
+            for (Map.Entry<String, Double> e : data.entrySet()) dataset.addValue(e.getValue(), yLabels[si], e.getKey());
         }
-        boolean legend = yCols.length > 1;
-        String yAxisLabel = yCols.length == 1 ? yLabels[0] : "Value";
+
         if (CHART_BAR.equals(type)) {
-            return ChartFactory.createBarChart(null, xLabel, yAxisLabel, dataset, PlotOrientation.VERTICAL, legend, true, false);
+            return stacked
+                    ? ChartFactory.createStackedBarChart(null, xLabel, yAxisLabel, dataset, orientation, legend, true, false)
+                    : ChartFactory.createBarChart(null, xLabel, yAxisLabel, dataset, orientation, legend, true, false);
         }
-        return ChartFactory.createLineChart(null, xLabel, yAxisLabel, dataset, PlotOrientation.VERTICAL, legend, true, false);
+        // Line
+        return stacked
+                ? ChartFactory.createStackedAreaChart(null, xLabel, yAxisLabel, dataset, orientation, legend, true, false)
+                : ChartFactory.createLineChart(null, xLabel, yAxisLabel, dataset, orientation, legend, true, false);
     }
+
+    // -------------------------------------------------------------------------
+
+    private Map<String, Double> aggregateAndSort(TableModel model, RowSorter<? extends TableModel> sorter, int rowCount, int xCol, int yCol) {
+        String aggMode = (String) aggregateCombo.getSelectedItem();
+        Map<String, List<Double>> raw = new LinkedHashMap<>();
+        for (int i = 0; i < rowCount; i++) {
+            int row = sorter != null ? sorter.convertRowIndexToModel(i) : i;
+            String key = cellString(model.getValueAt(row, xCol));
+            double val = cellDouble(model.getValueAt(row, yCol));
+            if (!Double.isNaN(val)) raw.computeIfAbsent(key, k -> new ArrayList<>()).add(val);
+        }
+        Map<String, Double> result = new LinkedHashMap<>();
+        for (Map.Entry<String, List<Double>> e : raw.entrySet()) result.put(e.getKey(), computeAggregate(e.getValue(), aggMode));
+        if (sortXCheckBox.isEnabled() && sortXCheckBox.isSelected()) {
+            List<Map.Entry<String, Double>> entries = new ArrayList<>(result.entrySet());
+            entries.sort(Map.Entry.comparingByKey());
+            result = new LinkedHashMap<>();
+            for (Map.Entry<String, Double> e : entries) result.put(e.getKey(), e.getValue());
+        }
+        return result;
+    }
+
+    private double computeAggregate(List<Double> values, String mode) {
+        switch (mode != null ? mode : "None") {
+            case "Sum":     return values.stream().mapToDouble(Double::doubleValue).sum();
+            case "Average": return values.stream().mapToDouble(Double::doubleValue).average().orElse(Double.NaN);
+            case "Count":   return values.size();
+            default:        return values.isEmpty() ? Double.NaN : values.get(0);
+        }
+    }
+
+    private int getEffectiveRowCount(int total) {
+        String sel = (String) rowLimitCombo.getSelectedItem();
+        if ("All".equals(sel)) return total;
+        try { return Math.min(total, Integer.parseInt(sel)); } catch (NumberFormatException e) { return total; }
+    }
+
+    // -------------------------------------------------------------------------
+
+    private void applySettings(JFreeChart chart, String type) {
+        String title = titleField.getText().trim();
+        chart.setTitle(title.isEmpty() ? null : title);
+        if (chart.getLegend() != null) chart.getLegend().setVisible(legendCheckBox.isSelected());
+
+        if (CHART_PIE.equals(type)) {
+            applyPieSettings(chart);
+        } else if (CHART_XY.equals(type)) {
+            applyXYSettings(chart);
+        } else {
+            applyCategorySettings(chart);
+        }
+    }
+
+    private void applyPieSettings(JFreeChart chart) {
+        PiePlot plot = (PiePlot) chart.getPlot();
+        if (!dataLabelsCheckBox.isSelected()) plot.setLabelGenerator(null);
+    }
+
+    private void applyXYSettings(JFreeChart chart) {
+        XYPlot plot = (XYPlot) chart.getPlot();
+        plot.setDomainGridlinesVisible(gridCheckBox.isSelected());
+        plot.setRangeGridlinesVisible(gridCheckBox.isSelected());
+        if (dataLabelsCheckBox.isSelected()) {
+            XYItemRenderer renderer = plot.getRenderer();
+            renderer.setDefaultItemLabelGenerator(new StandardXYItemLabelGenerator());
+            renderer.setDefaultItemLabelsVisible(true);
+        }
+        ValueAxis rangeAxis = plot.getRangeAxis();
+        if (logScaleCheckBox.isSelected()) {
+            LogAxis logAxis = new LogAxis(rangeAxis.getLabel());
+            plot.setRangeAxis(logAxis);
+            rangeAxis = logAxis;
+        }
+        applyYBounds(rangeAxis);
+    }
+
+    private void applyCategorySettings(JFreeChart chart) {
+        CategoryPlot plot = (CategoryPlot) chart.getPlot();
+        plot.setDomainGridlinesVisible(gridCheckBox.isSelected());
+        plot.setRangeGridlinesVisible(gridCheckBox.isSelected());
+        if (dataLabelsCheckBox.isSelected()) {
+            CategoryItemRenderer renderer = plot.getRenderer();
+            renderer.setDefaultItemLabelGenerator(new StandardCategoryItemLabelGenerator());
+            renderer.setDefaultItemLabelsVisible(true);
+        }
+        CategoryAxis domainAxis = plot.getDomainAxis();
+        switch ((String) xRotateCombo.getSelectedItem()) {
+            case "45°": domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45); break;
+            case "90°": domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90); break;
+            default: break;
+        }
+        ValueAxis rangeAxis = plot.getRangeAxis();
+        if (logScaleCheckBox.isSelected()) {
+            LogAxis logAxis = new LogAxis(rangeAxis.getLabel());
+            plot.setRangeAxis(logAxis);
+            rangeAxis = logAxis;
+        }
+        applyYBounds(rangeAxis);
+    }
+
+    private void applyYBounds(ValueAxis axis) {
+        String minText = yMinField.getText().trim();
+        String maxText = yMaxField.getText().trim();
+        try { if (!minText.isEmpty()) axis.setLowerBound(Double.parseDouble(minText)); } catch (NumberFormatException e) { /* ignore */ }
+        try { if (!maxText.isEmpty()) axis.setUpperBound(Double.parseDouble(maxText)); } catch (NumberFormatException e) { /* ignore */ }
+    }
+
+    // -------------------------------------------------------------------------
 
     private void showExportMenu() {
         JPopupMenu menu = new JPopupMenu();
-
         JMenuItem pngItem = new JMenuItem("Save as PNG...");
-        pngItem.setToolTipText("Save chart as PNG image file");
         pngItem.addActionListener(e -> saveChartAs("png"));
         menu.add(pngItem);
-
         JMenuItem jpgItem = new JMenuItem("Save as JPEG...");
-        jpgItem.setToolTipText("Save chart as JPEG image file");
         jpgItem.addActionListener(e -> saveChartAs("jpg"));
         menu.add(jpgItem);
-
         menu.addSeparator();
-
         JMenuItem clipItem = new JMenuItem("Copy to Clipboard");
-        clipItem.setToolTipText("Copy chart as image to the system clipboard");
         clipItem.addActionListener(e -> copyChartToClipboard());
         menu.add(clipItem);
-
         menu.show(exportButton, 0, exportButton.getHeight());
     }
 
@@ -375,15 +678,10 @@ public class SQLConsoleChartPanel extends JPanel {
         chooser.setFileFilter(new FileNameExtensionFilter(
                 isPng ? "PNG Image (*.png)" : "JPEG Image (*.jpg, *.jpeg)", format, isPng ? null : "jpeg"));
         if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) return;
-        File file = chooser.getSelectedFile();
-        int w = chartContainer.getWidth();
-        int h = chartContainer.getHeight();
+        int w = chartContainer.getWidth(), h = chartContainer.getHeight();
         try {
-            if (isPng) {
-                ChartUtils.saveChartAsPNG(file, currentChart, w, h);
-            } else {
-                ChartUtils.saveChartAsJPEG(file, currentChart, w, h);
-            }
+            if (isPng) ChartUtils.saveChartAsPNG(chooser.getSelectedFile(), currentChart, w, h);
+            else       ChartUtils.saveChartAsJPEG(chooser.getSelectedFile(), currentChart, w, h);
         } catch (IOException ex) {
             UIUtil.showException(this, "Export Error", ex);
         }
@@ -391,9 +689,7 @@ public class SQLConsoleChartPanel extends JPanel {
 
     private void copyChartToClipboard() {
         if (currentChart == null) return;
-        int w = chartContainer.getWidth();
-        int h = chartContainer.getHeight();
-        BufferedImage image = currentChart.createBufferedImage(w, h);
+        BufferedImage image = currentChart.createBufferedImage(chartContainer.getWidth(), chartContainer.getHeight());
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new Transferable() {
             @Override public DataFlavor[] getTransferDataFlavors() { return new DataFlavor[]{DataFlavor.imageFlavor}; }
             @Override public boolean isDataFlavorSupported(DataFlavor f) { return DataFlavor.imageFlavor.equals(f); }
@@ -403,6 +699,8 @@ public class SQLConsoleChartPanel extends JPanel {
             }
         }, null);
     }
+
+    // -------------------------------------------------------------------------
 
     private void showError(String msg) {
         chartContainer.removeAll();
@@ -421,11 +719,8 @@ public class SQLConsoleChartPanel extends JPanel {
         if (value instanceof TableModelItem) value = ((TableModelItem) value).value;
         if (value == null || value == UIUtil.NULL) return Double.NaN;
         if (value instanceof Number) return ((Number) value).doubleValue();
-        try {
-            return Double.parseDouble(value.toString().trim().replace(",", "."));
-        } catch (NumberFormatException e) {
-            return Double.NaN;
-        }
+        try { return Double.parseDouble(value.toString().trim().replace(",", ".")); }
+        catch (NumberFormatException e) { return Double.NaN; }
     }
 
     private String stripHtml(String html) {
