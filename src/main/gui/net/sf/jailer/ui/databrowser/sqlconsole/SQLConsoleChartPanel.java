@@ -31,19 +31,19 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.DefaultListModel;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter;
 import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -76,9 +76,12 @@ public class SQLConsoleChartPanel extends JPanel {
 
     private final JComboBox<String> chartTypeCombo = new JComboBox<>(new String[]{CHART_BAR, CHART_LINE, CHART_PIE, CHART_XY});
     private final JComboBox<String> xColumnCombo   = new JComboBox<>();
-    private final JList<String>     yColumnList    = new JList<>();
-    private final JPanel chartContainer = new JPanel(new BorderLayout());
-    private final JButton exportButton  = new JButton("Export");
+    private final JButton           yButton        = new JButton("(none)");
+    private final JPopupMenu        yPopup         = new JPopupMenu();
+    private final JPanel            yCheckPanel    = new JPanel();
+    private final List<JCheckBox>   yCheckBoxes    = new ArrayList<>();
+    private final JPanel            chartContainer = new JPanel(new BorderLayout());
+    private final JButton           exportButton   = new JButton("Export");
 
     private JTable currentTable;
     private JFreeChart currentChart;
@@ -91,8 +94,12 @@ public class SQLConsoleChartPanel extends JPanel {
         this.columnTypes = columnTypes;
         setLayout(new BorderLayout());
 
-        yColumnList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        yColumnList.setVisibleRowCount(3);
+        yCheckPanel.setLayout(new BoxLayout(yCheckPanel, BoxLayout.Y_AXIS));
+        JScrollPane yPopupScroll = new JScrollPane(yCheckPanel);
+        yPopupScroll.setBorder(null);
+        yPopupScroll.setPreferredSize(new Dimension(160, 150));
+        yPopup.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+        yPopup.add(yPopupScroll);
 
         JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
 
@@ -111,12 +118,14 @@ public class SQLConsoleChartPanel extends JPanel {
         toolbar.add(xColumnCombo);
 
         JLabel yLabel = new JLabel("Y:");
-        yLabel.setToolTipText("<html>Columns used as Y values (numeric).<br>Ctrl+click to select multiple columns.</html>");
-        JScrollPane yScrollPane = new JScrollPane(yColumnList);
-        yScrollPane.setPreferredSize(new Dimension(140, 58));
-        yScrollPane.setToolTipText("<html>Columns used as Y values (numeric).<br>Ctrl+click to select multiple columns.</html>");
+        yLabel.setToolTipText("Columns used as Y values (numeric) — click to select");
+        yButton.setToolTipText("Columns used as Y values (numeric) — click to select");
+        yButton.setPreferredSize(new Dimension(140, yButton.getPreferredSize().height));
+        yButton.setHorizontalAlignment(SwingConstants.LEFT);
+        yButton.addActionListener(e -> yPopup.show(yButton, 0, yButton.getHeight()));
         toolbar.add(yLabel);
-        toolbar.add(yScrollPane);
+        toolbar.add(yButton);
+
         toolbar.add(Box.createHorizontalStrut(8));
         exportButton.setToolTipText("Export chart as image file or copy to clipboard");
         exportButton.setEnabled(false);
@@ -129,7 +138,6 @@ public class SQLConsoleChartPanel extends JPanel {
 
         chartTypeCombo.addActionListener(e -> { if (!suppressUpdate) updateChart(); });
         xColumnCombo.addActionListener(e -> { if (!suppressUpdate) updateChart(); });
-        yColumnList.addListSelectionListener(e -> { if (!e.getValueIsAdjusting() && !suppressUpdate) updateChart(); });
     }
 
     public void setTable(JTable table) {
@@ -145,43 +153,64 @@ public class SQLConsoleChartPanel extends JPanel {
         int colCount = cm.getColumnCount();
 
         String xSel = (String) xColumnCombo.getSelectedItem();
-        List<String> ySel = yColumnList.getSelectedValuesList();
+        List<String> ySel = new ArrayList<>();
+        for (JCheckBox cb : yCheckBoxes) {
+            if (cb.isSelected()) ySel.add(cb.getText());
+        }
 
         suppressUpdate = true;
         try {
             xColumnCombo.removeAllItems();
-            DefaultListModel<String> listModel = new DefaultListModel<>();
+            yCheckBoxes.clear();
+            yCheckPanel.removeAll();
+
             for (int i = 0; i < colCount; i++) {
                 int modelIdx = cm.getColumn(i).getModelIndex();
                 String name = stripHtml(model.getColumnName(modelIdx));
                 xColumnCombo.addItem(name);
-                listModel.addElement(name);
+                JCheckBox cb = new JCheckBox(name);
+                cb.setSelected(ySel.contains(name));
+                cb.addActionListener(e -> { updateYButtonLabel(); if (!suppressUpdate) updateChart(); });
+                yCheckBoxes.add(cb);
+                yCheckPanel.add(cb);
             }
-            yColumnList.setModel(listModel);
 
             if (xSel != null) xColumnCombo.setSelectedItem(xSel);
-            if (xColumnCombo.getSelectedIndex() < 0 && colCount > 0) {
-                xColumnCombo.setSelectedIndex(0);
-            }
+            if (xColumnCombo.getSelectedIndex() < 0 && colCount > 0) xColumnCombo.setSelectedIndex(0);
 
-            if (!ySel.isEmpty()) {
-                List<Integer> indices = new ArrayList<>();
-                for (int i = 0; i < listModel.getSize(); i++) {
-                    if (ySel.contains(listModel.getElementAt(i))) indices.add(i);
-                }
-                if (!indices.isEmpty()) {
-                    int[] arr = new int[indices.size()];
-                    for (int i = 0; i < arr.length; i++) arr[i] = indices.get(i);
-                    yColumnList.setSelectedIndices(arr);
-                }
-            }
-            if (yColumnList.isSelectionEmpty() && colCount > 0) {
+            if (ySel.isEmpty() || yCheckBoxes.stream().noneMatch(JCheckBox::isSelected)) {
                 int defY = findFirstNumericViewCol();
-                yColumnList.setSelectedIndex(defY >= 0 ? defY : Math.min(1, colCount - 1));
+                int idx = defY >= 0 ? defY : Math.min(1, colCount - 1);
+                if (idx < yCheckBoxes.size()) yCheckBoxes.get(idx).setSelected(true);
             }
+            updateYButtonLabel();
         } finally {
             suppressUpdate = false;
         }
+    }
+
+    private void updateYButtonLabel() {
+        List<String> selected = new ArrayList<>();
+        for (JCheckBox cb : yCheckBoxes) {
+            if (cb.isSelected()) selected.add(cb.getText());
+        }
+        if (selected.isEmpty()) {
+            yButton.setText("(none)");
+        } else if (selected.size() == 1) {
+            yButton.setText(selected.get(0));
+        } else {
+            yButton.setText(selected.get(0) + " +" + (selected.size() - 1) + " more");
+        }
+    }
+
+    private int[] getSelectedYIndices() {
+        List<Integer> indices = new ArrayList<>();
+        for (int i = 0; i < yCheckBoxes.size(); i++) {
+            if (yCheckBoxes.get(i).isSelected()) indices.add(i);
+        }
+        int[] arr = new int[indices.size()];
+        for (int i = 0; i < arr.length; i++) arr[i] = indices.get(i);
+        return arr;
     }
 
     private int findFirstNumericViewCol() {
@@ -216,7 +245,7 @@ public class SQLConsoleChartPanel extends JPanel {
     private void updateChart() {
         if (currentTable == null) return;
         int xView = xColumnCombo.getSelectedIndex();
-        int[] yViews = yColumnList.getSelectedIndices();
+        int[] yViews = getSelectedYIndices();
         if (xView < 0 || yViews.length == 0) return;
 
         TableColumnModel cm = currentTable.getColumnModel();
