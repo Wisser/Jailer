@@ -652,7 +652,7 @@ public class AIQueryAssistant {
         }
         try {
             JsonNode result = postWithCurl(config.apiUrl, apiKey, bodyBytes, isAnthropic, abortRef);
-            UISettings.s19 = -config.providerType.ordinal();
+            UISettings.s19 = -config.providerType.ordinal() - 1;
             ++UISettings.s20;
             return result;
         } catch (IOException curlError) {
