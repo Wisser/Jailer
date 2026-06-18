@@ -964,12 +964,16 @@ public class AIQueryAssistant {
     }
 
     public static String buildSchemaDescription(DataModel dataModel, Set<Table> relevantTables, boolean omitColumnTypes) {
+        return buildSchemaDescription(dataModel, relevantTables, omitColumnTypes, true);
+    }
+
+    public static String buildSchemaDescription(DataModel dataModel, Set<Table> relevantTables, boolean omitColumnTypes, boolean includeForeignKeys) {
         List<Table> tables = new ArrayList<>(dataModel.getSortedTables());
         if (relevantTables != null) {
             tables.removeIf(t -> !relevantTables.contains(t));
         }
         StringBuilder sb = new StringBuilder();
-        StringBuilder fkSb = new StringBuilder();
+        StringBuilder fkSb = includeForeignKeys ? new StringBuilder() : null;
         for (int i = 0; i < tables.size(); i++) {
             Table table = tables.get(i);
             sb.append(table.getName()).append("(");
@@ -997,17 +1001,19 @@ public class AIQueryAssistant {
             }
             sb.append(")\n");
 
-            for (Association assoc : table.associations) {
-                if (!assoc.reversed) {
-                    String fk = buildFkConstraint(assoc);
-                    if (fk != null) {
-                        fkSb.append(fk).append("\n");
+            if (fkSb != null) {
+                for (Association assoc : table.associations) {
+                    if (!assoc.reversed) {
+                        String fk = buildFkConstraint(assoc);
+                        if (fk != null) {
+                            fkSb.append(fk).append("\n");
+                        }
                     }
                 }
             }
         }
 
-        if (fkSb.length() > 0) {
+        if (fkSb != null && fkSb.length() > 0) {
             sb.append("\nForeign keys:\n").append(fkSb);
         }
         return sb.toString();

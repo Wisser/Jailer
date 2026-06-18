@@ -21,6 +21,9 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,10 +33,12 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.KeyStroke;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -54,6 +59,7 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.ai.AIProviderConfig;
 import net.sf.jailer.ui.ai.AIProviderPanel;
 import net.sf.jailer.ui.ai.AIQueryAssistant;
+import net.sf.jailer.ui.ai.ConversationMessage;
 import net.sf.jailer.ui.util.UISettings;
 
 /**
@@ -83,6 +89,8 @@ public class AIExtractionModelDialog extends JDialog {
 
     private JTextArea systemPromptArea;
     private static final String SYSTEM_PROMPT_SETTING = "aiExtractionModelSystemPrompt";
+
+    private final List<ConversationMessage> conversationHistory = new ArrayList<>();
 
     private SwingWorker<String, Void> currentWorker;
     private final AtomicReference<Runnable> abortRef = new AtomicReference<>();
@@ -123,6 +131,7 @@ public class AIExtractionModelDialog extends JDialog {
             generateButton.setIcon(UIUtil.scaleIcon(generateButton, aiIcon));
         }
         generateButton.setEnabled(false);
+        generateButton.setToolTipText("Generate extraction model (Ctrl+Enter)");
         generateButton.addActionListener(e -> onGenerate());
 
         cancelButton = new JButton("Cancel");
@@ -144,13 +153,13 @@ public class AIExtractionModelDialog extends JDialog {
         genRow.add(statusLabel);
         questionPanel.add(genRow, BorderLayout.SOUTH);
 
-        // Preview panel
+        // Proposal panel
         previewArea = new JTextArea();
         previewArea.setEditable(false);
         previewArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
-        previewArea.setText("Generate an extraction model to see the preview here.");
+        previewArea.setText("Generate an extraction model to see the proposal here.");
         JScrollPane previewScroll = new JScrollPane(previewArea);
-        previewScroll.setBorder(BorderFactory.createTitledBorder("Preview"));
+        previewScroll.setBorder(BorderFactory.createEtchedBorder());
         previewScroll.setPreferredSize(new Dimension(600, 200));
 
         applyButton = new JButton("Apply to Editor");
@@ -159,13 +168,14 @@ public class AIExtractionModelDialog extends JDialog {
             applyButton.setIcon(UIUtil.scaleIcon(applyButton, okIcon));
         }
         applyButton.setEnabled(false);
-        applyButton.setToolTipText("Apply suggestion to the editor (undoable with Ctrl+Z)");
+        applyButton.setToolTipText("Apply suggestion to the editor (Ctrl+Enter, undoable with Ctrl+Z)");
         applyButton.addActionListener(e -> onApply());
 
         JPanel applyRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 4));
         applyRow.add(applyButton);
 
-        JPanel previewPanel = new JPanel(new BorderLayout(0, 0));
+        JPanel previewPanel = new JPanel(new BorderLayout(4, 4));
+        previewPanel.add(new JLabel("Proposal"), BorderLayout.NORTH);
         previewPanel.add(previewScroll, BorderLayout.CENTER);
         previewPanel.add(applyRow, BorderLayout.SOUTH);
 
@@ -210,6 +220,16 @@ public class AIExtractionModelDialog extends JDialog {
         southPanel.add(providerPanel, BorderLayout.CENTER);
         southPanel.add(buttonRow, BorderLayout.SOUTH);
         add(southPanel, BorderLayout.SOUTH);
+
+        KeyStroke ctrlEnter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK);
+        getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ctrlEnter, "applyModel");
+        getRootPane().getActionMap().put("applyModel", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (applyButton.isEnabled()) applyButton.doClick();
+                else if (generateButton.isEnabled()) generateButton.doClick();
+            }
+        });
     }
 
     private void updateGenerateButton() {
@@ -248,7 +268,9 @@ public class AIExtractionModelDialog extends JDialog {
                 statusLabel.setText(" ");
                 if (isCancelled()) return;
                 try {
-                    parseAndShowResult(get());
+                    String result = get();
+                    questionArea.setText("");
+                    parseAndShowResult(result);
                 } catch (ExecutionException ex) {
                     UIUtil.showException(AIExtractionModelDialog.this, "AI Error", ex);
                 } catch (InterruptedException ex) {
@@ -260,13 +282,17 @@ public class AIExtractionModelDialog extends JDialog {
     }
 
     private String callAI(String question, AIProviderConfig config) throws IOException, Exception {
-        String schema = buildSchemaWithAssociations();
         String currentState = buildCurrentState();
         String systemPrompt = buildSystemPrompt();
         UISettings.store(SYSTEM_PROMPT_SETTING, systemPromptArea.getText().trim());
-        String fullQuestion = currentState + "Schema:\n" + schema + "\n\nRequest: " + question;
-        return AIQueryAssistant.generateSQL(fullQuestion, Collections.emptyList(), dataModel,
+        String userMessage = conversationHistory.isEmpty()
+                ? currentState + "Schema:\n" + buildSchemaWithAssociations() + "\n\nRequest: " + question
+                : currentState + "Request: " + question;
+        String response = AIQueryAssistant.generateSQL(userMessage, conversationHistory, dataModel,
                 "SQL", config, systemPrompt, false, true, abortRef, null);
+        conversationHistory.add(new ConversationMessage("user", userMessage));
+        conversationHistory.add(new ConversationMessage("assistant", response));
+        return response;
     }
 
     private String buildCurrentState() {
@@ -296,16 +322,12 @@ public class AIExtractionModelDialog extends JDialog {
 
     private String buildSchemaWithAssociations() {
         StringBuilder sb = new StringBuilder();
-        sb.append(AIQueryAssistant.buildSchemaDescription(dataModel, null, false));
+        sb.append(AIQueryAssistant.buildSchemaDescription(dataModel, null, false, false));
         sb.append("\nNamed associations (use exact names in the restrictions list):\n");
         for (Association a : dataModel.namedAssociations.values()) {
             sb.append("  - ").append(a.getName());
             sb.append(": ").append(a.source.getName());
             sb.append(" -> ").append(a.destination.getName());
-            String cond = a.getUnrestrictedJoinCondition();
-            if (cond != null) {
-                sb.append(" (").append(cond).append(")");
-            }
             sb.append("\n");
         }
         return sb.toString();
@@ -530,11 +552,19 @@ public class AIExtractionModelDialog extends JDialog {
 // erkl�ren, dass Bedingungen, die direkt auf das Subjekt gehen, in "condition" kommen, alle anderen Einschr�nkungen auf Assoziationen
 // fordern, dass alle Tabellen, ausgeschlossen werden sollen, die nicht explizit angefordert werden und auch nicht auf dem Pfad zu den angeforderten Tabellen liegen, mit "false" eingeschr�nkt werden m�ssen, damit sie nicht automatisch mitgenommen werden (z.B. payment history im Beispiel)
 
-// TODO ? braucht man join-condition im request?
-// TODO keine foreign key in request
 
-// TODO im systemprompt fordern, dass m�glichst vieles "false" ist
+// TODO ? im systemprompt fordern, dass m�glichst vieles "false" ist?
 
 // TODO warnung wenn bei �ffnen des Dialogs schon ein additional Subjekt gesetzt ist
+// TODO warnung wenn format != SQL
 
 // TODO wenn API key vorhanden, AI Assistant in wizzard anbieten.
+
+// TODO
+// TODO UNDO: bessere Bezeichnung der Compensating Action
+
+// TODO
+//Aktuell sendet der Dialog nur eine einzige user-Message pro Request (keine History) → Reihenfolge noch irrelevant.
+//
+//Wenn Conversation-History ergänzt wird (geplanter "stateful"-Ausbau), muss die Reihenfolge korrekt aufgebaut werden — analog zu AIQueryDialog, das List<ConversationMessage> in der richtigen Reihenfolge an
+//AIQueryAssistant.generateSQL() übergibt.
