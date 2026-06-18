@@ -54,6 +54,7 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.ai.AIProviderConfig;
 import net.sf.jailer.ui.ai.AIProviderPanel;
 import net.sf.jailer.ui.ai.AIQueryAssistant;
+import net.sf.jailer.ui.util.UISettings;
 
 /**
  * Dialog for AI-assisted creation of an extraction model.
@@ -79,6 +80,9 @@ public class AIExtractionModelDialog extends JDialog {
     private String resultSubject;
     private String resultCondition;
     private List<String[]> resultRestrictions;
+
+    private JTextArea systemPromptArea;
+    private static final String SYSTEM_PROMPT_SETTING = "aiExtractionModelSystemPrompt";
 
     private SwingWorker<String, Void> currentWorker;
     private final AtomicReference<Runnable> abortRef = new AtomicReference<>();
@@ -149,20 +153,34 @@ public class AIExtractionModelDialog extends JDialog {
         previewScroll.setBorder(BorderFactory.createTitledBorder("Preview"));
         previewScroll.setPreferredSize(new Dimension(600, 200));
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, questionPanel, previewScroll);
-        splitPane.setResizeWeight(0.4);
-        add(splitPane, BorderLayout.CENTER);
-
-        // South: provider settings + buttons
-        providerPanel = new AIProviderPanel();
-
         applyButton = new JButton("Apply to Editor");
         ImageIcon okIcon = UIUtil.readImage("/buttonok.png");
         if (okIcon != null) {
             applyButton.setIcon(UIUtil.scaleIcon(applyButton, okIcon));
         }
         applyButton.setEnabled(false);
+        applyButton.setToolTipText("Apply suggestion to the editor (undoable with Ctrl+Z)");
         applyButton.addActionListener(e -> onApply());
+
+        JPanel applyRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 4));
+        applyRow.add(applyButton);
+
+        JPanel previewPanel = new JPanel(new BorderLayout(0, 0));
+        previewPanel.add(previewScroll, BorderLayout.CENTER);
+        previewPanel.add(applyRow, BorderLayout.SOUTH);
+
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, questionPanel, previewPanel);
+        splitPane.setResizeWeight(0.4);
+        add(splitPane, BorderLayout.CENTER);
+
+        // South: provider settings + buttons
+        providerPanel = new AIProviderPanel();
+
+        String savedPrompt = (String) UISettings.restore(SYSTEM_PROMPT_SETTING);
+        systemPromptArea = new JTextArea(savedPrompt != null && !savedPrompt.isEmpty() ? savedPrompt : buildDefaultSystemPrompt(), 10, 60);
+        systemPromptArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
+        systemPromptArea.setLineWrap(true);
+        systemPromptArea.setWrapStyleWord(true);
 
         closeButton = new JButton("Close");
         ImageIcon closeIcon = UIUtil.readImage("/buttoncancel.png");
@@ -171,13 +189,26 @@ public class AIExtractionModelDialog extends JDialog {
         }
         closeButton.addActionListener(e -> dispose());
 
+        JButton systemPromptButton = new JButton("System Prompt...");
+        ImageIcon editIcon = UIUtil.readImage("/ieditdetails_64.png");
+        if (editIcon != null) {
+            systemPromptButton.setIcon(UIUtil.scaleIcon(systemPromptButton, editIcon));
+        }
+        systemPromptButton.addActionListener(e -> openSystemPromptDialog());
+
+        JPanel leftButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
+        leftButtons.add(systemPromptButton);
+
         JPanel rightButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 4));
-        rightButtons.add(applyButton);
         rightButtons.add(closeButton);
+
+        JPanel buttonRow = new JPanel(new BorderLayout());
+        buttonRow.add(leftButtons, BorderLayout.WEST);
+        buttonRow.add(rightButtons, BorderLayout.EAST);
 
         JPanel southPanel = new JPanel(new BorderLayout(0, 4));
         southPanel.add(providerPanel, BorderLayout.CENTER);
-        southPanel.add(rightButtons, BorderLayout.SOUTH);
+        southPanel.add(buttonRow, BorderLayout.SOUTH);
         add(southPanel, BorderLayout.SOUTH);
     }
 
@@ -232,6 +263,7 @@ public class AIExtractionModelDialog extends JDialog {
         String schema = buildSchemaWithAssociations();
         String currentState = buildCurrentState();
         String systemPrompt = buildSystemPrompt();
+        UISettings.store(SYSTEM_PROMPT_SETTING, systemPromptArea.getText().trim());
         String fullQuestion = currentState + "Schema:\n" + schema + "\n\nRequest: " + question;
         return AIQueryAssistant.generateSQL(fullQuestion, Collections.emptyList(), dataModel,
                 "SQL", config, systemPrompt, false, true, abortRef, null);
@@ -280,6 +312,11 @@ public class AIExtractionModelDialog extends JDialog {
     }
 
     private String buildSystemPrompt() {
+        String text = systemPromptArea.getText().trim();
+        return text.isEmpty() ? buildDefaultSystemPrompt() : text;
+    }
+
+    private String buildDefaultSystemPrompt() {
         return "You are a Jailer extraction model assistant.\n\n"
              + "HOW JAILER EXTRACTION WORKS:\n"
              + "The database schema is a directed graph G where each table is a node and each\n"
@@ -367,6 +404,9 @@ public class AIExtractionModelDialog extends JDialog {
             }
 
             StringBuilder preview = new StringBuilder();
+            if (!explanation.isEmpty()) {
+                preview.append(explanation).append("\n\n");
+            }
             preview.append("Subject table: ").append(resultSubject).append("\n");
             preview.append("Condition:     ").append(resultCondition.isEmpty() ? "(none)" : resultCondition).append("\n");
             preview.append("\nAssociation restrictions:\n");
@@ -377,9 +417,6 @@ public class AIExtractionModelDialog extends JDialog {
                     String status = "false".equals(r[1]) ? "exclude" : ("remove".equals(r[1]) || r[1].isEmpty()) ? "remove restriction" : "restrict: " + r[1];
                     preview.append("  ").append(r[0]).append(": ").append(status).append("\n");
                 }
-            }
-            if (!explanation.isEmpty()) {
-                preview.append("\nExplanation:\n  ").append(explanation).append("\n");
             }
 
             previewArea.setText(preview.toString());
@@ -416,7 +453,7 @@ public class AIExtractionModelDialog extends JDialog {
         editor.subjectTable.setSelectedItem(dataModel.getDisplayName(subject));
 
         // Set WHERE condition
-        editor.condition.setText(resultCondition);
+        editor.setSubjectCondition(resultCondition);
 
         // Apply association restrictions (delta: only changed entries, rest keeps current state)
         for (String[] r : resultRestrictions) {
@@ -437,6 +474,45 @@ public class AIExtractionModelDialog extends JDialog {
         dispose();
     }
 
+    private void openSystemPromptDialog() {
+        JDialog d = new JDialog(this, "System Prompt", true);
+        ((JComponent) d.getContentPane()).setBorder(BorderFactory.createEmptyBorder(8, 8, 0, 8));
+        d.getContentPane().setLayout(new BorderLayout(0, 4));
+
+        JButton resetButton = new JButton("Reset to Default");
+        ImageIcon resetIcon = UIUtil.readImage("/reset_64.png");
+        if (resetIcon != null) {
+            resetButton.setIcon(UIUtil.scaleIcon(resetButton, resetIcon));
+        }
+        resetButton.addActionListener(e -> systemPromptArea.setText(buildDefaultSystemPrompt()));
+
+        JButton okButton = new JButton("OK");
+        ImageIcon okIcon = UIUtil.readImage("/buttonok.png");
+        if (okIcon != null) {
+            okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
+        }
+        okButton.addActionListener(e -> {
+            UISettings.store(SYSTEM_PROMPT_SETTING, systemPromptArea.getText().trim());
+            d.dispose();
+        });
+
+        JPanel bottom = new JPanel(new BorderLayout());
+        JPanel leftBottom = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
+        leftBottom.add(resetButton);
+        JPanel rightBottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 4));
+        rightBottom.add(okButton);
+        bottom.add(leftBottom, BorderLayout.WEST);
+        bottom.add(rightBottom, BorderLayout.EAST);
+
+        JScrollPane scroll = new JScrollPane(systemPromptArea);
+        scroll.setPreferredSize(new Dimension(700, 360));
+        d.getContentPane().add(scroll, BorderLayout.CENTER);
+        d.getContentPane().add(bottom, BorderLayout.SOUTH);
+        d.pack();
+        d.setLocationRelativeTo(this);
+        d.setVisible(true);
+    }
+
     private void setGenerating(boolean generating) {
         generateButton.setEnabled(!generating && !questionArea.getText().trim().isEmpty());
         cancelButton.setEnabled(generating);
@@ -447,23 +523,18 @@ public class AIExtractionModelDialog extends JDialog {
 }
 
 // TODO
-// TODO button "to editor" unter result area
 // TODO Benchmark: kunden mit ihren ausleihen, die in Boston wohnen
-// TODO UNDO nutzen
 // TODO limitierung: pass 1: nach subjekten fragen, pass 2: bis zu einem vom Nutzer vorgegebenen Anzahl Tabellen von subjekten ausgehen in Breitensuche sammeln
 // TODO System prompt: 
 // erkl�ren, wann einschr�nkungen auf association notwendig sind und wie man sie formuliert
 // erkl�ren, dass Bedingungen, die direkt auf das Subjekt gehen, in "condition" kommen, alle anderen Einschr�nkungen auf Assoziationen
 // fordern, dass alle Tabellen, ausgeschlossen werden sollen, die nicht explizit angefordert werden und auch nicht auf dem Pfad zu den angeforderten Tabellen liegen, mit "false" eingeschr�nkt werden m�ssen, damit sie nicht automatisch mitgenommen werden (z.B. payment history im Beispiel)
-// TODO nummeriere Assocs durch in API kommunikation, weniger tokens
+
 // TODO ? braucht man join-condition im request?
 // TODO keine foreign key in request
-
-// TODO in answer area: erst explanation, dann rest.
 
 // TODO im systemprompt fordern, dass m�glichst vieles "false" ist
 
 // TODO warnung wenn bei �ffnen des Dialogs schon ein additional Subjekt gesetzt ist
-// TODO hinweis, dass UNDO m�glich ist auf AIExtractionModelDialog
 
 // TODO wenn API key vorhanden, AI Assistant in wizzard anbieten.

@@ -25,6 +25,7 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -261,7 +262,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 				}
 			}
 		}
-		JMenuItem aiExtractionModelItem = new JMenuItem("AI Extraction Model...");
+		JMenuItem aiExtractionModelItem = new JMenuItem("AI Extraction Model Assistant...");
+		aiExtractionModelItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, mask | InputEvent.SHIFT_DOWN_MASK));
+		ImageIcon aiMenuIcon = UIUtil.readImage("/ask_ai.png");
+		if (aiMenuIcon != null) {
+			aiExtractionModelItem.setIcon(UIUtil.scaleIcon(aiExtractionModelItem, aiMenuIcon));
+		}
 		aiExtractionModelItem.addActionListener(e -> new AIExtractionModelDialog(this, extractionModelEditor));
 		jMenu3.addSeparator();
 		jMenu3.add(aiExtractionModelItem);

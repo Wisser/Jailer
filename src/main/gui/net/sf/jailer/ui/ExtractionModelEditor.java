@@ -3819,6 +3819,24 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 	}
 
 	/**
+	 * Sets the subject condition and pushes a compensation action to the undo manager.
+	 */
+	public void setSubjectCondition(String newCondition) {
+		String oldCondition = condition.getText();
+		if (oldCondition.equals(newCondition)) return;
+		condition.setText(newCondition);
+		markDirty();
+		undoManager.push(new CompensationAction(1, "changed condition", "changed condition",
+				subject != null ? dataModel.getDisplayName(subject) : null) {
+			@Override
+			public void run() {
+				condition.setText(oldCondition);
+				markDirty();
+			}
+		});
+	}
+
+	/**
 	 * Zooms graphical view to fit.
 	 */
 	public void zoomToFit() {
