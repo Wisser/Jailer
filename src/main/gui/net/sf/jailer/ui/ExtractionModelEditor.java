@@ -365,6 +365,23 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
         gridBagConstraints.weightx = 1.0;
         jPanel3.add(subjectTable, gridBagConstraints);
 
+        JButton aiButton = new JButton();
+        ImageIcon aiButtonIcon = UIUtil.readImage("/ask_ai.png");
+        if (aiButtonIcon != null) {
+            aiButton.setIcon(UIUtil.scaleIcon(aiButton, aiButtonIcon));
+        }
+        aiButton.setToolTipText("Open AI Extraction Model Assistant");
+        aiButton.addActionListener(e -> new AIExtractionModelDialog(extractionModelFrame, this));
+        jPanel3.remove(jLabel6);
+        JPanel exportFromPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
+        exportFromPanel.add(jLabel6);
+        exportFromPanel.add(aiButton);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel3.add(exportFromPanel, gridBagConstraints);
+
 		connectivityState.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -3816,6 +3833,22 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 	public void removeRestriction(Association association) {
 		addRestriction(association, "", true);
 		afterAddRestriction();
+	}
+
+	/**
+	 * Pushes a high-priority sentinel action so that all subsequent changes in the same
+	 * event cycle are grouped and labeled "applied AI extraction model" in undo/redo.
+	 */
+	public void beginAIOperation() {
+		undoManager.push(new CompensationAction(200, "applied AI extraction model", "applied AI extraction model", null) {
+			@Override
+			public void run() {
+				undoManager.push(new CompensationAction(200, "applied AI extraction model", "applied AI extraction model", null) {
+					@Override
+					public void run() { /* peer sub-actions handle the actual work */ }
+				});
+			}
+		});
 	}
 
 	/**

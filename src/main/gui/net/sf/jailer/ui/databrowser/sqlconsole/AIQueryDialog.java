@@ -26,6 +26,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ItemListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -1227,6 +1229,13 @@ public class AIQueryDialog extends JDialog {
         JDialog d = new JDialog(this, "System Prompts", true);
         ((javax.swing.JComponent) d.getContentPane()).setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 0));
         d.getContentPane().add(systemPromptPanel, BorderLayout.CENTER);
+
+        d.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                systemPromptPanel.discardSettings();
+            }
+        });
 
         JButton okButton = new JButton("OK");
         ImageIcon okIcon = UIUtil.readImage("/buttonok.png");

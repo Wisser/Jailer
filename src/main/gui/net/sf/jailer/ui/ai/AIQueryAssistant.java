@@ -326,7 +326,7 @@ public class AIQueryAssistant {
      *
      * @param maxContextTokens provider context-window size in tokens, or null if unknown
      */
-    static boolean likelySchemaOverload(String schema, DataModel dataModel, Integer maxContextTokens) {
+    public static boolean likelySchemaOverload(String schema, DataModel dataModel, Integer maxContextTokens) {
         if (maxContextTokens != null) {
             return schema.length() / 4 > maxContextTokens * 0.6; // Heuristic: average 4 chars per token, and schema should be well under context limit to leave room for question and answer.
         }
@@ -387,7 +387,7 @@ public class AIQueryAssistant {
         throw new IOException("Unexpected response format: empty or missing content. Response: " + response.toString());
     }
 
-    private static Set<Table> selectRelevantTables(String question, List<ConversationMessage> history,
+    public static Set<Table> selectRelevantTables(String question, List<ConversationMessage> history,
             DataModel dataModel, String dbmsName, AIProviderConfig config,
             AtomicReference<Runnable> abortRef, String firstPassSystemPromptTemplate, Session session) throws IOException, SQLException {
         List<Table> allTables = new ArrayList<>(dataModel.getSortedTables());
@@ -460,6 +460,56 @@ public class AIQueryAssistant {
         return expandWithFkNeighbors(dataModel, selected);
     }
 
+    /**
+     * Asks the AI which single table is the best subject/starting table for the given extraction request.
+     *
+     * @return the matching Table, or null if the AI response could not be matched
+     */
+    public static Table selectSubjectTable(String question, DataModel dataModel, AIProviderConfig config,
+            AtomicReference<Runnable> abortRef, String subjectSystemPrompt) throws IOException {
+        List<Table> allTables = new ArrayList<>(dataModel.getSortedTables());
+        StringBuilder tableList = new StringBuilder();
+        Map<String, List<Table>> normalizedToActual = new HashMap<>();
+        for (Table t : allTables) {
+            String raw = t.getName();
+            int dot = raw.lastIndexOf('.');
+            String simple = unquote(dot >= 0 ? raw.substring(dot + 1) : raw);
+            tableList.append(simple).append("\n");
+            normalizedToActual.computeIfAbsent(simple.toUpperCase(Locale.ENGLISH), k -> new ArrayList<>()).add(t);
+        }
+
+        String systemPrompt = (subjectSystemPrompt != null && !subjectSystemPrompt.isBlank())
+                ? subjectSystemPrompt
+                : "You are a database expert. Given a list of database table names and a data extraction request, "
+                  + "name the single best starting/subject table for the extraction. "
+                  + "Reply with ONLY the exact table name — no explanation, no other text.";
+        boolean isAnthropic = config.providerType == ProviderType.ANTHROPIC;
+        ObjectNode body = MAPPER.createObjectNode();
+        body.put("model", config.model);
+        body.put("max_tokens", 50);
+        body.put("stream", false);
+        ArrayNode messages = body.putArray("messages");
+        if (isAnthropic) {
+            body.put("system", systemPrompt);
+        } else {
+            ObjectNode sysMsg = messages.addObject();
+            sysMsg.put("role", "system");
+            sysMsg.put("content", systemPrompt);
+        }
+        ObjectNode userMsg = messages.addObject();
+        userMsg.put("role", "user");
+        userMsg.put("content", "Tables:\n" + tableList + "\nRequest: " + question);
+
+        JsonNode response = post(config, body, abortRef);
+        String responseText = extractText(response, isAnthropic).trim();
+
+        for (String token : responseText.split("[\\s,;]+")) {
+            List<Table> matches = normalizedToActual.get(unquote(token).toUpperCase(Locale.ENGLISH));
+            if (matches != null && !matches.isEmpty()) return matches.get(0);
+        }
+        return null;
+    }
+
     private static Set<Table> expandWithFkNeighbors(DataModel dataModel, Set<Table> tables) {
         Set<Table> expanded = new LinkedHashSet<>(tables);
         for (Table table : tables) {
@@ -476,7 +526,7 @@ public class AIQueryAssistant {
 
     private static final ConcurrentHashMap<String, Optional<Integer>> CONTEXT_WINDOW_CACHE = new ConcurrentHashMap<>();
 
-    static Integer fetchContextWindowTokens(AIProviderConfig config) {
+    public static Integer fetchContextWindowTokens(AIProviderConfig config) {
         String key = config.providerType.name() + ":" + config.apiUrl + ":" + config.model;
         Optional<Integer> cached = CONTEXT_WINDOW_CACHE.get(key);
         if (cached != null) return cached.orElse(null);

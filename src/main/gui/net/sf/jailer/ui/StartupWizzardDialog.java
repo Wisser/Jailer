@@ -15,6 +15,8 @@
  */
 package net.sf.jailer.ui;
 
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.ComponentEvent;
@@ -26,6 +28,9 @@ import java.awt.event.WindowFocusListener;
 
 import javax.swing.Icon;
 import javax.swing.UIManager;
+
+import net.sf.jailer.ui.ai.AIProviderConfig;
+import net.sf.jailer.ui.ai.AIQueryAssistant;
 
 /**
  * Startup Wizzard.
@@ -96,6 +101,10 @@ public abstract class StartupWizzardDialog extends javax.swing.JDialog {
 					if (e.getComponent() == loadButton) {
 						loadButtonActionPerformed(null);
 					}
+					if (e.getComponent() == aiAssistantButton) {
+						openAIAssistant = true;
+						setVisible(false);
+					}
 				}
 			}
 			@Override
@@ -109,6 +118,30 @@ public abstract class StartupWizzardDialog extends javax.swing.JDialog {
 		newModelWRjButton.addKeyListener(keyListener);
 		loadButton.addKeyListener(keyListener);
 		loadButton.setVisible(withLoad);
+
+		boolean aiConfigured = false;
+		try {
+			AIProviderConfig config = AIQueryAssistant.loadConfig();
+			aiConfigured = !config.apiKey.isEmpty() || !config.providerType.requiresApiKey;
+		} catch (Throwable t) {
+			// ignore
+		}
+		if (aiConfigured) {
+			aiAssistantButton = new javax.swing.JButton("AI Extraction Model Assistant");
+			aiAssistantButton.setToolTipText("Use AI to generate an Extraction Model from a natural-language description");
+			aiAssistantButton.setMargin(new Insets(4, 10, 4, 10));
+			aiAssistantButton.addActionListener(evt -> {
+				openAIAssistant = true;
+				setVisible(false);
+			});
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.gridx = 1;
+			gbc.gridy = 4;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.insets = new Insets(2, 2, 2, 2);
+			messagePanel.add(aiAssistantButton, gbc);
+			aiAssistantButton.addKeyListener(keyListener);
+		}
 		
 		pack();
 		if (pos != null) {
@@ -125,6 +158,8 @@ public abstract class StartupWizzardDialog extends javax.swing.JDialog {
 
 	public boolean loadModel = false;
 	public boolean newModelWithRestrictions = false;
+	public boolean openAIAssistant = false;
+	private javax.swing.JButton aiAssistantButton;
 	
 	/** This method is called from within the constructor to
 	 * initialize the form.

@@ -2600,6 +2600,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 												finalExtractionModelFrame.extractionModelEditor.ignoreAll(null);
 												finalExtractionModelFrame.extractionModelEditor.extractionModelFrame.updateTitle(finalExtractionModelFrame.extractionModelEditor.needsSave);
 											}
+											if (openAIAssistant) {
+												new AIExtractionModelDialog(finalExtractionModelFrame, finalExtractionModelFrame.extractionModelEditor);
+											}
 										} catch (Exception e) {
 											UIUtil.showException(finalExtractionModelFrame, "Error", e);
 										}

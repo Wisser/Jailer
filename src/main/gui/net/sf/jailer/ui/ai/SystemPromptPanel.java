@@ -212,4 +212,14 @@ public class SystemPromptPanel extends JPanel {
         UISettings.store(SETTING_ADVISOR_SYSTEM_PROMPT, advisorPromptArea.getText().trim());
         UISettings.store(SETTING_FIRST_PASS_SYSTEM_PROMPT, firstPassPromptArea.getText().trim());
     }
+
+    /** Restores all templates from {@link UISettings}, discarding any unsaved edits. */
+    public void discardSettings() {
+        String saved = (String) UISettings.restore(SETTING_SYSTEM_PROMPT);
+        promptArea.setText(saved != null && !saved.isEmpty() ? saved : DEFAULT_TEMPLATE);
+        String savedAdv = (String) UISettings.restore(SETTING_ADVISOR_SYSTEM_PROMPT);
+        advisorPromptArea.setText(savedAdv != null && !savedAdv.isEmpty() ? savedAdv : DEFAULT_ADVISOR_TEMPLATE);
+        String savedFP = (String) UISettings.restore(SETTING_FIRST_PASS_SYSTEM_PROMPT);
+        firstPassPromptArea.setText(savedFP != null && !savedFP.isEmpty() ? savedFP : DEFAULT_FIRST_PASS_TEMPLATE);
+    }
 }

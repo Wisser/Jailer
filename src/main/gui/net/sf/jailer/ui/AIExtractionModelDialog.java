@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright 2007 - 2026 Ralf Wisser.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,17 +18,24 @@ package net.sf.jailer.ui;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -37,6 +44,7 @@ import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import javax.swing.JDialog;
@@ -46,6 +54,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -54,12 +65,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import net.sf.jailer.datamodel.Association;
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.ai.AIProviderConfig;
 import net.sf.jailer.ui.ai.AIProviderPanel;
 import net.sf.jailer.ui.ai.AIQueryAssistant;
-import net.sf.jailer.ui.ai.ConversationMessage;
 import net.sf.jailer.ui.util.UISettings;
 
 /**
@@ -87,10 +98,17 @@ public class AIExtractionModelDialog extends JDialog {
     private String resultCondition;
     private List<String[]> resultRestrictions;
 
+    private JCheckBox reducedSchemaBox;
+    private JTextField maxTablesField;
+    private JCheckBox omitColumnTypesBox;
+
+    private static final String SETTING_REDUCED_SCHEMA = "aiExtractionReducedSchema";
+    private static final String SETTING_MAX_TABLES     = "aiExtractionMaxTables";
+
     private JTextArea systemPromptArea;
     private static final String SYSTEM_PROMPT_SETTING = "aiExtractionModelSystemPrompt";
-
-    private final List<ConversationMessage> conversationHistory = new ArrayList<>();
+    private JTextArea subjectPromptArea;
+    private static final String SETTING_SUBJECT_PROMPT = "aiExtractionSubjectTablePrompt";
 
     private SwingWorker<String, Void> currentWorker;
     private final AtomicReference<Runnable> abortRef = new AtomicReference<>();
@@ -126,12 +144,13 @@ public class AIExtractionModelDialog extends JDialog {
         questionPanel.add(new JScrollPane(questionArea), BorderLayout.CENTER);
 
         generateButton = new JButton("Generate Extraction Model");
+        generateButton.setHorizontalAlignment(SwingConstants.LEFT);
         ImageIcon aiIcon = UIUtil.readImage("/ask_ai.png");
         if (aiIcon != null) {
             generateButton.setIcon(UIUtil.scaleIcon(generateButton, aiIcon));
         }
         generateButton.setEnabled(false);
-        generateButton.setToolTipText("Generate extraction model (Ctrl+Enter)");
+        generateButton.setToolTipText("Generate an extraction model from your description (Ctrl+Enter)");
         generateButton.addActionListener(e -> onGenerate());
 
         cancelButton = new JButton("Cancel");
@@ -140,6 +159,7 @@ public class AIExtractionModelDialog extends JDialog {
             cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
         }
         cancelButton.setEnabled(false);
+        cancelButton.setToolTipText("Cancel the running AI request");
         cancelButton.addActionListener(e -> {
             Runnable abort = abortRef.get();
             if (abort != null) abort.run();
@@ -147,12 +167,51 @@ public class AIExtractionModelDialog extends JDialog {
         });
 
         statusLabel = new JLabel(" ");
-        JPanel genRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
-        genRow.add(generateButton);
-        genRow.add(cancelButton);
-        genRow.add(statusLabel);
-        questionPanel.add(genRow, BorderLayout.SOUTH);
 
+        reducedSchemaBox = new JCheckBox("Reduced schema");
+        reducedSchemaBox.setToolTipText("<html>Reduces the schema sent to the AI:<br>"
+                + "First asks the AI for the best subject table, then traverses<br>"
+                + "connected tables in breadth-first order up to the specified count.</html>");
+        maxTablesField = new JTextField("20", 4);
+        maxTablesField.setEnabled(false);
+        maxTablesField.setToolTipText("Maximum number of tables to include in the reduced schema");
+        maxTablesField.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) { updateContextEstimate(); }
+            public void removeUpdate(DocumentEvent e) { updateContextEstimate(); }
+            public void changedUpdate(DocumentEvent e) {}
+        });
+        reducedSchemaBox.addItemListener(e -> {
+            maxTablesField.setEnabled(reducedSchemaBox.isSelected());
+            updateContextEstimate();
+        });
+        omitColumnTypesBox = new JCheckBox("Omit column types");
+        omitColumnTypesBox.setToolTipText("<html>Reduces the AI context size by omitting column type information<br>"
+                + "from the schema description sent to the AI.<br>"
+                + "Table and column names, primary keys and foreign keys are still included.</html>");
+
+        omitColumnTypesBox.addItemListener(e -> updateContextEstimate());
+
+        JPanel genLeft = new JPanel(new java.awt.GridBagLayout());
+        {
+            java.awt.GridBagConstraints gbcL = new java.awt.GridBagConstraints();
+            gbcL.gridy = 0; gbcL.anchor = java.awt.GridBagConstraints.WEST;
+            gbcL.insets = new Insets(0, 0, 0, 6);
+            gbcL.gridx = 0; genLeft.add(generateButton, gbcL);
+            gbcL.gridx = 1; genLeft.add(cancelButton, gbcL);
+            gbcL.gridx = 2; gbcL.insets = new Insets(0, 0, 0, 0); genLeft.add(statusLabel, gbcL);
+        }
+        JPanel reducedSchemaPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        reducedSchemaPanel.add(reducedSchemaBox);
+        reducedSchemaPanel.add(maxTablesField);
+        JPanel checkboxRow = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        checkboxRow.add(omitColumnTypesBox);
+        checkboxRow.add(reducedSchemaPanel);
+        JPanel genRow = new JPanel(new BorderLayout());
+        genRow.setBorder(BorderFactory.createEmptyBorder(0, 0, 4, 0));
+        genRow.add(genLeft, BorderLayout.WEST);
+        genRow.add(checkboxRow, BorderLayout.EAST);
+        questionPanel.add(genRow, BorderLayout.SOUTH);
+        
         // Proposal panel
         previewArea = new JTextArea();
         previewArea.setEditable(false);
@@ -171,7 +230,7 @@ public class AIExtractionModelDialog extends JDialog {
         applyButton.setToolTipText("Apply suggestion to the editor (Ctrl+Enter, undoable with Ctrl+Z)");
         applyButton.addActionListener(e -> onApply());
 
-        JPanel applyRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 4));
+        JPanel applyRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         applyRow.add(applyButton);
 
         JPanel previewPanel = new JPanel(new BorderLayout(4, 4));
@@ -181,10 +240,44 @@ public class AIExtractionModelDialog extends JDialog {
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, questionPanel, previewPanel);
         splitPane.setResizeWeight(0.4);
-        add(splitPane, BorderLayout.CENTER);
+
+        List<String> warnings = new ArrayList<>();
+        if (!editor.extractionModel.additionalSubjects.isEmpty()) {
+            warnings.add("⚠ Additional subjects are set — the AI assistant works with the primary subject only.");
+        }
+        if (editor.scriptFormat != net.sf.jailer.subsetting.ScriptFormat.SQL) {
+            warnings.add("⚠ Export format is not SQL — the AI assistant is optimized for SQL.");
+        }
+
+        JPanel centerPanel = new JPanel(new BorderLayout(4, 8));
+        if (!warnings.isEmpty()) {
+            JLabel warningLabel = new JLabel("<html>" + String.join("<br>", warnings) + "</html>");
+            warningLabel.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(Colors.Color_255_255_0.darker(), 1),
+                    BorderFactory.createEmptyBorder(4, 8, 4, 8)));
+            warningLabel.setBackground(Colors.Color_255_255_0);
+            warningLabel.setOpaque(true);
+            JPanel warningPanel = new JPanel(new BorderLayout());
+            warningPanel.add(warningLabel, BorderLayout.CENTER);
+            JPanel splitWithWarning = new JPanel(new BorderLayout(0, 4));
+            splitWithWarning.add(warningPanel, BorderLayout.NORTH);
+            splitWithWarning.add(splitPane, BorderLayout.CENTER);
+            centerPanel.add(splitWithWarning, BorderLayout.CENTER);
+        } else {
+            centerPanel.add(splitPane, BorderLayout.CENTER);
+        }
+        add(centerPanel, BorderLayout.CENTER);
 
         // South: provider settings + buttons
         providerPanel = new AIProviderPanel();
+        AIProviderConfig initConfig = providerPanel.getConfig();
+        omitColumnTypesBox.setSelected(AIQueryAssistant.loadOmitColumnTypes(initConfig, null));
+        Object savedReduced = UISettings.restore(SETTING_REDUCED_SCHEMA);
+        reducedSchemaBox.setSelected(Boolean.TRUE.equals(savedReduced));
+        maxTablesField.setEnabled(reducedSchemaBox.isSelected());
+        Object savedMaxTables = UISettings.restore(SETTING_MAX_TABLES);
+        if (savedMaxTables instanceof Integer) maxTablesField.setText(String.valueOf(savedMaxTables));
+        updateContextEstimate();
 
         String savedPrompt = (String) UISettings.restore(SYSTEM_PROMPT_SETTING);
         systemPromptArea = new JTextArea(savedPrompt != null && !savedPrompt.isEmpty() ? savedPrompt : buildDefaultSystemPrompt(), 10, 60);
@@ -192,11 +285,18 @@ public class AIExtractionModelDialog extends JDialog {
         systemPromptArea.setLineWrap(true);
         systemPromptArea.setWrapStyleWord(true);
 
+        String savedSubjectPrompt = (String) UISettings.restore(SETTING_SUBJECT_PROMPT);
+        subjectPromptArea = new JTextArea(savedSubjectPrompt != null && !savedSubjectPrompt.isEmpty() ? savedSubjectPrompt : buildDefaultSubjectPrompt(), 4, 60);
+        subjectPromptArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
+        subjectPromptArea.setLineWrap(true);
+        subjectPromptArea.setWrapStyleWord(true);
+
         closeButton = new JButton("Close");
         ImageIcon closeIcon = UIUtil.readImage("/buttoncancel.png");
         if (closeIcon != null) {
             closeButton.setIcon(UIUtil.scaleIcon(closeButton, closeIcon));
         }
+        closeButton.setToolTipText("Close this dialog");
         closeButton.addActionListener(e -> dispose());
 
         JButton systemPromptButton = new JButton("System Prompt...");
@@ -204,6 +304,7 @@ public class AIExtractionModelDialog extends JDialog {
         if (editIcon != null) {
             systemPromptButton.setIcon(UIUtil.scaleIcon(systemPromptButton, editIcon));
         }
+        systemPromptButton.setToolTipText("Edit the system prompt sent to the AI");
         systemPromptButton.addActionListener(e -> openSystemPromptDialog());
 
         JPanel leftButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
@@ -249,16 +350,20 @@ public class AIExtractionModelDialog extends JDialog {
 
         setGenerating(true);
         statusLabel.setText("Generating...");
+        previewArea.setText("Generating...");
         applyButton.setEnabled(false);
         resultSubject = null;
 
         final String questionCopy = question;
         final AIProviderConfig configCopy = config;
+        final boolean reduced = reducedSchemaBox.isSelected();
+        final int maxTablesVal = parseMaxTables();
+        final boolean omitTypes = omitColumnTypesBox.isSelected();
 
         currentWorker = new SwingWorker<String, Void>() {
             @Override
             protected String doInBackground() throws Exception {
-                return callAI(questionCopy, configCopy);
+                return callAI(questionCopy, configCopy, reduced, maxTablesVal, omitTypes);
             }
 
             @Override
@@ -269,7 +374,6 @@ public class AIExtractionModelDialog extends JDialog {
                 if (isCancelled()) return;
                 try {
                     String result = get();
-                    questionArea.setText("");
                     parseAndShowResult(result);
                 } catch (ExecutionException ex) {
                     UIUtil.showException(AIExtractionModelDialog.this, "AI Error", ex);
@@ -281,18 +385,60 @@ public class AIExtractionModelDialog extends JDialog {
         currentWorker.execute();
     }
 
-    private String callAI(String question, AIProviderConfig config) throws IOException, Exception {
+    private String callAI(String question, AIProviderConfig config, boolean reducedSchema, int maxTables, boolean omitColumnTypes) throws IOException, Exception {
         String currentState = buildCurrentState();
         String systemPrompt = buildSystemPrompt();
         UISettings.store(SYSTEM_PROMPT_SETTING, systemPromptArea.getText().trim());
-        String userMessage = conversationHistory.isEmpty()
-                ? currentState + "Schema:\n" + buildSchemaWithAssociations() + "\n\nRequest: " + question
-                : currentState + "Request: " + question;
-        String response = AIQueryAssistant.generateSQL(userMessage, conversationHistory, dataModel,
-                "SQL", config, systemPrompt, false, true, abortRef, null);
-        conversationHistory.add(new ConversationMessage("user", userMessage));
-        conversationHistory.add(new ConversationMessage("assistant", response));
+        Set<Table> relevantTables = null;
+        if (reducedSchema && maxTables > 0) {
+            SwingUtilities.invokeLater(() -> statusLabel.setText("Determining subject table..."));
+            try {
+                Table subjectTable = AIQueryAssistant.selectSubjectTable(question, dataModel, config, abortRef, subjectPromptArea.getText().trim());
+                if (subjectTable != null && !Thread.currentThread().isInterrupted()) {
+                    SwingUtilities.invokeLater(() -> statusLabel.setText("Building reduced schema..."));
+                    relevantTables = selectTablesByBFS(subjectTable, maxTables);
+                }
+            } catch (Exception e) {
+                // Fall back to full schema on error
+            }
+        }
+        String userMessage = currentState + "Schema:\n" + buildSchemaWithAssociations(relevantTables, omitColumnTypes) + "\n\nRequest: " + question;
+        int est = userMessage.length() / 4;
+        Integer contextWindow = AIQueryAssistant.fetchContextWindowTokens(config);
+        boolean overload = contextWindow != null ? est > contextWindow * 0.6 : AIQueryAssistant.likelySchemaOverload(userMessage, dataModel, null);
+        String tokenInfo = est >= 1000 ? "~" + (est / 1000) + "k tokens" : "~" + est + " tokens";
+        SwingUtilities.invokeLater(() -> statusLabel.setText(
+                overload ? "<html><font color='orange'>⚠ " + tokenInfo + " — context window may be exceeded</font></html>"
+                         : tokenInfo));
+        AIQueryAssistant.saveCheckboxStates(config, null, omitColumnTypes, false);
+        UISettings.store(SETTING_REDUCED_SCHEMA, reducedSchema);
+        UISettings.store(SETTING_MAX_TABLES, maxTables);
+        String response = AIQueryAssistant.generateSQL(userMessage, Collections.emptyList(), dataModel,
+                "SQL", config, systemPrompt, false, false, abortRef, null);
+        UISettings.s19 += UISettings.s19 > 0 ? 100 : -100;
         return response;
+    }
+
+    private Set<Table> selectTablesByBFS(Table startTable, int maxTables) {
+        Map<Table, Set<Table>> neighbors = new HashMap<>();
+        for (Association a : dataModel.namedAssociations.values()) {
+            neighbors.computeIfAbsent(a.source, k -> new LinkedHashSet<>()).add(a.destination);
+            neighbors.computeIfAbsent(a.destination, k -> new LinkedHashSet<>()).add(a.source);
+        }
+        Set<Table> result = new LinkedHashSet<>();
+        Deque<Table> queue = new ArrayDeque<>();
+        result.add(startTable);
+        queue.add(startTable);
+        while (!queue.isEmpty() && result.size() < maxTables) {
+            Table current = queue.poll();
+            for (Table neighbor : neighbors.getOrDefault(current, Collections.emptySet())) {
+                if (result.add(neighbor)) {
+                    queue.add(neighbor);
+                    if (result.size() >= maxTables) break;
+                }
+            }
+        }
+        return result;
     }
 
     private String buildCurrentState() {
@@ -320,15 +466,17 @@ public class AIExtractionModelDialog extends JDialog {
         return sb.toString();
     }
 
-    private String buildSchemaWithAssociations() {
+    private String buildSchemaWithAssociations(Set<Table> relevantTables, boolean omitColumnTypes) {
         StringBuilder sb = new StringBuilder();
-        sb.append(AIQueryAssistant.buildSchemaDescription(dataModel, null, false, false));
+        sb.append(AIQueryAssistant.buildSchemaDescription(dataModel, relevantTables, omitColumnTypes, false));
         sb.append("\nNamed associations (use exact names in the restrictions list):\n");
         for (Association a : dataModel.namedAssociations.values()) {
-            sb.append("  - ").append(a.getName());
-            sb.append(": ").append(a.source.getName());
-            sb.append(" -> ").append(a.destination.getName());
-            sb.append("\n");
+            if (relevantTables == null || relevantTables.contains(a.source) || relevantTables.contains(a.destination)) {
+                sb.append("  - ").append(a.getName());
+                sb.append(": ").append(a.source.getName());
+                sb.append(" -> ").append(a.destination.getName());
+                sb.append("\n");
+            }
         }
         return sb.toString();
     }
@@ -341,38 +489,60 @@ public class AIExtractionModelDialog extends JDialog {
     private String buildDefaultSystemPrompt() {
         return "You are a Jailer extraction model assistant.\n\n"
              + "HOW JAILER EXTRACTION WORKS:\n"
-             + "The database schema is a directed graph G where each table is a node and each\n"
-             + "association (foreign-key link) is a directed edge. Given a subject node s and\n"
-             + "a WHERE condition, Jailer collects all rows in the subgraph reachable from s\n"
-             + "by following active edges transitively.\n\n"
-             + "RESTRICTIONS control which edges are active:\n"
-             + "  \"false\"  - deactivates this edge; a destination node becomes unreachable only\n"
-             + "             if ALL paths from s to it pass through this edge\n"
-             + "  \"<sql>\"  - edge stays active, but only rows matching the SQL predicate are followed\n"
-             + "  omitted  - edge active, no filter (default)\n"
-             + "  \"\"       - edge explicitly active (same as omitted, used to override a delta)\n\n"
+             + "Jailer starts with a \"subject\" table and a WHERE condition that selects the initial rows.\n"
+             + "It then automatically follows all foreign-key relationships (called \"associations\") from\n"
+             + "those rows, collects the related rows from every connected table, and repeats this for those\n"
+             + "rows too — recursively, until nothing new is reachable. The result is a complete, consistent\n"
+             + "snapshot of all data connected to the starting rows.\n\n"
+             + "Because Jailer follows ALL associations by default, you must explicitly stop it from\n"
+             + "following associations that lead to tables the user did NOT request. Use \"false\" to\n"
+             + "exclude an association. If you leave an association unrestricted, Jailer will follow it\n"
+             + "and pull in those rows even if the user did not ask for them.\n\n"
+             + "RESTRICTIONS control which associations are followed:\n"
+             + "  \"false\"  - Jailer does NOT follow this association; the connected table is excluded\n"
+             + "             (unless it is also reachable via a different unrestricted association)\n"
+             + "  \"<sql>\"  - Jailer follows this association but only includes rows matching the SQL\n"
+             + "             predicate (written against the destination table, alias T)\n"
+             + "  \"\"       - Jailer follows this association and includes all rows (same as omitting it)\n\n"
+             + "WHERE TO PUT CONDITIONS:\n"
+             + "  - Conditions that filter the SUBJECT TABLE rows go into \"condition\"\n"
+             + "    (e.g., \"T.CUSTOMER_ID = 42\" selects only that customer's orders)\n"
+             + "  - Conditions that filter ROWS IN RELATED TABLES go into \"restrictions\" as SQL predicates\n\n"
              + "EXAMPLE:\n"
              + "Request: \"All orders for customer 42, with order items and products, but without payment history\"\n"
              + "{\n"
              + "  \"subject\": \"ORDER\",\n"
              + "  \"condition\": \"T.CUSTOMER_ID = 42\",\n"
              + "  \"restrictions\": [\n"
-             + "    {\"association\": \"payments\", \"condition\": \"false\"},\n"
+             + "    {\"association\": \"payments\",    \"condition\": \"false\"},\n"
              + "    {\"association\": \"order_items\", \"condition\": \"\"},\n"
-             + "    {\"association\": \"products\", \"condition\": \"\"}\n"
+             + "    {\"association\": \"products\",    \"condition\": \"\"}\n"
              + "  ],\n"
-             + "  \"explanation\": \"Extracts orders of customer 42 with items and products, payment history excluded.\"\n"
+             + "  \"explanation\": \"Extracts orders of customer 42. Order items and products are included. Payment history is explicitly excluded.\"\n"
              + "}\n\n"
              + "CURRENT STATE:\n"
              + "You will receive the current extraction model state before the schema.\n"
-             + "Use it as context when deciding which edges to restrict.\n\n"
+             + "Use it as context when deciding which associations to restrict.\n\n"
              + "OUTPUT: Return ALL named associations from the schema in the restrictions list.\n"
-             + "For each association set condition:\n"
-             + "  \"false\"  - to deactivate the edge\n"
-             + "  \"<sql>\"  - to filter rows (SQL predicate on the destination table)\n"
-             + "  \"\"       - to leave the edge active (default, no restriction)\n\n"
+             + "For each association set condition to \"false\", a SQL predicate, or \"\".\n"
              + "Respond ONLY with a single JSON object in the same format, no markdown fences, no other text.\n"
              + "Use exact association names from the schema.";
+    }
+
+    private String buildDefaultSubjectPrompt() {
+        return "You are a database expert. Given a list of database table names and a data extraction request, "
+             + "name the single best starting/subject table for the extraction. "
+             + "Reply with ONLY the exact table name — no explanation, no other text.";
+    }
+
+    @Override
+    public void dispose() {
+        AIProviderConfig config = providerPanel.getConfig();
+        AIQueryAssistant.saveCheckboxStates(config, null, omitColumnTypesBox.isSelected(), false);
+        UISettings.store(SETTING_REDUCED_SCHEMA, reducedSchemaBox.isSelected());
+        UISettings.store(SETTING_MAX_TABLES, parseMaxTables());
+        UISettings.store(SETTING_SUBJECT_PROMPT, subjectPromptArea.getText().trim());
+        super.dispose();
     }
 
     private void parseAndShowResult(String response) {
@@ -471,6 +641,8 @@ public class AIExtractionModelDialog extends JDialog {
             return;
         }
 
+        editor.beginAIOperation();
+
         // Set subject table via the combo box (triggers the item listener -> changeSubject)
         editor.subjectTable.setSelectedItem(dataModel.getDisplayName(subject));
 
@@ -501,12 +673,15 @@ public class AIExtractionModelDialog extends JDialog {
         ((JComponent) d.getContentPane()).setBorder(BorderFactory.createEmptyBorder(8, 8, 0, 8));
         d.getContentPane().setLayout(new BorderLayout(0, 4));
 
-        JButton resetButton = new JButton("Reset to Default");
-        ImageIcon resetIcon = UIUtil.readImage("/reset_64.png");
-        if (resetIcon != null) {
-            resetButton.setIcon(UIUtil.scaleIcon(resetButton, resetIcon));
-        }
-        resetButton.addActionListener(e -> systemPromptArea.setText(buildDefaultSystemPrompt()));
+        final String originalText = systemPromptArea.getText();
+        final String originalSubjectText = subjectPromptArea.getText();
+        d.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                systemPromptArea.setText(originalText);
+                subjectPromptArea.setText(originalSubjectText);
+            }
+        });
 
         JButton okButton = new JButton("OK");
         ImageIcon okIcon = UIUtil.readImage("/buttonok.png");
@@ -515,20 +690,55 @@ public class AIExtractionModelDialog extends JDialog {
         }
         okButton.addActionListener(e -> {
             UISettings.store(SYSTEM_PROMPT_SETTING, systemPromptArea.getText().trim());
+            UISettings.store(SETTING_SUBJECT_PROMPT, subjectPromptArea.getText().trim());
             d.dispose();
         });
 
-        JPanel bottom = new JPanel(new BorderLayout());
-        JPanel leftBottom = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
-        leftBottom.add(resetButton);
-        JPanel rightBottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 4));
-        rightBottom.add(okButton);
-        bottom.add(leftBottom, BorderLayout.WEST);
-        bottom.add(rightBottom, BorderLayout.EAST);
+        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 4));
+        bottom.add(okButton);
 
-        JScrollPane scroll = new JScrollPane(systemPromptArea);
-        scroll.setPreferredSize(new Dimension(700, 360));
-        d.getContentPane().add(scroll, BorderLayout.CENTER);
+        // Main system prompt section
+        JLabel mainLabel = new JLabel("Extraction Model Prompt:");
+        mainLabel.setFont(mainLabel.getFont().deriveFont(java.awt.Font.BOLD));
+        JButton resetMain = new JButton("Reset to Default");
+        ImageIcon resetIcon = UIUtil.readImage("/reset_64.png");
+        if (resetIcon != null) {
+            resetMain.setIcon(UIUtil.scaleIcon(resetMain, resetIcon));
+        }
+        resetMain.addActionListener(e -> systemPromptArea.setText(buildDefaultSystemPrompt()));
+        JPanel mainHeader = new JPanel(new BorderLayout(8, 0));
+        mainHeader.add(mainLabel, BorderLayout.WEST);
+        mainHeader.add(resetMain, BorderLayout.EAST);
+
+        JScrollPane mainScroll = new JScrollPane(systemPromptArea);
+        mainScroll.setPreferredSize(new Dimension(700, 300));
+
+        // Subject table detection prompt section
+        JLabel subjectLabel = new JLabel("Subject Table Detection (1st pass):");
+        subjectLabel.setFont(subjectLabel.getFont().deriveFont(java.awt.Font.BOLD));
+        JButton resetSubject = new JButton("Reset to Default");
+        if (resetIcon != null) {
+            resetSubject.setIcon(UIUtil.scaleIcon(resetSubject, resetIcon));
+        }
+        resetSubject.addActionListener(e -> subjectPromptArea.setText(buildDefaultSubjectPrompt()));
+        JPanel subjectHeader = new JPanel(new BorderLayout(8, 0));
+        subjectHeader.add(subjectLabel, BorderLayout.WEST);
+        subjectHeader.add(resetSubject, BorderLayout.EAST);
+
+        JScrollPane subjectScroll = new JScrollPane(subjectPromptArea);
+        subjectScroll.setPreferredSize(new Dimension(700, 100));
+
+        JPanel center = new JPanel(new BorderLayout(0, 6));
+        JPanel mainSection = new JPanel(new BorderLayout(0, 2));
+        mainSection.add(mainHeader, BorderLayout.NORTH);
+        mainSection.add(mainScroll, BorderLayout.CENTER);
+        JPanel subjectSection = new JPanel(new BorderLayout(0, 2));
+        subjectSection.add(subjectHeader, BorderLayout.NORTH);
+        subjectSection.add(subjectScroll, BorderLayout.CENTER);
+        center.add(mainSection, BorderLayout.CENTER);
+        center.add(subjectSection, BorderLayout.SOUTH);
+
+        d.getContentPane().add(center, BorderLayout.CENTER);
         d.getContentPane().add(bottom, BorderLayout.SOUTH);
         d.pack();
         d.setLocationRelativeTo(this);
@@ -540,13 +750,36 @@ public class AIExtractionModelDialog extends JDialog {
         cancelButton.setEnabled(generating);
         providerPanel.setEnabled(!generating);
         questionArea.setEnabled(!generating);
+        reducedSchemaBox.setEnabled(!generating);
+        maxTablesField.setEnabled(!generating && reducedSchemaBox.isSelected());
+        omitColumnTypesBox.setEnabled(!generating);
         setCursor(generating ? Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR) : Cursor.getDefaultCursor());
+    }
+
+    private void updateContextEstimate() {
+        if (reducedSchemaBox.isSelected()) {
+            int tableCount = dataModel.getSortedTables().size();
+            try {
+                int raw = Integer.parseInt(maxTablesField.getText().trim());
+                if (raw > tableCount) {
+                    SwingUtilities.invokeLater(() -> maxTablesField.setText(String.valueOf(tableCount)));
+                }
+            } catch (NumberFormatException ignored) {}
+        }
+    }
+
+    private int parseMaxTables() {
+        try {
+            int v = Integer.parseInt(maxTablesField.getText().trim());
+            return Math.min(v, dataModel.getSortedTables().size());
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 }
 
 // TODO
 // TODO Benchmark: kunden mit ihren ausleihen, die in Boston wohnen
-// TODO limitierung: pass 1: nach subjekten fragen, pass 2: bis zu einem vom Nutzer vorgegebenen Anzahl Tabellen von subjekten ausgehen in Breitensuche sammeln
 // TODO System prompt: 
 // erkl�ren, wann einschr�nkungen auf association notwendig sind und wie man sie formuliert
 // erkl�ren, dass Bedingungen, die direkt auf das Subjekt gehen, in "condition" kommen, alle anderen Einschr�nkungen auf Assoziationen
@@ -554,17 +787,3 @@ public class AIExtractionModelDialog extends JDialog {
 
 
 // TODO ? im systemprompt fordern, dass m�glichst vieles "false" ist?
-
-// TODO warnung wenn bei �ffnen des Dialogs schon ein additional Subjekt gesetzt ist
-// TODO warnung wenn format != SQL
-
-// TODO wenn API key vorhanden, AI Assistant in wizzard anbieten.
-
-// TODO
-// TODO UNDO: bessere Bezeichnung der Compensating Action
-
-// TODO
-//Aktuell sendet der Dialog nur eine einzige user-Message pro Request (keine History) → Reihenfolge noch irrelevant.
-//
-//Wenn Conversation-History ergänzt wird (geplanter "stateful"-Ausbau), muss die Reihenfolge korrekt aufgebaut werden — analog zu AIQueryDialog, das List<ConversationMessage> in der richtigen Reihenfolge an
-//AIQueryAssistant.generateSQL() übergibt.
