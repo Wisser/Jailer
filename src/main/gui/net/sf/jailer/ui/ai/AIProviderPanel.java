@@ -21,6 +21,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ItemEvent;
+import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.ImageIcon;
@@ -67,6 +69,7 @@ public class AIProviderPanel extends JPanel {
     private final JButton saveButton;
     private final JButton testButton;
     private boolean connectionVerified = true;
+    private Map<ProviderType, String> defaultModelOverrides = Collections.emptyMap();
 
     public AIProviderPanel() {
         super(new GridBagLayout());
@@ -239,8 +242,8 @@ public class AIProviderPanel extends JPanel {
             if (urlField.getText().trim().equals(prev[0].defaultApiUrl)) {
                 urlField.setText(next.defaultApiUrl);
             }
-            if (modelField.getText().trim().equals(prev[0].defaultModel)) {
-                modelField.setText(next.defaultModel);
+            if (modelField.getText().trim().equals(effectiveDefault(prev[0]))) {
+                modelField.setText(effectiveDefault(next));
             }
             apiKeyLabel.setText(apiKeyLabelText(next));
             String key = loadApiKey(next);
@@ -286,6 +289,21 @@ public class AIProviderPanel extends JPanel {
             modelField.getText().trim(),
             (Integer) maxTokensSpinner.getValue()
         );
+    }
+
+    public void setDefaultModelOverrides(Map<ProviderType, String> overrides) {
+        this.defaultModelOverrides = overrides;
+        ProviderType current = (ProviderType) providerCombo.getSelectedItem();
+        if (current != null && overrides.containsKey(current)) {
+            String savedModel = (String) UISettings.restore(SETTING_MODEL);
+            if (savedModel == null) {
+                modelField.setText(overrides.get(current));
+            }
+        }
+    }
+
+    private String effectiveDefault(ProviderType pt) {
+        return defaultModelOverrides.getOrDefault(pt, pt.defaultModel);
     }
 
     /** Persists the current settings to {@link UISettings}. */

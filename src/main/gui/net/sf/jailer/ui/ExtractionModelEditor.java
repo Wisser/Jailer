@@ -270,6 +270,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 	 */
 	private final ExecutionContext executionContext;
 
+	public ExecutionContext getExecutionContext() { return executionContext; }
+
 	/**
 	 * Creates new form ModelTree.
 	 *

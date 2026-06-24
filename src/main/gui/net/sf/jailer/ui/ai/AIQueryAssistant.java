@@ -478,15 +478,11 @@ public class AIQueryAssistant {
             normalizedToActual.computeIfAbsent(simple.toUpperCase(Locale.ENGLISH), k -> new ArrayList<>()).add(t);
         }
 
-        String systemPrompt = (subjectSystemPrompt != null && !subjectSystemPrompt.isBlank())
-                ? subjectSystemPrompt
-                : "You are a database expert. Given a list of database table names and a data extraction request, "
-                  + "name the single best starting/subject table for the extraction. "
-                  + "Reply with ONLY the exact table name — no explanation, no other text.";
+        String systemPrompt = subjectSystemPrompt;
         boolean isAnthropic = config.providerType == ProviderType.ANTHROPIC;
         ObjectNode body = MAPPER.createObjectNode();
         body.put("model", config.model);
-        body.put("max_tokens", 50);
+        body.put("max_tokens", config.maxTokens);
         body.put("stream", false);
         ArrayNode messages = body.putArray("messages");
         if (isAnthropic) {
@@ -496,9 +492,11 @@ public class AIQueryAssistant {
             sysMsg.put("role", "system");
             sysMsg.put("content", systemPrompt);
         }
+        String subjectUserMessage = "Tables:\n" + tableList + "\nRequest: " + question;
+        writeClaudePrompt(systemPrompt, subjectUserMessage);
         ObjectNode userMsg = messages.addObject();
         userMsg.put("role", "user");
-        userMsg.put("content", "Tables:\n" + tableList + "\nRequest: " + question);
+        userMsg.put("content", subjectUserMessage);
 
         JsonNode response = post(config, body, abortRef);
         String responseText = extractText(response, isAnthropic).trim();
@@ -658,6 +656,7 @@ public class AIQueryAssistant {
         body.put("stream", false);
         // Schema lives in the system prompt so it is sent once, not repeated per user message.
         String systemPrompt = buildSystemPrompt(schema, dbmsName, systemPromptTemplate);
+        writeClaudePrompt(systemPrompt, question);
 
         ArrayNode messages = body.putArray("messages");
         if (isAnthropic) {
@@ -676,6 +675,19 @@ public class AIQueryAssistant {
         userMsg.put("role", "user");
         userMsg.put("content", question);
         return body;
+    }
+
+    private static void writeClaudePrompt(String systemPrompt, String userMessage) {
+        if (System.getProperty("claude-prompt") == null) return;
+        try {
+            String content = systemPrompt + "\n\n---\n\n" + userMessage;
+            java.nio.file.Files.writeString(
+                java.nio.file.Paths.get("claude-prompt.txt"),
+                content,
+                java.nio.charset.StandardCharsets.UTF_8);
+        } catch (java.io.IOException e) {
+            _log.warn("Failed to write claude-prompt.txt", e);
+        }
     }
 
     // Tries HttpURLConnection first; falls back to curl if the Authorization header

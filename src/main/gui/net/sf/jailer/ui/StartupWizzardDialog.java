@@ -31,6 +31,7 @@ import javax.swing.UIManager;
 
 import net.sf.jailer.ui.ai.AIProviderConfig;
 import net.sf.jailer.ui.ai.AIQueryAssistant;
+import net.sf.jailer.ui.util.UISettings;
 
 /**
  * Startup Wizzard.
@@ -126,7 +127,8 @@ public abstract class StartupWizzardDialog extends javax.swing.JDialog {
 		} catch (Throwable t) {
 			// ignore
 		}
-		if (aiConfigured) {
+		boolean aiUsed = "true".equals(UISettings.restore("aiExtractionModelUsed"));
+		if (aiConfigured && aiUsed) {
 			aiAssistantButton = new javax.swing.JButton("AI Extraction Model Assistant");
 			aiAssistantButton.setToolTipText("Use AI to generate an Extraction Model from a natural-language description");
 			aiAssistantButton.setMargin(new Insets(4, 10, 4, 10));

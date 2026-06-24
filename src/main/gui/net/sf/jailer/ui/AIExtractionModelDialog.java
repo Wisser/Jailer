@@ -64,6 +64,7 @@ import javax.swing.event.DocumentListener;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.ui.Colors;
 import net.sf.jailer.datamodel.DataModel;
@@ -85,6 +86,7 @@ public class AIExtractionModelDialog extends JDialog {
 
     private final ExtractionModelEditor editor;
     private final DataModel dataModel;
+    private final ExecutionContext executionContext;
     private AIProviderPanel providerPanel;
     private JTextArea questionArea;
     private JButton generateButton;
@@ -118,6 +120,7 @@ public class AIExtractionModelDialog extends JDialog {
         super(owner, "AI Extraction Model Assistant", ModalityType.APPLICATION_MODAL);
         this.editor = editor;
         this.dataModel = editor.dataModel;
+        this.executionContext = editor.getExecutionContext();
         initUI();
         UIUtil.initComponents(this);
         pack();
@@ -270,12 +273,13 @@ public class AIExtractionModelDialog extends JDialog {
 
         // South: provider settings + buttons
         providerPanel = new AIProviderPanel();
+        providerPanel.setDefaultModelOverrides(Map.of(AIProviderConfig.ProviderType.OPENROUTER, "deepseek/deepseek-r1"));
         AIProviderConfig initConfig = providerPanel.getConfig();
-        omitColumnTypesBox.setSelected(AIQueryAssistant.loadOmitColumnTypes(initConfig, null));
-        Object savedReduced = UISettings.restore(SETTING_REDUCED_SCHEMA);
+        omitColumnTypesBox.setSelected(AIQueryAssistant.loadOmitColumnTypes(initConfig, executionContext));
+        Object savedReduced = UISettings.restore(dmKey(SETTING_REDUCED_SCHEMA));
         reducedSchemaBox.setSelected(Boolean.TRUE.equals(savedReduced));
         maxTablesField.setEnabled(reducedSchemaBox.isSelected());
-        Object savedMaxTables = UISettings.restore(SETTING_MAX_TABLES);
+        Object savedMaxTables = UISettings.restore(dmKey(SETTING_MAX_TABLES));
         if (savedMaxTables instanceof Integer) maxTablesField.setText(String.valueOf(savedMaxTables));
         updateContextEstimate();
 
@@ -405,17 +409,18 @@ public class AIExtractionModelDialog extends JDialog {
         String userMessage = currentState + "Schema:\n" + buildSchemaWithAssociations(relevantTables, omitColumnTypes) + "\n\nRequest: " + question;
         int est = userMessage.length() / 4;
         Integer contextWindow = AIQueryAssistant.fetchContextWindowTokens(config);
-        boolean overload = contextWindow != null ? est > contextWindow * 0.6 : AIQueryAssistant.likelySchemaOverload(userMessage, dataModel, null);
+        boolean overload = contextWindow != null && est > contextWindow * 0.6;
         String tokenInfo = est >= 1000 ? "~" + (est / 1000) + "k tokens" : "~" + est + " tokens";
         SwingUtilities.invokeLater(() -> statusLabel.setText(
                 overload ? "<html><font color='orange'>⚠ " + tokenInfo + " — context window may be exceeded</font></html>"
                          : tokenInfo));
-        AIQueryAssistant.saveCheckboxStates(config, null, omitColumnTypes, false);
-        UISettings.store(SETTING_REDUCED_SCHEMA, reducedSchema);
-        UISettings.store(SETTING_MAX_TABLES, maxTables);
+        AIQueryAssistant.saveCheckboxStates(config, executionContext, omitColumnTypes, false);
+        UISettings.store(dmKey(SETTING_REDUCED_SCHEMA), reducedSchema);
+        UISettings.store(dmKey(SETTING_MAX_TABLES), maxTables);
         String response = AIQueryAssistant.generateSQL(userMessage, Collections.emptyList(), dataModel,
                 "SQL", config, systemPrompt, false, false, abortRef, null);
         UISettings.s19 += UISettings.s19 > 0 ? 100 : -100;
+        UISettings.store("aiExtractionModelUsed", "true");
         return response;
     }
 
@@ -501,15 +506,18 @@ public class AIExtractionModelDialog extends JDialog {
              + "RESTRICTIONS control which associations are followed:\n"
              + "  \"false\"  - Jailer does NOT follow this association; the connected table is excluded\n"
              + "             (unless it is also reachable via a different unrestricted association)\n"
-             + "  \"<sql>\"  - Jailer follows this association but only includes rows matching the SQL\n"
-             + "             predicate (written against the destination table, alias T)\n"
+             + "  \"<sql>\"  - Jailer follows this association but only includes rows where the SQL\n"
+             + "             predicate is true (A, and B are single-letter aliases: A ia source table,\n"
+             + "             B is destination table)\n"
              + "  \"\"       - Jailer follows this association and includes all rows (same as omitting it)\n\n"
              + "WHERE TO PUT CONDITIONS:\n"
-             + "  - Conditions that filter the SUBJECT TABLE rows go into \"condition\"\n"
+             + "  - Conditions that filter the SUBJECT TABLE (Alias \"T\") rows go into \"condition\"\n"
              + "    (e.g., \"T.CUSTOMER_ID = 42\" selects only that customer's orders)\n"
-             + "  - Conditions that filter ROWS IN RELATED TABLES go into \"restrictions\" as SQL predicates\n\n"
+             + "  - Conditions that filter ROWS IN RELATED TABLES go into \"restrictions\" as SQL predicates\n"
+             + "    (use A for the source table row, B for the destination table row)\n\n"
              + "EXAMPLE:\n"
              + "Request: \"All orders for customer 42, with order items and products, but without payment history\"\n"
+             + "Response:\n"
              + "{\n"
              + "  \"subject\": \"ORDER\",\n"
              + "  \"condition\": \"T.CUSTOMER_ID = 42\",\n"
@@ -523,24 +531,33 @@ public class AIExtractionModelDialog extends JDialog {
              + "CURRENT STATE:\n"
              + "You will receive the current extraction model state before the schema.\n"
              + "Use it as context when deciding which associations to restrict.\n\n"
-             + "OUTPUT: Return ALL named associations from the schema in the restrictions list.\n"
-             + "For each association set condition to \"false\", a SQL predicate, or \"\".\n"
-             + "Respond ONLY with a single JSON object in the same format, no markdown fences, no other text.\n"
-             + "Use exact association names from the schema.";
+             + "OUTPUT: Respond with a single JSON object containing:\n"
+             + "  \"subject\"      - the subject table name\n"
+             + "  \"condition\"    - WHERE condition for the subject table (empty string if none)\n"
+             + "  \"restrictions\" - ALL named associations from the schema, each with an\n"
+             + "                   \"association\" name and a \"condition\" (\"false\", SQL predicate, or \"\")\n"
+             + "  \"explanation\"  - brief description of what is extracted and what is excluded\n"
+             + "Use exact association names from the schema. No markdown fences, no other text.";
     }
 
     private String buildDefaultSubjectPrompt() {
         return "You are a database expert. Given a list of database table names and a data extraction request, "
-             + "name the single best starting/subject table for the extraction. "
-             + "Reply with ONLY the exact table name — no explanation, no other text.";
+             + "identify the single best subject table — the main entity the user wants to extract data about. "
+             + "Choose ONLY from the table names in the provided list. "
+             + "Reply with ONLY that exact table name — no explanation, no schema prefix, no other text.";
+    }
+
+    private String dmKey(String base) {
+        String folder = executionContext != null ? executionContext.getQualifiedDatamodelFolder() : null;
+        return base + "|" + (folder != null ? folder : "");
     }
 
     @Override
     public void dispose() {
         AIProviderConfig config = providerPanel.getConfig();
-        AIQueryAssistant.saveCheckboxStates(config, null, omitColumnTypesBox.isSelected(), false);
-        UISettings.store(SETTING_REDUCED_SCHEMA, reducedSchemaBox.isSelected());
-        UISettings.store(SETTING_MAX_TABLES, parseMaxTables());
+        AIQueryAssistant.saveCheckboxStates(config, executionContext, omitColumnTypesBox.isSelected(), false);
+        UISettings.store(dmKey(SETTING_REDUCED_SCHEMA), reducedSchemaBox.isSelected());
+        UISettings.store(dmKey(SETTING_MAX_TABLES), parseMaxTables());
         UISettings.store(SETTING_SUBJECT_PROMPT, subjectPromptArea.getText().trim());
         super.dispose();
     }
