@@ -104,16 +104,19 @@ public class SystemPromptPanel extends JPanel {
         promptArea.setLineWrap(true);
         promptArea.setWrapStyleWord(true);
         promptArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
+        promptArea.setCaretPosition(0);
 
         firstPassPromptArea = new JTextArea(initialFP, 4, 60);
         firstPassPromptArea.setLineWrap(true);
         firstPassPromptArea.setWrapStyleWord(true);
         firstPassPromptArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
+        firstPassPromptArea.setCaretPosition(0);
 
         advisorPromptArea = new JTextArea(initialAdv, 5, 60);
         advisorPromptArea.setLineWrap(true);
         advisorPromptArea.setWrapStyleWord(true);
         advisorPromptArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
+        advisorPromptArea.setCaretPosition(0);
 
         JPanel mainSection = buildSection(
             "SQL Generation",
@@ -171,7 +174,7 @@ public class SystemPromptPanel extends JPanel {
         if (resetIcon != null) {
             resetButton.setIcon(UIUtil.scaleIcon(resetButton, resetIcon));
         }
-        resetButton.addActionListener(e -> area.setText(defaultText));
+        resetButton.addActionListener(e -> { area.setText(defaultText); area.setCaretPosition(0); });
 
         JPanel bottomRow = new JPanel(new BorderLayout(6, 0));
         bottomRow.add(hint, BorderLayout.WEST);
@@ -217,9 +220,12 @@ public class SystemPromptPanel extends JPanel {
     public void discardSettings() {
         String saved = (String) UISettings.restore(SETTING_SYSTEM_PROMPT);
         promptArea.setText(saved != null && !saved.isEmpty() ? saved : DEFAULT_TEMPLATE);
+        promptArea.setCaretPosition(0);
         String savedAdv = (String) UISettings.restore(SETTING_ADVISOR_SYSTEM_PROMPT);
         advisorPromptArea.setText(savedAdv != null && !savedAdv.isEmpty() ? savedAdv : DEFAULT_ADVISOR_TEMPLATE);
+        advisorPromptArea.setCaretPosition(0);
         String savedFP = (String) UISettings.restore(SETTING_FIRST_PASS_SYSTEM_PROMPT);
         firstPassPromptArea.setText(savedFP != null && !savedFP.isEmpty() ? savedFP : DEFAULT_FIRST_PASS_TEMPLATE);
+        firstPassPromptArea.setCaretPosition(0);
     }
 }

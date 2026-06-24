@@ -288,12 +288,14 @@ public class AIExtractionModelDialog extends JDialog {
         systemPromptArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
         systemPromptArea.setLineWrap(true);
         systemPromptArea.setWrapStyleWord(true);
+        systemPromptArea.setCaretPosition(0);
 
         String savedSubjectPrompt = (String) UISettings.restore(SETTING_SUBJECT_PROMPT);
         subjectPromptArea = new JTextArea(savedSubjectPrompt != null && !savedSubjectPrompt.isEmpty() ? savedSubjectPrompt : buildDefaultSubjectPrompt(), 4, 60);
         subjectPromptArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
         subjectPromptArea.setLineWrap(true);
         subjectPromptArea.setWrapStyleWord(true);
+        subjectPromptArea.setCaretPosition(0);
 
         closeButton = new JButton("Close");
         ImageIcon closeIcon = UIUtil.readImage("/buttoncancel.png");
@@ -303,7 +305,7 @@ public class AIExtractionModelDialog extends JDialog {
         closeButton.setToolTipText("Close this dialog");
         closeButton.addActionListener(e -> dispose());
 
-        JButton systemPromptButton = new JButton("System Prompt...");
+        JButton systemPromptButton = new JButton("System Prompts...");
         ImageIcon editIcon = UIUtil.readImage("/ieditdetails_64.png");
         if (editIcon != null) {
             systemPromptButton.setIcon(UIUtil.scaleIcon(systemPromptButton, editIcon));
@@ -496,19 +498,26 @@ public class AIExtractionModelDialog extends JDialog {
              + "HOW JAILER EXTRACTION WORKS:\n"
              + "Jailer starts with a \"subject\" table and a WHERE condition that selects the initial rows.\n"
              + "It then automatically follows all foreign-key relationships (called \"associations\") from\n"
-             + "those rows, collects the related rows from every connected table, and repeats this for those\n"
-             + "rows too — recursively, until nothing new is reachable. The result is a complete, consistent\n"
-             + "snapshot of all data connected to the starting rows.\n\n"
+             + "those rows: for each association Source -> Destination, it finds all Destination rows\n"
+             + "linked to already-collected Source rows via an association-specific condition, and adds those rows to\n"
+             + "the result. This is repeated recursively for every newly collected row, until nothing new\n"
+             + "is reachable. The result is a complete, consistent snapshot of all data connected to the\n"
+             + "starting rows.\n\n"
              + "Because Jailer follows ALL associations by default, you must explicitly stop it from\n"
              + "following associations that lead to tables the user did NOT request. Use \"false\" to\n"
              + "exclude an association. If you leave an association unrestricted, Jailer will follow it\n"
              + "and pull in those rows even if the user did not ask for them.\n\n"
+             + "ASSOCIATION FORMAT (in the schema below):\n"
+             + "Each named association is listed as:\n"
+             + "  name: Source -> Destination\n"
+             + "where Source and Destination are table names. Source is alias A and Destination is alias B\n"
+             + "in SQL restriction conditions.\n\n"
              + "RESTRICTIONS control which associations are followed:\n"
              + "  \"false\"  - Jailer does NOT follow this association; the connected table is excluded\n"
              + "             (unless it is also reachable via a different unrestricted association)\n"
              + "  \"<sql>\"  - Jailer follows this association but only includes rows where the SQL\n"
-             + "             predicate is true (A, and B are single-letter aliases: A ia source table,\n"
-             + "             B is destination table)\n"
+             + "             predicate is true (A and B are single-letter aliases matching the association\n"
+             + "             direction: A is the left-hand table (before \"->\"), B is the right-hand table (after \"->\"))\n"
              + "  \"\"       - Jailer follows this association and includes all rows (same as omitting it)\n\n"
              + "WHERE TO PUT CONDITIONS:\n"
              + "  - Conditions that filter the SUBJECT TABLE (Alias \"T\") rows go into \"condition\"\n"
@@ -686,7 +695,7 @@ public class AIExtractionModelDialog extends JDialog {
     }
 
     private void openSystemPromptDialog() {
-        JDialog d = new JDialog(this, "System Prompt", true);
+        JDialog d = new JDialog(this, "System Prompts", true);
         ((JComponent) d.getContentPane()).setBorder(BorderFactory.createEmptyBorder(8, 8, 0, 8));
         d.getContentPane().setLayout(new BorderLayout(0, 4));
 
@@ -696,7 +705,9 @@ public class AIExtractionModelDialog extends JDialog {
             @Override
             public void windowClosing(WindowEvent e) {
                 systemPromptArea.setText(originalText);
+                systemPromptArea.setCaretPosition(0);
                 subjectPromptArea.setText(originalSubjectText);
+                subjectPromptArea.setCaretPosition(0);
             }
         });
 
@@ -722,7 +733,7 @@ public class AIExtractionModelDialog extends JDialog {
         if (resetIcon != null) {
             resetMain.setIcon(UIUtil.scaleIcon(resetMain, resetIcon));
         }
-        resetMain.addActionListener(e -> systemPromptArea.setText(buildDefaultSystemPrompt()));
+        resetMain.addActionListener(e -> { systemPromptArea.setText(buildDefaultSystemPrompt()); systemPromptArea.setCaretPosition(0); });
         JPanel mainHeader = new JPanel(new BorderLayout(8, 0));
         mainHeader.add(mainLabel, BorderLayout.WEST);
         mainHeader.add(resetMain, BorderLayout.EAST);
@@ -737,7 +748,7 @@ public class AIExtractionModelDialog extends JDialog {
         if (resetIcon != null) {
             resetSubject.setIcon(UIUtil.scaleIcon(resetSubject, resetIcon));
         }
-        resetSubject.addActionListener(e -> subjectPromptArea.setText(buildDefaultSubjectPrompt()));
+        resetSubject.addActionListener(e -> { subjectPromptArea.setText(buildDefaultSubjectPrompt()); subjectPromptArea.setCaretPosition(0); });
         JPanel subjectHeader = new JPanel(new BorderLayout(8, 0));
         subjectHeader.add(subjectLabel, BorderLayout.WEST);
         subjectHeader.add(resetSubject, BorderLayout.EAST);
