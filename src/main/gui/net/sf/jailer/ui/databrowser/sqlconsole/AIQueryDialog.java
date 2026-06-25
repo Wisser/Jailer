@@ -1258,8 +1258,3 @@ public class AIQueryDialog extends JDialog {
     }
 
 }
-
-// TODO 
-// TODO test with various models
-// TODO test first pass strategy, esp.: no unnecessary quoting (but quoting of keyword) of simple table names, no lU changes
-// TODO how about data model > 500 tables? relevant-tables-strategy might be unnecessary, or even counterproductive in that case.

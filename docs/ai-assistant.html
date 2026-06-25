@@ -91,6 +91,7 @@
 						Open the SQL Console (<b>Ctrl+Enter</b> from any table window, or via the menu) and look for the
 						"AI Assistant" button in the toolbar.</p>
 
+
 						<table border="0" cellpadding="8" cellspacing="0" width="90%" style="background:#fff8e1;border-left:4px solid #f0a000;margin:8px 0 12px 0;">
 							<tr><td>
 							&#9888;&nbsp;<b>AI-generated SQL is never executed automatically.</b>
@@ -276,6 +277,79 @@ SELECT * FROM orders WHERE order_date &gt;= CURRENT_DATE - 30</pre>
 							<li>Formatting rules such as uppercase keywords or a specific indentation style.</li>
 							<li>Database-specific constraints or naming conventions the AI should respect.</li>
 						</ul>
+
+						<br><h3><a name="extraction-model"></a>AI Extraction Model Assistant</h3>
+
+						<p>Describe in natural language what data you want to extract &mdash; the assistant generates
+						a complete extraction model ready to apply to the editor.</p>
+
+						<p>Open the assistant by clicking the <b>AI</b> button in the <b>Extraction Model Editor</b> toolbar.</p>
+
+						<table border="0" cellpadding="8" cellspacing="0" width="90%" style="background:#fff8e1;border-left:4px solid #f0a000;margin:8px 0 12px 0;">
+							<tr><td>
+							&#9888;&nbsp;<b>Proposals are never applied automatically.</b>
+							The generated extraction model is shown for review first.
+							Click <b>Apply to Editor</b> to accept it. The change can be undone at any time with <b>Ctrl+Z</b>.
+							</td></tr>
+						</table>
+
+						<br><h3>Writing a Good Request</h3>
+
+						<p>Plain English works well. A few tips for better results:</p>
+						<ul>
+							<li><b>Name the main entity first</b> &mdash;
+							<em>&ldquo;All orders for customer 42&hellip;&rdquo;</em></li>
+							<li><b>Explicitly name what to exclude</b> &mdash;
+							<em>&ldquo;&hellip;but without payment history.&rdquo;</em><br />
+							Without an explicit exclusion, the AI may include related tables.</li>
+							<li><b>Name what to include</b> if you want specific related data &mdash;
+							<em>&ldquo;&hellip;with order items and products.&rdquo;</em></li>
+						</ul>
+
+						<br><h3>The Proposal</h3>
+
+						<p>After generation the dialog shows:</p>
+						<ul>
+							<li><b>Subject table and condition</b> &mdash; the starting point of the extraction.</li>
+							<li><b>Restrictions</b> &mdash; per-association decisions: include all rows,
+							include only rows matching a filter condition, or exclude the association entirely.</li>
+							<li><b>Explanation</b> &mdash; a plain-text summary of what is extracted and what is excluded.
+							Read this to quickly verify that the AI understood your request correctly.</li>
+						</ul>
+
+						<p>Click <b>Apply to Editor</b> to apply the proposal, or close the dialog to discard it.</p>
+
+						<br><h3>Options</h3>
+
+						<h4>Reduced Schema</h4>
+
+						<p>For databases with many tables, sending the full schema to the AI can be slow.
+						Enable <b>Reduced Schema</b> to use a two-pass approach:</p>
+						<ol>
+							<li>A lightweight first pass sends only the list of table names; the AI identifies
+							the best subject table.</li>
+							<li>A second pass builds a reduced schema starting from that subject table,
+							traversing connected tables in breadth-first order up to the configured limit
+							(default: all tables in the schema).</li>
+						</ol>
+						<p>Recommended for schemas with more than a few dozen tables.</p>
+
+						<h4>Omit Column Types</h4>
+
+						<p>Enable <b>Omit Column Types</b> to send the schema without column type information.
+						Table names, column names, primary keys, and foreign keys are still included.
+						This further reduces the context size for very large schemas.</p>
+
+						<br><h3>System Prompts</h3>
+
+						<p>Click <b>System Prompts&hellip;</b> to customize the instructions sent to the AI.
+						Two separate prompts can be edited:</p>
+						<ul>
+							<li><b>Extraction Model Prompt</b> &mdash; main instructions for generating the extraction model.</li>
+							<li><b>Subject Table Detection (1st pass)</b> &mdash; instructions for the lightweight
+							first pass that identifies the subject table (used only when Reduced Schema is enabled).</li>
+						</ul>
+						<p>Both prompts have a <b>Reset to Default</b> button and are persisted across sessions.</p>
 
 						</td>
 					</tr>

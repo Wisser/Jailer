@@ -175,7 +175,7 @@ public class AIExtractionModelDialog extends JDialog {
         reducedSchemaBox.setToolTipText("<html>Reduces the schema sent to the AI:<br>"
                 + "First asks the AI for the best subject table, then traverses<br>"
                 + "connected tables in breadth-first order up to the specified count.</html>");
-        maxTablesField = new JTextField("20", 4);
+        maxTablesField = new JTextField(String.valueOf(dataModel.getSortedTables().size()), 4);
         maxTablesField.setEnabled(false);
         maxTablesField.setToolTipText("Maximum number of tables to include in the reduced schema");
         maxTablesField.getDocument().addDocumentListener(new DocumentListener() {

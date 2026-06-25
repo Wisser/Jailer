@@ -116,6 +116,7 @@
                       <span style="font-weight: bold;">Features</span><br />
 
                       <ul>
+                        
                         <li><p>The Data Browser lets you navigate through your database following the relationships (foreign key-based or user-defined) between tables.
                         </p></li>
 
@@ -129,13 +130,22 @@
                           <li><p>Generates SQL (topologically sorted), JSON, YAML, XML (hierarchically structured) and <a href="https://github.com/dbunit">DbUnit</a>
                         datasets.</p></li>
 
-                        <li><p>AI Assistant &mdash; integrated directly into the SQL Console:
-                        <a class="tlink" href="videoAI.html" target="_self">&nbsp;<img src="video.png">&nbsp;</a>
+                        
+                        
+                        <li><p>AI Assistant 
+                        
                         <ul>
-                            <li><a href="ai-assistant.html">Generate SQL</a> from natural language questions using Anthropic or OpenAI-compatible APIs, with smart table selection for large schemas.</li>
-                            <li><a href="ai-assistant.html#advisor">SQL Advisor</a>: analyze, explain, and refactor existing queries &mdash; suggestions menu, split SQL&nbsp;/&nbsp;explanation view, inline diff.</li>
+                            <li><a href="ai-assistant.html#extraction-model">Extraction Model Assistant</a>:
+                        Describe in natural language what data to extract. The AI generates the subject table,
+                        WHERE condition, and association restrictions.</li>
+                        <li><a href="ai-assistant.html">Generate SQL</a> from natural language questions using Anthropic or OpenAI-compatible APIs, with smart table selection for large schemas.</li>
+                            <li><a href="ai-assistant.html#advisor">SQL Advisor</a>: analyze, explain, and refactor existing queries &mdash; suggestions menu, split SQL&nbsp;/&nbsp;explanation view, inline diff.
+                        	<br/>
+                        	<a class="tlink" href="videoAI.html" target="_self">&nbsp;<img src="video.png">&nbsp;</a></li>
                         </ul>
                         </p></li>
+
+                        <li><p>SQL Console <a href="data-browsing.html#chart">Chart</a>: instantly turn query results into interactive charts &mdash; 11 chart types, extensive customization, export as PNG / JPEG / SVG.</p></li>
 
                         <li><p>A demo database is included with which you can get a first impression without any configuration effort.</p></li>
                       </ul><br />
@@ -179,6 +189,12 @@ Jailer also uses additional knowledge to cope with the peculiarities of major da
 
                        <table border="0" cellspacing="5">
                         <tbody>
+
+                          <tr class="b">
+                            <td nowrap>
+                            <small class="date">2026-06-25&nbsp;&nbsp;</small></td>
+                            <td valign="top"><a href="ai-assistant.html#extraction-model">AI&nbsp;Extraction&nbsp;Model&nbsp;Assistant</a>: Describe in natural language what data to extract. The AI generates the subject table, WHERE condition, and association restrictions.</code>.</td>
+                          </tr>
 
                           <tr class="a">
                             <td nowrap>
