@@ -273,7 +273,9 @@ public class AIExtractionModelDialog extends JDialog {
 
         // South: provider settings + buttons
         providerPanel = new AIProviderPanel();
-        providerPanel.setDefaultModelOverrides(Map.of(AIProviderConfig.ProviderType.OPENROUTER, "deepseek/deepseek-r1"));
+        java.util.Map<AIProviderConfig.ProviderType, String> overrides = new java.util.HashMap<>();
+        overrides.put(AIProviderConfig.ProviderType.OPENROUTER, "deepseek/deepseek-r1");
+        providerPanel.setDefaultModelOverrides(overrides);
         AIProviderConfig initConfig = providerPanel.getConfig();
         omitColumnTypesBox.setSelected(AIQueryAssistant.loadOmitColumnTypes(initConfig, executionContext));
         Object savedReduced = UISettings.restore(dmKey(SETTING_REDUCED_SCHEMA));

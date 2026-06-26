@@ -681,10 +681,9 @@ public class AIQueryAssistant {
         if (System.getProperty("claude-prompt") == null) return;
         try {
             String content = systemPrompt + "\n\n---\n\n" + userMessage;
-            java.nio.file.Files.writeString(
+            java.nio.file.Files.write(
                 java.nio.file.Paths.get("claude-prompt.txt"),
-                content,
-                java.nio.charset.StandardCharsets.UTF_8);
+                content.getBytes(java.nio.charset.StandardCharsets.UTF_8));
         } catch (java.io.IOException e) {
             _log.warn("Failed to write claude-prompt.txt", e);
         }
