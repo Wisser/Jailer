@@ -544,8 +544,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         explainButton.setIcon(scaledExplainIcon);
 
         ImageIcon aiIcon = UIUtil.scaleIcon(this, UIUtil.readImage("/ask_ai.png"));
-        // TODO
-        // TODO use NetBeans to add the button to the toolbar (and remove the hard-coded index)
         aiButton = new JButton("AI Assistant");
         if (aiIcon != null) {
             aiButton.setIcon(UIUtil.scaleIcon(aiButton, aiIcon));

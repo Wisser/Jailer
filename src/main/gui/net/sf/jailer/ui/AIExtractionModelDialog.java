@@ -805,13 +805,3 @@ public class AIExtractionModelDialog extends JDialog {
         }
     }
 }
-
-// TODO
-// TODO Benchmark: kunden mit ihren ausleihen, die in Boston wohnen
-// TODO System prompt: 
-// erkl�ren, wann einschr�nkungen auf association notwendig sind und wie man sie formuliert
-// erkl�ren, dass Bedingungen, die direkt auf das Subjekt gehen, in "condition" kommen, alle anderen Einschr�nkungen auf Assoziationen
-// fordern, dass alle Tabellen, ausgeschlossen werden sollen, die nicht explizit angefordert werden und auch nicht auf dem Pfad zu den angeforderten Tabellen liegen, mit "false" eingeschr�nkt werden m�ssen, damit sie nicht automatisch mitgenommen werden (z.B. payment history im Beispiel)
-
-
-// TODO ? im systemprompt fordern, dass m�glichst vieles "false" ist?
