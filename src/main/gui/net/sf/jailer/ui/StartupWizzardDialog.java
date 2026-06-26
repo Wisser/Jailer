@@ -129,8 +129,8 @@ public abstract class StartupWizzardDialog extends javax.swing.JDialog {
 		}
 		boolean aiUsed = "true".equals(UISettings.restore("aiExtractionModelUsed"));
 		if (aiConfigured && aiUsed) {
-			aiAssistantButton = new javax.swing.JButton("AI Extraction Model Assistant");
-			aiAssistantButton.setToolTipText("Use AI to generate an Extraction Model from a natural-language description");
+			aiAssistantButton = new javax.swing.JButton("AI Subsetting Assistant");
+			aiAssistantButton.setToolTipText("Use AI to generate a subsetting model from a natural-language description");
 			aiAssistantButton.setMargin(new Insets(4, 10, 4, 10));
 			aiAssistantButton.addActionListener(evt -> {
 				openAIAssistant = true;

@@ -372,12 +372,13 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
         if (aiButtonIcon != null) {
             aiButton.setIcon(UIUtil.scaleIcon(aiButton, aiButtonIcon));
         }
-        aiButton.setToolTipText("Open AI Extraction Model Assistant");
+        aiButton.setToolTipText("AI Subsetting Assistant");
         aiButton.addActionListener(e -> new AIExtractionModelDialog(extractionModelFrame, this));
         jPanel3.remove(jLabel6);
         JPanel exportFromPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
         exportFromPanel.add(jLabel6);
         exportFromPanel.add(aiButton);
+        exportFromPanel.add(new JLabel("  "));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;

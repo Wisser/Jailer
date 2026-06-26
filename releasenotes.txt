@@ -1,6 +1,6 @@
 17.1.3
-  - AI Extraction Model Assistant
-    - Describe in natural language what data you want to extract. The AI generates the subject
+  - AI Subsetting Assistant
+    - Describe in natural language what data you want to subset. The AI generates the subject
       table, WHERE condition, and association restrictions — ready to apply to the editor.
   - SQL Console: new tab "Chart"
     - The SQL Console now turns query results into interactive charts — directly in the result view.

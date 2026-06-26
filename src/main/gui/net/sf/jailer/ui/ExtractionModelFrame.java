@@ -262,7 +262,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 				}
 			}
 		}
-		JMenuItem aiExtractionModelItem = new JMenuItem("AI Extraction Model Assistant...");
+		JMenuItem aiExtractionModelItem = new JMenuItem("AI Subsetting Assistant...");
 		aiExtractionModelItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, mask | InputEvent.SHIFT_DOWN_MASK));
 		ImageIcon aiMenuIcon = UIUtil.readImage("/ask_ai.png");
 		if (aiMenuIcon != null) {

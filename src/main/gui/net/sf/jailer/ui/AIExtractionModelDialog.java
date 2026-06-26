@@ -117,7 +117,7 @@ public class AIExtractionModelDialog extends JDialog {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     public AIExtractionModelDialog(Window owner, ExtractionModelEditor editor) {
-        super(owner, "AI Extraction Model Assistant", ModalityType.APPLICATION_MODAL);
+        super(owner, "AI Subsetting Assistant", ModalityType.APPLICATION_MODAL);
         this.editor = editor;
         this.dataModel = editor.dataModel;
         this.executionContext = editor.getExecutionContext();
