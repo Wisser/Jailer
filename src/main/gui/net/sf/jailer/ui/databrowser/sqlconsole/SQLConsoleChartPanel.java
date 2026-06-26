@@ -1250,7 +1250,7 @@ public class SQLConsoleChartPanel extends JPanel {
         if (currentChart != null)       currentChart.draw(g2, bounds);
         else if (currentChart3D != null) currentChart3D.draw(g2, bounds);
         else return;
-        try (FileWriter fw = new FileWriter(chooser.getSelectedFile(), StandardCharsets.UTF_8)) {
+        try (java.io.OutputStreamWriter fw = new java.io.OutputStreamWriter(new java.io.FileOutputStream(chooser.getSelectedFile()), StandardCharsets.UTF_8)) {
             fw.write(g2.getSVGElement());
         } catch (IOException ex) {
             UIUtil.showException(this, "Export Error", ex);
