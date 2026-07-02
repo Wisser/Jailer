@@ -1,3 +1,9 @@
+17.1.4
+  - Fixed: AI Assistant "Test Connection" and SQL generation failed with "'input' is required"
+    against endpoints implementing the OpenAI Responses API. OpenAI-compatible providers now
+    auto-detect Responses API endpoints (URL ending in "/responses") and send requests in the
+    correct format.
+
 17.1.3
   - AI Subsetting Assistant
     - Describe in natural language what data you want to subset. The AI generates the subject

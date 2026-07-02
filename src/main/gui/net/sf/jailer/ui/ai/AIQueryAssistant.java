@@ -362,6 +362,31 @@ public class AIQueryAssistant {
             }
             throw new IOException("Unexpected response format: missing 'content' array. Response: " + response.toString());
         }
+        // OpenAI Responses API: output[].content[] (type "output_text"), or the "output_text" convenience field
+        JsonNode outputNode = response.path("output");
+        if (outputNode.isArray()) {
+            String outputText = response.path("output_text").asText("");
+            if (!outputText.isEmpty()) {
+                return outputText.trim();
+            }
+            StringBuilder sb = new StringBuilder();
+            for (JsonNode item : outputNode) {
+                if (!"message".equals(item.path("type").asText())) continue;
+                for (JsonNode part : item.path("content")) {
+                    if ("output_text".equals(part.path("type").asText())) {
+                        sb.append(part.path("text").asText(""));
+                    }
+                }
+            }
+            if (sb.length() > 0) {
+                return sb.toString().trim();
+            }
+            if ("incomplete".equals(response.path("status").asText())
+                    && "max_output_tokens".equals(response.path("incomplete_details").path("reason").asText())) {
+                throw new IOException("Model response was cut off (max_output_tokens reached). Consider increasing the max tokens limit.");
+            }
+            throw new IOException("Unexpected response format: empty 'output'. Response: " + response.toString());
+        }
         // OpenAI-compatible: choices[0].message.content
         JsonNode choicesNode = response.path("choices");
         if (choicesNode.isArray() && choicesNode.size() > 0) {
@@ -412,19 +437,9 @@ public class AIQueryAssistant {
         String systemPrompt = template.replace("{dbmsName}", dbmsName);
 
         boolean isAnthropic = config.providerType == ProviderType.ANTHROPIC;
+        boolean isResponsesApi = !isAnthropic && isResponsesApiUrl(config.apiUrl);
         ObjectNode body = MAPPER.createObjectNode();
-        body.put("model", config.model);
-        body.put("max_tokens", config.maxTokens);
-        body.put("stream", false);
-
-        ArrayNode messages = body.putArray("messages");
-        if (isAnthropic) {
-            body.put("system", systemPrompt);
-        } else {
-            ObjectNode sysMsg = messages.addObject();
-            sysMsg.put("role", "system");
-            sysMsg.put("content", systemPrompt);
-        }
+        ArrayNode messages = newRequestBody(body, config, systemPrompt, isAnthropic, isResponsesApi);
         for (ConversationMessage msg : history) {
             ObjectNode m = messages.addObject();
             m.put("role", msg.role);
@@ -480,18 +495,9 @@ public class AIQueryAssistant {
 
         String systemPrompt = subjectSystemPrompt;
         boolean isAnthropic = config.providerType == ProviderType.ANTHROPIC;
+        boolean isResponsesApi = !isAnthropic && isResponsesApiUrl(config.apiUrl);
         ObjectNode body = MAPPER.createObjectNode();
-        body.put("model", config.model);
-        body.put("max_tokens", config.maxTokens);
-        body.put("stream", false);
-        ArrayNode messages = body.putArray("messages");
-        if (isAnthropic) {
-            body.put("system", systemPrompt);
-        } else {
-            ObjectNode sysMsg = messages.addObject();
-            sysMsg.put("role", "system");
-            sysMsg.put("content", systemPrompt);
-        }
+        ArrayNode messages = newRequestBody(body, config, systemPrompt, isAnthropic, isResponsesApi);
         String subjectUserMessage = "Tables:\n" + tableList + "\nRequest: " + question;
         writeClaudePrompt(systemPrompt, subjectUserMessage);
         ObjectNode userMsg = messages.addObject();
@@ -629,43 +635,54 @@ public class AIQueryAssistant {
 
     public static void testConnection(AIProviderConfig config, AtomicReference<Runnable> abortRef) throws IOException {
         boolean isAnthropic = config.providerType == ProviderType.ANTHROPIC;
+        boolean isResponsesApi = !isAnthropic && isResponsesApiUrl(config.apiUrl);
         ObjectNode body = MAPPER.createObjectNode();
-        body.put("model", config.model);
-        body.put("max_tokens", config.maxTokens);
-        body.put("stream", false);
-        ArrayNode messages = body.putArray("messages");
-        if (isAnthropic) {
-            body.put("system", "You are a helpful assistant.");
-        } else {
-            ObjectNode sysMsg = messages.addObject();
-            sysMsg.put("role", "system");
-            sysMsg.put("content", "You are a helpful assistant.");
-        }
+        ArrayNode messages = newRequestBody(body, config, "You are a helpful assistant.", isAnthropic, isResponsesApi);
         ObjectNode userMsg = messages.addObject();
         userMsg.put("role", "user");
         userMsg.put("content", "Reply with just the word: \"OK\".");
         post(config, body, abortRef);
     }
 
-    private static ObjectNode buildRequestBody(String question, List<ConversationMessage> history,
-            String schema, String dbmsName, AIProviderConfig config, boolean isAnthropic,
-            String systemPromptTemplate) {
-        ObjectNode body = MAPPER.createObjectNode();
-        body.put("model", config.model);
-        body.put("max_tokens", config.maxTokens);
-        body.put("stream", false);
-        // Schema lives in the system prompt so it is sent once, not repeated per user message.
-        String systemPrompt = buildSystemPrompt(schema, dbmsName, systemPromptTemplate);
-        writeClaudePrompt(systemPrompt, question);
+    // Endpoints whose URL path ends in "/responses" are treated as the OpenAI Responses API
+    // (top-level "input"/"instructions"/"max_output_tokens") instead of Chat Completions ("messages"/"max_tokens").
+    private static boolean isResponsesApiUrl(String apiUrl) {
+        try {
+            String path = new URL(apiUrl).getPath();
+            return path != null && path.replaceAll("/+$", "").toLowerCase(Locale.ENGLISH).endsWith("/responses");
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
-        ArrayNode messages = body.putArray("messages");
+    private static ArrayNode newRequestBody(ObjectNode body, AIProviderConfig config, String systemPrompt,
+            boolean isAnthropic, boolean isResponsesApi) {
+        body.put("model", config.model);
+        body.put(isResponsesApi ? "max_output_tokens" : "max_tokens", config.maxTokens);
+        body.put("stream", false);
+        ArrayNode messages = body.putArray(isResponsesApi ? "input" : "messages");
         if (isAnthropic) {
             body.put("system", systemPrompt);
+        } else if (isResponsesApi) {
+            body.put("instructions", systemPrompt);
         } else {
             ObjectNode sysMsg = messages.addObject();
             sysMsg.put("role", "system");
             sysMsg.put("content", systemPrompt);
         }
+        return messages;
+    }
+
+    private static ObjectNode buildRequestBody(String question, List<ConversationMessage> history,
+            String schema, String dbmsName, AIProviderConfig config, boolean isAnthropic,
+            String systemPromptTemplate) {
+        boolean isResponsesApi = !isAnthropic && isResponsesApiUrl(config.apiUrl);
+        // Schema lives in the system prompt so it is sent once, not repeated per user message.
+        String systemPrompt = buildSystemPrompt(schema, dbmsName, systemPromptTemplate);
+        writeClaudePrompt(systemPrompt, question);
+
+        ObjectNode body = MAPPER.createObjectNode();
+        ArrayNode messages = newRequestBody(body, config, systemPrompt, isAnthropic, isResponsesApi);
         for (ConversationMessage msg : history) {
             ObjectNode m = messages.addObject();
             m.put("role", msg.role);
@@ -697,11 +714,12 @@ public class AIQueryAssistant {
             throw new IOException("Request cancelled");
         }
         boolean isAnthropic = config.providerType == ProviderType.ANTHROPIC;
+        boolean isResponsesApi = !isAnthropic && isResponsesApiUrl(config.apiUrl);
         String apiKey = config.apiKey;
         byte[] bodyBytes = MAPPER.writeValueAsBytes(body);
         IOException urlConnError;
         try {
-            JsonNode result = postWithHttpURLConnection(config.apiUrl, apiKey, bodyBytes, isAnthropic, abortRef);
+            JsonNode result = postWithHttpURLConnection(config.apiUrl, apiKey, bodyBytes, isAnthropic, isResponsesApi, abortRef);
             UISettings.s19 = config.providerType.ordinal() + 1L;
             ++UISettings.s20;
             return result;
@@ -727,7 +745,7 @@ public class AIQueryAssistant {
     }
 
     private static JsonNode postWithHttpURLConnection(String apiUrl, String apiKey,
-            byte[] bodyBytes, boolean isAnthropic, AtomicReference<Runnable> abortRef) throws IOException {
+            byte[] bodyBytes, boolean isAnthropic, boolean isResponsesApi, AtomicReference<Runnable> abortRef) throws IOException {
         String currentUrl = apiUrl;
         for (int redirects = 0; redirects < 5; redirects++) {
             URL url = new URL(currentUrl);
@@ -828,6 +846,10 @@ public class AIQueryAssistant {
                                 if ("content_block_delta".equals(chunk.path("type").asText())
                                         && "text_delta".equals(chunk.path("delta").path("type").asText())) {
                                     fullContent.append(chunk.path("delta").path("text").asText(""));
+                                }
+                            } else if (isResponsesApi) {
+                                if ("response.output_text.delta".equals(chunk.path("type").asText())) {
+                                    fullContent.append(chunk.path("delta").asText(""));
                                 }
                             } else {
                                 String delta = chunk.path("choices").path(0).path("delta").path("content").asText("");

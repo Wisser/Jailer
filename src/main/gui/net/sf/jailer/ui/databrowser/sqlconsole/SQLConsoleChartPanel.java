@@ -34,10 +34,12 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -118,21 +120,53 @@ import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
  */
 public class SQLConsoleChartPanel extends JPanel {
 
+    private enum PlotFamily { CATEGORY, XY_LIKE, PIE_LIKE, BAR_3D, PIE_3D }
+
+    private enum ChartOption {
+        ORIENTATION, STACKED, X_ROTATE, Y_BOUNDS, LOG_SCALE,
+        GRID, DATA_LABELS, PIE_LABELS, AGGREGATE, SORT_X,
+        BINS, LINE_WIDTH, PROJECTION
+    }
+
     private enum ChartType {
-        BAR         ("Bar"),
-        BAR_3D      ("Bar 3D"),
-        LINE        ("Line"),
-        AREA        ("Area"),
-        STACKED_AREA("Stacked Area"),
-        PIE         ("Pie"),
-        PIE_3D      ("Pie 3D"),
-        RING        ("Ring"),
-        XY          ("XY (Scatter)"),
-        BUBBLE      ("Bubble"),
-        HISTOGRAM   ("Histogram");
+        BAR          ("Bar",          PlotFamily.CATEGORY,
+                      EnumSet.of(ChartOption.ORIENTATION, ChartOption.STACKED, ChartOption.X_ROTATE,
+                                 ChartOption.Y_BOUNDS, ChartOption.LOG_SCALE, ChartOption.GRID,
+                                 ChartOption.DATA_LABELS, ChartOption.AGGREGATE, ChartOption.SORT_X)),
+        BAR_3D       ("Bar 3D",       PlotFamily.BAR_3D,
+                      EnumSet.of(ChartOption.PROJECTION)),
+        LINE         ("Line",         PlotFamily.CATEGORY,
+                      EnumSet.of(ChartOption.ORIENTATION, ChartOption.STACKED, ChartOption.X_ROTATE,
+                                 ChartOption.Y_BOUNDS, ChartOption.LOG_SCALE, ChartOption.GRID,
+                                 ChartOption.DATA_LABELS, ChartOption.AGGREGATE, ChartOption.SORT_X,
+                                 ChartOption.LINE_WIDTH)),
+        AREA         ("Area",         PlotFamily.CATEGORY,
+                      EnumSet.of(ChartOption.ORIENTATION, ChartOption.STACKED, ChartOption.X_ROTATE,
+                                 ChartOption.Y_BOUNDS, ChartOption.LOG_SCALE, ChartOption.GRID,
+                                 ChartOption.DATA_LABELS, ChartOption.AGGREGATE, ChartOption.SORT_X)),
+        STACKED_AREA ("Stacked Area", PlotFamily.CATEGORY,
+                      EnumSet.of(ChartOption.ORIENTATION, ChartOption.X_ROTATE, ChartOption.Y_BOUNDS,
+                                 ChartOption.LOG_SCALE, ChartOption.GRID, ChartOption.DATA_LABELS,
+                                 ChartOption.AGGREGATE, ChartOption.SORT_X)),
+        PIE          ("Pie",          PlotFamily.PIE_LIKE,  EnumSet.of(ChartOption.PIE_LABELS)),
+        PIE_3D       ("Pie 3D",       PlotFamily.PIE_3D,    EnumSet.of(ChartOption.PIE_LABELS, ChartOption.PROJECTION)),
+        RING         ("Ring",         PlotFamily.PIE_LIKE,  EnumSet.of(ChartOption.PIE_LABELS)),
+        XY           ("XY (Scatter)", PlotFamily.XY_LIKE,
+                      EnumSet.of(ChartOption.Y_BOUNDS, ChartOption.LOG_SCALE, ChartOption.GRID, ChartOption.DATA_LABELS)),
+        BUBBLE       ("Bubble",       PlotFamily.XY_LIKE,
+                      EnumSet.of(ChartOption.Y_BOUNDS, ChartOption.LOG_SCALE, ChartOption.GRID, ChartOption.DATA_LABELS)),
+        HISTOGRAM    ("Histogram",    PlotFamily.XY_LIKE,
+                      EnumSet.of(ChartOption.ORIENTATION, ChartOption.Y_BOUNDS, ChartOption.LOG_SCALE,
+                                 ChartOption.GRID, ChartOption.DATA_LABELS, ChartOption.BINS));
 
         final String label;
-        ChartType(String label) { this.label = label; }
+        final PlotFamily family;
+        final Set<ChartOption> options;
+
+        ChartType(String label, PlotFamily family, Set<ChartOption> options) {
+            this.label = label; this.family = family; this.options = options;
+        }
+        boolean has(ChartOption opt) { return options.contains(opt); }
 
         @Override public String toString() { return label; }
     }
@@ -516,29 +550,21 @@ public class SQLConsoleChartPanel extends JPanel {
 
     private void updateSettingsForChartType() {
         ChartType type = (ChartType) chartTypeCombo.getSelectedItem();
-        boolean is3D      = type == ChartType.BAR_3D || type == ChartType.PIE_3D;
-        boolean isBar     = type == ChartType.BAR;
-        boolean isCat     = isBar || type == ChartType.LINE || type == ChartType.AREA || type == ChartType.STACKED_AREA;
-        boolean isPie     = type == ChartType.PIE || type == ChartType.RING;
-        boolean isXYLike  = type == ChartType.XY || type == ChartType.BUBBLE || type == ChartType.HISTOGRAM;
-        boolean isHist    = type == ChartType.HISTOGRAM;
-        boolean hasStack  = isBar || type == ChartType.LINE || type == ChartType.AREA;
-
-        setEnabled2(orientationLabel, orientationCombo, !is3D && (isCat || isHist));
-        setEnabled2(null, stackedCheckBox, !is3D && hasStack);
-        setEnabled2(xRotateLabel, xRotateCombo, !is3D && isCat);
-        setEnabled2(yMinLabel, yMinField, !is3D && !isPie);
-        setEnabled2(yMaxLabel, yMaxField, !is3D && !isPie);
-        setEnabled2(null, logScaleCheckBox, !is3D && !isPie);
-        setEnabled2(null, gridCheckBox, !is3D && !isPie);
-        setEnabled2(null, dataLabelsCheckBox, !is3D && !isPie);
-        setEnabled2(pieLabelLabel, pieLabelCombo, isPie || type == ChartType.PIE_3D);
-        setEnabled2(aggregateLabel, aggregateCombo, !is3D && (isCat || type == ChartType.BAR_3D));
-        setEnabled2(null, sortXCheckBox, !is3D && isCat);
-        setEnabled2(binsLabel, binsCombo, isHist);
-        setEnabled2(lineWidthLabel, lineWidthSpinner, type == ChartType.LINE);
-        setEnabled2(projLabel, projField, is3D);
-        setEnabled2(null, resetViewButton, is3D);
+        setEnabled2(orientationLabel,   orientationCombo,    type.has(ChartOption.ORIENTATION));
+        setEnabled2(null,               stackedCheckBox,     type.has(ChartOption.STACKED));
+        setEnabled2(xRotateLabel,       xRotateCombo,        type.has(ChartOption.X_ROTATE));
+        setEnabled2(yMinLabel,          yMinField,           type.has(ChartOption.Y_BOUNDS));
+        setEnabled2(yMaxLabel,          yMaxField,           type.has(ChartOption.Y_BOUNDS));
+        setEnabled2(null,               logScaleCheckBox,    type.has(ChartOption.LOG_SCALE));
+        setEnabled2(null,               gridCheckBox,        type.has(ChartOption.GRID));
+        setEnabled2(null,               dataLabelsCheckBox,  type.has(ChartOption.DATA_LABELS));
+        setEnabled2(pieLabelLabel,      pieLabelCombo,       type.has(ChartOption.PIE_LABELS));
+        setEnabled2(aggregateLabel,     aggregateCombo,      type.has(ChartOption.AGGREGATE));
+        setEnabled2(null,               sortXCheckBox,       type.has(ChartOption.SORT_X));
+        setEnabled2(binsLabel,          binsCombo,           type.has(ChartOption.BINS));
+        setEnabled2(lineWidthLabel,     lineWidthSpinner,    type.has(ChartOption.LINE_WIDTH));
+        setEnabled2(projLabel,          projField,           type.has(ChartOption.PROJECTION));
+        setEnabled2(null,               resetViewButton,     type.has(ChartOption.PROJECTION));
     }
 
     private void setEnabled2(JLabel label, java.awt.Component control, boolean enabled) {
@@ -725,9 +751,9 @@ public class SQLConsoleChartPanel extends JPanel {
         }
         currentChartType = type;
 
-        if (type == ChartType.BAR_3D || type == ChartType.PIE_3D) {
+        if (type.family == PlotFamily.BAR_3D || type.family == PlotFamily.PIE_3D) {
             try {
-                Chart3D chart3d = type == ChartType.BAR_3D
+                Chart3D chart3d = (type.family == PlotFamily.BAR_3D)
                     ? buildBar3DChart(model, sorter, rowCount, xModelCol, yModelCols, xLabel, yLabels)
                     : buildPie3DChart(model, sorter, rowCount, xModelCol, yModelCols[0]);
                 applyFonts3D(chart3d, type);
@@ -753,16 +779,22 @@ public class SQLConsoleChartPanel extends JPanel {
 
         JFreeChart chart;
         try {
-            if (type == ChartType.PIE || type == ChartType.RING) {
-                chart = buildPieChart(type, model, sorter, rowCount, xModelCol, yModelCols[0]);
-            } else if (type == ChartType.XY) {
-                chart = buildXYChart(model, sorter, rowCount, xModelCol, yModelCols, xLabel, yLabels);
-            } else if (type == ChartType.BUBBLE) {
-                chart = buildBubbleChart(model, sorter, rowCount, xModelCol, yModelCols, xLabel, yLabels);
-            } else if (type == ChartType.HISTOGRAM) {
-                chart = buildHistogramChart(model, sorter, rowCount, yModelCols[0], yLabels[0]);
-            } else {
-                chart = buildCategoryChart(type, model, sorter, rowCount, xModelCol, yModelCols, xLabel, yLabels);
+            switch (type.family) {
+                case PIE_LIKE:
+                    chart = buildPieChart(type, model, sorter, rowCount, xModelCol, yModelCols[0]);
+                    break;
+                case XY_LIKE:
+                    if (type == ChartType.HISTOGRAM) {
+                        chart = buildHistogramChart(model, sorter, rowCount, yModelCols[0], yLabels[0]);
+                    } else if (type == ChartType.BUBBLE) {
+                        chart = buildBubbleChart(model, sorter, rowCount, xModelCol, yModelCols, xLabel, yLabels);
+                    } else {
+                        chart = buildXYChart(model, sorter, rowCount, xModelCol, yModelCols, xLabel, yLabels);
+                    }
+                    break;
+                default: // CATEGORY
+                    chart = buildCategoryChart(type, model, sorter, rowCount, xModelCol, yModelCols, xLabel, yLabels);
+                    break;
             }
         } catch (Exception ex) {
             showError(ex.getMessage());
@@ -839,23 +871,22 @@ public class SQLConsoleChartPanel extends JPanel {
             for (Map.Entry<String, Double> e : data.entrySet()) dataset.addValue(e.getValue(), yLabels[si], e.getKey());
         }
 
-        if (type == ChartType.BAR) {
-            return stacked
-                    ? ChartFactory.createStackedBarChart(null, xLabel, yAxisLabel, dataset, orientation, legend, true, false)
-                    : ChartFactory.createBarChart(null, xLabel, yAxisLabel, dataset, orientation, legend, true, false);
+        switch (type) {
+            case BAR:
+                return stacked
+                        ? ChartFactory.createStackedBarChart(null, xLabel, yAxisLabel, dataset, orientation, legend, true, false)
+                        : ChartFactory.createBarChart(null, xLabel, yAxisLabel, dataset, orientation, legend, true, false);
+            case AREA:
+                return stacked
+                        ? ChartFactory.createStackedAreaChart(null, xLabel, yAxisLabel, dataset, orientation, legend, true, false)
+                        : ChartFactory.createAreaChart(null, xLabel, yAxisLabel, dataset, orientation, legend, true, false);
+            case STACKED_AREA:
+                return ChartFactory.createStackedAreaChart(null, xLabel, yAxisLabel, dataset, orientation, legend, true, false);
+            default: // LINE
+                return stacked
+                        ? ChartFactory.createStackedAreaChart(null, xLabel, yAxisLabel, dataset, orientation, legend, true, false)
+                        : ChartFactory.createLineChart(null, xLabel, yAxisLabel, dataset, orientation, legend, true, false);
         }
-        if (type == ChartType.AREA) {
-            return stacked
-                    ? ChartFactory.createStackedAreaChart(null, xLabel, yAxisLabel, dataset, orientation, legend, true, false)
-                    : ChartFactory.createAreaChart(null, xLabel, yAxisLabel, dataset, orientation, legend, true, false);
-        }
-        if (type == ChartType.STACKED_AREA) {
-            return ChartFactory.createStackedAreaChart(null, xLabel, yAxisLabel, dataset, orientation, legend, true, false);
-        }
-        // Line
-        return stacked
-                ? ChartFactory.createStackedAreaChart(null, xLabel, yAxisLabel, dataset, orientation, legend, true, false)
-                : ChartFactory.createLineChart(null, xLabel, yAxisLabel, dataset, orientation, legend, true, false);
     }
 
     private JFreeChart buildBubbleChart(TableModel model, RowSorter<? extends TableModel> sorter, int rowCount, int xCol, int[] yCols, String xLabel, String[] yLabels) {
@@ -995,14 +1026,10 @@ public class SQLConsoleChartPanel extends JPanel {
         chart.setTitle(title.isEmpty() ? null : title);
         if (chart.getLegend() != null) chart.getLegend().setVisible(legendCheckBox.isSelected());
 
-        boolean isPieLike = type == ChartType.PIE || type == ChartType.RING;
-        boolean isXYLike  = type == ChartType.XY || type == ChartType.BUBBLE || type == ChartType.HISTOGRAM;
-        if (isPieLike) {
-            applyPieSettings(chart);
-        } else if (isXYLike) {
-            applyXYSettings(chart);
-        } else {
-            applyCategorySettings(chart);
+        switch (type.family) {
+            case PIE_LIKE: applyPieSettings(chart);      break;
+            case XY_LIKE:  applyXYSettings(chart);       break;
+            default:       applyCategorySettings(chart); break;
         }
 
         applyFonts(chart, type);
@@ -1018,33 +1045,37 @@ public class SQLConsoleChartPanel extends JPanel {
         if (chart.getTitle()  != null) { chart.getTitle().setFont(titleFont); chart.getTitle().setPaint(textColor); }
         if (chart.getLegend() != null) chart.getLegend().setItemFont(labelFont);
 
-        boolean isPieLike = type == ChartType.PIE || type == ChartType.RING;
-        boolean isXYLike  = type == ChartType.XY || type == ChartType.BUBBLE || type == ChartType.HISTOGRAM;
-
-        if (isPieLike) {
-            PiePlot plot = (PiePlot) chart.getPlot();
-            if (plot.getLabelGenerator() != null) { plot.setLabelFont(labelFont); plot.setLabelPaint(textColor); }
-        } else if (isXYLike) {
-            XYPlot plot = (XYPlot) chart.getPlot();
-            plot.getDomainAxis().setLabelFont(labelFont);   plot.getDomainAxis().setLabelPaint(textColor);
-            plot.getDomainAxis().setTickLabelFont(tickFont); plot.getDomainAxis().setTickLabelPaint(textColor);
-            plot.getRangeAxis().setLabelFont(labelFont);    plot.getRangeAxis().setLabelPaint(textColor);
-            plot.getRangeAxis().setTickLabelFont(tickFont);  plot.getRangeAxis().setTickLabelPaint(textColor);
-            if (dataLabelsCheckBox.isSelected()) { plot.getRenderer().setDefaultItemLabelFont(labelFont); plot.getRenderer().setDefaultItemLabelPaint(textColor); }
-        } else {
-            CategoryPlot plot = (CategoryPlot) chart.getPlot();
-            plot.getDomainAxis().setLabelFont(labelFont);   plot.getDomainAxis().setLabelPaint(textColor);
-            plot.getDomainAxis().setTickLabelFont(tickFont); plot.getDomainAxis().setTickLabelPaint(textColor);
-            plot.getRangeAxis().setLabelFont(labelFont);    plot.getRangeAxis().setLabelPaint(textColor);
-            plot.getRangeAxis().setTickLabelFont(tickFont);  plot.getRangeAxis().setTickLabelPaint(textColor);
-            if (dataLabelsCheckBox.isSelected()) { plot.getRenderer().setDefaultItemLabelFont(labelFont); plot.getRenderer().setDefaultItemLabelPaint(textColor); }
-            if (type == ChartType.LINE && plot.getRenderer() instanceof org.jfree.chart.renderer.category.LineAndShapeRenderer) {
-                float w = ((Number) lineWidthSpinner.getValue()).floatValue();
-                org.jfree.chart.renderer.category.LineAndShapeRenderer lr =
-                        (org.jfree.chart.renderer.category.LineAndShapeRenderer) plot.getRenderer();
-                java.awt.BasicStroke stroke = new java.awt.BasicStroke(w, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND);
-                lr.setAutoPopulateSeriesStroke(false);
-                lr.setDefaultStroke(stroke);
+        switch (type.family) {
+            case PIE_LIKE: {
+                PiePlot plot = (PiePlot) chart.getPlot();
+                if (plot.getLabelGenerator() != null) { plot.setLabelFont(labelFont); plot.setLabelPaint(textColor); }
+                break;
+            }
+            case XY_LIKE: {
+                XYPlot plot = (XYPlot) chart.getPlot();
+                plot.getDomainAxis().setLabelFont(labelFont);   plot.getDomainAxis().setLabelPaint(textColor);
+                plot.getDomainAxis().setTickLabelFont(tickFont); plot.getDomainAxis().setTickLabelPaint(textColor);
+                plot.getRangeAxis().setLabelFont(labelFont);    plot.getRangeAxis().setLabelPaint(textColor);
+                plot.getRangeAxis().setTickLabelFont(tickFont);  plot.getRangeAxis().setTickLabelPaint(textColor);
+                if (dataLabelsCheckBox.isSelected()) { plot.getRenderer().setDefaultItemLabelFont(labelFont); plot.getRenderer().setDefaultItemLabelPaint(textColor); }
+                break;
+            }
+            default: { // CATEGORY
+                CategoryPlot plot = (CategoryPlot) chart.getPlot();
+                plot.getDomainAxis().setLabelFont(labelFont);   plot.getDomainAxis().setLabelPaint(textColor);
+                plot.getDomainAxis().setTickLabelFont(tickFont); plot.getDomainAxis().setTickLabelPaint(textColor);
+                plot.getRangeAxis().setLabelFont(labelFont);    plot.getRangeAxis().setLabelPaint(textColor);
+                plot.getRangeAxis().setTickLabelFont(tickFont);  plot.getRangeAxis().setTickLabelPaint(textColor);
+                if (dataLabelsCheckBox.isSelected()) { plot.getRenderer().setDefaultItemLabelFont(labelFont); plot.getRenderer().setDefaultItemLabelPaint(textColor); }
+                if (type == ChartType.LINE && plot.getRenderer() instanceof org.jfree.chart.renderer.category.LineAndShapeRenderer) {
+                    float w = ((Number) lineWidthSpinner.getValue()).floatValue();
+                    org.jfree.chart.renderer.category.LineAndShapeRenderer lr =
+                            (org.jfree.chart.renderer.category.LineAndShapeRenderer) plot.getRenderer();
+                    java.awt.BasicStroke stroke = new java.awt.BasicStroke(w, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND);
+                    lr.setAutoPopulateSeriesStroke(false);
+                    lr.setDefaultStroke(stroke);
+                }
+                break;
             }
         }
     }
@@ -1086,25 +1117,30 @@ public class SQLConsoleChartPanel extends JPanel {
     private void applyColorScheme(JFreeChart chart, ChartType type, String scheme) {
         Color[] palette = getPalette(scheme);
         if (palette == null) return;
-        boolean isPieLike = type == ChartType.PIE || type == ChartType.RING;
-        boolean isXYLike  = type == ChartType.XY || type == ChartType.BUBBLE || type == ChartType.HISTOGRAM;
-        if (isPieLike) {
-            PiePlot plot = (PiePlot) chart.getPlot();
-            List keys = plot.getDataset().getKeys();
-            for (int i = 0; i < keys.size(); i++) {
-                plot.setSectionPaint((Comparable) keys.get(i), palette[i % palette.length]);
+        switch (type.family) {
+            case PIE_LIKE: {
+                PiePlot plot = (PiePlot) chart.getPlot();
+                List keys = plot.getDataset().getKeys();
+                for (int i = 0; i < keys.size(); i++) {
+                    plot.setSectionPaint((Comparable) keys.get(i), palette[i % palette.length]);
+                }
+                break;
             }
-        } else if (isXYLike) {
-            XYPlot plot = (XYPlot) chart.getPlot();
-            XYItemRenderer renderer = plot.getRenderer();
-            for (int i = 0; i < plot.getDataset().getSeriesCount(); i++) {
-                renderer.setSeriesPaint(i, palette[i % palette.length]);
+            case XY_LIKE: {
+                XYPlot plot = (XYPlot) chart.getPlot();
+                XYItemRenderer renderer = plot.getRenderer();
+                for (int i = 0; i < plot.getDataset().getSeriesCount(); i++) {
+                    renderer.setSeriesPaint(i, palette[i % palette.length]);
+                }
+                break;
             }
-        } else {
-            CategoryPlot plot = (CategoryPlot) chart.getPlot();
-            CategoryItemRenderer renderer = plot.getRenderer();
-            for (int i = 0; i < plot.getDataset().getRowCount(); i++) {
-                renderer.setSeriesPaint(i, palette[i % palette.length]);
+            default: { // CATEGORY
+                CategoryPlot plot = (CategoryPlot) chart.getPlot();
+                CategoryItemRenderer renderer = plot.getRenderer();
+                for (int i = 0; i < plot.getDataset().getRowCount(); i++) {
+                    renderer.setSeriesPaint(i, palette[i % palette.length]);
+                }
+                break;
             }
         }
     }
