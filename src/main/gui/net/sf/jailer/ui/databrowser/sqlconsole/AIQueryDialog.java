@@ -467,6 +467,7 @@ public class AIQueryDialog extends JDialog {
                 answerArea = new JEditorPane("text/html", "");
                 answerArea.setEditable(false);
                 answerArea.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+                answerArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, answerArea.getFont().getSize()));
                 JScrollPane answerScrollPane = new JScrollPane(answerArea);
                 copyAnswerButton = new JButton("Copy");
                 ImageIcon copyIcon = UIUtil.readImage("/copy.png");
@@ -598,7 +599,9 @@ public class AIQueryDialog extends JDialog {
             omitColumnTypesBox.setEnabled(!generating);
             systemPromptButton.setEnabled(!generating);
             if (suggestionsBox != null) suggestionsBox.setEnabled(!generating);
-            if (diffToggleButton != null) diffToggleButton.setEnabled(!generating && lastOriginalSql != null && !lastOriginalSql.equals(sqlArea.getText().trim()));
+            if (diffToggleButton != null) diffToggleButton.setEnabled(!generating && lastOriginalSql != null
+                    && !normalizeWhitespace(stripTrailingSemicolon(lastOriginalSql))
+                            .equals(normalizeWhitespace(stripTrailingSemicolon(sqlArea.getText()))));
             cancelButton.setEnabled(generating);
             setCursor(generating ? Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR) : Cursor.getDefaultCursor());
         }
@@ -713,7 +716,7 @@ public class AIQueryDialog extends JDialog {
                                         .matcher(raw);
                                 String lastBlock = null; int lastStart = -1, lastEnd = -1;
                                 while (cm2.find()) { lastBlock = cm2.group(1).trim(); lastStart = cm2.start(); lastEnd = cm2.end(); }
-                                if (lastBlock != null && !lastBlock.isEmpty()) {
+                                if (lastBlock != null && !lastBlock.isEmpty() && SQL_START_PATTERN.matcher(lastBlock).find()) {
                                     sql = lastBlock.endsWith(";") ? lastBlock.substring(0, lastBlock.length() - 1).trim() : lastBlock;
                                     String before = raw.substring(0, lastStart).trim();
                                     String after  = raw.substring(lastEnd).trim();
@@ -721,9 +724,7 @@ public class AIQueryDialog extends JDialog {
                                 } else {
                                     // Point 2: bare SQL (no code fence) — response starts with SQL keyword
                                     String rawTrimmed = raw.trim();
-                                    java.util.regex.Matcher sqlKw = java.util.regex.Pattern
-                                            .compile("(?si)^\\s*(?:(?:--[^\\n]*|/\\*.*?\\*/)\\s*)*(SELECT|WITH|UPDATE|INSERT|DELETE|CREATE|ALTER|DROP|MERGE)\\b")
-                                            .matcher(rawTrimmed);
+                                    java.util.regex.Matcher sqlKw = SQL_START_PATTERN.matcher(rawTrimmed);
                                     if (sqlKw.find()) {
                                         java.util.regex.Matcher blankM = java.util.regex.Pattern
                                                 .compile("(\r?\n){2,}").matcher(rawTrimmed);
@@ -778,7 +779,8 @@ public class AIQueryDialog extends JDialog {
                         insertButton.setEnabled(!sql.isEmpty());
                         if (diffToggleButton != null && !sql.isEmpty()) {
                             lastOriginalSql = sqlContent;
-                            boolean hasDiff = !lastOriginalSql.equals(sqlArea.getText().trim());
+                            boolean hasDiff = !normalizeWhitespace(stripTrailingSemicolon(lastOriginalSql))
+                                    .equals(normalizeWhitespace(stripTrailingSemicolon(sqlArea.getText())));
                             diffToggleButton.setEnabled(hasDiff);
                             if (hasDiff && diffToggleButton.isSelected()) {
                                 updateDiffArea();
@@ -919,8 +921,8 @@ public class AIQueryDialog extends JDialog {
             boolean dark = UIUtil.plaf == UIUtil.PLAF.FLATDARK;
             Color delColor = dark ? new Color(0x60, 0x20, 0x20) : new Color(0xFF, 0xD0, 0xD0);
             Color addColor = dark ? new Color(0x1a, 0x4a, 0x1a) : new Color(0xD0, 0xFF, 0xD0);
-            String[] orig = lastOriginalSql.replace("\r\n", "\n").split("\n", -1);
-            String[] mod  = sqlArea.getText().trim().replace("\r\n", "\n").split("\n", -1);
+            String[] orig = stripTrailingSemicolon(lastOriginalSql).replace("\r\n", "\n").split("\n", -1);
+            String[] mod  = stripTrailingSemicolon(sqlArea.getText()).replace("\r\n", "\n").split("\n", -1);
             List<String> diff = computeDiff(orig, mod);
             StringBuilder sb = new StringBuilder();
             for (String entry : diff) {
@@ -943,6 +945,19 @@ public class AIQueryDialog extends JDialog {
 
         String buildCommentForHistory() {
             return AIQueryAssistant.buildPromptComment(conversationHistory);
+        }
+
+        private String stripTrailingSemicolon(String s) {
+            if (s == null) return null;
+            s = s.trim();
+            if (s.endsWith(";")) {
+                s = s.substring(0, s.length() - 1).trim();
+            }
+            return s;
+        }
+
+        private String normalizeWhitespace(String s) {
+            return s == null ? null : s.trim().replaceAll("\\s+", " ");
         }
     }
 
@@ -1074,17 +1089,27 @@ public class AIQueryDialog extends JDialog {
         return providerPanel;
     }
 
+    private static String normalizeWhitespace(String s) {
+        return s == null ? null : s.trim().replaceAll("\\s+", " ");
+    }
+
+    private static final java.util.regex.Pattern SQL_START_PATTERN = java.util.regex.Pattern
+            .compile("(?si)^\\s*(?:(?:--[^\\n]*|/\\*.*?\\*/)\\s*)*(SELECT|WITH|UPDATE|INSERT|DELETE|CREATE|ALTER|DROP|MERGE)\\b");
+
     private static List<String> computeDiff(String[] orig, String[] mod) {
         int m = Math.min(orig.length, 800), n = Math.min(mod.length, 800);
+        String[] normOrig = new String[m], normMod = new String[n];
+        for (int i = 0; i < m; i++) normOrig[i] = normalizeWhitespace(orig[i]);
+        for (int j = 0; j < n; j++) normMod[j] = normalizeWhitespace(mod[j]);
         int[][] dp = new int[m + 1][n + 1];
         for (int i = m - 1; i >= 0; i--)
             for (int j = n - 1; j >= 0; j--)
-                dp[i][j] = orig[i].equals(mod[j]) ? dp[i+1][j+1] + 1 : Math.max(dp[i+1][j], dp[i][j+1]);
+                dp[i][j] = normOrig[i].equals(normMod[j]) ? dp[i+1][j+1] + 1 : Math.max(dp[i+1][j], dp[i][j+1]);
         List<String> result = new ArrayList<>();
         int i = 0, j = 0;
         while (i < m || j < n) {
-            if (i < m && j < n && orig[i].equals(mod[j])) {
-                result.add("=" + orig[i]); i++; j++;
+            if (i < m && j < n && normOrig[i].equals(normMod[j])) {
+                result.add("=" + mod[j]); i++; j++;
             } else if (j < n && (i >= m || dp[i][j+1] >= dp[i+1][j])) {
                 result.add("+" + mod[j]); j++;
             } else {
@@ -1129,14 +1154,13 @@ public class AIQueryDialog extends JDialog {
                 }
                 continue;
             }
-            if (inCode) { sb.append(mdEscape(line)).append("\n"); continue; }
+            if (inCode) { sb.append(preserveCodeSpaces(mdEscape(line))).append("\n"); continue; }
             if (line.trim().isEmpty()) {
                 if (inNestedUl) { sb.append("</ul>"); inNestedUl = false; }
                 if (inOlLi) { sb.append("</li>"); inOlLi = false; }
-                if (inUl) { sb.append("</ul>"); inUl = false; }
-                if (inOl) { sb.append("</ol>"); inOl = false; }
                 if (inBq) { sb.append("</blockquote>"); inBq = false; }
-                sb.append("<br>"); continue;
+                if (!inUl && !inOl) { sb.append("<br>"); }
+                continue;
             }
             if (line.matches("[-*_]{3,}\\s*")) {
                 if (inNestedUl) { sb.append("</ul>"); inNestedUl = false; }
@@ -1215,6 +1239,29 @@ public class AIQueryDialog extends JDialog {
         return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
 
+    private static String preserveCodeSpaces(String s) {
+        StringBuilder out = new StringBuilder(s.length());
+        int i = 0, n = s.length();
+        while (i < n) {
+            char c = s.charAt(i);
+            if (c == ' ') {
+                int j = i;
+                while (j < n && s.charAt(j) == ' ') j++;
+                int runLen = j - i;
+                if (runLen == 1) {
+                    out.append(' ');
+                } else {
+                    for (int k = 0; k < runLen; k++) out.append("&nbsp;");
+                }
+                i = j;
+            } else {
+                out.append(c);
+                i++;
+            }
+        }
+        return out.toString();
+    }
+
     private static String mdInline(String text) {
         String s = mdEscape(text);
         s = s.replaceAll("\\*\\*([^*\n]+?)\\*\\*", "<b>$1</b>");
@@ -1222,7 +1269,7 @@ public class AIQueryDialog extends JDialog {
         s = s.replaceAll("\\*([^*\n]+?)\\*", "<i>$1</i>");
         s = s.replaceAll("(?<![\\w_])_([^_\n]+?)_(?![\\w_])", "<i>$1</i>");
         s = s.replaceAll("`([^`\n]+?)`", "<tt>$1</tt>");
-        return s;
+        return preserveCodeSpaces(s);
     }
 
     private void openSystemPromptDialog() {
