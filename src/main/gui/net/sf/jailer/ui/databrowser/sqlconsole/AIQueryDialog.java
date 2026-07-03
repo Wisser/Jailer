@@ -213,7 +213,7 @@ public class AIQueryDialog extends JDialog {
             // Combobox (advisor only): col 1, spans rows 0+1 → does not affect row 0 height
             if (isAdvisor) {
                 suggestionsBox = new JComboBox<>(new String[]{
-                    "Suggestions…",
+                    "Suggestions...",
                     "Explain this query",
                     "Add comments to explain the query",
                     "Make this query more readable",
