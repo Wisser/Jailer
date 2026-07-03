@@ -467,7 +467,7 @@ public class AIQueryDialog extends JDialog {
                 answerArea = new JEditorPane("text/html", "");
                 answerArea.setEditable(false);
                 answerArea.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
-                answerArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, answerArea.getFont().getSize()));
+                answerArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, answerArea.getFont().getSize() + 2));
                 JScrollPane answerScrollPane = new JScrollPane(answerArea);
                 copyAnswerButton = new JButton("Copy");
                 ImageIcon copyIcon = UIUtil.readImage("/copy.png");
