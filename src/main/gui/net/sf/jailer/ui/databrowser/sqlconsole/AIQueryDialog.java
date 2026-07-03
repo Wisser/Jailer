@@ -754,6 +754,9 @@ public class AIQueryDialog extends JDialog {
                                 }
                             }
                         }
+                        if (isAdvisor && sql.trim().isEmpty()) {
+                            sql = sqlContent != null ? sqlContent : "";
+                        }
                         String displaySql = (isAdvisor && !existingAiComment.isEmpty()
                                 && AIQueryAssistant.extractPrompt(sql) == null)
                                 ? existingAiComment + "\n" + sql : sql;
@@ -1262,13 +1265,33 @@ public class AIQueryDialog extends JDialog {
         return out.toString();
     }
 
+    private static String uniqueMarker(String text) {
+        String marker = " CS ";
+        while (text.contains(marker)) {
+            marker = marker + marker;
+        }
+        return marker;
+    }
+
     private static String mdInline(String text) {
         String s = mdEscape(text);
+        String marker = uniqueMarker(s);
+        List<String> codeSpans = new ArrayList<>();
+        java.util.regex.Matcher codeM = java.util.regex.Pattern.compile("`([^`\n]+?)`").matcher(s);
+        StringBuffer codeBuf = new StringBuffer();
+        while (codeM.find()) {
+            codeSpans.add(codeM.group(1));
+            codeM.appendReplacement(codeBuf, java.util.regex.Matcher.quoteReplacement(marker + (codeSpans.size() - 1) + marker));
+        }
+        codeM.appendTail(codeBuf);
+        s = codeBuf.toString();
         s = s.replaceAll("\\*\\*([^*\n]+?)\\*\\*", "<b>$1</b>");
         s = s.replaceAll("~~([^\n]+?)~~", "<s>$1</s>");
         s = s.replaceAll("\\*([^*\n]+?)\\*", "<i>$1</i>");
         s = s.replaceAll("(?<![\\w_])_([^_\n]+?)_(?![\\w_])", "<i>$1</i>");
-        s = s.replaceAll("`([^`\n]+?)`", "<tt>$1</tt>");
+        for (int i = 0; i < codeSpans.size(); i++) {
+            s = s.replace(marker + i + marker, "<tt>" + codeSpans.get(i) + "</tt>");
+        }
         return preserveCodeSpaces(s);
     }
 
