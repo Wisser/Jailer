@@ -1057,7 +1057,8 @@ public class AssociationProposerView extends javax.swing.JPanel {
 		return null;
 	}
 
-	// TODO 2
-	// TODO write docu for this
+	// TODO
+	// TODO what about natural join syntax? (e.g. "SELECT * FROM A NATURAL JOIN B") - this is not supported by the AssociationProposer, but it is valid SQL and should be handled gracefully
+	// TODO "using" syntax (e.g. "SELECT * FROM A JOIN B USING (id)") - this is not supported by the AssociationProposer, but it is valid SQL and should be handled gracefully
 }
 

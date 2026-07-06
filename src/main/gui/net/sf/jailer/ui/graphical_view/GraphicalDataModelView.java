@@ -2237,7 +2237,7 @@ public class GraphicalDataModelView extends JPanel {
 				if (dataBrowser != null) {
 					SQLConsole sqlConsole = dataBrowser.getSqlConsole(true);
 					UIUtil.invokeLater(28, () -> {
-						sqlConsole.appendStatement(queryBuilderDialog.getSQL() + UIUtil.LINE_SEPARATOR + ";", true);
+						sqlConsole.appendStatement(queryBuilderDialog.getSQL() + UIUtil.LINE_SEPARATOR + ";", true, true);
 					});
 					queryBuilderDialog.setVisible(false);
 					queryBuilderDialog.dispose();

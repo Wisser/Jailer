@@ -1,3 +1,13 @@
+17.1.4.2
+  - "Analyze SQL": proposed associations are now checked for partially covered primary keys.
+    If a proposal's join condition equates only some columns of a composite primary key on
+    table "A" or "B", that cell is flagged with a warning icon and a tooltip listing the
+    still-uncovered column(s).
+  - Fixed: AssociationProposer could silently drop a column equality from a proposed join
+    condition when the same table appeared twice in a query under different aliases
+    (self-join), because equations from different aliases were incorrectly treated as
+    duplicates.
+
 17.1.4
   - Fixed: AI Assistant "Test Connection" and SQL generation failed with "'input' is required"
     against endpoints implementing the OpenAI Responses API. OpenAI-compatible providers now

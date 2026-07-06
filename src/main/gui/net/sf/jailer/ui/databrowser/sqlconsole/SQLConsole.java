@@ -1059,6 +1059,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     	boolean hadProgress = false;
     	Runnable nextStep;
     	Mode mode = Mode.COUNT;
+    	boolean fromQueryBuilder = false;
 		protected int numRowsRead;
 		protected int numRowsUpdated;
 		protected int numStatementsExec;
@@ -1098,7 +1099,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     }
     
     private SuccessState currentSuccessState;
-    
+    private boolean pendingFromQueryBuilder = false;
+
     /**
      * Executes a block of SQL statements (each statement separated by a ';' at the end of the line).
      *
@@ -2732,13 +2734,22 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                                         if (errorLine >= 0) {
                                             editorPane.setLineTrackingIcon(errorLine, scaledCancelIcon);
                                         }
-                                        showError(pos + theError.getMessage(), statement, origErrorPosition);
+                                        Runnable retryAction = null;
+                                        if (statement != null && SELECT_DISTINCT_PATTERN.matcher(statement).find()
+                                        		&& successState != null && successState.fromQueryBuilder) {
+                                        	final int capturedErrorPosition = errorPosition;
+                                        	retryAction = () -> {
+                                        		setCaretPosition(capturedErrorPosition);
+                                        		retryWithoutDistinct();
+                                        	};
+                                        }
+                                        showError(pos + theError.getMessage(), statement, origErrorPosition, retryAction);
                                     } else {
                                         StringWriter sw = new StringWriter();
                                         PrintWriter pw = new PrintWriter(sw);
                                         theError.printStackTrace(pw);
                                         String sStackTrace = sw.toString(); // stack trace as a string
-                                        showError(sStackTrace, statement, origErrorPosition);
+                                        showError(sStackTrace, statement, origErrorPosition, null);
                                     }
                                 }
                                 if (successState != null && (successState.mode == Mode.RETRY || numStatements > 0)) {
@@ -2896,14 +2907,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         }
     }
 
-    private void showError(String errorMessage, String statement, int errorPosition) {
+    private void showError(String errorMessage, String statement, int errorPosition, Runnable retryWithoutDistinct) {
     	statusLabel.setVisible(true);
     	statusLabel.setForeground(Colors.Color_255_0_0);
     	statusLabel.setText("Error");
 
     	removeLastErrorTab();
 
-    	JComponent rTabContainer = new ErrorPanel(errorMessage, statement, errorPosition);
+    	JComponent rTabContainer = new ErrorPanel(errorMessage, statement, errorPosition, retryWithoutDistinct);
 		jTabbedPane1.add(rTabContainer);
 		updateResultUI();
         jTabbedPane1.setTabComponentAt(jTabbedPane1.indexOfComponent(rTabContainer), getTitlePanel(jTabbedPane1, rTabContainer, null, "Error", null, -1, null));
@@ -4198,7 +4209,18 @@ public abstract class SQLConsole extends javax.swing.JPanel {
      * @param execute execute the statement?
      */
     public void appendStatement(String sql, boolean execute) {
-    	UIUtil.invokeLater(8, () -> appendStatement(sql, execute, null, false));
+    	appendStatement(sql, execute, false);
+    }
+
+    /**
+     * Appends a statement and eventually executes it.
+     *
+     * @param sql the statement
+     * @param execute execute the statement?
+     * @param fromQueryBuilder whether the statement was just handed over by the Query Builder dialog
+     */
+    public void appendStatement(String sql, boolean execute, boolean fromQueryBuilder) {
+    	UIUtil.invokeLater(8, () -> appendStatement(sql, execute, null, false, fromQueryBuilder));
     }
 
     /**
@@ -4209,6 +4231,18 @@ public abstract class SQLConsole extends javax.swing.JPanel {
      * @param tabContentPanel the panel to show result (option)
      */
     public void appendStatement(String sql, boolean execute, TabContentPanel tabContentPanel, boolean useLineContinuation) {
+    	appendStatement(sql, execute, tabContentPanel, useLineContinuation, false);
+    }
+
+    /**
+     * Appends a statement and eventually executes it.
+     *
+     * @param sql the statement
+     * @param execute execute the statement?
+     * @param tabContentPanel the panel to show result (option)
+     * @param fromQueryBuilder whether the statement was just handed over by the Query Builder dialog
+     */
+    public void appendStatement(String sql, boolean execute, TabContentPanel tabContentPanel, boolean useLineContinuation, boolean fromQueryBuilder) {
         if (!findAndSetCaretPosition(sql, tabContentPanel)) {
 	        String pre = "";
 	        int lineCount = editorPane.getLineCount();
@@ -4233,6 +4267,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             resetStatus();
         }
         if (execute) {
+        	pendingFromQueryBuilder = fromQueryBuilder;
             executeSelectedStatements(false, tabContentPanel, true);
         }
     }
@@ -4329,7 +4364,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	            sql = editorPane.getText(loc.a, loc.b, true);
 	        }
 	        if (loc != null && execute) {
-	            executeSQLBlock(sql, loc, editorPane.getCaret().getDot() == editorPane.getCaret().getMark(), locFragmentOffset, explain, tabContentPanel, new SuccessState());
+	        	SuccessState successState = new SuccessState();
+	        	successState.fromQueryBuilder = pendingFromQueryBuilder;
+	        	pendingFromQueryBuilder = false;
+	            executeSQLBlock(sql, loc, editorPane.getCaret().getDot() == editorPane.getCaret().getMark(), locFragmentOffset, explain, tabContentPanel, successState);
 	        }
 	        return sql;
         } catch (BadLocationException e) {
@@ -4518,6 +4556,18 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		String newStatement = UIUtil.toSingleLineSQL(currentStatement);
 		if (!currentStatement.equals(newStatement)) {
 			editorPane.replaceCurrentStatement(newStatement, false);
+		}
+	}
+
+	private static final Pattern SELECT_DISTINCT_PATTERN = Pattern.compile("(?is)^\\s*select\\s+distinct\\b");
+
+	// some DBMS reject DISTINCT over non-comparable columns (e.g. BLOB); drop it and re-run on request
+	private void retryWithoutDistinct() {
+		String currentStatement = editorPane.getCurrentStatement(true);
+		String newStatement = currentStatement.replaceFirst("(?is)(select\\s+)distinct\\s+", "$1");
+		if (!currentStatement.equals(newStatement)) {
+			editorPane.replaceCurrentStatement(newStatement, true);
+			executeSelectedStatements(false, null, true);
 		}
 	}
 
@@ -4967,9 +5017,5 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	// TODO ordering per column: break down to SQL?
 		
 	// TODO StringSearch component for historie (and than inc hist size a lot)
-    
-    // TODO automatically generated SQL statements from Desktop like:
-    // "Select distinct ... from ... left join ..." with a non-comparable column in select clause (for example BLOB) fails. Make the problem go away.
-    // idea: give SQLConsole an "ErrorHandler" who will be consulted if query fails and will ask user to skip "distinct" and try again.
 
 }
