@@ -15,11 +15,9 @@
  */
 package net.sf.jailer.ui.databrowser.sqlconsole;
 
-import java.awt.BorderLayout;
 import java.awt.Rectangle;
 
 import javax.swing.Icon;
-import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
 
@@ -43,9 +41,8 @@ public class ErrorPanel extends javax.swing.JPanel {
      * @param errorMessage the error message
      * @param statement the statement
      * @param errorPosition error position
-     * @param retryWithoutDistinct if non-<code>null</code>, offers a button to retry the statement without DISTINCT
      */
-    public ErrorPanel(String errorMessage, String statement, int errorPosition, Runnable retryWithoutDistinct) {
+    public ErrorPanel(String errorMessage, String statement, int errorPosition) {
         initComponents(); UIUtil.initComponents(this);
         errorTextArea.setText(errorMessage);
         errorTextArea.setCaretPosition(0);
@@ -75,11 +72,6 @@ public class ErrorPanel extends javax.swing.JPanel {
 			sqlEditorPane.scrollRectToVisible(new Rectangle(0, Math.max(0, l - 2) * lineHeight, 1, 4 * lineHeight));
 		} catch (Exception e) {
 			// ignore
-		}
-		if (retryWithoutDistinct != null) {
-			retryButton = new JButton("Retry without DISTINCT");
-			retryButton.addActionListener(e -> retryWithoutDistinct.run());
-			statementPanel.add(retryButton, BorderLayout.NORTH);
 		}
     }
 
@@ -150,7 +142,6 @@ public class ErrorPanel extends javax.swing.JPanel {
     private javax.swing.JPanel statementPanel;
     // End of variables declaration//GEN-END:variables
     private final RSyntaxTextArea sqlEditorPane;
-    private JButton retryButton;
 
 	/**
 	 * Disables all components in this panel.
@@ -161,8 +152,5 @@ public class ErrorPanel extends javax.swing.JPanel {
 		errorTextArea.setEnabled(false);
 		sqlEditorPane.setText("");
 		jLabel1.setEnabled(false);
-		if (retryButton != null) {
-			retryButton.setEnabled(false);
-		}
 	}
 }

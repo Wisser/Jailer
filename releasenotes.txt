@@ -7,6 +7,10 @@
     condition when the same table appeared twice in a query under different aliases
     (self-join), because equations from different aliases were incorrectly treated as
     duplicates.
+  - SQL Console: a "SELECT DISTINCT ... FROM ... LEFT JOIN ..." query built with the Query
+    Builder and sent to the console now automatically retries without DISTINCT if it fails
+    (some DBMS reject DISTINCT over non-comparable columns, e.g. BLOB). If the retry also
+    fails, the original query with DISTINCT is restored and its real error is shown.
 
 17.1.4
   - Fixed: AI Assistant "Test Connection" and SQL generation failed with "'input' is required"

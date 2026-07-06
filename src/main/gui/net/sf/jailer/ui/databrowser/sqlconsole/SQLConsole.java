@@ -1060,6 +1060,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     	Runnable nextStep;
     	Mode mode = Mode.COUNT;
     	boolean fromQueryBuilder = false;
+    	boolean autoDistinctRetry = false;
 		protected int numRowsRead;
 		protected int numRowsUpdated;
 		protected int numStatementsExec;
@@ -1100,6 +1101,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     
     private SuccessState currentSuccessState;
     private boolean pendingFromQueryBuilder = false;
+    private boolean pendingAutoDistinctRetry = false;
+    private String pendingOriginalStatementWithDistinct;
 
     /**
      * Executes a block of SQL statements (each statement separated by a ';' at the end of the line).
@@ -2669,6 +2672,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         protected int linesExecuted;
         public boolean withDDL;
         boolean failed;
+        boolean autoDistinctRetryHandled = false;
         boolean running;
         boolean limitExceeded;
         int numRowsRead;
@@ -2734,22 +2738,25 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                                         if (errorLine >= 0) {
                                             editorPane.setLineTrackingIcon(errorLine, scaledCancelIcon);
                                         }
-                                        Runnable retryAction = null;
-                                        if (statement != null && SELECT_DISTINCT_PATTERN.matcher(statement).find()
-                                        		&& successState != null && successState.fromQueryBuilder) {
-                                        	final int capturedErrorPosition = errorPosition;
-                                        	retryAction = () -> {
-                                        		setCaretPosition(capturedErrorPosition);
-                                        		retryWithoutDistinct();
-                                        	};
+                                        if (!autoDistinctRetryHandled) {
+                                        	autoDistinctRetryHandled = true;
+                                        	if (statement != null && SELECT_DISTINCT_PATTERN.matcher(statement).find()
+                                        			&& successState != null && successState.fromQueryBuilder
+                                        			&& retryWithoutDistinct()) {
+                                        		// handled: without-DISTINCT retry kicked off, don't show an error for this transient failure
+                                        	} else if (successState != null && successState.autoDistinctRetry
+                                        			&& restoreOriginalDistinctStatement()) {
+                                        		// handled: falling back to the original (DISTINCT) statement
+                                        	} else {
+                                        		showError(pos + theError.getMessage(), statement, origErrorPosition);
+                                        	}
                                         }
-                                        showError(pos + theError.getMessage(), statement, origErrorPosition, retryAction);
                                     } else {
                                         StringWriter sw = new StringWriter();
                                         PrintWriter pw = new PrintWriter(sw);
                                         theError.printStackTrace(pw);
                                         String sStackTrace = sw.toString(); // stack trace as a string
-                                        showError(sStackTrace, statement, origErrorPosition, null);
+                                        showError(sStackTrace, statement, origErrorPosition);
                                     }
                                 }
                                 if (successState != null && (successState.mode == Mode.RETRY || numStatements > 0)) {
@@ -2907,14 +2914,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         }
     }
 
-    private void showError(String errorMessage, String statement, int errorPosition, Runnable retryWithoutDistinct) {
+    private void showError(String errorMessage, String statement, int errorPosition) {
     	statusLabel.setVisible(true);
     	statusLabel.setForeground(Colors.Color_255_0_0);
     	statusLabel.setText("Error");
 
     	removeLastErrorTab();
 
-    	JComponent rTabContainer = new ErrorPanel(errorMessage, statement, errorPosition, retryWithoutDistinct);
+    	JComponent rTabContainer = new ErrorPanel(errorMessage, statement, errorPosition);
 		jTabbedPane1.add(rTabContainer);
 		updateResultUI();
         jTabbedPane1.setTabComponentAt(jTabbedPane1.indexOfComponent(rTabContainer), getTitlePanel(jTabbedPane1, rTabContainer, null, "Error", null, -1, null));
@@ -4366,7 +4373,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	        if (loc != null && execute) {
 	        	SuccessState successState = new SuccessState();
 	        	successState.fromQueryBuilder = pendingFromQueryBuilder;
+	        	successState.autoDistinctRetry = pendingAutoDistinctRetry;
 	        	pendingFromQueryBuilder = false;
+	        	pendingAutoDistinctRetry = false;
 	            executeSQLBlock(sql, loc, editorPane.getCaret().getDot() == editorPane.getCaret().getMark(), locFragmentOffset, explain, tabContentPanel, successState);
 	        }
 	        return sql;
@@ -4561,14 +4570,31 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
 	private static final Pattern SELECT_DISTINCT_PATTERN = Pattern.compile("(?is)^\\s*select\\s+distinct\\b");
 
-	// some DBMS reject DISTINCT over non-comparable columns (e.g. BLOB); drop it and re-run on request
-	private void retryWithoutDistinct() {
+	// some DBMS reject DISTINCT over non-comparable columns (e.g. BLOB); drop it and re-run automatically
+	private boolean retryWithoutDistinct() {
 		String currentStatement = editorPane.getCurrentStatement(true);
 		String newStatement = currentStatement.replaceFirst("(?is)(select\\s+)distinct\\s+", "$1");
-		if (!currentStatement.equals(newStatement)) {
-			editorPane.replaceCurrentStatement(newStatement, true);
-			executeSelectedStatements(false, null, true);
+		if (currentStatement.equals(newStatement)) {
+			return false;
 		}
+		pendingOriginalStatementWithDistinct = currentStatement;
+		pendingAutoDistinctRetry = true;
+		editorPane.replaceCurrentStatement(newStatement, true);
+		// defer until after the worker thread's trailing "running.set(false)" (queued via invokeLater, same as here) has run
+		UIUtil.invokeLater(2, () -> executeSelectedStatements(false, null, true));
+		return true;
+	}
+
+	// the without-DISTINCT retry also failed; fall back to the original statement so the real error is shown
+	private boolean restoreOriginalDistinctStatement() {
+		String original = pendingOriginalStatementWithDistinct;
+		pendingOriginalStatementWithDistinct = null;
+		if (original == null) {
+			return false;
+		}
+		editorPane.replaceCurrentStatement(original, true);
+		UIUtil.invokeLater(2, () -> executeSelectedStatements(false, null, true));
+		return true;
 	}
 
     private void toggleLineContinuation() {
