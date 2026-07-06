@@ -27,6 +27,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -61,6 +62,7 @@ import org.fife.ui.rtextarea.RTextScrollPane;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.Association;
+import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.ModelBuilder;
@@ -112,9 +114,10 @@ public class AssociationProposerView extends javax.swing.JPanel {
     	this.executionContext = executionContext;
     	
     	initComponents(); UIUtil.initComponents(this);
-    	
+
     	loadButton.setIcon(UIUtil.scaleIcon(loadButton, loadIcon));
     	closeButton.setIcon(UIUtil.scaleIcon(closeButton, cancelIcon));
+    	scaledWarnIcon = UIUtil.scaleIcon(this, warnIcon, 1);
         
         editorPane = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false) {
 			@Override
@@ -215,7 +218,21 @@ public class AssociationProposerView extends javax.swing.JPanel {
 					render.setBackground((row % 2 == 0) ? BG1 : BG2);
 				}
 				if (render instanceof JLabel) {
-					((JLabel) render).setToolTipText(UIUtil.toHTML(String.valueOf(value), 200));
+					String tooltipText = String.valueOf(value);
+					ImageIcon icon = null;
+					if (table == proposalTable) {
+						int modelColumn = table.convertColumnIndexToModel(column);
+						if (modelColumn == 1 || modelColumn == 2) {
+							int modelRow = table.convertRowIndexToModel(row);
+							String warning = getPkCoverageWarning(modelRow, modelColumn == 1);
+							if (warning != null) {
+								icon = scaledWarnIcon;
+								tooltipText = tooltipText + "\n" + warning;
+							}
+						}
+					}
+					((JLabel) render).setIcon(icon);
+					((JLabel) render).setToolTipText(UIUtil.toHTML(tooltipText, 200));
 				}
 				return render;
 			}
@@ -979,15 +996,68 @@ public class AssociationProposerView extends javax.swing.JPanel {
 
 	private ImageIcon loadIcon;
 	private ImageIcon cancelIcon;
+	private ImageIcon warnIcon;
+	private ImageIcon scaledWarnIcon;
 	{
 		// load images
 		loadIcon = UIUtil.readImage("/load2.png");
         cancelIcon = UIUtil.readImage("/buttoncancel.png");
+        warnIcon = UIUtil.readImage("/wanr.png");
     }
+
+	/**
+	 * Determines whether the primary key of table "A" (if <code>forSource</code>) or "B" of the given
+	 * proposal row is only partially covered by the row's current join condition.
+	 *
+	 * @param modelRow the row index (in the proposals table model)
+	 * @param forSource <code>true</code> to check table "A" (source), <code>false</code> for table "B" (destination)
+	 * @return a warning message, or <code>null</code> if the primary key is fully covered, not covered at all, or not applicable
+	 */
+	private String getPkCoverageWarning(int modelRow, boolean forSource) {
+		try {
+			Table source = dataModel.getTable(String.valueOf(proposalsModel.getValueAt(modelRow, 1)));
+			Table destination = dataModel.getTable(String.valueOf(proposalsModel.getValueAt(modelRow, 2)));
+			if (source == null || destination == null) {
+				return null;
+			}
+			String condition = String.valueOf(proposalsModel.getValueAt(modelRow, 3));
+			Association association = new Association(source, destination, false, false, condition, dataModel, false, null);
+			Map<Column, Column> sdMap = association.createSourceToDestinationKeyMapping();
+			if (sdMap.isEmpty()) {
+				return null;
+			}
+			Table table = forSource? source : destination;
+			Collection<Column> matchedColumns = forSource? sdMap.keySet() : sdMap.values();
+			List<Column> pkColumns = table.primaryKey.getColumns();
+			if (pkColumns.isEmpty()) {
+				return null;
+			}
+			int matched = 0;
+			List<String> uncovered = new ArrayList<String>();
+			for (Column pk: pkColumns) {
+				boolean found = false;
+				for (Column c: matchedColumns) {
+					if (c.name.equals(pk.name)) {
+						found = true;
+						break;
+					}
+				}
+				if (found) {
+					++matched;
+				} else {
+					uncovered.add(pk.name);
+				}
+			}
+			if (matched > 0 && !uncovered.isEmpty()) {
+				return "Primary key of \"" + table.getName() + "\" is only partially covered by this join condition. Uncovered column(s): " + String.join(", ", uncovered) + ".";
+			}
+		} catch (Throwable t) {
+			// malformed/edited condition text - no warning
+		}
+		return null;
+	}
 
 	// TODO 2
 	// TODO write docu for this
-	
-	// TODO warning if one of the two PKs is only partially covered.
 }
 

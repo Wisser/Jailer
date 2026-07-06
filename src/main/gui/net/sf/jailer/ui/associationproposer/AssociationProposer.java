@@ -746,6 +746,8 @@ public class AssociationProposer {
 			int result = 1;
 			result = prime * result + ((a == null) ? 0 : System.identityHashCode(a));
 			result = prime * result + ((b == null) ? 0 : System.identityHashCode(b));
+			result = prime * result + ((aliasA == null) ? 0 : aliasA.hashCode());
+			result = prime * result + ((aliasB == null) ? 0 : aliasB.hashCode());
 			return result;
 		}
 
@@ -767,6 +769,16 @@ public class AssociationProposer {
 				if (other.b != null)
 					return false;
 			} else if (b != other.b)
+				return false;
+			if (aliasA == null) {
+				if (other.aliasA != null)
+					return false;
+			} else if (!aliasA.equals(other.aliasA))
+				return false;
+			if (aliasB == null) {
+				if (other.aliasB != null)
+					return false;
+			} else if (!aliasB.equals(other.aliasB))
 				return false;
 			return true;
 		}
