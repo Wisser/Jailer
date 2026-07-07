@@ -88,6 +88,7 @@ import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
+import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
@@ -393,12 +394,47 @@ public class AssociationProposer {
 				plainSelect.getFromItem().accept(fromItemVisitor);
 			}
 			if (plainSelect.getJoins() != null) {
+				// tables joined so far (in left-to-right order); a NATURAL/USING join is resolved against
+				// all of them, since the join column may sit on any table already in the FROM/JOIN chain
+				List<String> joinedAliases = new ArrayList<String>();
+				String fromAlias = aliasOf(plainSelect.getFromItem());
+				if (fromAlias != null) {
+					joinedAliases.add(fromAlias);
+				}
 				for (Join join: plainSelect.getJoins()) {
 					if (join.getOnExpressions() != null) {
 						join.getOnExpressions().forEach(e -> scopes.peek().expressions.add(e));
 					}
 					if (join.getRightItem() != null) {
 						join.getRightItem().accept(fromItemVisitor);
+					}
+					String rightAlias = aliasOf(join.getRightItem());
+					if (rightAlias != null) {
+						if (join.isNatural()) {
+							net.sf.jailer.datamodel.Table rightTable = resolveTable(rightAlias);
+							if (rightTable != null) {
+								for (String leftAlias: joinedAliases) {
+									net.sf.jailer.datamodel.Table leftTable = resolveTable(leftAlias);
+									if (leftTable != null) {
+										for (net.sf.jailer.datamodel.Column leftColumn: leftTable.getColumns()) {
+											for (net.sf.jailer.datamodel.Column rightColumn: rightTable.getColumns()) {
+												if (Quoting.staticUnquote(leftColumn.name).equalsIgnoreCase(Quoting.staticUnquote(rightColumn.name))) {
+													scopes.peek().expressions.add(equalsExpression(leftAlias, rightAlias, leftColumn.name));
+													break;
+												}
+											}
+										}
+									}
+								}
+							}
+						} else if (join.getUsingColumns() != null && !join.getUsingColumns().isEmpty()) {
+							for (String leftAlias: joinedAliases) {
+								for (Column usingColumn: join.getUsingColumns()) {
+									scopes.peek().expressions.add(equalsExpression(leftAlias, rightAlias, usingColumn.getColumnName()));
+								}
+							}
+						}
+						joinedAliases.add(rightAlias);
 					}
 				}
 			}
@@ -549,6 +585,48 @@ public class AssociationProposer {
 					}
 				});
 			}
+		}
+
+		/**
+		 * Alias of a from-item, if it is a plain table (not a subquery/sub-join).
+		 */
+		private String aliasOf(FromItem item) {
+			if (item instanceof Table) {
+				Table table = (Table) item;
+				return Quoting.normalizeIdentifier(table.getAlias() != null ? table.getAlias().getName() : table.getName());
+			}
+			return null;
+		}
+
+		/**
+		 * Resolves the data model table for an alias, for NATURAL JOIN's common-column lookup.
+		 */
+		private net.sf.jailer.datamodel.Table resolveTable(String alias) {
+			for (boolean withSchema: new boolean[] { true, false }) {
+				for (int i = scopes.size() - 1; i >= 0; --i) {
+					String tn = scopes.get(i).aliasToTable.get(Quoting.normalizeIdentifier(alias));
+					if (tn != null) {
+						int iDot = tn.indexOf('.');
+						String tnSchema = iDot >= 0? tn.substring(0, iDot) : "";
+						String tnName = iDot >= 0? tn.substring(iDot + 1) : tn;
+						for (net.sf.jailer.datamodel.Table table: dataModel.getTables()) {
+							String schema = Quoting.normalizeIdentifier(table.getSchema(""));
+							String uName = Quoting.normalizeIdentifier(table.getUnqualifiedName());
+							if (uName.equals(tnName) && (!withSchema || schema.equals(tnSchema))) {
+								return table;
+							}
+						}
+					}
+				}
+			}
+			return null;
+		}
+
+		private Expression equalsExpression(String leftAlias, String rightAlias, String columnName) {
+			EqualsTo equalsTo = new EqualsTo();
+			equalsTo.setLeftExpression(new Column(new Table(leftAlias), columnName));
+			equalsTo.setRightExpression(new Column(new Table(rightAlias), columnName));
+			return equalsTo;
 		}
 
 		private net.sf.jailer.datamodel.Column getColumn(Column column) {

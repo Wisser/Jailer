@@ -1,4 +1,4 @@
-17.1.4.2
+17.1.5
   - "Analyze SQL": proposed associations are now checked for partially covered primary keys.
     If a proposal's join condition equates only some columns of a composite primary key on
     table "A" or "B", that cell is flagged with a warning icon and a tooltip listing the
@@ -11,6 +11,9 @@
     Builder and sent to the console now automatically retries without DISTINCT if it fails
     (some DBMS reject DISTINCT over non-comparable columns, e.g. BLOB). If the retry also
     fails, the original query with DISTINCT is restored and its real error is shown.
+  - "Analyze SQL": AssociationProposer now understands "NATURAL JOIN" and "JOIN ... USING
+    (col)" syntax and proposes associations for them, instead of silently ignoring those
+    joins.
 
 17.1.4
   - Fixed: AI Assistant "Test Connection" and SQL generation failed with "'input' is required"
