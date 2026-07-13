@@ -119,6 +119,9 @@ public class CellContentConverter {
 		if (content instanceof SpatialValueWrapper) {
 			return ((SpatialValueWrapper) content).getExpression();
 		}
+		if (content instanceof MSSQLSpatialValueWrapper) {
+			return ((MSSQLSpatialValueWrapper) content).getExpression();
+		}
 		if (content instanceof java.sql.Date) {
 			if (targetConfiguration.getDatePattern() != null) {
 				return targetConfiguration.createDateFormat().format((Date) content);
@@ -546,6 +549,75 @@ public class CellContentConverter {
 	}
 
 	/**
+	 * Wraps a SQL Server spatial (geometry/geography) column value read as raw bytes in
+	 * SQL Server's own native CLR binary serialization format (distinct from OGC WKB).
+	 * SRID and everything else is embedded in these bytes, so reconstruction is a plain
+	 * CAST back to the same type - a deserialize, not a WKT/WKB parse, so unlike MySQL
+	 * there is no axis-order reinterpretation risk.
+	 */
+	public class MSSQLSpatialValueWrapper implements Comparable<MSSQLSpatialValueWrapper> {
+		private final String type;
+		private final String hex;
+		/**
+		 * Constructor.
+		 *
+		 * @param type the SQL Server type name ("geometry" or "geography")
+		 * @param hex the raw native-format bytes, hex-encoded
+		 */
+		public MSSQLSpatialValueWrapper(String type, String hex) {
+			this.type = type;
+			this.hex = hex;
+		}
+		/**
+		 * Returns the SQL expression constructing this spatial value from its native binary representation.
+		 *
+		 * @return the SQL expression
+		 */
+		public String getExpression() {
+			String binaryPattern = targetConfiguration.getBinaryPattern();
+			String binaryLiteral = binaryPattern.replace("%s", hex);
+			return "CAST(" + binaryLiteral + " AS " + type + ")";
+		}
+		@Override
+		public String toString() {
+			return hex;
+		}
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((type == null) ? 0 : type.hashCode());
+			result = prime * result + ((hex == null) ? 0 : hex.hashCode());
+			return result;
+		}
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			MSSQLSpatialValueWrapper other = (MSSQLSpatialValueWrapper) obj;
+			if (type == null) {
+				if (other.type != null)
+					return false;
+			} else if (!type.equals(other.type))
+				return false;
+			if (hex == null) {
+				if (other.hex != null)
+					return false;
+			} else if (!hex.equals(other.hex))
+				return false;
+			return true;
+		}
+		@Override
+		public int compareTo(MSSQLSpatialValueWrapper o) {
+			return toString().compareTo(o.toString());
+		}
+	}
+
+	/**
 	 * Wraps a national character (NCHAR/NVARCHAR) string value.
 	 */
 	public static class NCharWrapper implements Comparable<NCharWrapper> {
@@ -799,6 +871,12 @@ public class CellContentConverter {
 			}
 		}
 
+		if (DBMS.MSSQL.equals(configuration) && object instanceof byte[] && columnTypeName != null
+				&& MSSQL_SPATIAL_TYPES.contains(columnTypeName.toLowerCase(Locale.ENGLISH))) {
+			byte[] data = (byte[]) object;
+			return new MSSQLSpatialValueWrapper(columnTypeName.toLowerCase(Locale.ENGLISH), toHexString(data, 0));
+		}
+
 		if (configuration != null && configuration.equals(targetConfiguration)) {
 			if (!configuration.getSqlExpressionRule().isEmpty() && columnTypeName != null && object != null) {
 				String expr = configuration.getSqlExpressionRule().get(columnTypeName.toLowerCase());
@@ -1031,6 +1109,14 @@ public class CellContentConverter {
 	private static Set<String> MYSQL_SPATIAL_TYPES = new HashSet<String>();
 	static {
 		MYSQL_SPATIAL_TYPES.addAll(Arrays.asList("geometry", "point", "linestring", "polygon", "multipoint", "multilinestring", "multipolygon", "geometrycollection"));
+	}
+
+	/**
+	 * SQL Server spatial column type names (as reported via {@code ResultSetMetaData.getColumnTypeName(int)}).
+	 */
+	private static Set<String> MSSQL_SPATIAL_TYPES = new HashSet<String>();
+	static {
+		MSSQL_SPATIAL_TYPES.addAll(Arrays.asList("geometry", "geography"));
 	}
 
 	private static Set<String> NON_COMPARABLE_PG_TYPES = new HashSet<String>();
