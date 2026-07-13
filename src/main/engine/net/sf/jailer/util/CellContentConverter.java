@@ -19,12 +19,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.sql.Array;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.NClob;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Struct;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -121,6 +124,9 @@ public class CellContentConverter {
 		}
 		if (content instanceof MSSQLSpatialValueWrapper) {
 			return ((MSSQLSpatialValueWrapper) content).getExpression();
+		}
+		if (content instanceof OracleSpatialValueWrapper) {
+			return ((OracleSpatialValueWrapper) content).getExpression();
 		}
 		if (content instanceof java.sql.Date) {
 			if (targetConfiguration.getDatePattern() != null) {
@@ -618,6 +624,72 @@ public class CellContentConverter {
 	}
 
 	/**
+	 * Wraps an Oracle spatial ({@code MDSYS.SDO_GEOMETRY}) column value read as its
+	 * decomposed object attributes (GTYPE, SRID, optional point, optional element-info/
+	 * ordinates arrays). Reconstruction is a direct {@code MDSYS.SDO_GEOMETRY(...)}
+	 * constructor call from the same attribute values, not a WKT/WKB parse, so there is
+	 * no axis-order reinterpretation risk.
+	 */
+	public class OracleSpatialValueWrapper implements Comparable<OracleSpatialValueWrapper> {
+		private final String gtype;
+		private final String srid;
+		private final String[] point;
+		private final String[] elemInfo;
+		private final String[] ordinates;
+		/**
+		 * Constructor.
+		 *
+		 * @param gtype the SDO_GTYPE value
+		 * @param srid the SDO_SRID value, or <code>null</code>
+		 * @param point the SDO_POINT (x, y, z) values, or <code>null</code>; z may itself be <code>null</code>
+		 * @param elemInfo the SDO_ELEM_INFO values, or <code>null</code>
+		 * @param ordinates the SDO_ORDINATES values, or <code>null</code>
+		 */
+		public OracleSpatialValueWrapper(String gtype, String srid, String[] point, String[] elemInfo, String[] ordinates) {
+			this.gtype = gtype;
+			this.srid = srid;
+			this.point = point;
+			this.elemInfo = elemInfo;
+			this.ordinates = ordinates;
+		}
+		/**
+		 * Returns the SQL expression constructing this spatial value from its decomposed attributes.
+		 *
+		 * @return the SQL expression
+		 */
+		public String getExpression() {
+			StringBuilder sb = new StringBuilder("MDSYS.SDO_GEOMETRY(");
+			sb.append(gtype).append(", ").append(srid == null ? "NULL" : srid).append(", ");
+			sb.append(point == null ? "NULL" : "MDSYS.SDO_POINT_TYPE(" + point[0] + ", " + point[1] + ", " + (point[2] == null ? "NULL" : point[2]) + ")");
+			sb.append(", ").append(elemInfo == null ? "NULL" : "MDSYS.SDO_ELEM_INFO_ARRAY(" + String.join(", ", elemInfo) + ")");
+			sb.append(", ").append(ordinates == null ? "NULL" : "MDSYS.SDO_ORDINATE_ARRAY(" + String.join(", ", ordinates) + ")");
+			return sb.append(")").toString();
+		}
+		@Override
+		public String toString() {
+			return gtype + "|" + srid + "|" + Arrays.toString(point) + "|" + Arrays.toString(elemInfo) + "|" + Arrays.toString(ordinates);
+		}
+		@Override
+		public int hashCode() {
+			return toString().hashCode();
+		}
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			return toString().equals(obj.toString());
+		}
+		@Override
+		public int compareTo(OracleSpatialValueWrapper o) {
+			return toString().compareTo(o.toString());
+		}
+	}
+
+	/**
 	 * Wraps a national character (NCHAR/NVARCHAR) string value.
 	 */
 	public static class NCharWrapper implements Comparable<NCharWrapper> {
@@ -877,6 +949,20 @@ public class CellContentConverter {
 			return new MSSQLSpatialValueWrapper(columnTypeName.toLowerCase(Locale.ENGLISH), toHexString(data, 0));
 		}
 
+		if (DBMS.ORACLE.equals(configuration) && object instanceof Struct && columnTypeName != null
+				&& ORACLE_SPATIAL_TYPES.contains(columnTypeName.toUpperCase(Locale.ENGLISH))) {
+			Object[] attrs = ((Struct) object).getAttributes();
+			String gtype = formatOracleNumber(attrs[0]);
+			String srid = formatOracleNumber(attrs[1]);
+			String[] point = null;
+			if (attrs[2] instanceof Struct) {
+				Object[] pointAttrs = ((Struct) attrs[2]).getAttributes();
+				point = new String[] { formatOracleNumber(pointAttrs[0]), formatOracleNumber(pointAttrs[1]),
+						pointAttrs.length > 2 ? formatOracleNumber(pointAttrs[2]) : null };
+			}
+			return new OracleSpatialValueWrapper(gtype, srid, point, toOracleNumberArray(attrs[3]), toOracleNumberArray(attrs[4]));
+		}
+
 		if (configuration != null && configuration.equals(targetConfiguration)) {
 			if (!configuration.getSqlExpressionRule().isEmpty() && columnTypeName != null && object != null) {
 				String expr = configuration.getSqlExpressionRule().get(columnTypeName.toLowerCase());
@@ -1104,6 +1190,41 @@ public class CellContentConverter {
 	}
 
 	/**
+	 * Formats an Oracle NUMBER attribute value (typically a {@link BigDecimal}) as a plain
+	 * (non-scientific-notation, locale-independent) SQL numeric literal.
+	 *
+	 * @param value the attribute value, or <code>null</code>
+	 * @return the formatted literal, or <code>null</code>
+	 */
+	private static String formatOracleNumber(Object value) {
+		if (value == null) {
+			return null;
+		}
+		if (value instanceof BigDecimal) {
+			return ((BigDecimal) value).toPlainString();
+		}
+		return new BigDecimal(value.toString()).toPlainString();
+	}
+
+	/**
+	 * Converts an Oracle VARRAY-of-NUMBER attribute (SDO_ELEM_INFO/SDO_ORDINATES) into formatted literals.
+	 *
+	 * @param attr the {@link Array} attribute value, or <code>null</code>
+	 * @return the formatted literals, or <code>null</code>
+	 */
+	private static String[] toOracleNumberArray(Object attr) throws SQLException {
+		if (attr == null) {
+			return null;
+		}
+		Object[] raw = (Object[]) ((Array) attr).getArray();
+		String[] result = new String[raw.length];
+		for (int i = 0; i < raw.length; ++i) {
+			result[i] = formatOracleNumber(raw[i]);
+		}
+		return result;
+	}
+
+	/**
 	 * MySQL/MariaDB spatial column type names (as reported via {@code ResultSetMetaData.getColumnTypeName(int)}).
 	 */
 	private static Set<String> MYSQL_SPATIAL_TYPES = new HashSet<String>();
@@ -1117,6 +1238,14 @@ public class CellContentConverter {
 	private static Set<String> MSSQL_SPATIAL_TYPES = new HashSet<String>();
 	static {
 		MSSQL_SPATIAL_TYPES.addAll(Arrays.asList("geometry", "geography"));
+	}
+
+	/**
+	 * Oracle spatial column type names (as reported via {@code ResultSetMetaData.getColumnTypeName(int)}), uppercase.
+	 */
+	private static Set<String> ORACLE_SPATIAL_TYPES = new HashSet<String>();
+	static {
+		ORACLE_SPATIAL_TYPES.addAll(Arrays.asList("SDO_GEOMETRY", "MDSYS.SDO_GEOMETRY"));
 	}
 
 	private static Set<String> NON_COMPARABLE_PG_TYPES = new HashSet<String>();

@@ -1044,3 +1044,7 @@ public class AssociationProposer {
 	}
 
 }
+
+
+// TODO
+// TODO support DDL too
