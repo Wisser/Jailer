@@ -116,6 +116,9 @@ public class CellContentConverter {
 		if (content instanceof DateTimeOffsetWrapper) {
 			return ((DateTimeOffsetWrapper) content).getExpression();
 		}
+		if (content instanceof SpatialValueWrapper) {
+			return ((SpatialValueWrapper) content).getExpression();
+		}
 		if (content instanceof java.sql.Date) {
 			if (targetConfiguration.getDatePattern() != null) {
 				return targetConfiguration.createDateFormat().format((Date) content);
@@ -474,6 +477,75 @@ public class CellContentConverter {
 	}
 
 	/**
+	 * Wraps a spatial (geometry/geography) column value read as WKB bytes with a leading SRID
+	 * (MySQL/MariaDB's "internal geometry format": 4-byte little-endian SRID followed by standard WKB).
+	 */
+	public class SpatialValueWrapper implements Comparable<SpatialValueWrapper> {
+		private final int srid;
+		private final String wkbHex;
+		/**
+		 * Constructor.
+		 *
+		 * @param srid the SRID
+		 * @param wkbHex the WKB payload (without the SRID prefix), hex-encoded
+		 */
+		public SpatialValueWrapper(int srid, String wkbHex) {
+			this.srid = srid;
+			this.wkbHex = wkbHex;
+		}
+		/**
+		 * Returns the SQL expression constructing this spatial value from its WKB representation.
+		 *
+		 * @return the SQL expression
+		 */
+		public String getExpression() {
+			String binaryPattern = targetConfiguration.getBinaryPattern();
+			String binaryLiteral = binaryPattern.replace("%s", wkbHex);
+			// MySQL's on-disk geometry storage is always long-lat, regardless of SRID, but
+			// ST_GeomFromWKB() without an explicit axis-order defaults to "srid-defined" -
+			// which for a geographic SRID like 4326 is lat-long, swapping X/Y on reconstruction.
+			// Force long-lat to match storage order. MariaDB's ST_GeomFromWKB() has no such
+			// 3rd argument, so only add it when the target is real MySQL, not MariaDB.
+			String axisOrderOption = "MySQL".equals(targetConfiguration.getId()) ? ", 'axis-order=long-lat'" : "";
+			return "ST_GeomFromWKB(" + binaryLiteral + ", " + srid + axisOrderOption + ")";
+		}
+		@Override
+		public String toString() {
+			return wkbHex;
+		}
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + srid;
+			result = prime * result + ((wkbHex == null) ? 0 : wkbHex.hashCode());
+			return result;
+		}
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			SpatialValueWrapper other = (SpatialValueWrapper) obj;
+			if (srid != other.srid)
+				return false;
+			if (wkbHex == null) {
+				if (other.wkbHex != null)
+					return false;
+			} else if (!wkbHex.equals(other.wkbHex))
+				return false;
+			return true;
+		}
+		@Override
+		public int compareTo(SpatialValueWrapper o) {
+			return toString().compareTo(o.toString());
+		}
+	}
+
+	/**
 	 * Wraps a national character (NCHAR/NVARCHAR) string value.
 	 */
 	public static class NCharWrapper implements Comparable<NCharWrapper> {
@@ -718,6 +790,15 @@ public class CellContentConverter {
 			}
 		}
 
+		if (DBMS.MySQL.equals(configuration) && object instanceof byte[] && columnTypeName != null
+				&& MYSQL_SPATIAL_TYPES.contains(columnTypeName.toLowerCase(Locale.ENGLISH))) {
+			byte[] data = (byte[]) object;
+			if (data.length >= 4) {
+				int srid = (data[0] & 0xff) | ((data[1] & 0xff) << 8) | ((data[2] & 0xff) << 16) | ((data[3] & 0xff) << 24);
+				return new SpatialValueWrapper(srid, toHexString(data, 4));
+			}
+		}
+
 		if (configuration != null && configuration.equals(targetConfiguration)) {
 			if (!configuration.getSqlExpressionRule().isEmpty() && columnTypeName != null && object != null) {
 				String expr = configuration.getSqlExpressionRule().get(columnTypeName.toLowerCase());
@@ -927,9 +1008,34 @@ public class CellContentConverter {
 	 */
 	public static final char[] hexChar = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
 
+	/**
+	 * Hex-encodes a range of a byte array.
+	 *
+	 * @param data the byte array
+	 * @param offset the offset of the range to encode
+	 * @return the hex-encoded range
+	 */
+	private static String toHexString(byte[] data, int offset) {
+		StringBuilder hex = new StringBuilder((data.length - offset) * 2);
+		for (int i = offset; i < data.length; ++i) {
+			byte b = data[i];
+			hex.append(hexChar[(b >> 4) & 15]);
+			hex.append(hexChar[b & 15]);
+		}
+		return hex.toString();
+	}
+
+	/**
+	 * MySQL/MariaDB spatial column type names (as reported via {@code ResultSetMetaData.getColumnTypeName(int)}).
+	 */
+	private static Set<String> MYSQL_SPATIAL_TYPES = new HashSet<String>();
+	static {
+		MYSQL_SPATIAL_TYPES.addAll(Arrays.asList("geometry", "point", "linestring", "polygon", "multipoint", "multilinestring", "multipolygon", "geometrycollection"));
+	}
+
 	private static Set<String> NON_COMPARABLE_PG_TYPES = new HashSet<String>();
 	static {
-		NON_COMPARABLE_PG_TYPES.addAll(Arrays.asList("jsonpath", "hstore", "ghstore", "json", "jsonb", "gtsvector", "point", "lseg", "path", "box", "polygon", "line", "circle" ));
+		NON_COMPARABLE_PG_TYPES.addAll(Arrays.asList("jsonpath", "hstore", "ghstore", "json", "jsonb", "gtsvector", "point", "lseg", "path", "box", "polygon", "line", "circle", "geometry", "geography" ));
 	}   
 
 	/**

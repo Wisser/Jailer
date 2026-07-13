@@ -966,7 +966,9 @@
 				"time": "'$1'::$2",
 				"lseg": "'$1'::$2",
 				"circle": "'$1'::$2",
-				"int8range": "'$1'::$2"
+				"int8range": "'$1'::$2",
+				"geometry": "'$1'::$2",
+				"geography": "'$1'::$2"
 			},
 			"experimentalTypeReplacement": {},
 			"varcharLengthLimit": null,
