@@ -47,3 +47,15 @@ public class JailerVersion {
 	}
 
 }
+
+
+// TODO
+// TODO spatial: mouse-zoom, repaint wenn tile da, zoomfaktor initial besser machen
+// TODO doppelklick: open in browser / inline view? Single-Klick = inline view?
+// TODO wenn tile-loading scheitert: vorschau nicht anzeigen. Bzw. umgekehrt: erst anzeigen, wenn tile da.
+// TODO map-diagramm in SQL-Konsole: "Geo-Map" Tab
+//TODO im DetailView sollte Vorschau abschaltbar sein.
+//TODO im DetailView sollte Vorschau abgeschaltet werden, sobald klar ist, dass tiles nicht geladen werden können 500/Excp. und noch kein Tile erfolgreich geladen.
+
+// TODO
+// TODO spatial: support for non-WGS84 geometries (SRID 0, 25832, etc.) - with appropriate mapping to WGS84 for the preview

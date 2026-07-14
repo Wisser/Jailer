@@ -69,6 +69,10 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 
+import net.sf.jailer.ui.databrowser.geo.Geometry;
+import net.sf.jailer.ui.databrowser.geo.GeometryPreviewPanel;
+import net.sf.jailer.ui.databrowser.geo.SpatialCellSupport;
+
 import com.formdev.flatlaf.FlatClientProperties;
 
 import net.sf.jailer.database.Session;
@@ -495,6 +499,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 				gridBagConstraints.gridy = i;
 				int rowIndex = rowSorter != null? rowSorter.convertRowIndexToModel(row) : row;
 				Object v = rows.get(rowIndex).values[columnIndexAtI];
+				Object spatialRawValue = v;
 				hasEditableColumn = hasEditableColumn || tableModel.isCellEditable(rowIndex, columnIndexAtI);
 				boolean isEditable = editModeToggleButton.isSelected() && tableModel.isCellEditable(rowIndex, columnIndexAtI);
 				if (v instanceof PObjectWrapper) {
@@ -661,7 +666,22 @@ public abstract class DetailsView extends javax.swing.JPanel {
 					l.setBackground(i % 2 == 0? BG1 : BG2);
 					f.setOpaque(true);
 					l.setOpaque(true);
-					content.add(f, gridBagConstraints);
+					Component cellComponent = f;
+					if (!isEditable) {
+						Geometry previewGeometry = SpatialCellSupport.parse(spatialRawValue);
+						if (previewGeometry != null) {
+							GeometryPreviewPanel preview = new GeometryPreviewPanel(previewGeometry);
+							preview.setBackground(f.getBackground());
+							JPanel geoPanel = new JPanel(new BorderLayout());
+							geoPanel.setOpaque(true);
+							geoPanel.setBackground(f.getBackground());
+							geoPanel.add(preview, BorderLayout.CENTER);
+							f.setPreferredSize(new Dimension(f.getPreferredSize().width, 18));
+							geoPanel.add(f, BorderLayout.SOUTH);
+							cellComponent = geoPanel;
+						}
+					}
+					content.add(cellComponent, gridBagConstraints);
 					JLabel l1 = new JLabel(" ");
 					JLabel l2 = new JLabel("    ");
 					l1.setOpaque(true);

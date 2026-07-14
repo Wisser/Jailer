@@ -302,6 +302,15 @@ public class CellContentConverter {
 			this.pattern = pattern;
 		}
 		/**
+		 * Returns the wrapped database value (e.g. a driver-specific object such as
+		 * a PostgreSQL {@code PGobject} for geometry/geography/json/uuid/... columns).
+		 *
+		 * @return the value
+		 */
+		public Object getValue() {
+			return value;
+		}
+		/**
 		 * Returns the SQL expression for this value.
 		 *
 		 * @return the SQL expression
@@ -503,6 +512,22 @@ public class CellContentConverter {
 			this.wkbHex = wkbHex;
 		}
 		/**
+		 * Returns the SRID.
+		 *
+		 * @return the SRID
+		 */
+		public int getSrid() {
+			return srid;
+		}
+		/**
+		 * Returns the WKB payload (without the SRID prefix), hex-encoded.
+		 *
+		 * @return the WKB payload, hex-encoded
+		 */
+		public String getWkbHex() {
+			return wkbHex;
+		}
+		/**
 		 * Returns the SQL expression constructing this spatial value from its WKB representation.
 		 *
 		 * @return the SQL expression
@@ -573,6 +598,22 @@ public class CellContentConverter {
 		public MSSQLSpatialValueWrapper(String type, String hex) {
 			this.type = type;
 			this.hex = hex;
+		}
+		/**
+		 * Returns the SQL Server type name ("geometry" or "geography").
+		 *
+		 * @return the type name
+		 */
+		public String getType() {
+			return type;
+		}
+		/**
+		 * Returns the raw native-format bytes, hex-encoded.
+		 *
+		 * @return the raw bytes, hex-encoded
+		 */
+		public String getHex() {
+			return hex;
 		}
 		/**
 		 * Returns the SQL expression constructing this spatial value from its native binary representation.
@@ -651,6 +692,46 @@ public class CellContentConverter {
 			this.point = point;
 			this.elemInfo = elemInfo;
 			this.ordinates = ordinates;
+		}
+		/**
+		 * Returns the SDO_GTYPE value.
+		 *
+		 * @return the SDO_GTYPE value
+		 */
+		public String getGtype() {
+			return gtype;
+		}
+		/**
+		 * Returns the SDO_SRID value.
+		 *
+		 * @return the SDO_SRID value, or <code>null</code>
+		 */
+		public String getSrid() {
+			return srid;
+		}
+		/**
+		 * Returns the SDO_POINT (x, y, z) values.
+		 *
+		 * @return the SDO_POINT values, or <code>null</code>; z may itself be <code>null</code>
+		 */
+		public String[] getPoint() {
+			return point;
+		}
+		/**
+		 * Returns the SDO_ELEM_INFO values.
+		 *
+		 * @return the SDO_ELEM_INFO values, or <code>null</code>
+		 */
+		public String[] getElemInfo() {
+			return elemInfo;
+		}
+		/**
+		 * Returns the SDO_ORDINATES values.
+		 *
+		 * @return the SDO_ORDINATES values, or <code>null</code>
+		 */
+		public String[] getOrdinates() {
+			return ordinates;
 		}
 		/**
 		 * Returns the SQL expression constructing this spatial value from its decomposed attributes.
