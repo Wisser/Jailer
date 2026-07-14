@@ -14,6 +14,17 @@
   - "Analyze SQL": AssociationProposer now understands "NATURAL JOIN" and "JOIN ... USING
     (col)" syntax and proposes associations for them, instead of silently ignoring those
     joins.
+  - Export now reconstructs spatial (geometry/geography) column values with a
+    dialect-specific SQL expression instead of losing type information, for MySQL/MariaDB,
+    SQL Server, Oracle, and PostgreSQL/PostGIS.
+    - MySQL/MariaDB: geometry columns (POINT, LINESTRING, POLYGON and their MULTI/COLLECTION
+      variants) are rebuilt via ST_GeomFromWKB(...), preserving SRID and axis order.
+    - SQL Server: geometry and geography columns are rebuilt via a CAST(...) from their
+      native binary representation, preserving SRID.
+    - Oracle: SDO_GEOMETRY columns are rebuilt via MDSYS.SDO_GEOMETRY(...) from their
+      decomposed GTYPE/SRID/point/element-info/ordinates attributes.
+    - PostgreSQL/PostGIS: geometry and geography columns round-trip via a HEXEWKB cast
+      ('...'::geometry / '...'::geography), preserving SRID.
 
 17.1.4
   - Fixed: AI Assistant "Test Connection" and SQL generation failed with "'input' is required"
