@@ -147,6 +147,30 @@ public class OsmTileLayer {
 	}
 
 	/**
+	 * The best-fit integer zoom level for the given bbox/available area (see {@link #computeView}),
+	 * without computing a full {@link MercatorView} - used to seed manual pan/zoom state.
+	 *
+	 * @param lonLatBounds {@code { minLon, minLat, maxLon, maxLat }}
+	 */
+	public static int pickBestFitZoom(double[] lonLatBounds, int availW, int availH, int padding) {
+		return pickZoom(xyFraction(lonLatBounds), availW, availH, padding);
+	}
+
+	/**
+	 * Computes the view for an explicit, caller-supplied center (as normalized Web Mercator
+	 * world-fraction coordinates, see {@link WebMercator}) and zoom - used for manual panning,
+	 * where the center is no longer necessarily the geometry's own bbox center.
+	 */
+	public static MercatorView computeViewAtZoomAndCenter(double centerXFraction, double centerYFraction, int availW, int availH, int zoom, double scale) {
+		double worldSize = WebMercator.worldSize(zoom);
+		double centerWx = centerXFraction * worldSize;
+		double centerWy = centerYFraction * worldSize;
+		double originPxX = centerWx - (availW / 2.0) / scale;
+		double originPxY = centerWy - (availH / 2.0) / scale;
+		return new MercatorView(zoom, scale, originPxX, originPxY);
+	}
+
+	/**
 	 * @return {@code { minX, minY, maxX, maxY, spanX, spanY }} in normalized world-fraction
 	 *         coordinates (see {@link WebMercator}), spans floored at {@link #MIN_SPAN_FRACTION}
 	 */
@@ -180,12 +204,9 @@ public class OsmTileLayer {
 	}
 
 	private static MercatorView centeredView(double[] xyFrac, int availW, int availH, int zoom, double scale) {
-		double worldSize = WebMercator.worldSize(zoom);
-		double centerWx = (xyFrac[0] + xyFrac[2]) / 2 * worldSize;
-		double centerWy = (xyFrac[1] + xyFrac[3]) / 2 * worldSize;
-		double originPxX = centerWx - (availW / 2.0) / scale;
-		double originPxY = centerWy - (availH / 2.0) / scale;
-		return new MercatorView(zoom, scale, originPxX, originPxY);
+		double centerX = (xyFrac[0] + xyFrac[2]) / 2;
+		double centerY = (xyFrac[1] + xyFrac[3]) / 2;
+		return computeViewAtZoomAndCenter(centerX, centerY, availW, availH, zoom, scale);
 	}
 
 	/**
@@ -196,21 +217,9 @@ public class OsmTileLayer {
 	 * @param onTileLoaded invoked (on the EDT) once a fetched tile becomes available, so the caller can repaint
 	 */
 	public void paint(Graphics2D g2, MercatorView view, int width, int height, Runnable onTileLoaded) {
-		double worldSize = WebMercator.worldSize(view.zoom);
-		int maxTileIndex = (int) (worldSize / TILE_SIZE) - 1;
-
-		double topLeftWx = view.originPxX;
-		double topLeftWy = view.originPxY;
-		double bottomRightWx = topLeftWx + width / view.scale;
-		double bottomRightWy = topLeftWy + height / view.scale;
-
-		int tileMinX = clamp((int) Math.floor(topLeftWx / TILE_SIZE), 0, maxTileIndex);
-		int tileMaxX = clamp((int) Math.floor(bottomRightWx / TILE_SIZE), 0, maxTileIndex);
-		int tileMinY = clamp((int) Math.floor(topLeftWy / TILE_SIZE), 0, maxTileIndex);
-		int tileMaxY = clamp((int) Math.floor(bottomRightWy / TILE_SIZE), 0, maxTileIndex);
-
-		for (int tx = tileMinX; tx <= tileMaxX; tx++) {
-			for (int ty = tileMinY; ty <= tileMaxY; ty++) {
+		int[] range = tileRange(view, width, height);
+		for (int tx = range[0]; tx <= range[1]; tx++) {
+			for (int ty = range[2]; ty <= range[3]; ty++) {
 				String key = view.zoom + "/" + tx + "/" + ty;
 				BufferedImage img = TILE_CACHE.get(key);
 				double screenX = (tx * (double) TILE_SIZE - view.originPxX) * view.scale;
@@ -229,6 +238,23 @@ public class OsmTileLayer {
 		g2.fillRect(0, height - ATTRIBUTION_HEIGHT, 160, ATTRIBUTION_HEIGHT);
 		g2.setColor(Color.DARK_GRAY);
 		g2.drawString(ATTRIBUTION, 3, height - 4);
+	}
+
+	/** @return {@code { tileMinX, tileMaxX, tileMinY, tileMaxY }} for the tiles visible in this view */
+	private static int[] tileRange(MercatorView view, int width, int height) {
+		double worldSize = WebMercator.worldSize(view.zoom);
+		int maxTileIndex = (int) (worldSize / TILE_SIZE) - 1;
+
+		double topLeftWx = view.originPxX;
+		double topLeftWy = view.originPxY;
+		double bottomRightWx = topLeftWx + width / view.scale;
+		double bottomRightWy = topLeftWy + height / view.scale;
+
+		int tileMinX = clamp((int) Math.floor(topLeftWx / TILE_SIZE), 0, maxTileIndex);
+		int tileMaxX = clamp((int) Math.floor(bottomRightWx / TILE_SIZE), 0, maxTileIndex);
+		int tileMinY = clamp((int) Math.floor(topLeftWy / TILE_SIZE), 0, maxTileIndex);
+		int tileMaxY = clamp((int) Math.floor(bottomRightWy / TILE_SIZE), 0, maxTileIndex);
+		return new int[] { tileMinX, tileMaxX, tileMinY, tileMaxY };
 	}
 
 	private static int clamp(int v, int min, int max) {
