@@ -1,4 +1,23 @@
-17.1.5
+17.2
+  - Export now reconstructs spatial (geometry/geography) column values with a
+    dialect-specific SQL expression instead of losing type information, for MySQL/MariaDB,
+    SQL Server, Oracle, and PostgreSQL/PostGIS.
+  - Spatial data preview: geometry/geography values are shown on an interactive map over
+    OpenStreetMap tiles - both in the Data Browser's cell preview and, for the SQL Console,
+    as a map overlay on the "Rows"/"Columns" result.
+    - Supports points, lines, polygons and their multi-/collection variants from
+      PostgreSQL/PostGIS, Oracle (SDO_GEOMETRY), SQL Server and MySQL/MariaDB.
+    - Coordinate systems: WGS84 (SRID 4326/8307) and EPSG:3857 "Web Mercator" (the projection
+      used by web maps / online portals).
+    - Navigation: drag to pan, mouse wheel to zoom (in the SQL Console the point under the
+      cursor stays fixed), Shift+drag to zoom into a box.
+    - Geometries are drawn with a high-contrast outline/halo so they stay visible over any
+      map tiles; points render as a colored ring with a white center. Hovering a geometry in
+      the SQL Console highlights it and shows the row's data as a tooltip.
+    - Legend (SQL Console): color the geometries by the values of a chosen column, pick a
+      color palette, adjust the legend text size, and move/resize the legend freely.
+    - "Save as image": save the current map as a PNG/JPG/BMP/GIF file or copy it to the
+      clipboard (the move/resize handles are omitted from the exported image).
   - "Analyze SQL": proposed associations are now checked for partially covered primary keys.
     If a proposal's join condition equates only some columns of a composite primary key on
     table "A" or "B", that cell is flagged with a warning icon and a tooltip listing the
@@ -14,17 +33,6 @@
   - "Analyze SQL": AssociationProposer now understands "NATURAL JOIN" and "JOIN ... USING
     (col)" syntax and proposes associations for them, instead of silently ignoring those
     joins.
-  - Export now reconstructs spatial (geometry/geography) column values with a
-    dialect-specific SQL expression instead of losing type information, for MySQL/MariaDB,
-    SQL Server, Oracle, and PostgreSQL/PostGIS.
-    - MySQL/MariaDB: geometry columns (POINT, LINESTRING, POLYGON and their MULTI/COLLECTION
-      variants) are rebuilt via ST_GeomFromWKB(...), preserving SRID and axis order.
-    - SQL Server: geometry and geography columns are rebuilt via a CAST(...) from their
-      native binary representation, preserving SRID.
-    - Oracle: SDO_GEOMETRY columns are rebuilt via MDSYS.SDO_GEOMETRY(...) from their
-      decomposed GTYPE/SRID/point/element-info/ordinates attributes.
-    - PostgreSQL/PostGIS: geometry and geography columns round-trip via a HEXEWKB cast
-      ('...'::geometry / '...'::geography), preserving SRID.
 
 17.1.4
   - Fixed: AI Assistant "Test Connection" and SQL generation failed with "'input' is required"
