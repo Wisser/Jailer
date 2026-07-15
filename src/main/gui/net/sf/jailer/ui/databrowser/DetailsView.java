@@ -291,6 +291,11 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	private boolean sortColumns;
 	private JPanel content;
 	private boolean isPacked = false;
+	// The first geometry-preview cell built for the current row, if any - resetScrollPane()
+	// scrolls to it instead of resetting to top-left, so the map is visible right away instead
+	// of requiring a manual scroll (matters most when DetailsView opens as a small floating
+	// popup, e.g. from the SQL Console, where the column may be well below the fold).
+	private JComponent firstGeometryCell;
 
 	protected void setCurrentRow(int row, boolean selectableFields) {
 		try {
@@ -310,7 +315,8 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			
 			labels.clear();
 			labelColors.clear();
-			
+			firstGeometryCell = null;
+
 			final JPanel oldContent = content;
 			content = new JPanel(new GridBagLayout());
 			gridBagConstraints = new java.awt.GridBagConstraints();
@@ -667,6 +673,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 					f.setOpaque(true);
 					l.setOpaque(true);
 					Component cellComponent = f;
+					boolean isGeoCell = false;
 					if (!isEditable) {
 						Geometry previewGeometry = SpatialCellSupport.parse(spatialRawValue);
 						if (previewGeometry != null) {
@@ -676,12 +683,32 @@ public abstract class DetailsView extends javax.swing.JPanel {
 							geoPanel.setOpaque(true);
 							geoPanel.setBackground(f.getBackground());
 							geoPanel.add(preview, BorderLayout.CENTER);
+							String geoCellText = f.getText();
+							if (geoCellText != null && geoCellText.length() > 50) {
+								f.setText(geoCellText.substring(0, 50) + "...");
+							}
 							f.setPreferredSize(new Dimension(f.getPreferredSize().width, 18));
 							geoPanel.add(f, BorderLayout.SOUTH);
 							cellComponent = geoPanel;
+							isGeoCell = true;
+							if (firstGeometryCell == null) {
+								firstGeometryCell = geoPanel;
+							}
 						}
 					}
-					content.add(cellComponent, gridBagConstraints);
+					if (isGeoCell) {
+						// Geometry preview cells must not be stretched to the full width of the
+						// (often much wider than 200px) value column - GeometryPreviewPanel auto-fits
+						// its geometry to whatever width it is actually given, so stretching it would
+						// render the geometry centered far to the right of the narrow area a user
+						// expects the small preview to occupy.
+						java.awt.GridBagConstraints geoConstraints = (java.awt.GridBagConstraints) gridBagConstraints.clone();
+						geoConstraints.fill = java.awt.GridBagConstraints.NONE;
+						geoConstraints.weightx = 0;
+						content.add(cellComponent, geoConstraints);
+					} else {
+						content.add(cellComponent, gridBagConstraints);
+					}
 					JLabel l1 = new JLabel(" ");
 					JLabel l2 = new JLabel("    ");
 					l1.setOpaque(true);
@@ -1324,7 +1351,11 @@ public abstract class DetailsView extends javax.swing.JPanel {
  	}
  
 	private void resetScrollPane() {
-		jScrollPane1.getVerticalScrollBar().setValue(jScrollPane1.getVerticalScrollBar().getMinimum());					
+		if (firstGeometryCell != null && firstGeometryCell.isShowing()) {
+			firstGeometryCell.scrollRectToVisible(new java.awt.Rectangle(0, 0, firstGeometryCell.getWidth(), firstGeometryCell.getHeight()));
+			return;
+		}
+		jScrollPane1.getVerticalScrollBar().setValue(jScrollPane1.getVerticalScrollBar().getMinimum());
 		jScrollPane1.getHorizontalScrollBar().setValue(jScrollPane1.getHorizontalScrollBar().getMinimum());
 	}
 	

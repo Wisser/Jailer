@@ -15,34 +15,54 @@
  */
 package net.sf.jailer.ui.databrowser.sqlconsole;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.imageio.ImageIO;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.RowSorter;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
@@ -64,6 +84,10 @@ import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
+import net.sf.jailer.ui.databrowser.Row;
+import net.sf.jailer.ui.databrowser.geo.Geometry;
+import net.sf.jailer.ui.databrowser.geo.GeometryPreviewPanel;
+import net.sf.jailer.ui.databrowser.geo.SpatialCellSupport;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataDetailsPanel;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithTheme;
@@ -80,7 +104,369 @@ public class TabContentPanel extends javax.swing.JPanel {
 	private static final Logger logger = LoggerFactory.getLogger(MetaDataDetailsPanel.class);
 	
 	private final boolean silent;
-	
+
+	private static final int MAX_TOOLTIP_COLUMNS = 20;
+	private static final int MAX_TOOLTIP_VALUE_LENGTH = 150;
+
+	/** Result of scanning a query result's rows for spatial (geometry) columns, see {@link #collectSpatialGeometries}. */
+	private static final class RowScanResult {
+		final Map<Geometry, Row> rowByGeometry;
+		final Set<Integer> spatialColumnIndices;
+
+		RowScanResult(Map<Geometry, Row> rowByGeometry, Set<Integer> spatialColumnIndices) {
+			this.rowByGeometry = rowByGeometry;
+			this.spatialColumnIndices = spatialColumnIndices;
+		}
+	}
+
+	/**
+	 * Scans every cell of every row for a decodable WGS84 geometry value (see
+	 * {@link SpatialCellSupport#parse(Object)} - already returns <code>null</code> for
+	 * anything that isn't a map-previewable spatial value), so the map overlay can be shown
+	 * only when the result set actually has something to display on one. Keeps the originating
+	 * {@link Row} for each found geometry (identity-keyed - {@link Geometry} has neither equals
+	 * nor hashCode, so each instance is unique per row), and also tracks which column indices ever
+	 * held a spatial value, so the legend-column combobox can exclude them ("keine Geoobjektspalte
+	 * anbieten") without a second scan.
+	 */
+	private static RowScanResult collectSpatialGeometries(List<Row> rows) {
+		Map<Geometry, Row> rowByGeometry = new LinkedHashMap<Geometry, Row>();
+		Set<Integer> spatialColumnIndices = new LinkedHashSet<Integer>();
+		if (rows != null) {
+			for (Row row : rows) {
+				if (row.values == null) {
+					continue;
+				}
+				for (int i = 0; i < row.values.length; i++) {
+					Geometry geometry = SpatialCellSupport.parse(row.values[i]);
+					if (geometry != null) {
+						spatialColumnIndices.add(i);
+						rowByGeometry.put(geometry, row);
+					}
+				}
+			}
+		}
+		return new RowScanResult(rowByGeometry, spatialColumnIndices);
+	}
+
+	/**
+	 * Renders a compact HTML table of {@code row}'s column/value pairs for the map overlay's
+	 * hover tooltip - every spatial column is skipped (no geo-objects in the tooltip, matching
+	 * what {@link #collectSpatialGeometries} already excludes from the map itself), capped at
+	 * {@link #MAX_TOOLTIP_COLUMNS} columns and {@link #MAX_TOOLTIP_VALUE_LENGTH} characters per
+	 * value. If {@code legendColumnIndex >= 0} (the user picked a legend/label column), that
+	 * column's row is shown first, then skipped in the general loop to avoid a duplicate.
+	 */
+	private static String buildRowTooltipHtml(Row row, TableModel model, int legendColumnIndex, Color legendColor) {
+		StringBuilder html = new StringBuilder("<html><table cellpadding=\"2\">");
+		int shown = 0;
+		if (legendColumnIndex >= 0 && legendColumnIndex < row.values.length) {
+			appendTooltipRow(html, row, model, legendColumnIndex, legendColor);
+			shown++;
+		}
+		for (int i = 0; i < row.values.length && shown < MAX_TOOLTIP_COLUMNS; i++) {
+			if (i == legendColumnIndex) {
+				continue;
+			}
+			Object value = row.values[i];
+			if (SpatialCellSupport.parse(value) != null) {
+				continue;
+			}
+			appendTooltipRow(html, row, model, i, null);
+			shown++;
+		}
+		html.append("</table></html>");
+		return html.toString();
+	}
+
+	/**
+	 * @param swatchColor when non-null (only for the legend column's row), a small colored square
+	 *        is rendered before the value - "nutze in tooltip für Legendenspalte die Legendenfarbe" -
+	 *        so the tooltip visually ties back to the same row's marker/legend color on the map.
+	 */
+	private static void appendTooltipRow(StringBuilder html, Row row, TableModel model, int i, Color swatchColor) {
+		Object value = row.values[i];
+		String columnName = model != null && i < model.getColumnCount() ? stripHtml(model.getColumnName(i)) : "#" + i;
+		String text = value == null ? "" : String.valueOf(value);
+		if (text.length() > MAX_TOOLTIP_VALUE_LENGTH) {
+			text = text.substring(0, MAX_TOOLTIP_VALUE_LENGTH) + "...";
+		}
+		html.append("<tr><td><b>").append(UIUtil.toHTMLFragment(columnName, 0, true, false)).append("</b></td><td>");
+		if (swatchColor != null) {
+			html.append("<font color=\"").append(toHexColor(swatchColor)).append("\">■</font>&nbsp;");
+		}
+		html.append(UIUtil.toHTMLFragment(text, 0, true, false)).append("</td></tr>");
+	}
+
+	private static String toHexColor(Color c) {
+		return String.format("#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue());
+	}
+
+	private static int findColumnIndexByName(TableModel model, String name) {
+		if (model == null || name == null) {
+			return -1;
+		}
+		for (int i = 0; i < model.getColumnCount(); i++) {
+			if (name.equals(stripHtml(model.getColumnName(i)))) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	private static final Pattern TOOLTIP_COLUMN_NAME_BOLD_PATTERN = Pattern.compile("<b>(.*?)</b>");
+
+	/**
+	 * {@code TableModel.getColumnName(...)} for the console's result table can itself be an HTML
+	 * string (e.g. wrapped in {@code <html><b>...</b></html>} - see the same pattern already used
+	 * in {@code SQLConsoleChartPanel.stripHtml}/{@code ColumnsTable.java}) - re-escaping that as
+	 * plain text (as {@link UIUtil#toHTMLFragment} does) would show the raw tags literally in the
+	 * tooltip instead of just the column name, so strip it down to plain text first.
+	 */
+	private static String stripHtml(String html) {
+		if (html == null) {
+			return "";
+		}
+		if (html.startsWith("<html>")) {
+			Matcher m = TOOLTIP_COLUMN_NAME_BOLD_PATTERN.matcher(html);
+			if (m.find()) {
+				return m.group(1);
+			}
+			return html.replaceAll("<[^>]*>", " ").replaceAll("\\s+", " ").trim();
+		}
+		return html;
+	}
+
+	private GeometryPreviewPanel mapOverlayPanel;
+	private boolean mapOverlayExpanded;
+	private GridBagConstraints mapOverlayCornerConstraints;
+	private GridBagConstraints mapOverlayExpandedConstraints;
+
+	private static final String NO_LEGEND_COLUMN = "(none)";
+	private javax.swing.JComboBox<String> legendColumnCombo;
+	private javax.swing.JComboBox<String> legendPaletteCombo;
+	// Remembered across TabContentPanel instances (one per query/tab) - same pattern as
+	// lastColumnSeparator/lastHeaderCheckBoxIsSelected above.
+	private static String lastLegendColumnName;
+	private static String lastLegendPaletteName;
+
+	private Map<Geometry, Row> rowByGeometry = java.util.Collections.emptyMap();
+	// Guards legendColumnCombo's item-list rebuild in refreshLegendColumnComboItems() against
+	// firing its own ActionListener (which would otherwise treat the rebuild as a user selection).
+	private boolean suppressLegendComboEvents;
+
+	/**
+	 * Toggles the floating map overlay between its small bottom-left "corner" presentation and
+	 * covering the entire {@code TabContentPanel} (all tabs), by swapping its {@link GridBagConstraints}
+	 * within the shared {@code jLayeredPane1} cell - the same mechanism {@code loadingPanel} and
+	 * {@code tabbedPane} already use to overlay each other there.
+	 */
+	private void toggleMapOverlayExpanded() {
+		mapOverlayExpanded = !mapOverlayExpanded;
+		((GridBagLayout) jLayeredPane1.getLayout()).setConstraints(
+				mapOverlayPanel, mapOverlayExpanded ? mapOverlayExpandedConstraints : mapOverlayCornerConstraints);
+		jLayeredPane1.revalidate();
+		jLayeredPane1.repaint();
+	}
+
+	/** Popup offering the supported bitmap formats plus copy-to-clipboard for the current map view. */
+	private void showMapExportMenu(Component anchor) {
+		JPopupMenu menu = new JPopupMenu();
+		for (String fmt : new String[] {"png", "jpg", "bmp", "gif"}) {
+			JMenuItem item = new JMenuItem("Save as " + fmt.toUpperCase() + "...");
+			item.addActionListener(e -> saveMapAs(fmt));
+			menu.add(item);
+		}
+		menu.addSeparator();
+		JMenuItem clip = new JMenuItem("Copy to Clipboard");
+		clip.addActionListener(e -> copyMapToClipboard());
+		menu.add(clip);
+		menu.show(anchor, 0, anchor.getHeight());
+	}
+
+	private void saveMapAs(String format) {
+		JFileChooser chooser = new JFileChooser();
+		chooser.setSelectedFile(new File("map." + format));
+		chooser.setFileFilter(new FileNameExtensionFilter(format.toUpperCase() + " Image (*." + format + ")", format));
+		if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
+			return;
+		}
+		try {
+			BufferedImage image = mapOverlayPanel.renderToImage();
+			// PNG/GIF keep the alpha channel; JPEG/BMP can't, so flatten onto white to avoid corrupted output.
+			if (!"png".equals(format)) {
+				image = toOpaque(image);
+			}
+			ImageIO.write(image, format, chooser.getSelectedFile());
+		} catch (IOException ex) {
+			UIUtil.showException(this, "Export Error", ex);
+		}
+	}
+
+	private void copyMapToClipboard() {
+		final BufferedImage image = mapOverlayPanel.renderToImage();
+		Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new Transferable() {
+			@Override public DataFlavor[] getTransferDataFlavors() { return new DataFlavor[] {DataFlavor.imageFlavor}; }
+			@Override public boolean isDataFlavorSupported(DataFlavor f) { return DataFlavor.imageFlavor.equals(f); }
+			@Override public Object getTransferData(DataFlavor f) throws UnsupportedFlavorException {
+				if (!isDataFlavorSupported(f)) throw new UnsupportedFlavorException(f);
+				return image;
+			}
+		}, null);
+	}
+
+	/** Flattens a (possibly translucent) image onto an opaque white RGB image for alpha-less formats. */
+	private static BufferedImage toOpaque(BufferedImage src) {
+		BufferedImage rgb = new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_INT_RGB);
+		Graphics2D g = rgb.createGraphics();
+		try {
+			g.setColor(Color.WHITE);
+			g.fillRect(0, 0, src.getWidth(), src.getHeight());
+			g.drawImage(src, 0, 0, null);
+		} finally {
+			g.dispose();
+		}
+		return rgb;
+	}
+
+	/**
+	 * Re-scans {@link #rowBrowser}'s rows for spatial data and updates the map overlay accordingly.
+	 * Rows are loaded asynchronously (see {@link BrowserContentPane.LoadJob}), so at construction
+	 * time {@link #rowBrowser}'s rows are typically still empty - this must be called again once
+	 * they have actually arrived (i.e. from {@code afterReload()}).
+	 */
+	public void refreshMapOverlay() {
+		RowScanResult scan = collectSpatialGeometries(rowBrowser == null ? null : rowBrowser.rows);
+		rowByGeometry = scan.rowByGeometry;
+		List<Geometry> spatialGeometries = new ArrayList<Geometry>(rowByGeometry.keySet());
+		boolean hasSpatialData = !spatialGeometries.isEmpty();
+		Geometry combined = hasSpatialData
+				? (spatialGeometries.size() == 1
+						? spatialGeometries.get(0)
+						: new Geometry.GeometryCollection(spatialGeometries.get(0).getSrid(), spatialGeometries.toArray(new Geometry[0])))
+				: null;
+		mapOverlayPanel.setGeometry(combined);
+		refreshLegendColumnComboItems(scan.spatialColumnIndices);
+		updateTooltipsAndLegend();
+		if (mapOverlayPanel.isVisible() != hasSpatialData) {
+			mapOverlayPanel.setVisible(hasSpatialData);
+			// GridBagLayout skips invisible components entirely when computing bounds, so it never
+			// gave mapOverlayPanel real bounds while hidden - becoming visible alone doesn't trigger
+			// a new layout pass, it has to be requested explicitly here.
+			jLayeredPane1.revalidate();
+			jLayeredPane1.repaint();
+		}
+	}
+
+	/**
+	 * Rebuilds {@link #legendColumnCombo}'s items from the current result set's columns, excluding
+	 * every column that ever held a spatial value ({@code spatialColumnIndices}, from the same scan
+	 * that collected the geometries - "keine Geoobjektspalte anbieten"). Preserves the current
+	 * selection by name if this instance already had one selected; on the very first populate (a
+	 * brand new tab/query), falls back to the remembered {@link #lastLegendColumnName} instead.
+	 */
+	private void refreshLegendColumnComboItems(Set<Integer> spatialColumnIndices) {
+		if (theRowsTable == null) {
+			return;
+		}
+		TableModel model = theRowsTable.getModel();
+		boolean firstPopulate = legendColumnCombo.getItemCount() == 0;
+		String previousSelection = (String) legendColumnCombo.getSelectedItem();
+		suppressLegendComboEvents = true;
+		try {
+			legendColumnCombo.removeAllItems();
+			legendColumnCombo.addItem(NO_LEGEND_COLUMN);
+			for (int i = 0; i < model.getColumnCount(); i++) {
+				if (spatialColumnIndices.contains(i)) {
+					continue;
+				}
+				legendColumnCombo.addItem(stripHtml(model.getColumnName(i)));
+			}
+			String toSelect = firstPopulate ? lastLegendColumnName : previousSelection;
+			boolean found = false;
+			if (toSelect != null) {
+				for (int i = 0; i < legendColumnCombo.getItemCount(); i++) {
+					if (toSelect.equals(legendColumnCombo.getItemAt(i))) {
+						legendColumnCombo.setSelectedItem(toSelect);
+						found = true;
+						break;
+					}
+				}
+			}
+			if (!found) {
+				legendColumnCombo.setSelectedItem(NO_LEGEND_COLUMN);
+			}
+		} finally {
+			suppressLegendComboEvents = false;
+		}
+		legendPaletteCombo.setEnabled(!NO_LEGEND_COLUMN.equals(legendColumnCombo.getSelectedItem()));
+	}
+
+	/**
+	 * Rebuilds the map overlay's tooltips (legend column first, if selected - "im Tooltip soll die
+	 * Bezeichnungsspalte ganz oben angezeigt werden") and, if a legend column is selected, the
+	 * per-row color assignment/legend list (from {@link #legendPaletteCombo}, reusing the exact
+	 * same palettes as the "Chart" tab via {@link ChartColorPalettes}) - called after every data
+	 * reload and whenever either combobox selection changes.
+	 */
+	private void updateTooltipsAndLegend() {
+		if (theRowsTable == null) {
+			return;
+		}
+		TableModel model = theRowsTable.getModel();
+		String legendColumnName = (String) legendColumnCombo.getSelectedItem();
+		boolean hasLegend = legendColumnName != null && !NO_LEGEND_COLUMN.equals(legendColumnName);
+		int legendColumnIndex = hasLegend ? findColumnIndexByName(model, legendColumnName) : -1;
+
+		Color[] palette = hasLegend ? ChartColorPalettes.getPalette((String) legendPaletteCombo.getSelectedItem()) : null;
+		boolean effectiveLegend = hasLegend && palette != null && palette.length > 0;
+
+		// One legend entry/color per DISTINCT label value - rows sharing the same value share the
+		// same color ("fasse alle Geoobjekte einer Spalte in einem Legendeneintrag zusammen"). Only
+		// rows that actually have a geo-object are ever considered here, since rowByGeometry (by
+		// construction, see collectSpatialGeometries) never holds a row without one ("lass rows weg,
+		// die keine Geoobjekte beinhalten").
+		Map<String, Color> colorByValue = null;
+		List<GeometryPreviewPanel.LegendEntry> legendEntries = null;
+		if (effectiveLegend) {
+			colorByValue = new LinkedHashMap<String, Color>();
+			for (Row row : rowByGeometry.values()) {
+				String label = legendLabelFor(row, legendColumnIndex);
+				if (!colorByValue.containsKey(label)) {
+					colorByValue.put(label, palette[colorByValue.size() % palette.length]);
+				}
+			}
+			legendEntries = new ArrayList<GeometryPreviewPanel.LegendEntry>();
+			for (Map.Entry<String, Color> e : colorByValue.entrySet()) {
+				legendEntries.add(new GeometryPreviewPanel.LegendEntry(e.getKey(), e.getValue()));
+			}
+		}
+
+		Map<Geometry, String> tooltipsByGeometry = new LinkedHashMap<Geometry, String>();
+		Map<Geometry, Color> colorByGeometry = effectiveLegend ? new java.util.IdentityHashMap<Geometry, Color>() : null;
+		for (Map.Entry<Geometry, Row> e : rowByGeometry.entrySet()) {
+			Row row = e.getValue();
+			Color rowColor = effectiveLegend ? colorByValue.get(legendLabelFor(row, legendColumnIndex)) : null;
+			if (effectiveLegend) {
+				colorByGeometry.put(e.getKey(), rowColor);
+			}
+			// The legend column's own row gets its swatch color rendered in the tooltip too
+			// ("nutze in tooltip für Legendenspalte die Legendenfarbe") - null (no swatch) when
+			// there's no effective legend, same tooltip as before this feature existed.
+			tooltipsByGeometry.put(e.getKey(), buildRowTooltipHtml(row, model, legendColumnIndex, rowColor));
+		}
+		mapOverlayPanel.setTooltipProvider(tooltipsByGeometry::get);
+		mapOverlayPanel.setLegend(legendEntries, effectiveLegend ? colorByGeometry::get : null);
+	}
+
+	private static String legendLabelFor(Row row, int legendColumnIndex) {
+		if (legendColumnIndex < 0 || legendColumnIndex >= row.values.length) {
+			return "";
+		}
+		Object rawLabel = row.values[legendColumnIndex];
+		return rawLabel == null ? "" : String.valueOf(rawLabel);
+	}
+
 	/**
      * Creates new form TabContentPanel.
      *
@@ -111,7 +497,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 			tabbedPane.putClientProperty(FlatClientProperties.TABBED_PANE_TAB_HEIGHT, 16);
 		}
         loadingPanel.setVisible(false);
-        
+
         textArea = new RSyntaxTextAreaWithSQLSyntaxStyle(
 				false, false) {
 			protected boolean withModifingMenuItems() {
@@ -251,6 +637,81 @@ public class TabContentPanel extends javax.swing.JPanel {
 				}
 			});
 		}
+
+		mapOverlayPanel = new GeometryPreviewPanel();
+		mapOverlayPanel.setPreferredSize(new java.awt.Dimension(312, 208));
+		// Without an explicit minimum size, GridBagLayout shrinks this zero-weight, fill=NONE
+		// component down toward (0,0) whenever tabbedPane's own real content (e.g. the "Chart" tab)
+		// reports a preferred width larger than the container - pinning minimum = preferred gives
+		// GridBagLayout a floor it won't shrink below, regardless of tabbedPane's content demands.
+		mapOverlayPanel.setMinimumSize(new java.awt.Dimension(312, 208));
+		mapOverlayPanel.setVisible(false);
+		mapOverlayPanel.setClickAction(this::toggleMapOverlayExpanded);
+		mapOverlayPanel.setSettingsPanelEnabled(true);
+
+		legendColumnCombo = new javax.swing.JComboBox<String>();
+		legendColumnCombo.addActionListener(e -> {
+			if (suppressLegendComboEvents) {
+				return;
+			}
+			boolean hasLegend = !NO_LEGEND_COLUMN.equals(legendColumnCombo.getSelectedItem());
+			legendPaletteCombo.setEnabled(hasLegend);
+			lastLegendColumnName = hasLegend ? (String) legendColumnCombo.getSelectedItem() : null;
+			updateTooltipsAndLegend();
+		});
+
+		legendPaletteCombo = new javax.swing.JComboBox<String>(ChartColorPalettes.GEO_PALETTE_NAMES);
+		legendPaletteCombo.setEnabled(false);
+		if (lastLegendPaletteName != null) {
+			legendPaletteCombo.setSelectedItem(lastLegendPaletteName);
+		}
+		legendPaletteCombo.addActionListener(e -> {
+			if (suppressLegendComboEvents) {
+				return;
+			}
+			lastLegendPaletteName = (String) legendPaletteCombo.getSelectedItem();
+			updateTooltipsAndLegend();
+		});
+
+		JPanel legendSettingsContent = new JPanel(new GridBagLayout());
+		GridBagConstraints lgc = new GridBagConstraints();
+		lgc.gridx = 0; lgc.gridy = 0; lgc.anchor = GridBagConstraints.WEST; lgc.insets = new Insets(2, 4, 2, 4);
+		legendSettingsContent.add(new JLabel("Legend:"), lgc);
+		lgc = new GridBagConstraints();
+		lgc.gridx = 1; lgc.gridy = 0; lgc.fill = GridBagConstraints.HORIZONTAL; lgc.weightx = 1; lgc.insets = new Insets(2, 4, 2, 4);
+		legendSettingsContent.add(legendColumnCombo, lgc);
+		lgc = new GridBagConstraints();
+		lgc.gridx = 0; lgc.gridy = 1; lgc.anchor = GridBagConstraints.WEST; lgc.insets = new Insets(2, 4, 2, 4);
+		legendSettingsContent.add(new JLabel("Palette:"), lgc);
+		lgc = new GridBagConstraints();
+		lgc.gridx = 1; lgc.gridy = 1; lgc.fill = GridBagConstraints.HORIZONTAL; lgc.weightx = 1; lgc.insets = new Insets(2, 4, 2, 4);
+		legendSettingsContent.add(legendPaletteCombo, lgc);
+		mapOverlayPanel.setSettingsPanelContent(legendSettingsContent);
+
+		JButton exportButton = new JButton("Save as image...", UIUtil.scaleIcon(UIUtil.readImage("/export.png"), 20, 18));
+		exportButton.setToolTipText("Export map as image file or copy to clipboard");
+		exportButton.addActionListener(e -> showMapExportMenu(exportButton));
+		mapOverlayPanel.setSettingsSideButton(exportButton);
+
+		mapOverlayCornerConstraints = new java.awt.GridBagConstraints();
+		mapOverlayCornerConstraints.gridx = 1;
+		mapOverlayCornerConstraints.gridy = 1;
+		mapOverlayCornerConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+		mapOverlayCornerConstraints.insets = new Insets(0, 0, 6, 6);
+
+		mapOverlayExpandedConstraints = new java.awt.GridBagConstraints();
+		mapOverlayExpandedConstraints.gridx = 1;
+		mapOverlayExpandedConstraints.gridy = 1;
+		mapOverlayExpandedConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		mapOverlayExpandedConstraints.weightx = 1;
+		mapOverlayExpandedConstraints.weighty = 1;
+
+		// Above tabbedPane (default layer 0), below loadingPanel (PALETTE_LAYER=100) - so it floats
+		// over whichever tab is selected, but the loading overlay still takes precedence while busy.
+		jLayeredPane1.setLayer(mapOverlayPanel, 50);
+		jLayeredPane1.add(mapOverlayPanel, mapOverlayCornerConstraints);
+
+		refreshMapOverlay();
 
 		this.shimPanel.removeAll();
         gridBagConstraints = new java.awt.GridBagConstraints();

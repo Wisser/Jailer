@@ -34,7 +34,7 @@ public class ScaleBar {
 	private static final double EARTH_CIRCUMFERENCE_M = 40075016.686;
 	private static final double METERS_PER_MILE = 1609.344;
 	private static final int MAX_BAR_PIXELS = 70;
-	private static final int MARGIN = 6;
+	public static final int MARGIN = 6;
 	private static final int TICK_HEIGHT = 5;
 	private static final int ROW_HEIGHT = 13;
 	private static final int LABEL_BAR_GAP = 4;

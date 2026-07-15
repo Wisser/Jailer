@@ -1796,6 +1796,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                             			}
                             			initialColumnsTablesPos = null;
                             		}
+                        			if (tabContentPanel != null) {
+                        				tabContentPanel.refreshMapOverlay();
+                        			}
                         		});
                         		super.afterReload();
                         	}

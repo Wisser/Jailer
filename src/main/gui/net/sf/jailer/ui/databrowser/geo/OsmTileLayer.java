@@ -77,7 +77,6 @@ public class OsmTileLayer {
 		}
 	};
 	private static final Set<String> inFlight = new HashSet<String>();
-	private static final Set<String> failed = new HashSet<String>();
 
 	/**
 	 * Maps (lon, lat) to screen pixels for a chosen zoom level and auto-fit
@@ -103,6 +102,19 @@ public class OsmTileLayer {
 			double wx = WebMercator.lonToXFraction(lon) * worldSize;
 			double wy = WebMercator.latToYFraction(lat) * worldSize;
 			return new double[] { (wx - originPxX) * scale, (wy - originPxY) * scale };
+		}
+
+		/**
+		 * Inverse of {@link #toScreen} - maps a screen pixel back to normalized Web Mercator
+		 * world-fraction coordinates {@code { xFraction, yFraction } } (see {@link WebMercator}).
+		 * Used by the shift-drag zoom-box feature to translate the drawn screen rectangle back
+		 * into map-space bounds.
+		 */
+		public double[] screenToFraction(double screenX, double screenY) {
+			double worldSize = WebMercator.worldSize(zoom);
+			double wx = screenX / scale + originPxX;
+			double wy = screenY / scale + originPxY;
+			return new double[] { wx / worldSize, wy / worldSize };
 		}
 
 		public int getZoom() {
@@ -154,6 +166,18 @@ public class OsmTileLayer {
 	 */
 	public static int pickBestFitZoom(double[] lonLatBounds, int availW, int availH, int padding) {
 		return pickZoom(xyFraction(lonLatBounds), availW, availH, padding);
+	}
+
+	/**
+	 * Best-fit zoom level for an already-computed normalized world-fraction bounding box (see
+	 * {@link WebMercator}), skipping the lon/lat conversion {@link #pickBestFitZoom} does - used
+	 * by the shift-drag zoom-box feature, whose box is measured directly in fraction space via
+	 * {@link MercatorView#screenToFraction}.
+	 */
+	public static int pickBestFitZoomForFraction(double minXFraction, double minYFraction, double maxXFraction, double maxYFraction, int availW, int availH, int padding) {
+		double spanX = Math.max(maxXFraction - minXFraction, MIN_SPAN_FRACTION);
+		double spanY = Math.max(maxYFraction - minYFraction, MIN_SPAN_FRACTION);
+		return pickZoom(new double[] { minXFraction, minYFraction, maxXFraction, maxYFraction, spanX, spanY }, availW, availH, padding);
 	}
 
 	/**
@@ -235,9 +259,9 @@ public class OsmTileLayer {
 		}
 
 		g2.setColor(new Color(255, 255, 255, 190));
-		g2.fillRect(0, height - ATTRIBUTION_HEIGHT, 160, ATTRIBUTION_HEIGHT);
+//		g2.fillRect(0, height - ATTRIBUTION_HEIGHT, 160, ATTRIBUTION_HEIGHT);
 		g2.setColor(Color.DARK_GRAY);
-		g2.drawString(ATTRIBUTION, 3, height - 4);
+//		g2.drawString(ATTRIBUTION, 3, height - 4);
 	}
 
 	/** @return {@code { tileMinX, tileMaxX, tileMinY, tileMaxY }} for the tiles visible in this view */
@@ -263,7 +287,7 @@ public class OsmTileLayer {
 
 	private void fetchAsync(int z, int x, int y, Runnable onTileLoaded) {
 		String key = z + "/" + x + "/" + y;
-		if (inFlight.contains(key) || failed.contains(key)) {
+		if (inFlight.contains(key)) {
 			return;
 		}
 		inFlight.add(key);
@@ -274,8 +298,8 @@ public class OsmTileLayer {
 					URL url = new URL(String.format(TILE_URL_TEMPLATE, z, x, y));
 					HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 					conn.setRequestProperty("User-Agent", USER_AGENT);
-					conn.setConnectTimeout(5000);
-					conn.setReadTimeout(5000);
+					conn.setConnectTimeout(30000);
+					conn.setReadTimeout(30000);
 					conn.setInstanceFollowRedirects(true);
 					if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
 						return null;
@@ -295,7 +319,7 @@ public class OsmTileLayer {
 				try {
 					img = get();
 				} catch (Exception e) {
-					// treated as a failed fetch below
+					// img stays null - treated as a failed fetch (see below)
 					LogUtil.warn(e);
 				}
 				if (img != null) {
@@ -303,9 +327,9 @@ public class OsmTileLayer {
 					if (onTileLoaded != null) {
 						onTileLoaded.run();
 					}
-				} else {
-					failed.add(key);
 				}
+				// No permanent failure blacklist - a missing tile is simply retried the next time
+				// paint() finds it still absent from TILE_CACHE (e.g. next repaint/pan/zoom).
 			}
 		}.execute();
 	}
