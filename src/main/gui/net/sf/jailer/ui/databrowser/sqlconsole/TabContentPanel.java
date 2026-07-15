@@ -239,6 +239,9 @@ public class TabContentPanel extends javax.swing.JPanel {
 
 	private GeometryPreviewPanel mapOverlayPanel;
 	private boolean mapOverlayExpanded;
+	// Set when the user dismisses the map via the context menu's "Close" item; keeps it hidden across
+	// tab switches (updateMapOverlayVisibility honors it) until the next data load re-shows it.
+	private boolean mapOverlayUserHidden;
 	private GridBagConstraints mapOverlayCornerConstraints;
 	private GridBagConstraints mapOverlayExpandedConstraints;
 
@@ -336,6 +339,8 @@ public class TabContentPanel extends javax.swing.JPanel {
 	 * they have actually arrived (i.e. from {@code afterReload()}).
 	 */
 	public void refreshMapOverlay() {
+		// A fresh data load clears a prior user "Close" dismissal - the map is eligible to show again.
+		mapOverlayUserHidden = false;
 		RowScanResult scan = collectSpatialGeometries(rowBrowser == null ? null : rowBrowser.rows);
 		rowByGeometry = scan.rowByGeometry;
 		List<Geometry> spatialGeometries = new ArrayList<Geometry>(rowByGeometry.keySet());
@@ -348,11 +353,21 @@ public class TabContentPanel extends javax.swing.JPanel {
 		mapOverlayPanel.setGeometry(combined);
 		refreshLegendColumnComboItems(scan.spatialColumnIndices);
 		updateTooltipsAndLegend();
-		if (mapOverlayPanel.isVisible() != hasSpatialData) {
-			mapOverlayPanel.setVisible(hasSpatialData);
-			// GridBagLayout skips invisible components entirely when computing bounds, so it never
-			// gave mapOverlayPanel real bounds while hidden - becoming visible alone doesn't trigger
-			// a new layout pass, it has to be requested explicitly here.
+		updateMapOverlayVisibility();
+	}
+
+	/**
+	 * The geo-map overlay is shown only when it has spatial data AND the "Rows" or "Columns" tab is
+	 * selected - it must not float over the Chart/Text/Meta tabs. GridBagLayout skips invisible
+	 * components entirely when computing bounds, so it never gave mapOverlayPanel real bounds while
+	 * hidden - becoming visible alone doesn't trigger a new layout pass, it has to be requested here.
+	 */
+	private void updateMapOverlayVisibility() {
+		Component selected = tabbedPane.getSelectedComponent();
+		boolean onMapTab = selected == contentPanel || selected == columnsPanel;
+		boolean visible = onMapTab && mapOverlayPanel.getGeometry() != null && !mapOverlayUserHidden;
+		if (mapOverlayPanel.isVisible() != visible) {
+			mapOverlayPanel.setVisible(visible);
 			jLayeredPane1.revalidate();
 			jLayeredPane1.repaint();
 		}
@@ -639,15 +654,22 @@ public class TabContentPanel extends javax.swing.JPanel {
 		}
 
 		mapOverlayPanel = new GeometryPreviewPanel();
-		mapOverlayPanel.setPreferredSize(new java.awt.Dimension(468, 312));
+		mapOverlayPanel.setPreferredSize(new java.awt.Dimension(328, 218));
 		// Without an explicit minimum size, GridBagLayout shrinks this zero-weight, fill=NONE
 		// component down toward (0,0) whenever tabbedPane's own real content (e.g. the "Chart" tab)
 		// reports a preferred width larger than the container - pinning minimum = preferred gives
 		// GridBagLayout a floor it won't shrink below, regardless of tabbedPane's content demands.
-		mapOverlayPanel.setMinimumSize(new java.awt.Dimension(468, 312));
+		mapOverlayPanel.setMinimumSize(new java.awt.Dimension(328, 218));
 		mapOverlayPanel.setVisible(false);
 		mapOverlayPanel.setClickAction(this::toggleMapOverlayExpanded);
+		mapOverlayPanel.setCloseAction(() -> {
+			mapOverlayUserHidden = true;
+			updateMapOverlayVisibility();
+		});
+		mapOverlayPanel.setZoomAtCursor(true); // console map zooms about the mouse cursor
 		mapOverlayPanel.setSettingsPanelEnabled(true);
+		// Hide/show the map overlay when switching tabs - only "Rows"/"Columns" may show it.
+		tabbedPane.addChangeListener(e -> updateMapOverlayVisibility());
 
 		legendColumnCombo = new javax.swing.JComboBox<String>();
 		legendColumnCombo.addActionListener(e -> {

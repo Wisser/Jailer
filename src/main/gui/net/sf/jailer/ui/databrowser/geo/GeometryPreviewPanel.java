@@ -20,7 +20,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Graphics;
@@ -66,6 +65,8 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.util.MovePanel;
+import net.sf.jailer.ui.util.SizeGrip;
 
 /**
  * Swing component that renders a 2D preview of a {@link Geometry} - points,
@@ -120,6 +121,8 @@ public class GeometryPreviewPanel extends JComponent {
 	// Web Mercator world-fraction { x, y } (see WebMercator) rather than lon/lat so it stays
 	// valid across zoom changes without needing re-projecting.
 	private double[] manualCenterFraction;
+	// Opt-in (SQL Console): mouse-wheel zoom keeps the point under the cursor fixed instead of the center.
+	private boolean zoomAtCursor;
 	private final boolean popupEnabled;
 	// Set only on the popup's own internal panel: a plain click dismisses the popup instead
 	// of (the disabled) opening of another one.
@@ -145,8 +148,7 @@ public class GeometryPreviewPanel extends JComponent {
 	// Translucent, not solid white - "Tabellenhintergrund mit transparenter Farbe, die etwas deckt" -
 	// legible over arbitrary tile colors while still letting the map show through underneath.
 	private static final Color LEGEND_BACKGROUND = new Color(255, 255, 255, 180);
-	private static final int LEGEND_MOVE_RESIZE_BAR_HEIGHT = 14;
-	private static final int LEGEND_RESIZE_GRIP_WIDTH = 14;
+	private static final int LEGEND_MOVE_RESIZE_BAR_HEIGHT = 16;
 	private static final int LEGEND_MIN_WIDTH = 60;
 	private static final int LEGEND_MIN_HEIGHT = 40;
 
@@ -160,13 +162,16 @@ public class GeometryPreviewPanel extends JComponent {
 	// the default lineColor/fillColor/pointColor, same as before this feature existed.
 	private Function<Geometry, Color> geometryColorProvider;
 	private List<LegendEntry> legendEntries;
-	// legendContainer (added to `this`) wraps legendScrollPane (content) + a bottom move/resize bar -
-	// moving/resizing it manipulates ITS OWN bounds within this panel directly (no top-level window
-	// involved, unlike net.sf.jailer.ui.util.MovePanel/SizeGrip, which only move/resize their window
-	// ancestor and so can't be reused here).
+	// legendContainer (added to `this`) wraps legendScrollPane (content) + a bottom move/resize bar
+	// built from net.sf.jailer.ui.util.MovePanel (move) and SizeGrip (resize) in their embedded-target
+	// callback mode - the drag deltas manipulate legendContainer's OWN bounds within this panel via
+	// moveLegendBy/resizeLegendBy (no top-level window involved).
 	private JPanel legendContainer;
 	private JScrollPane legendScrollPane;
 	private JPanel legendListPanel;
+	// The bottom move/resize bar (MovePanel grab handle + SizeGrip) - interactive chrome that is
+	// hidden while rendering the exported image, so the grips don't appear in it.
+	private JPanel legendMoveResizeBar;
 	// null = not yet customized by the user - use the existing default top-left/content-fit sizing;
 	// non-null = the user's own drag/resize result, used verbatim (clamped to the panel's current
 	// size in layoutOverlayControls(), in case the panel itself shrank since).
@@ -188,6 +193,9 @@ public class GeometryPreviewPanel extends JComponent {
 
 	private final JPopupMenu popupMenu;
 	private final JMenuItem resetZoomMenuItem;
+	// Opt-in (SQL Console only): when set, a "Close" item appears in the context menu that runs this.
+	private Runnable closeAction;
+	private JMenuItem closeMenuItem;
 
 	// Only set by the SQL Console's map overlay - null (the default) fully disables the
 	// hover-tooltip/highlight feature for every other consumer (e.g. DetailsView). Maps a specific
@@ -235,9 +243,22 @@ public class GeometryPreviewPanel extends JComponent {
 		if (bounds == null) {
 			return;
 		}
-		int newZoom = currentZoom(bounds) - e.getWheelRotation(); // scroll up/away = zoom in, the usual map-app convention
-		manualZoom = Math.max(0, Math.min(OsmTileLayer.MAX_ZOOM, newZoom));
-		// Center stays fixed - zoom is always centered on whatever the current center already is.
+		int z0 = currentZoom(bounds);
+		int newZoom = Math.max(0, Math.min(OsmTileLayer.MAX_ZOOM, z0 - e.getWheelRotation())); // scroll up/away = zoom in, the usual map-app convention
+		if (zoomAtCursor && newZoom != z0) {
+			// Keep the geo-point under the cursor fixed (standard map zoom): find the cursor's world
+			// fraction at the old zoom, then recenter so it stays under the cursor at the new zoom.
+			double[] center0 = currentCenterFraction(bounds);
+			double worldSize0 = WebMercator.worldSize(z0);
+			double worldSize1 = WebMercator.worldSize(newZoom);
+			double offX = e.getX() - getWidth() / 2.0;
+			double offY = e.getY() - getHeight() / 2.0;
+			double fx = center0[0] + offX / worldSize0;
+			double fy = center0[1] + offY / worldSize0;
+			manualCenterFraction = new double[] { fx - offX / worldSize1, fy - offY / worldSize1 };
+		}
+		// Otherwise the center stays fixed - zoom is centered on whatever the current center already is.
+		manualZoom = newZoom;
 		e.consume(); // this panel sits inside DetailsView's JScrollPane - don't also scroll that
 		repaint();
 	}
@@ -501,6 +522,33 @@ public class GeometryPreviewPanel extends JComponent {
 	}
 
 	/**
+	 * Opt-in (SQL Console only): when {@code true}, mouse-wheel zoom keeps the geo-point under the
+	 * cursor fixed (standard map behavior) instead of keeping the map center fixed. Left {@code false}
+	 * for every other consumer (e.g. DetailsView), which keeps the center-anchored zoom.
+	 */
+	public void setZoomAtCursor(boolean zoomAtCursor) {
+		this.zoomAtCursor = zoomAtCursor;
+	}
+
+	/**
+	 * Opt-in (SQL Console only): installs a "Close" item in the right-click context menu, right after
+	 * "Reset zoom", that runs {@code closeAction} (e.g. hiding this overlay in its host). A null action
+	 * leaves the menu without a Close item (every other consumer, e.g. DetailsView).
+	 */
+	public void setCloseAction(Runnable closeAction) {
+		this.closeAction = closeAction;
+		if (closeAction != null && closeMenuItem == null) {
+			closeMenuItem = new JMenuItem("Close");
+			closeMenuItem.addActionListener(e -> {
+				if (this.closeAction != null) {
+					this.closeAction.run();
+				}
+			});
+			popupMenu.add(closeMenuItem);
+		}
+	}
+
+	/**
 	 * Enables the hover-tooltip/highlight feature (SQL Console-specific - null, the default,
 	 * leaves every other consumer of this panel, e.g. DetailsView, completely unaffected).
 	 *
@@ -546,22 +594,6 @@ public class GeometryPreviewPanel extends JComponent {
 		settingsPanel.setBackground(new Color(255, 255, 255, 230));
 		settingsPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
 		settingsPanel.setVisible(true); // open by default
-
-		JButton settingsCloseButton = new JButton(UIUtil.readImage("/Close-16-1.png"));
-		settingsCloseButton.setToolTipText("Close");
-		settingsCloseButton.setFocusPainted(false);
-		settingsCloseButton.setBorderPainted(false);
-		settingsCloseButton.setContentAreaFilled(false);
-		settingsCloseButton.setMargin(new Insets(0, 0, 0, 0));
-		settingsCloseButton.addActionListener(e -> {
-			settingsPanel.setVisible(false);
-			revalidate();
-			repaint();
-		});
-		JPanel settingsHeader = new JPanel(new FlowLayout(FlowLayout.RIGHT, 2, 2));
-		settingsHeader.setOpaque(false);
-		settingsHeader.add(settingsCloseButton);
-		settingsPanel.add(settingsHeader, BorderLayout.NORTH);
 
 		settingsContentContainer = new JPanel(new BorderLayout());
 		settingsContentContainer.setOpaque(false);
@@ -646,26 +678,28 @@ public class GeometryPreviewPanel extends JComponent {
 			legendScrollPane.addMouseListener(legendAreaClickHandler);
 			legendScrollPane.getViewport().addMouseListener(legendAreaClickHandler);
 
-			// Move/resize handled directly here (manipulating legendContainer's own bounds within
-			// this panel) rather than via net.sf.jailer.ui.util.MovePanel/SizeGrip, which only
-			// move/resize their top-level Window ancestor and so can't be used for an embedded
-			// component - no top-level window is involved at all.
-			JPanel moveHandle = new JPanel();
+			// Move/resize the embedded legendContainer within this panel (no top-level window
+			// involved) via MovePanel/SizeGrip in their callback mode: the drag deltas are applied to
+			// legendContainer's own bounds by moveLegendBy/resizeLegendBy. MovePanel paints its own
+			// grab texture + MOVE cursor; SizeGrip paints its dots + SE-resize cursor and sizes itself.
+			MovePanel moveHandle = new MovePanel((dx, dy) -> moveLegendBy(dx, dy));
 			moveHandle.setOpaque(false);
-			moveHandle.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
-			LegendMoveHandler moveHandler = new LegendMoveHandler();
-			moveHandle.addMouseListener(moveHandler);
-			moveHandle.addMouseMotionListener(moveHandler);
+			// A plain click (no drag) on the move bar toggles the corner/full-cover map, same as
+			// clicking the legend/map area - preserves the old move handle's click behavior.
+			moveHandle.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					if (clickAction != null) {
+						clickAction.run();
+					}
+				}
+			});
 
-			JPanel resizeGrip = new JPanel();
+			SizeGrip resizeGrip = new SizeGrip((dx, dy) -> resizeLegendBy(dx, dy));
 			resizeGrip.setOpaque(false);
-			resizeGrip.setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
-			resizeGrip.setPreferredSize(new Dimension(LEGEND_RESIZE_GRIP_WIDTH, LEGEND_MOVE_RESIZE_BAR_HEIGHT));
-			LegendResizeHandler resizeHandler = new LegendResizeHandler();
-			resizeGrip.addMouseListener(resizeHandler);
-			resizeGrip.addMouseMotionListener(resizeHandler);
 
 			JPanel moveResizeBar = new JPanel(new GridBagLayout());
+			legendMoveResizeBar = moveResizeBar;
 			moveResizeBar.setOpaque(false);
 			GridBagConstraints moveConstraints = new GridBagConstraints();
 			moveConstraints.gridx = 0;
@@ -720,89 +754,43 @@ public class GeometryPreviewPanel extends JComponent {
 	}
 
 	/**
-	 * Drags {@link #legendContainer} by manipulating its own bounds within this panel (no window
-	 * involved) - mirrors {@code PanAndClickHandler}'s press/drag/release-with-threshold structure.
-	 * A plain click (no significant drag) falls through to the existing "click legend area toggles
-	 * corner/full-cover" behavior instead of moving it.
+	 * Moves {@link #legendContainer} by the given drag deltas (from the {@link MovePanel} handle),
+	 * manipulating its own bounds within this panel (no window involved) and clamping so it stays
+	 * fully on-panel. Bases the move on the currently *displayed* bounds (what the user grabbed) -
+	 * NOT the stored {@link #legendManualBounds}, which the layout may have clamped smaller to fit
+	 * the current map size, so the gesture would otherwise snap/freeze.
 	 */
-	private class LegendMoveHandler extends MouseAdapter {
-		private Point pressPoint;
-		private Rectangle startBounds;
-		private boolean dragged;
-
-		@Override
-		public void mousePressed(MouseEvent e) {
-			pressPoint = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), GeometryPreviewPanel.this);
-			startBounds = legendContainer.getBounds();
-			dragged = false;
-		}
-
-		@Override
-		public void mouseDragged(MouseEvent e) {
-			if (pressPoint == null) {
-				return;
-			}
-			Point current = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), GeometryPreviewPanel.this);
-			int dx = current.x - pressPoint.x;
-			int dy = current.y - pressPoint.y;
-			if (!dragged && Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) {
-				return;
-			}
-			dragged = true;
-			int maxX = Math.max(0, getWidth() - startBounds.width);
-			int maxY = Math.max(0, getHeight() - startBounds.height);
-			int newX = Math.max(0, Math.min(startBounds.x + dx, maxX));
-			int newY = Math.max(0, Math.min(startBounds.y + dy, maxY));
-			legendManualBounds = new Rectangle(newX, newY, startBounds.width, startBounds.height);
-			legendContainer.setBounds(legendManualBounds);
-			repaint();
-		}
-
-		@Override
-		public void mouseReleased(MouseEvent e) {
-			if (!dragged && clickAction != null) {
-				clickAction.run();
-			}
-			pressPoint = null;
-			dragged = false;
-		}
+	private void moveLegendBy(int dx, int dy) {
+		Rectangle b = legendContainer.getBounds();
+		int maxX = Math.max(0, getWidth() - b.width);
+		int maxY = Math.max(0, getHeight() - b.height);
+		int newX = Math.max(0, Math.min(b.x + dx, maxX));
+		int newY = Math.max(0, Math.min(b.y + dy, maxY));
+		legendManualBounds = new Rectangle(newX, newY, b.width, b.height);
+		legendContainer.setBounds(legendManualBounds);
+		repaint();
 	}
 
 	/**
-	 * Resizes {@link #legendContainer} by manipulating its own bounds within this panel (no window
-	 * involved) - never triggers {@link #clickAction} (a resize gesture is never a plain click).
+	 * Resizes {@link #legendContainer} by the given drag deltas (from the {@link SizeGrip}),
+	 * manipulating its own bounds within this panel (no window involved), enforcing the min size and
+	 * clamping to the remaining panel space. Bases the resize on the currently *displayed* bounds
+	 * (what the user grabbed) - NOT the stored {@link #legendManualBounds}, which the layout may have
+	 * clamped smaller to fit the current map size, so the gesture would otherwise freeze at the clamp.
 	 */
-	private class LegendResizeHandler extends MouseAdapter {
-		private Point pressPoint;
-		private Rectangle startBounds;
-
-		@Override
-		public void mousePressed(MouseEvent e) {
-			pressPoint = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), GeometryPreviewPanel.this);
-			startBounds = legendContainer.getBounds();
-		}
-
-		@Override
-		public void mouseDragged(MouseEvent e) {
-			if (pressPoint == null) {
-				return;
-			}
-			Point current = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), GeometryPreviewPanel.this);
-			int dx = current.x - pressPoint.x;
-			int dy = current.y - pressPoint.y;
-			int maxW = Math.max(LEGEND_MIN_WIDTH, getWidth() - startBounds.x);
-			int maxH = Math.max(LEGEND_MIN_HEIGHT, getHeight() - startBounds.y);
-			int newW = Math.max(LEGEND_MIN_WIDTH, Math.min(startBounds.width + dx, maxW));
-			int newH = Math.max(LEGEND_MIN_HEIGHT, Math.min(startBounds.height + dy, maxH));
-			legendManualBounds = new Rectangle(startBounds.x, startBounds.y, newW, newH);
-			legendContainer.setBounds(legendManualBounds);
-			repaint();
-		}
-
-		@Override
-		public void mouseReleased(MouseEvent e) {
-			pressPoint = null;
-		}
+	private void resizeLegendBy(int dx, int dy) {
+		Rectangle b = legendContainer.getBounds();
+		int maxW = Math.max(LEGEND_MIN_WIDTH, getWidth() - b.x);
+		int maxH = Math.max(LEGEND_MIN_HEIGHT, getHeight() - b.y);
+		int newW = Math.max(LEGEND_MIN_WIDTH, Math.min(b.width + dx, maxW));
+		int newH = Math.max(LEGEND_MIN_HEIGHT, Math.min(b.height + dy, maxH));
+		legendManualBounds = new Rectangle(b.x, b.y, newW, newH);
+		legendContainer.setBounds(legendManualBounds);
+		// setBounds alone grows the container but leaves its children (scroll pane + bar) laid out at
+		// the old size until a validate happens - without this the size change only becomes visible on
+		// the next layout pass (e.g. the klein/gross toggle).
+		legendContainer.revalidate();
+		repaint();
 	}
 
 	/** A small colored square, used as a legend row's swatch icon. */
@@ -893,12 +881,21 @@ public class GeometryPreviewPanel extends JComponent {
 		try {
 			paintComponent(g2);
 			if (legendContainer != null && legendContainer.isVisible()) {
+				// Hide the interactive move/resize bar (MovePanel/SizeGrip) so its grab texture and
+				// resize dots don't show up in the exported image - only the legend table belongs there.
+				boolean barVisible = legendMoveResizeBar != null && legendMoveResizeBar.isVisible();
+				if (barVisible) {
+					legendMoveResizeBar.setVisible(false);
+				}
 				Graphics2D legendG2 = (Graphics2D) g2.create(
 						legendContainer.getX(), legendContainer.getY(), legendContainer.getWidth(), legendContainer.getHeight());
 				try {
 					legendContainer.paint(legendG2);
 				} finally {
 					legendG2.dispose();
+					if (barVisible) {
+						legendMoveResizeBar.setVisible(true);
+					}
 				}
 			}
 		} finally {

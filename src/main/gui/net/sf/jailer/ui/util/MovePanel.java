@@ -35,9 +35,32 @@ import net.sf.jailer.ui.Colors;
 public class MovePanel extends JPanel {
 
 		/**
+		 * Optional callback: when non-null the panel moves this target (by the drag deltas) instead of
+		 * its enclosing top-level window - lets the panel be reused as a drag handle for an embedded
+		 * component (e.g. the map preview's legend overlay) rather than only a {@link Window}.
+		 */
+		@FunctionalInterface
+		public interface Mover {
+			void moveBy(int dx, int dy);
+		}
+
+		private final Mover mover;
+
+		/**
 		 * Constructor.
 		 */
 		public MovePanel() {
+			this((Mover) null);
+		}
+
+		/**
+		 * Constructor.
+		 *
+		 * @param mover callback moving an embedded target by the drag deltas; {@code null} moves the
+		 *              enclosing window (the classic behavior)
+		 */
+		public MovePanel(Mover mover) {
+			this.mover = mover;
 	        MouseInputAdapter ml = new MouseInputAdapter() {
 	    		private Point origPos;
 	    		@Override
@@ -45,11 +68,16 @@ public class MovePanel extends JPanel {
 	    			if (origPos == null) {
 	    				return;
 	    			}
-	    			Window window = SwingUtilities.getWindowAncestor(MovePanel.this);
 	    			Point newPos = e.getPoint();
-	    			SwingUtilities.convertPointToScreen(newPos, window);
+	    			SwingUtilities.convertPointToScreen(newPos, MovePanel.this);
 	    			int xDelta = newPos.x - origPos.x;
 	    			int yDelta = newPos.y - origPos.y;
+	    			if (mover != null) {
+	    				mover.moveBy(xDelta, yDelta);
+	    				origPos.setLocation(newPos);
+	    				return;
+	    			}
+	    			Window window = SwingUtilities.getWindowAncestor(MovePanel.this);
 	    			if (window!=null) { // Should always be true
 	    				window.setLocation(window.getX() + xDelta, window.getY() + yDelta);
 	    				window.invalidate();
@@ -61,7 +89,7 @@ public class MovePanel extends JPanel {
 	    		@Override
 	    		public void mousePressed(MouseEvent e) {
 	    			origPos = e.getPoint();
-	    			SwingUtilities.convertPointToScreen(origPos, SwingUtilities.getWindowAncestor(MovePanel.this));
+	    			SwingUtilities.convertPointToScreen(origPos, MovePanel.this);
 	    		}
 
 	    		@Override
@@ -73,7 +101,7 @@ public class MovePanel extends JPanel {
 	    	addMouseMotionListener(ml);
 	    	setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
 		}
-		
+
 		/**
 		 * Constructor.
 		 *

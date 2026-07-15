@@ -46,12 +46,30 @@ import net.sf.jailer.ui.UIUtil;
 public class SizeGrip extends JPanel {
 
 	/**
+	 * Optional callback: when non-null the grip resizes this target (by the drag deltas) instead of
+	 * its enclosing top-level window - lets the grip be reused for an embedded component (e.g. the
+	 * map preview's legend overlay) rather than only a {@link Window}.
+	 */
+	@FunctionalInterface
+	public interface Resizer {
+		void resizeBy(int dx, int dy);
+	}
+
+	/**
 	 * The size grip to use if we're on OS X.
 	 */
 	private Image osxSizeGrip;
 
+	private final Resizer resizer;
+
 
 	public SizeGrip() {
+		this((Resizer) null);
+	}
+
+
+	public SizeGrip(Resizer resizer) {
+		this.resizer = resizer;
 		MouseHandler adapter = new MouseHandler();
 		addMouseListener(adapter);
 		addMouseMotionListener(adapter);
@@ -223,6 +241,11 @@ public class SizeGrip extends JPanel {
 			SwingUtilities.convertPointToScreen(newPos, SizeGrip.this);
 			int xDelta = newPos.x - origPos.x;
 			int yDelta = newPos.y - origPos.y;
+			if (resizer != null) {
+				resizer.resizeBy(xDelta, yDelta);
+				origPos.setLocation(newPos);
+				return;
+			}
 			Window wind = SwingUtilities.getWindowAncestor(SizeGrip.this);
 			if (wind!=null) { // Should always be true
 				if (getComponentOrientation().isLeftToRight()) {

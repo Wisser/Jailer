@@ -178,7 +178,7 @@ public class SQLConsoleChartPanel extends JPanel {
     private final JPopupMenu        yPopup         = new JPopupMenu();
     private final JPanel            yCheckPanel    = new JPanel();
     private final List<JCheckBox>   yCheckBoxes    = new ArrayList<>();
-    private final JButton           exportButton   = new JButton("Export");
+    private final JButton           exportButton   = new JButton("Save as image");
 
     // --- General settings ---
     private final JTextField  titleField        = new JTextField(12);
@@ -370,7 +370,7 @@ public class SQLConsoleChartPanel extends JPanel {
         toolbar.add(yButton);
         toolbar.add(Box.createHorizontalStrut(12));
 
-        exportButton.setIcon(UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/run.png")));
+        exportButton.setIcon(UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/export.png")));
         exportButton.setToolTipText("Export chart as image file or copy to clipboard");
         exportButton.setEnabled(false);
         exportButton.addActionListener(e -> showExportMenu());
