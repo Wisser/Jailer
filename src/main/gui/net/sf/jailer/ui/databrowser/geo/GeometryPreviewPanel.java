@@ -21,6 +21,7 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
+import java.awt.Font;
 import java.awt.GridBagLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -88,17 +89,20 @@ public class GeometryPreviewPanel extends JComponent {
 	private static final long serialVersionUID = 1L;
 
 	private static final int PADDING = 10;
-	private static final double POINT_RADIUS = 5.0;
-	private static final float POINT_OUTLINE_WIDTH = 1.5f;
-	private static final float LINE_WIDTH = 2.2f;
-	private static final float LINE_HALO_WIDTH = LINE_WIDTH + 2.0f;
+	private static final double POINT_RADIUS = 9.0;
+	private static final float POINT_OUTLINE_WIDTH = 2.5f;
+	// White center dot radius, as a fraction of the point radius - gives the marker a "ring with a
+	// white hole" look that reads clearly on any tile color.
+	private static final double POINT_CENTER_FRACTION = 0.4;
+	private static final float LINE_WIDTH = 4.5f;
+	private static final float LINE_HALO_WIDTH = LINE_WIDTH + 3.5f;
 
 	// Hover-highlight amplification and hit-test tolerance for the SQL Console's per-row tooltip
 	// feature (see tooltipProvider) - a hovered leaf geometry gets a bigger/brighter marker or a
 	// thicker/brighter outline, and hit-testing is forgiving by a few pixels so thin lines/points
 	// remain easy to hit.
-	private static final double POINT_RADIUS_HOVER_EXTRA = 3.0;
-	private static final float LINE_WIDTH_HOVER_EXTRA = 1.5f;
+	private static final double POINT_RADIUS_HOVER_EXTRA = 5.0;
+	private static final float LINE_WIDTH_HOVER_EXTRA = 3.0f;
 	private static final double HOVER_HIT_TOLERANCE = 4.0;
 
 	// Tracks every panel currently part of a displayed component tree, so a tile-loaded
@@ -131,7 +135,7 @@ public class GeometryPreviewPanel extends JComponent {
 	// Console's corner/full-cover overlay toggle) - null (the default) leaves popup behavior unchanged.
 	private Runnable clickAction;
 	private final Color lineColor = new Color(0, 90, 200);
-	private final Color fillColor = new Color(0, 90, 200, 60);
+	private final Color fillColor = new Color(0, 90, 200, 130);
 	private final Color pointColor = new Color(200, 40, 40);
 	// Non-null only while a shift+left-mouse-button zoom-box drag is in progress, in panel-local
 	// screen coordinates - painted on top of everything else, then consumed (zooms in) on release.
@@ -139,8 +143,9 @@ public class GeometryPreviewPanel extends JComponent {
 
 	private static final int SETTINGS_BUTTON_SIZE = 32;
 	private static final int SETTINGS_OVERLAY_MARGIN = 4;
-	private static final int LEGEND_PANEL_WIDTH = 180;
 	private static final int LEGEND_PANEL_MAX_HEIGHT = 160;
+	// Left/right breathing room between the legend text and the table border.
+	private static final int LEGEND_TEXT_PADDING = 6;
 	private static final int LEGEND_SWATCH_SIZE = 12;
 	// Small allowance for the legend JScrollPane's own LineBorder insets, so the content-height
 	// calculation in layoutOverlayControls() doesn't clip the last row/its border by a pixel or two.
@@ -148,7 +153,10 @@ public class GeometryPreviewPanel extends JComponent {
 	// Translucent, not solid white - "Tabellenhintergrund mit transparenter Farbe, die etwas deckt" -
 	// legible over arbitrary tile colors while still letting the map show through underneath.
 	private static final Color LEGEND_BACKGROUND = new Color(255, 255, 255, 180);
-	private static final int LEGEND_MOVE_RESIZE_BAR_HEIGHT = 16;
+	private static final int LEGEND_MOVE_RESIZE_BAR_HEIGHT = 20;
+	// Opaque, clearly-visible strip behind the move/resize handles so they don't disappear into the
+	// map tiles - a distinct light-gray "footer" under the (translucent) legend table.
+	private static final Color LEGEND_MOVE_RESIZE_BAR_BG = new Color(225, 225, 225);
 	private static final int LEGEND_MIN_WIDTH = 60;
 	private static final int LEGEND_MIN_HEIGHT = 40;
 
@@ -172,6 +180,8 @@ public class GeometryPreviewPanel extends JComponent {
 	// The bottom move/resize bar (MovePanel grab handle + SizeGrip) - interactive chrome that is
 	// hidden while rendering the exported image, so the grips don't appear in it.
 	private JPanel legendMoveResizeBar;
+	// User-chosen legend text-size delta (points added to each row label's default font size); 0 = default.
+	private int legendFontSizeDelta;
 	// null = not yet customized by the user - use the existing default top-left/content-fit sizing;
 	// non-null = the user's own drag/resize result, used verbatim (clamped to the panel's current
 	// size in layoutOverlayControls(), in case the panel itself shrank since).
@@ -522,6 +532,62 @@ public class GeometryPreviewPanel extends JComponent {
 	}
 
 	/**
+	 * Sets the legend text-size delta - points added to (delta &lt; 0: subtracted from) each legend
+	 * row label's default font size. 0 restores the default. Rebuilds the legend so the change is
+	 * visible immediately.
+	 */
+	public void setLegendFontSizeDelta(int delta) {
+		if (delta != legendFontSizeDelta) {
+			legendFontSizeDelta = delta;
+			rebuildLegendUI();
+			// Auto-fit mode already refit via layoutOverlayControls (called from rebuildLegendUI);
+			// in manual mode refit to the new text while keeping the user's position.
+			if (legendManualBounds != null) {
+				resizeLegendToFit();
+			}
+			repaint();
+		}
+	}
+
+	/**
+	 * The size {@link #legendContainer} needs to fit its current content (rows at the current font
+	 * size, incl. their padding) plus the move/resize bar - clamped to the min size, the panel's
+	 * available area, and {@link #LEGEND_PANEL_MAX_HEIGHT}. Adds room for the vertical scrollbar when
+	 * the content is taller than the (capped) box.
+	 */
+	private Dimension legendFitSize() {
+		Dimension pref = legendListPanel.getPreferredSize();
+		int availW = Math.max(LEGEND_MIN_WIDTH, getWidth() - 2 * SETTINGS_OVERLAY_MARGIN);
+		int availH = Math.max(LEGEND_MIN_HEIGHT, getHeight() - 2 * SETTINGS_OVERLAY_MARGIN);
+		int contentH = pref.height + LEGEND_SCROLLPANE_BORDER_ALLOWANCE + LEGEND_MOVE_RESIZE_BAR_HEIGHT;
+		int h = Math.max(LEGEND_MIN_HEIGHT, Math.min(contentH, Math.min(LEGEND_PANEL_MAX_HEIGHT, availH)));
+		int w = pref.width + LEGEND_SCROLLPANE_BORDER_ALLOWANCE;
+		if (contentH > h) { // content taller than the box -> a vertical scrollbar appears, leave room for it
+			w += legendScrollPane.getVerticalScrollBar().getPreferredSize().width;
+		}
+		w = Math.max(LEGEND_MIN_WIDTH, Math.min(w, availW));
+		return new Dimension(w, h);
+	}
+
+	/**
+	 * Resizes {@link #legendContainer} to {@link #legendFitSize()}, keeping its top-left position.
+	 * Used after a legend text-size change (in manual mode) so the table grows/shrinks with the text;
+	 * in auto-fit mode {@link #layoutOverlayControls()} already applies the same size.
+	 */
+	private void resizeLegendToFit() {
+		if (legendContainer == null || legendListPanel == null || !legendContainer.isVisible()) {
+			return;
+		}
+		Dimension fit = legendFitSize();
+		Rectangle current = legendManualBounds != null ? legendManualBounds : legendContainer.getBounds();
+		int x = Math.max(0, Math.min(current.x, getWidth() - fit.width));
+		int y = Math.max(0, Math.min(current.y, getHeight() - fit.height));
+		legendManualBounds = new Rectangle(x, y, fit.width, fit.height);
+		legendContainer.setBounds(legendManualBounds);
+		legendContainer.revalidate();
+	}
+
+	/**
 	 * Opt-in (SQL Console only): when {@code true}, mouse-wheel zoom keeps the geo-point under the
 	 * cursor fixed (standard map behavior) instead of keeping the map center fixed. Left {@code false}
 	 * for every other consumer (e.g. DetailsView), which keeps the center-anchored zoom.
@@ -658,6 +724,9 @@ public class GeometryPreviewPanel extends JComponent {
 			};
 			legendListPanel.setLayout(new BoxLayout(legendListPanel, BoxLayout.Y_AXIS));
 			legendListPanel.setOpaque(false);
+			// A little left/right (and a touch top/bottom) spacing so the text isn't flush against the
+			// table border. Included in the panel's preferred size, so the fit-to-content sizing accounts for it.
+			legendListPanel.setBorder(BorderFactory.createEmptyBorder(2, LEGEND_TEXT_PADDING, 2, LEGEND_TEXT_PADDING));
 			legendScrollPane = new JScrollPane(legendListPanel,
 					JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 			legendScrollPane.setOpaque(false);
@@ -700,7 +769,10 @@ public class GeometryPreviewPanel extends JComponent {
 
 			JPanel moveResizeBar = new JPanel(new GridBagLayout());
 			legendMoveResizeBar = moveResizeBar;
-			moveResizeBar.setOpaque(false);
+			moveResizeBar.setOpaque(true);
+			moveResizeBar.setBackground(LEGEND_MOVE_RESIZE_BAR_BG);
+			moveResizeBar.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.GRAY));
+			moveResizeBar.setPreferredSize(new Dimension(0, LEGEND_MOVE_RESIZE_BAR_HEIGHT));
 			GridBagConstraints moveConstraints = new GridBagConstraints();
 			moveConstraints.gridx = 0;
 			moveConstraints.weightx = 1;
@@ -723,6 +795,10 @@ public class GeometryPreviewPanel extends JComponent {
 			row.setIcon(new SwatchIcon(entry.color));
 			row.setToolTipText(entry.label);
 			row.setOpaque(false);
+			if (legendFontSizeDelta != 0) {
+				Font f = row.getFont();
+				row.setFont(f.deriveFont(Math.max(1f, f.getSize2D() + legendFontSizeDelta)));
+			}
 			// Hovering a legend row highlights every geo-object sharing its color (i.e. every row
 			// grouped under this same legend entry, not just one); a plain click toggles the
 			// corner/full-cover map presentation, same as clicking the map itself.
@@ -847,15 +923,9 @@ public class GeometryPreviewPanel extends JComponent {
 				int y = Math.max(0, Math.min(legendManualBounds.y, getHeight() - h));
 				legendContainer.setBounds(x, y, w, h);
 			} else {
-				int w = Math.min(LEGEND_PANEL_WIDTH, Math.max(0, getWidth() - 2 * SETTINGS_OVERLAY_MARGIN));
-				// Only as tall as the actual entries need (plus a small border allowance and the
-				// move/resize bar), not always the full max height - "mache die Tabelle initial
-				// nicht höher, als nötig". Still capped at LEGEND_PANEL_MAX_HEIGHT (and available
-				// space) once there are enough entries to need scrolling, so long legends behave
-				// exactly as before.
-				int contentHeight = legendListPanel.getPreferredSize().height + LEGEND_SCROLLPANE_BORDER_ALLOWANCE + LEGEND_MOVE_RESIZE_BAR_HEIGHT;
-				int h = Math.min(contentHeight, Math.min(LEGEND_PANEL_MAX_HEIGHT, Math.max(0, getHeight() - 2 * SETTINGS_OVERLAY_MARGIN)));
-				legendContainer.setBounds(SETTINGS_OVERLAY_MARGIN, SETTINGS_OVERLAY_MARGIN, w, h);
+				// Auto-fit to the content (width + height) at the current font, positioned top-left.
+				Dimension fit = legendFitSize();
+				legendContainer.setBounds(SETTINGS_OVERLAY_MARGIN, SETTINGS_OVERLAY_MARGIN, fit.width, fit.height);
 			}
 		}
 	}
@@ -1051,6 +1121,12 @@ public class GeometryPreviewPanel extends JComponent {
 			g2.setStroke(new java.awt.BasicStroke(hovered ? POINT_OUTLINE_WIDTH + 1f : POINT_OUTLINE_WIDTH));
 			g2.draw(dot);
 			g2.setStroke(originalStroke);
+			// White center - turns the marker into a colored ring around a white core, which reads
+			// clearly regardless of the tile color under it.
+			double innerRadius = radius * POINT_CENTER_FRACTION;
+			Ellipse2D center = new Ellipse2D.Double(sp[0] - innerRadius, sp[1] - innerRadius, innerRadius * 2, innerRadius * 2);
+			g2.setColor(Color.WHITE);
+			g2.fill(center);
 		} else if (geo instanceof Geometry.LineString) {
 			Path2D path = toPath(((Geometry.LineString) geo).points, t, false);
 			drawHaloedLine(g2, path, hovered, assignedColor);

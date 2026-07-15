@@ -21,6 +21,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ItemEvent;
+import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -39,6 +40,7 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 
+import net.sf.jailer.ui.BrowserLauncher;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.ai.AIProviderConfig.ProviderType;
 import net.sf.jailer.ui.util.StringObfuscator;
@@ -220,12 +222,35 @@ public class AIProviderPanel extends JPanel {
             saveSettings();
         });
 
-        JPanel testRow = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 4, 0));
+        JButton helpButton = new JButton("Help");
+        ImageIcon helpIcon = UIUtil.readImage("/help.png");
+        if (helpIcon != null) {
+            helpButton.setIcon(UIUtil.scaleIcon(helpButton, helpIcon));
+        }
+        helpButton.setToolTipText("Open the setup help page in the browser");
+        helpButton.addActionListener(e -> {
+            try {
+                BrowserLauncher.openURL(new URI("https://wisser.github.io/Jailer/openrouter-setup.html"), AIProviderPanel.this);
+            } catch (Exception ex) {
+                UIUtil.showException(AIProviderPanel.this, "Error", ex);
+            }
+        });
+
+        JPanel testRowLeft = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 4, 0));
+        testRowLeft.setOpaque(false);
+        testRowLeft.add(saveButton);
+        testRowLeft.add(testButton);
+        testRowLeft.add(cancelTestButton);
+        testRowLeft.add(testStatusLabel);
+
+        JPanel testRowRight = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 4, 0));
+        testRowRight.setOpaque(false);
+        testRowRight.add(helpButton);
+
+        JPanel testRow = new JPanel(new java.awt.BorderLayout());
         testRow.setOpaque(false);
-        testRow.add(saveButton);
-        testRow.add(testButton);
-        testRow.add(cancelTestButton);
-        testRow.add(testStatusLabel);
+        testRow.add(testRowLeft, java.awt.BorderLayout.CENTER);
+        testRow.add(testRowRight, java.awt.BorderLayout.EAST);
 
         GridBagConstraints trc = new GridBagConstraints();
         trc.gridx = 0; trc.gridy = 4; trc.gridwidth = 5;

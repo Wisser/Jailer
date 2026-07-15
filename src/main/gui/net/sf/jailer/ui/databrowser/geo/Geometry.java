@@ -29,6 +29,12 @@ public abstract class Geometry {
 	public static final int SRID_WGS84 = 4326;
 	/** Oracle's own geodetic WGS84 SRID (lon/lat, same datum as {@link #SRID_WGS84}). */
 	public static final int SRID_ORACLE_WGS84 = 8307;
+	/** EPSG:3857 "Web Mercator" - the projection web maps/online portals (and the OSM tiles) use;
+	 *  coordinates are in meters, not degrees, so they are reprojected via {@link #toWgs84()}. */
+	public static final int SRID_WEB_MERCATOR = 3857;
+
+	/** Earth radius (meters) of the EPSG:3857 spherical Mercator model. */
+	private static final double WEB_MERCATOR_RADIUS = 6378137.0;
 
 	private final int srid;
 
@@ -52,6 +58,29 @@ public abstract class Geometry {
 	 */
 	public static boolean isWgs84(int srid) {
 		return srid == SRID_WGS84 || srid == SRID_ORACLE_WGS84;
+	}
+
+	/**
+	 * Returns an equivalent geometry with WGS84 (lon/lat) coordinates. EPSG:3857 (Web Mercator, used
+	 * by web maps / online portals) geometries are reprojected from meters to lon/lat so they can be
+	 * shown on the OSM map like native WGS84 data; every other geometry (including already-WGS84) is
+	 * returned unchanged.
+	 */
+	public final Geometry toWgs84() {
+		if (srid != SRID_WEB_MERCATOR) {
+			return this;
+		}
+		return convertWebMercatorToWgs84();
+	}
+
+	/** Reprojects this geometry's EPSG:3857 (Web Mercator) meter coordinates to a new WGS84 geometry. */
+	protected abstract Geometry convertWebMercatorToWgs84();
+
+	/** Converts a single EPSG:3857 (x, y) in meters to WGS84 { lon, lat } in degrees. */
+	protected static double[] webMercatorToWgs84(double x, double y) {
+		double lon = Math.toDegrees(x / WEB_MERCATOR_RADIUS);
+		double lat = Math.toDegrees(2 * Math.atan(Math.exp(y / WEB_MERCATOR_RADIUS)) - Math.PI / 2);
+		return new double[] { lon, lat };
 	}
 
 	/**
@@ -100,6 +129,12 @@ public abstract class Geometry {
 		public double[] getBounds() {
 			return new double[] { x, y, x, y };
 		}
+
+		@Override
+		protected Geometry convertWebMercatorToWgs84() {
+			double[] ll = webMercatorToWgs84(x, y);
+			return new Point(SRID_WGS84, ll[0], ll[1]);
+		}
 	}
 
 	/**
@@ -120,6 +155,15 @@ public abstract class Geometry {
 				return null;
 			}
 			return boundsOfPoints(points);
+		}
+
+		@Override
+		protected Geometry convertWebMercatorToWgs84() {
+			double[][] converted = new double[points.length][];
+			for (int i = 0; i < points.length; i++) {
+				converted[i] = webMercatorToWgs84(points[i][0], points[i][1]);
+			}
+			return new LineString(SRID_WGS84, converted);
 		}
 	}
 
@@ -146,6 +190,20 @@ public abstract class Geometry {
 			}
 			return bounds;
 		}
+
+		@Override
+		protected Geometry convertWebMercatorToWgs84() {
+			double[][][] converted = new double[rings.length][][];
+			for (int r = 0; r < rings.length; r++) {
+				double[][] ring = rings[r];
+				double[][] convertedRing = new double[ring.length][];
+				for (int i = 0; i < ring.length; i++) {
+					convertedRing[i] = webMercatorToWgs84(ring[i][0], ring[i][1]);
+				}
+				converted[r] = convertedRing;
+			}
+			return new Polygon(SRID_WGS84, converted);
+		}
 	}
 
 	/**
@@ -167,6 +225,15 @@ public abstract class Geometry {
 				bounds = mergeBounds(bounds, g.getBounds());
 			}
 			return bounds;
+		}
+
+		@Override
+		protected Geometry convertWebMercatorToWgs84() {
+			Geometry[] converted = new Geometry[geometries.length];
+			for (int i = 0; i < geometries.length; i++) {
+				converted[i] = geometries[i].convertWebMercatorToWgs84();
+			}
+			return new GeometryCollection(SRID_WGS84, converted);
 		}
 	}
 

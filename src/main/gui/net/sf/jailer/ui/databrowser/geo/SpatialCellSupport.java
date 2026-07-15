@@ -25,11 +25,13 @@ import net.sf.jailer.util.LogUtil;
  * data and decodes them into the {@link Geometry} preview model, so callers
  * don't need to know about the various DBMS-specific wrapper types or binary
  * formats. Returns <code>null</code> for anything that isn't a recognized,
- * decodable, WGS84 (SRID 4326/8307) spatial value - callers should fall back
- * to the normal text rendering in that case. Non-WGS84 (e.g. local/planar,
- * SRID 0) geometries are deliberately not previewed either: the preview only
- * exists to show the geometry on its OpenStreetMap background, and there is
- * no map to show one on otherwise.
+ * decodable spatial value that can be shown on the OpenStreetMap background:
+ * WGS84 (SRID 4326/8307) directly, and EPSG:3857 (Web Mercator, used by web
+ * maps / online portals) after reprojection to WGS84 lon/lat. Callers should
+ * fall back to the normal text rendering otherwise. Other non-WGS84 (e.g.
+ * local/planar, SRID 0) geometries are deliberately not previewed: the preview
+ * only exists to show the geometry on its map background, and there is no map
+ * to show one on otherwise.
  *
  * <p>For PostgreSQL/PostGIS, {@code CellContentConverter} routes geometry and
  * geography columns through its generic {@code sqlExpressionRule} mechanism:
@@ -57,6 +59,11 @@ public class SpatialCellSupport {
 	 */
 	public static Geometry parse(Object rawValue) {
 		Geometry g = decode(rawValue);
+		if (g != null) {
+			// EPSG:3857 (Web Mercator, used by web maps / online portals) is reprojected to WGS84
+			// lon/lat so it can be shown on the OSM background; anything else is returned unchanged.
+			g = g.toWgs84();
+		}
 		if (g == null || !Geometry.isWgs84(g.getSrid())) {
 			return null;
 		}

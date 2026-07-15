@@ -57,6 +57,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.RowSorter;
@@ -248,10 +250,14 @@ public class TabContentPanel extends javax.swing.JPanel {
 	private static final String NO_LEGEND_COLUMN = "(none)";
 	private javax.swing.JComboBox<String> legendColumnCombo;
 	private javax.swing.JComboBox<String> legendPaletteCombo;
+	private JSpinner legendFontSizeSpinner;
 	// Remembered across TabContentPanel instances (one per query/tab) - same pattern as
 	// lastColumnSeparator/lastHeaderCheckBoxIsSelected above.
 	private static String lastLegendColumnName;
 	private static String lastLegendPaletteName;
+	// Session-remembered legend text-size delta (see GeometryPreviewPanel.setLegendFontSizeDelta),
+	// carried across result tabs like the palette choice above.
+	private static int lastLegendFontSizeDelta;
 
 	private Map<Geometry, Row> rowByGeometry = java.util.Collections.emptyMap();
 	// Guards legendColumnCombo's item-list rebuild in refreshLegendColumnComboItems() against
@@ -414,7 +420,9 @@ public class TabContentPanel extends javax.swing.JPanel {
 		} finally {
 			suppressLegendComboEvents = false;
 		}
-		legendPaletteCombo.setEnabled(!NO_LEGEND_COLUMN.equals(legendColumnCombo.getSelectedItem()));
+		boolean legendSelected = !NO_LEGEND_COLUMN.equals(legendColumnCombo.getSelectedItem());
+		legendPaletteCombo.setEnabled(legendSelected);
+		legendFontSizeSpinner.setEnabled(legendSelected);
 	}
 
 	/**
@@ -678,6 +686,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 			}
 			boolean hasLegend = !NO_LEGEND_COLUMN.equals(legendColumnCombo.getSelectedItem());
 			legendPaletteCombo.setEnabled(hasLegend);
+			legendFontSizeSpinner.setEnabled(hasLegend);
 			lastLegendColumnName = hasLegend ? (String) legendColumnCombo.getSelectedItem() : null;
 			updateTooltipsAndLegend();
 		});
@@ -708,11 +717,27 @@ public class TabContentPanel extends javax.swing.JPanel {
 		lgc = new GridBagConstraints();
 		lgc.gridx = 1; lgc.gridy = 1; lgc.fill = GridBagConstraints.HORIZONTAL; lgc.weightx = 1; lgc.insets = new Insets(2, 4, 2, 4);
 		legendSettingsContent.add(legendPaletteCombo, lgc);
+
+		legendFontSizeSpinner = new JSpinner(new SpinnerNumberModel(lastLegendFontSizeDelta, -3, 16, 1));
+		legendFontSizeSpinner.setToolTipText("Legend text size relative to the default (-1, 0, +1, +2, ...)");
+		legendFontSizeSpinner.setEnabled(false); // enabled only while a legend is shown (see below)
+		legendFontSizeSpinner.addChangeListener(e -> {
+			lastLegendFontSizeDelta = (Integer) legendFontSizeSpinner.getValue();
+			mapOverlayPanel.setLegendFontSizeDelta(lastLegendFontSizeDelta);
+		});
+		mapOverlayPanel.setLegendFontSizeDelta(lastLegendFontSizeDelta);
+		lgc = new GridBagConstraints();
+		lgc.gridx = 0; lgc.gridy = 2; lgc.anchor = GridBagConstraints.WEST; lgc.insets = new Insets(2, 4, 2, 4);
+		legendSettingsContent.add(new JLabel("Text size:"), lgc);
+		lgc = new GridBagConstraints();
+		lgc.gridx = 1; lgc.gridy = 2; lgc.fill = GridBagConstraints.HORIZONTAL; lgc.weightx = 1; lgc.insets = new Insets(2, 4, 2, 4);
+		legendSettingsContent.add(legendFontSizeSpinner, lgc);
+
 		JButton exportButton = new JButton("Save as image...", UIUtil.scaleIcon(UIUtil.readImage("/export.png"), 20, 18));
 		exportButton.setToolTipText("Export map as image file or copy to clipboard");
 		exportButton.addActionListener(e -> showMapExportMenu(exportButton));
 		lgc = new GridBagConstraints();
-		lgc.gridx = 0; lgc.gridy = 2; lgc.gridwidth = 2; lgc.fill = GridBagConstraints.HORIZONTAL; lgc.insets = new Insets(4, 4, 2, 4);
+		lgc.gridx = 0; lgc.gridy = 3; lgc.gridwidth = 2; lgc.fill = GridBagConstraints.HORIZONTAL; lgc.insets = new Insets(4, 4, 2, 4);
 		legendSettingsContent.add(exportButton, lgc);
 		mapOverlayPanel.setSettingsPanelContent(legendSettingsContent);
 
