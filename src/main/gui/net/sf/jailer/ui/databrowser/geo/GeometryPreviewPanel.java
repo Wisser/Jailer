@@ -153,7 +153,6 @@ public class GeometryPreviewPanel extends JComponent {
 	// Only enabled by the SQL Console's map overlay (setSettingsPanelEnabled(true)) - null for
 	// every other consumer of this panel (e.g. DetailsView's cell preview/enlarge popup).
 	private JButton settingsToggleButton;
-	private JButton settingsSideButton;
 	private JPanel settingsPanel;
 	private JPanel settingsContentContainer;
 
@@ -525,11 +524,7 @@ public class GeometryPreviewPanel extends JComponent {
 		if (!enabled) {
 			remove(settingsToggleButton);
 			remove(settingsPanel);
-			if (settingsSideButton != null) {
-				remove(settingsSideButton);
-			}
 			settingsToggleButton = null;
-			settingsSideButton = null;
 			settingsPanel = null;
 			settingsContentContainer = null;
 			revalidate();
@@ -550,7 +545,7 @@ public class GeometryPreviewPanel extends JComponent {
 		settingsPanel.setOpaque(true);
 		settingsPanel.setBackground(new Color(255, 255, 255, 230));
 		settingsPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-		settingsPanel.setVisible(false); // collapsed by default
+		settingsPanel.setVisible(true); // open by default
 
 		JButton settingsCloseButton = new JButton(UIUtil.readImage("/Close-16-1.png"));
 		settingsCloseButton.setToolTipText("Close");
@@ -590,24 +585,6 @@ public class GeometryPreviewPanel extends JComponent {
 		settingsContentContainer.add(content, BorderLayout.CENTER);
 		settingsContentContainer.revalidate();
 		settingsContentContainer.repaint();
-	}
-
-	/**
-	 * Installs a caller-supplied button immediately left of the settings toggle button, at the same
-	 * height/size (e.g. the SQL Console map's "Save as..." export button). Requires
-	 * {@link #setSettingsPanelEnabled(boolean)} to have been enabled first.
-	 */
-	public void setSettingsSideButton(JButton button) {
-		if (settingsSideButton != null) {
-			remove(settingsSideButton);
-		}
-		settingsSideButton = button;
-		if (button != null) {
-			add(button);
-		}
-		layoutOverlayControls();
-		revalidate();
-		repaint();
 	}
 
 	/**
@@ -870,11 +847,6 @@ public class GeometryPreviewPanel extends JComponent {
 			int panelWidth = Math.min(pref.width, Math.max(0, getWidth() - 2 * SETTINGS_OVERLAY_MARGIN));
 			int panelHeight = Math.min(pref.height, Math.max(0, getHeight() - panelY - SETTINGS_OVERLAY_MARGIN));
 			settingsPanel.setBounds(getWidth() - panelWidth - SETTINGS_OVERLAY_MARGIN, panelY, panelWidth, panelHeight);
-			if (settingsSideButton != null) {
-				int w = settingsSideButton.getPreferredSize().width;
-				int toggleX = getWidth() - SETTINGS_BUTTON_SIZE - SETTINGS_OVERLAY_MARGIN;
-				settingsSideButton.setBounds(toggleX - 2 - w, SETTINGS_OVERLAY_MARGIN, w, SETTINGS_BUTTON_SIZE);
-			}
 		}
 		if (legendContainer != null) {
 			if (legendManualBounds != null) {

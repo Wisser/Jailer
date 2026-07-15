@@ -639,12 +639,12 @@ public class TabContentPanel extends javax.swing.JPanel {
 		}
 
 		mapOverlayPanel = new GeometryPreviewPanel();
-		mapOverlayPanel.setPreferredSize(new java.awt.Dimension(312, 208));
+		mapOverlayPanel.setPreferredSize(new java.awt.Dimension(468, 312));
 		// Without an explicit minimum size, GridBagLayout shrinks this zero-weight, fill=NONE
 		// component down toward (0,0) whenever tabbedPane's own real content (e.g. the "Chart" tab)
 		// reports a preferred width larger than the container - pinning minimum = preferred gives
 		// GridBagLayout a floor it won't shrink below, regardless of tabbedPane's content demands.
-		mapOverlayPanel.setMinimumSize(new java.awt.Dimension(312, 208));
+		mapOverlayPanel.setMinimumSize(new java.awt.Dimension(468, 312));
 		mapOverlayPanel.setVisible(false);
 		mapOverlayPanel.setClickAction(this::toggleMapOverlayExpanded);
 		mapOverlayPanel.setSettingsPanelEnabled(true);
@@ -686,12 +686,13 @@ public class TabContentPanel extends javax.swing.JPanel {
 		lgc = new GridBagConstraints();
 		lgc.gridx = 1; lgc.gridy = 1; lgc.fill = GridBagConstraints.HORIZONTAL; lgc.weightx = 1; lgc.insets = new Insets(2, 4, 2, 4);
 		legendSettingsContent.add(legendPaletteCombo, lgc);
-		mapOverlayPanel.setSettingsPanelContent(legendSettingsContent);
-
 		JButton exportButton = new JButton("Save as image...", UIUtil.scaleIcon(UIUtil.readImage("/export.png"), 20, 18));
 		exportButton.setToolTipText("Export map as image file or copy to clipboard");
 		exportButton.addActionListener(e -> showMapExportMenu(exportButton));
-		mapOverlayPanel.setSettingsSideButton(exportButton);
+		lgc = new GridBagConstraints();
+		lgc.gridx = 0; lgc.gridy = 2; lgc.gridwidth = 2; lgc.fill = GridBagConstraints.HORIZONTAL; lgc.insets = new Insets(4, 4, 2, 4);
+		legendSettingsContent.add(exportButton, lgc);
+		mapOverlayPanel.setSettingsPanelContent(legendSettingsContent);
 
 		mapOverlayCornerConstraints = new java.awt.GridBagConstraints();
 		mapOverlayCornerConstraints.gridx = 1;
