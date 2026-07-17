@@ -451,6 +451,45 @@ All model and settings files are then stored in a folder named ".jailer" in the 
                             Java JRE 8 does not support HiDPI graphics. Therefore it is strongly recommended to use Java <b>JRE 11</b> (or above).
                             <br />&nbsp;<br />&nbsp;<br /></td>
                           </tr>
+
+                          <tr>
+                            <td style=
+                            "background-color: rgb(242, 242, 242); font-weight: bold;">
+                            Q&nbsp;</td>
+
+                            <td style=
+                            "background-color: rgb(242, 242, 242); font-weight: bold;">
+                            Can a model have more than one subject (&#x201C;additional subjects&#x201D;)?</td>
+                          </tr>
+
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+
+                            <td>
+                            Yes. Besides the primary subject, an extraction model can have
+                            any number of further subject tables. In the <span style=
+                            "font-style: italic;">Extraction Model Editor</span> use the
+                            <b>&#x201C;Add Subject&#x201D;</b> button to add them; each
+                            additional subject has its own subject condition (<span style=
+                            "font-style: italic;">Where</span>). On export, Jailer collects
+                            the closure of <b>all</b> subjects together and writes it into a
+                            single, consistent dataset.<br />
+                            <br />
+                            Typical uses:<br />
+                            <ul>
+                              <li>Start the extraction from several tables at once in one run
+                              (instead of exporting each separately and merging).</li>
+                              <li>Center the export on child tables: add each child table as a
+                              subject scoped to the parent subset (e.g. <span style=
+                              "font-style: italic;">T.PARENT_ID in (select ID from PARENT where
+                              &hellip;)</span>), so all matching children are exported in one
+                              operation &#x2014; without necessarily exporting the parent rows
+                              themselves. Restrict the child&nbsp;&rarr;&nbsp;parent
+                              association if you want to leave the parent rows out.</li>
+                            </ul>
+                            As always, enable or restrict associations to control which
+                            related rows are pulled in.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
                         </tbody>
                       </table>
                     </td>
