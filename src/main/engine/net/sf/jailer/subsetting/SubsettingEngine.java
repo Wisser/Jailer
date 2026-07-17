@@ -1859,6 +1859,20 @@ public class SubsettingEngine {
 							}
 						}
 					}
+					if (!(entityGraph instanceof LocalEntityGraph)
+							&& DBMS.MySQL.equals(dbms)
+							&& e.getMessage() != null
+							&& e.getMessage().contains("Illegal mix of collations")) {
+						String hint =
+							"The tables to be processed use a different collation than the working tables (JAILER_*) "
+							+ "that Jailer created in the source database. MySQL/MariaDB cannot compare columns with "
+							+ "different collations, so the subsetting join failed.\n\n"
+							+ "Recommended solution: set the working table scope to \"local database\" and run it again. "
+							+ "The working table scope can be changed in the Export dialog. "
+							+ "Jailer then keeps its working tables in a separate local database, so this collation "
+							+ "conflict cannot occur.";
+						throw new SqlException(hint + "\n\n" + e.getMessage(), ((SqlException) e).sqlStatement, e.getCause());
+					}
 				}
 				throw e;
 			}
