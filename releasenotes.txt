@@ -1,3 +1,13 @@
+17.2.1
+  - Fixed: "Generate DDL Script" could emit a UNIQUE constraint with its columns repeated
+    several times (e.g. "UNIQUE (A, B, A, B, ...)"), producing invalid DDL, when reading an
+    H2 database. The column list of a UNIQUE constraint is now de-duplicated.
+    https://github.com/Wisser/Jailer/issues/132
+  - Fixed: "Generate DDL Script" left foreign-key references qualified with the source schema
+    (e.g. "REFERENCES SRC.T") while the created tables themselves were unqualified. When no
+    target schema is specified, the generated script is now consistently schema-independent.
+    https://github.com/Wisser/Jailer/issues/132
+
 17.2
   - Export now reconstructs spatial (geometry/geography) column values with a
     dialect-specific SQL expression instead of losing type information, for MySQL/MariaDB,

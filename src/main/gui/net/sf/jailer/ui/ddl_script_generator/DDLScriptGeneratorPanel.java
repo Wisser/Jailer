@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -318,6 +319,30 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 	private AtomicBoolean cancelled = new AtomicBoolean();
     
     @SuppressWarnings("deprecation")
+	/**
+	 * Collapses repeated columns inside a {@code UNIQUE (...)} column list.
+	 * Liquibase's H2 unique-constraint snapshot can emit the same columns
+	 * several times (issue #132 / liquibase#1654); a unique constraint never
+	 * legitimately repeats a column, so de-duplicating is always safe.
+	 */
+	private static final Pattern UNIQUE_COLS =
+			Pattern.compile("(?i)(\\bUNIQUE\\s*\\()([^()]+)(\\))");
+
+	private static String dedupUniqueColumns(String sql) {
+		Matcher m = UNIQUE_COLS.matcher(sql);
+		StringBuffer sb = new StringBuffer();
+		while (m.find()) {
+			LinkedHashSet<String> cols = new LinkedHashSet<String>();
+			for (String c : m.group(2).split(",")) {
+				cols.add(c.trim());
+			}
+			m.appendReplacement(sb,
+					Matcher.quoteReplacement(m.group(1) + String.join(", ", cols) + m.group(3)));
+		}
+		m.appendTail(sb);
+		return sb.toString();
+	}
+
 	private boolean doGenerate(String fileName, AtomicBoolean isCancelled) {
     	synchronized(this) {
     		cancelled = isCancelled;
@@ -438,6 +463,13 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 				if (!targetSchemaTextField.getText().trim().isEmpty()) {
 					liquibase.getDatabase().setOutputDefaultSchema(true);
 					liquibase.getDatabase().setDefaultSchemaName(outputSchema = targetSchemaTextField.getText().trim());
+				} else {
+					// Name the source schema as the default so Liquibase suppresses it
+					// consistently, incl. foreign-key REFERENCES (issue #132).
+					String sourceSchema = String.valueOf(schemaComboBox.getSelectedItem());
+					if (sourceSchema != null && !sourceSchema.trim().isEmpty()) {
+						liquibase.getDatabase().setDefaultSchemaName(sourceSchema.trim());
+					}
 				}
 	
 				String host = "";
@@ -479,7 +511,7 @@ public abstract class DDLScriptGeneratorPanel extends javax.swing.JPanel {
 							for (int i = 0; i < len; ++i) {
 								char c = cbuf[i + off];
 								if (c == '\n') {
-									String line = currentLine.toString();
+									String line = dedupUniqueColumns(currentLine.toString());
 									if (!line.startsWith("--") && !line.equals("GO") && !line.isEmpty() && !jailerTablePattern.matcher(line).find() && !tabuRe.matcher(line).find()) {
 										boolean thisLineHadSemicolon = line.endsWith(";");
 										int newType = -1;
