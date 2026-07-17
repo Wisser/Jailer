@@ -184,6 +184,7 @@ import net.sf.jailer.ui.databrowser.FullTextSearchPanel;
 import net.sf.jailer.ui.databrowser.Reference;
 import net.sf.jailer.ui.databrowser.Row;
 import net.sf.jailer.ui.databrowser.SQLValue;
+import net.sf.jailer.ui.databrowser.lob.LobCellValue;
 import net.sf.jailer.ui.databrowser.metadata.MDSchema;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataDetailsPanel;
@@ -1713,17 +1714,22 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						}
 						String smallLob = CellContentConverter.getSmallLob(object, session.dbms, BrowserContentPane.MAXBLOBLENGTH, BrowserContentPane.MAXCLOBLENGTH);
 						if (smallLob != null && lobValue != null) {
-							final String val = lobValue.toString();
-							lobValue = new SQLValue() {
-								@Override
-								public String getSQLExpression() {
-									return smallLob;
-								}
-								@Override
-								public String toString() {
-									return isBlob? smallLob : val;
-								}
-							};
+							if (isBlob) {
+								lobValue = new SQLValue() {
+									@Override
+									public String getSQLExpression() {
+										return smallLob;
+									}
+									@Override
+									public String toString() {
+										return smallLob;
+									}
+								};
+							} else {
+								// small text LOB (CLOB/XML): keep it exportable (SQLValue) and let the
+								// LOB viewer recognize it, carrying the complete small text for inline display.
+								lobValue = new LobCellValue(smallLob, lobValue.toString());
+							}
 						}
 						if (lobValue != null) {
                 			return lobValue;

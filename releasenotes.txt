@@ -1,4 +1,12 @@
 17.2.1
+  - BLOB/CLOB content preview and viewer in the Data Browser and SQL console.
+    - Details view: the guessed content type (image, JSON, XML, HTML, PDF, ZIP, GZIP) is shown
+      next to a LOB value, and image values show an inline thumbnail. The type and thumbnail are
+      loaded on demand off the event dispatch thread and cancelled when the details view is
+      closed. Clicking the value or the thumbnail opens the content viewer.
+    - Content viewer ("View..."): renders images, text with syntax highlighting, ZIP archives
+      as an entry list, and anything else as a hexadecimal dump. "Save to file..." always exports the
+      complete content, and "Copy to clipboard" copies the shown text or image.
   - Fixed: "Generate DDL Script" could emit a UNIQUE constraint with its columns repeated
     several times (e.g. "UNIQUE (A, B, A, B, ...)"), producing invalid DDL, when reading an
     H2 database. The column list of a UNIQUE constraint is now de-duplicated.

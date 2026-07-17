@@ -261,6 +261,42 @@ public class SQLDMLBuilder {
 	}
 
 	/**
+	 * Builds a {@code Select} for a single column of a single row, identified by
+	 * the row's primary-key predicate ({@link Row#rowId}). Used to re-read the
+	 * full content of one LOB cell on demand. The column name is resolved from
+	 * {@code table.getColumns()} at the given index (positional, aligned with
+	 * {@code row.values}, exactly as {@link #buildUpdate} resolves its columns).
+	 *
+	 * @param table the (source) table
+	 * @param row the row; must have a non-empty {@link Row#rowId}
+	 * @param columnIndex index of the column to select in {@code table.getColumns()}
+	 * @param session current DB session
+	 * @return the select statement, or <code>null</code> if the row has no usable
+	 *         key or the column cannot be resolved
+	 */
+	public static String buildSingleColumnSelect(Table table, Row row, int columnIndex, Session session) {
+		if (row == null || row.rowId == null || row.rowId.isEmpty()) {
+			return null;
+		}
+		List<Column> columns = table.getColumns();
+		if (columnIndex < 0 || columnIndex >= columns.size()) {
+			return null;
+		}
+		Column column = columns.get(columnIndex);
+		if (column == null || column.name == null) {
+			return null;
+		}
+		Quoting quoting;
+		try {
+			quoting = Quoting.getQuoting(session);
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+		return "Select " + quoting.requote(column.name) + " From " + table.getName()
+				+ " Where " + SqlUtil.replaceAliases(row.rowId, null, null);
+	}
+
+	/**
 	 * Build Delete statements.
 	 *
 	 * @param table the table

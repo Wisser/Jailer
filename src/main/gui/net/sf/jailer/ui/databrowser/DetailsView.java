@@ -48,9 +48,12 @@ import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
@@ -72,6 +75,8 @@ import javax.swing.text.JTextComponent;
 import net.sf.jailer.ui.databrowser.geo.Geometry;
 import net.sf.jailer.ui.databrowser.geo.GeometryPreviewPanel;
 import net.sf.jailer.ui.databrowser.geo.SpatialCellSupport;
+import net.sf.jailer.ui.databrowser.lob.LobContentSupport;
+import net.sf.jailer.ui.databrowser.lob.LobContentType;
 
 import com.formdev.flatlaf.FlatClientProperties;
 
@@ -310,6 +315,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			boolean changed = currentRow != row;
 			currentRow = row;
 			cancelEdit();
+			cancelPendingLobTypeRequests();
 			
 			java.awt.GridBagConstraints gridBagConstraints;
 			
@@ -694,6 +700,122 @@ public abstract class DetailsView extends javax.swing.JPanel {
 							if (firstGeometryCell == null) {
 								firstGeometryCell = geoPanel;
 							}
+						} else if (isLobViewerSupported() && LobContentSupport.isLobCell(spatialRawValue)) {
+							final Row lobRow = rows.get(rowIndex);
+							final int lobColumn = columnIndexAtI;
+							final Object lobValue = spatialRawValue;
+							JPanel lobPanel = new JPanel(new BorderLayout());
+							lobPanel.setOpaque(true);
+							lobPanel.setBackground(f.getBackground());
+							lobPanel.add(f, BorderLayout.CENTER);
+							f.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
+							f.setToolTipText("Show the content of this value");
+							f.addMouseListener(new MouseAdapter() {
+								@Override
+								public void mouseClicked(MouseEvent e) {
+									if (e.getButton() == MouseEvent.BUTTON1) {
+										onOpenLobViewer(lobRow, lobColumn, lobValue);
+									}
+								}
+							});
+							final JLabel thumbLabel = new JLabel();
+							thumbLabel.setOpaque(true);
+							thumbLabel.setBackground(f.getBackground());
+							thumbLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 6));
+							thumbLabel.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
+							thumbLabel.setToolTipText("Show the content of this value");
+							thumbLabel.addMouseListener(new MouseAdapter() {
+								@Override
+								public void mouseClicked(MouseEvent e) {
+									if (e.getButton() == MouseEvent.BUTTON1) {
+										onOpenLobViewer(lobRow, lobColumn, lobValue);
+									}
+								}
+							});
+							lobPanel.add(thumbLabel, BorderLayout.WEST);
+							JButton viewButton = new JButton("View…");
+							if (lobViewIcon != null) {
+								viewButton.setIcon(lobViewIcon);
+							}
+							viewButton.setMargin(new Insets(0, 4, 0, 4));
+							viewButton.setToolTipText("Show the content of this value");
+							viewButton.addActionListener(e -> onOpenLobViewer(lobRow, lobColumn, lobValue));
+							JPanel eastPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
+							eastPanel.setOpaque(true);
+							eastPanel.setBackground(f.getBackground());
+							LobContentType lobType = LobContentSupport.detectType(lobValue);
+							final JLabel typeLabel = new JLabel(isDisplayableLobType(lobType)? lobType.displayName + " " : "");
+							typeLabel.setForeground(Colors.Color_128_128_128);
+							typeLabel.setFont(italic);
+							eastPanel.add(typeLabel);
+							eastPanel.add(viewButton);
+							lobPanel.add(eastPanel, BorderLayout.EAST);
+							final JPanel lobPanelF = lobPanel;
+							final Runnable requestImagePreview = () -> {
+								final Object imgContext = new Object();
+								pendingLobTypeContexts.add(imgContext);
+								// thumbnail bounds; the image is scaled to fit off the EDT and
+								// delivered ready to display (never scaled on the EDT).
+								requestLobImagePreview(lobRow, lobColumn, lobValue, 160, 64, imgContext, img -> {
+									if (img != null) {
+										thumbLabel.setIcon(new ImageIcon(img));
+										// once the thumbnail is visible, hide the "<Blob> N bytes" placeholder text
+										f.setVisible(false);
+										thumbLabel.revalidate();
+										lobPanelF.revalidate();
+										lobPanelF.repaint();
+									}
+								});
+							};
+							if (lobType != null) {
+								// type already known from the cached value (e.g. materialized bytes)
+								if (lobType.isImage()) {
+									requestImagePreview.run();
+								}
+							} else {
+								// the type could not be guessed from the cached value (e.g. a BLOB
+								// that only carries its length): read the leading bytes from the
+								// database asynchronously, fill in the type, and - if it is an image -
+								// load a thumbnail preview.
+								final Object lobTypeContext = new Object();
+								pendingLobTypeContexts.add(lobTypeContext);
+								requestLobContentType(lobRow, lobColumn, lobValue, lobTypeContext, t -> {
+									if (isDisplayableLobType(t)) {
+										typeLabel.setText(t.displayName + " ");
+										typeLabel.revalidate();
+										typeLabel.repaint();
+									}
+									if (t != null && t.isImage()) {
+										requestImagePreview.run();
+									}
+								});
+							}
+							final JPopupMenu lobMenu = new JPopupMenu();
+							JMenuItem showItem = new JMenuItem("Show content…");
+							showItem.addActionListener(e -> onOpenLobViewer(lobRow, lobColumn, lobValue));
+							lobMenu.add(showItem);
+							MouseAdapter lobPopup = new MouseAdapter() {
+								@Override
+								public void mousePressed(MouseEvent e) {
+									maybeShow(e);
+								}
+								@Override
+								public void mouseReleased(MouseEvent e) {
+									maybeShow(e);
+								}
+								private void maybeShow(MouseEvent e) {
+									if (e.isPopupTrigger()) {
+										lobMenu.show(e.getComponent(), e.getX(), e.getY());
+									}
+								}
+							};
+							f.addMouseListener(lobPopup);
+							lobPanel.addMouseListener(lobPopup);
+							thumbLabel.addMouseListener(lobPopup);
+							cellComponent = lobPanel;
+							// unlike the geometry preview, a LOB cell is stretched to the full
+							// column width (normal cell layout) so its row background fills the
+							// cell instead of leaving the container background visible on the right.
 						}
 					}
 					if (isGeoCell) {
@@ -939,6 +1061,97 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	protected abstract void onRowChanged(int row);
 	protected abstract void onClose();
 	protected abstract void onSelectRow(Row row);
+
+	/**
+	 * Whether the BLOB/CLOB content viewer is available in this context, i.e.
+	 * the hosting pane can re-read a cell's content. Default: not available.
+	 */
+	protected boolean isLobViewerSupported() {
+		return false;
+	}
+
+	/**
+	 * Opens the BLOB/CLOB content viewer for a cell. Default: no-op.
+	 *
+	 * @param row              the row
+	 * @param columnModelIndex index into {@code row.values}
+	 * @param cellValue        the raw cell value
+	 */
+	protected void onOpenLobViewer(Row row, int columnModelIndex, Object cellValue) {
+	}
+
+	/**
+	 * Asynchronously guesses the content type of a LOB cell (reading only the
+	 * leading bytes from the database) and delivers it to <code>onResult</code>
+	 * on the EDT. Used to fill in the inline type hint for values whose type
+	 * cannot be determined from the cached cell value (e.g. BLOBs). Default:
+	 * no-op. The <code>context</code> is used to cancel the request (see
+	 * {@link #cancelLobContentTypeRequest}) when the view is closed or rebuilt.
+	 *
+	 * @param row              the row
+	 * @param columnModelIndex index into {@code row.values}
+	 * @param cellValue        the raw cell value
+	 * @param context          cancellation context
+	 * @param onResult         receives the guessed type (or <code>null</code>) on the EDT
+	 */
+	protected void requestLobContentType(Row row, int columnModelIndex, Object cellValue, Object context,
+			java.util.function.Consumer<net.sf.jailer.ui.databrowser.lob.LobContentType> onResult) {
+	}
+
+	/**
+	 * Asynchronously reads a LOB cell's content and, if it is an image, decodes
+	 * it and delivers the {@link java.awt.image.BufferedImage} to
+	 * <code>onImage</code> on the EDT (or <code>null</code> if it is not an image
+	 * / cannot be read). Used for the inline image preview. Default: no-op. The
+	 * <code>context</code> is used to cancel the request (see
+	 * {@link #cancelLobContentTypeRequest}) when the view is closed or rebuilt.
+	 *
+	 * @param row              the row
+	 * @param columnModelIndex index into {@code row.values}
+	 * @param cellValue        the raw cell value
+	 * @param context          cancellation context
+	 * @param onImage          receives the decoded image (or <code>null</code>) on the EDT
+	 */
+	protected void requestLobImagePreview(Row row, int columnModelIndex, Object cellValue, int maxWidth, int maxHeight, Object context,
+			java.util.function.Consumer<java.awt.image.BufferedImage> onImage) {
+	}
+
+	/**
+	 * Cancels a pending {@link #requestLobContentType} request. Default: no-op.
+	 *
+	 * @param context the cancellation context passed to {@link #requestLobContentType}
+	 */
+	protected void cancelLobContentTypeRequest(Object context) {
+	}
+
+	private final java.util.List<Object> pendingLobTypeContexts = new java.util.ArrayList<Object>();
+
+	/**
+	 * Cancels all pending LOB type requests (called when the row is rebuilt or
+	 * the view is closed).
+	 */
+	public void cancelPendingLobTypeRequests() {
+		for (Object ctx: pendingLobTypeContexts) {
+			try {
+				cancelLobContentTypeRequest(ctx);
+			} catch (Throwable t) {
+				// ignore
+			}
+		}
+		pendingLobTypeContexts.clear();
+	}
+
+	/**
+	 * Whether a guessed LOB type is specific enough to show as an inline hint.
+	 * The catch-all {@code BINARY} ("Binary data") and the generic
+	 * {@code PLAIN_TEXT} ("Text") add no information and are suppressed.
+	 */
+	private static boolean isDisplayableLobType(net.sf.jailer.ui.databrowser.lob.LobContentType type) {
+		return type != null
+				&& type != net.sf.jailer.ui.databrowser.lob.LobContentType.BINARY
+				&& type != net.sf.jailer.ui.databrowser.lob.LobContentType.PLAIN_TEXT;
+	}
+
 	protected SQLDMLPanel createSQLDMLPanel(JToggleButton pinButton) {
 		return null;
 	}
@@ -1143,6 +1356,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
     }//GEN-LAST:event_sortCheckBoxActionPerformed
 
     private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeButtonActionPerformed
+        cancelPendingLobTypeRequests();
         onClose();
     }//GEN-LAST:event_closeButtonActionPerformed
 
@@ -1411,6 +1625,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	private static ImageIcon maximizeDarkIcon;
 	private static ImageIcon unmaximizeIcon;
 	private static ImageIcon unmaximizeDarkIcon;
+	private static ImageIcon lobViewIcon;
 	static {
 		// load images
 		editdetails = UIUtil.readImage("/editdetails.png");
@@ -1422,6 +1637,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
         closeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/close.png"), 1.55);
         closeDarkIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/closedark.png"), 1.55);
         closeOverIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/close_over.png"), 1.55);
+        lobViewIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/showinnewwindow.png"));
 	}
 
 }

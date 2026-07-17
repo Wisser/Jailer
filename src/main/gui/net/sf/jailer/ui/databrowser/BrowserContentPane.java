@@ -199,6 +199,13 @@ import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.ui.databrowser.Desktop.RowToRowLink;
 import net.sf.jailer.ui.databrowser.Desktop.RunnableWithPriority;
 import net.sf.jailer.ui.databrowser.RowCounter.RowCount;
+import net.sf.jailer.ui.databrowser.lob.LobCellValue;
+import net.sf.jailer.ui.databrowser.lob.LobContent;
+import net.sf.jailer.ui.databrowser.lob.LobContentSupport;
+import net.sf.jailer.ui.databrowser.lob.LobContentType;
+import net.sf.jailer.ui.databrowser.lob.LobReader;
+import net.sf.jailer.ui.databrowser.lob.LobRetrievalCallback;
+import net.sf.jailer.ui.databrowser.lob.LobViewerPanel;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.ColumnsTable;
@@ -5313,17 +5320,22 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 								}
 								String smallLob = CellContentConverter.getSmallLob(object, session.dbms, MAXBLOBLENGTH, MAXCLOBLENGTH);
 								if (smallLob != null && lobValue != null) {
-									final String val = lobValue.toString();
-									lobValue = new SQLValue() {
-										@Override
-										public String getSQLExpression() {
-											return smallLob;
-										}
-										@Override
-										public String toString() {
-											return isBlob? smallLob : val;
-										}
-									};
+									if (isBlob) {
+										lobValue = new SQLValue() {
+											@Override
+											public String getSQLExpression() {
+												return smallLob;
+											}
+											@Override
+											public String toString() {
+												return smallLob;
+											}
+										};
+									} else {
+										// small text LOB (CLOB/XML): keep it exportable (SQLValue) and let the
+										// LOB viewer recognize it, carrying the complete small text for inline display.
+										lobValue = new LobCellValue(smallLob, lobValue.toString());
+									}
 								}
 								if (lobValue != null) {
 									value = lobValue;
@@ -5950,6 +5962,28 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 						}
 						@Override
 						protected void waitLoading() {
+						}
+						@Override
+						protected boolean isLobViewerSupported() {
+							return true;
+						}
+						@Override
+						protected void onOpenLobViewer(Row row, int columnModelIndex, Object cellValue) {
+							openLobViewer(row, columnModelIndex, this);
+						}
+						@Override
+						protected void requestLobContentType(Row row, int columnModelIndex, Object cellValue, Object context,
+								java.util.function.Consumer<LobContentType> onResult) {
+							retrieveLobContentType(row, columnModelIndex, context, onResult);
+						}
+						@Override
+						protected void requestLobImagePreview(Row row, int columnModelIndex, Object cellValue, int maxWidth, int maxHeight, Object context,
+								java.util.function.Consumer<java.awt.image.BufferedImage> onImage) {
+							retrieveLobImagePreview(row, columnModelIndex, cellValue, maxWidth, maxHeight, context, onImage);
+						}
+						@Override
+						protected void cancelLobContentTypeRequest(Object context) {
+							CancellationHandler.cancel(context);
 						}
 					};
 					((DetailsView) singleRowDetailsView).setSortColumns(currentRowsSortedReference == null? sortColumnsCheckBox.isSelected() : currentRowsSortedReference.get());
@@ -7718,6 +7752,469 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	 */
 	protected abstract void collectPositions(Map<String, Map<String, double[]>> positions);
 
+	/**
+	 * Delivers the cell's already-cached content (CLOB snippet, {@link BinValue}
+	 * bytes) with a notice, or reports the value as unavailable when nothing is
+	 * cached.
+	 */
+	private void deliverCachedOrUnavailable(Object cached, String tableName, String columnName,
+			String notice, String reason, LobRetrievalCallback callback) {
+		LobContent fallback = LobContentSupport.fromCellValue(cached, tableName, columnName, notice);
+		if (fallback != null) {
+			callback.onSuccess(fallback);
+		} else {
+			callback.onUnavailable(reason);
+		}
+	}
+
+	/**
+	 * Re-reads the full content of one LOB cell from the database, off the EDT,
+	 * and delivers it to the callback on the EDT. Large values are streamed to a
+	 * temporary file. The primary key used to identify the row is taken from the
+	 * LOB column's source table ({@link #getResultSetTypeForColumn}), so this also
+	 * works for SQL-console results whose underlying table and PK were resolved by
+	 * {@code QueryTypeAnalyser}. If no primary key is available, no database access
+	 * happens; instead the cached preview is delivered with a notice, or the value
+	 * is reported as unavailable. The retrieval can be cancelled with the
+	 * load-cancel button.
+	 *
+	 * @param row              the row
+	 * @param columnModelIndex index into {@code row.values} / the source table's columns
+	 * @param callback         receives the result on the EDT
+	 */
+	public void retrieveFullLobContent(final Row row, final int columnModelIndex, final LobRetrievalCallback callback) {
+		final Object cached = (row != null && columnModelIndex >= 0 && columnModelIndex < row.values.length)
+				? row.values[columnModelIndex] : null;
+
+		// Source table of the LOB column: for the normal browser this is our own table;
+		// for a SQL-console result it is the underlying table QueryTypeAnalyser resolved.
+		final Table type = getResultSetTypeForColumn(columnModelIndex);
+
+		String tn = null;
+		String cn = null;
+		if (type != null) {
+			// type.getName() may be null for a SqlStatementTable / artificial result table;
+			// getUnqualifiedName() would NPE on that, so guard it. Names are only used for
+			// the export file name, so null is harmless (LobFilenames falls back to "lob").
+			if (type.getName() != null) {
+				tn = Quoting.staticUnquote(type.getUnqualifiedName());
+			}
+			List<Column> typeColumns = type.getColumns();
+			if (typeColumns != null && columnModelIndex >= 0 && columnModelIndex < typeColumns.size()
+					&& typeColumns.get(columnModelIndex) != null && typeColumns.get(columnModelIndex).name != null) {
+				cn = Quoting.staticUnquote(typeColumns.get(columnModelIndex).name);
+			}
+		}
+		final String tableName = tn;
+		final String columnName = cn;
+
+		final String noKeyNotice = "Full content cannot be reloaded (no primary key available for this result); showing the cached preview only.";
+		final String noKeyReason = "The full content of this value cannot be reloaded because no primary key is available for this result.\n\n"
+				+ "Browse the table directly (so its primary key is known) to view or export the value.";
+
+		boolean hasKey = row != null
+				&& type != null
+				&& !(type instanceof SqlStatementTable)
+				&& type.primaryKey != null
+				&& !rowIdSupport.getPrimaryKey(type, session).getColumns().isEmpty()
+				&& isPKComplete(type, row);
+
+		if (!hasKey) {
+			deliverCachedOrUnavailable(cached, tableName, columnName, noKeyNotice, noKeyReason, callback);
+			return;
+		}
+
+		// For a SQL-console result the row's rowId is only a sequence number; synthesize
+		// the primary-key predicate from the source table (exactly as in-place editing does).
+		Row keyRow = row;
+		if (resultSetType != null || keyRow.rowId == null || keyRow.rowId.isEmpty()) {
+			keyRow = createRowWithNewID(row, type);
+		}
+		if (keyRow.rowId == null || keyRow.rowId.isEmpty()) {
+			deliverCachedOrUnavailable(cached, tableName, columnName, noKeyNotice, noKeyReason, callback);
+			return;
+		}
+
+		final String sql;
+		try {
+			sql = SQLDMLBuilder.buildSingleColumnSelect(type, keyRow, columnModelIndex, session);
+		} catch (RuntimeException e) {
+			callback.onError(e);
+			return;
+		}
+		if (sql == null) {
+			callback.onUnavailable("Cannot build a query to reload this value.");
+			return;
+		}
+
+		getRunnableQueue().add(new RunnableWithPriority() {
+			@Override
+			public int getPriority() {
+				return 100;
+			}
+
+			@Override
+			public void run() {
+				final Object context = new Object();
+				final ActionListener listener = new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						CancellationHandler.cancel(context);
+					}
+				};
+				cancelLoadButton.addActionListener(listener);
+				final LobContent[] result = new LobContent[1];
+				try {
+					AbstractResultSetReader reader = new AbstractResultSetReader() {
+						@Override
+						public void readCurrentRow(ResultSet resultSet) throws SQLException {
+							CellContentConverter ccc = getCellContentConverter(resultSet, session, session.dbms);
+							Object obj = ccc.getObject(resultSet, 1);
+							if (obj == null || resultSet.wasNull()) {
+								result[0] = null;
+								return;
+							}
+							try {
+								result[0] = LobReader.read(obj, context, tableName, columnName);
+							} catch (IOException ioe) {
+								throw new SQLException(ioe);
+							}
+						}
+					};
+					session.executeQuery(sql, reader, null, context, 1);
+					final LobContent content = result[0];
+					UIUtil.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							if (content != null) {
+								callback.onSuccess(content);
+							} else {
+								deliverCachedOrUnavailable(cached, tableName, columnName,
+									"The value could not be reloaded (the row may have changed or been removed); showing the cached preview only.",
+									"The value could not be reloaded from the database — no matching row was found (the row may have been changed or removed).",
+									callback);
+							}
+						}
+					});
+				} catch (CancellationException ce) {
+					UIUtil.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							callback.onCancelled();
+						}
+					});
+				} catch (final Throwable t) {
+					UIUtil.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							callback.onError(t);
+						}
+					});
+				} finally {
+					cancelLoadButton.removeActionListener(listener);
+					CancellationHandler.reset(context);
+				}
+			}
+		});
+	}
+
+	/**
+	 * Re-reads just the leading bytes of one LOB cell from the database, off the
+	 * EDT, guesses its {@link LobContentType} and delivers it to the callback on
+	 * the EDT. Only enough content for the type guess is read (see
+	 * {@link LobReader#detectType}). Mirrors {@link #retrieveFullLobContent} but
+	 * is cheap and used for the inline type hint. Delivers <code>null</code> when
+	 * the type cannot be determined (no primary key, no row, read error). The
+	 * given <code>context</code> can be cancelled by the caller (see
+	 * {@link #cancelLobContentTypeRequest}) e.g. when the details view is closed.
+	 *
+	 * @param row              the row
+	 * @param columnModelIndex index into {@code row.values} / the source table's columns
+	 * @param context          cancellation context
+	 * @param onResult         receives the guessed type (or <code>null</code>) on the EDT
+	 */
+	public void retrieveLobContentType(final Row row, final int columnModelIndex, final Object context,
+			final java.util.function.Consumer<LobContentType> onResult) {
+		final Table type = getResultSetTypeForColumn(columnModelIndex);
+
+		boolean hasKey = row != null
+				&& type != null
+				&& !(type instanceof SqlStatementTable)
+				&& type.primaryKey != null
+				&& !rowIdSupport.getPrimaryKey(type, session).getColumns().isEmpty()
+				&& isPKComplete(type, row);
+		if (!hasKey) {
+			onResult.accept(null);
+			return;
+		}
+
+		Row keyRow = row;
+		if (resultSetType != null || keyRow.rowId == null || keyRow.rowId.isEmpty()) {
+			keyRow = createRowWithNewID(row, type);
+		}
+		if (keyRow.rowId == null || keyRow.rowId.isEmpty()) {
+			onResult.accept(null);
+			return;
+		}
+
+		final String sql;
+		try {
+			sql = SQLDMLBuilder.buildSingleColumnSelect(type, keyRow, columnModelIndex, session);
+		} catch (RuntimeException e) {
+			onResult.accept(null);
+			return;
+		}
+		if (sql == null) {
+			onResult.accept(null);
+			return;
+		}
+
+		getRunnableQueue().add(new RunnableWithPriority() {
+			@Override
+			public int getPriority() {
+				return 100;
+			}
+
+			@Override
+			public void run() {
+				final LobContentType[] result = new LobContentType[1];
+				try {
+					AbstractResultSetReader reader = new AbstractResultSetReader() {
+						@Override
+						public void readCurrentRow(ResultSet resultSet) throws SQLException {
+							CellContentConverter ccc = getCellContentConverter(resultSet, session, session.dbms);
+							Object obj = ccc.getObject(resultSet, 1);
+							if (obj == null || resultSet.wasNull()) {
+								result[0] = null;
+								return;
+							}
+							try {
+								result[0] = LobReader.detectType(obj, context, LobContent.HEAD_SIZE);
+							} catch (IOException ioe) {
+								throw new SQLException(ioe);
+							}
+						}
+					};
+					session.executeQuery(sql, reader, null, context, 1);
+					final LobContentType t = result[0];
+					UIUtil.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							onResult.accept(t);
+						}
+					});
+				} catch (CancellationException ce) {
+					// cancelled (e.g. details view closed): no update
+				} catch (final Throwable th) {
+					UIUtil.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							onResult.accept(null);
+						}
+					});
+				} finally {
+					CancellationHandler.reset(context);
+				}
+			}
+		});
+	}
+
+	/**
+	 * Re-reads (or reuses) one LOB cell's content off the EDT, decodes it as an
+	 * image if it is an image type, and delivers the {@link java.awt.image.BufferedImage}
+	 * (or <code>null</code>) to the callback on the EDT. Used for the inline image
+	 * preview in the details view. Materialized values (e.g. {@link BinValue}) are
+	 * decoded without a database access; BLOBs are re-read via a PK-based
+	 * single-column select (like the content viewer). The given <code>context</code>
+	 * can be cancelled by the caller (e.g. when the details view is closed).
+	 */
+	public void retrieveLobImagePreview(final Row row, final int columnModelIndex, final Object cellValue,
+			final int maxWidth, final int maxHeight,
+			final Object context, final java.util.function.Consumer<java.awt.image.BufferedImage> onImage) {
+		final Table type = getResultSetTypeForColumn(columnModelIndex);
+
+		String tn = null;
+		String cn = null;
+		if (type != null) {
+			if (type.getName() != null) {
+				tn = Quoting.staticUnquote(type.getUnqualifiedName());
+			}
+			List<Column> typeColumns = type.getColumns();
+			if (typeColumns != null && columnModelIndex >= 0 && columnModelIndex < typeColumns.size()
+					&& typeColumns.get(columnModelIndex) != null && typeColumns.get(columnModelIndex).name != null) {
+				cn = Quoting.staticUnquote(typeColumns.get(columnModelIndex).name);
+			}
+		}
+		final String tableName = tn;
+		final String columnName = cn;
+
+		// 1) already materialized (e.g. BinValue): decode locally, no database access.
+		final LobContent local = LobContentSupport.fromCellValue(cellValue, tableName, columnName, null);
+		if (local != null && local.hasFullContent() && local.getType().isImage()) {
+			getRunnableQueue().add(new RunnableWithPriority() {
+				@Override
+				public int getPriority() {
+					return 100;
+				}
+				@Override
+				public void run() {
+					java.awt.image.BufferedImage img = null;
+					try {
+						img = scaleToFit(local.readImage(LobViewerPanel.IMAGE_MAX), maxWidth, maxHeight);
+					} catch (Throwable t) {
+						// ignore: no preview
+					}
+					final java.awt.image.BufferedImage f = img;
+					UIUtil.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							onImage.accept(f);
+						}
+					});
+				}
+			});
+			return;
+		}
+
+		// 2) BLOB: re-read the full content from the database (needs a primary key), then decode.
+		boolean hasKey = row != null
+				&& type != null
+				&& !(type instanceof SqlStatementTable)
+				&& type.primaryKey != null
+				&& !rowIdSupport.getPrimaryKey(type, session).getColumns().isEmpty()
+				&& isPKComplete(type, row);
+		if (!hasKey) {
+			onImage.accept(null);
+			return;
+		}
+
+		Row keyRow = row;
+		if (resultSetType != null || keyRow.rowId == null || keyRow.rowId.isEmpty()) {
+			keyRow = createRowWithNewID(row, type);
+		}
+		if (keyRow.rowId == null || keyRow.rowId.isEmpty()) {
+			onImage.accept(null);
+			return;
+		}
+
+		final String sql;
+		try {
+			sql = SQLDMLBuilder.buildSingleColumnSelect(type, keyRow, columnModelIndex, session);
+		} catch (RuntimeException e) {
+			onImage.accept(null);
+			return;
+		}
+		if (sql == null) {
+			onImage.accept(null);
+			return;
+		}
+
+		getRunnableQueue().add(new RunnableWithPriority() {
+			@Override
+			public int getPriority() {
+				return 100;
+			}
+
+			@Override
+			public void run() {
+				final java.awt.image.BufferedImage[] result = new java.awt.image.BufferedImage[1];
+				try {
+					AbstractResultSetReader reader = new AbstractResultSetReader() {
+						@Override
+						public void readCurrentRow(ResultSet resultSet) throws SQLException {
+							CellContentConverter ccc = getCellContentConverter(resultSet, session, session.dbms);
+							Object obj = ccc.getObject(resultSet, 1);
+							if (obj == null || resultSet.wasNull()) {
+								result[0] = null;
+								return;
+							}
+							try {
+								LobContent content = LobReader.read(obj, context, tableName, columnName);
+								result[0] = scaleToFit(content.readImage(LobViewerPanel.IMAGE_MAX), maxWidth, maxHeight);
+							} catch (IOException ioe) {
+								throw new SQLException(ioe);
+							}
+						}
+					};
+					session.executeQuery(sql, reader, null, context, 1);
+					final java.awt.image.BufferedImage img = result[0];
+					UIUtil.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							onImage.accept(img);
+						}
+					});
+				} catch (CancellationException ce) {
+					// cancelled (e.g. details view closed): no update
+				} catch (final Throwable th) {
+					UIUtil.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							onImage.accept(null);
+						}
+					});
+				} finally {
+					CancellationHandler.reset(context);
+				}
+			}
+		});
+	}
+
+	/**
+	 * Downscales an image to fit within <code>maxW x maxH</code> in a single
+	 * bilinear pass (never enlarges). Intended to run off the EDT so a large
+	 * source image is never scaled on the event dispatch thread.
+	 */
+	private static java.awt.image.BufferedImage scaleToFit(java.awt.image.BufferedImage src, int maxW, int maxH) {
+		if (src == null) {
+			return null;
+		}
+		int sw = src.getWidth();
+		int sh = src.getHeight();
+		if (sw <= 0 || sh <= 0) {
+			return src;
+		}
+		double s = Math.min(1.0, Math.min((double) maxW / sw, (double) maxH / sh));
+		if (s >= 1.0) {
+			return src;
+		}
+		int w = Math.max(1, (int) Math.round(sw * s));
+		int h = Math.max(1, (int) Math.round(sh * s));
+		java.awt.image.BufferedImage dst = new java.awt.image.BufferedImage(w, h, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+		java.awt.Graphics2D g = dst.createGraphics();
+		try {
+			g.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION, java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+			g.setRenderingHint(java.awt.RenderingHints.KEY_RENDERING, java.awt.RenderingHints.VALUE_RENDER_QUALITY);
+			g.drawImage(src, 0, 0, w, h, null);
+		} finally {
+			g.dispose();
+		}
+		return dst;
+	}
+
+	/**
+	 * Retrieves the full content of a LOB cell and shows it in the content viewer.
+	 */
+	private void openLobViewer(Row row, int columnModelIndex, final java.awt.Component viewerParent) {
+		retrieveFullLobContent(row, columnModelIndex, new LobRetrievalCallback() {
+			@Override
+			public void onSuccess(LobContent content) {
+				LobViewerPanel.showViewer(viewerParent != null ? viewerParent : BrowserContentPane.this, content);
+			}
+			@Override
+			public void onError(Throwable t) {
+				UIUtil.showException(BrowserContentPane.this, "Error", t);
+			}
+			@Override
+			public void onUnavailable(String reason) {
+				JOptionPane.showMessageDialog(BrowserContentPane.this, reason, "Content not available", JOptionPane.INFORMATION_MESSAGE);
+			}
+			@Override
+			public void onCancelled() {
+			}
+		});
+	}
+
 	public void openDetails(int rowIndex, final int x, final int y) {
 		final JDialog d = new JDialog(getOwner(), (table instanceof SqlStatementTable)? "" : dataModel.getDisplayName(table), false);
 		d.setUndecorated(true);
@@ -7819,6 +8316,28 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 						}
 					};
 				}
+				@Override
+				protected boolean isLobViewerSupported() {
+					return true;
+				}
+				@Override
+				protected void onOpenLobViewer(Row row, int columnModelIndex, Object cellValue) {
+					openLobViewer(row, columnModelIndex, this);
+				}
+				@Override
+				protected void requestLobContentType(Row row, int columnModelIndex, Object cellValue, Object context,
+						java.util.function.Consumer<LobContentType> onResult) {
+					retrieveLobContentType(row, columnModelIndex, context, onResult);
+				}
+				@Override
+				protected void requestLobImagePreview(Row row, int columnModelIndex, Object cellValue, int maxWidth, int maxHeight, Object context,
+						java.util.function.Consumer<java.awt.image.BufferedImage> onImage) {
+					retrieveLobImagePreview(row, columnModelIndex, cellValue, maxWidth, maxHeight, context, onImage);
+				}
+				@Override
+				protected void cancelLobContentTypeRequest(Object context) {
+					CancellationHandler.cancel(context);
+				}
 			};
 			dv.prepareForNonModalUsage();
 			currentDView[0] = dv;
@@ -7826,6 +8345,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 				@Override
 				public void windowLostFocus(WindowEvent e) {
 					if (!dv.isPinned() && dv == currentDView[0]) {
+						Window opp = e.getOppositeWindow();
+						if (opp instanceof JDialog
+								&& Boolean.TRUE.equals(((JDialog) opp).getRootPane()
+										.getClientProperty(LobViewerPanel.CONTENT_VIEWER_PROPERTY))) {
+							// keep the details view open while its content viewer is shown
+							return;
+						}
+						dv.cancelPendingLobTypeRequests();
 						d.setVisible(false);
 						d.dispose();
 					}
