@@ -16,12 +16,17 @@
 package net.sf.jailer.ui.databrowser.sqlconsole;
 
 import java.awt.BasicStroke;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -32,6 +37,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionAdapter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -46,7 +52,10 @@ import java.util.Vector;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.InputMap;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -72,6 +81,8 @@ import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
 import net.sf.jailer.ui.databrowser.Row;
+import net.sf.jailer.ui.databrowser.lob.LobContentSupport;
+import net.sf.jailer.ui.databrowser.lob.LobContentType;
 import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Pair;
 
@@ -96,7 +107,33 @@ public class ColumnsTable extends JTable {
 	private Action copyAction;
 	private Action ecopyAction;
 	private Action editModeAction;
-	
+
+	private static final String LOB_TOOLTIP = "Show the content of this value";
+	private static final ImageIcon LOB_VIEW_ICON = loadLobViewIcon();
+
+	private static ImageIcon loadLobViewIcon() {
+		try {
+			return UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/showinnewwindow.png"));
+		} catch (Throwable t) {
+			return null;
+		}
+	}
+
+	// keyed by table row (= the data column shown in that row; the single-row view has exactly one data row)
+	private final Map<Integer, LobContentType> lobTypeCache = new HashMap<Integer, LobContentType>();
+	private final Map<Integer, ImageIcon> lobThumbCache = new HashMap<Integer, ImageIcon>();
+	private final Set<Integer> lobRequested = new HashSet<Integer>();
+
+	/**
+	 * Whether LOB cells in this table show a content-type label, thumbnail and
+	 * "View…" affordance (as in {@link net.sf.jailer.ui.databrowser.DetailsView}).
+	 * Disabled by default; enabled only for the single-row details view.
+	 */
+	protected boolean isLobViewerEnabled() {
+		return false;
+	}
+
+
 	/**
 	 * Constructor.
 	 *
@@ -460,6 +497,12 @@ public class ColumnsTable extends JTable {
 				if (currentRow == row) {
 					render.setBackground(Colors.Color_122_210_255_200);
 				}
+				if (isLobViewerEnabled() && column > 0 && render instanceof JLabel) {
+					Object rawValue = lobRawValueAt(row, column);
+					if (LobContentSupport.isLobCell(rawValue)) {
+						render = buildLobCell((JLabel) render, row, column, rawValue);
+					}
+				}
 				return render;
 			}
 			private Color blend(Color color1) {
@@ -483,6 +526,56 @@ public class ColumnsTable extends JTable {
 				repaint();
 			}
 		});
+		if (isLobViewerEnabled()) {
+			setToolTipText(""); // registers with the ToolTipManager; getToolTipText(MouseEvent) below supplies the per-cell text
+		}
+		addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (!isLobViewerEnabled() || e.getButton() != MouseEvent.BUTTON1) {
+					return;
+				}
+				int tableRow = rowAtPoint(e.getPoint());
+				int tableColumn = columnAtPoint(e.getPoint());
+				if (tableRow < 0 || tableColumn <= 0) {
+					return;
+				}
+				Object rawValue = lobRawValueAt(tableRow, tableColumn);
+				if (!LobContentSupport.isLobCell(rawValue)) {
+					return;
+				}
+				Row dataRow = lobRowAt(tableColumn);
+				if (dataRow != null) {
+					rb.openLobViewer(dataRow, lobDataColumnModelIndex(tableRow), ColumnsTable.this);
+				}
+			}
+		});
+		addMouseMotionListener(new MouseMotionAdapter() {
+			@Override
+			public void mouseMoved(MouseEvent e) {
+				if (!isLobViewerEnabled()) {
+					return;
+				}
+				int tableRow = rowAtPoint(e.getPoint());
+				int tableColumn = columnAtPoint(e.getPoint());
+				boolean isLob = tableRow >= 0 && tableColumn > 0
+						&& LobContentSupport.isLobCell(lobRawValueAt(tableRow, tableColumn));
+				setCursor(isLob ? Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) : Cursor.getDefaultCursor());
+			}
+		});
+	}
+
+	@Override
+	public String getToolTipText(MouseEvent event) {
+		if (isLobViewerEnabled()) {
+			int tableRow = rowAtPoint(event.getPoint());
+			int tableColumn = columnAtPoint(event.getPoint());
+			if (tableRow >= 0 && tableColumn > 0
+					&& LobContentSupport.isLobCell(lobRawValueAt(tableRow, tableColumn))) {
+				return LOB_TOOLTIP;
+			}
+		}
+		return super.getToolTipText(event);
 	}
 
 	/**
@@ -746,6 +839,149 @@ public class ColumnsTable extends JTable {
 				defaultEditor.cancelCellEditing();
 			}
 		}
+	}
+
+	/**
+	 * Maps a table row (in this transposed view, the data column shown on that row) to the
+	 * model index of the underlying data column.
+	 */
+	private int lobDataColumnModelIndex(int tableRow) {
+		return rb.rowsTable.getColumnModel().getColumn(tableRow).getModelIndex();
+	}
+
+	/**
+	 * Maps a table column (&gt; 0; "Row N") to the model index of the underlying data row
+	 * (an index into {@link BrowserContentPane#rows}), or -1 if it cannot be resolved.
+	 */
+	private int lobDataRowModelIndex(int tableColumn) {
+		RowSorter<? extends TableModel> sorter = rb.rowsTable.getRowSorter();
+		int viewRow = tableColumn - 1;
+		if (sorter == null || viewRow < 0 || viewRow >= sorter.getViewRowCount()) {
+			return -1;
+		}
+		return sorter.convertRowIndexToModel(viewRow);
+	}
+
+	/**
+	 * The data {@link Row} shown by the given table column, or <code>null</code> if it
+	 * cannot be resolved.
+	 */
+	private Row lobRowAt(int tableColumn) {
+		int dataRow = lobDataRowModelIndex(tableColumn);
+		if (dataRow < 0 || dataRow >= rb.rows.size()) {
+			return null;
+		}
+		return rb.rows.get(dataRow);
+	}
+
+	/**
+	 * The raw (unwrapped) cell value at the given table cell, read directly from
+	 * {@link BrowserContentPane#rows} - the same source {@code DetailsView} uses - rather
+	 * than the renderer's {@code value} parameter, which may be wrapped
+	 * (e.g. in {@link BrowserContentPane.TableModelItem}).
+	 */
+	private Object lobRawValueAt(int tableRow, int tableColumn) {
+		Row row = lobRowAt(tableColumn);
+		if (row == null) {
+			return null;
+		}
+		int dataCol = lobDataColumnModelIndex(tableRow);
+		if (dataCol < 0 || dataCol >= row.values.length) {
+			return null;
+		}
+		return row.values[dataCol];
+	}
+
+	private static boolean isDisplayableLobType(LobContentType type) {
+		return type != null && type != LobContentType.BINARY && type != LobContentType.PLAIN_TEXT;
+	}
+
+	/**
+	 * Wraps the base cell label into a composite LOB cell: a content-type label and a
+	 * "View…" affordance (and, once known, a thumbnail for image content) - mirroring
+	 * the LOB cell UI in {@code DetailsView}.
+	 */
+	private Component buildLobCell(JLabel base, final int tableRow, final int tableColumn, final Object rawValue) {
+		JPanel lobPanel = new JPanel(new BorderLayout());
+		lobPanel.setOpaque(true);
+		lobPanel.setBackground(base.getBackground());
+		lobPanel.add(base, BorderLayout.CENTER);
+		base.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		base.setToolTipText(LOB_TOOLTIP);
+
+		ImageIcon thumb = lobThumbCache.get(tableRow);
+		if (thumb != null) {
+			JLabel thumbLabel = new JLabel(thumb);
+			thumbLabel.setOpaque(true);
+			thumbLabel.setBackground(base.getBackground());
+			thumbLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 6));
+			lobPanel.add(thumbLabel, BorderLayout.WEST);
+			// once the thumbnail is visible, hide the "<Blob> N bytes" placeholder text
+			base.setVisible(false);
+		}
+
+		JButton viewButton = new JButton("View…");
+		if (LOB_VIEW_ICON != null) {
+			viewButton.setIcon(LOB_VIEW_ICON);
+		}
+		viewButton.setMargin(new Insets(0, 4, 0, 4));
+		viewButton.setToolTipText(LOB_TOOLTIP);
+		// painted only - JTable renderer components are non-interactive; clicks are
+		// handled by ColumnsTable's own mouse listener.
+
+		LobContentType type = lobTypeCache.get(tableRow);
+		if (type == null) {
+			type = LobContentSupport.detectType(rawValue);
+		}
+		JLabel typeLabel = new JLabel(isDisplayableLobType(type) ? type.displayName + " " : "");
+		typeLabel.setForeground(Colors.Color_128_128_128);
+		typeLabel.setFont(base.getFont().deriveFont(base.getFont().getStyle() & ~Font.BOLD | Font.ITALIC));
+
+		JPanel eastPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
+		eastPanel.setOpaque(true);
+		eastPanel.setBackground(base.getBackground());
+		eastPanel.add(typeLabel);
+		eastPanel.add(viewButton);
+		lobPanel.add(eastPanel, BorderLayout.EAST);
+
+		if (lobRequested.add(tableRow)) {
+			final Row dataRow = lobRowAt(tableColumn);
+			final int dataCol = lobDataColumnModelIndex(tableRow);
+			if (dataRow != null) {
+				if (type != null) {
+					if (type.isImage()) {
+						requestLobThumbnail(tableRow, dataRow, dataCol, rawValue);
+					}
+				} else {
+					rb.retrieveLobContentType(dataRow, dataCol, new Object(), t -> {
+						if (t != null) {
+							lobTypeCache.put(tableRow, t);
+						}
+						if (t != null && t.isImage()) {
+							requestLobThumbnail(tableRow, dataRow, dataCol, rawValue);
+						}
+						refreshLobCell();
+					});
+				}
+			}
+		}
+
+		return lobPanel;
+	}
+
+	private void requestLobThumbnail(final int tableRow, Row dataRow, int dataCol, Object rawValue) {
+		rb.retrieveLobImagePreview(dataRow, dataCol, rawValue, 160, 64, new Object(), img -> {
+			if (img != null) {
+				lobThumbCache.put(tableRow, new ImageIcon(img));
+			}
+			refreshLobCell();
+		});
+	}
+
+	private void refreshLobCell() {
+		adjustTableColumnsWidth();
+		revalidate();
+		repaint();
 	}
 
 }

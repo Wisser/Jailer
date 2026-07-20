@@ -59,9 +59,12 @@ public final class LobContent {
 	private final String table;
 	private final String column;
 	private final String notice;      // e.g. "content truncated"; nullable
+	private final String originalFileName; // e.g. a ZIP entry's file name; nullable
+	private final String previewText; // derived preview (e.g. extracted Office text); nullable
 
 	private LobContent(LobContentType type, boolean binaryBacked, byte[] bytes, File file, String text,
-			Charset displayCharset, byte[] head, long length, String table, String column, String notice) {
+			Charset displayCharset, byte[] head, long length, String table, String column, String notice,
+			String originalFileName, String previewText) {
 		this.type = type;
 		this.binaryBacked = binaryBacked;
 		this.bytes = bytes;
@@ -73,6 +76,8 @@ public final class LobContent {
 		this.table = table;
 		this.column = column;
 		this.notice = notice;
+		this.originalFileName = originalFileName;
+		this.previewText = previewText;
 	}
 
 	// --- factories ---------------------------------------------------------
@@ -80,12 +85,12 @@ public final class LobContent {
 	public static LobContent binaryInMemory(byte[] full, String table, String column, String notice) {
 		byte[] head = full == null ? new byte[0] : (full.length <= HEAD_SIZE ? full : java.util.Arrays.copyOf(full, HEAD_SIZE));
 		LobContentType type = LobTypeDetector.detect(head, full == null ? -1 : full.length);
-		return new LobContent(type, true, full, null, null, LobText.resolveCharset(head), head, full == null ? 0 : full.length, table, column, notice);
+		return new LobContent(type, true, full, null, null, LobText.resolveCharset(head), head, full == null ? 0 : full.length, table, column, notice, null, null);
 	}
 
 	public static LobContent binaryFile(File file, long length, byte[] head, String table, String column, String notice) {
 		LobContentType type = LobTypeDetector.detect(head, length);
-		return new LobContent(type, true, null, file, null, LobText.resolveCharset(head), head, length, table, column, notice);
+		return new LobContent(type, true, null, file, null, LobText.resolveCharset(head), head, length, table, column, notice, null, null);
 	}
 
 	public static LobContent textInMemory(String text, String table, String column, String notice) {
@@ -93,13 +98,42 @@ public final class LobContent {
 		long len = text == null ? 0 : text.length();
 		byte[] head = text == null ? new byte[0]
 				: text.substring(0, Math.min(text.length(), HEAD_SIZE)).getBytes(StandardCharsets.UTF_8);
-		return new LobContent(type, false, null, null, text, StandardCharsets.UTF_8, head, len, table, column, notice);
+		return new LobContent(type, false, null, null, text, StandardCharsets.UTF_8, head, len, table, column, notice, null, null);
 	}
 
 	public static LobContent textFile(File file, long lengthChars, String headText, String table, String column, String notice) {
 		LobContentType type = LobTypeDetector.detectText(headText);
 		byte[] head = headText == null ? new byte[0] : headText.getBytes(StandardCharsets.UTF_8);
-		return new LobContent(type, false, null, file, null, StandardCharsets.UTF_8, head, lengthChars, table, column, notice);
+		return new LobContent(type, false, null, file, null, StandardCharsets.UTF_8, head, lengthChars, table, column, notice, null, null);
+	}
+
+	/**
+	 * Returns a copy of this content that carries the given original file name
+	 * (e.g. a ZIP entry's name), used to derive a better export/open file name
+	 * than the generic {@code table_column} name.
+	 */
+	public LobContent withOriginalFileName(String originalFileName) {
+		return new LobContent(type, binaryBacked, bytes, file, text, displayCharset, head, length, table, column, notice, originalFileName, previewText);
+	}
+
+	/**
+	 * Returns a copy of this content relabeled with the given type. The
+	 * underlying payload (bytes/file/text) is left untouched, so export/open
+	 * still operate on the real content - only the displayed type (and its
+	 * extension/display name) changes.
+	 */
+	public LobContent withType(LobContentType type) {
+		return new LobContent(type, binaryBacked, bytes, file, text, displayCharset, head, length, table, column, notice, originalFileName, previewText);
+	}
+
+	/**
+	 * Returns a copy of this content carrying the given derived preview text
+	 * (e.g. text extracted from a DOCX/XLSX/PPTX package), shown by the viewer
+	 * instead of the raw payload without altering what "Save to file..."/"Open
+	 * externally" export.
+	 */
+	public LobContent withPreviewText(String previewText) {
+		return new LobContent(type, binaryBacked, bytes, file, text, displayCharset, head, length, table, column, notice, originalFileName, previewText);
 	}
 
 	// --- accessors ---------------------------------------------------------
@@ -126,6 +160,14 @@ public final class LobContent {
 
 	public String getNotice() {
 		return notice;
+	}
+
+	public String getOriginalFileName() {
+		return originalFileName;
+	}
+
+	public String getPreviewText() {
+		return previewText;
 	}
 
 	public byte[] getHead() {

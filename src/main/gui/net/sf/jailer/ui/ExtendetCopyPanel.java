@@ -99,6 +99,17 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 		
 		window.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		ExtendetCopyPanel copyPanel = new ExtendetCopyPanel(columnNamesInFirstRow);
+		// Create tabContentPanel before initContentTable: initContentTable attaches
+		// selection/column listeners that call updatePreview(), which dereferences
+		// tabContentPanel. Assigning it first closes the window in which it is null.
+		copyPanel.tabContentPanel = new TabContentPanel(null, new JLabel(""), null, new JLabel(""), tableName,
+				false,
+				null,
+				null,
+				rowColumnTypes,
+				true, silent);
+		copyPanel.tabContentPanel.setRowAndColumnsLimit(500);
+		copyPanel.tabContentPanel.setColumnNamesInFirstRow(columnNamesInFirstRow);
 		copyPanel.initContentTable(jTable, allColumnsSelected, columnNamesInFirstRow);
 		
 		window.getContentPane().add(copyPanel);
@@ -107,14 +118,6 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 		window.setSize(Math.max(window.getWidth(), jTable.getParent().getWidth()), window.getHeight());
 		copyPanel.previewPanel.setMinimumSize(new Dimension(1, 180));
 		copyPanel.previewPanel.setPreferredSize(copyPanel.previewPanel.getMinimumSize());
-		copyPanel.tabContentPanel = new TabContentPanel(null, new JLabel(""), null, new JLabel(""), tableName, 
-				false,
-				null,
-				null,
-				rowColumnTypes,
-				true, silent);
-		copyPanel.tabContentPanel.setRowAndColumnsLimit(500);
-		copyPanel.tabContentPanel.setColumnNamesInFirstRow(columnNamesInFirstRow);
 		copyPanel.plainPanel.add(copyPanel.tabContentPanel.textTabPanel, java.awt.BorderLayout.CENTER);
 		copyPanel.tabContentPanel.copyCBButton.setVisible(false);
 		GridBagConstraints g = new java.awt.GridBagConstraints();
@@ -271,35 +274,40 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
     	contentTable.setColumnSelectionAllowed(true);
     	contentTable.setCellSelectionEnabled(true);
     	contentTable.setName("contentTable");
+		final DefaultTableCellRenderer fallbackRenderer = new DefaultTableCellRenderer();
 		contentTable.setDefaultRenderer(Object.class, new TableCellRenderer() {
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
 					boolean hasFocus, int row, int column) {
 				int dmColumn = column;
 				try {
-					Component render = jTable.getCellRenderer(row, dmColumn).getTableCellRendererComponent(contentTable,
-							value, false, hasFocus, row, dmColumn);
-					if (render instanceof JLabel) {
-						if (isSelected) {
-							if (UIUtil.TABLE_BACKGROUND_COLOR_1.equals(render.getBackground())) {
-								render.setBackground(UIUtil.TABLE_BG1SELECTED);
-							} else {
-								render.setBackground(UIUtil.TABLE_BG2SELECTED);
+					// The source jTable is live and non-modal; its column/row model may have
+					// shrunk while this dialog is open. Only delegate when the indexes are valid,
+					// otherwise fall back to the snapshot value held by contentTable's own model.
+					if (row >= 0 && row < jTable.getRowCount() && dmColumn >= 0 && dmColumn < jTable.getColumnCount()) {
+						Component render = jTable.getCellRenderer(row, dmColumn).getTableCellRendererComponent(contentTable,
+								value, false, hasFocus, row, dmColumn);
+						if (render instanceof JLabel) {
+							if (isSelected) {
+								if (UIUtil.TABLE_BACKGROUND_COLOR_1.equals(render.getBackground())) {
+									render.setBackground(UIUtil.TABLE_BG1SELECTED);
+								} else {
+									render.setBackground(UIUtil.TABLE_BG2SELECTED);
+								}
+							}
+							if ("found".equals(render.getName())) {
+								Color background = render.getBackground();
+								render.setBackground(new Color(Math.max((int) (background.getRed()), 0),
+										Math.max((int) (background.getGreen() * 0.90), 0),
+										Math.max((int) (background.getBlue() * 0.91), 0), background.getAlpha()));
 							}
 						}
-						if ("found".equals(render.getName())) {
-							Color background = render.getBackground();
-							render.setBackground(new Color(Math.max((int) (background.getRed()), 0),
-									Math.max((int) (background.getGreen() * 0.90), 0),
-									Math.max((int) (background.getBlue() * 0.91), 0), background.getAlpha()));
-						}
+						return render;
 					}
-					return render;
 				} catch (Exception e) {
 					LogUtil.warn(e);
-					return new JLabel();
 				}
-
+				return fallbackRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 			}
 		});
 		try {
@@ -464,6 +472,9 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 		if (!updatePending) {
 			UIUtil.invokeLater(() -> {
 				updatePending = false;
+				if (tabContentPanel == null) {
+					return;
+				}
 				if (!formattedCheckBox.isSelected()) {
 					tabContentPanel.updateTextView(contentTable);
 				} else {

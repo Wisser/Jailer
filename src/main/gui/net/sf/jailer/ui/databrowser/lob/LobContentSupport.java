@@ -15,8 +15,16 @@
  */
 package net.sf.jailer.ui.databrowser.lob;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
 import net.sf.jailer.ui.databrowser.BinValue;
 import net.sf.jailer.ui.databrowser.LobValue;
+import net.sf.jailer.util.LogUtil;
 
 /**
  * Recognizes DataBrowser cell values that hold a BLOB/CLOB/binary value worth
@@ -84,5 +92,94 @@ public final class LobContentSupport {
 			return LobContent.textInMemory(s, table, column, notice);
 		}
 		return null;
+	}
+
+	/**
+	 * If the given content is a single-file archive - a GZIP stream, or a ZIP
+	 * holding exactly one file entry - decompresses that single file and returns
+	 * it as a fresh {@link LobContent} with its own guessed
+	 * {@link LobContentType}. Returns <code>null</code> when drilling in is not
+	 * applicable, so the caller falls back to rendering the archive itself.
+	 *
+	 * <p>Only one level is unwrapped: a single-file archive nested inside another
+	 * is returned as its (archive) type, not recursed into. The decompressed size
+	 * is bounded by <code>maxBytes</code>; content exceeding it yields
+	 * <code>null</code> (too large to preview inline). Any read/format error also
+	 * yields <code>null</code>.
+	 *
+	 * @param archive  the archive content (only ZIP/GZIP are considered)
+	 * @param maxBytes cap on the decompressed size held in memory
+	 * @return the decompressed inner content, or <code>null</code>
+	 */
+	public static LobContent unwrapSingleFileArchive(LobContent archive, long maxBytes) {
+		if (archive == null || !archive.hasFullContent()) {
+			return null;
+		}
+		try {
+			if (archive.getType() == LobContentType.GZIP) {
+				try (InputStream in = new GZIPInputStream(archive.openBinaryStream())) {
+					byte[] bytes = readBounded(in, maxBytes);
+					if (bytes == null || bytes.length == 0) {
+						return null;
+					}
+					return LobContent.binaryInMemory(bytes, archive.getTable(), archive.getColumn(),
+							"Decompressed from GZIP");
+				}
+			}
+			if (archive.getType() == LobContentType.ZIP) {
+				try (ZipInputStream zis = new ZipInputStream(archive.openBinaryStream())) {
+					ZipEntry entry;
+					byte[] bytes = null;
+					String entryName = null;
+					while ((entry = zis.getNextEntry()) != null) {
+						if (entry.isDirectory()) {
+							zis.closeEntry();
+							continue;
+						}
+						if (bytes != null) {
+							return null; // more than one file entry - keep the entry-list view
+						}
+						bytes = readBounded(zis, maxBytes);
+						entryName = entry.getName();
+						zis.closeEntry();
+						if (bytes == null) {
+							return null; // over the cap
+						}
+					}
+					if (bytes == null || bytes.length == 0) {
+						return null;
+					}
+					return LobContent.binaryInMemory(bytes, archive.getTable(), archive.getColumn(),
+							"Extracted from ZIP entry \"" + entryName + "\"").withOriginalFileName(entryName);
+				}
+			}
+		} catch (IOException e) {
+			LogUtil.warn(e);
+			return null;
+		} catch (RuntimeException e) {
+			LogUtil.warn(e);
+			return null;
+		}
+		return null;
+	}
+
+	/**
+	 * Reads up to <code>maxBytes</code> from the stream. Returns <code>null</code>
+	 * if the stream holds more than <code>maxBytes</code> (detected by reading one
+	 * extra byte).
+	 */
+	static byte[] readBounded(InputStream in, long maxBytes) throws IOException {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		byte[] buf = new byte[8192];
+		long total = 0;
+		int n;
+		while ((n = in.read(buf)) != -1) {
+			total += n;
+			if (total > maxBytes) {
+				return null;
+			}
+			bos.write(buf, 0, n);
+		}
+		return bos.toByteArray();
 	}
 }

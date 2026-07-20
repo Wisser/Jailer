@@ -42,6 +42,12 @@ public enum LobContentType {
 	ZIP(Category.ARCHIVE, ".zip", null, "ZIP archive"),
 	GZIP(Category.ARCHIVE, ".gz", null, "GZIP archive"),
 
+	// Office Open XML packages: still ARCHIVE (the original bytes are the real file - see
+	// LobContent#getPreviewText()), not TEXT - only the extracted preview text is textual.
+	DOCX(Category.ARCHIVE, ".docx", null, "Word document"),
+	XLSX(Category.ARCHIVE, ".xlsx", null, "Excel spreadsheet"),
+	PPTX(Category.ARCHIVE, ".pptx", null, "PowerPoint presentation"),
+
 	BINARY(Category.BINARY, ".bin", null, "Binary data");
 
 	/**

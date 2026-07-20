@@ -27,14 +27,34 @@ public final class LobFilenames {
 	}
 
 	/**
-	 * The base file name (without extension), e.g. {@code table_column}.
+	 * The base file name (without extension). Prefers the content's original
+	 * file name (e.g. a ZIP entry's name) when known, falling back to
+	 * {@code table_column}.
 	 */
 	public static String baseName(LobContent content) {
+		String original = content.getOriginalFileName();
+		if (original != null) {
+			StringBuilder sb = new StringBuilder();
+			append(sb, stripExtension(stripPath(original)));
+			if (sb.length() > 0) {
+				return sb.toString();
+			}
+		}
 		StringBuilder sb = new StringBuilder();
 		append(sb, content.getTable());
 		append(sb, content.getColumn());
 		String s = sb.toString();
 		return s.isEmpty() ? "lob" : s;
+	}
+
+	private static String stripPath(String name) {
+		int slash = Math.max(name.lastIndexOf('/'), name.lastIndexOf('\\'));
+		return slash >= 0 ? name.substring(slash + 1) : name;
+	}
+
+	private static String stripExtension(String name) {
+		int dot = name.lastIndexOf('.');
+		return dot > 0 ? name.substring(0, dot) : name;
 	}
 
 	private static void append(StringBuilder sb, String part) {

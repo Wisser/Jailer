@@ -747,6 +747,16 @@ public abstract class DetailsView extends javax.swing.JPanel {
 							final JLabel typeLabel = new JLabel(isDisplayableLobType(lobType)? lobType.displayName + " " : "");
 							typeLabel.setForeground(Colors.Color_128_128_128);
 							typeLabel.setFont(italic);
+							typeLabel.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
+							typeLabel.setToolTipText("Show the content of this value");
+							typeLabel.addMouseListener(new MouseAdapter() {
+								@Override
+								public void mouseClicked(MouseEvent e) {
+									if (e.getButton() == MouseEvent.BUTTON1) {
+										onOpenLobViewer(lobRow, lobColumn, lobValue);
+									}
+								}
+							});
 							eastPanel.add(typeLabel);
 							eastPanel.add(viewButton);
 							lobPanel.add(eastPanel, BorderLayout.EAST);
@@ -812,6 +822,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 							f.addMouseListener(lobPopup);
 							lobPanel.addMouseListener(lobPopup);
 							thumbLabel.addMouseListener(lobPopup);
+							typeLabel.addMouseListener(lobPopup);
 							cellComponent = lobPanel;
 							// unlike the geometry preview, a LOB cell is stretched to the full
 							// column width (normal cell layout) so its row background fills the

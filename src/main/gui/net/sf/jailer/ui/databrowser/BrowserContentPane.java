@@ -6057,6 +6057,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 					protected boolean inTempClosure() {
 						return rows.size() == 1 && BrowserContentPane.this.rowsClosure.tempClosure.size() > 1 && BrowserContentPane.this.rowsClosure.tempClosure.contains(rows.get(0));
 					}
+					@Override
+					protected boolean isLobViewerEnabled() {
+						return true;
+					}
 				};
 				if (additionalMouseAdapter != null) {
 					singleRowDetailsView.addMouseListener(additionalMouseAdapter);
@@ -8195,7 +8199,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	/**
 	 * Retrieves the full content of a LOB cell and shows it in the content viewer.
 	 */
-	private void openLobViewer(Row row, int columnModelIndex, final java.awt.Component viewerParent) {
+	public void openLobViewer(Row row, int columnModelIndex, final java.awt.Component viewerParent) {
 		retrieveFullLobContent(row, columnModelIndex, new LobRetrievalCallback() {
 			@Override
 			public void onSuccess(LobContent content) {

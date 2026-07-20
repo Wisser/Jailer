@@ -17,6 +17,7 @@ package net.sf.jailer.ui.databrowser.lob;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -61,9 +62,11 @@ import javax.swing.table.DefaultTableModel;
 import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 
+import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
+import net.sf.jailer.util.LogUtil;
 
 /**
  * Renders the content of a BLOB/CLOB cell according to its guessed
@@ -86,6 +89,12 @@ public class LobViewerPanel extends JPanel {
 	public static final long IMAGE_MAX = 64L * 1024 * 1024;
 	/** Cap for the hex dump. */
 	private static final long HEX_MAX = 1024 * 1024;
+	/** Cap on the decompressed size of a single-file archive drilled into for preview. */
+	private static final long ARCHIVE_PREVIEW_MAX = 64L * 1024 * 1024;
+	/** Cap for PDFs loaded into memory for inline rendering. */
+	private static final long PDF_MAX = 128L * 1024 * 1024;
+	/** Cap on the cumulative size of the text-bearing parts read from a DOCX/XLSX/PPTX package. */
+	private static final long OFFICE_PREVIEW_MAX = 32L * 1024 * 1024;
 
 	/** Minimum viewer-dialog size, so tiny content still gets a usable window. */
 	private static final int MIN_WIDTH = 420;
@@ -93,6 +102,7 @@ public class LobViewerPanel extends JPanel {
 
 	private LobContent content;
 	private RSyntaxTextAreaWithSQLSyntaxStyle textArea;
+	private PdfViewPanel pdfPanel;
 	private BufferedImage image;
 	private String textForCopy;
 	private volatile boolean modalChildOpen;
@@ -126,6 +136,10 @@ public class LobViewerPanel extends JPanel {
 			textArea.setDocument(new RSyntaxDocument(null, SyntaxConstants.SYNTAX_STYLE_NONE));
 			textArea = null;
 		}
+		if (pdfPanel != null) {
+			pdfPanel.dispose();
+			pdfPanel = null;
+		}
 	}
 
 	private void rebuild() {
@@ -133,6 +147,29 @@ public class LobViewerPanel extends JPanel {
 		dispose();
 		image = null;
 		textForCopy = null;
+		// A LOB that holds a single compressed file (a GZIP stream, or a ZIP with
+		// exactly one entry) is shown decompressed: unwrap it and render the inner
+		// file as if it were the content. Failure leaves the archive itself shown.
+		if (content.getType().category == LobContentType.Category.ARCHIVE && content.hasFullContent()) {
+			try {
+				LobContent inner = LobContentSupport.unwrapSingleFileArchive(content, ARCHIVE_PREVIEW_MAX);
+				if (inner != null) {
+					content = inner;
+				}
+				// Office Open XML packages (DOCX/XLSX/PPTX) are always multi-entry ZIPs, so they are
+				// never unwrapped above; checked separately (and also covers a single-file-archive
+				// that just unwrapped to one, e.g. a GZIP- or ZIP-wrapped Office document).
+				if (content.getType() == LobContentType.ZIP) {
+					LobContent office = OfficeTextExtractor.extractPreview(content, OFFICE_PREVIEW_MAX);
+					if (office != null) {
+						content = office;
+					}
+				}
+			} catch (Throwable t) {
+				// keep the original archive content
+				LogUtil.warn(t);
+			}
+		}
 		add(buildInfoBar(), BorderLayout.NORTH);
 		add(buildBody(), BorderLayout.CENTER);
 		add(buildToolBar(), BorderLayout.SOUTH);
@@ -160,11 +197,13 @@ public class LobViewerPanel extends JPanel {
 			case TEXT:
 				return buildText();
 			case PDF:
-				return messagePanel("PDF document (" + humanSize(content.getLength(), false)
-						+ ").\nInline preview is not supported – use „Save to file…“ to open it externally.");
+				return buildPdf();
 			case ARCHIVE:
 				if (content.getType() == LobContentType.ZIP) {
 					return buildZip();
+				}
+				if (content.getPreviewText() != null) {
+					return buildOfficePreview();
 				}
 				return messagePanel(content.getType().displayName + " (" + humanSize(content.getLength(), false)
 						+ ").\nUse „Save to file…“ to extract it.");
@@ -173,6 +212,7 @@ public class LobViewerPanel extends JPanel {
 				return buildHex();
 			}
 		} catch (Throwable t) {
+			LogUtil.warn(t);
 			return messagePanel("Could not render the content: " + t.getMessage());
 		}
 	}
@@ -198,6 +238,35 @@ public class LobViewerPanel extends JPanel {
 	}
 
 	private JComponent buildText() throws IOException {
+		// getTextForDisplay caps the read itself (avoids loading more than the cap
+		// from a large file-backed LOB); a result reaching exactly the cap is treated
+		// as capped, so the notice is shown even in the rare case the content's true
+		// length is exactly the cap (pre-existing, harmless imprecision).
+		String text = content.getTextForDisplay(TEXT_DISPLAY_CAP);
+		return buildTextView(text, text.length() >= TEXT_DISPLAY_CAP, content.getType().syntaxStyle);
+	}
+
+	/**
+	 * Renders the extracted plain-text preview of a DOCX/XLSX/PPTX package
+	 * (see {@link LobContent#getPreviewText()}). Unlike {@link #buildText()},
+	 * the underlying payload stays the original Office file - only the on-screen
+	 * body and "Copy to clipboard" use the preview text; "Save to file…"/"Open
+	 * externally" keep exporting the real file.
+	 */
+	private JComponent buildOfficePreview() {
+		String full = content.getPreviewText();
+		boolean capped = full.length() > TEXT_DISPLAY_CAP;
+		String text = capped ? full.substring(0, TEXT_DISPLAY_CAP) : full;
+		return buildTextView(text, capped, null);
+	}
+
+	/**
+	 * Shared body for any text-like rendering: a read-only {@code RSyntaxTextArea}
+	 * showing the (already capped) <code>text</code>, with a notice if
+	 * <code>capped</code>. Also sets {@link #textForCopy} for the "Copy to
+	 * clipboard" button.
+	 */
+	private JComponent buildTextView(String text, boolean capped, String syntaxStyle) {
 		textArea = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false) {
 			private static final long serialVersionUID = 1L;
 			@Override
@@ -205,13 +274,12 @@ public class LobViewerPanel extends JPanel {
 				return false;
 			}
 		};
-		String style = content.getType().syntaxStyle;
-		textArea.setSyntaxEditingStyle(style != null ? style : SyntaxConstants.SYNTAX_STYLE_NONE);
-		textForCopy = content.getTextForDisplay(TEXT_DISPLAY_CAP);
+		textArea.setSyntaxEditingStyle(syntaxStyle != null ? syntaxStyle : SyntaxConstants.SYNTAX_STYLE_NONE);
+		textForCopy = text;
 		textArea.setText(textForCopy);
 		textArea.setEditable(false);
 		textArea.setCaretPosition(0);
-		if (textForCopy.length() < TEXT_DISPLAY_CAP) {
+		if (!capped) {
 			return scrollPane(textArea);
 		}
 		// the on-screen text was capped - tell the user (the full content is still exported)
@@ -228,6 +296,25 @@ public class LobViewerPanel extends JPanel {
 	private JComponent buildHex() throws IOException {
 		byte[] bytes = content.readAllBytes(HEX_MAX);
 		return new HexViewPanel(bytes, content.getLength());
+	}
+
+	private JComponent buildPdf() throws IOException {
+		if (content.getLength() >= 0 && content.getLength() > PDF_MAX) {
+			return messagePanel("PDF document (" + humanSize(content.getLength(), false)
+					+ ") is too large to preview inline (over " + humanSize(PDF_MAX, false)
+					+ ") — use „Save to file…“ to open it externally.");
+		}
+		try {
+			byte[] bytes = content.readAllBytes(PDF_MAX);
+			pdfPanel = new PdfViewPanel(bytes);
+			return pdfPanel;
+		} catch (Throwable t) {
+			// e.g. encrypted / malformed PDF, out of memory, or (defensively) a
+			// missing PDFBox class at runtime - fall back to the save-externally hint.
+			LogUtil.warn(t);
+			return messagePanel("Could not render the PDF (" + t.getMessage()
+					+ ").\nUse „Save to file…“ to open it externally.");
+		}
 	}
 
 	private JComponent buildZip() throws IOException {
@@ -258,7 +345,34 @@ public class LobViewerPanel extends JPanel {
 		table.setRowSelectionAllowed(false);
 		table.setColumnSelectionAllowed(false);
 		table.setCellSelectionEnabled(false);
+		sizeColumnsToContent(table);
 		return scrollPane(table);
+	}
+
+	/** Max width the (first) name column is allowed to claim, so a long path does not blow out the dialog. */
+	private static final int NAME_COLUMN_MAX = 400;
+
+	/**
+	 * Sizes each column's preferred width to fit its header and cell content
+	 * (measured via the cell renderers), clamping the leading name column.
+	 */
+	private static void sizeColumnsToContent(JTable table) {
+		for (int c = 0; c < table.getColumnCount(); c++) {
+			javax.swing.table.TableColumn column = table.getColumnModel().getColumn(c);
+			Component header = table.getTableHeader().getDefaultRenderer().getTableCellRendererComponent(
+					table, column.getHeaderValue(), false, false, -1, c);
+			int width = header.getPreferredSize().width;
+			for (int r = 0; r < table.getRowCount(); r++) {
+				Component cell = table.getCellRenderer(r, c).getTableCellRendererComponent(
+						table, table.getValueAt(r, c), false, false, r, c);
+				width = Math.max(width, cell.getPreferredSize().width);
+			}
+			width += 16; // padding
+			if (c == 0) {
+				width = Math.min(width, NAME_COLUMN_MAX);
+			}
+			column.setPreferredWidth(width);
+		}
 	}
 
 	/** Wheel/track scroll increment for the viewer's scroll panes. */
@@ -289,6 +403,7 @@ public class LobViewerPanel extends JPanel {
 
 	/** Button icons (loaded once; scaled to the label font height). */
 	private static final ImageIcon SAVE_ICON = loadButtonIcon("/export.png");
+	private static final ImageIcon OPEN_EXTERNAL_ICON = loadButtonIcon("/showinnewwindow.png");
 	private static final ImageIcon COPY_ICON = loadButtonIcon("/copy.png");
 	private static final ImageIcon CLOSE_ICON = loadButtonIcon("/Cancel.png");
 
@@ -312,8 +427,18 @@ public class LobViewerPanel extends JPanel {
 		});
 		bar.add(save);
 
-		if (content.getType().category == LobContentType.Category.TEXT
-				|| content.getType().category == LobContentType.Category.IMAGE) {
+		JButton openExternal = new JButton("Open externally");
+		openExternal.setIcon(OPEN_EXTERNAL_ICON);
+		openExternal.setToolTipText("Open this content in the operating system's default application");
+		openExternal.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				openExternally();
+			}
+		});
+		bar.add(openExternal);
+
+		if (textForCopy != null || image != null) {
 			JButton copy = new JButton("Copy to clipboard");
 			copy.setIcon(COPY_ICON);
 			copy.addActionListener(new ActionListener() {
@@ -354,6 +479,26 @@ public class LobViewerPanel extends JPanel {
 			UIUtil.showException(this, "Error", ex);
 		} finally {
 			modalChildOpen = false;
+		}
+	}
+
+	private void openExternally() {
+		if (!Desktop.isDesktopSupported() || !Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
+			javax.swing.JOptionPane.showMessageDialog(this,
+					"Your system does not support opening files in an external application.",
+					"Warning", javax.swing.JOptionPane.WARNING_MESSAGE);
+			return;
+		}
+		try {
+			File tempDir = Configuration.getInstance().createTempFile();
+			tempDir.mkdirs();
+			File file = new File(tempDir, LobFilenames.baseName(content) + content.getType().extension);
+			content.exportTo(file);
+			file.deleteOnExit();
+			tempDir.deleteOnExit();
+			Desktop.getDesktop().open(file);
+		} catch (IOException | RuntimeException ex) {
+			UIUtil.showException(this, "Error", ex);
 		}
 	}
 
@@ -446,26 +591,47 @@ public class LobViewerPanel extends JPanel {
 		dialog.getRootPane().registerKeyboardAction(e -> dialog.dispose(),
 				KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
 		// Size the dialog to the content's own preferred size (e.g. an image's
-		// natural dimensions, a short text's extent), then clamp to sensible
-		// minimum/maximum bounds so tiny content still gets a usable window and
-		// huge content does not exceed the owner/screen.
+		// natural dimensions, a short text's extent), then keep both the initial
+		// size and position within the top-level parent window (the DataBrowser /
+		// SQL-console frame) so the viewer never overhangs its borders.
 		dialog.pack();
 		Dimension pref = dialog.getSize();
-		// clamp to the screen (not the owner window - a small owner e.g. a details-view popup must not shrink the viewer)
-		java.awt.Rectangle screen;
-		if (owner != null && owner.getGraphicsConfiguration() != null) {
-			screen = owner.getGraphicsConfiguration().getBounds();
-		} else {
-			screen = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+		// the ultimate owner is the top-level frame; a small intermediate owner
+		// (e.g. a details-view popup) must not let the viewer spill past the frame.
+		Window top = owner;
+		if (top != null) {
+			while (top.getOwner() != null) {
+				top = top.getOwner();
+			}
 		}
-		int maxW = Math.round(screen.width * 0.9f);
-		int maxH = Math.round(screen.height * 0.9f);
-		maxW = Math.max(maxW, MIN_WIDTH);
-		maxH = Math.max(maxH, MIN_HEIGHT);
-		int w = Math.max(MIN_WIDTH, Math.min(pref.width + 8, maxW));
-		int h = Math.max(MIN_HEIGHT, Math.min(pref.height + 8, maxH));
+		java.awt.Rectangle bounds;
+		if (top != null && top.isShowing()) {
+			bounds = top.getBounds();
+			if (top.getGraphicsConfiguration() != null) {
+				bounds = bounds.intersection(top.getGraphicsConfiguration().getBounds());
+			}
+		} else {
+			// parentless fallback: 90% of the screen
+			java.awt.Rectangle screen;
+			if (owner != null && owner.getGraphicsConfiguration() != null) {
+				screen = owner.getGraphicsConfiguration().getBounds();
+			} else {
+				screen = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+			}
+			bounds = new java.awt.Rectangle(screen.x, screen.y,
+					Math.round(screen.width * 0.9f), Math.round(screen.height * 0.9f));
+		}
+		int w = Math.min(pref.width + 28, bounds.width);
+		int h = Math.min(pref.height + 8, bounds.height);
+		// fit-the-frame takes priority over the usability minimum on a tiny frame
+		w = Math.max(w, Math.min(MIN_WIDTH, bounds.width));
+		h = Math.max(h, Math.min(MIN_HEIGHT, bounds.height));
 		dialog.setSize(new Dimension(w, h));
 		dialog.setLocationRelativeTo(owner);
+		java.awt.Point loc = dialog.getLocation();
+		int x = Math.min(Math.max(loc.x, bounds.x), bounds.x + bounds.width - w);
+		int y = Math.min(Math.max(loc.y, bounds.y), bounds.y + bounds.height - h);
+		dialog.setLocation(x, y);
 		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		dialog.setVisible(true);
 	}

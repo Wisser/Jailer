@@ -85,6 +85,7 @@ public class SqlUtil {
 
 	/**
 	 * Replaces the aliases A and B with given aliases in a SQL-condition.
+	 * Text inside string literals and comments ("--..." and "/ *...* /") is left untouched.
 	 *
 	 * @param condition the condition
 	 * @param aliasA alias for A
@@ -94,8 +95,50 @@ public class SqlUtil {
 	public static String replaceAliases(String condition, String aliasA, String aliasB) {
 		final String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_";
 		StringBuffer result = new StringBuffer("");
+		boolean inLiteral = false;
+		boolean inLineComment = false;
+		boolean inBlockComment = false;
 		for (int i = 0; i < condition.length(); ++i) {
 			char c = condition.charAt(i);
+
+			if (inLineComment) {
+				result.append(c);
+				if (c == '\n') {
+					inLineComment = false;
+				}
+				continue;
+			}
+			if (inBlockComment) {
+				result.append(c);
+				if (c == '*' && i + 1 < condition.length() && condition.charAt(i + 1) == '/') {
+					result.append('/');
+					++i;
+					inBlockComment = false;
+				}
+				continue;
+			}
+			if (inLiteral) {
+				result.append(c);
+				if (c == '\'') {
+					inLiteral = false;
+				}
+				continue;
+			}
+			if (c == '\'') {
+				inLiteral = true;
+				result.append(c);
+				continue;
+			}
+			if (c == '-' && i + 1 < condition.length() && condition.charAt(i + 1) == '-') {
+				inLineComment = true;
+				result.append(c);
+				continue;
+			}
+			if (c == '/' && i + 1 < condition.length() && condition.charAt(i + 1) == '*') {
+				inBlockComment = true;
+				result.append(c);
+				continue;
+			}
 			if (c == 'A' || c == 'B' || c == 'a' || c == 'b') {
 				if (nextNonSpace(condition, i + 1) == '.') {
 					if (i == 0 || chars.indexOf(condition.charAt(i - 1)) < 0) {
@@ -116,6 +159,7 @@ public class SqlUtil {
 
 	/**
 	 * Replaces the alias T with given alias in a SQL-condition.
+	 * Text inside string literals and comments ("--..." and "/ *...* /") is left untouched.
 	 *
 	 * @param condition the condition
 	 * @param alias alias for T
@@ -124,8 +168,50 @@ public class SqlUtil {
 	public static String replaceAlias(String condition, String alias) {
 		final String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_";
 		StringBuffer result = new StringBuffer("");
+		boolean inLiteral = false;
+		boolean inLineComment = false;
+		boolean inBlockComment = false;
 		for (int i = 0; i < condition.length(); ++i) {
 			char c = condition.charAt(i);
+
+			if (inLineComment) {
+				result.append(c);
+				if (c == '\n') {
+					inLineComment = false;
+				}
+				continue;
+			}
+			if (inBlockComment) {
+				result.append(c);
+				if (c == '*' && i + 1 < condition.length() && condition.charAt(i + 1) == '/') {
+					result.append('/');
+					++i;
+					inBlockComment = false;
+				}
+				continue;
+			}
+			if (inLiteral) {
+				result.append(c);
+				if (c == '\'') {
+					inLiteral = false;
+				}
+				continue;
+			}
+			if (c == '\'') {
+				inLiteral = true;
+				result.append(c);
+				continue;
+			}
+			if (c == '-' && i + 1 < condition.length() && condition.charAt(i + 1) == '-') {
+				inLineComment = true;
+				result.append(c);
+				continue;
+			}
+			if (c == '/' && i + 1 < condition.length() && condition.charAt(i + 1) == '*') {
+				inBlockComment = true;
+				result.append(c);
+				continue;
+			}
 			if (c == 'T' || c == 't') {
 				if (nextNonSpace(condition, i + 1) == '.') {
 					if (i == 0 || chars.indexOf(condition.charAt(i - 1)) < 0) {
