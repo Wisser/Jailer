@@ -30,6 +30,7 @@ import java.util.Stack;
 import java.util.UUID;
 
 import net.sf.jailer.datamodel.Association;
+import net.sf.jailer.datamodel.Cardinality;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.util.JSqlParserUtil;
 import net.sf.jailer.util.Pair;
@@ -66,6 +67,7 @@ import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UnsupportedStatement;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.alter.AlterExpression;
 import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
 import net.sf.jsqlparser.statement.alter.RenameTableStatement;
@@ -77,6 +79,8 @@ import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.table.ForeignKeyIndex;
+import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
@@ -242,6 +246,14 @@ public class AssociationProposer {
 
 		@Override
 		public void visit(CreateTable createTable) {
+			if (createTable.getIndexes() != null) {
+				Table fkTable = createTable.getTable();
+				for (Index index: createTable.getIndexes()) {
+					if (index instanceof ForeignKeyIndex) {
+						proposeForeignKeyIndexAssociation(fkTable, (ForeignKeyIndex) index);
+					}
+				}
+			}
 		}
 
 		@Override
@@ -254,6 +266,20 @@ public class AssociationProposer {
 
 		@Override
 		public void visit(Alter alter) {
+			if (alter.getAlterExpressions() != null) {
+				Table fkTable = alter.getTable();
+				for (AlterExpression alterExpression: alter.getAlterExpressions()) {
+					if (alterExpression.getFkColumns() != null) {
+						// unnamed constraint: "ADD FOREIGN KEY (...) REFERENCES ..."
+						proposeForeignKeyAssociation(
+								fkTable.getSchemaName(), fkTable.getName(), alterExpression.getFkColumns(),
+								alterExpression.getFkSourceSchema(), alterExpression.getFkSourceTable(), alterExpression.getFkSourceColumns());
+					} else if (alterExpression.getIndex() instanceof ForeignKeyIndex) {
+						// named constraint: "ADD CONSTRAINT <name> FOREIGN KEY (...) REFERENCES ..."
+						proposeForeignKeyIndexAssociation(fkTable, (ForeignKeyIndex) alterExpression.getIndex());
+					}
+				}
+			}
 		}
 
 		@Override
@@ -677,6 +703,90 @@ public class AssociationProposer {
 			return null;
 		}
 
+		/**
+		 * Resolves a DDL table name (schema-qualified or not) against the data model,
+		 * analogously to {@link #resolveTable(String)}/{@link #getColumn(Column)} but
+		 * without going through an alias.
+		 */
+		private net.sf.jailer.datamodel.Table findModelTable(String schemaName, String tableName) {
+			String tnSchema = schemaName != null ? Quoting.normalizeIdentifier(schemaName) : "";
+			String tnName = Quoting.normalizeIdentifier(tableName);
+			for (boolean withSchema: new boolean[] { true, false }) {
+				for (net.sf.jailer.datamodel.Table table: dataModel.getTables()) {
+					String schema = Quoting.normalizeIdentifier(table.getSchema(""));
+					String uName = Quoting.normalizeIdentifier(table.getUnqualifiedName());
+					if (uName.equals(tnName) && (!withSchema || schema.equals(tnSchema))) {
+						return table;
+					}
+				}
+			}
+			return null;
+		}
+
+		/**
+		 * Resolves a DDL column name against a data model table, analogously to the
+		 * innermost lookup in {@link #getColumn(Column)}.
+		 */
+		private net.sf.jailer.datamodel.Column findModelColumn(net.sf.jailer.datamodel.Table table, String columnName) {
+			String uqColName = Quoting.staticUnquote(columnName);
+			for (net.sf.jailer.datamodel.Column column: table.getColumns()) {
+				if (Quoting.staticUnquote(column.name).equalsIgnoreCase(uqColName)) {
+					columnToTable.put(column, table);
+					return column;
+				}
+			}
+			return null;
+		}
+
+		/**
+		 * Proposes an association for a FOREIGN KEY expressed as a {@link ForeignKeyIndex} table constraint
+		 * (used by CREATE TABLE's table-level constraints and by ALTER TABLE's named-constraint form).
+		 */
+		private void proposeForeignKeyIndexAssociation(Table fkTable, ForeignKeyIndex fk) {
+			Table pkTable = fk.getTable();
+			proposeForeignKeyAssociation(
+					fkTable.getSchemaName(), fkTable.getName(), fk.getColumnsNames(),
+					pkTable.getSchemaName(), pkTable.getName(), fk.getReferencedColumnNames());
+		}
+
+		/**
+		 * Proposes an association for a FOREIGN KEY declared in DDL (CREATE TABLE or ALTER TABLE).
+		 * Unlike query-derived joins, the cardinality (many-to-one) and insert order are certain here.
+		 */
+		private void proposeForeignKeyAssociation(String fkSchema, String fkTableName, List<String> fkColumnNames,
+				String pkSchema, String pkTableName, List<String> pkColumnNames) {
+			if (fkColumnNames == null || pkColumnNames == null || fkColumnNames.isEmpty()
+					|| fkColumnNames.size() != pkColumnNames.size()) {
+				return;
+			}
+			net.sf.jailer.datamodel.Table fkTable = findModelTable(fkSchema, fkTableName);
+			net.sf.jailer.datamodel.Table pkTable = findModelTable(pkSchema, pkTableName);
+			if (fkTable == null || pkTable == null) {
+				return;
+			}
+			StringBuilder condition = new StringBuilder();
+			for (int i = 0; i < fkColumnNames.size(); ++i) {
+				net.sf.jailer.datamodel.Column fkColumn = findModelColumn(fkTable, fkColumnNames.get(i));
+				net.sf.jailer.datamodel.Column pkColumn = findModelColumn(pkTable, pkColumnNames.get(i));
+				if (fkColumn == null || pkColumn == null) {
+					return;
+				}
+				if (condition.length() > 0) {
+					condition.append(" and \n");
+				}
+				condition.append("A." + fkColumn.name + "=B." + pkColumn.name);
+			}
+			String name = "AP" + UUID.randomUUID().toString();
+			Pair<net.sf.jailer.datamodel.Table, net.sf.jailer.datamodel.Table> pair =
+					new Pair<net.sf.jailer.datamodel.Table, net.sf.jailer.datamodel.Table>(fkTable, pkTable);
+			Association association = new Association(fkTable, pkTable, false, true, condition.toString(), dataModel, false, Cardinality.MANY_TO_ONE, "Association Proposer");
+			Association revAssociation = new Association(pkTable, fkTable, true, false, condition.toString(), dataModel, true, Cardinality.ONE_TO_MANY, "Association Proposer");
+			association.setName(name);
+			association.reversalAssociation = revAssociation;
+			revAssociation.reversalAssociation = association;
+			addAssociation(name, pair, association, true);
+		}
+
 		@Override
 		public void visit(Block arg0) {
 			// ignore
@@ -1044,7 +1154,3 @@ public class AssociationProposer {
 	}
 
 }
-
-
-// TODO
-// TODO support DDL too
