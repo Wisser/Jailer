@@ -93,9 +93,12 @@ public final class LobTypeDetector {
 			return LobContentType.HTML;
 		}
 		if (lower.startsWith("<?xml")) {
-			return LobContentType.XML;
+			return isSvgAfterXmlDecl(s) ? LobContentType.SVG : LobContentType.XML;
 		}
 		if (s.charAt(0) == '<') {
+			if (lower.startsWith("<svg")) {
+				return LobContentType.SVG;
+			}
 			// generic markup: treat as XML unless it clearly looks like HTML
 			if (lower.contains("<html") || lower.contains("<!doctype html")) {
 				return LobContentType.HTML;
@@ -107,6 +110,26 @@ public final class LobTypeDetector {
 			return LobContentType.JSON;
 		}
 		return LobContentType.PLAIN_TEXT;
+	}
+
+	/**
+	 * After an {@code <?xml ...?>} declaration, checks whether the root element
+	 * (skipping an optional {@code <!DOCTYPE ...>}) is {@code <svg}.
+	 */
+	private static boolean isSvgAfterXmlDecl(String s) {
+		int end = s.indexOf("?>");
+		if (end < 0) {
+			return false;
+		}
+		String rest = s.substring(end + 2).trim();
+		if (rest.toLowerCase(Locale.ENGLISH).startsWith("<!doctype")) {
+			int docTypeEnd = rest.indexOf('>');
+			if (docTypeEnd < 0) {
+				return false;
+			}
+			rest = rest.substring(docTypeEnd + 1).trim();
+		}
+		return rest.toLowerCase(Locale.ENGLISH).startsWith("<svg");
 	}
 
 	private static boolean isGif(byte[] b) {

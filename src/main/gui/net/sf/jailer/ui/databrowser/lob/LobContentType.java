@@ -31,6 +31,7 @@ public enum LobContentType {
 	JPEG(Category.IMAGE, ".jpg", null, "JPEG image"),
 	GIF(Category.IMAGE, ".gif", null, "GIF image"),
 	BMP(Category.IMAGE, ".bmp", null, "BMP image"),
+	SVG(Category.IMAGE, ".svg", null, "SVG image"),
 
 	PLAIN_TEXT(Category.TEXT, ".txt", SyntaxConstants.SYNTAX_STYLE_NONE, "Text"),
 	JSON(Category.TEXT, ".json", SyntaxConstants.SYNTAX_STYLE_JSON_WITH_COMMENTS, "JSON"),

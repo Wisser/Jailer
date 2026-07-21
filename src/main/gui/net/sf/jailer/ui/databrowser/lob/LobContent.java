@@ -15,6 +15,8 @@
  */
 package net.sf.jailer.ui.databrowser.lob;
 
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -29,6 +31,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 import javax.imageio.ImageIO;
+
+import com.github.weisj.jsvg.SVGDocument;
+import com.github.weisj.jsvg.parser.LoaderContext;
+import com.github.weisj.jsvg.parser.SVGLoader;
+import com.github.weisj.jsvg.view.FloatSize;
+import com.github.weisj.jsvg.view.ViewBox;
+
+import net.sf.jailer.util.LogUtil;
 
 /**
  * The full (or best-available) content of one BLOB/CLOB cell, together with its
@@ -203,7 +213,67 @@ public final class LobContent {
 		if (!type.isImage()) {
 			return null;
 		}
-		return ImageIO.read(new ByteArrayInputStream(readAllBytes(maxBytes)));
+		byte[] data = readAllBytes(maxBytes);
+		if (type == LobContentType.SVG) {
+			return renderSvg(data);
+		}
+		return ImageIO.read(new ByteArrayInputStream(data));
+	}
+
+	/** Clamp on a rasterized SVG's pixel dimensions (per side), guarding against a pathological viewBox. */
+	private static final int SVG_MAX_DIMENSION = 4096;
+
+	/** Small SVGs (icons) are rendered at least this large on their longer side, so they're a legible preview rather than a postage stamp. */
+	private static final int SVG_MIN_DISPLAY_DIMENSION = 256;
+
+	/**
+	 * Parses and rasterizes an SVG document, scaling it (vector-crisp, via JSVG's
+	 * {@link ViewBox}-targeted render) so its longer side is between
+	 * {@link #SVG_MIN_DISPLAY_DIMENSION} and {@link #SVG_MAX_DIMENSION} - small
+	 * icons are enlarged to a legible size, oversized documents are shrunk,
+	 * proportionally in both cases. Returns <code>null</code> if the document
+	 * cannot be parsed.
+	 */
+	private static BufferedImage renderSvg(byte[] data) {
+		SVGDocument document;
+		try {
+			document = new SVGLoader().load(new ByteArrayInputStream(data), null, LoaderContext.createDefault());
+		} catch (Throwable t) {
+			LogUtil.warn(t);
+			return null;
+		}
+		if (document == null) {
+			return null;
+		}
+		FloatSize size = document.size();
+		float w = size.width;
+		float h = size.height;
+		float longer = Math.max(w, h);
+		if (longer > 0) {
+			float scale = 1f;
+			if (longer < SVG_MIN_DISPLAY_DIMENSION) {
+				scale = SVG_MIN_DISPLAY_DIMENSION / longer;
+			} else if (longer > SVG_MAX_DIMENSION) {
+				scale = SVG_MAX_DIMENSION / longer;
+			}
+			w *= scale;
+			h *= scale;
+		}
+		int targetW = Math.max(1, Math.round(w));
+		int targetH = Math.max(1, Math.round(h));
+		BufferedImage image = new BufferedImage(targetW, targetH, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = image.createGraphics();
+		try {
+			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+			g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+			g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+			document.render(null, g, new ViewBox(0, 0, targetW, targetH));
+		} finally {
+			g.dispose();
+		}
+		return image;
 	}
 
 	/**
