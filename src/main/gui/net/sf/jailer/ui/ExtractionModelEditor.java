@@ -4315,7 +4315,4 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 
 	private static final long serialVersionUID = -5640822484296649670L;
 
-	// TODO 1
-	// TODO icons for popup menu items
-
 }

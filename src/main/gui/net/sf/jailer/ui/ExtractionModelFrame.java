@@ -262,6 +262,30 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 				}
 			}
 		}
+		zoomToFit.setIcon(UIUtil.scaleIcon(zoomToFit, UIUtil.readImage("/maximizec.png")));
+		jMenuItem2.setIcon(UIUtil.scaleIcon(jMenuItem2, UIUtil.readImage("/filter.png")));
+		queryBuilder.setIcon(UIUtil.scaleIcon(queryBuilder, UIUtil.readImage("/querybuilder.png")));
+		openDataBrowserItem.setIcon(UIUtil.scaleIcon(openDataBrowserItem, UIUtil.readImage("/database.png")));
+		renderHtml.setIcon(UIUtil.scaleIcon(renderHtml, UIUtil.readImage("/edit_32.png")));
+		renderHtml1.setIcon(UIUtil.scaleIcon(renderHtml1, UIUtil.readImage("/edit_32.png")));
+		ignoreAll.setIcon(UIUtil.scaleIcon(ignoreAll, UIUtil.readImage("/Cancel2.png")));
+		removeAllRestrictions.setIcon(UIUtil.scaleIcon(removeAllRestrictions, UIUtil.readImage("/connection.png")));
+		showTableDetails.setIcon(UIUtil.scaleIcon(showTableDetails, UIUtil.readImage("/editdetails.png")));
+		reload.setIcon(UIUtil.scaleIcon(reload, UIUtil.readImage("/reset_64.png")));
+		refresh.setIcon(UIUtil.scaleIcon(refresh, UIUtil.readImage("/reset_64.png")));
+		connectDb.setIcon(UIUtil.scaleIcon(connectDb, UIUtil.readImage("/nonconnection.png")));
+		disconnectDb.setIcon(UIUtil.scaleIcon(disconnectDb, UIUtil.readImage("/buttoncancel.png")));
+		updateDataModel.setIcon(UIUtil.scaleIcon(updateDataModel, UIUtil.readImage("/database_32.png")));
+		columnOrderItem.setIcon(UIUtil.scaleIcon(columnOrderItem, UIUtil.readImage("/sort123.png")));
+		checkPKMenuItem.setIcon(UIUtil.scaleIcon(checkPKMenuItem, UIUtil.readImage("/constraint_pk_32.png")));
+		consistencyCheckMenuItem1.setIcon(UIUtil.scaleIcon(consistencyCheckMenuItem1, UIUtil.readImage("/constraint_check_32.png")));
+		consistencyCheckMenuItem.setIcon(UIUtil.scaleIcon(consistencyCheckMenuItem, UIUtil.readImage("/constraint_check_32.png")));
+		jMenuItem1.setIcon(UIUtil.scaleIcon(jMenuItem1, UIUtil.readImage("/jailer.png")));
+		helpContent.setIcon(UIUtil.scaleIcon(helpContent, UIUtil.readImage("/help.png")));
+		collapseAll.setIcon(UIUtil.scaleIcon(collapseAll, UIUtil.readImage("/minus.png")));
+		expandAll.setIcon(UIUtil.scaleIcon(expandAll, UIUtil.readImage("/collapsed.png")));
+		downloadMenuItem.setIcon(UIUtil.scaleIcon(downloadMenuItem, UIUtil.readImage("/tb_zoomout.png")));
+
 		JMenuItem aiExtractionModelItem = new JMenuItem("AI Subsetting Assistant...");
 		aiExtractionModelItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, mask | InputEvent.SHIFT_DOWN_MASK));
 		ImageIcon aiMenuIcon = UIUtil.readImage("/ask_ai.png");

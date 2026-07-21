@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -188,6 +189,48 @@ public class GraphicalDataModelView extends JPanel {
 	private final ExecutionContext executionContext;
 
 	private final ActionList animate;
+
+	private ImageIcon navigationIcon;
+	private ImageIcon tableIcon;
+	private ImageIcon focusIcon;
+	private ImageIcon databaseIcon;
+	private ImageIcon zoomIcon;
+	private ImageIcon hideIcon;
+	private ImageIcon detailsIcon;
+	private ImageIcon columnMappingIcon;
+	private ImageIcon disableIcon;
+	private ImageIcon enableIcon;
+	private ImageIcon htmlRenderIcon;
+	private ImageIcon queryBuilderIcon;
+	private ImageIcon filterIcon;
+	private ImageIcon exportModeIcon;
+	private ImageIcon insertIcon;
+	private ImageIcon upsertIcon;
+	private ImageIcon excludeMenuIcon;
+	private ImageIcon yesIcon;
+	private ImageIcon noIcon;
+	{
+		// load images
+		navigationIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/navigation.png"));
+		tableIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/table.png"));
+		focusIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/pin_64.png"));
+		databaseIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/database.png"));
+		zoomIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/maximizec.png"));
+		hideIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/close.png"));
+		detailsIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/editdetails.png"));
+		columnMappingIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/edit.png"));
+		disableIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/Cancel2.png"));
+		enableIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/connection.png"));
+		htmlRenderIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/edit_32.png"));
+		queryBuilderIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/querybuilder.png"));
+		filterIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/filter.png"));
+		exportModeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/export.png"));
+		insertIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/add.png"));
+		upsertIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/upsert.png"));
+		excludeMenuIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/delete.png"));
+		yesIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/constraint_check.png"));
+		noIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/Cancel.png"));
+	}
 
 	/**
 	 * Constructor.
@@ -748,6 +791,7 @@ public class GraphicalDataModelView extends JPanel {
 
 		if (withNavigation) {
 			navigateTo = new JScrollMenu("Show Associated Table");
+			navigateTo.setIcon(navigationIcon);
 			List<Association> aList = new ArrayList<Association>();
 			Set<Table> includedTables = new HashSet<Table>();
 			Set<Association> visualizable = new HashSet<Association>();
@@ -775,6 +819,7 @@ public class GraphicalDataModelView extends JPanel {
 			for (final Association a: aList) {
 				String miText = a.getDataModel().getDisplayName(a.destination);
 				JMenuItem mi = new JMenuItem();
+				mi.setIcon(tableIcon);
 				if (!visualizable.contains(a)) {
 					if (italic == null) {
 						Font font = new JLabel().getFont();
@@ -817,6 +862,7 @@ public class GraphicalDataModelView extends JPanel {
 //			}
 //		});
 		JMenuItem selectAsRoot = new JMenuItem("Focus on " + table.getName());
+		selectAsRoot.setIcon(focusIcon);
 		selectAsRoot.addActionListener(new ActionListener () {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -829,6 +875,7 @@ public class GraphicalDataModelView extends JPanel {
 			}
 		});
 		JMenuItem dataBrowser = new JMenuItem("Browse Data");
+		dataBrowser.setIcon(databaseIcon);
 		dataBrowser.addActionListener(new ActionListener () {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -836,6 +883,7 @@ public class GraphicalDataModelView extends JPanel {
 			}
 		});
 		JMenuItem zoomToFit = new JMenuItem("Zoom To Fit");
+		zoomToFit.setIcon(zoomIcon);
 		zoomToFit.addActionListener(new ActionListener () {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -843,6 +891,7 @@ public class GraphicalDataModelView extends JPanel {
 			}
 		});
 		JMenuItem hide = new JMenuItem("Hide " + table.getName());
+		hide.setIcon(hideIcon);
 		hide.addActionListener(new ActionListener () {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -856,6 +905,7 @@ public class GraphicalDataModelView extends JPanel {
 			hide.setEnabled(false);
 		}
 		JMenuItem toggleDetails = new JMenuItem(showDetails(table)? "Hide Details" : "Show Details");
+		toggleDetails.setIcon(detailsIcon);
 		toggleDetails.addActionListener(new ActionListener () {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -865,6 +915,7 @@ public class GraphicalDataModelView extends JPanel {
 		JMenuItem mapColumns = null;
 		if (modelEditor.scriptFormat.isObjectNotation()) {
 			mapColumns = new JMenuItem(modelEditor.createXMappingButtonText(table, true));
+			mapColumns.setIcon(columnMappingIcon);
 			mapColumns.addActionListener(new ActionListener () {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -874,6 +925,7 @@ public class GraphicalDataModelView extends JPanel {
 		}
 
 		JMenuItem restrictAll = new JMenuItem("Disable Associations");
+		restrictAll.setIcon(disableIcon);
 		restrictAll.addActionListener(new ActionListener () {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -883,6 +935,7 @@ public class GraphicalDataModelView extends JPanel {
 		restrictAll.setEnabled(modelEditor.isIgnoreAllApplicable(table));
 
 		JMenuItem removeRestrictions = new JMenuItem("Remove Restrictions");
+		removeRestrictions.setIcon(enableIcon);
 		removeRestrictions.addActionListener(new ActionListener () {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -890,6 +943,7 @@ public class GraphicalDataModelView extends JPanel {
 			}
 		});
 		JMenuItem htmlRender = new JMenuItem("Open HTML Render");
+		htmlRender.setIcon(htmlRenderIcon);
 		htmlRender.addActionListener(new ActionListener () {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -897,6 +951,7 @@ public class GraphicalDataModelView extends JPanel {
 			}
 		});
 		JMenuItem queryBuilder = new JMenuItem("Query Builder");
+		queryBuilder.setIcon(queryBuilderIcon);
 		queryBuilder.addActionListener(new ActionListener () {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -919,6 +974,7 @@ public class GraphicalDataModelView extends JPanel {
 //		});
 
 		JMenuItem filterEditor= new JMenuItem("Edit Filters...");
+		filterEditor.setIcon(filterIcon);
 		filterEditor.addActionListener(new ActionListener () {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -959,8 +1015,10 @@ public class GraphicalDataModelView extends JPanel {
 
 			popup.add(new JSeparator());
 			JMenu insertModeMenu = new JMenu("Export Mode");
+			insertModeMenu.setIcon(exportModeIcon);
 			popup.add(insertModeMenu);
 			JRadioButtonMenuItem insert = new JRadioButtonMenuItem("Insert");
+			insert.setIcon(insertIcon);
 			insert.addActionListener(new ActionListener () {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -971,6 +1029,7 @@ public class GraphicalDataModelView extends JPanel {
 			});
 			insertModeMenu.add(insert);
 			JRadioButtonMenuItem upsert = new JRadioButtonMenuItem("Upsert/Merge");
+			upsert.setIcon(upsertIcon);
 			insertModeMenu.add(upsert);
 			upsert.addActionListener(new ActionListener () {
 				@Override
@@ -1008,8 +1067,10 @@ public class GraphicalDataModelView extends JPanel {
 			}
 
 			JMenu excludeMenu = new JMenu("Exclude from Deletion");
+			excludeMenu.setIcon(excludeMenuIcon);
 			popup.add(excludeMenu);
 			JRadioButtonMenuItem yes = new JRadioButtonMenuItem("Yes");
+			yes.setIcon(yesIcon);
 			yes.addActionListener(new ActionListener () {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -1020,6 +1081,7 @@ public class GraphicalDataModelView extends JPanel {
 			});
 			excludeMenu.add(yes);
 			JRadioButtonMenuItem no = new JRadioButtonMenuItem("No");
+			no.setIcon(noIcon);
 			excludeMenu.add(no);
 			no.addActionListener(new ActionListener () {
 				@Override
@@ -1123,6 +1185,7 @@ public class GraphicalDataModelView extends JPanel {
 		boolean withModifications = modelEditor.getAdditionalPopupMenuItems().isEmpty();
 
 		JMenuItem disable = new JMenuItem("Disable Association");
+		disable.setIcon(disableIcon);
 		disable.addActionListener(new ActionListener () {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -1130,6 +1193,7 @@ public class GraphicalDataModelView extends JPanel {
 			}
 		});
 		JMenuItem enable = new JMenuItem("Enable Association");
+		enable.setIcon(enableIcon);
 		enable.addActionListener(new ActionListener () {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -1137,6 +1201,7 @@ public class GraphicalDataModelView extends JPanel {
 			}
 		});
 		JMenuItem zoomToFit = new JMenuItem("Zoom To Fit");
+		zoomToFit.setIcon(zoomIcon);
 		zoomToFit.addActionListener(new ActionListener () {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -1153,6 +1218,7 @@ public class GraphicalDataModelView extends JPanel {
 			if (modelEditor.pendingDecisionsPanel != null && modelEditor.pendingDecisionsPanel.isActivated()) {
 				popup.add(new JSeparator());
 				JCheckBoxMenuItem check = new JCheckBoxMenuItem("Checked");
+				check.setIcon(yesIcon);
 				check.setSelected(modelEditor.pendingDecisionsPanel.isChecked(association));
 				check.setEnabled(modelEditor.pendingDecisionsPanel.origDecisionPending.contains(association.reversalAssociation.getName()));
 				check.addActionListener(new ActionListener () {
@@ -1174,6 +1240,7 @@ public class GraphicalDataModelView extends JPanel {
 				popup.add(new JSeparator());
 			}
 			JCheckBoxMenuItem check = new JCheckBoxMenuItem();
+			check.setIcon(columnMappingIcon);
 			check.setSelected(association.reversalAssociation.getAggregationSchema() != AggregationSchema.NONE);
 			modelEditor.initXAggregationCheckbox(check, association, check.isSelected(), 70);
 			check.addActionListener(e -> {
@@ -1182,6 +1249,7 @@ public class GraphicalDataModelView extends JPanel {
 			});
 			popup.add(check);
 			JMenuItem aggregationMapping = new JMenuItem(modelEditor.createXMappingButtonText(association.destination, true));
+			aggregationMapping.setIcon(columnMappingIcon);
 			popup.add(aggregationMapping);
 			aggregationMapping.addActionListener(e -> modelEditor.openColumnMapper(association.destination));
 			popup.add(new JSeparator());

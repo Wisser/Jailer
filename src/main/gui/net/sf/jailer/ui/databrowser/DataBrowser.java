@@ -381,6 +381,8 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		jToolBar1.setFloatable(false);
 		jToolBar2.setFloatable(false);
 		
+		scalingMenu.setVisible(false);
+		
 		initWorkbenchTabbedPane();
 
 		initMenu();
@@ -6720,6 +6722,30 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 				}
 			}
 		}
+		checkPKMenuItem.setIcon(UIUtil.scaleIcon(checkPKMenuItem, UIUtil.readImage("/constraint_pk_32.png")));
+		consistencyCheckMenuItem.setIcon(UIUtil.scaleIcon(consistencyCheckMenuItem, UIUtil.readImage("/constraint_check_32.png")));
+		consistencyCheckMenuItem1.setIcon(UIUtil.scaleIcon(consistencyCheckMenuItem1, UIUtil.readImage("/constraint_check_32.png")));
+		columnOrderItem.setIcon(UIUtil.scaleIcon(columnOrderItem, UIUtil.readImage("/sort123.png")));
+		analyseMenuItem.setIcon(UIUtil.scaleIcon(analyseMenuItem, UIUtil.readImage("/database_32.png")));
+		reconnectMenuItem.setIcon(UIUtil.scaleIcon(reconnectMenuItem, UIUtil.readImage("/nonconnection.png")));
+		renderHtml.setIcon(UIUtil.scaleIcon(renderHtml, UIUtil.readImage("/edit_32.png")));
+		jMenuItem4.setIcon(UIUtil.scaleIcon(jMenuItem4, UIUtil.readImage("/help.png")));
+		aboutMenuItem.setIcon(UIUtil.scaleIcon(aboutMenuItem, UIUtil.readImage("/jailer.png")));
+		downloadMenuItem.setIcon(UIUtil.scaleIcon(downloadMenuItem, UIUtil.readImage("/tb_zoomout.png")));
+		closeAllMenuItem.setIcon(UIUtil.scaleIcon(closeAllMenuItem, UIUtil.readImage("/clear.png")));
+		jMenuItem3.setIcon(UIUtil.scaleIcon(jMenuItem3, UIUtil.readImage("/addtable.png")));
+		zoomInMenuItem.setIcon(UIUtil.scaleIcon(zoomInMenuItem, UIUtil.readImage("/tb_zoomin.png")));
+		zoomOutMenuItem.setIcon(UIUtil.scaleIcon(zoomOutMenuItem, UIUtil.readImage("/tb_zoomout.png")));
+		thumbnailLayoutRadioButtonMenuItem.setIcon(UIUtil.scaleIcon(thumbnailLayoutRadioButtonMenuItem, UIUtil.readImage("/tb_zoom0.png")));
+		tinyLayoutRadioButtonMenuItem.setIcon(UIUtil.scaleIcon(tinyLayoutRadioButtonMenuItem, UIUtil.readImage("/tb_zoom1.png")));
+		smallLayoutRadioButtonMenuItem.setIcon(UIUtil.scaleIcon(smallLayoutRadioButtonMenuItem, UIUtil.readImage("/tb_zoom2.png")));
+		mediumLayoutRadioButtonMenuItem.setIcon(UIUtil.scaleIcon(mediumLayoutRadioButtonMenuItem, UIUtil.readImage("/tb_zoom3.png")));
+		largeLayoutRadioButtonMenuItem.setIcon(UIUtil.scaleIcon(largeLayoutRadioButtonMenuItem, UIUtil.readImage("/tb_zoom4.png")));
+		goBackItem.setIcon(UIUtil.scaleIcon(goBackItem, UIUtil.readImage("/tb_back.png")));
+		goForwardItem.setIcon(UIUtil.scaleIcon(goForwardItem, UIUtil.readImage("/tb_forward.png")));
+		addBookmarkMenuItem.setIcon(UIUtil.scaleIcon(addBookmarkMenuItem, UIUtil.readImage("/pin_64.png")));
+		editBookmarkMenuItem.setIcon(UIUtil.scaleIcon(editBookmarkMenuItem, UIUtil.readImage("/edit_32.png")));
+
 		aiAssistantMenuItem = new JMenuItem("AI Assistant...");
 		aiAssistantMenuItem.setAccelerator(KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, mask | InputEvent.SHIFT_DOWN_MASK));
 		javax.swing.ImageIcon aiIcon = net.sf.jailer.ui.UIUtil.readImage("/ask_ai.png");
