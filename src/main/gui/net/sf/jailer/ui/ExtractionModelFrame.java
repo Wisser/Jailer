@@ -262,6 +262,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 				}
 			}
 		}
+		scalingMenu.setVisible(false);
 		zoomToFit.setIcon(UIUtil.scaleIcon(zoomToFit, UIUtil.readImage("/maximizec.png")));
 		jMenuItem2.setIcon(UIUtil.scaleIcon(jMenuItem2, UIUtil.readImage("/filter.png")));
 		queryBuilder.setIcon(UIUtil.scaleIcon(queryBuilder, UIUtil.readImage("/querybuilder.png")));
@@ -285,9 +286,73 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 		collapseAll.setIcon(UIUtil.scaleIcon(collapseAll, UIUtil.readImage("/minus.png")));
 		expandAll.setIcon(UIUtil.scaleIcon(expandAll, UIUtil.readImage("/collapsed.png")));
 		downloadMenuItem.setIcon(UIUtil.scaleIcon(downloadMenuItem, UIUtil.readImage("/tb_zoomout.png")));
+		openDataModelEditor.setIcon(UIUtil.scaleIcon(openDataModelEditor, UIUtil.readImage("/model.png")));
+		analyzeSQLMenuItem.setIcon(UIUtil.scaleIcon(analyzeSQLMenuItem, UIUtil.readImage("/analyzesql.png")));
+		dataExport.setIcon(UIUtil.scaleIcon(dataExport, UIUtil.readImage("/run.png")));
+		save.setIcon(UIUtil.scaleIcon(save, UIUtil.readImage("/save.png")));
+		saveAs.setIcon(UIUtil.scaleIcon(saveAs, UIUtil.readImage("/saveas.png")));
+		exit.setIcon(UIUtil.scaleIcon(exit, UIUtil.readImage("/exit.png")));
+		undoMenuItem.setIcon(UIUtil.scaleIcon(undoMenuItem, UIUtil.readImage("/undo.png")));
+		redoMenuItem.setIcon(UIUtil.scaleIcon(redoMenuItem, UIUtil.readImage("/redo.png")));
+		load.setIcon(UIUtil.scaleIcon(load, UIUtil.readImage("/load.png")));
+		newModel.setIcon(UIUtil.scaleIcon(newModel, UIUtil.readImage("/new.png")));
+		dataImport.setIcon(UIUtil.scaleIcon(dataImport, UIUtil.readImage("/import.png")));
+		cycleView.setIcon(UIUtil.scaleIcon(cycleView, UIUtil.readImage("/explain.png")));
+		modelMigrationMenuItem.setIcon(UIUtil.scaleIcon(modelMigrationMenuItem, UIUtil.readImage("/modelmigration.png")));
+		jMenuItem3.setIcon(UIUtil.scaleIcon(jMenuItem3, UIUtil.readImage("/pin.png")));
+		jMenuItem4.setIcon(UIUtil.scaleIcon(jMenuItem4, UIUtil.readImage("/unpin.png")));
+		expandAllVisible.setIcon(UIUtil.scaleIcon(expandAllVisible, UIUtil.readImage("/expandvisible.png")));
+		showIgnored.setIcon(UIUtil.scaleIcon(showIgnored, UIUtil.readImage("/showdisabled.png")));
+
+		newModel.setToolTipText("Create a new, empty extraction model.");
+		load.setToolTipText("Load an extraction model from a file.");
+		reload.setToolTipText("Reload the current extraction model from disk, discarding unsaved changes.");
+		save.setToolTipText("Save the current extraction model.");
+		saveAs.setToolTipText("Save the current extraction model under a new file name.");
+		connectDb.setToolTipText("Reconnect to the database using different connection settings.");
+		disconnectDb.setToolTipText("Disconnect from the current database connection.");
+		exportDisplay.setToolTipText("Export the current graphical view as an image file.");
+		exportDisplay1.setToolTipText("Export the current graphical view as an HTML image map.");
+		exportMenuItem.setToolTipText("Export data models and connection settings to a file, e.g. for backup or transfer to another machine.");
+		importMenuItem.setToolTipText("Import data models and connection settings previously exported from this or another machine.");
+		updateDataModel.setToolTipText("Analyze the database schema and (re-)generate the data model from it.");
+		openDataModelEditor.setToolTipText("Open the editor for tables, columns and associations of the current data model.");
+		columnOrderItem.setToolTipText("Define the column display order for tables.");
+		analyzeSQLMenuItem.setToolTipText("Analyzes selected SQL and proposes association definitions.");
+		modelMigrationMenuItem.setToolTipText("Migrate extraction models between different versions of the data model.");
+		checkPKMenuItem.setToolTipText("Check all tables for a defined primary key.");
+		consistencyCheckMenuItem1.setToolTipText("Check the referential integrity of the database (find rows that violate foreign key constraints).");
+		ignoreAll.setToolTipText("Disable all associations of the selected table (excludes them from the extraction model).");
+		removeAllRestrictions.setToolTipText("Remove all restrictions (conditions) from the associations of the selected table.");
+		jMenuItem2.setToolTipText("Open the editor for column filters and export transformations.");
+		collapseAll.setToolTipText("Collapse all tables in the graphical view.");
+		expandAll.setToolTipText("Expand all tables in the graphical view.");
+		expandAllVisible.setToolTipText("Expand only the tables currently visible in the graphical view.");
+		jMenuItem3.setToolTipText("Fix the position of all tables so they are no longer moved by the automatic layout.");
+		jMenuItem4.setToolTipText("Release all fixed table positions so automatic layout can move them again.");
+		refresh.setToolTipText("Reset the graphical view (re-layout all tables).");
+		zoomToFit.setToolTipText("Scale the graphical view so that all tables are visible.");
+		showIgnored.setToolTipText("Show associations that have been disabled (excluded from the extraction model).");
+		showTableDetails.setToolTipText("Show columns and other details inside each table box.");
+		dataExport.setToolTipText("Export rows from the database to a file (e.g. SQL, CSV, XML, DBUnit).");
+		dataImport.setToolTipText("Import data from a SQL script into the database.");
+		openDataBrowserItem.setToolTipText("Open the Data Browser for the current database.");
+		queryBuilder.setToolTipText("Open the visual SQL Query Builder.");
+		cycleView.setToolTipText("Find and display cyclic association paths in the data model.");
+		renderHtml.setToolTipText("Render the data model as a browsable set of HTML pages.");
+		renderHtml1.setToolTipText("Render the data model as HTML pages, including the graphical view.");
+		consistencyCheckMenuItem.setToolTipText("Check the referential integrity of the database (find rows that violate foreign key constraints).");
+		plafMenu.setToolTipText("Choose the visual theme of the application.");
+		horizontalLayoutMenuItem.setToolTipText("Arrange the graphical view and detail panels horizontally instead of vertically.");
+		jMenu4.setToolTipText("Speed of the layout animation when arranging table browsers.");
+		helpContent.setToolTipText("Open the online user manual.");
+		tutorial.setToolTipText("Open the step-by-step tutorial.");
+		helpForum.setToolTipText("Open the user forum in your web browser.");
+		downloadMenuItem.setToolTipText("Check for and download the latest Jailer release.");
 
 		JMenuItem aiExtractionModelItem = new JMenuItem("AI Subsetting Assistant...");
 		aiExtractionModelItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, mask | InputEvent.SHIFT_DOWN_MASK));
+		aiExtractionModelItem.setToolTipText("Generate a subsetting extraction model from a plain language description using AI.");
 		ImageIcon aiMenuIcon = UIUtil.readImage("/ask_ai.png");
 		if (aiMenuIcon != null) {
 			aiExtractionModelItem.setIcon(UIUtil.scaleIcon(aiExtractionModelItem, aiMenuIcon));

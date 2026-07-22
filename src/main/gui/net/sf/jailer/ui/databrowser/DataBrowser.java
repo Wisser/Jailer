@@ -6745,9 +6745,63 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		goForwardItem.setIcon(UIUtil.scaleIcon(goForwardItem, UIUtil.readImage("/tb_forward.png")));
 		addBookmarkMenuItem.setIcon(UIUtil.scaleIcon(addBookmarkMenuItem, UIUtil.readImage("/pin_64.png")));
 		editBookmarkMenuItem.setIcon(UIUtil.scaleIcon(editBookmarkMenuItem, UIUtil.readImage("/edit_32.png")));
+		createExtractionModelMenuItem.setIcon(UIUtil.scaleIcon(createExtractionModelMenuItem, UIUtil.readImage("/subset.png")));
+		dataModelEditorjMenuItem.setIcon(UIUtil.scaleIcon(dataModelEditorjMenuItem, UIUtil.readImage("/model.png")));
+		analyseSQLMenuItem1.setIcon(UIUtil.scaleIcon(analyseSQLMenuItem1, UIUtil.readImage("/analyzesql.png")));
+		exportDataMenuItem.setIcon(UIUtil.scaleIcon(exportDataMenuItem, UIUtil.readImage("/run.png")));
+		newWindowMenuItem.setIcon(UIUtil.scaleIcon(newWindowMenuItem, UIUtil.readImage("/showinnewwindow.png")));
+		layoutMenuItem.setIcon(UIUtil.scaleIcon(layoutMenuItem, UIUtil.readImage("/anchor1.png")));
+		saveScriptMenuItem.setIcon(UIUtil.scaleIcon(saveScriptMenuItem, UIUtil.readImage("/save.png")));
+		saveScriptAsMenuItem.setIcon(UIUtil.scaleIcon(saveScriptAsMenuItem, UIUtil.readImage("/saveas.png")));
+		exitMenuItem.setIcon(UIUtil.scaleIcon(exitMenuItem, UIUtil.readImage("/exit.png")));
+		dataImport.setIcon(UIUtil.scaleIcon(dataImport, UIUtil.readImage("/import.png")));
+		loadScriptMenuItem.setIcon(UIUtil.scaleIcon(loadScriptMenuItem, UIUtil.readImage("/load.png")));
+		rowLimitMenu.setIcon(UIUtil.scaleIcon(rowLimitMenu, UIUtil.readImage("/rowlimit.png")));
+
+		jMenuItem3.setToolTipText("Open a table in a new table browser.");
+		closeAllMenuItem.setToolTipText("Close all open table browsers in this window.");
+		reconnectMenuItem.setToolTipText("Reconnect to the database using different connection settings.");
+		newBrowserjMenuItem.setToolTipText("Open another Data Browser window connected to the same database.");
+		loadScriptMenuItem.setToolTipText("Load a SQL script file into the SQL Console.");
+		saveScriptMenuItem.setToolTipText("Save the current SQL script.");
+		saveScriptAsMenuItem.setToolTipText("Save the current SQL script under a new file name.");
+		storeSessionItem.setToolTipText("Save the current arrangement of table browsers into a file.");
+		restoreSessionItem.setToolTipText("Restore the arrangement of table browsers from a file.");
+		exportMenuItem.setToolTipText("Export data models and connection settings to a file, e.g. for backup or transfer to another machine.");
+		importMenuItem.setToolTipText("Import data models and connection settings previously exported from this or another machine.");
+		analyseMenuItem.setToolTipText("Analyze the database schema and (re-)generate the data model from it.");
+		dataModelEditorjMenuItem.setToolTipText("Open the editor for tables, columns and associations of the current data model.");
+		schemaMappingMenuItem.setToolTipText("Map database schemas to data model schemas.");
+		columnOrderItem.setToolTipText("Define the column display order for tables.");
+		analyseSQLMenuItem1.setToolTipText("Analyzes selected SQL and proposes association definitions.");
+		showDataModelMenuItem.setToolTipText("Show a graphical overview of the entire data model.");
+		checkPKMenuItem.setToolTipText("Check all tables for a defined primary key.");
+		consistencyCheckMenuItem1.setToolTipText("Check the referential integrity of the database (find rows that violate foreign key constraints).");
+		goBackItem.setToolTipText("Navigate back to the previous arrangement of tables.");
+		goForwardItem.setToolTipText("Navigate forward again to the arrangement of tables visited before going back.");
+		addBookmarkMenuItem.setToolTipText("Save the current table arrangement as a reusable layout bookmark.");
+		editBookmarkMenuItem.setToolTipText("Rename or delete saved layout bookmarks.");
+		exportDataMenuItem.setToolTipText("Export rows from the database to a file (e.g. SQL, CSV, XML, DBUnit).");
+		dataImport.setToolTipText("Import data from a SQL script into the database.");
+		createExtractionModelMenuItem.setToolTipText("Create a subsetting extraction model with the selected table as subject.");
+		consistencyCheckMenuItem.setToolTipText("Check the referential integrity of the database (find rows that violate foreign key constraints).");
+		renderHtml.setToolTipText("Render the data model as a browsable set of HTML pages.");
+		createCLIItem.setToolTipText("Show the equivalent command line for the current operation.");
+		layoutMenuItem.setToolTipText("Automatically arrange all open table browsers.");
+		zoomInMenuItem.setToolTipText("Enlarge the table browser arrangement.");
+		zoomOutMenuItem.setToolTipText("Shrink the table browser arrangement.");
+		newWindowMenuItem.setToolTipText("Open a new Data Browser window, keeping the current table arrangement.");
+		newEmptyWindowMenuItem.setToolTipText("Open a new, empty Data Browser window.");
+		plafMenu.setToolTipText("Choose the visual theme of the application.");
+		autoLayoutMenuItem.setToolTipText("Automatically rearrange table browsers when new ones are opened.");
+		animationStepTimeMenu.setToolTipText("Speed of the layout animation when arranging table browsers.");
+		jMenuItem4.setToolTipText("Open the online user manual.");
+		helpForum.setToolTipText("Open the user forum in your web browser.");
+		downloadMenuItem.setToolTipText("Check for and download the latest Jailer release.");
 
 		aiAssistantMenuItem = new JMenuItem("AI Assistant...");
 		aiAssistantMenuItem.setAccelerator(KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, mask | InputEvent.SHIFT_DOWN_MASK));
+		aiAssistantMenuItem.setToolTipText("Generate SQL from plain language, or use the SQL Advisor to explain and refactor existing queries — using AI.");
 		javax.swing.ImageIcon aiIcon = net.sf.jailer.ui.UIUtil.readImage("/ask_ai.png");
 		if (aiIcon != null) {
 			aiAssistantMenuItem.setIcon(net.sf.jailer.ui.UIUtil.scaleIcon(aiAssistantMenuItem, aiIcon));
@@ -7050,6 +7104,8 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		}
 		JPopupMenu popup = new JPopupMenu();
 		JMenuItem i = new JMenuItem("Arrange Layout");
+		i.setIcon(UIUtil.scaleIcon(i, UIUtil.readImage("/anchor1.png")));
+		i.setToolTipText("Automatically arrange all open table browsers.");
 		popup.add(i);
 		i.addActionListener(new ActionListener() {
 			@Override
@@ -7060,6 +7116,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		ButtonGroup group = new ButtonGroup();
 		popup.add(new JSeparator());
 		i = new JRadioButtonMenuItem("Thumbnail Layout");
+		i.setIcon(UIUtil.scaleIcon(i, UIUtil.readImage("/tb_zoom0.png")));
 		i.setSelected(desktop.layoutMode == LayoutMode.THUMBNAIL);
 		group.add(i);
 		popup.add(i);
@@ -7070,6 +7127,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 			}
 		});
 		i = new JRadioButtonMenuItem("Tiny Layout");
+		i.setIcon(UIUtil.scaleIcon(i, UIUtil.readImage("/tb_zoom1.png")));
 		i.setSelected(desktop.layoutMode == LayoutMode.TINY);
 		group.add(i);
 		popup.add(i);
@@ -7080,6 +7138,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 			}
 		});
 		i = new JRadioButtonMenuItem("Small Layout");
+		i.setIcon(UIUtil.scaleIcon(i, UIUtil.readImage("/tb_zoom2.png")));
 		i.setSelected(desktop.layoutMode == LayoutMode.SMALL);
 		group.add(i);
 		popup.add(i);
@@ -7090,6 +7149,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 			}
 		});
 		i = new JRadioButtonMenuItem("Medium Layout");
+		i.setIcon(UIUtil.scaleIcon(i, UIUtil.readImage("/tb_zoom3.png")));
 		i.setSelected(desktop.layoutMode == LayoutMode.MEDIUM);
 		group.add(i);
 		popup.add(i);
@@ -7100,6 +7160,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 			}
 		});
 		i = new JRadioButtonMenuItem("Large Layout");
+		i.setIcon(UIUtil.scaleIcon(i, UIUtil.readImage("/tb_zoom4.png")));
 		i.setSelected(desktop.layoutMode == LayoutMode.LARGE);
 		group.add(i);
 		popup.add(i);

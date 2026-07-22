@@ -2991,6 +2991,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		AllNonEmptyItem() {
 			setEnabled(false);
 			setIcon(allDotIcon);
+			setToolTipText("Open a table browser for every non-empty association group at once.");
 			addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -3088,6 +3089,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	public JPopupMenu createPopupMenu(final JTable contextJTable, final Row row, final int rowIndex, Set<Integer> selectedRowsIndexes, final int x, final int y, boolean navigateFromAllRows, Action altCopyTCB, Action ealtCopyTCB, final Runnable repaint, final boolean withKeyStroke, boolean withSingleRow, boolean forColumnsTable) {
 		JMenuItem tableFilter = new JCheckBoxMenuItem("Table Filter");
 		tableFilter.setIcon(UIUtil.scaleIcon(tableFilter, UIUtil.readImage("/filter.png")));
+		tableFilter.setToolTipText("Filter the rows shown in this table browser.");
 		if (withKeyStroke) {
 			tableFilter.setAccelerator(KS_FILTER);
 		} else {
@@ -3198,6 +3200,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 				) {
 			JScrollC2Menu findPath = new JScrollC2Menu("Find Path to ...");
 			findPath.setIcon(findPathIcon);
+			findPath.setToolTipText("Find the shortest association path from this table to another table.");
 			popup.add(findPath);
 			initFindPathPopupMenu(findPath);
 		}
@@ -3206,6 +3209,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			JMenuItem sel = null;
 			JMenuItem det = new JMenuItem("Details");
 			det.setIcon(detailsIcon);
+			det.setToolTipText("Show all column values of this row in a detail view.");
 			det.setEnabled(row != null);
 			det.setName("selectRow");
 			popup.insert(det, 0);
@@ -3238,6 +3242,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 						(rows.size() == 1 || toSelect.size() == rows.size())) {
 					JMenuItem sr = new JMenuItem(rows.size() == 1? "Deselect Row" : ("Deselect Rows (" + rows.size() + ")"));
 					sr.setIcon(selectIcon);
+					sr.setToolTipText("Remove these rows from the current row selection.");
 					sr.setEnabled(row != null);
 					popup.insert(sr, 0);
 					sr.addActionListener(new ActionListener() {
@@ -3250,6 +3255,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 					JMenuItem sr = new JMenuItem(toSelect.size() <= 1? "Select Row" : ("Select Rows (" + toSelect.size() + ")"));
 					sel = sr;
 					sr.setIcon(selectIcon);
+					sr.setToolTipText("Add these rows to the current row selection.");
 					sr.setEnabled(row != null && rows != null && rows.size() > 0 && !row.rowId.isEmpty());
 					popup.insert(sr, 0);
 					sr.addActionListener(new ActionListener() {
@@ -3262,8 +3268,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
 				JMenu sql = new JMenu("Create SQL");
 				sql.setIcon(genSQLIcon);
+				sql.setToolTipText("Generate SQL statements (Update/Insert/Delete) for this row.");
 				final String rowName = row != null? (!(table instanceof SqlStatementTable)? dataModel.getDisplayName(table) + "(" + SqlUtil.replaceAliases(row.rowId, null, null) + ")" : "") : "";
 				JMenuItem update = new JMenuItem("Update");
+				update.setToolTipText("Generate an UPDATE statement for the row(s).");
 				sql.add(update);
 				update.addActionListener(new ActionListener() {
 					@Override
@@ -3272,6 +3280,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 					}
 				});
 				JMenuItem insert = new JMenuItem("Insert");
+				insert.setToolTipText("Generate an INSERT statement for the row(s).");
 				sql.add(insert);
 				insert.addActionListener(new ActionListener() {
 					@Override
@@ -3280,8 +3289,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 					}
 				});
 				JMenuItem insertNewRow = createInsertChildMenu(toSelect, x, y);
+				insertNewRow.setToolTipText("Generate an INSERT statement for a new child row.");
 				sql.add(insertNewRow);
 				JMenuItem delete = new JMenuItem("Delete");
+				delete.setToolTipText("Generate a DELETE statement for the row(s).");
 				sql.add(delete);
 				delete.addActionListener(new ActionListener() {
 					@Override
@@ -3303,6 +3314,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 						popup.add(new JSeparator());
 						script = new JMenu("Create SQL");
 						script.setIcon(genSQLIcon);
+						script.setToolTipText("Generate SQL statements (Update/Insert/Delete) for this row.");
 						popup.add(script);
 					} else {
 						script = sql;
@@ -3331,6 +3343,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 						}
 						Set<Row> fsRows = sRows;
 						JMenuItem updates = new JMenuItem("Updates" + suffix);
+						updates.setToolTipText("Generate UPDATE statements for the row(s).");
 						script.add(updates);
 						updates.addActionListener(new ActionListener() {
 							@Override
@@ -3340,6 +3353,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 							}
 						});
 						JMenuItem inserts = new JMenuItem("Inserts" + suffix);
+						inserts.setToolTipText("Generate INSERT statements for the row(s).");
 						script.add(inserts);
 						inserts.addActionListener(new ActionListener() {
 							@Override
@@ -3349,6 +3363,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 							}
 						});
 						JMenuItem deletes = new JMenuItem("Deletes" + suffix);
+						deletes.setToolTipText("Generate DELETE statements for the row(s).");
 						script.add(deletes);
 						deletes.addActionListener(new ActionListener() {
 							@Override
@@ -3380,6 +3395,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 				JMenuItem copyItem = new JMenuItem("Copy");
 				copyItem.setAccelerator(KS_COPY_TO_CLIPBOARD);
 				copyItem.setIcon(copyIcon);
+				copyItem.setToolTipText("Copy the selected rows to the clipboard.");
 				copyItem.addActionListener(e -> {
 					if (altCopyTCB != null) {
 						altCopyTCB.actionPerformed(e);
@@ -3391,6 +3407,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 				JMenuItem ecopyItem = new JMenuItem("Extended Copy...");
 				ecopyItem.setAccelerator(KS_ECOPY_TO_CLIPBOARD);
 				ecopyItem.setIcon(ecopyIcon);
+				ecopyItem.setToolTipText("Copy the selected rows to the clipboard, with additional formatting options.");
 				ecopyItem.addActionListener(e -> {
 					if (ealtCopyTCB != null) {
 						ealtCopyTCB.actionPerformed(e);
@@ -3419,6 +3436,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 				popup.add(tableFilter);
 				JCheckBoxMenuItem editMode = new JCheckBoxMenuItem("Edit Mode");
 				setMenuItemName(editMode, "editdetailsitem.png");
+				editMode.setToolTipText("Toggle inline editing of cell values in this table browser.");
 				editMode.setEnabled(isTableEditable(table));
 				if (withKeyStroke) {
 					editMode.setAccelerator(KS_EDIT);
@@ -3440,6 +3458,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			popup.add(new JSeparator());
 			JMenu window = new JMenu("Menu");
 			window.setIcon(menuIcon);
+			window.setToolTipText("All available actions for this table browser.");
 			popup.add(window);
 			for (Component comp: createPopupMenu(null, -1, 0, 0, false, false, false).getComponents()) {
 				window.add(comp);
@@ -3480,6 +3499,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	private JMenuItem createFindColumnMenuItem(final int x, final int y, final JTable contextJTable) {
 		final JMenuItem menuItem = new JMenuItem("Find Column...");
 		menuItem.setIcon(UIUtil.scaleIcon(menuItem, findColumnIcon1));
+		menuItem.setToolTipText("Find and jump to a column by name.");
 		menuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -3497,6 +3517,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
 		JMenuItem rebase = new JMenuItem("Start Navigation here");
 		setMenuItemName(rebase, "startnav.png");
+		rebase.setToolTipText("Make this table browser the starting point for further navigation.");
 		popup.add(rebase);
 		rebase.setEnabled(getParentBrowser() != null);
 		rebase.addActionListener(new ActionListener() {
@@ -3523,6 +3544,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		popup.add(new JSeparator());
 		JMenuItem qb = new JMenuItem("Query Builder");
 		setMenuItemName(qb, "querybuilder.png");
+		qb.setToolTipText("Open the visual SQL Query Builder for this table.");
 		qb.setAccelerator(KS_QUERYBUILDER);
 		popup.add(qb);
 		qb.addActionListener(new ActionListener() {
@@ -3533,6 +3555,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		});
 		JMenuItem sqlConsole = new JMenuItem("SQL Console");
 		setMenuItemName(sqlConsole, "runall.png");
+		sqlConsole.setToolTipText("Open a SQL Console for this table.");
 		sqlConsole.setAccelerator(KS_SQLCONSOLE);
 		popup.add(sqlConsole);
 		sqlConsole.addActionListener(new ActionListener() {
@@ -3543,9 +3566,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		});
 		JMenu sqlDml = new JMenu("Create SQL");
 		sqlDml.setIcon(genSQLIcon);
+		sqlDml.setToolTipText("Generate SQL statements (Update/Insert/Delete) for this row.");
 		popup.add(sqlDml);
 		final String tableName = dataModel.getDisplayName(table);
 		JMenuItem update = new JMenuItem(rows.size() == 1? "Update" : "Updates");
+		update.setToolTipText("Generate an UPDATE statement for the row(s).");
 		sqlDml.add(update);
 		update.addActionListener(new ActionListener() {
 			@Override
@@ -3555,6 +3580,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			}
 		});
 		JMenuItem insert = new JMenuItem(rows.size() == 1? "Insert" : "Inserts");
+		insert.setToolTipText("Generate an INSERT statement for the row(s).");
 		sqlDml.add(insert);
 		insert.addActionListener(new ActionListener() {
 			@Override
@@ -3564,8 +3590,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			}
 		});
 		JMenuItem insertNewRow = createInsertChildMenu(sortedAndFiltered(rows), x, y);
+		insertNewRow.setToolTipText("Generate an INSERT statement for a new child row.");
 		sqlDml.add(insertNewRow);
 		JMenuItem delete = new JMenuItem(rows.size() == 1? "Delete" : "Deletes");
+		delete.setToolTipText("Generate a DELETE statement for the row(s).");
 		sqlDml.add(delete);
 		delete.addActionListener(new ActionListener() {
 			@Override
@@ -3593,6 +3621,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
 		JMenuItem extractionModel = new JMenuItem("Create Extraction Model");
 		extractionModel.setIcon(subsetIcon);
+		extractionModel.setToolTipText("Create a subsetting extraction model with this table as subject.");
 		popup.add(extractionModel);
 		extractionModel.addActionListener(new ActionListener() {
 			@Override
@@ -3604,6 +3633,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		popup.add(new JSeparator());
 		JMenuItem snw = new JMenuItem("Show in new Window");
 		setMenuItemName(snw, "showinnewwindow.png");
+		snw.setToolTipText("Open this table browser in a separate window.");
 		popup.add(snw);
 		snw.addActionListener(new ActionListener() {
 			@Override
@@ -3614,6 +3644,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
 		JMenuItem m = new JMenuItem("Hide (Minimize)");
 		m.setIcon(minimizeIcon);
+		m.setToolTipText("Minimize this table browser.");
 		popup.add(m);
 		m.addActionListener(new ActionListener() {
 			@Override
@@ -3623,6 +3654,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		});
 		m = new JMenuItem("Close");
 		m.setIcon(UIUtil.scaleIcon(m, UIUtil.readImage("/buttoncancel.png")));
+		m.setToolTipText("Close this table browser.");
 		popup.add(m);
 		m.addActionListener(new ActionListener() {
 			@Override
@@ -3645,17 +3677,20 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			JMenuItem copyItem = new JMenuItem("Copy");
 			copyItem.setAccelerator(KS_COPY_TO_CLIPBOARD);
 			copyItem.setIcon(copyIcon);
+			copyItem.setToolTipText("Copy the selected rows to the clipboard.");
 			copyItem.addActionListener(e -> copyAction.actionPerformed(e));
 			popup.add(copyItem);
 			JMenuItem ecopyItem = new JMenuItem("Extended Copy...");
 			ecopyItem.setAccelerator(KS_ECOPY_TO_CLIPBOARD);
 			ecopyItem.setIcon(ecopyIcon);
+			ecopyItem.setToolTipText("Copy the selected rows to the clipboard, with additional formatting options.");
 			ecopyItem.addActionListener(e -> ecopyAction.actionPerformed(e));
 			popup.add(ecopyItem);
 
 			popup.add(new JSeparator());
 			JMenuItem tableFilter = new JCheckBoxMenuItem("Table Filter");
 			tableFilter.setIcon(UIUtil.scaleIcon(tableFilter, UIUtil.readImage("/filter.png")));
+			tableFilter.setToolTipText("Filter the rows shown in this table browser.");
 			tableFilter.setAccelerator(KS_FILTER);
 			tableFilter.setSelected(isTableFilterEnabled);
 			if (isLimitExceeded) {
@@ -3683,6 +3718,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			popup.add(tableFilter);
 			JCheckBoxMenuItem editMode = new JCheckBoxMenuItem("Edit Mode");
 			setMenuItemName(editMode, "editdetailsitem.png");
+			editMode.setToolTipText("Toggle inline editing of cell values in this table browser.");
 			editMode.setEnabled(isTableEditable(table));
 			editMode.setAccelerator(KS_EDIT);
 			editMode.setSelected(isEditMode);

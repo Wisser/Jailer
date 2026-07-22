@@ -408,7 +408,7 @@
               <SubComponents>
                 <Container class="javax.swing.JPanel" name="jPanel3">
                   <Properties>
-                    <Property name="toolTipText" type="java.lang.String" value="Specify here where to start collecting the rows to be exported."/>
+                    <Property name="toolTipText" type="java.lang.String" value="Specify here the Subject of the extraction: the table to start from, and an optional condition (alias T) restricting which of its rows are exported."/>
                   </Properties>
 
                   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout"/>

@@ -514,8 +514,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         continueButton.setIcon(UIUtil.scaleIcon(this, runIcon));
         runSQLButton.setIcon(UIUtil.scaleIcon(this, runIcon));
         runnAllButton.setIcon(UIUtil.scaleIcon(this, runAllIcon));
-        runSQLButton.setToolTipText("Run - Ctrl-Enter ");
-        runnAllButton.setToolTipText("Run Script - Alt-Enter ");
+        runSQLButton.setToolTipText("Run the SQL statement at the cursor position - Ctrl-Enter ");
+        runnAllButton.setToolTipText("Run the entire SQL Script - Alt-Enter ");
 
         scaledCancelIcon = UIUtil.scaleIcon(this, cancelIcon);
         cancelButton.setIcon(scaledCancelIcon);
@@ -635,6 +635,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	protected void initMenuItems() {
 		JMenuItem item = new JMenuItem("Toggle Line Continuation");
 		item.setEnabled(false);
+		item.setIcon(UIUtil.scaleIcon(item, UIUtil.readImage("/togglecontinuation.png")));
 		menuItemToggle = item;
 		item.addActionListener(new ActionListener() {
 			@Override
@@ -649,6 +650,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
 		item = new JMenuItem("To Single Line");
 		item.setEnabled(false);
+		item.setIcon(UIUtil.scaleIcon(item, UIUtil.readImage("/singleline.png")));
+		item.setToolTipText("Join the selected lines into a single line.");
 		menuItemToSingleLine = item;
 		item.addActionListener(new ActionListener() {
 			@Override
@@ -659,6 +662,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
 		item = new JMenuItem("Substitute Variables");
 		item.setEnabled(false);
+		item.setIcon(UIUtil.scaleIcon(item, UIUtil.readImage("/substitutevars.png")));
 		menuItemSubstituteVariables = item;
 		item.addActionListener(new ActionListener() {
 			@Override
@@ -676,6 +680,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				"</table>");
 		item = new JMenuItem("Analyze SQL");
 		item.setEnabled(false);
+		item.setIcon(UIUtil.scaleIcon(item, UIUtil.readImage("/analyzesql.png")));
 		menuItemAnalyse = item;
 		item.addActionListener(new ActionListener() {
 			@Override

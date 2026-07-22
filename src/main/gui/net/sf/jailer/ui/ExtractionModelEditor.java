@@ -329,7 +329,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 
 		boolean saveNeedsSave = needsSave;
 		initComponents(); UIUtil.initComponents(this);
-		jPanel3.setName("no-tt-indicator");
+//		jPanel3.setName("no-tt-indicator");
 		subjectTable = new JComboBox2() {
 			@Override
 			public Dimension getPreferredSize() {
@@ -429,6 +429,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 
 		exportButton.setIcon(runIcon);
 		limitLabel.setText(SubjectLimitEditor.subjectLimitDefinitionRender(extractionModel.subjectLimitDefinition));
+		additionalSubjectsButton.setIcon(UIUtil.scaleIcon(additionalSubjectsButton, UIUtil.readImage("/add_32.png")));
+		additionalSubjectsButton.setToolTipText("Add another subject table to this extraction model, each with its own subject condition.");
+		limitButton.setIcon(UIUtil.scaleIcon(limitButton, UIUtil.readImage("/rowlimit.png")));
+		limitButton.setToolTipText("Limit the number of rows exported for this subject, optionally ordered by a column.");
 
 		undoManager = new UndoManager(extractionModelFrame.undoMenuItem, extractionModelFrame.redoMenuItem, undoViewHolder) {
 			@Override
@@ -1790,7 +1794,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 
         editorPanel.setLayout(new java.awt.GridLayout(1, 4));
 
-        jPanel3.setToolTipText("Specify here where to start collecting the rows to be exported.");
+        jPanel3.setToolTipText("Specify here the Subject of the extraction: the table to start from, and an optional condition (alias T) restricting which of its rows are exported.");
         jPanel3.setLayout(new java.awt.GridBagLayout());
 
         jPanel9.setLayout(null);

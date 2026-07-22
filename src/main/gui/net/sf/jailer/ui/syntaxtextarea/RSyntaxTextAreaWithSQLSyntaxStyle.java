@@ -120,6 +120,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 		zoomIn = new AbstractAction("Zoom In") {
 			{
 				putValue(ACCELERATOR_KEY, KS_ZOOMIN);
+				putValue(SHORT_DESCRIPTION, "Increase the editor's font size.");
 				InputMap im = getInputMap();
 				im.put(KS_ZOOMIN, this);
 				ActionMap am = getActionMap();
@@ -135,6 +136,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 		zoomOut = new AbstractAction("Zoom Out") {
 			{
 				putValue(ACCELERATOR_KEY, KS_ZOOMOUT);
+				putValue(SHORT_DESCRIPTION, "Decrease the editor's font size.");
 				InputMap im = getInputMap();
 				im.put(KS_ZOOMOUT, this);
 				ActionMap am = getActionMap();
@@ -150,6 +152,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 		zoomReset = new AbstractAction("Restore Default Zoom") {
 			{
 				putValue(ACCELERATOR_KEY, KS_ZOOMRESET);
+				putValue(SHORT_DESCRIPTION, "Reset the editor's font size to its default.");
 				InputMap im = getInputMap();
 				im.put(KS_ZOOMRESET, this);
 				ActionMap am = getActionMap();
@@ -165,6 +168,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 		formatSQL = new AbstractAction("Format SQL") {
 			{
 				putValue(ACCELERATOR_KEY, KS_FORMAT);
+				putValue(SHORT_DESCRIPTION, "Reformat the selected SQL for better readability.");
 				InputMap im = getInputMap();
 				im.put(KS_FORMAT, this);
 				ActionMap am = getActionMap();
@@ -180,6 +184,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 		runBlock = new AbstractAction("Run") {
 			{
 				putValue(ACCELERATOR_KEY, KS_RUN_BLOCK);
+				putValue(SHORT_DESCRIPTION, "Execute the SQL statement at the cursor position.");
 				InputMap im = getInputMap();
 				im.put(KS_RUN_BLOCK, this);
 				ActionMap am = getActionMap();
@@ -193,6 +198,10 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 		};
 		
 		explain = new AbstractAction("Explain") {
+			{
+				putValue(SHORT_DESCRIPTION, "Show the database's execution plan for the SQL statement at the cursor position.");
+			}
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				RSyntaxTextAreaWithSQLSyntaxStyle.this.explainBlock();
@@ -202,6 +211,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 		runAll = new AbstractAction("Run Script") {
 			{
 				putValue(ACCELERATOR_KEY, KS_RUN_ALL);
+				putValue(SHORT_DESCRIPTION, "Execute the entire SQL script.");
 				InputMap im = getInputMap();
 				im.put(KS_RUN_ALL, this);
 				ActionMap am = getActionMap();
@@ -217,6 +227,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 		selectTableAction = withSelectTableAction? new AbstractAction("Select Table") {
 			{
 				putValue(ACCELERATOR_KEY, KS_SELECTTABLE);
+				putValue(SHORT_DESCRIPTION, "Select the table referenced at the cursor position in the Data Browser.");
 				InputMap im = getInputMap();
 				im.put(KS_SELECTTABLE, this);
 				ActionMap am = getActionMap();
@@ -340,6 +351,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 
 		if (withModifingMenuItems()) {
 			JMenuItem item = new JMenuItem(formatSQL);
+			item.setIcon(UIUtil.scaleIcon(item, UIUtil.readImage("/formatsql.png")));
 			item.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -349,16 +361,22 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 			menu.add(item, 0);
 		}
 		if (selectTableAction != null) {
-			menu.add(new JMenuItem(selectTableAction), 1);
+			JMenuItem selectTableItem = new JMenuItem(selectTableAction);
+			selectTableItem.setIcon(UIUtil.scaleIcon(selectTableItem, UIUtil.readImage("/table_32.png")));
+			menu.add(selectTableItem, 1);
 			menu.add(new JSeparator(), 2);
 		} else {
 			menu.add(new JSeparator(), 1);
 		}
 
 		if (withFindAndReplace()) {
-			menu.add(new JMenuItem(new ShowFindDialogAction()), 0);
+			JMenuItem findItem = new JMenuItem(new ShowFindDialogAction());
+			findItem.setIcon(UIUtil.scaleIcon(findItem, UIUtil.readImage("/search.png")));
+			menu.add(findItem, 0);
 			if (withModifingMenuItems()) {
-				menu.add(new JMenuItem(new ShowReplaceDialogAction()), 1);
+				JMenuItem replaceItem = new JMenuItem(new ShowReplaceDialogAction());
+				replaceItem.setIcon(UIUtil.scaleIcon(replaceItem, UIUtil.readImage("/replace.png")));
+				menu.add(replaceItem, 1);
 				menu.add(new JSeparator(), 2);
 			} else {
 				menu.add(new JSeparator(), 1);
@@ -367,18 +385,24 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 
 		if (withExecuteActions) {
 			JMenuItem item = new JMenuItem(runBlock);
+			item.setIcon(UIUtil.scaleIcon(item, UIUtil.readImage("/run.png")));
 			menu.add(item, 0);
 			item = new JMenuItem(runAll);
+			item.setIcon(UIUtil.scaleIcon(item, UIUtil.readImage("/runall.png")));
 			menu.add(item, 1);
 			item = new JMenuItem(explain);
+			item.setIcon(UIUtil.scaleIcon(item, UIUtil.readImage("/explain.png")));
 			menu.add(item, 2);
 			menu.add(new JSeparator(), 3);
 		}
 
 		menu.add(new JSeparator());
-		menu.add(zoomIn);
-		menu.add(zoomOut);
-		menu.add(zoomReset);
+		JMenuItem zoomInItem = menu.add(zoomIn);
+		zoomInItem.setIcon(UIUtil.scaleIcon(zoomInItem, UIUtil.readImage("/tb_zoomin.png")));
+		JMenuItem zoomOutItem = menu.add(zoomOut);
+		zoomOutItem.setIcon(UIUtil.scaleIcon(zoomOutItem, UIUtil.readImage("/tb_zoomout.png")));
+		JMenuItem zoomResetItem = menu.add(zoomReset);
+		zoomResetItem.setIcon(UIUtil.scaleIcon(zoomResetItem, UIUtil.readImage("/reset_64.png")));
 
 		appendPopupMenu(menu);
 		
@@ -844,6 +868,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 
 		public ShowFindDialogAction() {
 			super("Find...");
+			putValue(SHORT_DESCRIPTION, "Find text in the editor.");
 			int c = getToolkit().getMenuShortcutKeyMask();
 			KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_F, c);
 			putValue(ACCELERATOR_KEY, keyStroke);
@@ -867,6 +892,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 
 		public ShowReplaceDialogAction() {
 			super("Replace...");
+			putValue(SHORT_DESCRIPTION, "Find and replace text in the editor.");
 			int c = getToolkit().getMenuShortcutKeyMask();
 			KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_H, c);
 			putValue(ACCELERATOR_KEY, keyStroke);
