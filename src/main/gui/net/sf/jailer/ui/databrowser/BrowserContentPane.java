@@ -16,10 +16,13 @@
 package net.sf.jailer.ui.databrowser;
 
 import java.awt.BasicStroke;
+import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GradientPaint;
@@ -41,6 +44,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -199,6 +203,7 @@ import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.ui.databrowser.Desktop.RowToRowLink;
 import net.sf.jailer.ui.databrowser.Desktop.RunnableWithPriority;
 import net.sf.jailer.ui.databrowser.RowCounter.RowCount;
+import net.sf.jailer.ui.databrowser.lob.BlobLengthPlaceholder;
 import net.sf.jailer.ui.databrowser.lob.LobCellValue;
 import net.sf.jailer.ui.databrowser.lob.LobContent;
 import net.sf.jailer.ui.databrowser.lob.LobContentSupport;
@@ -1874,6 +1879,44 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 					} catch (Exception e) {
 						// ignore
 					}
+					if (table == rowsTable && r != null && convertedColumnIndex >= 0 && convertedColumnIndex < r.values.length) {
+						Object lobCellContent = r.values[convertedColumnIndex];
+						if (lobCellContent instanceof BlobLengthPlaceholder) {
+							final BlobLengthPlaceholder placeholder = (BlobLengthPlaceholder) lobCellContent;
+							if (placeholder.markRequested()) {
+								final Row scanRow = r;
+								final int scanColumn = convertedColumnIndex;
+								final Object scanContext = new Object();
+								pendingLobBackgroundScanContexts.add(scanContext);
+								retrieveLobContentType(scanRow, scanColumn, scanContext, LOB_BACKGROUND_SCAN_PRIORITY, t -> {
+									pendingLobBackgroundScanContexts.remove(scanContext);
+									if (t != null) {
+										placeholder.setGuessedType(t);
+										rowsTable.repaint();
+									}
+								});
+							}
+							LobContentType guessedType = placeholder.getGuessedType();
+							if (guessedType != null && guessedType.isImage() && placeholder.markThumbnailRequested()) {
+								final Row iconRow = r;
+								final int iconColumn = convertedColumnIndex;
+								final Object iconContext = new Object();
+								pendingLobBackgroundScanContexts.add(iconContext);
+								retrieveLobImagePreview(iconRow, iconColumn, placeholder, BLOB_BUTTON_ICON_SIZE, BLOB_BUTTON_ICON_SIZE,
+										LOB_BACKGROUND_SCAN_PRIORITY, iconContext, img -> {
+									pendingLobBackgroundScanContexts.remove(iconContext);
+									if (img != null) {
+										placeholder.setThumbnailIcon(new ImageIcon(img));
+										rowsTable.repaint();
+									}
+								});
+							}
+							if (render instanceof JLabel) {
+								boolean reloadable = isLobReloadable(r, convertedColumnIndex);
+								render = buildBlobViewCell((JLabel) render, placeholder, reloadable);
+							}
+						}
+					}
 				}
 				if (render instanceof JLabel) {
 					if (cellSelected) {
@@ -2102,6 +2145,41 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		rowsTableScrollPane.addMouseListener(rowTableListener);
 		singleRowViewScrollPane.addMouseListener(rowTableListener);
 		singleRowViewContainterPanel.addMouseListener(rowTableListener);
+
+		// Separate, additional listeners for the "View..." affordance on BLOB cells
+		// with a resolved, displayable content type (see buildBlobViewCell). Kept
+		// separate from rowTableListener (rather than folded into it) to avoid
+		// touching its large, intricate existing click/selection/popup handling.
+		rowsTable.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				// mousePressed, not mouseClicked: mouseClicked is only synthesized
+				// when press+release resolve to the same target with no intervening
+				// state change, and the first press on an unfocused table also
+				// triggers focus transfer / internal-frame activation as a side
+				// effect - which can suppress the synthesized click. rowTableListener
+				// (below) has the same real-mousePressed / no-op-mouseClicked shape
+				// for the same reason.
+				if (e.getButton() != MouseEvent.BUTTON1) {
+					return;
+				}
+				if (blobViewCellAt(e.getPoint()) == null) {
+					return;
+				}
+				int viewRow = rowsTable.rowAtPoint(e.getPoint());
+				int viewColumn = rowsTable.columnAtPoint(e.getPoint());
+				int modelRow = rowsTable.getRowSorter().convertRowIndexToModel(viewRow);
+				int modelColumn = rowsTable.convertColumnIndexToModel(viewColumn);
+				openLobViewer(rows.get(modelRow), modelColumn, rowsTable);
+			}
+		});
+		rowsTable.addMouseMotionListener(new MouseMotionAdapter() {
+			@Override
+			public void mouseMoved(MouseEvent e) {
+				boolean isBlobViewCell = blobViewCellAt(e.getPoint()) != null;
+				rowsTable.setCursor(isBlobViewCell ? Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) : Cursor.getDefaultCursor());
+			}
+		});
 
 		rowsTable.addMouseListener(tempClosureListener);
 		rowsTable.addMouseMotionListener(tempClosureListener);
@@ -4616,6 +4694,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			cancelLoadJob(true);
 			setPendingState(true, true);
 			rows.clear();
+			cancelPendingLobBackgroundScans();
 			updateMode("loading", cause);
 			setPendingState(false, false);
 			int limit = getOwnReloadLimit();
@@ -6011,6 +6090,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 						protected void requestLobContentType(Row row, int columnModelIndex, Object cellValue, Object context,
 								java.util.function.Consumer<LobContentType> onResult) {
 							retrieveLobContentType(row, columnModelIndex, context, onResult);
+						}
+						@Override
+						protected boolean isLobReloadable(Row row, int columnModelIndex) {
+							return BrowserContentPane.this.isLobReloadable(row, columnModelIndex);
 						}
 						@Override
 						protected void requestLobImagePreview(Row row, int columnModelIndex, Object cellValue, int maxWidth, int maxHeight, Object context,
@@ -7822,6 +7905,28 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	 * @param columnModelIndex index into {@code row.values} / the source table's columns
 	 * @param callback         receives the result on the EDT
 	 */
+	/**
+	 * Whether a LOB cell's full content can be reloaded from the database - i.e.
+	 * whether its source table and a complete primary key are known. When this is
+	 * <code>false</code>, {@link #retrieveFullLobContent}/{@link #retrieveLobContentType}/
+	 * {@link #retrieveLobImagePreview} degrade gracefully (a "cannot reload"
+	 * notice, or <code>null</code>) - but a "View" button should be shown disabled
+	 * up front instead of looking clickable (e.g. for a SQL-console result whose
+	 * primary key couldn't be resolved).
+	 *
+	 * @param row              the row
+	 * @param columnModelIndex index into {@code row.values} / the source table's columns
+	 */
+	public boolean isLobReloadable(Row row, int columnModelIndex) {
+		Table type = getResultSetTypeForColumn(columnModelIndex);
+		return row != null
+				&& type != null
+				&& !(type instanceof SqlStatementTable)
+				&& type.primaryKey != null
+				&& !rowIdSupport.getPrimaryKey(type, session).getColumns().isEmpty()
+				&& isPKComplete(type, row);
+	}
+
 	public void retrieveFullLobContent(final Row row, final int columnModelIndex, final LobRetrievalCallback callback) {
 		final Object cached = (row != null && columnModelIndex >= 0 && columnModelIndex < row.values.length)
 				? row.values[columnModelIndex] : null;
@@ -7852,12 +7957,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		final String noKeyReason = "The full content of this value cannot be reloaded because no primary key is available for this result.\n\n"
 				+ "Browse the table directly (so its primary key is known) to view or export the value.";
 
-		boolean hasKey = row != null
-				&& type != null
-				&& !(type instanceof SqlStatementTable)
-				&& type.primaryKey != null
-				&& !rowIdSupport.getPrimaryKey(type, session).getColumns().isEmpty()
-				&& isPKComplete(type, row);
+		boolean hasKey = isLobReloadable(row, columnModelIndex);
 
 		if (!hasKey) {
 			deliverCachedOrUnavailable(cached, tableName, columnName, noKeyNotice, noKeyReason, callback);
@@ -7975,14 +8075,46 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	 */
 	public void retrieveLobContentType(final Row row, final int columnModelIndex, final Object context,
 			final java.util.function.Consumer<LobContentType> onResult) {
+		retrieveLobContentType(row, columnModelIndex, context, 100, onResult);
+	}
+
+	/**
+	 * Lower priority given to a purely passive/background type scan (e.g. the main
+	 * data browser table opportunistically guessing the type of visible BLOB
+	 * placeholders) so it never delays interactive work (row loading, on-demand LOB
+	 * viewing, in-place editing), all of which use priority 100 or below.
+	 */
+	private static final int LOB_BACKGROUND_SCAN_PRIORITY = 1;
+
+	/**
+	 * Square size (in pixels) of the thumbnail fetched for a BLOB "View" button's
+	 * icon once its guessed type is an image - small, since it replaces a
+	 * button icon, not a preview.
+	 */
+	private static final int BLOB_BUTTON_ICON_SIZE = 20;
+
+	/**
+	 * Tooltip shown on a disabled "View" button (see {@link #isLobReloadable(Row, int)}).
+	 */
+	private static final String LOB_NOT_RELOADABLE_TOOLTIP = "Full content cannot be reloaded (no primary key available for this result).";
+
+	/**
+	 * Same as {@link #retrieveLobContentType(Row, int, Object, java.util.function.Consumer)},
+	 * but with an explicit {@link RunnableWithPriority} priority instead of the
+	 * default interactive priority (100). Use {@link #LOB_BACKGROUND_SCAN_PRIORITY}
+	 * for passive, non-interactive scans.
+	 *
+	 * @param row              the row
+	 * @param columnModelIndex index into {@code row.values} / the source table's columns
+	 * @param context          cancellation context
+	 * @param priority         the {@link RunnableWithPriority} priority to submit the scan with
+	 * @param onResult         receives the guessed type (or <code>null</code>) on the EDT
+	 */
+	public void retrieveLobContentType(final Row row, final int columnModelIndex, final Object context,
+			final int priority, final java.util.function.Consumer<LobContentType> onResult) {
 		final Table type = getResultSetTypeForColumn(columnModelIndex);
 
-		boolean hasKey = row != null
-				&& type != null
-				&& !(type instanceof SqlStatementTable)
-				&& type.primaryKey != null
-				&& !rowIdSupport.getPrimaryKey(type, session).getColumns().isEmpty()
-				&& isPKComplete(type, row);
+		boolean hasKey = isLobReloadable(row, columnModelIndex);
 		if (!hasKey) {
 			onResult.accept(null);
 			return;
@@ -8012,7 +8144,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		getRunnableQueue().add(new RunnableWithPriority() {
 			@Override
 			public int getPriority() {
-				return 100;
+				return priority;
 			}
 
 			@Override
@@ -8060,6 +8192,145 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	}
 
 	/**
+	 * Cancellation contexts of background BLOB-type scans (see {@link #LOB_BACKGROUND_SCAN_PRIORITY})
+	 * that are still queued or in flight, so they can be cancelled in bulk when the
+	 * table is reloaded or closed (see {@link #cancelPendingLobBackgroundScans()}).
+	 */
+	private final List<Object> pendingLobBackgroundScanContexts = Collections.synchronizedList(new ArrayList<Object>());
+
+	/**
+	 * Cancels all background BLOB-type scans that are still queued or in flight
+	 * (see {@link #pendingLobBackgroundScanContexts}). Called when the table's rows
+	 * are reloaded or the browser is closed, so stale scans don't keep querying the
+	 * database for rows that no longer matter.
+	 */
+	private void cancelPendingLobBackgroundScans() {
+		synchronized (pendingLobBackgroundScanContexts) {
+			for (Object context : pendingLobBackgroundScanContexts) {
+				try {
+					CancellationHandler.cancel(context);
+				} catch (Throwable t) {
+					// ignore
+				}
+			}
+			pendingLobBackgroundScanContexts.clear();
+		}
+	}
+
+	private static ImageIcon blobViewIcon;
+
+	private static ImageIcon loadBlobViewIcon() {
+		try {
+			return UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/showinnewwindow.png"));
+		} catch (Throwable t) {
+			return null;
+		}
+	}
+
+	/**
+	 * Whether a guessed {@link LobContentType} is worth showing to the user (as
+	 * opposed to a generic "binary data"/"plain text" guess that doesn't tell them
+	 * anything more than the placeholder text already does).
+	 */
+	private static boolean isDisplayableLobType(LobContentType type) {
+		return type != null && type != LobContentType.BINARY && type != LobContentType.PLAIN_TEXT;
+	}
+
+	/**
+	 * Wraps a BLOB placeholder's base label into a composite cell: a "View…"
+	 * button replacing the plain <code>&lt;Blob&gt; N bytes</code> text (which is
+	 * hidden once the button is built), mirroring the LOB cell UI in
+	 * {@link DetailsView} and {@code ColumnsTable}. Built for every BLOB
+	 * placeholder cell, not just once a type has been guessed: the button is
+	 * labeled with the guessed content type once it's known and "noteworthy" (see
+	 * {@link #isDisplayableLobType(LobContentType)}), and with the placeholder's
+	 * plain length text ({@link BlobLengthPlaceholder#plainText()}) otherwise (no
+	 * type guessed yet, or a non-noteworthy guess like plain binary data). Once the
+	 * guessed type is an image, the button's icon becomes a small thumbnail of the
+	 * BLOB's own content instead of the generic view icon (see
+	 * {@link BlobLengthPlaceholder#getThumbnailIcon()}).
+	 * Clicking anywhere on the composite cell opens the LOB viewer (see the mouse
+	 * listener registered on {@link #rowsTable} for the actual click handling -
+	 * {@link JTable} cell renderers are painted-only, so the button here cannot
+	 * carry its own listener).
+	 */
+	private JComponent buildBlobViewCell(JLabel base, BlobLengthPlaceholder placeholder, boolean reloadable) {
+		if (blobViewIcon == null) {
+			blobViewIcon = loadBlobViewIcon();
+		}
+
+		JPanel lobPanel = new JPanel(new BorderLayout());
+		lobPanel.setOpaque(true);
+		lobPanel.setBackground(base.getBackground());
+		lobPanel.add(base, BorderLayout.CENTER);
+		base.setVisible(false);
+
+		LobContentType type = placeholder.getGuessedType();
+		String buttonText = isDisplayableLobType(type) ? type.displayName : placeholder.plainText();
+		JButton viewButton = new JButton(buttonText);
+		ImageIcon icon = placeholder.getThumbnailIcon();
+		if (icon == null) {
+			icon = blobViewIcon;
+		}
+		if (icon != null) {
+			viewButton.setIcon(icon);
+		}
+		viewButton.setMargin(new Insets(0, 4, 0, 4));
+		viewButton.setEnabled(reloadable);
+		String tooltip = reloadable ? "Show the content of this value" : LOB_NOT_RELOADABLE_TOOLTIP;
+		viewButton.setToolTipText(tooltip);
+		// painted only - JTable renderer components are non-interactive; clicks are
+		// handled by the mouse listener registered on rowsTable (see blobViewCellAt).
+		lobPanel.add(viewButton, BorderLayout.WEST);
+		// JTable.getToolTipText(MouseEvent) delegates to the top-level component
+		// prepareRenderer() returns (this panel), not to nested children - so the
+		// tooltip has to live here too, not just on viewButton, or it never shows.
+		lobPanel.setToolTipText(tooltip);
+
+		return lobPanel;
+	}
+
+	/**
+	 * Hit-tests {@link #rowsTable} at the given point (in {@code rowsTable}'s own
+	 * coordinate space) for a BLOB placeholder cell - i.e. one rendered by
+	 * {@link #buildBlobViewCell(JLabel, BlobLengthPlaceholder)}. Returns
+	 * <code>null</code> if the point isn't over such a cell. Used by the click and
+	 * hover listeners registered on {@link #rowsTable} to route clicks to
+	 * {@link #openLobViewer(Row, int, java.awt.Component)}.
+	 */
+	private BlobLengthPlaceholder blobViewCellAt(java.awt.Point p) {
+		int viewRow = rowsTable.rowAtPoint(p);
+		int viewColumn = rowsTable.columnAtPoint(p);
+		if (viewRow < 0 || viewColumn < 0) {
+			return null;
+		}
+		RowSorter<?> sorter = rowsTable.getRowSorter();
+		if (sorter == null || viewRow >= sorter.getViewRowCount()) {
+			return null;
+		}
+		int modelRow = sorter.convertRowIndexToModel(viewRow);
+		if (modelRow < 0 || modelRow >= rows.size()) {
+			return null;
+		}
+		Row row = rows.get(modelRow);
+		if (row == null) {
+			return null;
+		}
+		int modelColumn = rowsTable.convertColumnIndexToModel(viewColumn);
+		if (modelColumn < 0 || modelColumn >= row.values.length) {
+			return null;
+		}
+		Object cellContent = row.values[modelColumn];
+		if (!(cellContent instanceof BlobLengthPlaceholder)) {
+			return null;
+		}
+		if (!isLobReloadable(row, modelColumn)) {
+			return null;
+		}
+		return (BlobLengthPlaceholder) cellContent;
+	}
+
+	/**
 	 * Re-reads (or reuses) one LOB cell's content off the EDT, decodes it as an
 	 * image if it is an image type, and delivers the {@link java.awt.image.BufferedImage}
 	 * (or <code>null</code>) to the callback on the EDT. Used for the inline image
@@ -8070,6 +8341,18 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	 */
 	public void retrieveLobImagePreview(final Row row, final int columnModelIndex, final Object cellValue,
 			final int maxWidth, final int maxHeight,
+			final Object context, final java.util.function.Consumer<java.awt.image.BufferedImage> onImage) {
+		retrieveLobImagePreview(row, columnModelIndex, cellValue, maxWidth, maxHeight, 100, context, onImage);
+	}
+
+	/**
+	 * Same as {@link #retrieveLobImagePreview(Row, int, Object, int, int, Object, java.util.function.Consumer)},
+	 * but with an explicit {@link RunnableWithPriority} priority instead of the
+	 * default interactive priority (100). Use {@link #LOB_BACKGROUND_SCAN_PRIORITY}
+	 * for passive, non-interactive fetches (e.g. the main table's "View" button icon).
+	 */
+	public void retrieveLobImagePreview(final Row row, final int columnModelIndex, final Object cellValue,
+			final int maxWidth, final int maxHeight, final int priority,
 			final Object context, final java.util.function.Consumer<java.awt.image.BufferedImage> onImage) {
 		final Table type = getResultSetTypeForColumn(columnModelIndex);
 
@@ -8094,7 +8377,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			getRunnableQueue().add(new RunnableWithPriority() {
 				@Override
 				public int getPriority() {
-					return 100;
+					return priority;
 				}
 				@Override
 				public void run() {
@@ -8117,12 +8400,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		}
 
 		// 2) BLOB: re-read the full content from the database (needs a primary key), then decode.
-		boolean hasKey = row != null
-				&& type != null
-				&& !(type instanceof SqlStatementTable)
-				&& type.primaryKey != null
-				&& !rowIdSupport.getPrimaryKey(type, session).getColumns().isEmpty()
-				&& isPKComplete(type, row);
+		boolean hasKey = isLobReloadable(row, columnModelIndex);
 		if (!hasKey) {
 			onImage.accept(null);
 			return;
@@ -8152,7 +8430,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		getRunnableQueue().add(new RunnableWithPriority() {
 			@Override
 			public int getPriority() {
-				return 100;
+				return priority;
 			}
 
 			@Override
@@ -8368,6 +8646,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 				protected void requestLobContentType(Row row, int columnModelIndex, Object cellValue, Object context,
 						java.util.function.Consumer<LobContentType> onResult) {
 					retrieveLobContentType(row, columnModelIndex, context, onResult);
+				}
+				@Override
+				protected boolean isLobReloadable(Row row, int columnModelIndex) {
+					return BrowserContentPane.this.isLobReloadable(row, columnModelIndex);
 				}
 				@Override
 				protected void requestLobImagePreview(Row row, int columnModelIndex, Object cellValue, int maxWidth, int maxHeight, Object context,
@@ -8843,19 +9125,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		if (object instanceof Blob) {
 			try {
 				final long length = ((Blob) object).length();
-				value = new LobValue() {
-					@Override
-					public String toString() {
-						return "<Blob> " + (length > 0? length + " bytes" : "");
-					}
-				};
+				value = new BlobLengthPlaceholder(length);
 			} catch (Exception e) {
-				value = new LobValue() {
-					@Override
-					public String toString() {
-						return "<Blob>";
-					}
-				};
+				value = new BlobLengthPlaceholder(-1);
 			}
 		}
 		if (object instanceof Clob) {
@@ -9361,6 +9633,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		if (rows != null) {
 			rows.clear();
 		}
+		cancelPendingLobBackgroundScans();
 		rowsTable.setModel(new DefaultTableModel());
 		if (andConditionEditor != null) {
 			andConditionEditor.dispose();

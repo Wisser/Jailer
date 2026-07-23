@@ -80,7 +80,9 @@ import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
+import net.sf.jailer.ui.databrowser.LobValue;
 import net.sf.jailer.ui.databrowser.Row;
+import net.sf.jailer.ui.databrowser.lob.BlobLengthPlaceholder;
 import net.sf.jailer.ui.databrowser.lob.LobContentSupport;
 import net.sf.jailer.ui.databrowser.lob.LobContentType;
 import net.sf.jailer.util.LogUtil;
@@ -109,6 +111,7 @@ public class ColumnsTable extends JTable {
 	private Action editModeAction;
 
 	private static final String LOB_TOOLTIP = "Show the content of this value";
+	private static final String LOB_NOT_RELOADABLE_TOOLTIP = "Full content cannot be reloaded (no primary key available for this result).";
 	private static final ImageIcon LOB_VIEW_ICON = loadLobViewIcon();
 
 	private static ImageIcon loadLobViewIcon() {
@@ -497,9 +500,15 @@ public class ColumnsTable extends JTable {
 				if (currentRow == row) {
 					render.setBackground(Colors.Color_122_210_255_200);
 				}
-				if (isLobViewerEnabled() && column > 0 && render instanceof JLabel) {
+				if (column > 0 && render instanceof JLabel) {
 					Object rawValue = lobRawValueAt(row, column);
-					if (LobContentSupport.isLobCell(rawValue)) {
+					if (rawValue instanceof LobValue) {
+						String text = ((JLabel) render).getText();
+						if (text != null) {
+							((JLabel) render).setText(rawValue.toString().trim());
+						}
+					}
+					if (isLobViewerEnabled() && LobContentSupport.isLobCell(rawValue)) {
 						render = buildLobCell((JLabel) render, row, column, rawValue);
 					}
 				}
@@ -531,7 +540,10 @@ public class ColumnsTable extends JTable {
 		}
 		addMouseListener(new MouseAdapter() {
 			@Override
-			public void mouseClicked(MouseEvent e) {
+			public void mousePressed(MouseEvent e) {
+				// mousePressed, not mouseClicked: a synthesized mouseClicked can be
+				// suppressed when the same press also triggers focus transfer /
+				// internal-frame activation on an unfocused table.
 				if (!isLobViewerEnabled() || e.getButton() != MouseEvent.BUTTON1) {
 					return;
 				}
@@ -542,6 +554,9 @@ public class ColumnsTable extends JTable {
 				}
 				Object rawValue = lobRawValueAt(tableRow, tableColumn);
 				if (!LobContentSupport.isLobCell(rawValue)) {
+					return;
+				}
+				if (!isLobViewCellReloadable(rawValue, tableRow, tableColumn)) {
 					return;
 				}
 				Row dataRow = lobRowAt(tableColumn);
@@ -558,11 +573,26 @@ public class ColumnsTable extends JTable {
 				}
 				int tableRow = rowAtPoint(e.getPoint());
 				int tableColumn = columnAtPoint(e.getPoint());
-				boolean isLob = tableRow >= 0 && tableColumn > 0
-						&& LobContentSupport.isLobCell(lobRawValueAt(tableRow, tableColumn));
+				Object rawValue = tableRow >= 0 && tableColumn > 0 ? lobRawValueAt(tableRow, tableColumn) : null;
+				boolean isLob = rawValue != null && LobContentSupport.isLobCell(rawValue)
+						&& isLobViewCellReloadable(rawValue, tableRow, tableColumn);
 				setCursor(isLob ? Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) : Cursor.getDefaultCursor());
 			}
 		});
+	}
+
+	/**
+	 * Whether a LOB cell's "View" affordance should act as clickable/hoverable.
+	 * Only {@link BlobLengthPlaceholder} cells need a resolvable primary key to
+	 * reload their content (see {@link BrowserContentPane#isLobReloadable}) -
+	 * every other LOB kind already has its content materialized locally.
+	 */
+	private boolean isLobViewCellReloadable(Object rawValue, int tableRow, int tableColumn) {
+		if (!(rawValue instanceof BlobLengthPlaceholder)) {
+			return true;
+		}
+		Row dataRow = lobRowAt(tableColumn);
+		return dataRow != null && rb.isLobReloadable(dataRow, lobDataColumnModelIndex(tableRow));
 	}
 
 	@Override
@@ -570,9 +600,11 @@ public class ColumnsTable extends JTable {
 		if (isLobViewerEnabled()) {
 			int tableRow = rowAtPoint(event.getPoint());
 			int tableColumn = columnAtPoint(event.getPoint());
-			if (tableRow >= 0 && tableColumn > 0
-					&& LobContentSupport.isLobCell(lobRawValueAt(tableRow, tableColumn))) {
-				return LOB_TOOLTIP;
+			if (tableRow >= 0 && tableColumn > 0) {
+				Object rawValue = lobRawValueAt(tableRow, tableColumn);
+				if (LobContentSupport.isLobCell(rawValue)) {
+					return isLobViewCellReloadable(rawValue, tableRow, tableColumn) ? LOB_TOOLTIP : LOB_NOT_RELOADABLE_TOOLTIP;
+				}
 			}
 		}
 		return super.getToolTipText(event);
@@ -902,51 +934,57 @@ public class ColumnsTable extends JTable {
 	 * the LOB cell UI in {@code DetailsView}.
 	 */
 	private Component buildLobCell(JLabel base, final int tableRow, final int tableColumn, final Object rawValue) {
+		final Row dataRow = lobRowAt(tableColumn);
+		final int dataCol = lobDataColumnModelIndex(tableRow);
+
 		JPanel lobPanel = new JPanel(new BorderLayout());
 		lobPanel.setOpaque(true);
 		lobPanel.setBackground(base.getBackground());
 		lobPanel.add(base, BorderLayout.CENTER);
-		base.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-		base.setToolTipText(LOB_TOOLTIP);
+		// the placeholder text is always replaced by the button below, so it's
+		// never shown once this composite cell is built.
+		base.setVisible(false);
 
 		ImageIcon thumb = lobThumbCache.get(tableRow);
-		if (thumb != null) {
-			JLabel thumbLabel = new JLabel(thumb);
-			thumbLabel.setOpaque(true);
-			thumbLabel.setBackground(base.getBackground());
-			thumbLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 6));
-			lobPanel.add(thumbLabel, BorderLayout.WEST);
-			// once the thumbnail is visible, hide the "<Blob> N bytes" placeholder text
-			base.setVisible(false);
-		}
-
-		JButton viewButton = new JButton("View…");
-		if (LOB_VIEW_ICON != null) {
-			viewButton.setIcon(LOB_VIEW_ICON);
-		}
-		viewButton.setMargin(new Insets(0, 4, 0, 4));
-		viewButton.setToolTipText(LOB_TOOLTIP);
-		// painted only - JTable renderer components are non-interactive; clicks are
-		// handled by ColumnsTable's own mouse listener.
 
 		LobContentType type = lobTypeCache.get(tableRow);
 		if (type == null) {
 			type = LobContentSupport.detectType(rawValue);
 		}
-		JLabel typeLabel = new JLabel(isDisplayableLobType(type) ? type.displayName + " " : "");
-		typeLabel.setForeground(Colors.Color_128_128_128);
-		typeLabel.setFont(base.getFont().deriveFont(base.getFont().getStyle() & ~Font.BOLD | Font.ITALIC));
+		String buttonText;
+		boolean reloadable = true;
+		if (isDisplayableLobType(type)) {
+			buttonText = type.displayName;
+		} else if (rawValue instanceof BlobLengthPlaceholder) {
+			buttonText = ((BlobLengthPlaceholder) rawValue).plainText();
+			reloadable = dataRow != null && rb.isLobReloadable(dataRow, dataCol);
+		} else {
+			buttonText = "View…";
+		}
+		JButton viewButton = new JButton(buttonText);
+		if (thumb == null && LOB_VIEW_ICON != null) {
+			viewButton.setIcon(LOB_VIEW_ICON);
+		}
+		viewButton.setMargin(new Insets(0, 4, 0, 4));
+		viewButton.setEnabled(reloadable);
+		viewButton.setToolTipText(reloadable ? LOB_TOOLTIP : LOB_NOT_RELOADABLE_TOOLTIP);
+		// painted only - JTable renderer components are non-interactive; clicks are
+		// handled by ColumnsTable's own mouse listener.
 
-		JPanel eastPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
-		eastPanel.setOpaque(true);
-		eastPanel.setBackground(base.getBackground());
-		eastPanel.add(typeLabel);
-		eastPanel.add(viewButton);
-		lobPanel.add(eastPanel, BorderLayout.EAST);
+		JPanel westPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+		westPanel.setOpaque(true);
+		westPanel.setBackground(base.getBackground());
+		if (thumb != null) {
+			JLabel thumbLabel = new JLabel(thumb);
+			thumbLabel.setOpaque(true);
+			thumbLabel.setBackground(base.getBackground());
+			thumbLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 6));
+			westPanel.add(thumbLabel);
+		}
+		westPanel.add(viewButton);
+		lobPanel.add(westPanel, BorderLayout.WEST);
 
 		if (lobRequested.add(tableRow)) {
-			final Row dataRow = lobRowAt(tableColumn);
-			final int dataCol = lobDataColumnModelIndex(tableRow);
 			if (dataRow != null) {
 				if (type != null) {
 					if (type.isImage()) {

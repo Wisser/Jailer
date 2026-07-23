@@ -86,6 +86,7 @@ import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
 import net.sf.jailer.ui.databrowser.geo.Geometry;
 import net.sf.jailer.ui.databrowser.geo.GeometryPreviewPanel;
 import net.sf.jailer.ui.databrowser.geo.SpatialCellSupport;
+import net.sf.jailer.ui.databrowser.lob.BlobLengthPlaceholder;
 import net.sf.jailer.ui.databrowser.lob.LobContentSupport;
 import net.sf.jailer.ui.databrowser.lob.LobContentType;
 import net.sf.jailer.ui.databrowser.sqlconsole.TabContentPanel;
@@ -707,41 +708,10 @@ public abstract class DetailsView extends javax.swing.JPanel {
 							lobPanel.setOpaque(true);
 							lobPanel.setBackground(f.getBackground());
 							lobPanel.add(f, BorderLayout.CENTER);
-							f.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
-							f.setToolTipText("Show the content of this value");
-							f.addMouseListener(new MouseAdapter() {
-								private boolean entered = false;
-								private boolean sent = false;
-								@Override
-								public void mouseEntered(MouseEvent e) {
-									entered = true;
-								}
-								@Override
-								public void mouseExited(MouseEvent e) {
-									entered = false;
-								}
-								@Override
-								public void mouseReleased(MouseEvent e) {
-									if (entered && e.getButton() == MouseEvent.BUTTON1) {
-										doOpen();
-									}
-								}
-								@Override
-								public void mouseClicked(MouseEvent e) {
-									if (e.getButton() == MouseEvent.BUTTON1) {
-										doOpen();
-									}
-								}
-								private void doOpen() {
-									if (!sent) {
-										sent = true;
-										UIUtil.invokeLater(() -> {
-											sent = false;
-											onOpenLobViewer(lobRow, lobColumn, lobValue);
-										});
-									}
-								}
-							});
+							// the "<Blob> N bytes" placeholder text is never shown once the
+							// button/thumbnail cell is built - the button's own label (the
+							// guessed content type) replaces it.
+							f.setVisible(false);
 							final JLabel thumbLabel = new JLabel();
 							thumbLabel.setOpaque(true);
 							thumbLabel.setBackground(f.getBackground());
@@ -781,59 +751,30 @@ public abstract class DetailsView extends javax.swing.JPanel {
 									}
 								}
 							});
-							lobPanel.add(thumbLabel, BorderLayout.WEST);
-							JButton viewButton = new JButton("View…");
+							LobContentType lobType = LobContentSupport.detectType(lobValue);
+							final String initialViewButtonText;
+							if (isDisplayableLobType(lobType)) {
+								initialViewButtonText = lobType.displayName;
+							} else if (lobValue instanceof BlobLengthPlaceholder) {
+								initialViewButtonText = ((BlobLengthPlaceholder) lobValue).plainText();
+							} else {
+								initialViewButtonText = "View…";
+							}
+							boolean reloadable = !(lobValue instanceof BlobLengthPlaceholder) || isLobReloadable(lobRow, lobColumn);
+							final JButton viewButton = new JButton(initialViewButtonText);
 							if (lobViewIcon != null) {
 								viewButton.setIcon(lobViewIcon);
 							}
 							viewButton.setMargin(new Insets(0, 4, 0, 4));
-							viewButton.setToolTipText("Show the content of this value");
+							viewButton.setEnabled(reloadable);
+							viewButton.setToolTipText(reloadable ? "Show the content of this value"
+									: "Full content cannot be reloaded (no primary key available for this result).");
 							viewButton.addActionListener(e -> onOpenLobViewer(lobRow, lobColumn, lobValue));
-							JPanel eastPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
-							eastPanel.setOpaque(true);
-							eastPanel.setBackground(f.getBackground());
-							LobContentType lobType = LobContentSupport.detectType(lobValue);
-							final JLabel typeLabel = new JLabel(isDisplayableLobType(lobType)? lobType.displayName + " " : "");
-							typeLabel.setForeground(Colors.Color_128_128_128);
-							typeLabel.setFont(italic);
-							typeLabel.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
-							typeLabel.setToolTipText("Show the content of this value");
-							typeLabel.addMouseListener(new MouseAdapter() {
-								private boolean entered = false;
-								private boolean sent = false;
-								@Override
-								public void mouseEntered(MouseEvent e) {
-									entered = true;
-								}
-								@Override
-								public void mouseExited(MouseEvent e) {
-									entered = false;
-								}
-								@Override
-								public void mouseReleased(MouseEvent e) {
-									if (entered && e.getButton() == MouseEvent.BUTTON1) {
-										doOpen();
-									}
-								}
-								@Override
-								public void mouseClicked(MouseEvent e) {
-									if (e.getButton() == MouseEvent.BUTTON1) {
-										doOpen();
-									}
-								}
-								private void doOpen() {
-									if (!sent) {
-										sent = true;
-										UIUtil.invokeLater(() -> {
-											sent = false;
-											onOpenLobViewer(lobRow, lobColumn, lobValue);
-										});
-									}
-								}
-							});
-							eastPanel.add(typeLabel);
-							eastPanel.add(viewButton);
-							lobPanel.add(eastPanel, BorderLayout.EAST);
+							JPanel westPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+							westPanel.setOpaque(true);
+							westPanel.setBackground(f.getBackground());
+							westPanel.add(viewButton);
+							lobPanel.add(westPanel, BorderLayout.WEST);
 							final JPanel lobPanelF = lobPanel;
 							final Runnable requestImagePreview = () -> {
 								final Object imgContext = new Object();
@@ -843,9 +784,18 @@ public abstract class DetailsView extends javax.swing.JPanel {
 								requestLobImagePreview(lobRow, lobColumn, lobValue, 160, 64, imgContext, img -> {
 									if (img != null) {
 										thumbLabel.setIcon(new ImageIcon(img));
-										// once the thumbnail is visible, hide the "<Blob> N bytes" placeholder text
-										f.setVisible(false);
+										if (thumbLabel.getParent() == null) {
+											// only reserve space for the thumbnail once there is
+											// actually one to show - otherwise it leaves a gap
+											// to the left of the button for nothing.
+											westPanel.add(thumbLabel, 0);
+										}
 										thumbLabel.revalidate();
+										// the thumbnail is already showing the image - no need for
+										// the button to repeat it as an icon.
+										viewButton.setIcon(null);
+										viewButton.revalidate();
+										westPanel.revalidate();
 										lobPanelF.revalidate();
 										lobPanelF.repaint();
 									}
@@ -859,15 +809,15 @@ public abstract class DetailsView extends javax.swing.JPanel {
 							} else {
 								// the type could not be guessed from the cached value (e.g. a BLOB
 								// that only carries its length): read the leading bytes from the
-								// database asynchronously, fill in the type, and - if it is an image -
-								// load a thumbnail preview.
+								// database asynchronously, fill in the button's label, and - if it
+								// is an image - load a thumbnail preview.
 								final Object lobTypeContext = new Object();
 								pendingLobTypeContexts.add(lobTypeContext);
 								requestLobContentType(lobRow, lobColumn, lobValue, lobTypeContext, t -> {
 									if (isDisplayableLobType(t)) {
-										typeLabel.setText(t.displayName + " ");
-										typeLabel.revalidate();
-										typeLabel.repaint();
+										viewButton.setText(t.displayName);
+										viewButton.revalidate();
+										viewButton.repaint();
 									}
 									if (t != null && t.isImage()) {
 										requestImagePreview.run();
@@ -893,10 +843,9 @@ public abstract class DetailsView extends javax.swing.JPanel {
 									}
 								}
 							};
-							f.addMouseListener(lobPopup);
 							lobPanel.addMouseListener(lobPopup);
 							thumbLabel.addMouseListener(lobPopup);
-							typeLabel.addMouseListener(lobPopup);
+							viewButton.addMouseListener(lobPopup);
 							cellComponent = lobPanel;
 							// unlike the geometry preview, a LOB cell is stretched to the full
 							// column width (normal cell layout) so its row background fills the
@@ -1181,6 +1130,20 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	 */
 	protected void requestLobContentType(Row row, int columnModelIndex, Object cellValue, Object context,
 			java.util.function.Consumer<net.sf.jailer.ui.databrowser.lob.LobContentType> onResult) {
+	}
+
+	/**
+	 * Whether a LOB cell's full content can be reloaded from the database (see
+	 * {@code BrowserContentPane#isLobReloadable}) - used to show the "View"
+	 * button disabled when it can't (e.g. no resolvable primary key for a
+	 * SQL-console result). Default: <code>true</code> (no-op subclasses never
+	 * disable it).
+	 *
+	 * @param row              the row
+	 * @param columnModelIndex index into {@code row.values}
+	 */
+	protected boolean isLobReloadable(Row row, int columnModelIndex) {
+		return true;
 	}
 
 	/**
