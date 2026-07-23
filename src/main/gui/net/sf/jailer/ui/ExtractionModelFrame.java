@@ -303,6 +303,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 		jMenuItem4.setIcon(UIUtil.scaleIcon(jMenuItem4, UIUtil.readImage("/unpin.png")));
 		expandAllVisible.setIcon(UIUtil.scaleIcon(expandAllVisible, UIUtil.readImage("/expandvisible.png")));
 		showIgnored.setIcon(UIUtil.scaleIcon(showIgnored, UIUtil.readImage("/showdisabled.png")));
+		generateDDLMenuItem.setIcon(UIUtil.scaleIcon(generateDDLMenuItem, UIUtil.readImage("/ddl.png")));
 
 		newModel.setToolTipText("Create a new, empty extraction model.");
 		load.setToolTipText("Load an extraction model from a file.");

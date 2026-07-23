@@ -72,12 +72,6 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 
-import net.sf.jailer.ui.databrowser.geo.Geometry;
-import net.sf.jailer.ui.databrowser.geo.GeometryPreviewPanel;
-import net.sf.jailer.ui.databrowser.geo.SpatialCellSupport;
-import net.sf.jailer.ui.databrowser.lob.LobContentSupport;
-import net.sf.jailer.ui.databrowser.lob.LobContentType;
-
 import com.formdev.flatlaf.FlatClientProperties;
 
 import net.sf.jailer.database.Session;
@@ -89,6 +83,11 @@ import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
+import net.sf.jailer.ui.databrowser.geo.Geometry;
+import net.sf.jailer.ui.databrowser.geo.GeometryPreviewPanel;
+import net.sf.jailer.ui.databrowser.geo.SpatialCellSupport;
+import net.sf.jailer.ui.databrowser.lob.LobContentSupport;
+import net.sf.jailer.ui.databrowser.lob.LobContentType;
 import net.sf.jailer.ui.databrowser.sqlconsole.TabContentPanel;
 import net.sf.jailer.ui.util.MovePanel;
 import net.sf.jailer.ui.util.SizeGrip;
@@ -711,10 +710,35 @@ public abstract class DetailsView extends javax.swing.JPanel {
 							f.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
 							f.setToolTipText("Show the content of this value");
 							f.addMouseListener(new MouseAdapter() {
+								private boolean entered = false;
+								private boolean sent = false;
+								@Override
+								public void mouseEntered(MouseEvent e) {
+									entered = true;
+								}
+								@Override
+								public void mouseExited(MouseEvent e) {
+									entered = false;
+								}
+								@Override
+								public void mouseReleased(MouseEvent e) {
+									if (entered && e.getButton() == MouseEvent.BUTTON1) {
+										doOpen();
+									}
+								}
 								@Override
 								public void mouseClicked(MouseEvent e) {
 									if (e.getButton() == MouseEvent.BUTTON1) {
-										onOpenLobViewer(lobRow, lobColumn, lobValue);
+										doOpen();
+									}
+								}
+								private void doOpen() {
+									if (!sent) {
+										sent = true;
+										UIUtil.invokeLater(() -> {
+											sent = false;
+											onOpenLobViewer(lobRow, lobColumn, lobValue);
+										});
 									}
 								}
 							});
@@ -725,10 +749,35 @@ public abstract class DetailsView extends javax.swing.JPanel {
 							thumbLabel.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
 							thumbLabel.setToolTipText("Show the content of this value");
 							thumbLabel.addMouseListener(new MouseAdapter() {
+								private boolean entered = false;
+								private boolean sent = false;
+								@Override
+								public void mouseEntered(MouseEvent e) {
+									entered = true;
+								}
+								@Override
+								public void mouseExited(MouseEvent e) {
+									entered = false;
+								}
+								@Override
+								public void mouseReleased(MouseEvent e) {
+									if (entered && e.getButton() == MouseEvent.BUTTON1) {
+										doOpen();
+									}
+								}
 								@Override
 								public void mouseClicked(MouseEvent e) {
 									if (e.getButton() == MouseEvent.BUTTON1) {
-										onOpenLobViewer(lobRow, lobColumn, lobValue);
+										doOpen();
+									}
+								}
+								private void doOpen() {
+									if (!sent) {
+										sent = true;
+										UIUtil.invokeLater(() -> {
+											sent = false;
+											onOpenLobViewer(lobRow, lobColumn, lobValue);
+										});
 									}
 								}
 							});
@@ -750,10 +799,35 @@ public abstract class DetailsView extends javax.swing.JPanel {
 							typeLabel.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
 							typeLabel.setToolTipText("Show the content of this value");
 							typeLabel.addMouseListener(new MouseAdapter() {
+								private boolean entered = false;
+								private boolean sent = false;
+								@Override
+								public void mouseEntered(MouseEvent e) {
+									entered = true;
+								}
+								@Override
+								public void mouseExited(MouseEvent e) {
+									entered = false;
+								}
+								@Override
+								public void mouseReleased(MouseEvent e) {
+									if (entered && e.getButton() == MouseEvent.BUTTON1) {
+										doOpen();
+									}
+								}
 								@Override
 								public void mouseClicked(MouseEvent e) {
 									if (e.getButton() == MouseEvent.BUTTON1) {
-										onOpenLobViewer(lobRow, lobColumn, lobValue);
+										doOpen();
+									}
+								}
+								private void doOpen() {
+									if (!sent) {
+										sent = true;
+										UIUtil.invokeLater(() -> {
+											sent = false;
+											onOpenLobViewer(lobRow, lobColumn, lobValue);
+										});
 									}
 								}
 							});

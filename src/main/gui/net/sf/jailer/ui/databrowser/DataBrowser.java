@@ -6750,6 +6750,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		analyseSQLMenuItem1.setIcon(UIUtil.scaleIcon(analyseSQLMenuItem1, UIUtil.readImage("/analyzesql.png")));
 		exportDataMenuItem.setIcon(UIUtil.scaleIcon(exportDataMenuItem, UIUtil.readImage("/run.png")));
 		newWindowMenuItem.setIcon(UIUtil.scaleIcon(newWindowMenuItem, UIUtil.readImage("/showinnewwindow.png")));
+		newEmptyWindowMenuItem.setIcon(UIUtil.scaleIcon(newEmptyWindowMenuItem, UIUtil.readImage("/newemptywindow.png")));
 		layoutMenuItem.setIcon(UIUtil.scaleIcon(layoutMenuItem, UIUtil.readImage("/anchor1.png")));
 		saveScriptMenuItem.setIcon(UIUtil.scaleIcon(saveScriptMenuItem, UIUtil.readImage("/save.png")));
 		saveScriptAsMenuItem.setIcon(UIUtil.scaleIcon(saveScriptAsMenuItem, UIUtil.readImage("/saveas.png")));
@@ -6757,6 +6758,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		dataImport.setIcon(UIUtil.scaleIcon(dataImport, UIUtil.readImage("/import.png")));
 		loadScriptMenuItem.setIcon(UIUtil.scaleIcon(loadScriptMenuItem, UIUtil.readImage("/load.png")));
 		rowLimitMenu.setIcon(UIUtil.scaleIcon(rowLimitMenu, UIUtil.readImage("/rowlimit.png")));
+		generateDDLMenuItem.setIcon(UIUtil.scaleIcon(generateDDLMenuItem, UIUtil.readImage("/ddl.png")));
 
 		jMenuItem3.setToolTipText("Open a table in a new table browser.");
 		closeAllMenuItem.setToolTipText("Close all open table browsers in this window.");
