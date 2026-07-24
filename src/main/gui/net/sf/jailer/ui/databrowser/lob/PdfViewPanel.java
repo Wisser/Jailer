@@ -207,7 +207,6 @@ public class PdfViewPanel extends JPanel {
 				if (token != renderToken) {
 					return;
 				}
-				LogUtil.warn(t);
 				SwingUtilities.invokeLater(() -> {
 					if (token != renderToken) {
 						return;

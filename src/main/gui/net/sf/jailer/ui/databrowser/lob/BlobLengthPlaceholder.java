@@ -44,6 +44,10 @@ public final class BlobLengthPlaceholder implements LobValue {
 
 	private final AtomicBoolean thumbnailRequested = new AtomicBoolean();
 
+	private volatile LobContentType singleEntryType;
+
+	private final AtomicBoolean singleEntryTypeRequested = new AtomicBoolean();
+
 	public BlobLengthPlaceholder(long length) {
 		this.length = length;
 	}
@@ -98,9 +102,36 @@ public final class BlobLengthPlaceholder implements LobValue {
 		return thumbnailIcon;
 	}
 
+	/**
+	 * Marks this placeholder as having a single-entry-type scan in flight (only
+	 * done once the guessed type is {@link LobContentType#ZIP}). Returns
+	 * <code>true</code> the first time it is called (the caller should start the
+	 * scan), <code>false</code> on every subsequent call.
+	 */
+	public boolean markSingleEntryTypeRequested() {
+		return singleEntryTypeRequested.compareAndSet(false, true);
+	}
+
+	/**
+	 * Sets the guessed type of a single-file ZIP archive's one entry, once the
+	 * background scan delivers a result (see {@code BrowserContentPane#retrieveZipSingleEntryType}).
+	 */
+	public void setSingleEntryType(LobContentType singleEntryType) {
+		this.singleEntryType = singleEntryType;
+	}
+
+	/**
+	 * The guessed type of a single-file ZIP archive's one entry, or <code>null</code>
+	 * if not (yet) known - either the scan hasn't completed, the archive has more
+	 * than one entry, or scanning it exceeded the size cap.
+	 */
+	public LobContentType getSingleEntryType() {
+		return singleEntryType;
+	}
+
 	@Override
 	public String toString() {
-		return (length > 0 ? "<Blob> " + length + " bytes" : "<Blob>") + "    ";
+		return (length > 0 ? "<Blob> " + LobViewerPanel.humanSize(length, false) + " bytes" : "<Blob>");
 	}
 
 	/**

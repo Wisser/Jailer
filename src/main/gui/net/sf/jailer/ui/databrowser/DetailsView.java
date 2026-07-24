@@ -802,10 +802,26 @@ public abstract class DetailsView extends javax.swing.JPanel {
 									}
 								});
 							};
+							final Runnable requestSingleEntryType = () -> {
+								final Object zipContext = new Object();
+								pendingLobTypeContexts.add(zipContext);
+								// second, lower-priority scan: only fires for a BLOB already
+								// guessed to be a ZIP archive, to see if it holds exactly one
+								// entry and, if so, show that entry's own type instead.
+								requestZipSingleEntryType(lobRow, lobColumn, lobValue, zipContext, entryType -> {
+									if (isDisplayableLobType(entryType)) {
+										viewButton.setText(entryType.displayName);
+										viewButton.revalidate();
+										viewButton.repaint();
+									}
+								});
+							};
 							if (lobType != null) {
 								// type already known from the cached value (e.g. materialized bytes)
 								if (lobType.isImage()) {
 									requestImagePreview.run();
+								} else if (lobType == LobContentType.ZIP) {
+									requestSingleEntryType.run();
 								}
 							} else {
 								// the type could not be guessed from the cached value (e.g. a BLOB
@@ -822,6 +838,8 @@ public abstract class DetailsView extends javax.swing.JPanel {
 									}
 									if (t != null && t.isImage()) {
 										requestImagePreview.run();
+									} else if (t == LobContentType.ZIP) {
+										requestSingleEntryType.run();
 									}
 								});
 							}
@@ -1164,6 +1182,25 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	 */
 	protected void requestLobImagePreview(Row row, int columnModelIndex, Object cellValue, int maxWidth, int maxHeight, Object context,
 			java.util.function.Consumer<java.awt.image.BufferedImage> onImage) {
+	}
+
+	/**
+	 * Second-stage scan for a BLOB already guessed to be a ZIP archive: checks
+	 * whether it holds exactly one file entry and, if so, guesses that entry's
+	 * own content type. Delivers <code>null</code> to <code>onResult</code> (on
+	 * the EDT) otherwise (more than one entry, or scanning it exceeded the
+	 * implementation's size cap). Default: no-op. The <code>context</code> is
+	 * cancelled via {@link CancellationHandler#cancel(Object)} when the view is
+	 * closed or rebuilt (see {@link #cancelPendingLobTypeRequests()}).
+	 *
+	 * @param row              the row
+	 * @param columnModelIndex index into {@code row.values}
+	 * @param cellValue        the raw cell value
+	 * @param context          cancellation context
+	 * @param onResult         receives the guessed entry type (or <code>null</code>) on the EDT
+	 */
+	protected void requestZipSingleEntryType(Row row, int columnModelIndex, Object cellValue, Object context,
+			java.util.function.Consumer<net.sf.jailer.ui.databrowser.lob.LobContentType> onResult) {
 	}
 
 	private final java.util.List<Object> pendingLobTypeContexts = new java.util.ArrayList<Object>();

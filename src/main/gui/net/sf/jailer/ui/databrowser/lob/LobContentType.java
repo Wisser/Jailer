@@ -27,29 +27,29 @@ import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
  */
 public enum LobContentType {
 
-	PNG(Category.IMAGE, ".png", null, "PNG image"),
-	JPEG(Category.IMAGE, ".jpg", null, "JPEG image"),
-	GIF(Category.IMAGE, ".gif", null, "GIF image"),
-	BMP(Category.IMAGE, ".bmp", null, "BMP image"),
-	SVG(Category.IMAGE, ".svg", null, "SVG image"),
+	PNG(Category.IMAGE, ".png", null, "PNG Image"),
+	JPEG(Category.IMAGE, ".jpg", null, "JPEG Image"),
+	GIF(Category.IMAGE, ".gif", null, "GIF Image"),
+	BMP(Category.IMAGE, ".bmp", null, "BMP Image"),
+	SVG(Category.IMAGE, ".svg", null, "SVG Image"),
 
 	PLAIN_TEXT(Category.TEXT, ".txt", SyntaxConstants.SYNTAX_STYLE_NONE, "Text"),
 	JSON(Category.TEXT, ".json", SyntaxConstants.SYNTAX_STYLE_JSON_WITH_COMMENTS, "JSON"),
 	XML(Category.TEXT, ".xml", SyntaxConstants.SYNTAX_STYLE_XML, "XML"),
 	HTML(Category.TEXT, ".html", SyntaxConstants.SYNTAX_STYLE_HTML, "HTML"),
 
-	PDF(Category.PDF, ".pdf", null, "PDF document"),
+	PDF(Category.PDF, ".pdf", null, "PDF Doc"),
 
-	ZIP(Category.ARCHIVE, ".zip", null, "ZIP archive"),
-	GZIP(Category.ARCHIVE, ".gz", null, "GZIP archive"),
+	ZIP(Category.ARCHIVE, ".zip", null, "ZIP Archive"),
+	GZIP(Category.ARCHIVE, ".gz", null, "GZIP Archive"),
 
 	// Office Open XML packages: still ARCHIVE (the original bytes are the real file - see
 	// LobContent#getPreviewText()), not TEXT - only the extracted preview text is textual.
-	DOCX(Category.ARCHIVE, ".docx", null, "Word document"),
-	XLSX(Category.ARCHIVE, ".xlsx", null, "Excel spreadsheet"),
-	PPTX(Category.ARCHIVE, ".pptx", null, "PowerPoint presentation"),
+	DOCX(Category.ARCHIVE, ".docx", null, "Word Doc"),
+	XLSX(Category.ARCHIVE, ".xlsx", null, "Excel Sheet"),
+	PPTX(Category.ARCHIVE, ".pptx", null, "PowerPoint"),
 
-	BINARY(Category.BINARY, ".bin", null, "Binary data");
+	BINARY(Category.BINARY, ".bin", null, "Binary");
 
 	/**
 	 * How a value of a given type is rendered.

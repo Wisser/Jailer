@@ -55,6 +55,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -96,6 +97,8 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -210,7 +213,9 @@ import net.sf.jailer.ui.databrowser.lob.LobContentSupport;
 import net.sf.jailer.ui.databrowser.lob.LobContentType;
 import net.sf.jailer.ui.databrowser.lob.LobReader;
 import net.sf.jailer.ui.databrowser.lob.LobRetrievalCallback;
+import net.sf.jailer.ui.databrowser.lob.LobTypeDetector;
 import net.sf.jailer.ui.databrowser.lob.LobViewerPanel;
+import net.sf.jailer.ui.databrowser.metadata.MDSchema;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.ColumnsTable;
@@ -1883,33 +1888,48 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 						Object lobCellContent = r.values[convertedColumnIndex];
 						if (lobCellContent instanceof BlobLengthPlaceholder) {
 							final BlobLengthPlaceholder placeholder = (BlobLengthPlaceholder) lobCellContent;
-							if (placeholder.markRequested()) {
-								final Row scanRow = r;
-								final int scanColumn = convertedColumnIndex;
-								final Object scanContext = new Object();
-								pendingLobBackgroundScanContexts.add(scanContext);
-								retrieveLobContentType(scanRow, scanColumn, scanContext, LOB_BACKGROUND_SCAN_PRIORITY, t -> {
-									pendingLobBackgroundScanContexts.remove(scanContext);
-									if (t != null) {
-										placeholder.setGuessedType(t);
-										rowsTable.repaint();
-									}
-								});
-							}
-							LobContentType guessedType = placeholder.getGuessedType();
-							if (guessedType != null && guessedType.isImage() && placeholder.markThumbnailRequested()) {
-								final Row iconRow = r;
-								final int iconColumn = convertedColumnIndex;
-								final Object iconContext = new Object();
-								pendingLobBackgroundScanContexts.add(iconContext);
-								retrieveLobImagePreview(iconRow, iconColumn, placeholder, BLOB_BUTTON_ICON_SIZE, BLOB_BUTTON_ICON_SIZE,
-										LOB_BACKGROUND_SCAN_PRIORITY, iconContext, img -> {
-									pendingLobBackgroundScanContexts.remove(iconContext);
-									if (img != null) {
-										placeholder.setThumbnailIcon(new ImageIcon(img));
-										rowsTable.repaint();
-									}
-								});
+							if (!measuringColumnWidths) {
+								if (placeholder.markRequested()) {
+									final Row scanRow = r;
+									final int scanColumn = convertedColumnIndex;
+									final Object scanContext = new Object();
+									pendingLobBackgroundScanContexts.add(scanContext);
+									retrieveLobContentType(scanRow, scanColumn, scanContext, LOB_BACKGROUND_SCAN_PRIORITY, t -> {
+										pendingLobBackgroundScanContexts.remove(scanContext);
+										if (t != null) {
+											placeholder.setGuessedType(t);
+											rowsTable.repaint();
+										}
+									});
+								}
+								LobContentType guessedType = placeholder.getGuessedType();
+								if (guessedType != null && guessedType.isImage() && placeholder.markThumbnailRequested()) {
+									final Row iconRow = r;
+									final int iconColumn = convertedColumnIndex;
+									final Object iconContext = new Object();
+									pendingLobBackgroundScanContexts.add(iconContext);
+									retrieveLobImagePreview(iconRow, iconColumn, placeholder, BLOB_BUTTON_ICON_SIZE, BLOB_BUTTON_ICON_SIZE,
+											LOB_BACKGROUND_SCAN_PRIORITY, iconContext, img -> {
+										pendingLobBackgroundScanContexts.remove(iconContext);
+										if (img != null) {
+											placeholder.setThumbnailIcon(new ImageIcon(img));
+											rowsTable.repaint();
+										}
+									});
+								}
+								if (guessedType == LobContentType.ZIP && placeholder.markSingleEntryTypeRequested()) {
+									final Row zipRow = r;
+									final int zipColumn = convertedColumnIndex;
+									final Object zipContext = new Object();
+									pendingLobBackgroundScanContexts.add(zipContext);
+									retrieveZipSingleEntryType(zipRow, zipColumn, zipContext, entryType -> {
+										pendingLobBackgroundScanContexts.remove(zipContext);
+										if (entryType != null) {
+											placeholder.setSingleEntryType(entryType);
+											rowsTable.repaint();
+										}
+									});
+								}
 							}
 							if (render instanceof JLabel) {
 								boolean reloadable = isLobReloadable(r, convertedColumnIndex);
@@ -6100,6 +6120,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 								java.util.function.Consumer<java.awt.image.BufferedImage> onImage) {
 							retrieveLobImagePreview(row, columnModelIndex, cellValue, maxWidth, maxHeight, context, onImage);
 						}
+						@Override
+						protected void requestZipSingleEntryType(Row row, int columnModelIndex, Object cellValue, Object context,
+								java.util.function.Consumer<LobContentType> onResult) {
+							retrieveZipSingleEntryType(row, columnModelIndex, context, onResult);
+						}
 					};
 					((DetailsView) singleRowDetailsView).setSortColumns(currentRowsSortedReference == null? sortColumnsCheckBox.isSelected() : currentRowsSortedReference.get());
 			        dtm = new DefaultTableModel(new String[] { singleRowDetailsViewTitel }, 0) {
@@ -6589,6 +6614,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		int totalWidth = 0;
 		final int maxColumnWidth = 300;
 
+		measuringColumnWidths = true;
+		try {
 		for (int i = 0; i < rowsTable.getColumnCount(); i++) {
 			TableColumn column = rowsTable.getColumnModel().getColumn(i);
 			int width = minTotalWidth / rowsTable.getColumnCount();
@@ -6644,7 +6671,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			}
 			column.setPreferredWidth(Math.min(maxColumnWidth, width));
 		}
-		
+		} finally {
+			measuringColumnWidths = false;
+		}
+
 		lastColumnConfig = new LinkedHashMap<>();
 		for (int i = 0; i < rowsTable.getColumnCount(); i++) {
 			TableColumn column = rowsTable.getColumnModel().getColumn(i);
@@ -8095,15 +8125,17 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	private static final String LOB_NOT_RELOADABLE_TOOLTIP = "Full content cannot be reloaded (no primary key available for this result).";
 
 	/**
-	 * Same as {@link #retrieveLobContentType(Row, int, Object, java.util.function.Consumer)},
-	 * but with an explicit {@link RunnableWithPriority} priority instead of the
-	 * default interactive priority (100). Use {@link #LOB_BACKGROUND_SCAN_PRIORITY}
-	 * for passive, non-interactive scans.
+	 * Same as {@link #retrieveLobContentType(Row, int, Object, java.util.function.Consumer)}.
+	 * Runs on {@link MDSchema#loadMetaData(Runnable, int)}'s queue 1 ("heavy
+	 * loads"), not the shared {@link Desktop#runnableQueue}, so this scan never
+	 * competes with interactive row-loading/LOB-viewing work. The
+	 * <code>priority</code> parameter is no longer used for dispatch (kept for
+	 * source compatibility with existing callers).
 	 *
 	 * @param row              the row
 	 * @param columnModelIndex index into {@code row.values} / the source table's columns
 	 * @param context          cancellation context
-	 * @param priority         the {@link RunnableWithPriority} priority to submit the scan with
+	 * @param priority         unused
 	 * @param onResult         receives the guessed type (or <code>null</code>) on the EDT
 	 */
 	public void retrieveLobContentType(final Row row, final int columnModelIndex, final Object context,
@@ -8137,12 +8169,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			return;
 		}
 
-		getRunnableQueue().add(new RunnableWithPriority() {
-			@Override
-			public int getPriority() {
-				return priority;
-			}
-
+		// queue 1 ("heavy loads") on MDSchema's own dedicated background threads,
+		// instead of the shared Desktop.runnableQueue - decouples this passive
+		// scan traffic from interactive row-loading/LOB-viewing work entirely.
+		MDSchema.loadMetaData(new Runnable() {
 			@Override
 			public void run() {
 				final LobContentType[] result = new LobContentType[1];
@@ -8184,7 +8214,173 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 					CancellationHandler.reset(context);
 				}
 			}
-		});
+		}, 1);
+	}
+
+	/**
+	 * Upper bound on how much of a ZIP archive's (decompressed) content
+	 * {@link #retrieveZipSingleEntryType} will read while looking for a second
+	 * entry - scanning gives up (delivers <code>null</code>) once this is
+	 * exceeded.
+	 */
+	private static final long ZIP_ENTRY_SCAN_MAX_BYTES = 16L * 1024 * 1024;
+
+	/**
+	 * Second-stage scan for a BLOB already guessed to be a {@link LobContentType#ZIP}
+	 * archive: re-reads it from the database and streams forward through its
+	 * entries (via {@link ZipInputStream}) to determine whether it holds exactly
+	 * one file entry and, if so, guesses that entry's own content type from its
+	 * leading bytes. Delivers <code>null</code> to <code>onResult</code> (on the
+	 * EDT) if the archive holds more than one entry, no entry at all, or reading
+	 * it exceeds {@link #ZIP_ENTRY_SCAN_MAX_BYTES} before either can be
+	 * determined. Runs on {@link MDSchema#loadMetaData(Runnable, int)}'s queue 1
+	 * ("heavy loads"), not the shared {@link Desktop#runnableQueue}.
+	 *
+	 * @param row              the row
+	 * @param columnModelIndex index into {@code row.values} / the source table's columns
+	 * @param context          cancellation context
+	 * @param onResult         receives the guessed entry type (or <code>null</code>) on the EDT
+	 */
+	public void retrieveZipSingleEntryType(final Row row, final int columnModelIndex, final Object context,
+			final java.util.function.Consumer<LobContentType> onResult) {
+		final Table type = getResultSetTypeForColumn(columnModelIndex);
+
+		boolean hasKey = isLobReloadable(row, columnModelIndex);
+		if (!hasKey) {
+			onResult.accept(null);
+			return;
+		}
+
+		Row keyRow = row;
+		if (resultSetType != null || keyRow.rowId == null || keyRow.rowId.isEmpty()) {
+			keyRow = createRowWithNewID(row, type);
+		}
+		if (keyRow.rowId == null || keyRow.rowId.isEmpty()) {
+			onResult.accept(null);
+			return;
+		}
+
+		final String sql;
+		try {
+			sql = SQLDMLBuilder.buildSingleColumnSelect(type, keyRow, columnModelIndex, session);
+		} catch (RuntimeException e) {
+			onResult.accept(null);
+			return;
+		}
+		if (sql == null) {
+			onResult.accept(null);
+			return;
+		}
+
+		// queue 1 ("heavy loads") on MDSchema's own dedicated background threads,
+		// instead of the shared Desktop.runnableQueue - this scan can read up to
+		// ZIP_ENTRY_SCAN_MAX_BYTES and should never compete with interactive work.
+		MDSchema.loadMetaData(new Runnable() {
+			@Override
+			public void run() {
+				final LobContentType[] result = new LobContentType[1];
+				try {
+					AbstractResultSetReader reader = new AbstractResultSetReader() {
+						@Override
+						public void readCurrentRow(ResultSet resultSet) throws SQLException {
+							CellContentConverter ccc = getCellContentConverter(resultSet, session, session.dbms);
+							Object obj = ccc.getObject(resultSet, 1);
+							if (obj == null || resultSet.wasNull()) {
+								result[0] = null;
+								return;
+							}
+							try {
+								result[0] = detectSingleZipEntryType(obj, context);
+							} catch (IOException ioe) {
+								throw new SQLException(ioe);
+							}
+						}
+					};
+					session.executeQuery(sql, reader, null, context, 1);
+					final LobContentType t = result[0];
+					UIUtil.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							onResult.accept(t);
+						}
+					});
+				} catch (CancellationException ce) {
+					// cancelled (e.g. table reloaded/closed): no update
+				} catch (final Throwable th) {
+					UIUtil.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							onResult.accept(null);
+						}
+					});
+				} finally {
+					CancellationHandler.reset(context);
+				}
+			}
+		}, 1);
+	}
+
+	/**
+	 * Opens the given JDBC value ({@link Blob} or {@code byte[]}) as a
+	 * {@link ZipInputStream} and streams forward through its entries, looking
+	 * for exactly one non-directory entry. Guesses that entry's type from its
+	 * leading bytes (mirroring {@link LobReader#detectType}), without ever
+	 * holding more than {@link LobContent#HEAD_SIZE} bytes of it in memory.
+	 * Gives up (returns <code>null</code>) as soon as a second entry appears, or
+	 * once more than {@link #ZIP_ENTRY_SCAN_MAX_BYTES} has been read.
+	 */
+	private static LobContentType detectSingleZipEntryType(Object obj, Object context) throws IOException, SQLException {
+		InputStream binaryIn;
+		if (obj instanceof Blob) {
+			binaryIn = ((Blob) obj).getBinaryStream();
+		} else if (obj instanceof byte[]) {
+			binaryIn = new java.io.ByteArrayInputStream((byte[]) obj);
+		} else {
+			return null;
+		}
+		try (ZipInputStream zis = new ZipInputStream(binaryIn)) {
+			ZipEntry entry = nextZipFileEntry(zis);
+			if (entry == null) {
+				return null;
+			}
+			byte[] head = new byte[LobContent.HEAD_SIZE];
+			int headLen = 0;
+			long totalRead = 0;
+			byte[] buf = new byte[8192];
+			int n;
+			while ((n = zis.read(buf)) != -1) {
+				CancellationHandler.checkForCancellation(context);
+				if (headLen < head.length) {
+					int toCopy = Math.min(n, head.length - headLen);
+					System.arraycopy(buf, 0, head, headLen, toCopy);
+					headLen += toCopy;
+				}
+				totalRead += n;
+				if (totalRead > ZIP_ENTRY_SCAN_MAX_BYTES) {
+					return null;
+				}
+			}
+			LobContentType entryType = LobTypeDetector.detect(
+					headLen == head.length ? head : java.util.Arrays.copyOf(head, headLen), entry.getSize());
+			if (nextZipFileEntry(zis) != null) {
+				return null;
+			}
+			return entryType;
+		}
+	}
+
+	/**
+	 * Advances to (and returns) the next non-directory entry, skipping
+	 * directory entries. Returns <code>null</code> once there are no more.
+	 */
+	private static ZipEntry nextZipFileEntry(ZipInputStream zis) throws IOException {
+		ZipEntry entry;
+		while ((entry = zis.getNextEntry()) != null) {
+			if (!entry.isDirectory()) {
+				return entry;
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -8193,6 +8389,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	 * table is reloaded or closed (see {@link #cancelPendingLobBackgroundScans()}).
 	 */
 	private final List<Object> pendingLobBackgroundScanContexts = Collections.synchronizedList(new ArrayList<Object>());
+
+	/**
+	 * Set while {@link #adjustRowTableColumnsWidth(LinkedHashMap, LinkedHashMap)}
+	 * is measuring preferred column widths - it calls {@link #rowsTable}'s own
+	 * cell renderer directly, for rows well beyond what's actually visible, so
+	 * new BLOB background scans must not be started from that pass (a cell whose
+	 * type/thumbnail/entry-type is already known still renders correctly; only
+	 * kicking off new scans is suppressed).
+	 */
+	private boolean measuringColumnWidths = false;
 
 	/**
 	 * Cancels all background BLOB-type scans that are still queued or in flight
@@ -8244,7 +8450,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	 * type guessed yet, or a non-noteworthy guess like plain binary data). Once the
 	 * guessed type is an image, the button's icon becomes a small thumbnail of the
 	 * BLOB's own content instead of the generic view icon (see
-	 * {@link BlobLengthPlaceholder#getThumbnailIcon()}).
+	 * {@link BlobLengthPlaceholder#getThumbnailIcon()}). If the guessed type is
+	 * {@link LobContentType#ZIP} and a second-stage scan later determines it's a
+	 * single-file archive, the button switches to that entry's own type instead
+	 * (see {@link BlobLengthPlaceholder#getSingleEntryType()} and
+	 * {@link #retrieveZipSingleEntryType}).
 	 * Clicking anywhere on the composite cell opens the LOB viewer (see the mouse
 	 * listener registered on {@link #rowsTable} for the actual click handling -
 	 * {@link JTable} cell renderers are painted-only, so the button here cannot
@@ -8262,7 +8472,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		base.setVisible(false);
 
 		LobContentType type = placeholder.getGuessedType();
-		String buttonText = isDisplayableLobType(type) ? type.displayName : placeholder.plainText();
+		LobContentType singleEntryType = placeholder.getSingleEntryType();
+		LobContentType displayType = singleEntryType != null ? singleEntryType : type;
+		String buttonText = isDisplayableLobType(displayType) ? displayType.displayName : placeholder.plainText();
 		JButton viewButton = new JButton(buttonText);
 		ImageIcon icon = placeholder.getThumbnailIcon();
 		if (icon == null) {
@@ -8271,11 +8483,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		if (icon != null) {
 			viewButton.setIcon(icon);
 		}
-		viewButton.setMargin(new Insets(0, 4, 0, 4));
+		viewButton.setMargin(new Insets(0, 4, 0, 8));
 		viewButton.setEnabled(reloadable);
 		String sizeLine = LobViewerPanel.humanSize(placeholder.length, false);
-		String tooltip = "<html>" + (reloadable ? "Show the content of this value" : LOB_NOT_RELOADABLE_TOOLTIP)
-				+ "<br>" + sizeLine + "</html>";
+		LobContentType typ = placeholder.getSingleEntryType() != null? placeholder.getSingleEntryType() : placeholder.getGuessedType();
+		String tooltip = "<html>" + (typ == null? "" : typ.displayName + " ") + sizeLine
+				+ "<br><hr>" + (reloadable ? "Show the content of this value" : LOB_NOT_RELOADABLE_TOOLTIP) + "</html>";
 		viewButton.setToolTipText(tooltip);
 		// painted only - JTable renderer components are non-interactive; clicks are
 		// handled by the mouse listener registered on rowsTable (see blobViewCellAt).
@@ -8653,6 +8866,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 				protected void requestLobImagePreview(Row row, int columnModelIndex, Object cellValue, int maxWidth, int maxHeight, Object context,
 						java.util.function.Consumer<java.awt.image.BufferedImage> onImage) {
 					retrieveLobImagePreview(row, columnModelIndex, cellValue, maxWidth, maxHeight, context, onImage);
+				}
+				@Override
+				protected void requestZipSingleEntryType(Row row, int columnModelIndex, Object cellValue, Object context,
+						java.util.function.Consumer<LobContentType> onResult) {
+					retrieveZipSingleEntryType(row, columnModelIndex, context, onResult);
 				}
 			};
 			dv.prepareForNonModalUsage();
