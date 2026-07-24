@@ -510,7 +510,7 @@ public class LobViewerPanel extends JPanel {
 		}
 	}
 
-	private static String humanSize(long length, boolean chars) {
+	public static String humanSize(long length, boolean chars) {
 		if (length < 0) {
 			return "unknown size";
 		}

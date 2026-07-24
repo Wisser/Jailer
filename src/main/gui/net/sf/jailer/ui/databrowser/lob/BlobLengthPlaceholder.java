@@ -111,6 +111,6 @@ public final class BlobLengthPlaceholder implements LobValue {
 	 * brackets.
 	 */
 	public String plainText() {
-		return length > 0 ? "Blob " + length + " bytes" : "Blob";
+		return "Blob " + LobViewerPanel.humanSize(length, false);
 	}
 }

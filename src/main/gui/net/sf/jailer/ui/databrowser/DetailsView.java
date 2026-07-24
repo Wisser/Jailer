@@ -93,6 +93,7 @@ import net.sf.jailer.ui.databrowser.sqlconsole.TabContentPanel;
 import net.sf.jailer.ui.util.MovePanel;
 import net.sf.jailer.ui.util.SizeGrip;
 import net.sf.jailer.ui.util.SmallButton;
+import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CellContentConverter.PObjectWrapper;
 import net.sf.jailer.util.Quoting;
 
@@ -1119,8 +1120,9 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	 * leading bytes from the database) and delivers it to <code>onResult</code>
 	 * on the EDT. Used to fill in the inline type hint for values whose type
 	 * cannot be determined from the cached cell value (e.g. BLOBs). Default:
-	 * no-op. The <code>context</code> is used to cancel the request (see
-	 * {@link #cancelLobContentTypeRequest}) when the view is closed or rebuilt.
+	 * no-op. The <code>context</code> is cancelled via
+	 * {@link CancellationHandler#cancel(Object)} when the view is closed or
+	 * rebuilt (see {@link #cancelPendingLobTypeRequests()}).
 	 *
 	 * @param row              the row
 	 * @param columnModelIndex index into {@code row.values}
@@ -1151,8 +1153,8 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	 * it and delivers the {@link java.awt.image.BufferedImage} to
 	 * <code>onImage</code> on the EDT (or <code>null</code> if it is not an image
 	 * / cannot be read). Used for the inline image preview. Default: no-op. The
-	 * <code>context</code> is used to cancel the request (see
-	 * {@link #cancelLobContentTypeRequest}) when the view is closed or rebuilt.
+	 * <code>context</code> is cancelled via {@link CancellationHandler#cancel(Object)}
+	 * when the view is closed or rebuilt (see {@link #cancelPendingLobTypeRequests()}).
 	 *
 	 * @param row              the row
 	 * @param columnModelIndex index into {@code row.values}
@@ -1164,14 +1166,6 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			java.util.function.Consumer<java.awt.image.BufferedImage> onImage) {
 	}
 
-	/**
-	 * Cancels a pending {@link #requestLobContentType} request. Default: no-op.
-	 *
-	 * @param context the cancellation context passed to {@link #requestLobContentType}
-	 */
-	protected void cancelLobContentTypeRequest(Object context) {
-	}
-
 	private final java.util.List<Object> pendingLobTypeContexts = new java.util.ArrayList<Object>();
 
 	/**
@@ -1181,7 +1175,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	public void cancelPendingLobTypeRequests() {
 		for (Object ctx: pendingLobTypeContexts) {
 			try {
-				cancelLobContentTypeRequest(ctx);
+				CancellationHandler.cancelSilently(ctx);
 			} catch (Throwable t) {
 				// ignore
 			}

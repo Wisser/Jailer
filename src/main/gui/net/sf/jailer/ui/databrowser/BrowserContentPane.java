@@ -725,7 +725,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			if (finished) {
 				return;
 			}
-			CancellationHandler.cancel(this);
+			CancellationHandler.cancelSilently(this);
 		}
 
 		public synchronized void checkCancellation() {
@@ -5823,7 +5823,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 										ActionListener listener = new ActionListener() {
 											@Override
 											public void actionPerformed(ActionEvent e) {
-												CancellationHandler.cancel(context);
+												CancellationHandler.cancelSilently(context);
 											}
 										};
 										cancelLoadButton.addActionListener(listener);
@@ -6099,10 +6099,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 						protected void requestLobImagePreview(Row row, int columnModelIndex, Object cellValue, int maxWidth, int maxHeight, Object context,
 								java.util.function.Consumer<java.awt.image.BufferedImage> onImage) {
 							retrieveLobImagePreview(row, columnModelIndex, cellValue, maxWidth, maxHeight, context, onImage);
-						}
-						@Override
-						protected void cancelLobContentTypeRequest(Object context) {
-							CancellationHandler.cancel(context);
 						}
 					};
 					((DetailsView) singleRowDetailsView).setSortColumns(currentRowsSortedReference == null? sortColumnsCheckBox.isSelected() : currentRowsSortedReference.get());
@@ -7999,7 +7995,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 				final ActionListener listener = new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						CancellationHandler.cancel(context);
+						CancellationHandler.cancelSilently(context);
 					}
 				};
 				cancelLoadButton.addActionListener(listener);
@@ -8065,8 +8061,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	 * {@link LobReader#detectType}). Mirrors {@link #retrieveFullLobContent} but
 	 * is cheap and used for the inline type hint. Delivers <code>null</code> when
 	 * the type cannot be determined (no primary key, no row, read error). The
-	 * given <code>context</code> can be cancelled by the caller (see
-	 * {@link #cancelLobContentTypeRequest}) e.g. when the details view is closed.
+	 * given <code>context</code> can be cancelled by the caller (e.g. when the
+	 * details view is closed) via {@link CancellationHandler#cancel(Object)}.
 	 *
 	 * @param row              the row
 	 * @param columnModelIndex index into {@code row.values} / the source table's columns
@@ -8208,7 +8204,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		synchronized (pendingLobBackgroundScanContexts) {
 			for (Object context : pendingLobBackgroundScanContexts) {
 				try {
-					CancellationHandler.cancel(context);
+					CancellationHandler.cancelSilently(context);
 				} catch (Throwable t) {
 					// ignore
 				}
@@ -8277,7 +8273,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		}
 		viewButton.setMargin(new Insets(0, 4, 0, 4));
 		viewButton.setEnabled(reloadable);
-		String tooltip = reloadable ? "Show the content of this value" : LOB_NOT_RELOADABLE_TOOLTIP;
+		String sizeLine = LobViewerPanel.humanSize(placeholder.length, false);
+		String tooltip = "<html>" + (reloadable ? "Show the content of this value" : LOB_NOT_RELOADABLE_TOOLTIP)
+				+ "<br>" + sizeLine + "</html>";
 		viewButton.setToolTipText(tooltip);
 		// painted only - JTable renderer components are non-interactive; clicks are
 		// handled by the mouse listener registered on rowsTable (see blobViewCellAt).
@@ -8655,10 +8653,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 				protected void requestLobImagePreview(Row row, int columnModelIndex, Object cellValue, int maxWidth, int maxHeight, Object context,
 						java.util.function.Consumer<java.awt.image.BufferedImage> onImage) {
 					retrieveLobImagePreview(row, columnModelIndex, cellValue, maxWidth, maxHeight, context, onImage);
-				}
-				@Override
-				protected void cancelLobContentTypeRequest(Object context) {
-					CancellationHandler.cancel(context);
 				}
 			};
 			dv.prepareForNonModalUsage();
