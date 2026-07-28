@@ -3148,10 +3148,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		}
 
 		public void setInitialText() {
-			if (todoList.isEmpty()) {
+			if (done >= todo) {
 				setText("All non-empty (0)");
 			} else {
-				setText(initText + "100%");
+				setText(initText);
 			}
 		}
 

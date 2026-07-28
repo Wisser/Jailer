@@ -86,6 +86,7 @@ public class AIProviderPanel extends JPanel {
         providerCombo.setSelectedItem(savedProvider);
 
         urlField    = new JTextField(savedUrl   != null ? savedUrl   : savedProvider.defaultApiUrl, 36);
+        urlField.setToolTipText(urlFieldTooltip(savedProvider));
         modelField  = new JTextField(savedModel != null ? savedModel : savedProvider.defaultModel,   20);
         apiKeyField = new JPasswordField(36);
         if (savedKey != null) {
@@ -267,6 +268,7 @@ public class AIProviderPanel extends JPanel {
             if (urlField.getText().trim().equals(prev[0].defaultApiUrl)) {
                 urlField.setText(next.defaultApiUrl);
             }
+            urlField.setToolTipText(urlFieldTooltip(next));
             if (modelField.getText().trim().equals(effectiveDefault(prev[0]))) {
                 modelField.setText(effectiveDefault(next));
             }
@@ -293,6 +295,11 @@ public class AIProviderPanel extends JPanel {
 
     private static String apiKeyLabelText(ProviderType type) {
         return "API Key";
+    }
+
+    private static String urlFieldTooltip(ProviderType type) {
+        return "Full endpoint URL for this provider, e.g. a path ending in \"" + type.expectedUrlPath()
+                + "\" — not just the server's base URL.";
     }
 
     /** Returns the API key currently entered (trimmed). */

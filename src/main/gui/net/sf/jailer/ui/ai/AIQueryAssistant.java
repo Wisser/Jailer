@@ -716,11 +716,12 @@ public class AIQueryAssistant {
         }
         boolean isAnthropic = config.providerType == ProviderType.ANTHROPIC;
         boolean isResponsesApi = !isAnthropic && isResponsesApiUrl(config.apiUrl);
+        String expectedPath = isResponsesApi ? "/v1/responses" : config.providerType.expectedUrlPath();
         String apiKey = config.apiKey;
         byte[] bodyBytes = MAPPER.writeValueAsBytes(body);
         IOException urlConnError;
         try {
-            JsonNode result = postWithHttpURLConnection(config.apiUrl, apiKey, bodyBytes, isAnthropic, isResponsesApi, abortRef);
+            JsonNode result = postWithHttpURLConnection(config.apiUrl, apiKey, bodyBytes, isAnthropic, isResponsesApi, expectedPath, abortRef);
             UISettings.s19 = config.providerType.ordinal() + 1L;
             ++UISettings.s20;
             return result;
@@ -746,7 +747,7 @@ public class AIQueryAssistant {
     }
 
     private static JsonNode postWithHttpURLConnection(String apiUrl, String apiKey,
-            byte[] bodyBytes, boolean isAnthropic, boolean isResponsesApi, AtomicReference<Runnable> abortRef) throws IOException {
+            byte[] bodyBytes, boolean isAnthropic, boolean isResponsesApi, String expectedPath, AtomicReference<Runnable> abortRef) throws IOException {
         String currentUrl = apiUrl;
         for (int redirects = 0; redirects < 5; redirects++) {
             URL url = new URL(currentUrl);
@@ -793,7 +794,7 @@ public class AIQueryAssistant {
                 if (status == 301 || status == 302 || status == 307 || status == 308) {
                     String location = conn.getHeaderField("Location");
                     if (location == null) {
-                        throw new IOException("Redirect without Location header");
+                        throw new IOException("Redirect without Location header\n  URL: " + currentUrl);
                     }
                     currentUrl = location;
                     continue;
@@ -824,7 +825,10 @@ public class AIQueryAssistant {
                     String msg = "API error " + status + ": " + parseErrorMessage(responseBytes, status);
                     if (status == 401) {
                         msg += " (check your API key)";
+                    } else if (status == 404 || status == 405) {
+                        msg += " (check your API URL — it must point to the chat endpoint, e.g. a path ending in \"" + expectedPath + "\", not just the server's base URL)";
                     }
+                    msg += "\n  URL: " + currentUrl;
                     msg += "\n  Headers: " + headers + "\n  Request: " + new String(bodyBytes, StandardCharsets.UTF_8);
                     throw new IOException(msg);
                 }
@@ -938,22 +942,22 @@ public class AIQueryAssistant {
                 String errStr = new String(errBytes, StandardCharsets.UTF_8).trim();
                 if (errStr.length() > 0) {
                     _log.debug("RESPONSE (curl) exitCode={} Body: {}", exitCode, errStr);
-                    throw new IOException("API error " + exitCode + ": " + errStr);
+                    throw new IOException("API error " + exitCode + ": " + errStr + "\n  URL: " + apiUrl);
                 }
-                throw new IOException("curl failed with exit code " + exitCode);
+                throw new IOException("curl failed with exit code " + exitCode + "\n  URL: " + apiUrl);
             }
             if (responseBytes.length == 0) {
                 byte[] errBytes = readAllBytes(process.getErrorStream());
                 String curlErr = new String(errBytes, StandardCharsets.UTF_8).trim();
                 _log.debug("RESPONSE (curl) error: {}", curlErr);
-                throw new IOException("curl error: " + curlErr);
+                throw new IOException("curl error: " + curlErr + "\n  URL: " + apiUrl);
             }
             _log.debug("RESPONSE (curl)\n  Body: {}", new String(responseBytes, StandardCharsets.UTF_8));
             JsonNode response = MAPPER.readTree(responseBytes);
             JsonNode errorNode = response.path("error");
             if (!errorNode.isMissingNode() && !errorNode.isNull()) {
                 String msg = errorNode.path("message").asText(errorNode.toString());
-                throw new IOException("API error: " + msg);
+                throw new IOException("API error: " + msg + "\n  URL: " + apiUrl);
             }
             return response;
         } catch (InterruptedException e) {

@@ -54,6 +54,19 @@ public class AIProviderConfig {
             this.requiresApiKey = requiresApiKey;
         }
 
+        /**
+         * The URL path segment a valid endpoint for this provider is expected to end in,
+         * derived from {@link #defaultApiUrl}.
+         */
+        public String expectedUrlPath() {
+            try {
+                String path = new java.net.URL(defaultApiUrl).getPath();
+                return (path == null || path.isEmpty()) ? defaultApiUrl : path;
+            } catch (java.net.MalformedURLException e) {
+                return defaultApiUrl;
+            }
+        }
+
         @Override
         public String toString() {
             return displayName;
