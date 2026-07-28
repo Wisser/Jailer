@@ -195,6 +195,7 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel.OutlineInfo;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.AIQueryDialog;
+import net.sf.jailer.ui.databrowser.sqlconsole.DDLAnalyser;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.ui.databrowser.whereconditioneditor.WhereConditionEditorPanel;
 import net.sf.jailer.ui.ddl_script_generator.DDLScriptGeneratorPanel;
@@ -6421,6 +6422,13 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		protected void refreshMetaData() {
 			if (metaDataPanel != null) {
 				metaDataPanel.reset();
+			}
+		}
+
+		@Override
+		protected void applyDDLChanges(List<DDLAnalyser.DDLChange> changes) {
+			if (metaDataPanel != null) {
+				metaDataPanel.applyDDLChanges(getMetaDataSource(), changes);
 			}
 		}
 

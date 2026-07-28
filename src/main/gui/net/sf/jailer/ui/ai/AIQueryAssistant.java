@@ -1081,7 +1081,7 @@ public class AIQueryAssistant {
                 Column col = columns.get(j);
                 sb.append(col.name);
                 if (!omitColumnTypes && col.type != null && !col.type.isEmpty()) {
-                    sb.append(" ").append(col.type);
+                    sb.append(" ").append(col.toSQL("").substring(col.name.length()).trim());
                 }
                 if (pkNames.contains(col.name)) {
                     sb.append(" PK");

@@ -171,6 +171,17 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel implements
 		tableDetailsViewsAll.clear();
 	}
 
+	/**
+	 * Discards cached detail views (Columns/PK/FK/Indexes/etc.) for exactly one
+	 * table, leaving all other tables' cached views untouched. Call after a DDL
+	 * change that alters (in place) or replaces the given table's shape.
+	 *
+	 * @param mdTable the table whose cached detail views are to be discarded
+	 */
+	public void invalidateTable(MDTable mdTable) {
+		detailsViews.keySet().removeIf(key -> key.b == mdTable);
+	}
+
 	@Override
 	public void onNewPlaf() {
 		reset();

@@ -200,6 +200,33 @@ public class MDTable extends MDObject {
         return primaryKey;
     }
 
+    /**
+     * Forces the next {@link #getColumns()}/{@link #getPrimaryKeyColumns()}/{@link #getDDL()} call
+     * to re-read live metadata for this table, discarding all cached column/PK/DDL state.
+     * Used for incremental ALTER TABLE refresh, where this object's identity is preserved
+     * (in-place mutation) rather than being replaced.
+     * <p>
+     * Passing <code>cached=false</code> into {@link #getColumns(boolean)} already bypasses the
+     * shared per-schema JDBC-level bulk column cache and queries live JDBC metadata filtered to
+     * just this table, so no additional JDBC-level cache invalidation is required.
+     * <p>
+     * Must only be called for a genuine ALTER TABLE on an existing table/view of unchanged kind
+     * -- {@link #isView}/{@link #isSynonym} are immutable, so a change of kind must go through a
+     * DROP followed by a CREATE instead.
+     */
+    synchronized void invalidate() {
+        columns = null;
+        columnTypes = null;
+        columnComments = new ArrayList<String>();
+        primaryKey = null;
+        pkConstraintName = null;
+        ddl = null;
+        ddlLoaded.set(false);
+        loaded.set(false);
+        loading.set(false);
+        retryReading = false;
+    }
+
     private boolean retryReading = false;
     
     private synchronized void readColumns(boolean cached, Connection fallbackConnection) throws SQLException {

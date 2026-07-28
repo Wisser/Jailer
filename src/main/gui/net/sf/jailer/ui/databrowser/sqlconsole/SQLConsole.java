@@ -876,6 +876,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						jTabbedPane1.addChangeListener(cl);
 						replaceCurrentStatement(comment + "\n" + sql);
 						try {
+							int culi = editorPane.getLineOfOffset(caretPos);
+							culi = Math.min(culi + 8, editorPane.getLineCount() - 1);
+							int lineHeight = editorPane.getLineHeight();
+							editorPane.scrollRectToVisible(new Rectangle(0, culi * lineHeight, 1, 4 * lineHeight));
+						} catch (Exception ex) {
+							// ignore
+						}
+						try {
 							editorPane.setCaretPosition(caretPos);
 							editorPane.grabFocus();
 						} catch (Exception ex) {
@@ -2268,6 +2276,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 }
                 if (isDDLStatement(sql)) {
                     status.withDDL = true;
+                    DDLAnalyser.DDLChange ddlChange = DDLAnalyser.analyse(sql);
+                    status.ddlChanges.add(ddlChange);
+                    if (ddlChange.kind == DDLAnalyser.Kind.UNRECOGNIZED) {
+                        status.ddlUnrecognized = true;
+                    }
                 }
                 UIUtil.invokeLater(new Runnable() {
 					@Override
@@ -2639,10 +2652,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	}
 
 	private boolean isDDLStatement(String sql) {
-        return sql.trim().matches("^(?is)\\b(drop|create|alter|rename)\\b.*");
+        return SQLCompletionProvider.removeCommentsAndLiterals(sql).trim().matches("^(?is)\\b(drop|create|alter|rename)\\b.*");
     }
 
 	protected abstract void refreshMetaData();
+	protected abstract void applyDDLChanges(List<DDLAnalyser.DDLChange> changes);
 	protected abstract void repaintMetaData();
     protected abstract void selectTable(MDTable mdTable);
     protected abstract void setOutlineTables(List<OutlineInfo> outlineTables, int indexOfInfoAtCaret);
@@ -2675,6 +2689,15 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         editorPane.forceCaretEvent();
     }
 
+    /**
+     * Gets this console's current metadata source.
+     *
+     * @return the metadata source
+     */
+    protected MetaDataSource getMetaDataSource() {
+        return metaDataSource;
+    }
+
     private class Status {
         private boolean cancelled;
 		private boolean rolledback;
@@ -2685,6 +2708,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         protected int linesExecuting;
         protected int linesExecuted;
         public boolean withDDL;
+        List<DDLAnalyser.DDLChange> ddlChanges = new ArrayList<DDLAnalyser.DDLChange>();
+        boolean ddlUnrecognized;
         boolean failed;
         boolean autoDistinctRetryHandled = false;
         boolean running;
@@ -2829,7 +2854,20 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
                             if (withDDL && !running) {
                                 withDDL = false;
-                                refreshMetaData();
+                                List<DDLAnalyser.DDLChange> changes = ddlChanges;
+                                boolean unrecognized = ddlUnrecognized;
+                                ddlChanges = new ArrayList<DDLAnalyser.DDLChange>();
+                                ddlUnrecognized = false;
+                                if (!rolledback) {
+                                    // nothing was actually committed on rollback -- neither an
+                                    // incremental nor a full refresh is needed, since no metadata
+                                    // could have changed
+                                    if (unrecognized || changes.isEmpty()) {
+                                        refreshMetaData();
+                                    } else {
+                                        applyDDLChanges(changes);
+                                    }
+                                }
                             }
                         } finally {
                             updatingStatus.set(false);

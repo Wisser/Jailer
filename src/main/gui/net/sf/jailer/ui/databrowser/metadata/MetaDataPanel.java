@@ -131,6 +131,7 @@ import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.UIUtil.IconWithText;
 import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.Row;
+import net.sf.jailer.ui.databrowser.sqlconsole.DDLAnalyser;
 import net.sf.jailer.ui.ddl_script_generator.DDLScriptGeneratorPanel;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithTheme;
 import net.sf.jailer.util.Quoting;
@@ -1511,11 +1512,14 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 
     private DefaultMutableTreeNode root;
     private Map<MDSchema, DefaultMutableTreeNode> treeNodePerSchema = new HashMap<MDSchema, DefaultMutableTreeNode>();
+    private Map<MDSchema, Map<Object, DefaultMutableTreeNode>> categoryNodePerSchema = new HashMap<MDSchema, Map<Object, DefaultMutableTreeNode>>();
 
     private void updateTreeModel(final MetaDataSource metaDataSource) {
         root = new DefaultMutableTreeNode(new MDDatabase(metaDataSource.dataSourceName, metaDataSource, dataModel, executionContext));
         for (final MDSchema schema: metaDataSource.getSchemas()) {
             final DefaultMutableTreeNode schemaChild = new DefaultMutableTreeNode(schema);
+            final Map<Object, DefaultMutableTreeNode> categoryNodes = new HashMap<Object, DefaultMutableTreeNode>();
+            categoryNodePerSchema.put(schema, categoryNodes);
             for (final MDDescriptionBasedGeneric desc: getGenericDatabaseObjects(schema)) {
                 Iterable<Object> leafs = new Iterable<Object>() {
     				@Override
@@ -1541,7 +1545,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		            return leafs.iterator();
 				}
 			};
-            createCategoryNode(schemaChild, leafs, CATEGORY_SYNONYMS, true, 0);
+            categoryNodes.put(CATEGORY_SYNONYMS, createCategoryNode(schemaChild, leafs, CATEGORY_SYNONYMS, true, 0));
             leafs = new Iterable<Object>() {
 				@Override
 				public Iterator<Object> iterator() {
@@ -1554,7 +1558,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		            return leafs.iterator();
 				}
 			};
-            createCategoryNode(schemaChild, leafs, CATEGORY_VIEWS, true, 0);
+            categoryNodes.put(CATEGORY_VIEWS, createCategoryNode(schemaChild, leafs, CATEGORY_VIEWS, true, 0));
             leafs = new Iterable<Object>() {
 				@Override
 				public Iterator<Object> iterator() {
@@ -1579,6 +1583,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 			};
             DefaultMutableTreeNode schemaTablesChild = createCategoryNode(schemaChild, leafs, CATEGORY_TABLES, true, 0);
             treeNodePerSchema.put(schema, schemaTablesChild);
+            categoryNodes.put(CATEGORY_TABLES, schemaTablesChild);
         }
         DefaultTreeModel treeModel = new DefaultTreeModel(root);
         metaDataTree.setModel(treeModel);
@@ -1611,6 +1616,141 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             jScrollPane1.repaint();	
         });
     }
+
+	/**
+	 * Applies a batch of DDL changes incrementally: for each change, updates exactly
+	 * the affected schema's tree category node (Tables/Views) and, if the affected
+	 * table is currently selected, its detail panel -- without rebuilding the tree,
+	 * without touching any other schema, and without changing the current selection
+	 * or scroll position (except when the currently-selected node is itself removed
+	 * by a DROP).
+	 * <p>
+	 * If any change cannot be resolved incrementally, no partial change is applied
+	 * at all; instead the existing full {@link #reset()} is used, exactly matching
+	 * today's fallback behavior.
+	 *
+	 * @param metaDataSource the metadata source
+	 * @param changes the changes to apply
+	 */
+	public void applyDDLChanges(final MetaDataSource metaDataSource, List<DDLAnalyser.DDLChange> changes) {
+		final List<MetaDataSource.ApplyResult> results = new ArrayList<MetaDataSource.ApplyResult>();
+		boolean allOk = true;
+		for (DDLAnalyser.DDLChange change: changes) {
+			try {
+				MetaDataSource.ApplyResult result = metaDataSource.apply(change);
+				if (result == null) {
+					allOk = false;
+					break;
+				}
+				results.add(result);
+			} catch (SQLException e) {
+				allOk = false;
+				break;
+			}
+		}
+		if (!allOk) {
+			reset();
+			return;
+		}
+		UIUtil.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				for (MetaDataSource.ApplyResult result: results) {
+					applyOneChange(result);
+				}
+				updateRowCounters();
+			}
+		});
+	}
+
+	private void applyOneChange(MetaDataSource.ApplyResult result) {
+		switch (result.kind) {
+		case ALTER_TABLE:
+		case CREATE_INDEX:
+		case DROP_INDEX:
+			metaDataDetailsPanel.invalidateTable(result.newTable);
+			if (isCurrentlySelected(result.newTable)) {
+				onTableSelect(result.newTable);
+			}
+			break;
+		case CREATE_TABLE:
+		case CREATE_VIEW:
+			insertLeafIfExpanded(result.schema, result.newTable);
+			break;
+		case DROP_TABLE:
+		case DROP_VIEW:
+			removeLeafIfPresent(result.schema, result.oldTable);
+			break;
+		case RENAME_TABLE:
+			removeLeafIfPresent(result.schema, result.oldTable);
+			insertLeafIfExpanded(result.schema, result.newTable);
+			break;
+		default:
+			break;
+		}
+	}
+
+	private boolean isCurrentlySelected(MDTable table) {
+		if (table == null || metaDataTree.getSelectionPath() == null) {
+			return false;
+		}
+		Object last = metaDataTree.getSelectionPath().getLastPathComponent();
+		if (last instanceof DefaultMutableTreeNode) {
+			return ((DefaultMutableTreeNode) last).getUserObject() == table;
+		}
+		return false;
+	}
+
+	private void insertLeafIfExpanded(MDSchema schema, MDTable newTable) {
+		Map<Object, DefaultMutableTreeNode> categoryNodes = categoryNodePerSchema.get(schema);
+		if (categoryNodes == null) {
+			return;
+		}
+		Object category = newTable.isView()? CATEGORY_VIEWS : (newTable.isSynonym()? CATEGORY_SYNONYMS : CATEGORY_TABLES);
+		DefaultMutableTreeNode categoryNode = categoryNodes.get(category);
+		if (categoryNode == null || categoryNode.getChildCount() == 0
+				|| categoryNode.getChildAt(0) instanceof ExpandingMutableTreeNode) {
+			// not yet expanded -- the next real expand() reads fresh and will already include it
+			return;
+		}
+		int insertAt = 0;
+		int cc = categoryNode.getChildCount();
+		for (; insertAt < cc; ++insertAt) {
+			Object uo = ((DefaultMutableTreeNode) categoryNode.getChildAt(insertAt)).getUserObject();
+			if (uo instanceof MDTable && ((MDTable) uo).getUnquotedName().compareToIgnoreCase(newTable.getUnquotedName()) > 0) {
+				break;
+			}
+		}
+		DefaultMutableTreeNode newChild = new DefaultMutableTreeNode(newTable);
+		((DefaultTreeModel) metaDataTree.getModel()).insertNodeInto(newChild, categoryNode, insertAt);
+	}
+
+	private void removeLeafIfPresent(MDSchema schema, MDTable oldTable) {
+		Map<Object, DefaultMutableTreeNode> categoryNodes = categoryNodePerSchema.get(schema);
+		if (categoryNodes == null) {
+			return;
+		}
+		Object category = oldTable.isView()? CATEGORY_VIEWS : (oldTable.isSynonym()? CATEGORY_SYNONYMS : CATEGORY_TABLES);
+		DefaultMutableTreeNode categoryNode = categoryNodes.get(category);
+		if (categoryNode == null || categoryNode.getChildCount() == 0
+				|| categoryNode.getChildAt(0) instanceof ExpandingMutableTreeNode) {
+			// not yet expanded -- nothing visible to remove
+			return;
+		}
+		int cc = categoryNode.getChildCount();
+		for (int i = 0; i < cc; ++i) {
+			DefaultMutableTreeNode child = (DefaultMutableTreeNode) categoryNode.getChildAt(i);
+			if (child.getUserObject() == oldTable) {
+				boolean wasSelected = isCurrentlySelected(oldTable);
+				((DefaultTreeModel) metaDataTree.getModel()).removeNodeFromParent(child);
+				metaDataDetailsPanel.invalidateTable(oldTable);
+				if (wasSelected) {
+					metaDataDetailsPanel.clear();
+				}
+				break;
+			}
+		}
+	}
 
 	/**
 	 * Creates a category node in the metadata tree under the given schema node.

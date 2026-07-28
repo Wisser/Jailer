@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -67,6 +68,8 @@ public class AIProviderPanel extends JPanel {
     private final JTextField modelField;
     private final JPasswordField apiKeyField;
     private final JSpinner maxTokensSpinner;
+    private final JFormattedTextField maxTokensField;
+    private String maxTokensLastText;
     private final JLabel apiKeyLabel;
     private final JButton saveButton;
     private final JButton testButton;
@@ -93,7 +96,11 @@ public class AIProviderPanel extends JPanel {
             apiKeyField.setText(savedKey);
         }
         maxTokensSpinner = new JSpinner(new SpinnerNumberModel(savedMaxTokens, 256, 32768, 256));
-        ((JSpinner.NumberEditor) maxTokensSpinner.getEditor()).getTextField().setColumns(5);
+        JSpinner.NumberEditor maxTokensEditor = (JSpinner.NumberEditor) maxTokensSpinner.getEditor();
+        maxTokensEditor.getFormat().setGroupingUsed(false);
+        maxTokensField = maxTokensEditor.getTextField();
+        maxTokensField.setText(String.valueOf(savedMaxTokens));
+        maxTokensField.setColumns(5);
 
         // 5-column grid:
         //  row 0: Provider [combo]  URL [field, wide x2]
@@ -288,6 +295,12 @@ public class AIProviderPanel extends JPanel {
         urlField.getDocument().addDocumentListener(dl);
         modelField.getDocument().addDocumentListener(dl);
         apiKeyField.getDocument().addDocumentListener(dl);
+        maxTokensLastText = maxTokensField.getText();
+        maxTokensField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { onMaxTokensTextChanged(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { onMaxTokensTextChanged(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { onMaxTokensTextChanged(); }
+        });
         maxTokensSpinner.addChangeListener(e -> { updateSaveButton(); markConnectionFailed(); });
         updateSaveButton();
         updateTestButton();
@@ -314,6 +327,10 @@ public class AIProviderPanel extends JPanel {
 
     /** Builds an {@link AIProviderConfig} from the current field values. */
     public AIProviderConfig getConfig() {
+        try {
+            maxTokensSpinner.commitEdit();
+        } catch (java.text.ParseException ignored) {
+        }
         return new AIProviderConfig(
             (ProviderType) providerCombo.getSelectedItem(),
             urlField.getText().trim(),
@@ -354,6 +371,18 @@ public class AIProviderPanel extends JPanel {
         saveButton.setEnabled(!isSaved());
     }
 
+    private void onMaxTokensTextChanged() {
+        UIUtil.invokeLater(() -> {
+            String text = maxTokensField.getText();
+            if (text.equals(maxTokensLastText)) {
+                return;
+            }
+            maxTokensLastText = text;
+            updateSaveButton();
+            markConnectionFailed();
+        });
+    }
+
     private void updateTestButton() {
         testButton.setEnabled(!connectionVerified);
     }
@@ -378,7 +407,11 @@ public class AIProviderPanel extends JPanel {
         Object storedModel = UISettings.restore(SETTING_MODEL);
         String expectedModel = storedModel instanceof String ? (String) storedModel : pt.defaultModel;
         if (!modelField.getText().trim().equals(expectedModel)) return false;
-        if ((Integer) maxTokensSpinner.getValue() != loadMaxTokens()) return false;
+        try {
+            if (Integer.parseInt(maxTokensField.getText().trim()) != loadMaxTokens()) return false;
+        } catch (NumberFormatException ex) {
+            return false;
+        }
         String storedKey = loadApiKey(pt);
         if (!getApiKey().equals(storedKey != null ? storedKey : "")) return false;
         return true;

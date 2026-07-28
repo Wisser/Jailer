@@ -511,6 +511,131 @@ public class MDSchema extends MDObject {
 		}
 	}
 
+	/**
+	 * Incrementally adds one table/view, discovered via a targeted, live JDBC lookup --
+	 * never fabricated purely from parsed SQL text. If the table cannot be confirmed to
+	 * exist (rolled back, "IF NOT EXISTS" no-op, name resolution mismatch), returns
+	 * <code>null</code> and the caller performs no further change.
+	 *
+	 * @param tableName unquoted name as parsed from the DDL statement
+	 * @param loadColumnsEagerly <code>true</code> to synchronously load columns before returning,
+	 *        <code>false</code> to queue the load like {@link #getTables()} does for bulk loads
+	 * @return the new table, or <code>null</code> if not found
+	 */
+	MDTable addTable(String tableName, boolean loadColumnsEagerly) throws SQLException {
+		synchronized (getTablesLock) {
+			MDTable alreadyPresent = find(tableName);
+			if (alreadyPresent != null) {
+				// schema was never loaded before -- find() already forced a fresh,
+				// synchronous getTables() reload, which (since the DDL already
+				// committed) already includes this table
+				if (loadColumnsEagerly) {
+					try {
+						alreadyPresent.getColumns();
+					} catch (SQLException e) {
+						// best effort, matches getTables()'s tolerance for column-load failures
+					}
+				}
+				return alreadyPresent;
+			}
+			if (tables == null) {
+				// find() already attempted a fresh load and tables is still null
+				// (e.g. connection down) -- give up
+				return null;
+			}
+			MetaDataSource metaDataSource = getMetaDataSource();
+			MDTable newTable = null;
+			ResultSet rs = metaDataSource.readTables(getName(), Quoting.staticUnquote(tableName));
+			try {
+				while (rs.next()) {
+					if (!Quoting.equalsWROSearchPattern(getName(), rs.getString(1), rs.getString(2))) {
+						continue;
+					}
+					String name = rs.getString(3);
+					if (!Quoting.equalsIgnoreQuotingAndCase(name, tableName)) {
+						continue;
+					}
+					String quotedName = metaDataSource.getQuoting().quote(name);
+					newTable = new MDTable(quotedName, this, rs.getString(4) != null && rs.getString(4).toUpperCase().contains("VIEW"),
+							"SYNONYM".equalsIgnoreCase(rs.getString(4)) || "ALIAS".equalsIgnoreCase(rs.getString(4)));
+					newTable.setTableType(rs.getString(4));
+					newTable.setComment(rs.getString(5));
+					break;
+				}
+			} finally {
+				rs.close();
+			}
+			if (newTable == null) {
+				return null;
+			}
+			int insertAt = 0;
+			for (MDTable existing: tables) {
+				if (existing.getUnquotedName().compareToIgnoreCase(newTable.getUnquotedName()) > 0) {
+					break;
+				}
+				insertAt++;
+			}
+			tables.add(insertAt, newTable);
+			synchronized (tablePerUnquotedNameUC) {
+				tablePerUnquotedNameUC.clear();
+			}
+			final MDTable finalNewTable = newTable;
+			if (loadColumnsEagerly) {
+				try {
+					finalNewTable.getColumns();
+				} catch (SQLException e) {
+					// best effort, matches getTables()'s tolerance for column-load failures
+				}
+			} else {
+				loadTableColumnsQueue.add(new Runnable() {
+					@Override
+					public void run() {
+						if (valid) {
+							try {
+								finalNewTable.getColumns();
+							} catch (SQLException e) {
+								// ignore
+							}
+						}
+					}
+				});
+			}
+			return newTable;
+		}
+	}
+
+	/**
+	 * Incrementally removes one table/view by name from the in-memory cache.
+	 *
+	 * @param tableName unquoted name as parsed from the DDL statement
+	 * @return the removed table, or <code>null</code> if not present
+	 */
+	MDTable removeTable(String tableName) {
+		synchronized (getTablesLock) {
+			if (tables == null) {
+				return null;
+			}
+			MDTable t = find(tableName);
+			if (t != null) {
+				tables.remove(t);
+				synchronized (tablePerUnquotedNameUC) {
+					tablePerUnquotedNameUC.remove(Quoting.normalizeIdentifier(tableName));
+				}
+			}
+			return t;
+		}
+	}
+
+	/**
+	 * Invalidates the cached schema-wide constraints (used for best-effort CREATE/DROP INDEX handling).
+	 */
+	void invalidateConstraints() {
+		synchronized (getConstraintsLock) {
+			constraints = null;
+			constraintsLoaded.set(false);
+		}
+	}
+
 	private static Map<String, ImageIcon> constraintTypeIcons = Collections.synchronizedMap(new HashMap<String, ImageIcon>());
 
 	/**

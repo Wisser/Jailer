@@ -34,6 +34,7 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.ui.SessionForUI;
+import net.sf.jailer.ui.databrowser.sqlconsole.DDLAnalyser;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
@@ -155,26 +156,37 @@ public class MetaDataSource {
 	}
 
 	ResultSet readTables(String schemaPattern) throws SQLException {
+		return readTables(schemaPattern, "%");
+	}
+
+	/**
+	 * Reads tables (or a single, specific table) of a schema, live against JDBC (never cached).
+	 *
+	 * @param schemaPattern the schema
+	 * @param tableNamePattern the table name pattern, or a specific unquoted table name
+	 * @return a result set describing the matching tables
+	 */
+	ResultSet readTables(String schemaPattern, String tableNamePattern) throws SQLException {
 		try {
 			if (DBMS.MySQL.equals(session.dbms)) {
-				return JDBCMetaDataBasedModelElementFinder.getTables(session, Quoting.staticUnquote(schemaPattern), "%", new String[] { "SYSTEM TABLE", "SYSTEM VIEW", "TABLE", "VIEW", "SYNONYM", "ALIAS" });
+				return JDBCMetaDataBasedModelElementFinder.getTables(session, Quoting.staticUnquote(schemaPattern), tableNamePattern, new String[] { "SYSTEM TABLE", "SYSTEM VIEW", "TABLE", "VIEW", "SYNONYM", "ALIAS" });
 			}
 			if (DBMS.MSSQL.equals(session.dbms)) {
-				return JDBCMetaDataBasedModelElementFinder.getTables(session, Quoting.staticUnquote(schemaPattern), "%", new String[] { "SYSTEM TABLE", "TABLE", "VIEW", "SYNONYM", "ALIAS" });
+				return JDBCMetaDataBasedModelElementFinder.getTables(session, Quoting.staticUnquote(schemaPattern), tableNamePattern, new String[] { "SYSTEM TABLE", "TABLE", "VIEW", "SYNONYM", "ALIAS" });
 			}
 			if (DBMS.POSTGRESQL.equals(session.dbms)) {
 				// TODO 2 make types-selection configurable
-				return JDBCMetaDataBasedModelElementFinder.getTables(session, Quoting.staticUnquote(schemaPattern), "%", new String[] { "PARTITIONED TABLE", "FOREIGN TABLE", "MATERIALIZED VIEW", "TABLE", "VIEW", "SYSTEM VIEW", "SYNONYM", "ALIAS" });
+				return JDBCMetaDataBasedModelElementFinder.getTables(session, Quoting.staticUnquote(schemaPattern), tableNamePattern, new String[] { "PARTITIONED TABLE", "FOREIGN TABLE", "MATERIALIZED VIEW", "TABLE", "VIEW", "SYSTEM VIEW", "SYNONYM", "ALIAS" });
 			}
-			return JDBCMetaDataBasedModelElementFinder.getTables(session, Quoting.staticUnquote(schemaPattern), "%", new String[] { "SYSTEM VIEW", "TABLE", "VIEW", "SYNONYM", "ALIAS" });
+			return JDBCMetaDataBasedModelElementFinder.getTables(session, Quoting.staticUnquote(schemaPattern), tableNamePattern, new String[] { "SYSTEM VIEW", "TABLE", "VIEW", "SYNONYM", "ALIAS" });
 		} catch (Exception e) {
 			if (!session.isDown()) {
 				logger.info("error", e);
 				try {
-					return JDBCMetaDataBasedModelElementFinder.getTables(session, Quoting.staticUnquote(schemaPattern), "%", new String[] { "TABLE", "VIEW", "SYNONYM", "ALIAS" });
+					return JDBCMetaDataBasedModelElementFinder.getTables(session, Quoting.staticUnquote(schemaPattern), tableNamePattern, new String[] { "TABLE", "VIEW", "SYNONYM", "ALIAS" });
 				} catch (Exception e2) {
 					if (!session.isDown()) {
-						return JDBCMetaDataBasedModelElementFinder.getTables(session, Quoting.staticUnquote(schemaPattern), "%", new String[] { "TABLE", "VIEW" });
+						return JDBCMetaDataBasedModelElementFinder.getTables(session, Quoting.staticUnquote(schemaPattern), tableNamePattern, new String[] { "TABLE", "VIEW" });
 					} else {
 						throw e;
 					}
@@ -401,6 +413,120 @@ public class MetaDataSource {
 			}
 		}
 		return schemaPerUnquotedNameUC.get(Quoting.normalizeIdentifier(schemaName));
+	}
+
+	/**
+	 * Resolves the schema referenced by a DDL change: the explicitly parsed schema
+	 * name if given, else the session's default schema.
+	 *
+	 * @param change the parsed DDL change
+	 * @return the schema, or <code>null</code> if it can't be resolved (caller must fall back to a full refresh)
+	 */
+	MDSchema resolveSchema(DDLAnalyser.DDLChange change) {
+		return change.schemaName != null ? find(change.schemaName) : getDefaultSchema();
+	}
+
+	/**
+	 * Purges a table being removed/replaced from the identity-keyed Table&lt;-&gt;MDTable
+	 * cross reference. Safe O(1) removal since {@link #toTable(MDTable)}/{@link #toMDTable(Table)}
+	 * always insert both maps together.
+	 *
+	 * @param mdTable the table being removed/replaced
+	 */
+	synchronized void purge(MDTable mdTable) {
+		Table t = mDTableToTable.remove(mdTable);
+		if (t != null) {
+			tableToMDTable.remove(t);
+		}
+	}
+
+	/**
+	 * Result of successfully applying one incremental DDL change.
+	 */
+	static class ApplyResult {
+		final MDSchema schema;
+		final DDLAnalyser.Kind kind;
+		final MDTable oldTable;
+		final MDTable newTable;
+
+		ApplyResult(MDSchema schema, DDLAnalyser.Kind kind, MDTable oldTable, MDTable newTable) {
+			this.schema = schema;
+			this.kind = kind;
+			this.oldTable = oldTable;
+			this.newTable = newTable;
+		}
+	}
+
+	/**
+	 * Applies one incremental DDL change to the live metadata cache -- never touching
+	 * any schema/table other than the one the change refers to.
+	 *
+	 * @param change the parsed DDL change
+	 * @return the result describing what happened, or <code>null</code> if the change
+	 *         could not be applied incrementally (caller must fall back to a full refresh)
+	 */
+	ApplyResult apply(DDLAnalyser.DDLChange change) throws SQLException {
+		MDSchema schema = resolveSchema(change);
+		if (schema == null) {
+			return null;
+		}
+		switch (change.kind) {
+		case ALTER_TABLE: {
+			MDTable t = schema.find(change.tableName);
+			if (t == null) {
+				// not found -- e.g. created earlier in the same batch and not yet
+				// reflected in this schema's cached table list; self-heal via addTable
+				MDTable created = schema.addTable(change.tableName, true);
+				if (created == null) {
+					return null;
+				}
+				return new ApplyResult(schema, change.kind, null, created);
+			}
+			t.invalidate();
+			t.getColumns(false);
+			return new ApplyResult(schema, change.kind, t, t);
+		}
+		case CREATE_TABLE:
+		case CREATE_VIEW: {
+			MDTable created = schema.addTable(change.tableName, true);
+			if (created == null) {
+				// not found live -- e.g. rolled back or an "IF NOT EXISTS" no-op
+				return null;
+			}
+			return new ApplyResult(schema, change.kind, null, created);
+		}
+		case DROP_TABLE:
+		case DROP_VIEW: {
+			MDTable removed = schema.removeTable(change.tableName);
+			if (removed == null) {
+				return null;
+			}
+			purge(removed);
+			return new ApplyResult(schema, change.kind, removed, null);
+		}
+		case RENAME_TABLE: {
+			MDTable removed = schema.removeTable(change.tableName);
+			if (removed != null) {
+				purge(removed);
+			}
+			MDTable created = schema.addTable(change.newTableName, true);
+			if (created == null) {
+				return null;
+			}
+			return new ApplyResult(schema, change.kind, removed, created);
+		}
+		case CREATE_INDEX:
+		case DROP_INDEX: {
+			MDTable t = schema.find(change.tableName);
+			if (t == null) {
+				return null;
+			}
+			schema.invalidateConstraints();
+			return new ApplyResult(schema, change.kind, t, t);
+		}
+		default:
+			return null;
+		}
 	}
 
 }
