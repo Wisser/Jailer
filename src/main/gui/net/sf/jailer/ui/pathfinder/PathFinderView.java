@@ -753,10 +753,15 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         okButton = new javax.swing.JButton();
         sepLabel = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
+        jPanel7 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         exclusionTable = new javax.swing.JTable();
+        jPanel6 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
         undoButton = new javax.swing.JButton();
         redoButton = new javax.swing.JButton();
@@ -824,7 +829,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = 3;
         jPanel2.add(sepLabel, gridBagConstraints);
 
-        jLabel2.setForeground(/* Renaming also in *.form! */ Colors.Color_128_128_128);
+        jLabel2.setForeground(/* Renaming also in *.form! */ Colors.Color_0_100_0);
         jLabel2.setText("Open context menu (right mouse click on table) to define its direct successor.");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -836,6 +841,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         jSplitPane1.setLeftComponent(jPanel2);
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Excluded Tables"));
+        jPanel3.setToolTipText(EXCLUSION_HINT_TOOLTIP);
         jPanel3.setLayout(new java.awt.GridBagLayout());
 
         exclusionTable.setModel(new javax.swing.table.DefaultTableModel(
@@ -859,13 +865,59 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         jPanel3.add(jScrollPane2, gridBagConstraints);
 
-        jLabel1.setText("                                                                                                 ");
+        jPanel6.setToolTipText(EXCLUSION_HINT_TOOLTIP);
+        jPanel6.setLayout(new java.awt.GridBagLayout());
+
+        jLabel1.setForeground(/* Renaming also in *.form! */ Colors.Color_0_100_0);
+        jLabel1.setText("Check a table above to exclude it");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel6.add(jLabel1, gridBagConstraints);
+
+        jLabel3.setForeground(/* Renaming also in *.form! */ Colors.Color_0_100_0);
+        jLabel3.setText("from every candidate path.");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel6.add(jLabel3, gridBagConstraints);
+
+        jLabel4.setForeground(/* Renaming also in *.form! */ Colors.Color_0_100_0);
+        jLabel4.setText("The graph is then rebuilt without that table,");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel6.add(jLabel4, gridBagConstraints);
+
+        jLabel5.setForeground(/* Renaming also in *.form! */ Colors.Color_0_100_0);
+        jLabel5.setText("forcing the search to route around it.");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel6.add(jLabel5, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
-        jPanel3.add(jLabel1, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 70);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel3.add(jPanel6, gridBagConstraints);
 
-        jSplitPane1.setRightComponent(jPanel3);
+        jPanel7.setLayout(new java.awt.GridBagLayout());
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel7.add(jPanel3, gridBagConstraints);
+
+        jSplitPane1.setRightComponent(jPanel7);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1063,11 +1115,16 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     private javax.swing.JButton historyButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
+    private javax.swing.JPanel jPanel7;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator2;
@@ -1096,6 +1153,11 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 	static private ImageIcon rightIcon;
     private ImageIcon scaledCancelIcon;
     private DefaultTableModel exclusionTableModel;
+
+    private static final String EXCLUSION_HINT_TOOLTIP = "<html>Tables with a high \"Neighbors\" count are often shared reference tables<br>"
+    		+ "that rarely belong on one specific path.<br>"
+    		+ "They are good candidates to exclude first.<br>"
+    		+ "If no path remains, uncheck again.</html>";
     
     private void initExclusionTable(Set<Integer> nonExcludablesColumns) {
     	List<SortKey> keys = new ArrayList<SortKey>();
@@ -1145,7 +1207,8 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 		exclusionTable.setDefaultEditor(Boolean.class, anEditor);
 		
 		exclusionTable.setModel(exclusionTableModel);
-		
+		exclusionTable.getTableHeader().setToolTipText(EXCLUSION_HINT_TOOLTIP);
+
 		final TableCellRenderer defaultTableCellRenderer = exclusionTable.getDefaultRenderer(String.class);
 		TableCellRenderer renderer = new TableCellRenderer() {
 			final Color BG1 = UIUtil.TABLE_BACKGROUND_COLOR_1;

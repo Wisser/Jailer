@@ -161,6 +161,12 @@ public class CommandLineParser {
 		System.out.println("    taking into account the restrictions on the associations (the so-called \"Closure\")");
 		System.out.println("    <separator>: optional separator between table names in the output");
 		System.out.println();
+		System.out.println("  " + cmd + " -h | -help | --help");
+		System.out.println("    prints this help text");
+		System.out.println();
+		System.out.println("  " + cmd + " -v | -version | --version");
+		System.out.println("    prints the Jailer version");
+		System.out.println();
 		System.out.println("options:");
 		CmdLineParser cmdLineParser = new CmdLineParser(new CommandLine());
 		cmdLineParser.setUsageWidth(160);
@@ -195,6 +201,26 @@ public class CommandLineParser {
 			out.println();
 			out.println();
 		}
+	}
+
+	/**
+	 * Checks whether the given command-line arguments request help.
+	 *
+	 * @param args the raw command-line arguments
+	 * @return <code>true</code> if the first argument is <code>-h</code>, <code>-help</code> or <code>--help</code>
+	 */
+	public static boolean isHelpRequest(String[] args) {
+		return args.length > 0 && ("-h".equals(args[0]) || "-help".equals(args[0]) || "--help".equals(args[0]));
+	}
+
+	/**
+	 * Checks whether the given command-line arguments request the application version.
+	 *
+	 * @param args the raw command-line arguments
+	 * @return <code>true</code> if the first argument is <code>-v</code>, <code>-version</code> or <code>--version</code>
+	 */
+	public static boolean isVersionRequest(String[] args) {
+		return args.length > 0 && ("-v".equals(args[0]) || "-version".equals(args[0]) || "--version".equals(args[0]));
 	}
 
 }

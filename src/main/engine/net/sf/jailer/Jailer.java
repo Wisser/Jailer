@@ -97,6 +97,15 @@ public class Jailer {
 	 * @param args arguments
 	 */
 	public static void main(String[] args) {
+		if (CommandLineParser.isHelpRequest(args)) {
+			CommandLineParser.printUsage(new String[0]);
+			return;
+		}
+		if (CommandLineParser.isVersionRequest(args)) {
+			System.out.println(JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION);
+			return;
+		}
+
 		final AtomicBoolean cleanUpFinished = new AtomicBoolean(false);
 		Thread shutdownHook;
 		Runtime.getRuntime().addShutdownHook(shutdownHook = new Thread("shutdown-hook") {
