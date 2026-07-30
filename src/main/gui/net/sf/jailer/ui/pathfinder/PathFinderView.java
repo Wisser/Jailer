@@ -142,10 +142,21 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     	greyDotIconScaled = UIUtil.scaleIcon(this, greyDotIcon);
 
     	okExpandButton.setIcon(UIUtil.scaleIcon(this, buttonokIcon));
-    	
-        if (!withExpandButton) {
-        	okExpandButton.setVisible(false);
-        }
+    	okExpandButton.setToolTipText("<html>Applies the path shown above."
+    			+ "<hr><font color=\"" + toHexColor(Colors.Color_0_100_0) + "\">"
+    			+ "Enabled as soon as the path is unique - every column above<br>"
+    			+ "must contain exactly one table."
+    			+ "</font></html>");
+
+    	unionTitleLabel.setFont(unionTitleLabel.getFont().deriveFont(unionTitleLabel.getFont().getStyle() | Font.BOLD));
+    	excludedTablesLabel.setFont(excludedTablesLabel.getFont().deriveFont(excludedTablesLabel.getFont().getStyle() | Font.BOLD));
+
+
+        // okExpandButton is the only apply button left. It stays visible regardless of
+        // withExpandButton: hiding it for the ClosureView call (which passes false) would leave
+        // that dialog without any way to apply the path, and ClosureView ignores Result.expand
+        // anyway, so both buttons were equivalent there.
+        okButton.setVisible(false);
         scaledCancelIcon = UIUtil.scaleIcon(this, cancelIcon);
         undoButton.setText(null);
         undoButton.setToolTipText("Undo");
@@ -800,9 +811,11 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         hintPanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         successorHintLabel = new javax.swing.JLabel();
+        unionTitleLabel = new javax.swing.JLabel();
         sortByConfidenceCheckbox = new javax.swing.JCheckBox();
         jPanel7 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
+        excludedTablesLabel = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         exclusionTable = new javax.swing.JTable();
         jPanel6 = new javax.swing.JPanel();
@@ -825,7 +838,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 
         jSplitPane1.setResizeWeight(1.0);
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Union of all shortest paths without excluded tables."));
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(""));
         jPanel2.setForeground(/* Renaming also in *.form! */ Colors.Color_255_255_255);
         jPanel2.setOpaque(false);
         jPanel2.setLayout(new java.awt.GridBagLayout());
@@ -843,7 +856,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         jPanel2.add(jScrollPane1, gridBagConstraints);
 
-        okExpandButton.setText("Show Path and open Tables");
+        okExpandButton.setText("Show Path");
         okExpandButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okExpandButtonActionPerformed(evt);
@@ -852,7 +865,8 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         jPanel2.add(okExpandButton, gridBagConstraints);
 
         okButton.setText("Show Path");
@@ -864,8 +878,8 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 2);
         jPanel2.add(okButton, gridBagConstraints);
 
         sepLabel.setText("                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           ");
@@ -901,6 +915,14 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         jPanel2.add(hintPanel, gridBagConstraints);
 
+        unionTitleLabel.setText("Union of all shortest paths without excluded tables.");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        jPanel2.add(unionTitleLabel, gridBagConstraints);
+
         sortByConfidenceCheckbox.setSelected(true);
         sortByConfidenceCheckbox.setText("Sort tables by confidence");
         sortByConfidenceCheckbox.setToolTipText("If checked, tables within a distance column are ordered by confidence (most likely first) instead of alphabetically.");
@@ -911,16 +933,23 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         jPanel2.add(sortByConfidenceCheckbox, gridBagConstraints);
 
         jSplitPane1.setLeftComponent(jPanel2);
 
-        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Excluded Tables"));
+        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(""));
         jPanel3.setToolTipText(EXCLUSION_HINT_TOOLTIP);
         jPanel3.setLayout(new java.awt.GridBagLayout());
+
+        excludedTablesLabel.setText("Excluded Tables");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel3.add(excludedTablesLabel, gridBagConstraints);
 
         exclusionTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -995,6 +1024,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 2, 0);
         jPanel1.add(jSplitPane1, gridBagConstraints);
 
         jPanel4.setLayout(new java.awt.GridBagLayout());
@@ -1008,7 +1038,9 @@ public abstract class PathFinderView extends javax.swing.JPanel {
                 undoButtonActionPerformed(evt);
             }
         });
-        jPanel4.add(undoButton, new java.awt.GridBagConstraints());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
+        jPanel4.add(undoButton, gridBagConstraints);
 
         redoButton.setText("jButton1");
         redoButton.setFocusable(false);
@@ -1185,6 +1217,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox considerRestrictionsCheckbox;
+    private javax.swing.JLabel excludedTablesLabel;
     private javax.swing.JTable exclusionTable;
     private javax.swing.JPanel hintPanel;
     private javax.swing.JButton historyButton;
@@ -1213,6 +1246,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     private javax.swing.JCheckBox sortByConfidenceCheckbox;
     private javax.swing.JLabel successorHintLabel;
     private javax.swing.JButton undoButton;
+    private javax.swing.JLabel unionTitleLabel;
     // End of variables declaration//GEN-END:variables
 
 	private List<Table> exclusionCandidates = new ArrayList<Table>();

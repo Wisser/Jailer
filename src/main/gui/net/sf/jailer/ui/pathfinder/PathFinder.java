@@ -58,7 +58,7 @@ public class PathFinder {
 	 * @param source the source table
 	 * @param destination the destination table
 	 * @param dataModel the data model
-	 * @param withOpenTablesButton <code>true</code> to show the open-tables button
+	 * @param withOpenTablesButton currently ignored - the single apply button is always shown
 	 * @param fromHistory <code>true</code> if this is invoked from the history
 	 * @param owner the owner frame
 	 * @return the result, or <code>null</code> if the dialog was cancelled
