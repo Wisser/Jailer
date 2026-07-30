@@ -154,93 +154,15 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         redoButton.setToolTipText("Redo");
         redoButton.setIcon(UIUtil.scaleIcon(this, rightIcon));
 
-        sortByConfidenceCheckbox = new javax.swing.JCheckBox("Sort tables by confidence");
-        sortByConfidenceCheckbox.setSelected(true);
-        sortByConfidenceCheckbox.setToolTipText("If checked, tables within a distance column are ordered by confidence (most likely first) instead of alphabetically.");
-        sortByConfidenceCheckbox.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				showGraph(false);
-			}
-        });
-        // The hint on the right, re-wrapped from four lines to three so that each line ends on
-        // a sentence boundary. jLabel1/3/4/5 are otherwise only touched by initComponents(), so
-        // re-texting them here keeps the change safe against form regeneration. This has to
-        // happen before the left side is laid out below, which measures jPanel6's height.
-        jLabel1.setText("Check a table above to exclude it from every candidate path.");
-        jLabel3.setText("The graph is then rebuilt without that table,");
-        jLabel4.setText("forcing the search to route around it.");
-        jPanel6.remove(jLabel5);
-
-        // The hint here is spread over two stacked labels, wrapped in a panel of their own so
-        // they share one anchor. Like jPanel6 on the right it is bottom-anchored, then lifted by
-        // the two blocks' height difference - that puts the first lines of both split pane halves
-        // on exactly the same y, whatever the font/LAF. The free line left underneath is taken up
-        // by the buttons sitting next to it. hintPanel takes over the weightx that okButton used
-        // to provide - it is what keeps the buttons right-aligned once PathFinder hides sepLabel
-        // after the dialog is shown. The checkbox goes into the top right corner of the area,
-        // spanning the two button columns so it right-aligns with them without widening either.
-        jPanel2.remove(jLabel2);
-        jPanel2.remove(sepLabel);
-        jPanel2.remove(okButton);
-        jPanel2.remove(okExpandButton);
-
-        jLabel2.setText("Open context menu (right mouse click on table)");
-        JLabel successorHintLabel = new JLabel("to define its direct successor.");
-        successorHintLabel.setForeground(Colors.Color_0_100_0);
-
-        JPanel hintPanel = new JPanel(new GridBagLayout());
-        hintPanel.setOpaque(false);
-        java.awt.GridBagConstraints hintLineGbc = new java.awt.GridBagConstraints();
-        hintLineGbc.gridx = 0;
-        hintLineGbc.gridy = 0;
-        hintLineGbc.anchor = java.awt.GridBagConstraints.WEST;
-        hintPanel.add(jLabel2, hintLineGbc);
-        hintLineGbc = new java.awt.GridBagConstraints();
-        hintLineGbc.gridx = 0;
-        hintLineGbc.gridy = 1;
-        hintLineGbc.anchor = java.awt.GridBagConstraints.WEST;
-        hintPanel.add(successorHintLabel, hintLineGbc);
-
-        java.awt.GridBagConstraints hintPanelGbc = new java.awt.GridBagConstraints();
-        hintPanelGbc.gridx = 0;
-        hintPanelGbc.gridy = 4;
-        hintPanelGbc.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        hintPanelGbc.weightx = 1.0;
-        hintPanelGbc.insets = new java.awt.Insets(0, 0, Math.max(0, jPanel6.getPreferredSize().height - hintPanel.getPreferredSize().height), 0);
-        jPanel2.add(hintPanel, hintPanelGbc);
-
-        // Hint, checkbox and buttons all share this one grid band, which hintPanel plus its
-        // bottom inset sizes to exactly jPanel6's height on the right. A separate row for the
-        // checkbox would add empty space above the hint and make the graph's scroll pane end
-        // higher than the Excluded Tables list. Rows 2 and 3 stay unused (height 0).
-        java.awt.GridBagConstraints sortByConfidenceGbc = new java.awt.GridBagConstraints();
-        sortByConfidenceGbc.gridx = 1;
-        sortByConfidenceGbc.gridy = 4;
-        sortByConfidenceGbc.gridwidth = 2;
-        sortByConfidenceGbc.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        jPanel2.add(sortByConfidenceCheckbox, sortByConfidenceGbc);
-
-        java.awt.GridBagConstraints sepLabelGbc = new java.awt.GridBagConstraints();
-        sepLabelGbc.gridx = 0;
-        sepLabelGbc.gridy = 4;
-        sepLabelGbc.gridwidth = 3;
-        jPanel2.add(sepLabel, sepLabelGbc);
-
-        // SOUTH anchors: hintPanel makes this row taller than the buttons, which have to stay
-        // flush with the panel's bottom edge instead of being centered in it.
-        java.awt.GridBagConstraints okButtonGbc = new java.awt.GridBagConstraints();
-        okButtonGbc.gridx = 1;
-        okButtonGbc.gridy = 4;
-        okButtonGbc.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        okButtonGbc.insets = new java.awt.Insets(0, 0, 0, 2);
-        jPanel2.add(okButton, okButtonGbc);
-
-        java.awt.GridBagConstraints okExpandButtonGbc = new java.awt.GridBagConstraints();
-        okExpandButtonGbc.gridx = 2;
-        okExpandButtonGbc.gridy = 4;
-        okExpandButtonGbc.anchor = java.awt.GridBagConstraints.SOUTHEAST;
-        jPanel2.add(okExpandButton, okExpandButtonGbc);
+        // hintPanel (two lines) and jPanel6 on the right (three lines) are both bottom-anchored
+        // in equally high split pane halves. Lifting hintPanel by the two blocks' height
+        // difference puts the first lines of both halves on exactly the same y, whatever the
+        // font/LAF - the free line underneath is taken up by the buttons sitting next to it.
+        // A measured value cannot be expressed in the form, hence the constraint tweak here.
+        GridBagLayout hintLayout = (GridBagLayout) jPanel2.getLayout();
+        GridBagConstraints hintConstraints = hintLayout.getConstraints(hintPanel);
+        hintConstraints.insets.bottom = Math.max(0, jPanel6.getPreferredSize().height - hintPanel.getPreferredSize().height);
+        hintLayout.setConstraints(hintPanel, hintConstraints);
 
         if (jScrollPane1.getHorizontalScrollBar() != null) {
         	jScrollPane1.getHorizontalScrollBar().setUnitIncrement(16);
@@ -875,7 +797,10 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         okExpandButton = new javax.swing.JButton();
         okButton = new javax.swing.JButton();
         sepLabel = new javax.swing.JLabel();
+        hintPanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
+        successorHintLabel = new javax.swing.JLabel();
+        sortByConfidenceCheckbox = new javax.swing.JCheckBox();
         jPanel7 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -884,7 +809,6 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
         undoButton = new javax.swing.JButton();
         redoButton = new javax.swing.JButton();
@@ -927,8 +851,8 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
         jPanel2.add(okExpandButton, gridBagConstraints);
 
         okButton.setText("Show Path");
@@ -939,27 +863,58 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
         jPanel2.add(okButton, gridBagConstraints);
 
-        sepLabel.setText("                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       ");
+        sepLabel.setText("                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 3;
         jPanel2.add(sepLabel, gridBagConstraints);
 
+        hintPanel.setOpaque(false);
+        hintPanel.setLayout(new java.awt.GridBagLayout());
+
         jLabel2.setForeground(/* Renaming also in *.form! */ Colors.Color_0_100_0);
-        jLabel2.setText("Open context menu (right mouse click on table) to define its direct successor.");
+        jLabel2.setText("Open context menu (right mouse click on table)");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel2.add(jLabel2, gridBagConstraints);
+        hintPanel.add(jLabel2, gridBagConstraints);
+
+        successorHintLabel.setForeground(/* Renaming also in *.form! */ Colors.Color_0_100_0);
+        successorHintLabel.setText("to define its direct successor.");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        hintPanel.add(successorHintLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        jPanel2.add(hintPanel, gridBagConstraints);
+
+        sortByConfidenceCheckbox.setSelected(true);
+        sortByConfidenceCheckbox.setText("Sort tables by confidence");
+        sortByConfidenceCheckbox.setToolTipText("If checked, tables within a distance column are ordered by confidence (most likely first) instead of alphabetically.");
+        sortByConfidenceCheckbox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sortByConfidenceCheckboxActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        jPanel2.add(sortByConfidenceCheckbox, gridBagConstraints);
 
         jSplitPane1.setLeftComponent(jPanel2);
 
@@ -992,7 +947,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         jPanel6.setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setForeground(/* Renaming also in *.form! */ Colors.Color_0_100_0);
-        jLabel1.setText("Check a table above to exclude it");
+        jLabel1.setText("Check a table above to exclude it from every candidate path.");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -1000,7 +955,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         jPanel6.add(jLabel1, gridBagConstraints);
 
         jLabel3.setForeground(/* Renaming also in *.form! */ Colors.Color_0_100_0);
-        jLabel3.setText("from every candidate path.");
+        jLabel3.setText("The graph is then rebuilt without that table,");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -1008,20 +963,12 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         jPanel6.add(jLabel3, gridBagConstraints);
 
         jLabel4.setForeground(/* Renaming also in *.form! */ Colors.Color_0_100_0);
-        jLabel4.setText("The graph is then rebuilt without that table,");
+        jLabel4.setText("forcing the search to route around it.");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel6.add(jLabel4, gridBagConstraints);
-
-        jLabel5.setForeground(/* Renaming also in *.form! */ Colors.Color_0_100_0);
-        jLabel5.setText("forcing the search to route around it.");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel6.add(jLabel5, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1230,17 +1177,21 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     	showGraph(false);
     }//GEN-LAST:event_considerRestrictionsCheckboxActionPerformed
 
+    private void sortByConfidenceCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortByConfidenceCheckboxActionPerformed
+    	showGraph(false);
+    }//GEN-LAST:event_sortByConfidenceCheckboxActionPerformed
+
     protected abstract void applyPath(List<Table> path, boolean expand);
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox considerRestrictionsCheckbox;
     private javax.swing.JTable exclusionTable;
+    private javax.swing.JPanel hintPanel;
     private javax.swing.JButton historyButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -1259,6 +1210,8 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     private javax.swing.JButton redoButton;
     private javax.swing.JButton resetButton;
     javax.swing.JLabel sepLabel;
+    private javax.swing.JCheckBox sortByConfidenceCheckbox;
+    private javax.swing.JLabel successorHintLabel;
     private javax.swing.JButton undoButton;
     // End of variables declaration//GEN-END:variables
 
@@ -1287,7 +1240,6 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 	static private ImageIcon rightIcon;
     private ImageIcon scaledCancelIcon;
     private DefaultTableModel exclusionTableModel;
-    private javax.swing.JCheckBox sortByConfidenceCheckbox;
 
     private static final String EXCLUSION_HINT_TOOLTIP = "<html>Tables with a high \"Neighbors\" count are often shared reference tables<br>"
     		+ "that rarely belong on one specific path.<br>"
