@@ -1028,7 +1028,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 100);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 10);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel3.add(jPanel6, gridBagConstraints);
 
