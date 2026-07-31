@@ -56,8 +56,8 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
 
+import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
-import javax.swing.DefaultCellEditor;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -77,6 +77,7 @@ import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
@@ -405,7 +406,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     		Map<Node, Double> scaledConfidence = new HashMap<Node, Double>();
     		double sum = 0;
     		for (Node node: nodes) {
-    			double value = Math.pow((100.0 - confidence.get(node.table) * confidenceScale) / 100.0, 8) * 100.0;
+    			double value = 100.0 - confidence.get(node.table) * confidenceScale;
 				scaledConfidence.put(node, value);
 				sum += value;
     		}
@@ -1300,6 +1301,74 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     private ImageIcon scaledCancelIcon;
     private DefaultTableModel exclusionTableModel;
 
+    /**
+     * Value of the merged first column of the exclusion table: holds the table
+     * together with its exclusion state, so that a single cell can render the
+     * check box and the table's name. Sorts by display name.
+     */
+    private static class ExclusionCandidate implements Comparable<ExclusionCandidate> {
+    	final Table table;
+    	final String displayName;
+    	final boolean excluded;
+
+    	ExclusionCandidate(Table table, String displayName, boolean excluded) {
+    		this.table = table;
+    		this.displayName = displayName;
+    		this.excluded = excluded;
+    	}
+
+    	@Override
+    	public int compareTo(ExclusionCandidate other) {
+    		return displayName.compareTo(other.displayName);
+    	}
+
+    	@Override
+    	public String toString() {
+    		return displayName;
+    	}
+    }
+
+    private static JCheckBox createExclusionCheckBox() {
+    	JCheckBox checkBox = new JCheckBox();
+    	checkBox.setHorizontalAlignment(SwingConstants.LEFT);
+    	checkBox.setOpaque(true);
+    	return checkBox;
+    }
+
+    /**
+     * Editor of the merged first column of the exclusion table. A check box with the
+     * table's name, committing immediately on click (like {@code DefaultCellEditor}
+     * with a check box did for the former "Excluded" column).
+     */
+    private static class ExclusionCandidateEditor extends AbstractCellEditor implements TableCellEditor {
+    	private final JCheckBox checkBox = createExclusionCheckBox();
+    	private ExclusionCandidate candidate;
+
+    	ExclusionCandidateEditor() {
+    		checkBox.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					stopCellEditing();
+				}
+			});
+    	}
+
+		@Override
+		public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+			candidate = (ExclusionCandidate) value;
+			checkBox.setText(candidate.displayName);
+			checkBox.setSelected(candidate.excluded);
+			checkBox.setToolTipText(UIUtil.toHTML(candidate.displayName, 200));
+			checkBox.setBackground((row % 2 == 0) ? UIUtil.TABLE_BACKGROUND_COLOR_1 : UIUtil.TABLE_BACKGROUND_COLOR_2);
+			return checkBox;
+		}
+
+		@Override
+		public Object getCellEditorValue() {
+			return new ExclusionCandidate(candidate.table, candidate.displayName, checkBox.isSelected());
+		}
+    }
+
     private static final String EXCLUSION_HINT_TOOLTIP = "<html>Tables with a high \"Neighbors\" count are often shared reference tables<br>"
     		+ "that rarely belong on one specific path.<br>"
     		+ "They are good candidates to exclude first.<br>"
@@ -1311,47 +1380,44 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     		keys.addAll(exclusionTable.getRowSorter().getSortKeys());
     	}
     	if (keys.isEmpty()) {
-    		keys.add(new SortKey(2, SortOrder.DESCENDING));
+    		keys.add(new SortKey(1, SortOrder.DESCENDING));
     	}
 		exclusionTable.setColumnSelectionAllowed(false);
 		exclusionTable.setRowSelectionAllowed(false);
-		exclusionTableModel = new DefaultTableModel(new String[] { "Excluded", "Table", "Neighbors" }, 0) {
+		exclusionTableModel = new DefaultTableModel(new String[] { "Exclude", "Neighbors" }, 0) {
 			@Override
 			public boolean isCellEditable(int row, int column) {
 				return column == 0;
 			}
-			
+
 			@Override
 			public void setValueAt(Object aValue, int row, int column) {
 				super.setValueAt(aValue, row, column);
-				if (column == 0) {
-					if (Boolean.TRUE.equals(aValue)) {
-						excludedTables.add(exclusionCandidates.get(row));
+				if (column == 0 && aValue instanceof ExclusionCandidate) {
+					ExclusionCandidate candidate = (ExclusionCandidate) aValue;
+					if (candidate.excluded == excludedTables.contains(candidate.table)) {
+						return; // editing has been stopped without a change
 					}
-					if (Boolean.FALSE.equals(aValue)) {
-						excludedTables.remove(exclusionCandidates.get(row));
+					if (candidate.excluded) {
+						excludedTables.add(candidate.table);
+					} else {
+						excludedTables.remove(candidate.table);
 					}
 					showGraph(false);
 				}
 			}
-			
+
 			@Override
             public Class<?> getColumnClass(int columnIndex) {
 				if(columnIndex == 0){
-                    return Boolean.class;
+                    return ExclusionCandidate.class;
                 }
-				if(columnIndex == 2){
+				if(columnIndex == 1){
                     return Integer.class;
                 }
                 return super.getColumnClass(columnIndex);
             }
 		};
-		final JCheckBox checkBox = new JCheckBox("  ");
-		checkBox.setHorizontalAlignment(SwingConstants.RIGHT);
-		DefaultCellEditor anEditor = new DefaultCellEditor(checkBox);
-		anEditor.setClickCountToStart(1);
-		exclusionTable.setDefaultEditor(Boolean.class, anEditor);
-		
 		exclusionTable.setModel(exclusionTableModel);
 		exclusionTable.getTableHeader().setToolTipText(EXCLUSION_HINT_TOOLTIP);
 
@@ -1363,10 +1429,12 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 				Component render = defaultTableCellRenderer.getTableCellRendererComponent(table, value, isSelected, false, row, column);
-				if (value instanceof Boolean) {
-					JCheckBox checkBox = new JCheckBox("  ");
-					checkBox.setHorizontalAlignment(SwingConstants.RIGHT);
-					checkBox.setSelected(Boolean.TRUE.equals(value));
+				if (value instanceof ExclusionCandidate) {
+					ExclusionCandidate candidate = (ExclusionCandidate) value;
+					JCheckBox checkBox = createExclusionCheckBox();
+					checkBox.setText(candidate.displayName);
+					checkBox.setSelected(candidate.excluded);
+					checkBox.setToolTipText(UIUtil.toHTML(candidate.displayName, 200));
 					render = checkBox;
 				}
 				if (!isSelected) {
@@ -1379,7 +1447,8 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 			}
 		};
 		exclusionTable.getColumnModel().getColumn(0).setCellRenderer(renderer);
-		exclusionTable.getColumnModel().getColumn(2).setCellRenderer(renderer);
+		exclusionTable.getColumnModel().getColumn(1).setCellRenderer(renderer);
+		exclusionTable.getColumnModel().getColumn(0).setCellEditor(new ExclusionCandidateEditor());
 		exclusionTable.setDefaultRenderer(Object.class, renderer);
 		exclusionTable.setAutoCreateRowSorter(true);
 		exclusionTable.setShowHorizontalLines(false);
@@ -1417,7 +1486,9 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 			exclusionTableModel.removeRow(0);
 		}
 		for (Table table: exclusionCandidates) {
-			exclusionTableModel.addRow(new Object[] { excludedTables.contains(table), dataModel.getDisplayName(table), Integer.valueOf(table.associations.size()) });
+			exclusionTableModel.addRow(new Object[] {
+					new ExclusionCandidate(table, dataModel.getDisplayName(table), excludedTables.contains(table)),
+					Integer.valueOf(table.associations.size()) });
 		}
 		
 		adjustTableColumnsWidth(exclusionTable);
@@ -1438,9 +1509,6 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 				width = Math.max(width, comp.getPreferredSize().width);
 			}
 			column.setPreferredWidth(Math.min(width, 400));
-			if (i == 0) {
-				column.setWidth(column.getPreferredWidth());
-			}
 		}
 	}
 
