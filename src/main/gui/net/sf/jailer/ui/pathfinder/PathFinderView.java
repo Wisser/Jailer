@@ -49,6 +49,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -401,15 +402,26 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 					}
 				});
     		}
+    		Map<Node, Double> scaledConfidence = new HashMap<Node, Double>();
+    		double sum = 0;
+    		for (Node node: nodes) {
+    			double value = Math.pow((100.0 - confidence.get(node.table) * confidenceScale) / 100.0, 8) * 100.0;
+				scaledConfidence.put(node, value);
+				sum += value;
+    		}
+    		if (sum == 0) {
+				sum = 1;
+			}
     		int y = 4;
     		for (Node node: nodes) {
     			int pathStationIndex = newPathStations.size();
     			if (nodes.size() == 1 && pathStations.contains(node.table)) {
     				newPathStations.add(node.table);
     			}
-				NodeRender nodeRender = new NodeRender(node, showExcludeButton, newPathStations.contains(node.table), pathStationIndex, confidence.get(node.table) * confidenceScale);
+				NodeRender nodeRender = new NodeRender(node, showExcludeButton, newPathStations.contains(node.table),
+						pathStationIndex, nodes.size() <= 1 ? null : scaledConfidence.get(node) / sum * 100.0);
 				renderPerNode.put(node, nodeRender);
-
+				
 		        gridBagConstraints = new java.awt.GridBagConstraints();
 		        gridBagConstraints.gridx = x;
 		        gridBagConstraints.gridy = y;
@@ -435,11 +447,16 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     			excludeButton = excludeButtons.get(x - 1);
     		}
     		if (excludeButton != null) {
+    			// The per-table exclude buttons are icon-only JLabels (SmallButton) sitting
+    			// 24 + 16 px off the column's right edge. This one is a JButton with LAF margins,
+    			// so its right inset compensates for the width difference to line the icons up.
+    			int alignInset = Math.max(0, 24 + 16
+    					+ (scaledCancelIcon.getIconWidth() - excludeButton.getPreferredSize().width) / 2);
 	    		gridBagConstraints = new java.awt.GridBagConstraints();
 	            gridBagConstraints.gridx = x;
 	            gridBagConstraints.gridy = maxY + 1;
 	            gridBagConstraints.anchor = GridBagConstraints.EAST;
-	            gridBagConstraints.insets = new Insets(12, 0, 2, 26);
+	            gridBagConstraints.insets = new Insets(12, 0, 2, alignInset);
 	    		panel.add(excludeButton, gridBagConstraints);
     		}
 
@@ -514,23 +531,24 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 		private static final long serialVersionUID = 1L;
 		private int selectedCount = 0;
 		
-		public NodeRender(final Node node, boolean showExcludeButton, final boolean isSelected, final int pathStationIndex, double scaledConfidence) {
+		public NodeRender(final Node node, boolean showExcludeButton, final boolean isSelected, final int pathStationIndex, Double scaledConfidence) {
 			super(new GridBagLayout());
 			final JComponent button;
     		if (node.table.equals(source) || node.table.equals(destination)) {
     			button = new JLabel(dataModel.getDisplayName(node.table));
 	    		button.setForeground(sourceClosure.contains(node.table)? Colors.Color_0_0_0 : COLOR_NOT_IN_CLOSURE);
     		} else {
-    			long round = Math.round(Math.pow((100.0 - scaledConfidence) / 100.0, 8) * 100.0);
-    			if (round < 1) {
-					round = 1;
-				} else if (round > 99) {
-					round = 99;
-				}
-				String nodeText = "<html>" + UIUtil.toHTMLFragment(dataModel.getDisplayName(node.table), 0)
-	    				+ " <font color=\"" + toHexColor(Colors.Color_0_100_0, 0.7, Colors.Color_255_255_255) + "\">" + round + "%</font></html>";
-	    		JToggleButton tButton = new JToggleButton(nodeText);
-	    		tButton.setToolTipText("<html>" + UIUtil.toHTMLFragment(dataModel.getDisplayName(node.table), 0)
+    			JToggleButton tButton = new JToggleButton();
+	    		if (scaledConfidence != null) {
+	    			if (scaledConfidence < 1) {
+	    				scaledConfidence = 1.0;
+					} else if (scaledConfidence > 99) {
+						scaledConfidence = 99.0;
+					}
+	    			String round = String.format(Locale.US, "%.1f", scaledConfidence);
+	    			tButton.setText("<html>" + UIUtil.toHTMLFragment(dataModel.getDisplayName(node.table), 0)
+		    				+ " <font color=\"" + toHexColor(Colors.Color_0_100_0, 0.7, Colors.Color_255_255_255) + "\">" + round + "%</font></html>");
+		    		tButton.setToolTipText("<html>" + UIUtil.toHTMLFragment(dataModel.getDisplayName(node.table), 0)
 	    				+ "<br>Confidence: " + round + "%"
 	    				+ "<hr><font color=\"" + toHexColor(Colors.Color_0_100_0) + "\">"
 	    				+ "The confidence estimates how likely this table<br>"
@@ -539,6 +557,11 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 	    				+ "compared to the other candidate tables at this distance.<br>"
 	    				+ "Higher confidence means more likely."
 	    				+ "</font></html>");
+    			} else {
+					tButton.setText(dataModel.getDisplayName(node.table));
+		    		tButton.setToolTipText(dataModel.getDisplayName(node.table));
+				}
+	    		UIUtil.initToolTips(tButton);
 	    		tButton.setSelected(isSelected);
 	    		tButton.setForeground(sourceClosure.contains(node.table)? Colors.Color_0_0_0 : COLOR_NOT_IN_CLOSURE);
 	    		final ArrayList<Table> nPathStations = new ArrayList<Table>(pathStations);
@@ -919,7 +942,8 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         gridBagConstraints.weightx = 1.0;
         jPanel2.add(unionTitleLabel, gridBagConstraints);
 
@@ -948,7 +972,8 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         jPanel3.add(excludedTablesLabel, gridBagConstraints);
 
         exclusionTable.setModel(new javax.swing.table.DefaultTableModel(

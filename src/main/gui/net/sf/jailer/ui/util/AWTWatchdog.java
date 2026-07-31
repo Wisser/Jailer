@@ -22,7 +22,7 @@ import net.sf.jailer.ui.UIUtil;
  */
 public class AWTWatchdog {
 
-	private static final long MAX_DELAY = 8000 + 4000;
+	private static final long MAX_DELAY = 8000 + 4000 + 4000; // 16s
 
 	/**
 	 * Starts the AWT watchdog thread.
@@ -61,7 +61,7 @@ public class AWTWatchdog {
 						        }
 								dump = JailerVersion.VERSION + " " + dump;
 								String iMsg = dump;
-								issueBListed = !UIUtil.sendIssue("AWTHanging", "(12s:)" + iMsg);
+								issueBListed = !UIUtil.sendIssue("AWTHanging", "(16s:)" + iMsg);
 								issueSent = true;
 							}
 						} else {

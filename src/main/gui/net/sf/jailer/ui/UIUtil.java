@@ -1107,10 +1107,20 @@ public class UIUtil {
 	private static Pattern blacklist = Pattern.compile(
     		"(" +
     			"Connection refused" + ".*DriverShim"
-   				+ ")|(" +
+    			+ ")|(" +
+    			Pattern.quote("no PostgreSQL user name specified") + ".*DriverShim"
+    			+ ")|(" +
+    			Pattern.quote("no pg_hba.conf entry") + ".*DriverShim"
+    			+ ")|(" +
+    			Pattern.quote("Failed to authenticate") + ".*DriverShim"
+    			+ ")|(" +
+    			Pattern.quote("authentication failed") + ".*DriverShim"
+    			+ ")|(" +
    				Pattern.quote("UnknownHostException") + ".*DriverShim"
    				+ ")|(" +
    				Pattern.quote("ORA-17868") + ".*DriverShim"
+   				+ ")|(" +
+   				Pattern.quote("ORA-28000") + ".*DriverShim"
    				+ ")|(" +
    				Pattern.quote("c.relispartition") + ".*" + Pattern.quote("JDBCMetaDataBasedModelElementFinder.findPartitions")
    				+ ")|(" +
