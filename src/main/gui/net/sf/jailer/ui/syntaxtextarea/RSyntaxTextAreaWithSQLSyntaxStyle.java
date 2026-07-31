@@ -327,6 +327,14 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 	}
 
 	/**
+	 * If <code>true</code>, empty lines do not terminate a statement,
+	 * i.e. statements are terminated by ';' only.
+	 */
+	protected boolean allowEmptyLinesInStatements() {
+		return false;
+	}
+
+	/**
 	 * Overridden to toggle the enabled state of various menu items.
 	 */
 	@Override
@@ -534,7 +542,9 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 		Segment txt = new Segment();
 		try {
 			getDocument().getText(begin, end - begin, txt);
-			Pattern pattern = Pattern.compile("(\\n\\s*\\n)|(;\\s*(\\n\\r?|$))", Pattern.DOTALL);
+			Pattern pattern = Pattern.compile(
+					allowEmptyLinesInStatements()? "(;\\s*(\\n\\r?|$))" : "(\\n\\s*\\n)|(;\\s*(\\n\\r?|$))",
+					Pattern.DOTALL);
 			Matcher matcher = pattern.matcher(txt);
 			if (!matcher.find()) {
 				return new Pair<Pair<Integer, Integer>, Pair<Integer, Integer>>(
@@ -568,6 +578,9 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 	 * @return pair of start and end line number
 	 */
 	public Pair<Integer, Integer> getCurrentStatementLocation(boolean singleStatement, boolean currentLineMayBeEmpty, Set<Integer> eosLines, boolean startAtLineAbove) {
+		// if empty lines don't separate statements, ';' has to terminate them, regardless of "singleStatement"
+		boolean emptyLineSeparates = !allowEmptyLinesInStatements();
+		boolean singleStmt = singleStatement || !emptyLineSeparates;
 		try {
 			int y = getLineOfOffset(Math.min(getCaretDot(), getCaretMark()));
 			int caretBegin = y;
@@ -581,13 +594,13 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 				if (endsWithSemicolon && eosLines != null) {
 					eosLines.add(start - 1);
 				}
-				if (sLine.length() == 0 && !singleStatement) {
+				if (sLine.length() == 0 && !singleStmt) {
 					if (eosLines != null) {
 						eosLines.add(start - 2);
 						eosLines.add(-start);
 					}
 				}
-				if ((/*!singleStatement &&*/ sLine.length() == 0) || (singleStatement && endsWithSemicolon)) {
+				if ((emptyLineSeparates && sLine.length() == 0) || (singleStmt && endsWithSemicolon)) {
 					if (start != y || !startAtLineAbove || !endsWithSemicolon) {
 						break;
 					}
@@ -615,7 +628,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 				} else if (sLine.length() > 0) {
 					eosSeen = false;
 				}
-				if (sLine.length() == 0 && !singleStatement) {
+				if (sLine.length() == 0 && !singleStmt) {
 					if (eosLines != null) {
 						eosLines.add(l - 1);
 						eosLines.add(-l - 1);
@@ -630,7 +643,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 					Segment txt = new Segment();
 					getDocument().getText(endOff, getLineEndOffset(end) - endOff, txt);
 					String sLine = txt.toString().trim();
-					if ((/*!singleStatement &&*/ sLine.length() == 0) && !(currentLineMayBeEmpty && end == y)) {
+					if ((emptyLineSeparates && sLine.length() == 0) && !(currentLineMayBeEmpty && end == y)) {
 						if (end > start) {
 							--end;
 						}
@@ -640,13 +653,13 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 					if (endsWithSemicolon && eosLines != null) {
 						eosLines.add(end);
 					}
-					if (sLine.length() == 0 && !singleStatement) {
+					if (sLine.length() == 0 && !singleStmt) {
 						if (eosLines != null) {
 							eosLines.add(end - 1);
 							eosLines.add(-end - 1);
 						}
 					}
-					if (singleStatement && endsWithSemicolon) {
+					if (singleStmt && endsWithSemicolon) {
 						break;
 					}
 					++end;

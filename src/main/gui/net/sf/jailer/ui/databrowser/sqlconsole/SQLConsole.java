@@ -103,6 +103,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -121,6 +122,7 @@ import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.RowSorter;
 import javax.swing.RowSorter.SortKey;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.Timer;
@@ -248,6 +250,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	private JMenuItem menuItemAIAssistant;
 	private JMenuItem menuItemAIAssistantSilent;
 	private JButton aiButton;
+	private JCheckBox allowEmptyLinesBox;
 	private boolean aiCallRunning;
 	private boolean[] toolbarEnabledState;
 	private int initialTabbedPaneSelection = 0;
@@ -326,6 +329,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         	@Override
 			protected boolean canExplain() {
 				return SQLConsole.this.canExplain();
+			}
+        	@Override
+			protected boolean allowEmptyLinesInStatements() {
+        		return allowEmptyLinesBox != null && allowEmptyLinesBox.isSelected();
 			}
             @Override
             protected void runBlock() {
@@ -558,6 +565,21 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         });
         jToolBar1.add(aiButton, 4);
         jToolBar1.add(new JToolBar.Separator(), 5);
+
+        allowEmptyLinesBox = new JCheckBox("Allow empty lines in statements");
+        allowEmptyLinesBox.setToolTipText("<html>If checked, statements are terminated by ';' only, "
+        		+ "so a statement may contain empty lines. <br>"
+        		+ "\"Run\" then executes exactly the one statement at the cursor position. <br>"
+        		+ "Otherwise an empty line terminates a statement too.");
+        allowEmptyLinesBox.setFocusable(false);
+        allowEmptyLinesBox.setHorizontalTextPosition(SwingConstants.RIGHT);
+        allowEmptyLinesBox.setVerticalTextPosition(SwingConstants.BOTTOM);
+        allowEmptyLinesBox.addActionListener(e -> {
+        	editorPane.updateMenuItemState(); // statement boundaries changed, repaint the gutter icons
+        	updateOutline(false);
+        	updateExecutedStatementHighlight();
+        });
+        jToolBar1.add(allowEmptyLinesBox, jToolBar1.getComponentIndex(transactionalBox) + 1);
 
         KeyStroke aiSilentKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_S,
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() | InputEvent.SHIFT_MASK);
@@ -2061,7 +2083,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                        explButton.setIcon(UIUtil.scaleIcon(explButton, explainIcon));
 	                        toolBar.add(explButton);
 	                        explButton.addActionListener(e -> {
-	            	            executeSQLBlock(toExplain, null, true, null, true, null, new SuccessState());
+	            	            executeSQLBlock(toExplain, null, !allowEmptyLinesBox.isSelected(), null, true, null, new SuccessState());
 	                        });
 	                        tabContentPanel.panel.add(toolBar, gridBagConstraints);
                         }
@@ -4428,7 +4450,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	        	successState.autoDistinctRetry = pendingAutoDistinctRetry;
 	        	pendingFromQueryBuilder = false;
 	        	pendingAutoDistinctRetry = false;
-	            executeSQLBlock(sql, loc, editorPane.getCaret().getDot() == editorPane.getCaret().getMark(), locFragmentOffset, explain, tabContentPanel, successState);
+	            executeSQLBlock(sql, loc, !allowEmptyLinesBox.isSelected() && editorPane.getCaret().getDot() == editorPane.getCaret().getMark(), locFragmentOffset, explain, tabContentPanel, successState);
 	        }
 	        return sql;
         } catch (BadLocationException e) {
@@ -4456,7 +4478,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 // ignore
             }
             Pair<Integer, Integer> loc = new Pair<Integer, Integer>(start, editorPane.getLineCount() - 1);
-            executeSQLBlock(editorPane.getText(loc.a, loc.b, true), loc, true, null, false, null, new SuccessState());
+            executeSQLBlock(editorPane.getText(loc.a, loc.b, true), loc, !allowEmptyLinesBox.isSelected(), null, false, null, new SuccessState());
         }
     }
 
