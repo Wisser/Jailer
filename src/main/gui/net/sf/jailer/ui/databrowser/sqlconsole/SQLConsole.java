@@ -1226,7 +1226,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                                	lineNumber += countLines - 1;
 	                                	status.linesExecuting += countLines - 1;
 	                                }
-	                                if (sql.trim().length() > 0 && !isCommentOnly(sql)) {
+	                                if (sql.trim().length() > 0 && !isNoop(sql)) {
 	                                	++statementNumber;
 	                                	if (successState.mode == Mode.COUNT) {
 	                                		++successState.numStatements;
@@ -1490,7 +1490,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             		.replaceAll("((?:\\n(?: |\\t|\\r)*?)) ?\\\\([ \\t\\r]*)(?=\\n)", "$1");
 			sqlStatement = sqlPlusSupport.replaceVariables(sqlStatement, positionOffsets);
 			status.statement = sqlStatement;
-			if (!isCommentOnly(sqlStatement)) {
+			if (!isNoop(sqlStatement)) {
 				status.numStatements++;
 	            localStatus.numStatements++;
 	            UISettings.s3++;
@@ -2323,7 +2323,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 }
             }
             
-            if (!isCommentOnly(sqlStatement) || (error instanceof CancellationException)) {
+            if (!isNoop(sqlStatement) || (error instanceof CancellationException)) {
 				if (transactional) {
 					try {
 						connection.rollback();
@@ -2337,7 +2337,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				}
 	        }
             
-            if (!isCommentOnly(sqlStatement)) {
+            if (!isNoop(sqlStatement)) {
             	if (explainCreateExplainTable != null && error instanceof SQLException) {
             		error = new SQLException(error.getMessage() + " (caused by: " + explainCreateExplainTable.getMessage() + ")");
             	}
@@ -4461,11 +4461,21 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     }
 
     private final Pattern COMMENT_ONLY_PATTERN = Pattern.compile("('([^']*'))|(/\\*.*?\\*/)|(\\-\\-.*?(\n|$))", Pattern.DOTALL);
-    
-    private boolean isCommentOnly(String statement) {
+    private final Pattern GO_ONLY_PATTERN = Pattern.compile("GO\\s*;?", Pattern.CASE_INSENSITIVE);
+
+    /**
+     * Checks whether a statement has no effect, i.e. it consists of comments only
+     * or is nothing but a "GO" batch separator. (Microsoft SQL Server / Sybase)
+     */
+    private boolean isNoop(String statement) {
     	if (statement == null) {
     		return false;
     	}
+    	String withoutComments = removeComments(statement).trim();
+    	return withoutComments.isEmpty() || GO_ONLY_PATTERN.matcher(withoutComments).matches();
+    }
+
+    private String removeComments(String statement) {
         Matcher matcher = COMMENT_ONLY_PATTERN.matcher(statement);
         boolean result = matcher.find();
         StringBuffer sb = new StringBuffer();
@@ -4480,7 +4490,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             } while (result);
         }
         matcher.appendTail(sb);
-        return sb.toString().trim().isEmpty();
+        return sb.toString();
     }
 
     private final String HISTORY_FILE = ".history";
