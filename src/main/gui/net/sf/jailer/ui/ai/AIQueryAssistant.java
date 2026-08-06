@@ -57,6 +57,10 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.ai.AIProviderConfig.ProviderType;
+import net.sf.jailer.ui.ai.tools.PendingToolCall;
+import net.sf.jailer.ui.ai.tools.ToolCallLoop;
+import net.sf.jailer.ui.ai.tools.ToolDescriptor;
+import net.sf.jailer.ui.ai.tools.ToolRegistry;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
@@ -210,6 +214,18 @@ public class AIQueryAssistant {
                 loadFirstPassSystemPromptTemplate(), session);
     }
 
+    /**
+     * Sends {@code body} and returns the final answer text, either via a single request/response
+     * (no tools) or by driving a {@link ToolCallLoop} through as many tool-calling rounds as needed.
+     */
+    private static String runRequest(AIProviderConfig config, ObjectNode body, boolean isAnthropic, boolean isResponsesApi,
+            AtomicReference<Runnable> abortRef, ToolRegistry toolRegistry, ToolCallLoop.Listener toolListener) throws IOException {
+        if (toolRegistry != null && !toolRegistry.isEmpty()) {
+            return new ToolCallLoop(config, isAnthropic, isResponsesApi, toolRegistry, abortRef, toolListener).run(body);
+        }
+        return extractText(post(config, body, abortRef), isAnthropic);
+    }
+
     public static void validateConfig(AIProviderConfig config) throws IOException {
         if (config.apiKey.isEmpty() && config.providerType.requiresApiKey) {
             throw new IOException("No API key configured. Please enter an API key in the AI Assistant settings.");
@@ -250,6 +266,23 @@ public class AIQueryAssistant {
             AtomicReference<Runnable> abortRef, BooleanSupplier confirmFullSchema,
             String firstPassSystemPromptTemplate, AtomicReference<String> rawResponseRef,
             Session session, AtomicReference<Boolean> smartSelectionFallbackRef) throws IOException, SQLException {
+        return generateSQL(question, history, dataModel, dbmsName, config, systemPromptTemplate,
+                smartSelection, omitColumnTypes, abortRef, confirmFullSchema, firstPassSystemPromptTemplate,
+                rawResponseRef, session, smartSelectionFallbackRef, null, null);
+    }
+
+    /**
+     * @param toolRegistry the tools (from enabled MCP servers) the model may call while answering,
+     *        or {@code null}/empty for the original behaviour (no tool-calling)
+     * @param toolListener notified when a tool call starts/finishes, or {@code null}
+     */
+    public static String generateSQL(String question, List<ConversationMessage> history,
+            DataModel dataModel, String dbmsName, AIProviderConfig config,
+            String systemPromptTemplate, boolean smartSelection, boolean omitColumnTypes,
+            AtomicReference<Runnable> abortRef, BooleanSupplier confirmFullSchema,
+            String firstPassSystemPromptTemplate, AtomicReference<String> rawResponseRef,
+            Session session, AtomicReference<Boolean> smartSelectionFallbackRef,
+            ToolRegistry toolRegistry, ToolCallLoop.Listener toolListener) throws IOException, SQLException {
         if (MOCK_ENABLED) {
             int idx = MOCK_INDEX.getAndIncrement() % MOCK_SQL.length;
             _log.debug("MOCK mode: returning MOCK_SQL[{}]", idx);
@@ -280,10 +313,15 @@ public class AIQueryAssistant {
         }
         String schema = buildSchemaDescription(dataModel, relevantTables, omitColumnTypes);
         boolean isAnthropic = config.providerType == ProviderType.ANTHROPIC;
+        boolean isResponsesApi = !isAnthropic && isResponsesApiUrl(config.apiUrl);
+        boolean useTools = toolRegistry != null && !toolRegistry.isEmpty();
         ObjectNode body = buildRequestBody(question, history, schema, dbmsName, config, isAnthropic, systemPromptTemplate);
-        JsonNode response;
+        if (useTools) {
+            addToolsArray(body, toolRegistry.getToolDescriptors(), isAnthropic, isResponsesApi);
+        }
+        String rawText;
         try {
-            response = post(config, body, abortRef);
+            rawText = runRequest(config, body, isAnthropic, isResponsesApi, abortRef, toolRegistry, toolListener);
         } catch (IOException e) {
             if (!smartSelection && !Thread.currentThread().isInterrupted() && isContextLengthError(e)) {
                 _log.warn("Context length exceeded with full schema - retrying with smart table selection ({})", e.getMessage());
@@ -296,7 +334,10 @@ public class AIQueryAssistant {
                 if (smartTables == null) throw e;
                 schema = buildSchemaDescription(dataModel, smartTables, omitColumnTypes);
                 body = buildRequestBody(question, history, schema, dbmsName, config, isAnthropic, systemPromptTemplate);
-                response = post(config, body, abortRef);
+                if (useTools) {
+                    addToolsArray(body, toolRegistry.getToolDescriptors(), isAnthropic, isResponsesApi);
+                }
+                rawText = runRequest(config, body, isAnthropic, isResponsesApi, abortRef, toolRegistry, toolListener);
                 if (smartSelectionFallbackRef != null) smartSelectionFallbackRef.set(Boolean.TRUE);
             } else {
                 if (!smartSelection && !Thread.currentThread().isInterrupted()
@@ -308,7 +349,7 @@ public class AIQueryAssistant {
                 throw e;
             }
         }
-        String rawText = extractText(response, isAnthropic).trim();
+        rawText = rawText.trim();
         if (rawResponseRef != null) rawResponseRef.set(rawText);
         String result = stripMarkdownCodeFence(rawText);
         if (result.endsWith(";")) {
@@ -355,7 +396,7 @@ public class AIQueryAssistant {
         return name;
     }
 
-    private static String extractText(JsonNode response, boolean isAnthropic) throws IOException {
+    public static String extractText(JsonNode response, boolean isAnthropic) throws IOException {
         if (isAnthropic) {
             JsonNode contentNode = response.path("content");
             if (contentNode.isArray() && contentNode.size() > 0) {
@@ -411,6 +452,85 @@ public class AIQueryAssistant {
             }
         }
         throw new IOException("Unexpected response format: empty or missing content. Response: " + response.toString());
+    }
+
+    /**
+     * Extracts any tool calls the model requested in {@code response} (Anthropic "tool_use" blocks,
+     * OpenAI Chat "tool_calls", or OpenAI Responses "function_call" items). Returns an empty list
+     * if the response contains a final text answer instead.
+     */
+    public static List<PendingToolCall> extractToolCalls(JsonNode response, boolean isAnthropic, boolean isResponsesApi) {
+        List<PendingToolCall> calls = new ArrayList<>();
+        if (isAnthropic) {
+            for (JsonNode block : response.path("content")) {
+                if ("tool_use".equals(block.path("type").asText())) {
+                    JsonNode input = block.path("input");
+                    calls.add(new PendingToolCall(
+                            block.path("id").asText(""),
+                            block.path("name").asText(""),
+                            input.isObject() ? (ObjectNode) input : MAPPER.createObjectNode()));
+                }
+            }
+        } else if (isResponsesApi) {
+            for (JsonNode item : response.path("output")) {
+                if ("function_call".equals(item.path("type").asText())) {
+                    calls.add(new PendingToolCall(
+                            item.path("call_id").asText(""),
+                            item.path("name").asText(""),
+                            parseToolArguments(item.path("arguments").asText("{}"))));
+                }
+            }
+        } else {
+            JsonNode message = response.path("choices").path(0).path("message");
+            for (JsonNode toolCall : message.path("tool_calls")) {
+                calls.add(new PendingToolCall(
+                        toolCall.path("id").asText(""),
+                        toolCall.path("function").path("name").asText(""),
+                        parseToolArguments(toolCall.path("function").path("arguments").asText("{}"))));
+            }
+        }
+        return calls;
+    }
+
+    // OpenAI's tool_calls/function_call "arguments" field is itself a JSON-encoded string, not a nested object.
+    private static ObjectNode parseToolArguments(String json) {
+        try {
+            JsonNode node = MAPPER.readTree(json == null || json.isEmpty() ? "{}" : json);
+            return node.isObject() ? (ObjectNode) node : MAPPER.createObjectNode();
+        } catch (IOException e) {
+            return MAPPER.createObjectNode();
+        }
+    }
+
+    /**
+     * Adds the "tools" array (in the shape the given provider expects) to a request body, from
+     * MCP tool schemas that are already valid JSON Schema and thus only need re-wrapping, not conversion.
+     */
+    public static void addToolsArray(ObjectNode body, List<ToolDescriptor> tools, boolean isAnthropic, boolean isResponsesApi) {
+        if (tools == null || tools.isEmpty()) {
+            return;
+        }
+        ArrayNode toolsArray = body.putArray("tools");
+        for (ToolDescriptor tool : tools) {
+            ObjectNode toolNode = toolsArray.addObject();
+            JsonNode schema = tool.inputSchema != null ? tool.inputSchema : MAPPER.createObjectNode();
+            if (isAnthropic) {
+                toolNode.put("name", tool.name);
+                toolNode.put("description", tool.description);
+                toolNode.set("input_schema", schema.deepCopy());
+            } else if (isResponsesApi) {
+                toolNode.put("type", "function");
+                toolNode.put("name", tool.name);
+                toolNode.put("description", tool.description);
+                toolNode.set("parameters", schema.deepCopy());
+            } else {
+                toolNode.put("type", "function");
+                ObjectNode fn = toolNode.putObject("function");
+                fn.put("name", tool.name);
+                fn.put("description", tool.description);
+                fn.set("parameters", schema.deepCopy());
+            }
+        }
     }
 
     public static Set<Table> selectRelevantTables(String question, List<ConversationMessage> history,
@@ -709,7 +829,8 @@ public class AIQueryAssistant {
 
     // Tries HttpURLConnection first; falls back to curl if the Authorization header
     // was silently dropped by a proxy (common in corporate environments).
-    private static JsonNode post(AIProviderConfig config, ObjectNode body,
+    // Public so ToolCallLoop (a different package) can re-send a request after appending tool results.
+    public static JsonNode post(AIProviderConfig config, ObjectNode body,
             AtomicReference<Runnable> abortRef) throws IOException {
         if (Thread.currentThread().isInterrupted()) {
             throw new IOException("Request cancelled");
@@ -1206,6 +1327,17 @@ public class AIQueryAssistant {
         UISettings.store("aiSmartSelection_" + key, smartSelection);
     }
 
+    public static void saveCheckboxStates(AIProviderConfig config, ExecutionContext executionContext,
+            boolean omitColumnTypes, boolean smartSelection, boolean enableTools) {
+        saveCheckboxStates(config, executionContext, omitColumnTypes, smartSelection);
+        UISettings.store("aiEnableTools_" + checkboxSettingsKey(config, executionContext), enableTools);
+    }
+
+    public static boolean loadEnableTools(AIProviderConfig config, ExecutionContext executionContext) {
+        Object stored = UISettings.restore("aiEnableTools_" + checkboxSettingsKey(config, executionContext));
+        return stored instanceof Boolean ? (Boolean) stored : false;
+    }
+
     public static String loadSystemPromptTemplate() {
         String saved = (String) UISettings.restore(SystemPromptPanel.SETTING_SYSTEM_PROMPT);
         return (saved != null && !saved.isEmpty()) ? saved : null;
@@ -1239,5 +1371,8 @@ public class AIQueryAssistant {
 // TODO session management: if the provider supports it, we could keep a session ID and reuse it for subsequent calls to maintain context without resending the full schema each time.
 
 // TODO
-// TODO add comments to datamodel context of API call. Offer "omit" checkbox. 
-// TODO ? add support for function calls (e.g. OpenAI function calling) to allow the model to return structured data (e.g. list of relevant tables) without needing to parse text responses. This would be more robust than relying on the model to format its output correctly for the smart table selection step.
+// TODO add comments to datamodel context of API call. Offer "omit" checkbox.
+// TODO function/tool calling (see net.sf.jailer.ui.ai.tools) is now wired into the main generateSQL() call via
+// external MCP servers. selectRelevantTables() still uses regex text-parsing; migrating it to a local,
+// in-process tool (exposing DataModel introspection directly) is a follow-up, with the regex parsing
+// kept as a fallback for models that reply in prose instead of calling the tool.

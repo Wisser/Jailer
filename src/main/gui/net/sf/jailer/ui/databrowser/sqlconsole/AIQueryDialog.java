@@ -62,6 +62,8 @@ import org.fife.ui.rtextarea.RTextScrollPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.DataModel;
@@ -71,6 +73,12 @@ import net.sf.jailer.ui.ai.AIProviderPanel;
 import net.sf.jailer.ui.ai.AIQueryAssistant;
 import net.sf.jailer.ui.ai.ConversationMessage;
 import net.sf.jailer.ui.ai.SystemPromptPanel;
+import net.sf.jailer.ui.ai.mcp.McpServerConfig;
+import net.sf.jailer.ui.ai.mcp.McpServerConfigDialog;
+import net.sf.jailer.ui.ai.mcp.McpServerSettings;
+import net.sf.jailer.ui.ai.tools.ToolCallLoop;
+import net.sf.jailer.ui.ai.tools.ToolRegistry;
+import net.sf.jailer.ui.ai.tools.ToolResult;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithTheme;
 
@@ -93,6 +101,7 @@ public class AIQueryDialog extends JDialog {
     private SystemPromptPanel systemPromptPanel;
     private JButton closeButton;
     private JButton systemPromptButton;
+    private JButton mcpServersButton;
 
     private ConversationTab generateTab;
     private ConversationTab advisorTab;
@@ -119,6 +128,8 @@ public class AIQueryDialog extends JDialog {
         JLabel statusLabel;
         JCheckBox smartSelectionBox;
         JCheckBox omitColumnTypesBox;
+        JCheckBox enableToolsBox;
+        final List<String> lastToolActivity = new ArrayList<>();
         JLabel contextEstimateLabel;
         JButton cancelButton;
         SwingWorker<String, Void> currentWorker;
@@ -290,6 +301,11 @@ public class AIQueryDialog extends JDialog {
                 + "from the schema description sent to the AI.<br>"
                 + "Table and column names, primary keys and foreign keys are still included.</html>");
 
+            enableToolsBox = new JCheckBox("Enable MCP tools");
+            enableToolsBox.setToolTipText("<html>Lets the AI call tools exposed by configured MCP servers<br>"
+                + "(see the \"MCP Servers...\" button below) while answering.<br>"
+                + "Has no effect if no MCP server is enabled.</html>");
+
             contextEstimateLabel = new JLabel();
             contextEstimateLabel.setFont(contextEstimateLabel.getFont().deriveFont(
                     contextEstimateLabel.getFont().getSize2D() - 1f));
@@ -320,7 +336,8 @@ public class AIQueryDialog extends JDialog {
                 String sql = sqlArea.getText().trim();
                 if (!sql.isEmpty()) {
                     AIProviderConfig cfg = providerPanel.getConfig();
-                    AIQueryAssistant.saveCheckboxStates(cfg, executionContext, omitColumnTypesBox.isSelected(), smartSelectionBox.isSelected());
+                    AIQueryAssistant.saveCheckboxStates(cfg, executionContext, omitColumnTypesBox.isSelected(),
+                            smartSelectionBox.isSelected(), enableToolsBox.isSelected());
                     String combined;
                     if (isAdvisor) {
                         combined = sql;
@@ -346,6 +363,7 @@ public class AIQueryDialog extends JDialog {
             JPanel checkboxRow = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
             checkboxRow.add(omitColumnTypesBox);
             checkboxRow.add(smartSelectionBox);
+            checkboxRow.add(enableToolsBox);
             JPanel estimateRow = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 2));
             estimateRow.add(contextEstimateLabel);
             JPanel genRight = new JPanel(new BorderLayout());
@@ -571,6 +589,7 @@ public class AIQueryDialog extends JDialog {
         void loadCheckboxStates(AIProviderConfig config) {
             omitColumnTypesBox.setSelected(AIQueryAssistant.loadOmitColumnTypes(config, executionContext));
             smartSelectionBox.setSelected(AIQueryAssistant.loadSmartSelection(config, executionContext));
+            enableToolsBox.setSelected(AIQueryAssistant.loadEnableTools(config, executionContext));
         }
 
         void updateContextEstimate() {
@@ -597,7 +616,9 @@ public class AIQueryDialog extends JDialog {
             providerPanel.setEnabled(!generating);
             smartSelectionBox.setEnabled(!generating);
             omitColumnTypesBox.setEnabled(!generating);
+            enableToolsBox.setEnabled(!generating);
             systemPromptButton.setEnabled(!generating);
+            mcpServersButton.setEnabled(!generating);
             if (suggestionsBox != null) suggestionsBox.setEnabled(!generating);
             if (diffToggleButton != null) diffToggleButton.setEnabled(!generating && lastOriginalSql != null
                     && !normalizeWhitespace(stripTrailingSemicolon(lastOriginalSql))
@@ -639,6 +660,8 @@ public class AIQueryDialog extends JDialog {
             List<ConversationMessage> historySnapshot = new ArrayList<>(conversationHistory);
             boolean smartSelection = smartSelectionBox.isSelected();
             boolean omitColumnTypes = omitColumnTypesBox.isSelected();
+            boolean enableTools = enableToolsBox.isSelected();
+            lastToolActivity.clear();
 
             final AtomicReference<String> rawResponseRef = isAdvisor ? new AtomicReference<>("") : null;
             final AtomicReference<Boolean> smartSelectionFallbackRef = new AtomicReference<>(Boolean.FALSE);
@@ -648,6 +671,26 @@ public class AIQueryDialog extends JDialog {
                     String template = isAdvisor ? systemPromptPanel.getAdvisorTemplate() : systemPromptPanel.getTemplate();
                     if (isAdvisor && sqlContent != null && template != null) {
                         template = template.replace("{SQL}", sqlContent);
+                    }
+                    ToolRegistry toolRegistry = null;
+                    ToolCallLoop.Listener toolListener = null;
+                    if (enableTools) {
+                        List<McpServerConfig> enabledServers = McpServerSettings.loadEnabled();
+                        toolRegistry = ToolRegistry.buildActive(enabledServers);
+                        toolListener = new ToolCallLoop.Listener() {
+                            @Override
+                            public void onToolCallStart(String toolName, ObjectNode arguments) {
+                                SwingUtilities.invokeLater(() -> statusLabel.setText("Calling tool: " + toolName + "..."));
+                            }
+
+                            @Override
+                            public void onToolCallResult(String toolName, ToolResult result) {
+                                String summary = result.text.length() > 200 ? result.text.substring(0, 200) + "..." : result.text;
+                                lastToolActivity.add("[tool] " + toolName + (result.isError ? " (error)" : "")
+                                        + " -> " + summary.replace("\n", " "));
+                                SwingUtilities.invokeLater(() -> statusLabel.setText("Generating..."));
+                            }
+                        };
                     }
                     return AIQueryAssistant.generateSQL(question, historySnapshot, dataModel, dbmsName, config,
                             template, smartSelection, omitColumnTypes, abortRef, () -> {
@@ -670,7 +713,8 @@ public class AIQueryDialog extends JDialog {
                             _log.warn("Confirmation dialog failed", ex);
                         }
                         return result[0];
-                    }, systemPromptPanel.getFirstPassTemplate(), rawResponseRef, session, smartSelectionFallbackRef);
+                    }, systemPromptPanel.getFirstPassTemplate(), rawResponseRef, session, smartSelectionFallbackRef,
+                            toolRegistry, toolListener);
                 }
 
                 @Override
@@ -798,7 +842,7 @@ public class AIQueryDialog extends JDialog {
                             providerPanel.markConnectionVerified();
                             if (Boolean.TRUE.equals(smartSelectionFallbackRef.get())) {
                                 smartSelectionBox.setSelected(true);
-                                AIQueryAssistant.saveCheckboxStates(config, executionContext, omitColumnTypes, true);
+                                AIQueryAssistant.saveCheckboxStates(config, executionContext, omitColumnTypes, true, enableTools);
                                 JOptionPane.showMessageDialog(AIQueryDialog.this,
                                     "<html>The full schema was too large for the AI model.<br>"
                                     + "The query was generated using <b>smart table selection</b>.<br>"
@@ -806,7 +850,7 @@ public class AIQueryDialog extends JDialog {
                                     "Smart Table Selection activated",
                                     JOptionPane.INFORMATION_MESSAGE);
                             } else {
-                                AIQueryAssistant.saveCheckboxStates(config, executionContext, omitColumnTypes, smartSelection);
+                                AIQueryAssistant.saveCheckboxStates(config, executionContext, omitColumnTypes, smartSelection, enableTools);
                             }
                             String rawForHistory = (rawResponseRef != null && rawResponseRef.get() != null && !rawResponseRef.get().isEmpty())
                                     ? rawResponseRef.get() : sql;
@@ -851,6 +895,11 @@ public class AIQueryDialog extends JDialog {
                 }
                 sb.append("You:\n").append(conversationHistory.get(i).content).append("\n");
                 sb.append("----\n");
+                if (i + 2 >= conversationHistory.size() && !lastToolActivity.isEmpty()) {
+                    for (String line : lastToolActivity) {
+                        sb.append(line).append("\n");
+                    }
+                }
                 sb.append(conversationHistory.get(i + 1).content).append("\n");
             }
             historyArea.setEnabled(true);
@@ -1069,8 +1118,12 @@ public class AIQueryDialog extends JDialog {
         }
         systemPromptButton.addActionListener(e -> openSystemPromptDialog());
 
+        mcpServersButton = new JButton("MCP Servers...");
+        mcpServersButton.addActionListener(e -> new McpServerConfigDialog(this).setVisible(true));
+
         JPanel leftButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
         leftButtons.add(systemPromptButton);
+        leftButtons.add(mcpServersButton);
 
         JPanel rightButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 4));
         rightButtons.add(closeButton);

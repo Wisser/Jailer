@@ -48,3 +48,17 @@ public class JailerVersion {
 
 }
 
+// TODO
+// TODO ; in sql console: option to tolerate empty lines in sql statements. test
+// TODO mcp
+
+// TODO
+// TODO mcp: fallback to not using the mcp if it fails.
+
+// TODO
+// TODO AISettingsPanel: maxTokenSpinner lässt sich nicht editieren - alter wert uerscheint wieder bei focus lost.
+
+// TODO
+// TODO tool-calls logging
+// TODO icons for new button "mcp servers" and that dialog
+
