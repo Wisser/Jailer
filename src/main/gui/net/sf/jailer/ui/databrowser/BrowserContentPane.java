@@ -3084,12 +3084,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		int todo;
 		int done;
 		private List<ActionListener> todoList = new ArrayList<ActionListener>();
+		private List<String> todoNames = new ArrayList<String>();
 		private final String initText = "Counting rows... ";
+		private final String baseToolTip = "Open a table browser for every non-empty association group at once.";
+		private final int MAX_TOOLTIP_ENTRIES = 12;
 
 		AllNonEmptyItem() {
 			setEnabled(false);
 			setIcon(allDotIcon);
-			setToolTipText("Open a table browser for every non-empty association group at once.");
+			setToolTipText(baseToolTip);
 			addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -3133,18 +3136,42 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			super.print(g);
 		}
 
-		public void rowsCounted(long count, ActionListener itemAction) {
+		public void rowsCounted(long count, ActionListener itemAction, String name) {
 			++done;
 			if (count != 0) {
 				todoList.add(itemAction);
+				todoNames.add(name);
 			}
 			int p = todo > 0? (100 * done) / todo : 0;
 			if (done < todo) {
 				setText(initText + p + "%");
 			} else {
 				setText("All non-empty (" + todoList.size() + ")");
+				updateToolTip();
 				setEnabled(true);
 			}
+		}
+
+		/**
+		 * Lists the tables to be opened in the tool tip.
+		 */
+		private void updateToolTip() {
+			if (todoNames.isEmpty()) {
+				setToolTipText(baseToolTip);
+				return;
+			}
+			List<String> names = new ArrayList<String>(todoNames);
+			Collections.sort(names, String::compareToIgnoreCase);
+			StringBuilder sb = new StringBuilder("<html>" + UIUtil.toHTMLFragment(baseToolTip, 0) + "<hr>");
+			for (int i = 0; i < names.size(); ++i) {
+				int rest = names.size() - i;
+				if (i >= MAX_TOOLTIP_ENTRIES && rest > 1) {
+					sb.append("<font color=" + Colors.HTMLColor_707080 + "><i>" + rest + " more</i></font>");
+					break;
+				}
+				sb.append(UIUtil.toHTMLFragment(names.get(i), 0) + "<br>");
+			}
+			setToolTipText(sb.append("</html>").toString());
 		}
 
 		public void setInitialText() {
@@ -4662,7 +4689,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 									countLabel.setForeground(Colors.Color_192_192_192);
 								}
 								if (!fExcludeFromANEmpty) {
-									allNonEmptyItem.rowsCounted(count.count, itemAction);
+									allNonEmptyItem.rowsCounted(count.count, itemAction, name.substring(1));
 								}
 							}
 						});

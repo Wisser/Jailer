@@ -44,7 +44,7 @@ public class SystemPromptPanel extends JPanel {
 
     static final String SETTING_SYSTEM_PROMPT = "aiSystemPrompt";
     static final String SETTING_FIRST_PASS_SYSTEM_PROMPT = "aiFirstPassSystemPrompt";
-    static final String SETTING_ADVISOR_SYSTEM_PROMPT = "aiAdvisorSystemPrompt";
+    static final String SETTING_ADVISOR_SYSTEM_PROMPT = "aiAdvisorSystemPrompt2";
 
     /** Separator line the advisor AI must emit between the SQL result and the explanation. */
     public static final String ADVISOR_SQL_ANSWER_SEPARATOR = "--ENDOFSQL";
@@ -69,7 +69,7 @@ public class SystemPromptPanel extends JPanel {
         + "Retain comments.\n"
         + "Use tab characters for formatting.\n"
         + "Then output a new line containing exactly: \"{separator}\".\n"
-        + "Then provide a markdown, plain-text explanation of the changes or analysis.\n"
+        + "Then provide the explanation of the changes or analysis, formatted as markdown.\n"
         + "Use only tables and columns from the schema above.\n"
         + "\n"
         + "Use aliases for complex expressions in select clauses.\n"
