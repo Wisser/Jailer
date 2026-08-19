@@ -1,3 +1,40 @@
+17.2.2
+  - Path Finder: candidate tables now show a confidence estimate.
+    - Each table in a distance column is labeled with a percentage estimating how likely it truly
+      belongs on the path. It is based on how specific (few neighbors) a table is compared to the
+      other candidates at the same distance. A tooltip explains the value.
+    - New option "Sort tables by confidence": tables within a distance column are ordered by
+      confidence (most likely first) instead of alphabetically.
+    - The "Excluded Tables" list has been simplified: check box and table name now share a single
+      column, next to the "Neighbors" count. Hints and tooltips explain that checking a table
+      rebuilds the graph without it, forcing the search to route around it, and that tables with
+      many neighbors are usually shared reference tables and thus good candidates to exclude first.
+  - SQL Console: new option "Allow empty lines in statements". If checked, statements are
+    terminated by ";" only, so a statement may contain empty lines, and "Run" executes exactly the
+    one statement at the cursor position. Otherwise an empty line terminates a statement too.
+  - SQL Console: a "GO" batch separator (Microsoft SQL Server / Sybase) is no longer sent to the
+    database and no longer counted as an executed statement.
+  - SQL Console: after executing DDL, the metadata tree is now updated incrementally instead of
+    being reloaded completely. Only the affected schema's "Tables"/"Views" node - and the details
+    of the affected table if it is currently selected - are updated, leaving selection and scroll
+    position untouched. CREATE/ALTER/DROP/RENAME TABLE, CREATE/DROP VIEW and CREATE/DROP INDEX are
+    recognized; anything else falls back to the full refresh as before. After a rollback no refresh
+    is done at all, since nothing has been committed.
+  - "Analyze SQL" now also proposes associations based on DDL statements: foreign key constraints
+    in "CREATE TABLE" as well as "ALTER TABLE ... ADD [CONSTRAINT <name>] FOREIGN KEY (...)
+    REFERENCES ...".
+  - BLOB/CLOB content preview:
+    - The detected content type, the image thumbnail and the "View" button are now shown directly
+      in the cells of the result tables (Data Browser and SQL Console "Rows"/"Columns"), not only
+      in the details view.
+    - SVG images are rendered. They are scaled proportionally, small icons are enlarged to a
+      legible preview size.
+    - A ZIP archive containing exactly one entry shows the content type of that entry.
+  - Icons and tooltips have been added to many menu items, toolbar buttons and dialogs of the
+    Data Model Editor, the Data Browser and the SQL Console.
+  - Fixed: the "All non-empty" item of the Data Browser's related-tables menu showed
+    "Counting rows... 100%" before the row counting had actually started.
+
 17.2.1
   - BLOB/CLOB content preview and viewer in the Data Browser and SQL console.
     - Details view: the detected content type (image, JSON, XML, HTML, PDF, ZIP, GZIP) is shown
