@@ -17,11 +17,13 @@ package net.sf.jailer.ui;
 
 import java.awt.CardLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -83,6 +85,7 @@ import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.render.HtmlDataModelRenderer;
+import net.sf.jailer.render.MermaidRenderer;
 import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.subsetting.SubsettingEngine;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
@@ -361,6 +364,68 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 		aiExtractionModelItem.addActionListener(e -> new AIExtractionModelDialog(this, extractionModelEditor));
 		jMenu3.addSeparator();
 		jMenu3.add(aiExtractionModelItem);
+
+		JMenu mermaidMenu = new JMenu("Export graph as Mermaid ER diagram");
+		mermaidMenu.setToolTipText("Export the data model as a Mermaid ER diagram. Unlike an image this is plain text, so it can be embedded into Markdown documents or wikis and put under version control.");
+		JMenuItem mermaidAll = new JMenuItem("Whole data model...");
+		mermaidAll.setToolTipText("Write all tables of the data model to a Mermaid file.");
+		mermaidAll.addActionListener(e -> exportMermaid(false, false));
+		JMenuItem mermaidVisible = new JMenuItem("Visible tables only...");
+		mermaidVisible.setToolTipText("Write only the tables currently visible in the graphical view to a Mermaid file.");
+		mermaidVisible.addActionListener(e -> exportMermaid(true, false));
+		JMenuItem mermaidClipboard = new JMenuItem("Copy whole data model to clipboard");
+		mermaidClipboard.setToolTipText("Copy the Mermaid ER diagram of the whole data model to the clipboard.");
+		mermaidClipboard.addActionListener(e -> exportMermaid(false, true));
+		mermaidMenu.add(mermaidAll);
+		mermaidMenu.add(mermaidVisible);
+		mermaidMenu.add(mermaidClipboard);
+		insertAfter(fileMenu, exportDisplay1, mermaidMenu);
+	}
+
+	/**
+	 * Inserts a menu item into a menu directly after another item.
+	 * Used to extend the NetBeans generated menus without touching "initComponents".
+	 *
+	 * @param menu the menu
+	 * @param predecessor the item after which to insert
+	 * @param item the item to insert
+	 */
+	private void insertAfter(JMenu menu, JMenuItem predecessor, JMenuItem item) {
+		Component[] components = menu.getMenuComponents();
+		for (int i = 0; i < components.length; ++i) {
+			if (components[i] == predecessor) {
+				menu.insert(item, i + 1);
+				return;
+			}
+		}
+		menu.add(item);
+	}
+
+	/**
+	 * Exports the data model as a Mermaid ER diagram.
+	 *
+	 * @param visibleTablesOnly if <code>true</code>, only the tables currently visible in the graphical view are exported
+	 * @param toClipboard if <code>true</code>, the diagram is copied to the clipboard instead of being written to a file
+	 */
+	private void exportMermaid(boolean visibleTablesOnly, boolean toClipboard) {
+		try {
+			Collection<Table> tables = visibleTablesOnly? extractionModelEditor.graphView.getVisibleTables() : null;
+			if (visibleTablesOnly && (tables == null || tables.isEmpty())) {
+				JOptionPane.showMessageDialog(this, "No tables are visible in the graphical view.");
+				return;
+			}
+			String mermaid = MermaidRenderer.render(extractionModelEditor.dataModel, tables, null);
+			if (toClipboard) {
+				UIUtil.setClipboardContent(new StringSelection(mermaid));
+			} else {
+				String fileName = UIUtil.choseFile(null, ".", "Export as Mermaid ER Diagram", ".mmd", this, true, false);
+				if (fileName != null) {
+					Files.write(new File(fileName).toPath(), mermaid.getBytes("UTF-8"));
+				}
+			}
+		} catch (Throwable e) {
+			UIUtil.showException(this, "Error", e);
+		}
 	}
 
 	private void initSandbox() {

@@ -10,13 +10,17 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
+
+import org.jfree.svg.SVGGraphics2D;
 
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
@@ -37,6 +41,12 @@ import prefuse.visual.tuple.TableVisualItem;
  * @author     Marcus St&auml;nder (<a href="mailto:webmaster@msdevelopment.org">webmaster@msdevelopment.org</a>)    
  */
 public class DisplayExporter {
+
+	/** Extension and format name of the vector format. Not provided by ImageIO. */
+	private static final String SVG_FORMAT = "svg";
+
+	/** Format preselected in the file chooser. */
+	private static final String DEFAULT_FORMAT = "png";
 
 	/** The FileChooser to select the file to save to */
 	protected JFileChooser  chooser = null;
@@ -60,19 +70,30 @@ public class DisplayExporter {
 		// Initialize the chooser
 		chooser = new JFileChooser();
 		chooser.setDialogType(JFileChooser.SAVE_DIALOG);
-		chooser.setDialogTitle("Export graph as image");
+		chooser.setDialogTitle("Export graph as image or SVG");
 		chooser.setAcceptAllFileFilterUsed(false);
 
 		HashSet<String> availableFormats = new HashSet<String>();
 		String[]        fmts             = ImageIO.getWriterFormatNames();
+		SimpleFileFilter defaultFilter = null;
 
 		for (int i = 0; i < fmts.length; i++) {
 			String s = fmts[i].toLowerCase(Locale.ENGLISH);
 			if ((s.length() == 3) &&!availableFormats.contains(s)) {
 				availableFormats.add(s);
-				chooser.setFileFilter(new SimpleFileFilter(s, s.toUpperCase(Locale.ENGLISH) + " Image (*." + s + ")"));
+				SimpleFileFilter filter = new SimpleFileFilter(s, s.toUpperCase(Locale.ENGLISH) + " Image (*." + s + ")");
+				chooser.addChoosableFileFilter(filter);
+				if (DEFAULT_FORMAT.equals(s)) {
+					defaultFilter = filter;
+				}
 			}
 		}
+
+		// the vector format is not provided by ImageIO
+		SimpleFileFilter svgFilter = new SimpleFileFilter(SVG_FORMAT, "SVG Image (*.svg)");
+		chooser.addChoosableFileFilter(svgFilter);
+
+		chooser.setFileFilter(defaultFilter != null? defaultFilter : svgFilter);
 
 		availableFormats.clear();
 		availableFormats = null;
@@ -139,45 +160,31 @@ public class DisplayExporter {
 			// Some little extra spacing
 			GraphicsLib.expand(bounds, 10 + (1 /* / display.getScale() */));
 			
-			// Get a buffered image to draw into
-			BufferedImage img = getNewOffscreenBuffer(display, Math.max(1, (int) (bounds.getWidth() * display.getScale())), Math.max(1, (int) (bounds.getHeight() * display.getScale())));
-			Graphics2D g = (Graphics2D)img.getGraphics();
-
-			/*
-			 * Set up the display, render, then revert to normal settings
-			 */
-
-			// The zoom point, zooming should not change anything else than the scale
-//          Point2D zoomPoint = new Point2D.Double(0, 0);
-
 			// Get and remember the current scaling
 			double scale = display.getScale();
 
-			// Change scale to normal (1)
-//            display.zoom(zoomPoint, 1/scale);
+			int width = Math.max(1, (int) (bounds.getWidth() * scale));
+			int height = Math.max(1, (int) (bounds.getHeight() * scale));
 
-			boolean isHighQuality = display.isHighQuality();
-			display.setHighQuality(true);
+			if (SVG_FORMAT.equalsIgnoreCase(format)) {
+				// Vector output. The very same painting, but into a Graphics2D that writes SVG
+				SVGGraphics2D g = new SVGGraphics2D(width, height);
 
-			// Remember the current point
-			Point2D currentPoint = new Point2D.Double(display.getDisplayX(), display.getDisplayY());
+				paintTo(display, g, bounds, scale);
 
-			// Now pan so the most left element is at the left side of the display and 
-			// the highest element is at the top.
-			display.panToAbs(new Point2D.Double(bounds.getMinX() + display.getWidth()/scale/2,
-					bounds.getMinY() + display.getHeight()/scale/2));
+				OutputStreamWriter out = new OutputStreamWriter(output, StandardCharsets.UTF_8);
+				out.write(g.getSVGElement());
+				out.flush();
+			} else {
+				// Get a buffered image to draw into
+				BufferedImage img = getNewOffscreenBuffer(display, width, height);
+				Graphics2D g = (Graphics2D)img.getGraphics();
 
-			// Now lets prefuse to the actual painting
-			display.paintDisplay(g, new Dimension((int) (bounds.getWidth() * scale), (int) (bounds.getHeight() * scale)));
+				paintTo(display, g, bounds, scale);
 
-			// Undo the panning, zooming and reset the quality mode
-			display.panToAbs(new Point2D.Double((currentPoint.getX() + display.getWidth()/2)/scale,
-					(currentPoint.getY() + display.getHeight()/2)/scale));
-			display.setHighQuality(isHighQuality);
-//            display.zoom(zoomPoint, scale);    // also takes care of damage report
-
-			// Save the image and return
-			ImageIO.write(img, format, output);
+				// Save the image
+				ImageIO.write(img, format, output);
+			}
 
 			if (mapHtmlFile != null) {
 				PrintWriter out = new PrintWriter(mapHtmlFile);
@@ -240,6 +247,42 @@ public class DisplayExporter {
 		} finally {
 			UIUtil.resetWaitCursor(display);
 		}
+	}
+
+	/**
+	 * Paints the <code>Display</code> into a given <code>Graphics2D</code>.
+	 * The display is panned so that the top left element appears at the top left
+	 * of the graphics. Panning and quality mode are restored afterwards.
+	 *
+	 * @param display the <code>Display</code> to paint
+	 * @param g the graphics to paint into
+	 * @param bounds the bounding box of all visual items
+	 * @param scale the current scaling of the display
+	 */
+	private void paintTo(Display display, Graphics2D g, Rectangle2D bounds, double scale) {
+
+		/*
+		 * Set up the display, render, then revert to normal settings
+		 */
+
+		boolean isHighQuality = display.isHighQuality();
+		display.setHighQuality(true);
+
+		// Remember the current point
+		Point2D currentPoint = new Point2D.Double(display.getDisplayX(), display.getDisplayY());
+
+		// Now pan so the most left element is at the left side of the display and 
+		// the highest element is at the top.
+		display.panToAbs(new Point2D.Double(bounds.getMinX() + display.getWidth()/scale/2,
+				bounds.getMinY() + display.getHeight()/scale/2));
+
+		// Now lets prefuse to the actual painting
+		display.paintDisplay(g, new Dimension((int) (bounds.getWidth() * scale), (int) (bounds.getHeight() * scale)));
+
+		// Undo the panning and reset the quality mode
+		display.panToAbs(new Point2D.Double((currentPoint.getX() + display.getWidth()/2)/scale,
+				(currentPoint.getY() + display.getHeight()/2)/scale));
+		display.setHighQuality(isHighQuality);
 	}
 
 	//~--- Get methods --------------------------------------------------------

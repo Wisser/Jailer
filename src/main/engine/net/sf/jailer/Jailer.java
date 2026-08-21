@@ -45,6 +45,7 @@ import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.progress.ProgressListener;
 import net.sf.jailer.render.DataModelRenderer;
 import net.sf.jailer.render.HtmlDataModelRenderer;
+import net.sf.jailer.render.MermaidRenderer;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.subsetting.SubsettingEngine;
@@ -194,7 +195,7 @@ public class Jailer {
 
 			String command = commandLine.arguments.get(0);
 			if (!"create-ddl".equalsIgnoreCase(command)) {
-				if (!"print-closure".equalsIgnoreCase(command)) {
+				if (!"print-closure".equalsIgnoreCase(command) && !"render-mermaid".equalsIgnoreCase(command)) {
 					getLogger().info("Jailer " + JailerVersion.VERSION);
 				}
 			}
@@ -209,6 +210,15 @@ public class Jailer {
 						updateDataModelFolder(commandLine, commandLine.arguments.get(1), executionContext);
 					}
 					renderDataModel(commandLine.arguments, commandLine.schema, executionContext);
+				}
+			} else if ("render-mermaid".equalsIgnoreCase(command)) {
+				if (commandLine.arguments.size() > 2) {
+					CommandLineParser.printUsage(args);
+				} else {
+					if (commandLine.arguments.size() > 1) {
+						updateDataModelFolder(commandLine, commandLine.arguments.get(1), executionContext);
+					}
+					renderMermaid(commandLine.arguments, executionContext);
 				}
 			} else if ("import".equalsIgnoreCase(command)) {
 				checkPW(commandLine, 6);
@@ -424,6 +434,25 @@ public class Jailer {
 			throw new RuntimeException("no renderer found");
 		}
 		renderer.render(dataModel, arguments.subList(1, arguments.size()));
+	}
+
+	/**
+	 * Renders the data model as a Mermaid ER diagram and prints it to stdout.
+	 *
+	 * @param arguments the command-line arguments (first element is the command, remaining elements are extraction model file names)
+	 * @param executionContext the execution context
+	 */
+	private static void renderMermaid(List<String> arguments, ExecutionContext executionContext) throws Exception {
+		DataModel dataModel = new DataModel(executionContext);
+		for (String rm : arguments.subList(1, arguments.size())) {
+			if (dataModel.getRestrictionModel() == null) {
+				dataModel.setRestrictionModel(new RestrictionModel(dataModel, executionContext));
+			}
+			URL modelURL = new File(rm).toURI().toURL();
+			dataModel.getRestrictionModel().addRestrictionDefinition(modelURL, new HashMap<String, String>());
+		}
+		System.out.print(MermaidRenderer.render(dataModel, null, null));
+		System.out.flush();
 	}
 
 }

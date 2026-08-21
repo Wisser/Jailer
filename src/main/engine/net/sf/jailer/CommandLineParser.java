@@ -156,6 +156,9 @@ public class CommandLineParser {
 		System.out.println("  " + cmd + " render-datamodel [-datamodel VAL] [<extraction-model>] ");
 		System.out.println("    generates a HTML render of the (restricted) data model into directory 'render'");
 		System.out.println();
+		System.out.println("  " + cmd + " render-mermaid [-datamodel VAL] [<extraction-model>] ");
+		System.out.println("    prints the (restricted) data model as a Mermaid ER diagram to stdout");
+		System.out.println();
 		System.out.println("  " + cmd + " print-closure <extraction-model> [<separator>] [-datamodel VAL]");
 		System.out.println("    prints a list of all tables that are directly or transitively associated with a subject table,");
 		System.out.println("    taking into account the restrictions on the associations (the so-called \"Closure\")");

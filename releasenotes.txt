@@ -1,3 +1,21 @@
+17.2.3
+  - The data model can now be exported as an ER diagram in text form and as a vector image.
+    - New menu item "File" -> "Export graph as Mermaid ER diagram" writes the data model as a
+      Mermaid "erDiagram" - either the whole model or only the tables currently visible in the
+      graphical view - to a file, or copies it to the clipboard. Unlike an image this is plain
+      text, so it can be embedded into Markdown documents, READMEs or wikis, where the hosting
+      platform renders it, and it can be put under version control and diffed.
+      Tables are rendered with their primary key and foreign key columns, associations with their
+      cardinality; restricted associations are drawn as non-identifying (dashed) relationships,
+      disabled associations are omitted.
+    - New command line command "render-mermaid" prints the same diagram of the (restricted) data
+      model to stdout, so documentation can be generated in a build pipeline.
+    - "File" -> "Export graph as image..." now offers "SVG" in addition to the raster formats.
+      An SVG stays sharp at any zoom level and its text remains selectable and searchable.
+      The format box of the file chooser now preselects PNG. Previously the preselected format
+      depended on the order in which the JDK enumerates its image writers, which could yield an
+      unexpected format like TIFF.
+
 17.2.2
   - Path Finder: candidate tables now show a confidence estimate.
     - Each table in a distance column is labeled with a percentage estimating how likely it truly
