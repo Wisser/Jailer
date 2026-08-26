@@ -109,6 +109,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButton;
@@ -2971,4 +2972,39 @@ public class UIUtil {
 
 	private static Map<Runnable, Runnable> scaleAwareInitializer = new WeakHashMap<Runnable, Runnable>();
 	
+
+	/**
+	 * Sets the icon of the tab with the given title.
+	 * Used to extend the NetBeans generated tabs without touching "initComponents".
+	 *
+	 * @param tabbedPane the tabbed pane
+	 * @param title the title of the tab
+	 * @param resource the resource path of the image
+	 */
+	public static void setTabIcon(JTabbedPane tabbedPane, String title, String resource) {
+		int index = tabbedPane.indexOfTab(title);
+		if (index >= 0) {
+			tabbedPane.setIconAt(index, scaleIcon(tabbedPane, readImage(resource)));
+		}
+	}
+
+	/**
+	 * Inserts a menu item into a menu directly after another item.
+	 * Used to extend the NetBeans generated menus without touching "initComponents".
+	 *
+	 * @param menu the menu
+	 * @param predecessor the item after which to insert
+	 * @param item the item to insert
+	 */
+	public static void insertAfter(JMenu menu, JMenuItem predecessor, JMenuItem item) {
+		Component[] components = menu.getMenuComponents();
+		for (int i = 0; i < components.length; ++i) {
+			if (components[i] == predecessor) {
+				menu.insert(item, i + 1);
+				return;
+			}
+		}
+		menu.add(item);
+	}
+
 }

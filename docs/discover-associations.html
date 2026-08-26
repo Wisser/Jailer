@@ -1,0 +1,514 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+
+  <title>Jailer - Discover Associations</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii" />
+  <meta name="keywords" content="Data Export Tool" />
+  <meta name="description" content="data export referential integrity java jdbc dbms" />
+  <link rel="stylesheet" type="text/css" href="styles.css" />
+  <link rel="shortcut icon" href="favicon.ico" />
+</head>
+
+<body left-margin="0" top-margin="0">
+  <div align="left">
+    <table style="text-align: left; position: absolute; left: 0pt; top: 0pt;" border="0"
+    cellpadding="0" cellspacing="0" height="407" width="100%">
+      <tbody>
+        <tr>
+          <td colspan="2" class="bannerbackground" height="33" width="100%">
+            <table border="0" cellpadding="4" cellspacing="0" width="100%">
+              <tbody>
+                <tr>
+                  <td><a href="https://github.com/Wisser/Jailer"><img src="logo.png" hspace="10" /></td> <td class="slogan" width="100%"></a>
+
+
+
+                  <td style="text-align: right; width: 100%;"><table border="0" cellpadding="0" cellspacing="0">
+                      <tbody>
+                        <tr>
+                           <td><a href="https://github.com/Wisser/Jailer"><img src="GitHub-Mark-64px.png" title="GitHub" /></a> </td></tr><tr style="height: 100%;"><td>&nbsp;</td>
+                        </tr>
+                      </tbody>
+                    </table> </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td colspan="2" class="nav1background"  width="100%">&nbsp;
+          <b><font color="#FFFFFF"><a href="home.htm" target="_self" class=
+          "tlink">&nbsp;Home&nbsp;</a> <a href="quicktour.htm" target="_self"
+          class="tlink">&nbsp;Quick Tour&nbsp;</a> <a href="exporting-data.htm"
+          target="_self" class="tlink">&nbsp;Tutorial&nbsp;</a> <a href=
+          "data-browsing.html" target="_self" class="tlink">&nbsp;Data Browser&nbsp;</a> <a class="tlink" href="videos.html" target="_self">&nbsp;Videos&nbsp;</a>
+          <a href="faq.html" target="_self" class="tlinkA">&nbsp;FAQ&nbsp;</a>
+          <a href="api.html" target="_self" class="tlink">&nbsp;API&nbsp;</a>
+          <a href="design.htm" target="_self" class=
+          "tlink">&nbsp;Technical Reference&nbsp;</a> <a href=
+          "forum.html" target="_self" class=
+          "tlink">&nbsp;Forum&nbsp;</a> <a href=
+          "download.html" target="_self"
+          class="tlink">&nbsp;Download&nbsp;</a>  &nbsp;&nbsp;&nbsp;
+          &nbsp;&nbsp;&nbsp;</font></b></td>
+        </tr>
+
+        <tr>
+          <td colspan="2" class="spacer" width="100%"></td> </tr><tr><td class="lmenucontainer">&nbsp;</td>
+        </tr>
+
+        <tr>
+          <td class="lmenucontainer" height="100%" valign="top" width="14%">
+            <div align="center">
+              <center>
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                  <tbody>
+                    <tr>
+                      <td height="6px" width="100%"> </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </center>
+            </div>
+
+            <ul>
+              <li>FAQ</li>
+              <ul>
+                <li><a href="faq.html" target="_self" class="llink">General Questions</a></li>
+                <li><a href="analyse-sql-script.html" target="_self" class="llink">Analyse SQL Script</a></li>
+                <li><a href="discover-associations.html" target="_self" class="llinkA">Discover Associations</a></li>
+                <li><a href="model-migration-tool.html" target="_self" class="llink">Model Migration Tool</a></li>
+                <li><a href="find-path.html" target="_self" class="llink">Find Path to...</a></li>
+                <li><a href="subset-by-example-faq.html" target="_self" class="llink">Subset by Example</a></li>
+                <li><a href="query-builder-faq.html" target="_self" class="llink">Query Builder</a></li>
+              </ul>
+            </ul>
+
+            <table border="0" cellpadding="5" cellspacing="0" width="100%">
+              <tbody>
+                <tr>
+                  <td class="content2background"><img style="width: 160px; height: 1px;"
+                  alt="" src="architecture-Dateien/vgradp.gif" /></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <p>&nbsp;</p>
+          </td>
+
+          <td class="contentbackground" height="418" valign="top" width="86%">
+            <div align="right">
+              <table border="0" cellpadding="0" cellspacing="0" height="542" width="98%">
+                <tbody>
+                  <tr>
+                    <td class="contentbackground" height="21" width="100%">&nbsp;</td>
+                  </tr>
+
+                  <tr>
+                    <td class="content" height="520" valign="top" width="100%">
+
+                      <big><span style="font-weight: bold;">Using &quot;Discover Associations&quot; to Reverse-Engineer a Data Model<br />
+                      <br /></span></big>
+
+                      <span>When a database schema declares no foreign key constraints,
+                      <span style="font-style: italic;">Analyse Database</span> cannot find
+                      any association, and every relationship has to be entered by hand.
+                      <span style="font-style: italic;">Discover Associations</span> closes
+                      that gap without requiring any SQL script: it derives candidates from
+                      the column and table <span style="font-weight: bold;">names</span>,
+                      optionally from the <span style="font-weight: bold;">data</span>
+                      itself, and verifies every candidate against the database before
+                      proposing it.<br /><br /></span>
+
+                      <table style="text-align: left;" border="0" cellpadding="3"
+                      cellspacing="0">
+                        <tbody>
+
+                          <!-- Q1 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">What is the &quot;Discover Associations&quot; feature and when should I use it?&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>Use it whenever the data model is incomplete because the
+                            database has no foreign key constraints &#x2014; a common
+                            situation with legacy schemas, with schemas managed by
+                            third-party applications, and with databases where the
+                            constraints have been dropped for load or performance
+                            reasons.<br /><br />
+                            It complements
+                            <a href="analyse-sql-script.html" target="_self">Analyse SQL
+                            Script</a>: that tool needs a collection of existing queries as
+                            input, whereas
+                            <span style="font-style: italic;">Discover Associations</span>
+                            needs nothing but the database connection. Both tools feed their
+                            proposals into the same place, so you can use them one after the
+                            other.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q2 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">How do I open the tool?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>Choose<br /><br />
+                            <span style="font-weight: bold;">Data Model &rarr; Discover Associations...</span><br /><br />
+                            The menu item exists both in the
+                            <span style="font-style: italic;">Extraction Model Editor</span>
+                            and in the <span style="font-style: italic;">Data Browser</span>.
+                            Because the candidates are verified against the data, a database
+                            connection is required: in the Extraction Model Editor you are
+                            asked to connect if you are not connected yet, in the Data
+                            Browser the open connection is used.<br /><br />
+                            The dialog does not start immediately. Set the options first,
+                            then click <span style="font-weight: bold;">Start</span>.
+                            <br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q3 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">How are candidates derived from the names?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>For every table with a primary key, all other tables are
+                            searched for columns that look like a reference to that primary
+                            key. Comparison ignores quoting and case. Accepted are:<br />
+                            <ul>
+                              <li>a column with exactly the name of the primary key column,
+                              e.g. <span style="font-style: italic;">ORDER.CUSTOMER_ID</span>
+                              &rarr; <span style="font-style: italic;">CUSTOMER.CUSTOMER_ID</span></li>
+                              <li>the table name followed by the primary key column name,
+                              e.g. <span style="font-style: italic;">ORDER.CUSTOMER_ID</span>
+                              &rarr; <span style="font-style: italic;">CUSTOMER.ID</span></li>
+                              <li>the usual variants of such a name:
+                              <span style="font-style: italic;">CUSTOMERID</span>,
+                              <span style="font-style: italic;">CUSTOMER_NO</span>,
+                              <span style="font-style: italic;">CUSTOMER_NR</span>,
+                              <span style="font-style: italic;">CUSTOMER_KEY</span>,
+                              <span style="font-style: italic;">CUSTOMER_CODE</span></li>
+                              <li>singular and plural forms of the table name
+                              (<span style="font-style: italic;">CUSTOMERS</span>,
+                              <span style="font-style: italic;">CATEGORIES</span> /
+                              <span style="font-style: italic;">CATEGORY</span>)</li>
+                              <li>names carrying one of the usual foreign key affixes:
+                              <span style="font-style: italic;">FK_</span>,
+                              <span style="font-style: italic;">REF_</span>,
+                              <span style="font-style: italic;">ID_</span>,
+                              <span style="font-style: italic;">_FK</span>,
+                              <span style="font-style: italic;">_REF</span></li>
+                            </ul>
+                            In addition, the column types must be compatible. Columns that
+                            cannot be part of a key at all &#x2014; LOBs, binaries, XML,
+                            geometries, booleans and long text &#x2014; are never
+                            considered.<br /><br />
+                            For a <span style="font-weight: bold;">composite</span> primary
+                            key, <span style="font-weight: bold;">all</span> of its columns
+                            must find a distinct matching column in the other table;
+                            otherwise the candidate is discarded.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q4 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Why is a column named &quot;ID&quot; not treated as a reference to another table's &quot;ID&quot;?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>Because it almost never is one. A primary key whose name
+                            says nothing about its table &#x2014;
+                            <span style="font-style: italic;">ID</span>,
+                            <span style="font-style: italic;">NO</span>,
+                            <span style="font-style: italic;">NR</span>,
+                            <span style="font-style: italic;">KEY</span>,
+                            <span style="font-style: italic;">CODE</span>,
+                            <span style="font-style: italic;">NAME</span>, &hellip; &#x2014;
+                            exists in nearly every table, where it is that table's own key.
+                            Accepting name equality in such a case would turn every pair of
+                            tables into a candidate, and since small key ranges overlap, many
+                            of those candidates would even pass the data check.<br /><br />
+                            Therefore, if a primary key consists of generic names only, plain
+                            name equality counts as no evidence; only the qualified forms
+                            (<span style="font-style: italic;">CUSTOMER_ID</span>,
+                            <span style="font-style: italic;">CUSTOMERID</span>, &hellip;) are
+                            accepted. As soon as at least one column of the primary key has a
+                            specific name, name equality is accepted for the whole key
+                            &#x2014; this keeps composite keys such as
+                            (<span style="font-style: italic;">ORDER_ID</span>,
+                            <span style="font-style: italic;">POSITION</span>) working.
+                            <br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q5 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">How is a candidate verified against the data?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>By counting the rows of the child table that have no matching
+                            row in the parent table &#x2014; an inclusion dependency
+                            check:<br /><br />
+                            <span style="font-family: monospace;">Select count(*) From ORDER A
+                            Where A.CUSTOMER_ID is not null and not exists<br />
+                            &nbsp;&nbsp;(Select 1 From CUSTOMER P Where A.CUSTOMER_ID =
+                            P.ID)</span><br /><br />
+                            Rows in which the foreign key is null are ignored, as they are for
+                            a real foreign key. Together with the total number of rows with a
+                            complete key this yields the fraction of matching rows.<br /><br />
+                            A candidate is only proposed if that fraction reaches the value
+                            selected under <span style="font-weight: bold;">Min. matching
+                            rows</span> (95&nbsp;% by default). Choose 100&nbsp;% for a strict
+                            check, or a lower value if the database is known to contain
+                            orphaned rows.<br /><br />
+                            The exact statement of every candidate can be found in the
+                            <span style="font-weight: bold;">Statements</span> tab.
+                            <br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q6 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">What does the confidence tell me?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>It estimates how likely the candidate is a real foreign key,
+                            and it combines three things:<br />
+                            <ul>
+                              <li>the <span style="font-weight: bold;">fraction of matching
+                              rows</span> determined by the check above</li>
+                              <li>the <span style="font-weight: bold;">strength of the name
+                              evidence</span> &#x2014; a name equal to the primary key counts
+                              more than a name that merely follows a convention, and both
+                              count more than a candidate found by the data scan alone</li>
+                              <li>the <span style="font-weight: bold;">number of distinct
+                              values</span> of the column: a column holding only a handful of
+                              different values matches almost any key by chance and is
+                              therefore rated down</li>
+                            </ul>
+                            The <span style="font-weight: bold;">Evidence</span> column spells
+                            out what the value is based on, e.g.
+                            <span style="font-style: italic;">&quot;Name matches primary key;
+                            12480 of 12500 rows match (20 without parent); n:1&quot;</span>.
+                            The detected <span style="font-weight: bold;">cardinality</span>
+                            is shown as well: <span style="font-style: italic;">1:1</span> if
+                            the values of the column are unique, otherwise
+                            <span style="font-style: italic;">n:1</span>. It is displayed for
+                            information only and is not written into the data model.<br /><br />
+                            Sort by <span style="font-weight: bold;">Confidence</span> to
+                            review the most reliable proposals first. A confidence of
+                            100&nbsp;% is never reported: no heuristic can prove a foreign
+                            key, so the final judgement stays with you.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q7 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">What does the option &quot;Also find candidates without matching column names&quot; do?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>It scans the data for columns whose values are contained in a
+                            primary key although their names give no hint at all &#x2014; the
+                            case of cryptic column names such as
+                            <span style="font-style: italic;">F_042</span>, and of
+                            self-references such as
+                            <span style="font-style: italic;">EMPLOYEE.MANAGER_ID</span>,
+                            whose name does not mention its own table.<br /><br />
+                            Checking every column against every primary key would need a
+                            quadratic number of queries. To avoid that, all tables are
+                            profiled first &#x2014; one aggregate query per table gathering
+                            the row count and, per column, the number of non-null values, the
+                            number of distinct values and the value range. A column pair is
+                            only verified if it survives this pre-filter:<br />
+                            <ul>
+                              <li>the types are compatible</li>
+                              <li>the value range of the column lies inside the value range of
+                              the primary key</li>
+                              <li>the number of distinct values is not greater than the number
+                              of rows of the parent table</li>
+                              <li>the column has at least three distinct values &#x2014; flags
+                              and constants would only create noise</li>
+                            </ul>
+                            Only tables with a <span style="font-weight: bold;">single</span>
+                            primary key column take part in this mode; matching column tuples
+                            without any name evidence is not viable.<br /><br />
+                            Candidates found this way are listed with the evidence
+                            <span style="font-style: italic;">&quot;Data scan only&quot;</span>
+                            and, unlike the name-based ones, they are
+                            <span style="font-weight: bold;">not checked</span> in advance
+                            &#x2014; they need to be judged individually.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q8 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">How much load does this put on the database, and how do I limit it?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>Two kinds of statements are executed, and all of them are
+                            read-only:<br />
+                            <ul>
+                              <li>one profiling query per table. If it does not finish within
+                              30 seconds, the expensive
+                              <span style="font-style: italic;">count(distinct &hellip;)</span>
+                              is dropped; if that still does not finish, the table is profiled
+                              over a sample of its rows; if even that fails, the table is
+                              listed in the <span style="font-weight: bold;">Problems</span>
+                              tab and takes part in the name-based search only.</li>
+                              <li>one verification query per candidate (a second one only for
+                              composite keys).</li>
+                            </ul>
+                            The option <span style="font-weight: bold;">Max. queries</span>
+                            caps the number of verification queries (2000 by default). If the
+                            limit is reached, the run stops and the status line reports how
+                            many candidates have not been checked &#x2014; the result is never
+                            silently truncated.<br /><br />
+                            Closing the dialog cancels a running discovery immediately.
+                            <br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q9 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">How do I interpret the four tabs?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>
+                              <table style="text-align: left; width: 100%;" border="0"
+                              cellpadding="4" cellspacing="0">
+                                <tbody>
+                                  <tr>
+                                    <td style="font-weight: bold; vertical-align: top;">Proposals</td>
+                                    <td>The confirmed candidates, with join condition,
+                                    confidence, cardinality and evidence. The check box in
+                                    each row decides what is accepted; the column headers
+                                    allow sorting and filtering.</td>
+                                  </tr>
+                                  <tr>
+                                    <td style="font-weight: bold; vertical-align: top;">Already known</td>
+                                    <td>Candidates for which an equivalent association
+                                    already exists in the data model. Informational only
+                                    &#x2014; they are not proposed again. A useful
+                                    cross-check: known associations that reappear here
+                                    confirm that the heuristic works on this schema.</td>
+                                  </tr>
+                                  <tr>
+                                    <td style="font-weight: bold; vertical-align: top;">Statements</td>
+                                    <td>Every statement that has been executed, in
+                                    order &#x2014; the profiling queries as well as the
+                                    verification queries.</td>
+                                  </tr>
+                                  <tr>
+                                    <td style="font-weight: bold; vertical-align: top;">Problems</td>
+                                    <td>Tables that could not be profiled and candidates that
+                                    could not be verified, e.g. because of a timeout or a
+                                    missing privilege. Everything else is unaffected.</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            <br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q10 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">How do I accept proposals and add them to the data model?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>
+                              <ol>
+                                <li>Check the proposals you want to keep. Name-based
+                                proposals are pre-checked, data-scan proposals are not.
+                                <span style="font-weight: bold;">&quot;Select all&quot;</span>
+                                and <span style="font-weight: bold;">&quot;Deselect
+                                all&quot;</span> act on the rows that are currently visible,
+                                so you can first filter, e.g. by confidence, and then select
+                                the remainder.</li>
+                                <li>Click <span style="font-weight: bold;">Accept</span>.</li>
+                                <li>The Data Model Editor opens with the new associations. In
+                                it you can rename them, adjust the cardinality and correct
+                                the join condition; nothing is written until you save.</li>
+                              </ol>
+                            Each accepted association receives an auto-generated name of the
+                            form <span style="font-style: italic;">P_TableA_TableB</span>
+                            (with a numeric suffix if necessary to avoid duplicates)
+                            &#x2014; the same naming as with
+                            <span style="font-style: italic;">Analyse SQL Script</span>.
+                            <br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q11 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">What is not found, and what should I watch out for?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>The tool proposes, it does not decide. Known limits:<br />
+                            <ul>
+                              <li>A table <span style="font-weight: bold;">without a primary
+                              key</span> can never be a parent. Use
+                              <span style="font-style: italic;">Check Primary Keys</span> to
+                              find such tables and define the key in the Data Model
+                              Editor.</li>
+                              <li>A <span style="font-weight: bold;">self-reference</span>
+                              whose column name does not mention its own table (e.g.
+                              <span style="font-style: italic;">MANAGER_ID</span> in
+                              <span style="font-style: italic;">EMPLOYEE</span>) is only found
+                              by the data scan.</li>
+                              <li><span style="font-weight: bold;">Composite</span> keys are
+                              only found by the name-based search.</li>
+                              <li>An <span style="font-weight: bold;">empty table</span>
+                              confirms nothing: without rows the check has no evidence, so no
+                              candidate is proposed.</li>
+                              <li>Two columns that contain the same small numbers without
+                              being related pass the check as a
+                              <span style="font-weight: bold;">false positive</span>. The
+                              confidence rates such cases down, but does not eliminate them
+                              &#x2014; a plausibility check of the column names remains
+                              worthwhile.</li>
+                            </ul>
+                            After accepting, <span style="font-style: italic;">Check
+                            referential consistency</span> and the graphical view are good
+                            ways of validating the result: an association that pulls in
+                            unexpectedly large parts of the database during a subsetting run
+                            is usually a false positive.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <p><br /></p>
+
+            <p><br /></p>
+
+            <p><br />
+            &nbsp;</p>
+          </td>
+        </tr>
+
+        <tr>
+          <td height="12" valign="top" width="14%"><br /></td>
+
+          <td><br /></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

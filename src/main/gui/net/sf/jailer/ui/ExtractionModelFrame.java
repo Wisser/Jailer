@@ -17,7 +17,6 @@ package net.sf.jailer.ui;
 
 import java.awt.CardLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Frame;
 import java.awt.Point;
@@ -93,6 +92,7 @@ import net.sf.jailer.ui.DbConnectionDialog.ConnectionType;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionTypeChangeListener;
 import net.sf.jailer.ui.UIUtil.PlafAware;
 import net.sf.jailer.ui.UIUtil.ResultConsumer;
+import net.sf.jailer.ui.associationdiscovery.AssociationDiscoveryView;
 import net.sf.jailer.ui.associationproposer.AssociationProposerView;
 import net.sf.jailer.ui.commandline.CommandLineInstance;
 import net.sf.jailer.ui.commandline.UICommandLine;
@@ -380,6 +380,15 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 		mermaidMenu.add(mermaidVisible);
 		mermaidMenu.add(mermaidClipboard);
 		insertAfter(fileMenu, exportDisplay1, mermaidMenu);
+
+		JMenuItem discoverAssociationsItem = new JMenuItem("Discover Associations");
+		discoverAssociationsItem.setToolTipText("Propose associations for a database without foreign key constraints, based on naming conventions and on the data itself.");
+		ImageIcon discoverIcon = UIUtil.readImage("/explain.png");
+		if (discoverIcon != null) {
+			discoverAssociationsItem.setIcon(UIUtil.scaleIcon(discoverAssociationsItem, discoverIcon));
+		}
+		discoverAssociationsItem.addActionListener(e -> discoverAssociations());
+		insertAfter(jMenu1, analyzeSQLMenuItem, discoverAssociationsItem);
 	}
 
 	/**
@@ -391,14 +400,37 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 	 * @param item the item to insert
 	 */
 	private void insertAfter(JMenu menu, JMenuItem predecessor, JMenuItem item) {
-		Component[] components = menu.getMenuComponents();
-		for (int i = 0; i < components.length; ++i) {
-			if (components[i] == predecessor) {
-				menu.insert(item, i + 1);
-				return;
+		UIUtil.insertAfter(menu, predecessor, item);
+	}
+
+	/**
+	 * Opens the "Discover Associations" dialog, which proposes associations that are
+	 * not declared as foreign key constraints.
+	 */
+	private void discoverAssociations() {
+		try {
+			if (dbConnectionDialog.isConnected || dbConnectionDialog.connect("Discover Associations")) {
+				BasicDataSource dataSource = new BasicDataSource(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword(), 0, dbConnectionDialog.currentJarURLs());
+				if (theSession != null) {
+					theSession.shutDown();
+					theSession = null;
+				}
+				Session session = SessionForUI.createSession(dataSource, dataSource.dbms, executionContext.getIsolationLevel(), false, false, this);
+				if (session != null) {
+					boolean accepted;
+					try {
+						accepted = new AssociationDiscoveryView(this, extractionModelEditor.dataModel, session, executionContext).isAccepted();
+					} finally {
+						session.shutDown();
+					}
+					if (accepted) {
+						openDataModelEditor(null, true);
+					}
+				}
 			}
+		} catch (Exception e) {
+			UIUtil.showException(this, "Error", e);
 		}
-		menu.add(item);
 	}
 
 	/**

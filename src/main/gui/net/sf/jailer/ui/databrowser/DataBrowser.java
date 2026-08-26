@@ -179,6 +179,7 @@ import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.UIUtil.PlafAware;
 import net.sf.jailer.ui.UIUtil.ResultConsumer;
+import net.sf.jailer.ui.associationdiscovery.AssociationDiscoveryView;
 import net.sf.jailer.ui.associationproposer.AssociationProposerView;
 import net.sf.jailer.ui.commandline.CommandLineInstance;
 import net.sf.jailer.ui.constraintcheck.ConstraintChecker;
@@ -6819,6 +6820,15 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		aiAssistantMenuItem.addActionListener(e -> openAIAssistant());
 		jMenu2.addSeparator();
 		jMenu2.add(aiAssistantMenuItem);
+
+		JMenuItem discoverAssociationsItem = new JMenuItem("Discover Associations");
+		discoverAssociationsItem.setToolTipText("Propose associations for a database without foreign key constraints, based on naming conventions and on the data itself.");
+		javax.swing.ImageIcon discoverIcon = net.sf.jailer.ui.UIUtil.readImage("/explain.png");
+		if (discoverIcon != null) {
+			discoverAssociationsItem.setIcon(net.sf.jailer.ui.UIUtil.scaleIcon(discoverAssociationsItem, discoverIcon));
+		}
+		discoverAssociationsItem.addActionListener(e -> discoverAssociations());
+		net.sf.jailer.ui.UIUtil.insertAfter(menuTools, analyseSQLMenuItem1, discoverAssociationsItem);
 	}
 
 	private void saveScriptAsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_saveScriptAsMenuItemActionPerformed
@@ -6852,6 +6862,17 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 			openDataModelEditor(true);
 		}
 	}// GEN-LAST:event_analyseSQLMenuItem1ActionPerformed
+
+	/**
+	 * Opens the "Discover Associations" dialog, which proposes associations that are
+	 * not declared as foreign key constraints.
+	 */
+	private void discoverAssociations() {
+		AssociationDiscoveryView discoveryView = new AssociationDiscoveryView(this, datamodel.get(), session, executionContext);
+		if (discoveryView.isAccepted()) {
+			openDataModelEditor(true);
+		}
+	}
 
 	private void columnOrderItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_columnOrderItemActionPerformed
 		openColumnOrderEditor(null);

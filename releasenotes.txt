@@ -1,4 +1,31 @@
 17.2.3
+  - New feature "Discover Associations": proposes associations for databases that have no
+    foreign key constraints.
+    - New menu item "Data Model" -> "Discover Associations..." (in the Subsetter as well as in
+      the Data Browser) proposes association definitions without reading any foreign key
+      constraint. Candidates are derived from naming conventions - a column that refers to the
+      primary key of another table, e.g. "ORDER.CUSTOMER_ID" -> "CUSTOMER.ID", including
+      singular/plural forms of the table name and the usual prefixes and suffixes ("FK_",
+      "_REF", "_NO", ...). Each candidate is then verified against the data: the number of rows
+      of the child table that have no matching row in the parent table is counted.
+    - Every proposal is labeled with a confidence in percent. It combines the fraction of
+      matching rows with the strength of the name evidence and with the number of distinct
+      values of the column, so that columns with few distinct values - which match almost any
+      key by chance - are rated down. The detected cardinality (n:1 or 1:1) is shown as well.
+    - Option "Also find candidates without matching column names": additionally scans the data
+      for columns whose values are contained in a primary key although their names give no
+      hint. To keep the number of queries manageable, all tables are profiled first (row
+      count, value range and number of distinct values per column) and only the column pairs
+      that survive this pre-filter are verified. In this mode only tables with a single
+      primary key column are considered.
+    - The minimum fraction of matching rows (default 95%) and the maximum number of
+      verification queries can be chosen. If the query limit is reached, the number of
+      candidates that have not been checked is reported in the status line.
+    - Associations that already exist in the data model are listed separately under "Already
+      known" instead of being proposed again. All executed statements, and all problems (e.g.
+      a table that could not be profiled within the timeout), are shown in their own tabs.
+    - Accepted proposals are handed over to the Data Model Editor, exactly like those of
+      "Analyze SQL Script".
   - The data model can now be exported as an ER diagram in text form and as a vector image.
     - New menu item "File" -> "Export graph as Mermaid ER diagram" writes the data model as a
       Mermaid "erDiagram" - either the whole model or only the tables currently visible in the
@@ -12,9 +39,7 @@
       model to stdout, so documentation can be generated in a build pipeline.
     - "File" -> "Export graph as image..." now offers "SVG" in addition to the raster formats.
       An SVG stays sharp at any zoom level and its text remains selectable and searchable.
-      The format box of the file chooser now preselects PNG. Previously the preselected format
-      depended on the order in which the JDK enumerates its image writers, which could yield an
-      unexpected format like TIFF.
+      The format box of the file chooser now preselects PNG.
 
 17.2.2
   - Path Finder: candidate tables now show a confidence estimate.

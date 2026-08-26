@@ -20,17 +20,14 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.TextArea;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -65,18 +62,13 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
-import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.ui.Colors;
-import net.sf.jailer.ui.DataModelEditor;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLPlusSupport;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.syntaxtextarea.SQLAutoCompletion;
 import net.sf.jailer.ui.syntaxtextarea.SQLCompletionProvider;
-import net.sf.jailer.util.CsvFile;
-import net.sf.jailer.util.Pair;
-import net.sf.jailer.util.Quoting;
 
 /**
  * Analyzes SQL statements and proposes association definitions. <br>
@@ -117,6 +109,13 @@ public class AssociationProposerView extends javax.swing.JPanel {
 
     	loadButton.setIcon(UIUtil.scaleIcon(loadButton, loadIcon));
     	closeButton.setIcon(UIUtil.scaleIcon(closeButton, cancelIcon));
+    	selectAllButton.setIcon(UIUtil.scaleIcon(selectAllButton, selectIcon));
+    	deselectAllButton.setIcon(UIUtil.scaleIcon(deselectAllButton, clearIcon));
+    	acceptButton.setIcon(UIUtil.scaleIcon(acceptButton, okIcon));
+    	applyButton.setIcon(UIUtil.scaleIcon(applyButton, okIcon));
+    	UIUtil.setTabIcon(tabbedPane, "Proposals", "/add.png");
+    	UIUtil.setTabIcon(tabbedPane, "Known", "/model.png");
+    	UIUtil.setTabIcon(tabbedPane, "Problems", "/wanr.png");
     	scaledWarnIcon = UIUtil.scaleIcon(this, warnIcon, 1);
         
         editorPane = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false) {
@@ -926,67 +925,19 @@ public class AssociationProposerView extends javax.swing.JPanel {
 
 	private void acceptProposals() {
     	try {
-    		List<String> names = new ArrayList<String>();
+    		List<AssociationProposalWriter.Proposal> proposals = new ArrayList<AssociationProposalWriter.Proposal>();
     		for (int i = 0; i < proposalsModel.getRowCount(); ++i) {
     			if (Boolean.TRUE.equals(proposalsModel.getValueAt(i, 0))) {
-    	    		names.add("P_" + Quoting.staticUnquote(String.valueOf(proposalsModel.getValueAt(i, 1))) + "_" + Quoting.staticUnquote(String.valueOf(proposalsModel.getValueAt(i, 2))));
-    			} else {
-    				names.add("?");
+    				proposals.add(new AssociationProposalWriter.Proposal(
+    						String.valueOf(proposalsModel.getValueAt(i, 1)),
+    						String.valueOf(proposalsModel.getValueAt(i, 2)),
+    						String.valueOf(proposalsModel.getValueAt(i, 3))));
     			}
     		}
-    		Map<String, Integer> nameCount = new HashMap<String, Integer>();
-    		for (String name: names) {
-    			Integer count = nameCount.get(name);
-    			if (count == null) {
-    				count = 1;
-    			} else {
-    				++count;
-    			}
-    			nameCount.put(name, count);
-    		}
-    		for (int i = 0; i < names.size(); ++i) {
-    			String name = names.get(i);
-    			int n = 0;
-    			while (nameCount.get(name) != null && nameCount.get(name) > 1 || dataModel.namedAssociations.containsKey(name)) {
-    				name = names.get(i) + "_" + (++n);
-    			}
-    			if (n > 0) {
-    				nameCount.put(name, 2);
-    			}
-    			names.set(i, name);
-    		}
-    		
-    		BufferedWriter out = new BufferedWriter(new FileWriter(ModelBuilder.getModelBuilderAssociationsFilename(executionContext)));
-    		out.append("\n");
-    		AssociationProposer ap = new AssociationProposer(dataModel);
-    		int knownCount = 0;
-    		int allCount = 0;
-    		for (int i = 0; i < proposalsModel.getRowCount(); ++i) {
-    			if (Boolean.TRUE.equals(proposalsModel.getValueAt(i, 0))) {
-	    			String condition = String.valueOf(proposalsModel.getValueAt(i, 3));
-	    			condition = condition.replaceAll(" *\\n", " ");
-	    			String fromName = proposalsModel.getValueAt(i, 1).toString();
-					String toName = proposalsModel.getValueAt(i, 2).toString();
-					Table from = dataModel.getTable(fromName);
-					Table to = dataModel.getTable(toName);
-					if (from != null && to != null) {
-						++allCount;
-						Association association = new Association(from, to, false, false, condition, dataModel, false, null);
-						if (ap.addAssociation(names.get(i), new Pair<Table, Table>(from, to), association, true)) {
-							out.append(
-		    					CsvFile.encodeCell(String.valueOf(fromName)) + "; " +
-		    					CsvFile.encodeCell(String.valueOf(toName)) + "; ; ; " +
-		    					CsvFile.encodeCell(condition) + "; " + names.get(i) + "; " + DataModelEditor.DATA_MODEL_EDITOR_AUTHOR + "\n");
-						} else {
-							++knownCount;
-						}
-					}
-    			}
-    		}
-    		out.close();
+    		int[] counts = AssociationProposalWriter.write(proposals, dataModel, executionContext);
     		accepted = true;
-    		if (knownCount > 0) {
-    			JOptionPane.showMessageDialog(dialog, knownCount + " of " + allCount + " associations are already known.", "", JOptionPane.INFORMATION_MESSAGE);
+    		if (counts[1] > 0) {
+    			JOptionPane.showMessageDialog(dialog, counts[1] + " of " + counts[0] + " associations are already known.", "", JOptionPane.INFORMATION_MESSAGE);
     		}
     		dialog.dispose();
     	} catch (Throwable t) {
@@ -996,12 +947,18 @@ public class AssociationProposerView extends javax.swing.JPanel {
 
 	private ImageIcon loadIcon;
 	private ImageIcon cancelIcon;
+	private ImageIcon selectIcon;
+	private ImageIcon clearIcon;
+	private ImageIcon okIcon;
 	private ImageIcon warnIcon;
 	private ImageIcon scaledWarnIcon;
 	{
 		// load images
 		loadIcon = UIUtil.readImage("/load2.png");
         cancelIcon = UIUtil.readImage("/buttoncancel.png");
+        selectIcon = UIUtil.readImage("/select.png");
+        clearIcon = UIUtil.readImage("/clear.png");
+        okIcon = UIUtil.readImage("/buttonok.png");
         warnIcon = UIUtil.readImage("/wanr.png");
     }
 

@@ -190,6 +190,36 @@ Jailer also uses additional knowledge to cope with the peculiarities of major da
                        <table border="0" cellspacing="5">
                         <tbody>
 
+                          <tr class="a">
+                            <td nowrap>
+                            <small class="date">2026-08-25&nbsp;&nbsp;</small></td>
+                            <td valign="top" style="background-color: rgb(238, 238, 248);"><a href="discover-associations.html">Discover&nbsp;Associations</a>: Reverse-engineer the data model of a database that has no foreign key constraints. Candidates are derived from the column names and, optionally, from the data itself. Each one is verified against the database and rated with a confidence.</td>
+                          </tr>
+
+                          <tr class="b">
+                            <td nowrap>
+                            <small class="date">2026-08-21&nbsp;&nbsp;</small></td>
+                            <td valign="top"><b>Mermaid&nbsp;ER&nbsp;diagram</b>: The data model can now be exported as a Mermaid <i>erDiagram</i> &mdash; either the whole model or only the tables visible in the graphical view. Unlike an image this is plain text, so it can be embedded into Markdown documents, READMEs or wikis and put under version control. &quot;Export graph as image...&quot; now offers SVG as well, and the command line command <i>render-mermaid</i> writes the same diagram in a build pipeline.</td>
+                          </tr>
+
+                          <tr class="a">
+                            <td nowrap>
+                            <small class="date">2026-08-19&nbsp;&nbsp;</small></td>
+                            <td valign="top" style="background-color: rgb(238, 238, 248);"><a href="find-path.html">Path&nbsp;Finder</a>: Candidate tables now show a confidence estimate of how likely they belong on the path, based on how specific a table is compared to the other candidates at the same distance, and they can be sorted by it.</td>
+                          </tr>
+
+                          <tr class="b">
+                            <td nowrap>
+                            <small class="date">2026-07-31&nbsp;&nbsp;</small></td>
+                            <td valign="top"><b>BLOB/CLOB&nbsp;content&nbsp;preview</b>: The detected content type and an image thumbnail are shown directly in the cells of the result tables of the Data Browser and the SQL Console. The content viewer renders images (including SVG), text with syntax highlighting, PDF documents with page navigation and zoom, ZIP archives as an entry list, and anything else as a hexadecimal dump. Compressed single-file contents are shown decompressed.</td>
+                          </tr>
+
+                          <tr class="a">
+                            <td nowrap>
+                            <small class="date">2026-07-16&nbsp;&nbsp;</small></td>
+                            <td valign="top" style="background-color: rgb(238, 238, 248);"><b>Spatial&nbsp;data&nbsp;preview</b>: Geometry and geography values are shown on an interactive map over OpenStreetMap tiles &mdash; in the cell preview of the Data Browser and as a map overlay on the result of the SQL Console, where the geometries can be colored by the values of a column. Supports PostGIS, Oracle, SQL&nbsp;Server and MySQL/MariaDB. Export now reconstructs spatial values with a dialect-specific SQL expression instead of losing the type information.</td>
+                          </tr>
+
                           <tr class="b">
                             <td nowrap>
                             <small class="date">2026-06-25&nbsp;&nbsp;</small></td>
@@ -198,15 +228,21 @@ Jailer also uses additional knowledge to cope with the peculiarities of major da
 
                           <tr class="a">
                             <td nowrap>
-                            <small class="date">2026-05-31&nbsp;&nbsp;</small></td>
-                            <td valign="top" style="background-color: rgb(238, 238, 248);"><a href="ai-assistant.html#advisor">SQL&nbsp;Advisor</a>: Analyze, explain, and refactor existing SQL queries with AI assistance &mdash; suggestions menu, split SQL&nbsp;/&nbsp;explanation view, and inline diff highlighting.</td>
+                            <small class="date">2026-06-17&nbsp;&nbsp;</small></td>
+                            <td valign="top" style="background-color: rgb(238, 238, 248);"><a href="data-browsing.html#chart">Chart&nbsp;tab</a>: The SQL Console turns query results into interactive charts &mdash; directly in the result view. 11 chart types including 2D and 3D variants, with color schemes, transparency, aggregation, axis scaling and data labels. Charts can be exported as PNG, JPEG or SVG.</td>
                           </tr>
 
                           <tr class="b">
+                            <td nowrap>
+                            <small class="date">2026-05-31&nbsp;&nbsp;</small></td>
+                            <td valign="top"><a href="ai-assistant.html#advisor">SQL&nbsp;Advisor</a>: Analyze, explain, and refactor existing SQL queries with AI assistance &mdash; suggestions menu, split SQL&nbsp;/&nbsp;explanation view, and inline diff highlighting.</td>
+                          </tr>
+
+                          <tr class="a">
                             <td   nowrap >
                             <small class="date">2026-06-01&nbsp;&nbsp;</small></td>
 
-                            <td valign="top"><a href="ai-assistant.html">AI&nbsp;Query&nbsp;Assistant</a>: Generate SQL from natural language questions using Anthropic or OpenAI-compatible APIs (OpenAI, Azure, Groq, Ollama, OpenRouter, etc.) with smart table selection for large schemas.
+                            <td valign="top" style="background-color: rgb(238, 238, 248);"><a href="ai-assistant.html">AI&nbsp;Query&nbsp;Assistant</a>: Generate SQL from natural language questions using Anthropic or OpenAI-compatible APIs (OpenAI, Azure, Groq, Ollama, OpenRouter, etc.) with smart table selection for large schemas.
                             <a class="tlink" href="videoAI.html" target="_self">&nbsp;<img src="video.png">&nbsp;</a></td>
                            </tr>
 

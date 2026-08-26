@@ -89,6 +89,8 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         initComponents(); UIUtil.initComponents(this);
         
     	closeButton.setIcon(UIUtil.scaleIcon(closeButton, cancelIcon));
+    	UIUtil.setTabIcon(tabbedPane, "Checks", "/history.png");
+    	UIUtil.setTabIcon(tabbedPane, "Problems", "/wanr.png");
 
         viewButton.setVisible(withViewButton);
         
