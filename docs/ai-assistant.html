@@ -87,7 +87,7 @@
 						<h3><a name="generate"></a>AI Assistant</h3>
 
 						<p>The AI Query Assistant lets you generate SQL queries from natural language questions.
-						Simply describe what you want to know about your data, and the assistant writes the SQL for you &mdash;
+						Simply describe what you want to know about your data, and the assistant writes the SQL for you -
 						taking the current database schema into account.</p>
 
 						<p>The assistant is integrated into the <b>SQL Console</b> of the Data Browser.
@@ -98,7 +98,7 @@
 						<table border="0" cellpadding="8" cellspacing="0" width="90%" style="background:#fff8e1;border-left:4px solid #f0a000;margin:8px 0 12px 0;">
 							<tr><td>
 							&#9888;&nbsp;<b>AI-generated SQL is never executed automatically.</b>
-							Every query produced by the assistant &mdash; in any mode &mdash; is placed into the
+							Every query produced by the assistant - in any mode - is placed into the
 							SQL Console for your review first. You decide when and whether to run it.
 							</td></tr>
 						</table>
@@ -109,7 +109,7 @@
 
                         <p>The AI Assistant works as an interactive dialog: you type a question in natural language,
                         the assistant generates the SQL, and you can follow up with further questions or refinements
-                        &mdash; all within the same dialog window.
+                        - all within the same dialog window.
                         Each exchange is kept as context so the assistant understands follow-up questions
                         that refer to previous ones.</p>
 
@@ -136,7 +136,7 @@
 SELECT * FROM orders WHERE order_date &gt;= CURRENT_DATE - 30</pre>
 
                         <p>When the cursor is inside such a statement, the <b>AI Assistant (Silent)</b> action
-                        becomes available. It re-generates the SQL directly in the editor &mdash; without opening
+                        becomes available. It re-generates the SQL directly in the editor - without opening
                         the dialog. A typical use is to edit the
                         <code>/* AI: ... */</code> comment to refine or extend the question and then
                         let the AI update the query in place.
@@ -156,7 +156,7 @@ SELECT * FROM orders WHERE order_date &gt;= CURRENT_DATE - 30</pre>
 
                         <p>The <b>SQL Advisor</b> is the second tab in the AI Assistant dialog.
                         Where the <b>Generate SQL</b> tab creates queries from scratch,
-                        the Advisor works with an existing query &mdash; paste it in and ask the AI to
+                        the Advisor works with an existing query - paste it in and ask the AI to
                         explain, improve, or rewrite it.</p>
 
                         <p>Open the SQL Advisor by switching to the <b>SQL Advisor</b> tab in the AI Assistant dialog.
@@ -167,7 +167,7 @@ SELECT * FROM orders WHERE order_date &gt;= CURRENT_DATE - 30</pre>
 
                         <h4>Suggestions Menu</h4>
 
-                        <p>A built-in dropdown provides one-click prompts for the most common advisor tasks &mdash;
+                        <p>A built-in dropdown provides one-click prompts for the most common advisor tasks -
                         no typing required:</p>
 
                         <ul>
@@ -185,9 +185,9 @@ SELECT * FROM orders WHERE order_date &gt;= CURRENT_DATE - 30</pre>
 
                         <p>The response is shown as a side-by-side split view:</p>
                         <ul>
-                            <li><b>Left &mdash; SQL:</b> the AI-revised query, ready to insert into the SQL Console with
+                            <li><b>Left - SQL:</b> the AI-revised query, ready to insert into the SQL Console with
                             the <b>Insert into SQL Console</b> button.</li>
-                            <li><b>Right &mdash; Answer:</b> the AI&rsquo;s explanation, rendered as formatted text.</li>
+                            <li><b>Right - Answer:</b> the AI&rsquo;s explanation, rendered as formatted text.</li>
                         </ul>
 
                         <h4>Inline Diff</h4>
@@ -224,7 +224,7 @@ SELECT * FROM orders WHERE order_date &gt;= CURRENT_DATE - 30</pre>
 								</tr>
 								<tr class="b">
 									<td nowrap><b>Ollama</b></td>
-									<td>Run models locally on your own machine &mdash; no API key required and no data
+									<td>Run models locally on your own machine - no API key required and no data
 									leaves your system. Requires a running
 									<a href="https://ollama.com">Ollama</a> instance.
 									Default model: <code>llama3.2</code>.</td>
@@ -239,13 +239,13 @@ SELECT * FROM orders WHERE order_date &gt;= CURRENT_DATE - 30</pre>
 						in the SQL Console toolbar. Configure:</p>
 
 						<ul>
-							<li><b>Provider</b> &mdash; select Anthropic, OpenAI-compatible, OpenRouter, or Ollama.</li>
-							<li><b>API URL</b> &mdash; pre-filled with the provider default; change only for custom endpoints
+							<li><b>Provider</b> - select Anthropic, OpenAI-compatible, OpenRouter, or Ollama.</li>
+							<li><b>API URL</b> - pre-filled with the provider default; change only for custom endpoints
 							(e.g. Azure, a local proxy, or a self-hosted OpenRouter mirror).</li>
-							<li><b>API Key</b> &mdash; your secret key for the chosen provider. Not required for Ollama.</li>
-							<li><b>Model</b> &mdash; the model name to use. Refer to your provider&rsquo;s documentation for
+							<li><b>API Key</b> - your secret key for the chosen provider. Not required for Ollama.</li>
+							<li><b>Model</b> - the model name to use. Refer to your provider&rsquo;s documentation for
 							available model identifiers.</li>
-							<li><b>Max Tokens</b> &mdash; the maximum number of tokens in the generated response
+							<li><b>Max Tokens</b> - the maximum number of tokens in the generated response
 							(default: 8192).</li>
 						</ul>
 
@@ -273,7 +273,7 @@ SELECT * FROM orders WHERE order_date &gt;= CURRENT_DATE - 30</pre>
 
 						<p>It is a good place to establish general rules for SQL generation, for example:</p>
 						<ul>
-							<li><b>Aliases for complex expressions</b> &mdash; instruct the AI to always assign
+							<li><b>Aliases for complex expressions</b> - instruct the AI to always assign
 							a meaningful column alias to calculated fields, e.g.
 							<code>SUM(amount) AS total_amount</code> instead of an unnamed expression.</li>
 							<li>Preferred SQL dialect or syntax conventions for your database.</li>
@@ -283,7 +283,7 @@ SELECT * FROM orders WHERE order_date &gt;= CURRENT_DATE - 30</pre>
 
 						<br><h3><a name="subsetting-assistant"></a>AI Subsetting Assistant</h3>
 
-						<p>Describe in natural language what data you want to subset &mdash; the assistant generates
+						<p>Describe in natural language what data you want to subset - the assistant generates
 						a complete subsetting model ready to apply to the editor.</p>
 
 						<p>Open the assistant by clicking the <b>AI</b> button in the <b>Extraction Model Editor</b> toolbar.</p>
@@ -300,12 +300,12 @@ SELECT * FROM orders WHERE order_date &gt;= CURRENT_DATE - 30</pre>
 
 						<p>Plain English works well. A few tips for better results:</p>
 						<ul>
-							<li><b>Name the main entity first</b> &mdash;
+							<li><b>Name the main entity first</b> -
 							<em>&ldquo;All orders for customer 42&hellip;&rdquo;</em></li>
-							<li><b>Explicitly name what to exclude</b> &mdash;
+							<li><b>Explicitly name what to exclude</b> -
 							<em>&ldquo;&hellip;but without payment history.&rdquo;</em><br />
 							Without an explicit exclusion, the AI may include related tables.</li>
-							<li><b>Name what to include</b> if you want specific related data &mdash;
+							<li><b>Name what to include</b> if you want specific related data -
 							<em>&ldquo;&hellip;with order items and products.&rdquo;</em></li>
 						</ul>
 
@@ -313,10 +313,10 @@ SELECT * FROM orders WHERE order_date &gt;= CURRENT_DATE - 30</pre>
 
 						<p>After generation the dialog shows:</p>
 						<ul>
-							<li><b>Subject table and condition</b> &mdash; the starting point of the extraction.</li>
-							<li><b>Restrictions</b> &mdash; per-association decisions: include all rows,
+							<li><b>Subject table and condition</b> - the starting point of the extraction.</li>
+							<li><b>Restrictions</b> - per-association decisions: include all rows,
 							include only rows matching a filter condition, or exclude the association entirely.</li>
-							<li><b>Explanation</b> &mdash; a plain-text summary of what is extracted and what is excluded.
+							<li><b>Explanation</b> - a plain-text summary of what is extracted and what is excluded.
 							Read this to quickly verify that the AI understood your request correctly.</li>
 						</ul>
 
@@ -348,8 +348,8 @@ SELECT * FROM orders WHERE order_date &gt;= CURRENT_DATE - 30</pre>
 						<p>Click <b>System Prompts&hellip;</b> to customize the instructions sent to the AI.
 						Two separate prompts can be edited:</p>
 						<ul>
-							<li><b>Extraction Model Prompt</b> &mdash; main instructions for generating the extraction model.</li>
-							<li><b>Subject Table Detection (1st pass)</b> &mdash; instructions for the lightweight
+							<li><b>Extraction Model Prompt</b> - main instructions for generating the extraction model.</li>
+							<li><b>Subject Table Detection (1st pass)</b> - instructions for the lightweight
 							first pass that identifies the subject table (used only when Reduced Schema is enabled).</li>
 						</ul>
 						<p>Both prompts have a <b>Reset to Default</b> button and are persisted across sessions.</p>

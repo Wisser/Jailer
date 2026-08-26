@@ -139,9 +139,9 @@
                             <span style="font-style: italic;">Analyse SQL Script</span>
                             (found in the <span style="font-weight: bold;">Data Model</span>
                             menu of the Extraction Model Editor) solves this by analysing
-                            an existing SQL file &#x2014; such as application query logs,
+                            an existing SQL file - such as application query logs,
                             ORM-generated SQL, migration scripts, or hand-written
-                            reports &#x2014; and proposing associations for every
+                            reports - and proposing associations for every
                             column-equality condition it finds between two different
                             tables.<br /><br />
                             Use this feature whenever the data model is incomplete due to
@@ -162,7 +162,7 @@
                             <td>The analyser looks for SELECT statements that join two or
                             more tables. Any condition of the form
                             <span style="font-style: italic;">TableA.col = TableB.col</span>
-                            &#x2014; whether in an ON clause or a WHERE clause &#x2014;
+                            - whether in an ON clause or a WHERE clause -
                             is a candidate for a new association. Transitive equalities
                             (A=B and B=C) are also resolved.<br /><br />
                             Good sources for input scripts:<br />
@@ -175,7 +175,7 @@
                               <li>Stored procedure bodies exported as plain SQL</li>
                             </ul>
                             DML and DDL statements (INSERT, UPDATE, CREATE TABLE, &hellip;)
-                            are harmlessly ignored &#x2014; only SELECT statements are
+                            are harmlessly ignored - only SELECT statements are
                             analysed. SQL comments starting with
                             <span style="font-style: italic;">--</span> are stripped
                             automatically.<br /><br />
@@ -219,15 +219,15 @@
                                 <li>Choose the statement delimiter:
                                   <ul>
                                     <li><b>&#9745; Empty line separates statements</b>
-                                    (default) &#x2014; a blank line marks the boundary
+                                    (default) - a blank line marks the boundary
                                     between statements.</li>
-                                    <li>Unchecked &#x2014; each statement must end with a
+                                    <li>Unchecked - each statement must end with a
                                     semicolon (<span style="font-style: italic;">;</span>).</li>
                                   </ul>
                                 </li>
                                 <li>The engine reads the file statement by statement.
                                 A progress bar shows the overall progress. Results appear
-                                in the tabs as they are found &#x2014; you do not have to
+                                in the tabs as they are found - you do not have to
                                 wait for the full file to be processed.</li>
                               </ol>
                             &nbsp;<br />&nbsp;<br /></td>
@@ -265,7 +265,7 @@
                                     <td>SQL statements that the parser could not process,
                                     listed with their line number and the error message.
                                     Up to 1&#x202F;000 errors are shown. Any proposals
-                                    found before an error are still valid &#x2014; errors
+                                    found before an error are still valid - errors
                                     only mean that those particular statements were
                                     skipped.</td>
                                   </tr>
@@ -285,9 +285,9 @@
                             tab to select it. A <span style="font-weight: bold;">Condition Editor</span>
                             panel appears below the table showing the current join
                             condition as editable SQL.<br /><br />
-                            Edit the condition as needed &#x2014; for example to add a
+                            Edit the condition as needed - for example to add a
                             type cast, narrow the join with an extra predicate, or correct
-                            a false positive &#x2014; then click
+                            a false positive - then click
                             <span style="font-weight: bold;">Apply</span> to save the
                             change. The updated condition is shown immediately in the
                             table row.<br />&nbsp;<br />&nbsp;<br /></td>

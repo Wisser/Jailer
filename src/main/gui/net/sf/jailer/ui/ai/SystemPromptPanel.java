@@ -124,8 +124,8 @@ public class SystemPromptPanel extends JPanel {
             "Placeholders: {schema}, {dbmsName}",
             DEFAULT_TEMPLATE,
             "<html>System prompt for generating SQL from a natural-language description.<br>"
-            + "<b>{schema}</b> &mdash; database schema DDL<br>"
-            + "<b>{dbmsName}</b> &mdash; DBMS name</html>");
+            + "<b>{schema}</b> - database schema DDL<br>"
+            + "<b>{dbmsName}</b> - DBMS name</html>");
 
         JPanel advisorSection = buildSection(
             "SQL Advisor",
@@ -133,10 +133,10 @@ public class SystemPromptPanel extends JPanel {
             "Placeholders: {schema}, {dbmsName}, {separator}, {SQL}",
             DEFAULT_ADVISOR_TEMPLATE,
             "<html>System prompt for analyzing, explaining, or optimizing existing SQL.<br>"
-            + "<b>{schema}</b> &mdash; database schema DDL<br>"
-            + "<b>{dbmsName}</b> &mdash; DBMS name<br>"
-            + "<b>{SQL}</b> &mdash; current SQL from the editor<br>"
-            + "<b>{separator}</b> &mdash; separator line between SQL result and explanation</html>");
+            + "<b>{schema}</b> - database schema DDL<br>"
+            + "<b>{dbmsName}</b> - DBMS name<br>"
+            + "<b>{SQL}</b> - current SQL from the editor<br>"
+            + "<b>{separator}</b> - separator line between SQL result and explanation</html>");
 
         JPanel firstPassSection = buildSection(
             "Table Selection (Relevant Tables Only)",
@@ -145,7 +145,7 @@ public class SystemPromptPanel extends JPanel {
             DEFAULT_FIRST_PASS_TEMPLATE,
             "<html>System prompt for the first AI call that selects only the relevant tables<br>"
             + "from the full schema before generating SQL (smart selection).<br>"
-            + "<b>{dbmsName}</b> &mdash; DBMS name</html>");
+            + "<b>{dbmsName}</b> - DBMS name</html>");
 
         JPanel both = new JPanel();
         both.setLayout(new BoxLayout(both, BoxLayout.Y_AXIS));
