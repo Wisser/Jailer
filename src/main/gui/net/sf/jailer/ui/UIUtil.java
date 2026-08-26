@@ -117,6 +117,7 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToolTip;
 import javax.swing.KeyStroke;
@@ -131,6 +132,8 @@ import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.BorderUIResource;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableColumn;
 import javax.swing.text.DefaultEditorKit;
 
 import org.slf4j.Logger;
@@ -2972,6 +2975,31 @@ public class UIUtil {
 
 	private static Map<Runnable, Runnable> scaleAwareInitializer = new WeakHashMap<Runnable, Runnable>();
 	
+
+	/**
+	 * Adjusts the preferred width of every column of a table to the width its content
+	 * needs, limited to 400 pixels.
+	 *
+	 * @param table the table
+	 * @param fixFirstColumn if <code>true</code>, the first column keeps the calculated
+	 *        width instead of taking part in the redistribution - for a check box column
+	 */
+	public static void adjustTableColumnsWidth(JTable table, boolean fixFirstColumn) {
+		DefaultTableCellRenderer defaultRenderer = new DefaultTableCellRenderer();
+		for (int i = 0; i < table.getColumnCount(); i++) {
+			TableColumn column = table.getColumnModel().getColumn(i);
+			Component comp = defaultRenderer.getTableCellRendererComponent(table, column.getHeaderValue(), false, false, 0, i);
+			int width = Math.max(1, comp.getPreferredSize().width);
+			for (int line = 0; line < table.getRowCount(); ++line) {
+				comp = table.getCellRenderer(line, i).getTableCellRendererComponent(table, table.getValueAt(line, i), false, false, line, i);
+				width = Math.max(width, comp.getPreferredSize().width);
+			}
+			column.setPreferredWidth(Math.min(width, 400));
+			if (i == 0 && fixFirstColumn) {
+				column.setWidth(column.getPreferredWidth());
+			}
+		}
+	}
 
 	/**
 	 * Sets the icon of the tab with the given title.

@@ -53,8 +53,10 @@ public class ColumnTypes {
 		UUID,
 
 		/**
-		 * Anything that cannot be part of a key or is too expensive to profile
-		 * (LOBs, binaries, XML, geometries, long text, ...).
+		 * Anything that cannot be matched <b>by category</b>, either because a join on it is
+		 * unusual or because it is too expensive to profile: LOBs, binaries, XML, geometries,
+		 * long text, and every type this classification does not know. Two such columns can
+		 * still be matched if they are declared with the same type.
 		 */
 		OTHER
 	}
@@ -105,18 +107,40 @@ public class ColumnTypes {
 
 	/**
 	 * Checks whether two columns are type-compatible, i.e. whether an equi-join
-	 * between them is meaningful.
+	 * between them is meaningful. <br>
+	 * Columns of the same type always are, whether the classification below knows that type
+	 * or not - two RAW(16) columns holding a UUID, for instance. Length and precision play
+	 * no role; whether the values really fit is what the data check is for. Columns of
+	 * different types have to belong to the same category.
 	 *
 	 * @param a a column
 	 * @param b another column
-	 * @return <code>true</code> if both columns have the same, joinable category
+	 * @return <code>true</code> if an equi-join between the columns is meaningful
 	 */
 	public static boolean areCompatible(Column a, Column b) {
+		if (sameType(a, b)) {
+			return true;
+		}
 		Category ca = categoryOf(a);
 		if (ca == Category.OTHER) {
 			return false;
 		}
 		return ca == categoryOf(b);
+	}
+
+	/**
+	 * Checks whether two columns are declared with the same type name, ignoring case and
+	 * surrounding whitespace.
+	 *
+	 * @param a a column
+	 * @param b another column
+	 * @return <code>true</code> if the type names are equal
+	 */
+	private static boolean sameType(Column a, Column b) {
+		if (a == null || b == null || a.type == null || b.type == null) {
+			return false;
+		}
+		return a.type.trim().equalsIgnoreCase(b.type.trim());
 	}
 
 	private ColumnTypes() {

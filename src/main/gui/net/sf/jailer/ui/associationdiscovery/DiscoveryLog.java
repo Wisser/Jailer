@@ -38,6 +38,14 @@ public interface DiscoveryLog {
 	void problem(String message);
 
 	/**
+	 * Reports the progress of the current phase.
+	 *
+	 * @param done number of steps done
+	 * @param total number of steps of this phase
+	 */
+	void progress(int done, int total);
+
+	/**
 	 * @return <code>true</code> if the run has been cancelled
 	 */
 	boolean isCancelled();

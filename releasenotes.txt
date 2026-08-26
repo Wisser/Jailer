@@ -1,13 +1,43 @@
 17.2.3
   - New feature "Discover Associations": proposes associations for databases that have no
     foreign key constraints.
-    - New menu item "Data Model" -> "Discover Associations..." (in the Subsetter as well as in
-      the Data Browser) proposes association definitions without reading any foreign key
-      constraint. Candidates are derived from naming conventions - a column that refers to the
-      primary key of another table, e.g. "ORDER.CUSTOMER_ID" -> "CUSTOMER.ID", including
-      singular/plural forms of the table name and the usual prefixes and suffixes ("FK_",
+    - New menu item "Data Model" -> "Discover Associations" proposes association definitions 
+      without reading any foreign key constraint. Candidates are derived from naming conventions -
+      a column that refers to the primary key of another table, e.g. "ORDER.CUSTOMER_ID" -> "CUSTOMER.ID", 
+      including singular/plural forms of the table name and the usual prefixes and suffixes ("FK_",
       "_REF", "_NO", ...). Each candidate is then verified against the data: the number of rows
       of the child table that have no matching row in the parent table is counted.
+    - Own naming rules: the button "Naming rules..." opens an editor for the naming convention of
+      the schema at hand. A rule describes the name of the foreign key column, either as a
+      template with the placeholders "${table}" and "${pk}" - for instance "${table}${pk}",
+      "${table}_${pk}" or "FK_${table}" - or as a regular expression with a group for the parent
+      table and, optionally, one for the primary key column, for instance
+      "^(?<table>.+)_(?<pk>.+)$". Case and quotes are ignored and singular and plural forms of
+      the table name are tried. "${pk}" always stands for one key column: the rule is applied
+      once per column of the primary key, and all of them have to be matched. For the frequent
+      case that only part of the key is qualified while the rest - a tenant, a version - is
+      named alike in both tables, every rule has the option "Remaining key columns match by
+      identical name". A second option, "Accept without checking the data", proposes the matches
+      of a rule without running a verification query - for a convention that is binding anyway,
+      for tables too large to check, and for empty tables, where the check can confirm nothing
+      and would otherwise leave no proposal at all. Such proposals show no confidence, since
+      there is no matching quota; if nothing has to be checked and the data scan is off, the
+      profiling queries are skipped as well.
+      The list does not start out empty: on first use it is filled with the built-in
+      conventions, written as rules ("${table}_${pk}", "${table}${pk}", "${table}_ID", ...), so
+      that what the discovery does is visible and can be adapted. Deleting them all is
+      respected. What cannot be expressed as a rule - name
+      equality, the tolerance towards affixes like "FK_", and the key name without the table
+      prefix - stays behind the check box "Also use the built-in naming conventions". The rules
+      belong to the data model: they are stored as "naming_rules.csv" in its folder and travel
+      with it. Proposals found this way are labeled "Matches a naming rule" and are verified
+      against the data like any other candidate.
+    - Primary keys that say nothing about their table are not matched by name equality alone:
+      neither generic names ("ID", "NO", "KEY", ...) nor a column combination that is the
+      primary key of a large part of the data model (a technical object id together with a
+      tenant and a version, for instance). Such columns exist in nearly every table, so
+      accepting them would turn every pair of tables into a candidate. The qualified forms
+      ("CUSTOMER_ID") and the data scan are unaffected.
     - Every proposal is labeled with a confidence in percent. It combines the fraction of
       matching rows with the strength of the name evidence and with the number of distinct
       values of the column, so that columns with few distinct values - which match almost any
@@ -16,14 +46,21 @@
       for columns whose values are contained in a primary key although their names give no
       hint. To keep the number of queries manageable, all tables are profiled first (row
       count, value range and number of distinct values per column) and only the column pairs
-      that survive this pre-filter are verified. In this mode only tables with a single
-      primary key column are considered.
-    - The minimum fraction of matching rows (default 95%) and the maximum number of
-      verification queries can be chosen. If the query limit is reached, the number of
-      candidates that have not been checked is reported in the status line.
+      that survive this pre-filter are verified. Composite keys are covered as well: the
+      pre-filter runs per key column and only the surviving columns are combined, at most three
+      per key column and at most four combinations per pair of tables, the most plausible ones
+      first. If combinations had to be left out, the number of affected table pairs is reported
+      in the "Problems" tab. For a key that most tables of the model share, at least one of the
+      columns must name the parent table - otherwise every table would be proposed as a
+      reference to every other one.
+    - The minimum fraction of matching rows can be chosen (95% by default). Candidates are
+      verified in the order of their evidence, the strongest first, so the most reliable
+      proposals appear first while the run is still going. The status line reports how many
+      candidates were confirmed, how many came from names and from the data scan, and how
+      many queries were executed.
     - Associations that already exist in the data model are listed separately under "Already
       known" instead of being proposed again. All executed statements, and all problems (e.g.
-      a table that could not be profiled within the timeout), are shown in their own tabs.
+      a table that could not be profiled), are shown in their own tabs.
     - Accepted proposals are handed over to the Data Model Editor, exactly like those of
       "Analyze SQL Script".
   - The data model can now be exported as an ER diagram in text form and as a vector image.

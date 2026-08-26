@@ -133,7 +133,7 @@
                           <tr>
                             <td style="vertical-align: top;">A</td>
                             <td>Use it whenever the data model is incomplete because the
-                            database has no foreign key constraints &#x2014; a common
+                            database has no foreign key constraints - a common
                             situation with legacy schemas, with schemas managed by
                             third-party applications, and with databases where the
                             constraints have been dropped for load or performance
@@ -156,7 +156,7 @@
                           <tr>
                             <td style="vertical-align: top;">A</td>
                             <td>Choose<br /><br />
-                            <span style="font-weight: bold;">Data Model &rarr; Discover Associations...</span><br /><br />
+                            <span style="font-weight: bold;">Data Model &rarr; Discover Associations</span><br /><br />
                             The menu item exists both in the
                             <span style="font-style: italic;">Extraction Model Editor</span>
                             and in the <span style="font-style: italic;">Data Browser</span>.
@@ -165,7 +165,7 @@
                             asked to connect if you are not connected yet, in the Data
                             Browser the open connection is used.<br /><br />
                             The dialog does not start immediately. Set the options first,
-                            then click <span style="font-weight: bold;">Start</span>.
+                            then click <span style="font-weight: bold;">Start discovery</span>.
                             <br />&nbsp;<br />&nbsp;<br /></td>
                           </tr>
 
@@ -203,10 +203,16 @@
                               <span style="font-style: italic;">_FK</span>,
                               <span style="font-style: italic;">_REF</span></li>
                             </ul>
-                            In addition, the column types must be compatible. Columns that
-                            cannot be part of a key at all &#x2014; LOBs, binaries, XML,
-                            geometries, booleans and long text &#x2014; are never
-                            considered.<br /><br />
+                            In addition, the column types have to fit. Columns of the
+                            <span style="font-weight: bold;">same type</span> always do, no matter
+                            which type that is - two
+                            <span style="font-family: monospace;">RAW(16)</span> columns holding a
+                            UUID, for instance. Length and precision play no role there; whether
+                            the values really fit is what the data check is for. Columns of
+                            <span style="font-weight: bold;">different</span> types have to belong
+                            to the same category: numeric, short character, date/time or UUID. For
+                            everything else - LOBs, binaries, XML, geometries, booleans,
+                            long text - differing types are rejected.<br /><br />
                             For a <span style="font-weight: bold;">composite</span> primary
                             key, <span style="font-weight: bold;">all</span> of its columns
                             must find a distinct matching column in the other table;
@@ -221,13 +227,13 @@
                           <tr>
                             <td style="vertical-align: top;">A</td>
                             <td>Because it almost never is one. A primary key whose name
-                            says nothing about its table &#x2014;
+                            says nothing about its table -
                             <span style="font-style: italic;">ID</span>,
                             <span style="font-style: italic;">NO</span>,
                             <span style="font-style: italic;">NR</span>,
                             <span style="font-style: italic;">KEY</span>,
                             <span style="font-style: italic;">CODE</span>,
-                            <span style="font-style: italic;">NAME</span>, &hellip; &#x2014;
+                            <span style="font-style: italic;">NAME</span>, &hellip; -
                             exists in nearly every table, where it is that table's own key.
                             Accepting name equality in such a case would turn every pair of
                             tables into a candidate, and since small key ranges overlap, many
@@ -238,9 +244,187 @@
                             <span style="font-style: italic;">CUSTOMERID</span>, &hellip;) are
                             accepted. As soon as at least one column of the primary key has a
                             specific name, name equality is accepted for the whole key
-                            &#x2014; this keeps composite keys such as
+                            - this keeps composite keys such as
                             (<span style="font-style: italic;">ORDER_ID</span>,
-                            <span style="font-style: italic;">POSITION</span>) working.
+                            <span style="font-style: italic;">POSITION</span>) working.<br /><br />
+                            The same applies to a key that is a house-wide convention: if
+                            one and the same column combination is the primary key of a
+                            large part of the model - a technical object id together
+                            with a tenant and a version, for instance - then those
+                            columns say nothing about a reference either, because every
+                            table carries them. Name equality is then not accepted for that
+                            key; the qualified forms and the data scan still are. Without
+                            this rule such a schema would turn every pair of tables into a
+                            candidate.
+                            <br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q4b -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Can I enter the naming convention of my own schema?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>Yes, and on a schema with its own systematics that is the
+                            fastest way to a complete data model. The button
+                            <span style="font-weight: bold;">Naming rules...</span> opens an
+                            editor in which any number of rules can be entered. A rule
+                            describes the name of the
+                            <span style="font-style: italic;">foreign key column</span> and
+                            comes in two flavours.<br /><br />
+                            <span style="font-weight: bold;">Template</span> - the
+                            column name with the placeholders
+                            <span style="font-family: monospace;">$&#123;table&#125;</span> for
+                            the parent table and
+                            <span style="font-family: monospace;">$&#123;pk&#125;</span> for its
+                            primary key column:<br />
+                            <table style="text-align: left;" border="0" cellpadding="2" cellspacing="0">
+                              <tbody>
+                                <tr><td style="font-family: monospace;">$&#123;table&#125;_$&#123;pk&#125;&nbsp;&nbsp;</td>
+                                    <td>matches <span style="font-family: monospace;">PRODUCT_ID</span> &rarr; <span style="font-family: monospace;">PRODUCT.ID</span></td></tr>
+                                <tr><td style="font-family: monospace;">$&#123;table&#125;$&#123;pk&#125;</td>
+                                    <td>matches <span style="font-family: monospace;">PRODUCTID</span></td></tr>
+                                <tr><td style="font-family: monospace;">FK_$&#123;table&#125;</td>
+                                    <td>matches <span style="font-family: monospace;">FK_PRODUCT</span></td></tr>
+                              </tbody>
+                            </table><br />
+                            <span style="font-weight: bold;">Regular expression</span> -
+                            matched against the column name, with a group for the parent table
+                            and optionally one for the primary key column:
+                            <span style="font-family: monospace;">^FK_(?&lt;table&gt;.+)$</span>,
+                            <span style="font-family: monospace;">^(?&lt;table&gt;.+)_(?&lt;pk&gt;.+)$</span>.
+                            Unnamed groups work too: group 1 is the table, group 2 the key
+                            column.<br /><br />
+                            Case and quotes are ignored, and the singular and plural form of the
+                            table name are tried.<br /><br />
+                            <span style="font-weight: bold;">$&#123;pk&#125; is one key column,
+                            not the whole key.</span> This matters as soon as a table has a
+                            composite primary key. The rule is not applied once per table pair,
+                            but once for <span style="font-style: italic;">every column</span> of
+                            the primary key, and each of those columns needs its own column in
+                            the child table. Take
+                            <span style="font-family: monospace;">PRODUCT</span> with the key
+                            (<span style="font-family: monospace;">ID</span>,
+                            <span style="font-family: monospace;">VERSION</span>,
+                            <span style="font-family: monospace;">LOCALE</span>) and the rule
+                            <span style="font-family: monospace;">$&#123;table&#125;_$&#123;pk&#125;</span>.
+                            It is then checked three times, once per key column:<br />
+                            <table style="text-align: left;" border="0" cellpadding="2" cellspacing="0">
+                              <tbody>
+                                <tr>
+                                  <td style="font-weight: bold;">key column of PRODUCT&nbsp;&nbsp;</td>
+                                  <td style="font-weight: bold;">$&#123;pk&#125; stands for&nbsp;&nbsp;</td>
+                                  <td style="font-weight: bold;">expected column of the child table</td>
+                                </tr>
+                                <tr><td><span style="font-family: monospace;">ID</span></td>
+                                    <td><span style="font-family: monospace;">ID</span></td>
+                                    <td><span style="font-family: monospace;">PRODUCT_ID</span></td></tr>
+                                <tr><td><span style="font-family: monospace;">VERSION</span></td>
+                                    <td><span style="font-family: monospace;">VERSION</span></td>
+                                    <td><span style="font-family: monospace;">PRODUCT_VERSION</span></td></tr>
+                                <tr><td><span style="font-family: monospace;">LOCALE</span></td>
+                                    <td><span style="font-family: monospace;">LOCALE</span></td>
+                                    <td><span style="font-family: monospace;">PRODUCT_LOCALE</span></td></tr>
+                              </tbody>
+                            </table>
+                            Only if the child table has all three of them does the candidate come
+                            about, and its join condition then compares all three pairs. If one
+                            is missing, nothing is proposed. A single column may serve only one
+                            key column, and the same applies to the
+                            <span style="font-family: monospace;">pk</span> group of a regular
+                            expression.<br /><br />
+                            Often only part of the key is qualified that way, while the rest
+                            - a tenant, a version - is named alike in both tables.
+                            For that case every rule has the option
+                            <span style="font-weight: bold;">Remaining key columns match by
+                            identical name</span>: if the rule matches at least one key column,
+                            the remaining ones may be taken from columns of the identical name,
+                            even where name equality is otherwise suppressed. With that option
+                            the rule above already finds
+                            <span style="font-family: monospace;">PRODUCT_ID</span> +
+                            <span style="font-family: monospace;">VERSION</span> +
+                            <span style="font-family: monospace;">LOCALE</span>. It is safe
+                            here because the rule has already shown that the child refers to
+                            this very parent. For a key of a single column the option has no
+                            effect.<br /><br />
+                            A rule can also state that its matches are
+                            <span style="font-weight: bold;">accepted without checking the
+                            data</span>. No verification query is then run for them: they are
+                            proposed as they are, their confidence stays empty and the evidence
+                            says so. Three situations call for it:<br />
+                            <ul>
+                              <li>the convention is binding anyway, and the queries would only
+                              cost time</li>
+                              <li>the tables are <span style="font-weight: bold;">empty</span>
+                              - the check can confirm nothing there, so without this
+                              option such a schema yields no proposal at all</li>
+                              <li>the tables are too large to check</li>
+                            </ul>
+                            The option is deliberately conservative: it takes effect only if all
+                            rules that contributed to a candidate agree, and never if one of its
+                            columns was found by a built-in convention. If nothing has to be
+                            checked at all and the data scan is off, even the profiling queries
+                            are skipped.<br /><br />
+                            A template must contain
+                            <span style="font-family: monospace;">$&#123;table&#125;</span> and a
+                            regular expression must have a table group; otherwise the rule would
+                            not depend on the parent table at all and every pair of tables would
+                            become a candidate. The editor refuses such rules.<br /><br />
+                            <span style="font-weight: bold;">The list does not start out
+                            empty.</span> The first time the editor is opened for a data model it
+                            is filled with the built-in conventions, written as rules:
+                            <span style="font-family: monospace;">$&#123;table&#125;_$&#123;pk&#125;</span>,
+                            <span style="font-family: monospace;">$&#123;table&#125;$&#123;pk&#125;</span>,
+                            <span style="font-family: monospace;">$&#123;table&#125;_ID</span>,
+                            <span style="font-family: monospace;">$&#123;table&#125;ID</span>,
+                            <span style="font-family: monospace;">$&#123;table&#125;_KEY</span>,
+                            <span style="font-family: monospace;">$&#123;table&#125;_NO</span>,
+                            <span style="font-family: monospace;">$&#123;table&#125;NO</span>,
+                            <span style="font-family: monospace;">$&#123;table&#125;_NR</span> and
+                            <span style="font-family: monospace;">$&#123;table&#125;_CODE</span>. So
+                            what the discovery does is visible from the start and can be shortened
+                            or extended. They come with
+                            <span style="font-weight: bold;">Remaining key columns match by identical
+                            name</span> switched on, which is what a composite key usually looks like.
+                            Deleting them all is respected - they are not
+                            filled in again. To start over from the built-in set, delete the file
+                            <span style="font-family: monospace;">naming_rules.csv</span> from the
+                            folder of the data model; the next time the editor is opened it is
+                            filled again.<br /><br />
+                            Three parts of the built-in matching cannot be written as a rule and
+                            therefore stay behind the check box <span style="font-weight: bold;">Also
+                            use the built-in naming conventions</span>:<br />
+                            <table style="text-align: left;" border="0" cellpadding="2" cellspacing="0">
+                              <tbody>
+                                <tr><td style="vertical-align: top;">name equality&nbsp;&nbsp;</td>
+                                    <td>a column named exactly like the key column. As a rule this
+                                    would be <span style="font-family: monospace;">$&#123;pk&#125;</span>,
+                                    which the editor refuses: it does not depend on the parent table.
+                                    Built in it is guarded by the rules for generic and house-wide
+                                    keys described above.</td></tr>
+                                <tr><td style="vertical-align: top;">affixes</td>
+                                    <td>the tolerance towards <span style="font-family: monospace;">FK_</span>,
+                                    <span style="font-family: monospace;">REF_</span>,
+                                    <span style="font-family: monospace;">ID_</span>,
+                                    <span style="font-family: monospace;">_FK</span> and
+                                    <span style="font-family: monospace;">_REF</span> around an
+                                    otherwise matching name.</td></tr>
+                                <tr><td style="vertical-align: top;">key without prefix</td>
+                                    <td>if the key column repeats the table name
+                                    (<span style="font-family: monospace;">CUSTOMER.CUSTOMER_ID</span>),
+                                    a child column named just
+                                    <span style="font-family: monospace;">ID</span> is accepted.</td></tr>
+                              </tbody>
+                            </table>
+                            Uncheck the box if your schema follows its own systematics and those
+                            extras only add noise.<br /><br />
+                            The rules belong to the data model: they are stored as
+                            <span style="font-family: monospace;">naming_rules.csv</span> in its
+                            folder and travel with it when the model is exported. Candidates
+                            found this way carry the evidence
+                            <span style="font-style: italic;">&quot;Matches a naming rule&quot;</span>
+                            and are verified against the data like any other candidate.
                             <br />&nbsp;<br />&nbsp;<br /></td>
                           </tr>
 
@@ -252,7 +436,7 @@
                           <tr>
                             <td style="vertical-align: top;">A</td>
                             <td>By counting the rows of the child table that have no matching
-                            row in the parent table &#x2014; an inclusion dependency
+                            row in the parent table - an inclusion dependency
                             check:<br /><br />
                             <span style="font-family: monospace;">Select count(*) From ORDER A
                             Where A.CUSTOMER_ID is not null and not exists<br />
@@ -266,6 +450,11 @@
                             rows</span> (95&nbsp;% by default). Choose 100&nbsp;% for a strict
                             check, or a lower value if the database is known to contain
                             orphaned rows.<br /><br />
+                            Candidates from a rule that is marked
+                            <span style="font-style: italic;">accepted without checking the
+                            data</span> skip all of this: no query is run for them, and their
+                            confidence column stays empty because there is no matching quota to
+                            report.<br /><br />
                             The exact statement of every candidate can be found in the
                             <span style="font-weight: bold;">Statements</span> tab.
                             <br />&nbsp;<br />&nbsp;<br /></td>
@@ -284,7 +473,7 @@
                               <li>the <span style="font-weight: bold;">fraction of matching
                               rows</span> determined by the check above</li>
                               <li>the <span style="font-weight: bold;">strength of the name
-                              evidence</span> &#x2014; a name equal to the primary key counts
+                              evidence</span> - a name equal to the primary key counts
                               more than a name that merely follows a convention, and both
                               count more than a candidate found by the data scan alone</li>
                               <li>the <span style="font-weight: bold;">number of distinct
@@ -315,7 +504,7 @@
                           <tr>
                             <td style="vertical-align: top;">A</td>
                             <td>It scans the data for columns whose values are contained in a
-                            primary key although their names give no hint at all &#x2014; the
+                            primary key although their names give no hint at all - the
                             case of cryptic column names such as
                             <span style="font-style: italic;">F_042</span>, and of
                             self-references such as
@@ -323,7 +512,7 @@
                             whose name does not mention its own table.<br /><br />
                             Checking every column against every primary key would need a
                             quadratic number of queries. To avoid that, all tables are
-                            profiled first &#x2014; one aggregate query per table gathering
+                            profiled first - one aggregate query per table gathering
                             the row count and, per column, the number of non-null values, the
                             number of distinct values and the value range. A column pair is
                             only verified if it survives this pre-filter:<br />
@@ -333,17 +522,28 @@
                               the primary key</li>
                               <li>the number of distinct values is not greater than the number
                               of rows of the parent table</li>
-                              <li>the column has at least three distinct values &#x2014; flags
+                              <li>the column has at least three distinct values - flags
                               and constants would only create noise</li>
                             </ul>
-                            Only tables with a <span style="font-weight: bold;">single</span>
-                            primary key column take part in this mode; matching column tuples
-                            without any name evidence is not viable.<br /><br />
+                            <span style="font-weight: bold;">Composite</span> keys take part as
+                            well: the pre-filter runs per key column, and only the surviving
+                            columns are combined - at most three per key column and at
+                            most four combinations per pair of tables, the most plausible ones
+                            first (a column whose name is related to the key column, then the
+                            higher number of distinct values). If combinations had to be left
+                            out, the number of affected table pairs is reported in the
+                            <span style="font-weight: bold;">Problems</span> tab - a
+                            naming rule resolves those pairs exactly.<br /><br />
+                            For a key that most tables of the model share, the data scan
+                            requires in addition that at least one of the columns names the
+                            parent table. Without that restriction every table would be proposed
+                            as a reference to every other one, because the values of such a key
+                            appear everywhere.<br /><br />
                             Candidates found this way are listed with the evidence
                             <span style="font-style: italic;">&quot;Data scan only&quot;</span>
                             and, unlike the name-based ones, they are
                             <span style="font-weight: bold;">not checked</span> in advance
-                            &#x2014; they need to be judged individually.<br />&nbsp;<br />&nbsp;<br /></td>
+                            - they need to be judged individually.<br />&nbsp;<br />&nbsp;<br /></td>
                           </tr>
 
                           <!-- Q8 -->
@@ -356,22 +556,26 @@
                             <td>Two kinds of statements are executed, and all of them are
                             read-only:<br />
                             <ul>
-                              <li>one profiling query per table. If it does not finish within
-                              30 seconds, the expensive
+                              <li>one profiling query per table. Its duration is measured: as
+                              soon as one table takes longer than five seconds, the expensive
                               <span style="font-style: italic;">count(distinct &hellip;)</span>
-                              is dropped; if that still does not finish, the table is profiled
-                              over a sample of its rows; if even that fails, the table is
-                              listed in the <span style="font-weight: bold;">Problems</span>
-                              tab and takes part in the name-based search only.</li>
+                              is dropped for all remaining tables, which is noted in the
+                              <span style="font-weight: bold;">Problems</span> tab. If a query
+                              fails, the table is profiled over a sample of its rows; if that
+                              fails too, the table is listed under
+                              <span style="font-weight: bold;">Problems</span> and takes part in
+                              the name-based search only.</li>
                               <li>one verification query per candidate (a second one only for
                               composite keys).</li>
                             </ul>
-                            The option <span style="font-weight: bold;">Max. queries</span>
-                            caps the number of verification queries (2000 by default). If the
-                            limit is reached, the run stops and the status line reports how
-                            many candidates have not been checked &#x2014; the result is never
-                            silently truncated.<br /><br />
-                            Closing the dialog cancels a running discovery immediately.
+                            Every candidate is verified; there is no query limit, so nothing
+                            is silently left out. Candidates are verified in the order of
+                            their evidence, the strongest first, so the most reliable
+                            proposals appear at the top while the run is still going.
+                            The status line reports how many queries were executed.<br /><br />
+                            No query timeout is set, just as everywhere else in Jailer.
+                            Closing the dialog cancels a running discovery immediately,
+                            including the query that is currently running.
                             <br />&nbsp;<br />&nbsp;<br /></td>
                           </tr>
 
@@ -397,21 +601,24 @@
                                     <td style="font-weight: bold; vertical-align: top;">Already known</td>
                                     <td>Candidates for which an equivalent association
                                     already exists in the data model. Informational only
-                                    &#x2014; they are not proposed again. A useful
+                                    - they are not proposed again. A useful
                                     cross-check: known associations that reappear here
                                     confirm that the heuristic works on this schema.</td>
                                   </tr>
                                   <tr>
                                     <td style="font-weight: bold; vertical-align: top;">Statements</td>
                                     <td>Every statement that has been executed, in
-                                    order &#x2014; the profiling queries as well as the
-                                    verification queries.</td>
+                                    order - the profiling queries as well as the
+                                    verification queries. A large run executes far more than
+                                    fit into a text pane, so only the first 2000 are shown.</td>
                                   </tr>
                                   <tr>
                                     <td style="font-weight: bold; vertical-align: top;">Problems</td>
                                     <td>Tables that could not be profiled and candidates that
-                                    could not be verified, e.g. because of a timeout or a
-                                    missing privilege. Everything else is unaffected.</td>
+                                    could not be verified, e.g. because of a missing privilege
+                                    or an expression the database does not support, plus the
+                                    note when profiling switched to its cheaper mode.
+                                    Everything else is unaffected.</td>
                                   </tr>
                                 </tbody>
                               </table>
@@ -442,7 +649,7 @@
                             Each accepted association receives an auto-generated name of the
                             form <span style="font-style: italic;">P_TableA_TableB</span>
                             (with a numeric suffix if necessary to avoid duplicates)
-                            &#x2014; the same naming as with
+                            - the same naming as with
                             <span style="font-style: italic;">Analyse SQL Script</span>.
                             <br />&nbsp;<br />&nbsp;<br /></td>
                           </tr>
@@ -467,15 +674,18 @@
                               <span style="font-style: italic;">EMPLOYEE</span>) is only found
                               by the data scan.</li>
                               <li><span style="font-weight: bold;">Composite</span> keys are
-                              only found by the name-based search.</li>
+                              found by all three ways, but the data scan checks only a limited
+                              number of column combinations per pair of tables (see above).</li>
                               <li>An <span style="font-weight: bold;">empty table</span>
                               confirms nothing: without rows the check has no evidence, so no
-                              candidate is proposed.</li>
+                              candidate is proposed. The way out is a naming rule marked
+                              <span style="font-style: italic;">accepted without checking the
+                              data</span>.</li>
                               <li>Two columns that contain the same small numbers without
                               being related pass the check as a
                               <span style="font-weight: bold;">false positive</span>. The
                               confidence rates such cases down, but does not eliminate them
-                              &#x2014; a plausibility check of the column names remains
+                              - a plausibility check of the column names remains
                               worthwhile.</li>
                             </ul>
                             After accepting, <span style="font-style: italic;">Check

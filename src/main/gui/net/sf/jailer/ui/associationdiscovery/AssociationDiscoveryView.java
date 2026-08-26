@@ -83,6 +83,7 @@ import net.sf.jailer.util.CancellationHandler;
 @SuppressWarnings("serial")
 public class AssociationDiscoveryView extends JPanel {
 
+	private final JFrame owner;
 	private final DataModel dataModel;
 	private final Session session;
 	private final ExecutionContext executionContext;
@@ -102,6 +103,7 @@ public class AssociationDiscoveryView extends JPanel {
 	private JCheckBox dataScanCheckBox;
 	private JComboBox<String> thresholdComboBox;
 	private JButton startButton;
+	private JButton rulesButton;
 	private JButton acceptButton;
 	private JButton selectAllButton;
 	private JButton deselectAllButton;
@@ -118,6 +120,17 @@ public class AssociationDiscoveryView extends JPanel {
 	private static final int MAX_SHOWN_STATEMENTS = 2000;
 
 	/**
+	 * Number of rows from which on the column widths are adjusted to the content. Doing it
+	 * with the first row would size the columns after a single example.
+	 */
+	private static final int ADJUST_COLUMNS_AT = 5;
+
+	/**
+	 * Label of the button that opens the editor for the naming rules.
+	 */
+	private static final String RULES_BUTTON_TEXT = "Naming rules...";
+
+	/**
 	 * Guards the buffers below. They are filled by the worker thread and read by the event
 	 * dispatch thread, so that a run does not put one EDT event per query into the queue
 	 * but coalesces bursts into a single update.
@@ -132,6 +145,8 @@ public class AssociationDiscoveryView extends JPanel {
 	private int pendingProgressMaximum;
 	private boolean flushScheduled;
 	private int shownStatements;
+	private boolean proposalColumnsAdjusted;
+	private boolean knownColumnsAdjusted;
 
 	/**
 	 * Creates the view and opens it as a modal dialog.
@@ -142,6 +157,7 @@ public class AssociationDiscoveryView extends JPanel {
 	 * @param executionContext the execution context
 	 */
 	public AssociationDiscoveryView(JFrame owner, DataModel dataModel, Session session, ExecutionContext executionContext) {
+		this.owner = owner;
 		this.dataModel = dataModel;
 		this.session = session;
 		this.executionContext = executionContext;
@@ -154,7 +170,7 @@ public class AssociationDiscoveryView extends JPanel {
 		dialog.setModal(true);
 		dialog.getContentPane().add(this);
 		dialog.pack();
-		UIUtil.setDialogSize(dialog, 900, 600);
+		UIUtil.setDialogSize(dialog, 1100, 600);
 		dialog.setLocation(owner.getX() + (owner.getWidth() - dialog.getWidth()) / 2, owner.getY() + (owner.getHeight() - dialog.getHeight()) / 2);
 		UIUtil.fit(dialog);
 		dialog.addWindowListener(new WindowAdapter() {
@@ -209,16 +225,24 @@ public class AssociationDiscoveryView extends JPanel {
 
 		dataScanCheckBox = new JCheckBox("Also find candidates without matching column names");
 		dataScanCheckBox.setToolTipText("Scan the data for columns whose values are contained in a primary key, "
-				+ "even if their names give no hint. Finds keys with cryptic names, but needs considerably more queries "
-				+ "and only regards tables with a single primary key column.");
+				+ "even if their names give no hint. Finds keys with cryptic names, but needs considerably more queries. "
+				+ "Composite keys are covered too, with a limited number of column combinations per pair of tables.");
 		panel.add(dataScanCheckBox, optionsGbc(0, 1, 2, 0));
+
+		rulesButton = new JButton(RULES_BUTTON_TEXT);
+		rulesButton.setIcon(UIUtil.scaleIcon(rulesButton, editIcon));
+		rulesButton.setToolTipText("Enter the naming conventions of this schema: how a foreign key column is named. "
+				+ "The rules are stored with the data model.");
+		rulesButton.addActionListener(e -> editNamingRules());
+		updateRulesButtonText();
+		panel.add(rulesButton, optionsGbc(0, 2, 2, 1));
 
 		startButton = new JButton("Start discovery");
 		startButton.setIcon(UIUtil.scaleIcon(startButton, runIcon));
 		startButton.setToolTipText("Search the database for associations: profiles the tables, then verifies "
 				+ "every candidate with a query. Closing the dialog cancels a running discovery.");
 		startButton.addActionListener(e -> start());
-		panel.add(startButton, optionsGbc(0, 2, 2, 1));
+		panel.add(startButton, optionsGbc(0, 3, 2, 1));
 
 		return panel;
 	}
@@ -346,7 +370,7 @@ public class AssociationDiscoveryView extends JPanel {
 					render.setBackground((row % 2 == 0) ? BG1 : BG2);
 				}
 				if (render instanceof JLabel) {
-					((JLabel) render).setToolTipText(UIUtil.toHTML(String.valueOf(value), 200));
+					((JLabel) render).setToolTipText(value == null? null : UIUtil.toHTML(String.valueOf(value), 200));
 				}
 				return render;
 			}
@@ -417,6 +441,23 @@ public class AssociationDiscoveryView extends JPanel {
 	}
 
 	/**
+	 * Opens the editor for the naming rules of this data model.
+	 */
+	private void editNamingRules() {
+		new NamingRulesEditor(owner, executionContext, NamingRules.load(executionContext));
+		updateRulesButtonText();
+	}
+
+	/**
+	 * Puts the number of rules into the label of the button, so that it is visible without
+	 * opening the editor.
+	 */
+	private void updateRulesButtonText() {
+		int count = NamingRules.load(executionContext).getRules().size();
+		rulesButton.setText(count > 0? RULES_BUTTON_TEXT + " (" + count + ")" : RULES_BUTTON_TEXT);
+	}
+
+	/**
 	 * Starts the discovery in the background.
 	 */
 	private void start() {
@@ -438,11 +479,14 @@ public class AssociationDiscoveryView extends JPanel {
 			pendingProgressText = null;
 			shownStatements = 0;
 		}
+		proposalColumnsAdjusted = false;
+		knownColumnsAdjusted = false;
 		statusLabel.setText(" ");
 		statusLabel.setForeground(defaultForeground);
 		startButton.setEnabled(false);
 		dataScanCheckBox.setEnabled(false);
 		thresholdComboBox.setEnabled(false);
+		rulesButton.setEnabled(false);
 		updateButtonsState();
 
 		final boolean dataScan = dataScanCheckBox.isSelected();
@@ -469,6 +513,7 @@ public class AssociationDiscoveryView extends JPanel {
 							startButton.setEnabled(true);
 							dataScanCheckBox.setEnabled(true);
 							thresholdComboBox.setEnabled(true);
+							rulesButton.setEnabled(true);
 							progressLabel.setText(cancelled? "Cancelled." : "Done.");
 							updateButtonsState();
 						}
@@ -487,6 +532,8 @@ public class AssociationDiscoveryView extends JPanel {
 	 * @param threshold minimum fraction of matching rows
 	 */
 	private void discover(boolean dataScan, double threshold) {
+		// the phase the finder is currently in, for its progress messages
+		final String[] phase = new String[] { "Matching names..." };
 		DiscoveryLog log = new DiscoveryLog() {
 			@Override
 			public void statement(String sql) {
@@ -509,35 +556,58 @@ public class AssociationDiscoveryView extends JPanel {
 				}
 			}
 			@Override
+			public void progress(int done, int total) {
+				AssociationDiscoveryView.this.progress(phase[0] + " (" + done + " of " + total + ")", done, total);
+			}
+			@Override
 			public boolean isCancelled() {
 				return cancelled;
 			}
 		};
 
-		AssociationCandidateFinder finder = new AssociationCandidateFinder(dataModel);
+		AssociationCandidateFinder finder = new AssociationCandidateFinder(dataModel, NamingRules.load(executionContext));
 		List<Table> tables = finder.getTables();
-		List<AssociationCandidate> candidates = finder.findByName();
+		progress(phase[0], 0, tables.size());
+		List<AssociationCandidate> candidates = finder.findByName(log);
+		if (cancelled) {
+			return;
+		}
+		phase[0] = "Applying naming rules...";
+		candidates.addAll(finder.findByRegexRules(keysOf(candidates), log));
+		if (cancelled) {
+			return;
+		}
 
-		// profile all tables: needed for the cardinality, for the confidence and,
-		// if the data scan is on, for the pre-filter
-		TableProfiler profiler = new TableProfiler(session, cancellationContext, log);
-		Map<Table, TableProfile> profiles = new HashMap<Table, TableProfile>();
-		progress("Profiling tables...", 0, tables.size());
-		int i = 0;
-		for (Table table: tables) {
-			if (cancelled) {
-				return;
+		// profile all tables: needed for the cardinality, for the confidence and, if the data
+		// scan is on, for the pre-filter. Not needed at all if every candidate comes from a
+		// rule that is accepted without checking the data
+		boolean profilingNeeded = dataScan;
+		for (AssociationCandidate candidate: candidates) {
+			if (!candidate.withoutDataCheck) {
+				profilingNeeded = true;
+				break;
 			}
-			profiles.put(table, profiler.profile(table));
-			progress("Profiling tables... (" + table.getName() + ")", ++i, tables.size());
+		}
+		Map<Table, TableProfile> profiles = new HashMap<Table, TableProfile>();
+		if (profilingNeeded) {
+			TableProfiler profiler = new TableProfiler(session, cancellationContext, log);
+			progress("Profiling tables...", 0, tables.size());
+			int i = 0;
+			for (Table table: tables) {
+				if (cancelled) {
+					return;
+				}
+				profiles.put(table, profiler.profile(table));
+				progress("Profiling tables... (" + table.getName() + ")", ++i, tables.size());
+			}
 		}
 
 		if (dataScan && !cancelled) {
-			Set<String> keys = new HashSet<String>();
-			for (AssociationCandidate candidate: candidates) {
-				keys.add(candidate.key());
+			candidates.addAll(finder.findByData(profiles, keysOf(candidates)));
+			if (finder.getPartiallyCheckedPairs() > 0) {
+				log.problem("For " + finder.getPartiallyCheckedPairs() + " pairs of tables the data scan did not check "
+						+ "all possible column combinations. A naming rule would resolve those pairs exactly.");
 			}
-			candidates.addAll(finder.findByData(profiles, keys));
 		}
 		if (cancelled) {
 			return;
@@ -566,21 +636,42 @@ public class AssociationDiscoveryView extends JPanel {
 		int statements = 0;
 		int checked = 0;
 		int rejected = 0;
+		int unchecked = 0;
 		progress("Verifying candidates...", 0, candidates.size());
 		for (AssociationCandidate candidate: candidates) {
 			if (cancelled) {
 				return;
 			}
-			statements += verifier.verify(candidate);
-			++checked;
-			if (candidate.matchRatio >= threshold) {
+			if (candidate.withoutDataCheck) {
+				// the rule that found it is binding according to the user
 				addProposal(candidate);
+				++unchecked;
 			} else {
-				++rejected;
+				statements += verifier.verify(candidate);
+				if (candidate.matchRatio >= threshold) {
+					addProposal(candidate);
+				} else {
+					++rejected;
+				}
 			}
+			++checked;
 			progress("Verifying candidates... (" + checked + " of " + candidates.size() + ")", checked, candidates.size());
 		}
-		status(nameCandidates, candidates.size() - nameCandidates, rejected, statements);
+		status(nameCandidates, candidates.size() - nameCandidates, rejected, statements, unchecked);
+	}
+
+	/**
+	 * Gets the keys of the given candidates, to recognize duplicates of a later pass.
+	 *
+	 * @param candidates the candidates
+	 * @return their keys
+	 */
+	private Set<String> keysOf(List<AssociationCandidate> candidates) {
+		Set<String> keys = new HashSet<String>();
+		for (AssociationCandidate candidate: candidates) {
+			keys.add(candidate.key());
+		}
+		return keys;
 	}
 
 	private void progress(String message, int value, int maximum) {
@@ -655,12 +746,20 @@ public class AssociationDiscoveryView extends JPanel {
 					dataModel.getDisplayName(candidate.child),
 					dataModel.getDisplayName(candidate.parent),
 					candidate.getCondition(),
-					Double.valueOf(candidate.confidence),
+					candidate.withoutDataCheck? null : Double.valueOf(candidate.confidence),
 					candidate.cardinality == null? "" : candidate.cardinality.toString(),
 					candidate.getEvidenceText() });
 		}
 		if (!newProposals.isEmpty()) {
 			updateButtonsState();
+		}
+		if (!proposalColumnsAdjusted && proposalsModel.getRowCount() >= ADJUST_COLUMNS_AT) {
+			proposalColumnsAdjusted = true;
+			UIUtil.adjustTableColumnsWidth(proposalTable, true);
+		}
+		if (!knownColumnsAdjusted && knownModel.getRowCount() >= ADJUST_COLUMNS_AT) {
+			knownColumnsAdjusted = true;
+			UIUtil.adjustTableColumnsWidth(knownTable, false);
 		}
 		if (progressText != null) {
 			progressLabel.setText(progressText);
@@ -676,8 +775,10 @@ public class AssociationDiscoveryView extends JPanel {
 	 * @param dataCandidates number of candidates that came from the data scan
 	 * @param rejected number of candidates below the threshold
 	 * @param statements number of verification queries executed
+	 * @param unchecked number of candidates accepted without checking the data
 	 */
-	private void status(final int nameCandidates, final int dataCandidates, final int rejected, final int statements) {
+	private void status(final int nameCandidates, final int dataCandidates, final int rejected, final int statements,
+			final int unchecked) {
 		UIUtil.invokeLater(new Runnable() {
 			@Override
 			public void run() {
@@ -689,6 +790,9 @@ public class AssociationDiscoveryView extends JPanel {
 					text.append(", " + rejected + " rejected");
 				}
 				text.append(", " + statements + " verification queries");
+				if (unchecked > 0) {
+					text.append(", " + unchecked + " accepted without data check");
+				}
 				statusLabel.setText(text.toString());
 			}
 		});
@@ -753,6 +857,7 @@ public class AssociationDiscoveryView extends JPanel {
 	private ImageIcon modelIcon;
 	private ImageIcon historyIcon;
 	private ImageIcon warnIcon;
+	private ImageIcon editIcon;
 	{
 		// load images
 		runIcon = UIUtil.readImage("/run.png");
@@ -764,6 +869,7 @@ public class AssociationDiscoveryView extends JPanel {
 		modelIcon = UIUtil.readImage("/model.png");
 		historyIcon = UIUtil.readImage("/history.png");
 		warnIcon = UIUtil.readImage("/wanr.png");
+		editIcon = UIUtil.readImage("/edit.png");
 	}
 
 }

@@ -41,6 +41,13 @@ public class AssociationCandidate {
 		NAME_EXACT(1.0, "Name matches primary key"),
 
 		/**
+		 * The child columns match a naming rule of the rule list. Since that list starts out
+		 * with the built-in conventions, this is the usual case - it therefore ranks behind
+		 * name equality, which is the stronger signal.
+		 */
+		USER_RULE(1.0, "Matches a naming rule"),
+
+		/**
 		 * The child column names follow a naming convention.
 		 */
 		NAME_PATTERN(0.9, "Name follows convention"),
@@ -97,6 +104,12 @@ public class AssociationCandidate {
 	public String verifyStatement;
 
 	/**
+	 * <code>true</code> if the matching rule says that its matches are accepted without
+	 * being checked against the data.
+	 */
+	public boolean withoutDataCheck;
+
+	/**
 	 * @param child the child table (the table holding the foreign key)
 	 * @param parent the parent table (the table holding the primary key)
 	 * @param childColumns the foreign key columns
@@ -134,6 +147,10 @@ public class AssociationCandidate {
 	 */
 	public String getEvidenceText() {
 		StringBuilder text = new StringBuilder(evidence.description);
+		if (withoutDataCheck) {
+			text.append(" (accepted without data check)");
+			return text.toString();
+		}
 		if (matchRatio >= 0 && nonNullCount >= 0) {
 			long matched = nonNullCount - Math.max(0, orphans);
 			text.append("; " + matched + " of " + nonNullCount + " rows match");
