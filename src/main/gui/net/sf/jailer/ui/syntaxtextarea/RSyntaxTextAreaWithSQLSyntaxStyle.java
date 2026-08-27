@@ -64,6 +64,7 @@ import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.util.Pair;
+import net.sf.jailer.util.SqlUtil;
 
 /**
  * Text area for SQL documents.
@@ -547,6 +548,10 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 					Pattern.DOTALL);
 			Matcher matcher = pattern.matcher(txt);
 			if (!matcher.find()) {
+				if (coversWholeStatement(begin, end)) {
+					// no real fragment: the selection spans the whole statement
+					return null;
+				}
 				return new Pair<Pair<Integer, Integer>, Pair<Integer, Integer>>(
 						new Pair<Integer, Integer>(getLineOfOffset(begin), getLineOfOffset(end)),
 						new Pair<Integer, Integer>(begin, end)
@@ -556,6 +561,34 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 			return null;
 		}
 		return null;
+	}
+
+	/**
+	 * Checks whether a selection spans the whole statement it belongs to, except for
+	 * insignificant borders: whitespace, comments and an optional terminating ';'.
+	 *
+	 * @param begin begin offset of the selection
+	 * @param end end offset of the selection
+	 * @return {@code true} if the selection de-facto spans the whole statement
+	 */
+	private boolean coversWholeStatement(int begin, int end) {
+		try {
+			Pair<Integer, Integer> loc = getCurrentStatementLocation(true, false, null, false);
+			if (loc == null) {
+				return false;
+			}
+			int from = Math.min(getLineStartOffset(loc.a), begin);
+			int to = Math.max(Math.min(getLineEndOffset(loc.b), getDocument().getLength()), end);
+			if (to - from > 1000000) {
+				return false;
+			}
+			// "removeComments" preserves the length, so the offsets remain valid
+			String statement = SqlUtil.removeComments(getDocument().getText(from, to - from));
+			return statement.substring(0, begin - from).trim().isEmpty()
+					&& statement.substring(end - from).matches("\\s*;?\\s*");
+		} catch (BadLocationException e) {
+			return false;
+		}
 	}
 
 	/**
