@@ -1575,6 +1575,76 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 		return file;
 	}
 
+	/**
+	 * Registers a temporary extraction model file, so that the name of the model
+	 * the user knows can be reported instead of the temporary one.
+	 *
+	 * @param tmpFileName name of the temporary extraction model file
+	 */
+	private void registerTmpModelURL(String tmpFileName) {
+		try {
+			SubsettingEngine.registerTmpURL(new File(tmpFileName).toURI().toURL(), extractionModelEditor.extractionModelFile == null? null : Configuration.getInstance().isTempFile(new File(extractionModelEditor.extractionModelFile))? null : new File(extractionModelEditor.extractionModelFile).getAbsolutePath());
+		} catch (Exception e) {
+			LogUtil.warn(e);
+		}
+	}
+
+	/**
+	 * Re-creates the temporary extraction model file if it has been lost.
+	 * The file is read again by each invocation of the engine, so if it vanishes
+	 * while the export dialog is open, the export would fail with a
+	 * {@link java.io.FileNotFoundException} on every attempt.
+	 *
+	 * @param tmpFileName name of the temporary extraction model file, or <code>null</code> if the model file itself is used
+	 * @param parent parent window of the error message
+	 * @return <code>false</code> iff the file is missing and could not be re-created
+	 */
+	private boolean ensureTmpModelFile(String tmpFileName, Window parent) {
+		if (tmpFileName == null || new File(tmpFileName).exists()) {
+			return true;
+		}
+		String folderInfo = tmpFolderInfo(); // the state at the time of the loss, before saving the model again
+		// "save" returns true without writing the file if the subject is unknown, so check again
+		boolean restored = extractionModelEditor.save(tmpFileName) && new File(tmpFileName).exists();
+		LogUtil.warn(new RuntimeException("lost temporary extraction model file: " + new File(tmpFileName).getAbsolutePath()
+				+ (restored? ". Saving it again succeeded" : ". Saving it again failed") + folderInfo));
+		if (!restored) {
+			JOptionPane.showMessageDialog(parent,
+					"The temporary extraction model file could not be written:\n"
+					+ new File(tmpFileName).getAbsolutePath() + "\n\n"
+					+ "Check the write permission on this folder.", "Error", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		registerTmpModelURL(tmpFileName);
+		return true;
+	}
+
+	/**
+	 * Collects the state of the temporary files folder for diagnostic purposes.
+	 *
+	 * @return description of the state of the temporary files folder
+	 */
+	private String tmpFolderInfo() {
+		try {
+			File folder = new File(Configuration.getInstance().getTempFileFolder());
+			StringBuilder info = new StringBuilder(". Folder " + folder.getAbsolutePath()
+					+ ": exists=" + folder.exists() + ", isDirectory=" + folder.isDirectory() + ", canWrite=" + folder.canWrite());
+			String[] names = folder.list();
+			if (names == null) {
+				info.append(", content=null");
+			} else {
+				Arrays.sort(names);
+				info.append(", " + names.length + " entries");
+				for (int i = Math.max(0, names.length - 8); i < names.length; ++i) {
+					info.append(", " + names[i]);
+				}
+			}
+			return info.toString();
+		} catch (Throwable t) {
+			return ". Folder state unknown: " + t.getMessage();
+		}
+	}
+
 	@SuppressWarnings("serial")
 	public void openExportDialog(boolean checkRI, final Runnable onDataModelUpdate, final Runnable cleanup) {
 		if (!UIUtil.canRunJailer()) {
@@ -1623,11 +1693,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 //			}
 			tmpFileName = tmpF;
 			if (tmpFileName != null) {
-				try {
-					SubsettingEngine.registerTmpURL(new File(tmpFileName).toURI().toURL(), extractionModelEditor.extractionModelFile == null? null : Configuration.getInstance().isTempFile(new File(extractionModelEditor.extractionModelFile))? null : new File(extractionModelEditor.extractionModelFile).getAbsolutePath());
-				} catch (Exception e) {
-					LogUtil.warn(e);
-				}
+				registerTmpModelURL(tmpFileName);
 			}
 			if (tmpFileName != null || saveIfNeeded("Export data", false, true)) {
 				if (tmpFileName != null || (extractionModelEditor.extractionModelFile != null || extractionModelEditor.save(true, "Export data"))) {
@@ -1704,6 +1770,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 										}
 										return true;
 									}
+									@Override
+									protected boolean ensureModelFile() {
+										return ensureTmpModelFile(tmpFileName, this);
+									}
 								};
 							} finally {
 								session.resetGlobalFallbackConnection();
@@ -1750,6 +1820,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 								cDDLExecutionContext.setIndependentWorkingTables(exportDialog.isIndependentWorkingTablesSelected());
 								cDDLExecutionContext.setUseRowid(exportDialog.isUseRowId());
 								cDDLExecutionContext.setUseRowIdsOnlyForTablesWithoutPK(exportDialog.isUseRowIdsOnlyForTablesWithoutPK());
+
+								if (!ensureTmpModelFile(tmpFileName, this)) {
+									exportDialog.dispose();
+									return;
+								}
 
 								DDLCreator ddlCreator = new DDLCreator(cDDLExecutionContext);
 								if (!cDDLExecutionContext.isIndependentWorkingTables()) {
@@ -1799,6 +1874,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 										"try another \"Working table schema\"," +
 										"or use the Working table scope \"local database\"\n\n" +
 										"Continue Data Export?", dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, true, false, true, null, executionContext)) {
+										if (!ensureTmpModelFile(tmpFileName, this)) {
+											exportDialog.dispose();
+											return;
+										}
 										ProgressTable progressTable = new ProgressTable();
 										ProgressTable progressTableForDelete = new ProgressTable();
 										final ProgressPanel progressPanel = new ProgressPanel(progressTable, progressTableForDelete, exportDialog.hasDeleteScript());

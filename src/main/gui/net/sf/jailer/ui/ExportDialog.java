@@ -2629,7 +2629,19 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
 	protected abstract boolean checkForPKs(JRadioButton radioButton, Runnable saveSettings);
 
+	/**
+	 * Ensures that the extraction model file still exists, re-creating it if necessary.
+	 * The file is read again by each invocation of the engine, so the export must not
+	 * start without it.
+	 *
+	 * @return <code>false</code> iff the file is missing and could not be re-created
+	 */
+	protected abstract boolean ensureModelFile();
+
 	private boolean createWorkingTables() {
+		if (!ensureModelFile()) {
+			return false;
+		}
 		List<String> ddlArgs = new ArrayList<String>();
 		ddlArgs.add("create-ddl");
 		dbConnectionDialog.addDbArgs(ddlArgs);
