@@ -102,6 +102,16 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	boolean isOk = false;
 
 	/**
+	 * true iff the rows are to be collected and analyzed without writing an export file.
+	 */
+	private boolean isDryRun = false;
+
+	/**
+	 * Starts a dry run. Created after {@link #initComponents()}.
+	 */
+	private javax.swing.JButton dryRunButton;
+
+	/**
 	 * Xml/Sql switch.
 	 */
 	public final ScriptFormat scriptFormat;
@@ -211,7 +221,9 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			
 			jButton1.setIcon(runIcon);
 			cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
-			
+
+			createDryRunButton();
+
 			if (jScrollPane2.getHorizontalScrollBar() != null) {
 	        	jScrollPane2.getHorizontalScrollBar().setUnitIncrement(16);
 	        }
@@ -2462,7 +2474,74 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+	/**
+	 * Creates the "Dry Run" button and puts it left of the "Export Data" button.
+	 * The buttons of the generated form are re-added with new constraints, so that the
+	 * generated code itself remains untouched.
+	 */
+	private void createDryRunButton() {
+		dryRunButton = new javax.swing.JButton(" Dry Run ");
+		dryRunButton.setToolTipText(
+				"<html>Collect the rows and analyze the result, but don't write an export file."
+				+ "<br>Note that this saves the time needed to write the file, not the time needed to collect the rows.</html>");
+		dryRunButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				run(true);
+			}
+		});
+
+		jPanel2.remove(jButton1);
+		jPanel2.remove(cancelButton);
+
+		java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.weighty = 1.0;
+		gridBagConstraints.insets = new java.awt.Insets(4, 4, 2, 2);
+		jPanel2.add(dryRunButton, gridBagConstraints);
+
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 2;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+		gridBagConstraints.weighty = 1.0;
+		gridBagConstraints.insets = new java.awt.Insets(4, 0, 2, 2);
+		jPanel2.add(jButton1, gridBagConstraints);
+
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 3;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+		gridBagConstraints.weighty = 1.0;
+		gridBagConstraints.insets = new java.awt.Insets(4, 0, 2, 6);
+		jPanel2.add(cancelButton, gridBagConstraints);
+	}
+
 	private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+		run(false);
+	}//GEN-LAST:event_jButton1ActionPerformed
+
+	/**
+	 * Starts the export, or the collection of the rows alone.
+	 *
+	 * @param dryRun <code>true</code> to collect and analyze the rows without writing an export file
+	 */
+	private void run(boolean dryRun) {
+		isDryRun = dryRun;
+		try {
+			doRun(dryRun);
+		} finally {
+			if (!isOk) {
+				// nothing has been started and the dialog stays open, so the state must not stick
+				isDryRun = false;
+			}
+		}
+	}
+
+	private void doRun(boolean dryRun) {
 		if (scriptFormat != ScriptFormat.INTRA_DATABASE) {
 			for (JTextField f: schemaMappingFields.values()) {
 				if (f.getText().trim().length() == 0) {
@@ -2487,7 +2566,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		boolean err = false;
 		JComponent errComp = null;
 		JLabel errLabel = null;
-		if (insert.getText().trim().length() == 0 && (!delete.isVisible() || delete.getText().trim().length() == 0)) {
+		if (!dryRun && insert.getText().trim().length() == 0 && (!delete.isVisible() || delete.getText().trim().length() == 0)) {
 			exportLabel.setForeground(Colors.Color_255_0_0);
 			err = true;
 			errComp = insert;
@@ -2514,7 +2593,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 				errComp.grabFocus();
 			}
 		} else {
-			if (defaultExportFileName != null) {
+			if (defaultExportFileName != null && !dryRun) {
 				defaultExportFileName.setLength(0);
 				defaultExportFileName.append(insert.getText().trim());
 			}
@@ -2546,7 +2625,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 				setVisible(false);
 			}
 		}
-	}//GEN-LAST:event_jButton1ActionPerformed
+	}
 
 	protected abstract boolean checkForPKs(JRadioButton radioButton, Runnable saveSettings);
 
@@ -2754,7 +2833,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	 * Gets name of delete-script, or <code>null</code>, if there is no delete-script.
 	 */
 	public String getDeleteFileName() {
-		if (delete.isVisible() && delete.getText().trim().length() > 0) {
+		if (!isDryRun && delete.isVisible() && delete.getText().trim().length() > 0) {
 			return toFileName(delete.getText().trim());
 		}
 		return null;
@@ -2765,11 +2844,20 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	}
 
 	public boolean insertScripFileNameFieldIsEmpty() {
-		return insert.getText().trim().length() == 0;
+		return isDryRun || insert.getText().trim().length() == 0;
 	}
 
 	public String getInsertFileName() {
-		return insert.getText().trim().length() == 0 ? null : insert.getText().trim();
+		return isDryRun || insert.getText().trim().length() == 0 ? null : insert.getText().trim();
+	}
+
+	/**
+	 * Returns whether the rows are to be collected and analyzed without writing an export file.
+	 *
+	 * @return <code>true</code> if this is a dry run
+	 */
+	public boolean isDryRun() {
+		return isDryRun;
 	}
 
 	/**
@@ -2779,7 +2867,11 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	 */
 	public void fillCLIArgs(List<String> args) {
 		boolean opKnown = false;
-		if (insert.getText().trim().length() > 0) {
+		if (isDryRun) {
+			args.add(0, "export");
+			args.add("-dry-run");
+			opKnown = true;
+		} else if (insert.getText().trim().length() > 0) {
 			args.add(0, "export");
 			args.add("-e");
 			args.add(toFileName(insert.getText()));
@@ -2791,7 +2883,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			}
 		}
 		copyButton.setEnabled(opKnown);
-		if (delete.isVisible() && delete.getText().trim().length() > 0) {
+		if (!isDryRun && delete.isVisible() && delete.getText().trim().length() > 0) {
 			args.add("-d");
 			args.add(toFileName(delete.getText().trim()));
 		}
@@ -3094,7 +3186,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	}
 
 	public boolean hasDeleteScript() {
-		return delete.isVisible() && delete.getText().trim().length() > 0;
+		return !isDryRun && delete.isVisible() && delete.getText().trim().length() > 0;
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

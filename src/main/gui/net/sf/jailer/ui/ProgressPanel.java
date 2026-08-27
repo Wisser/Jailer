@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Consumer;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -37,6 +38,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 import net.sf.jailer.database.DMLTransformer;
+import net.sf.jailer.datamodel.Association;
+import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.ui.progress.CollectionAnalysis;
+import net.sf.jailer.ui.progress.CollectionAnalysisPanel;
 
 /**
  * Progress panel.
@@ -49,6 +54,7 @@ public class ProgressPanel extends javax.swing.JPanel {
 	private Font nonboldbig = font.deriveFont(font.getStyle() & ~Font.BOLD, (font.getSize() * 14) / 10);
 	private final ProgressTable progressTable;
 	private final ProgressTable deleteProgressTable;
+	private final CollectionAnalysisPanel analysisPanel;
 
 	/**
 	 * Creates new form ProgressPanel.
@@ -74,11 +80,14 @@ public class ProgressPanel extends javax.swing.JPanel {
 			progressTable.setShowExcludeFromDeletionImage(false);
 			deletedRowsLabel.setVisible(false);
 			deletedRowsTitelLabel.setVisible(false);
+			// the tabbed pane is kept even without the delete tab, as it holds the analysis tab
 			jTabbedPane1.remove(panel4);
-			jPanel4.remove(jTabbedPane1);
-			jTabbedPane1.remove(panel3);
-			jPanel4.add(panel3);
 		}
+		analysisPanel = new CollectionAnalysisPanel();
+		UIUtil.initComponents(analysisPanel);
+		jTabbedPane1.addTab("Analysis", analysisPanel);
+		jTabbedPane1.setToolTipTextAt(jTabbedPane1.indexOfComponent(analysisPanel),
+				"Which association is responsible for how many rows of the subset");
 		stepLabelColor = stepLabel.getForeground();
 		initialStepLabelColor = stepLabelColor;
 		stepLabel.addPropertyChangeListener("text", new PropertyChangeListener() {
@@ -234,6 +243,26 @@ public class ProgressPanel extends javax.swing.JPanel {
 	 */
 	public void switchToDeleteTab() {
 		jTabbedPane1.setSelectedIndex(1);
+	}
+
+	/**
+	 * Updates the collection analysis, which shows the number of collected rows per association.
+	 *
+	 * @param analysis the analysis
+	 * @param dataModel the data model, for display names
+	 */
+	public void updateAnalysis(CollectionAnalysis analysis, DataModel dataModel) {
+		analysisPanel.setAnalysis(analysis, dataModel);
+	}
+
+	/**
+	 * Sets the consumer which selects an association in the extraction model editor.
+	 * If none is set, the analysis does not offer to jump to an association.
+	 *
+	 * @param associationSelector the consumer, or <code>null</code>
+	 */
+	public void setAssociationSelector(Consumer<Association> associationSelector) {
+		analysisPanel.setAssociationSelector(associationSelector);
 	}
 
 	/** This method is called from within the constructor to

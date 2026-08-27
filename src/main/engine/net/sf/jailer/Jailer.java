@@ -245,7 +245,7 @@ public class Jailer {
 				} else {
 					pw = commandLine.arguments.get(5);
 
-					if (commandLine.exportScriptFileName == null) {
+					if (commandLine.exportScriptFileName == null && !commandLine.dryRun) {
 						System.out.println("missing '-e' option");
 						CommandLineParser.printUsage(args);
 					} else {
@@ -257,7 +257,9 @@ public class Jailer {
 						BasicDataSource dataSource = new BasicDataSource(commandLine.arguments.get(2), commandLine.arguments.get(3),
 								commandLine.arguments.get(4), commandLine.arguments.get(5), 0, jdbcJarURLs);
 						URL modelURL = new File(commandLine.arguments.get(1)).toURI().toURL();
-						new SubsettingEngine(executionContext).export(commandLine.where, modelURL, commandLine.exportScriptFileName, commandLine.deleteScriptFileName,
+						new SubsettingEngine(executionContext).export(commandLine.where, modelURL,
+								commandLine.dryRun? null : commandLine.exportScriptFileName,
+								commandLine.dryRun? null : commandLine.deleteScriptFileName,
 								dataSource, dataSource.dbms, executionContext.getScriptFormat(), 0);
 					}
 				}

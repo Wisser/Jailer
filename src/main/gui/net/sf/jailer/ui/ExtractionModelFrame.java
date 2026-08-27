@@ -1802,6 +1802,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 										ProgressTable progressTable = new ProgressTable();
 										ProgressTable progressTableForDelete = new ProgressTable();
 										final ProgressPanel progressPanel = new ProgressPanel(progressTable, progressTableForDelete, exportDialog.hasDeleteScript());
+										progressPanel.setAssociationSelector(association -> {
+											extractionModelEditor.select(association);
+											ExtractionModelFrame.this.toFront();
+										});
 										boolean confirm = exportDialog.scriptFormat == ScriptFormat.INTRA_DATABASE && exportDialog.getConfirmExport();
 										final ExportAndDeleteStageProgressListener progressListener = new ExportAndDeleteStageProgressListener(progressTable, progressTableForDelete, progressPanel, extractionModelEditor.dataModel, confirm, exportDialog.getTargetSchemaSet(), !exportDialog.scriptFormat.isObjectNotation() && !exportDialog.insertScripFileNameFieldIsEmpty()) {
 											@Override
@@ -1830,7 +1834,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 											}										};
 										UIUtil.runJailer(this, args, true, true,
 											false, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), progressListener, progressPanel, true,
-											true, false, false, false, consumer, openResult, false, executionContext);
+											true, false, false, false, consumer, exportDialog.isDryRun()? null : openResult, false, executionContext);
 										isRunning = true;
 									}
 								}

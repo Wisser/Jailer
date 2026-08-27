@@ -82,6 +82,14 @@ public class CommandLine {
 	@Option(name="-e",usage="name of the export-script file (compressed if it ends with '.zip' or '.gz')", metaVar="export-script")
 	public String exportScriptFileName = null;
 
+	/**
+	 * Collects the rows and reports the statistics, but writes neither an export- nor a
+	 * delete-script. Used by the "Dry Run" button of the export dialog.
+	 * Deliberately without a "usage" text, so that it does not appear in the usage output.
+	 */
+	@Option(name="-dry-run")
+	public boolean dryRun = false;
+
 	@Option(name="-schema",usage="schema to reduce JDBC-Introspection to", metaVar="schema")
 	public String schema = null;
 

@@ -49,9 +49,5 @@ public class JailerVersion {
 }
 
 // TODO
-// TODO test: suchfeld in popup bei multi-screen ging nicht.
-// TODO doku: no mdash
-
-// TODO
-// TODO discover associatin: - nutzer soll namensschema angeben können - 
+// TODO  project_subset_insight.md, Ideen für Aufräumen (Entity-Graph weg)
 

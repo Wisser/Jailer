@@ -77,6 +77,29 @@
     - "File" -> "Export graph as image..." now offers "SVG" in addition to the raster formats.
       An SVG stays sharp at any zoom level and its text remains selectable and searchable.
       The format box of the file chooser now preselects PNG.
+  - New tab "Analysis" in the progress window of an export: which association is responsible for
+    how many rows of the subset.
+    - The rows of a subset are collected by resolving associations. Up to now the progress window
+      showed the number of collected rows per table and per step, but not the association through
+      which they came in. If a subset turns out to be far bigger than expected, the association to
+      be restricted had to be guessed.
+    - The new tab lists every association with the number of rows it has collected, its share of
+      the total, the cumulated share and the step at which it has been resolved, the biggest one
+      first. A row is counted for the association through which it has been collected first, so
+      rows which are reachable via several associations are not counted more than once.
+    - "Restrict Association" in the context menu, or a double click, selects the association in
+      the extraction model, ready to be restricted.
+    - For the selected association, the lower part lists the associations which have brought rows
+      into its source table one step earlier. Often it is not the association with the most rows
+      which has to be restricted, but one of those a few steps ahead of it. This is an assignment
+      by step and table, not the origin of a single row: if several associations feed the same
+      table, all of them are shown. A double click walks one step further towards the subject.
+    - "Copy to Clipboard" copies the analysis as text.
+  - New button "Dry Run" in the export dialog: the rows are collected and analyzed, but neither
+    an export- nor a delete-script is written. This gives the analysis described above before an
+    export is actually made. Note that it saves the time needed to write the file, not the time
+    needed to collect the rows. Together with a row limit it can be used to find the association
+    which lets a subset explode without waiting for a complete run.
 
 17.2.2
   - Path Finder: candidate tables now show a confidence estimate.

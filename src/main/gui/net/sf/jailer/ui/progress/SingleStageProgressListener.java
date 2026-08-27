@@ -73,6 +73,11 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 	private final Map<String, Long> rowsPerTable = new TreeMap<String, Long>();
 
 	/**
+	 * Holds rows per association.
+	 */
+	private final CollectionAnalysis collectionAnalysis = new CollectionAnalysis();
+
+	/**
 	 * Today.
 	 */
 	private int today = -1, lastUpdated = -1;
@@ -94,6 +99,7 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 	private boolean isErrorStage = false;
 	private boolean stopClock;
 	private boolean rowsPerTableIsUptodate = false;
+	private boolean analysisIsUptodate = false;
 
 	private final DataModel dataModel;
 
@@ -172,6 +178,10 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 									progressPanel.updateRowsReductionPerTable(rowsPerTable);
 								}
 								rowsPerTableIsUptodate = true;
+							}
+							if (SingleStageProgressListener.this.forExportStage && !analysisIsUptodate) {
+								progressPanel.updateAnalysis(collectionAnalysis, dataModel);
+								analysisIsUptodate = true;
 							}
 							if (SingleStageProgressListener.this.forExportStage) {
 								progressTable.setTotalNumberOfCollectedRows(collectedRows);
@@ -272,7 +282,12 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 					}
 				}
 			}
-			cleanupLastLine = false;
+			if (day == today) {
+				// Only the last row consumes the flag. Earlier rows are cleaned up anyway
+				// (see "day < today"), so if the display catches up on several days at once,
+				// using it up on an earlier row would leave the last one uncleaned.
+				cleanupLastLine = false;
+			}
 		}
 		if (day == lastUpdated) {
 			progressTable.replaceLastRow(theRow, day);
@@ -326,6 +341,10 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 			} else {
 				collectedRows += rc;
 				if (rc > 0) {
+					if (forExportStage) {
+						collectionAnalysis.add(day, modelElement, rc);
+						analysisIsUptodate = false;
+					}
 					rowsPerTableIsUptodate = false;
 					String tableName = dataModel.getDisplayName(getDestination(modelElement));
 					if (rowsPerTable.containsKey(tableName)) {
@@ -386,6 +405,15 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 
 	public synchronized void stop() {
 		stop = true;
+	}
+
+	/**
+	 * Gets the number of collected rows per association.
+	 *
+	 * @return the collection analysis
+	 */
+	public CollectionAnalysis getCollectionAnalysis() {
+		return collectionAnalysis;
 	}
 
 	/**
