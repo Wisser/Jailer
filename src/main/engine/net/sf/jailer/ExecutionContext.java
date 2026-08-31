@@ -92,6 +92,7 @@ public class ExecutionContext {
 		this.insertIncrementally = other.insertIncrementally;
 		this.abortInCaseOfInconsistency = other.abortInCaseOfInconsistency;
 		this.independentWorkingTables = other.independentWorkingTables;
+		this.keepEntityGraph = other.keepEntityGraph;
 		this.upkDomain = other.upkDomain;
 		this.currentConnectionAlias = other.currentConnectionAlias;
 		this.limit = other.limit;
@@ -994,6 +995,9 @@ public class ExecutionContext {
 	// create working tables that are independent of the extraction model. (Potentially less efficient)
 	private boolean independentWorkingTables = false;
 
+	// keep the entity-graph after the export, so that the origin of a collected row can be analyzed
+	private boolean keepEntityGraph = false;
+
 	// maximum allowed number of exported rows. If this limit is exceeded, the export aborts with an error.
 	private Long limit;
 	
@@ -1146,6 +1150,24 @@ public class ExecutionContext {
 	}
 
 	/**
+	 * Keep the entity-graph after the export instead of deleting it, so that the origin of a
+	 * collected row can be analyzed afterwards. Only supported for the working table scope
+	 * {@link WorkingTableScope#GLOBAL}.
+	 */
+	public boolean isKeepEntityGraph() {
+		return keepEntityGraph;
+	}
+
+	/**
+	 * Keep the entity-graph after the export instead of deleting it, so that the origin of a
+	 * collected row can be analyzed afterwards. Only supported for the working table scope
+	 * {@link WorkingTableScope#GLOBAL}.
+	 */
+	public void setKeepEntityGraph(boolean keepEntityGraph) {
+		this.keepEntityGraph = keepEntityGraph;
+	}
+
+	/**
 	 * Gets the universal primary key domain.
 	 *
 	 * @return the universal primary key domain
@@ -1239,6 +1261,7 @@ public class ExecutionContext {
 		noSorting = commandLine.noSorting;
 		orderByPK = commandLine.orderByPK;
 		independentWorkingTables = commandLine.independentWorkingTables;
+		keepEntityGraph = commandLine.keepEntityGraph;
 		transactional = commandLine.transactional;
 		isolationLevel = commandLine.isolationLevel;
 		useRowid = commandLine.useRowid;

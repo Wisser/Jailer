@@ -38,6 +38,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.RowSorter.SortKey;
 import javax.swing.SortOrder;
 import javax.swing.SwingConstants;
@@ -114,6 +115,8 @@ public class CollectionAnalysisPanel extends JPanel {
 	private DataModel dataModel;
 	private ModelElement selectedModelElement;
 	private Consumer<Association> associationSelector;
+	private RowOriginContext rowOriginContext;
+	private Runnable discardAction;
 
 	private final NumberFormat percentFormat = createPercentFormat();
 
@@ -276,6 +279,18 @@ public class CollectionAnalysisPanel extends JPanel {
 	 */
 	public void setAssociationSelector(Consumer<Association> associationSelector) {
 		this.associationSelector = associationSelector;
+	}
+
+	/**
+	 * Sets the context for the row origin analysis. Only if one is set and an entity-graph has
+	 * been retained, the collected rows of an association can be inspected.
+	 *
+	 * @param rowOriginContext the context, or <code>null</code>
+	 * @param discardAction discards the retained data, or <code>null</code>
+	 */
+	public void setRowOriginContext(RowOriginContext rowOriginContext, Runnable discardAction) {
+		this.rowOriginContext = rowOriginContext;
+		this.discardAction = discardAction;
 	}
 
 	/**
@@ -502,6 +517,31 @@ public class CollectionAnalysisPanel extends JPanel {
 				}
 			});
 			popup.add(restrict);
+			popup.addSeparator();
+		}
+		if (rowOriginContext != null && rowOriginContext.isAvailable()) {
+			JMenuItem showRows = new JMenuItem("Show collected rows...");
+			showRows.setToolTipText("Lists the rows collected through this association, and shows for a selected one how it has found its way into the subset.");
+			showRows.setEnabled(association != null);
+			showRows.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent evt) {
+					new RowOriginDialog(SwingUtilities.getWindowAncestor(CollectionAnalysisPanel.this),
+							rowOriginContext, association).setVisible(true);
+				}
+			});
+			popup.add(showRows);
+			if (discardAction != null) {
+				JMenuItem discard = new JMenuItem("Discard analysis data");
+				discard.setToolTipText("Deletes the collected rows from the working tables. Afterwards the origin of a row can no longer be analyzed.");
+				discard.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent evt) {
+						discardAction.run();
+					}
+				});
+				popup.add(discard);
+			}
 			popup.addSeparator();
 		}
 		JMenuItem copy = new JMenuItem("Copy to Clipboard");

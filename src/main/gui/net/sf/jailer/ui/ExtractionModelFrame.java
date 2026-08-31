@@ -101,6 +101,8 @@ import net.sf.jailer.ui.databrowser.BookmarksPanel.BookmarkId;
 import net.sf.jailer.ui.databrowser.DataBrowser;
 import net.sf.jailer.ui.ddl_script_generator.DDLScriptGeneratorPanel;
 import net.sf.jailer.ui.progress.ExportAndDeleteStageProgressListener;
+import net.sf.jailer.ui.progress.RetainedEntityGraphs;
+import net.sf.jailer.ui.progress.RowOriginContext;
 import net.sf.jailer.ui.util.AnimationController;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.ui.util.UpdateInfoManager;
@@ -1885,8 +1887,36 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 											extractionModelEditor.select(association);
 											ExtractionModelFrame.this.toFront();
 										});
+
+										final RowOriginContext rowOriginContext;
+										if (exportDialog.isKeepEntityGraph()) {
+											// at most one retained graph at a time
+											RetainedEntityGraphs.discardCurrent(ExtractionModelFrame.this);
+											ExecutionContext originExecutionContext = new ExecutionContext(executionContext);
+											originExecutionContext.setScope(WorkingTableScope.GLOBAL);
+											originExecutionContext.setWorkingTableSchema(exportDialog.getWorkingTableSchema());
+											originExecutionContext.setUseRowid(exportDialog.isUseRowId());
+											originExecutionContext.setUseRowIdsOnlyForTablesWithoutPK(exportDialog.isUseRowIdsOnlyForTablesWithoutPK());
+											rowOriginContext = new RowOriginContext(
+													extractionModelEditor.dataModel,
+													originExecutionContext,
+													() -> new BasicDataSource(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4), 0, dbConnectionDialog.currentJarURLs()),
+													dataSource.dbms,
+													dbConnectionDialog.currentConnection.url);
+											RetainedEntityGraphs.register(rowOriginContext);
+											progressPanel.setRowOriginContext(rowOriginContext, RetainedEntityGraphs.discardAction(ExtractionModelFrame.this));
+										} else {
+											rowOriginContext = null;
+										}
 										boolean confirm = exportDialog.scriptFormat == ScriptFormat.INTRA_DATABASE && exportDialog.getConfirmExport();
 										final ExportAndDeleteStageProgressListener progressListener = new ExportAndDeleteStageProgressListener(progressTable, progressTableForDelete, progressPanel, extractionModelEditor.dataModel, confirm, exportDialog.getTargetSchemaSet(), !exportDialog.scriptFormat.isObjectNotation() && !exportDialog.insertScripFileNameFieldIsEmpty()) {
+											@Override
+											public void entityGraphRetained(int graphId) {
+												if (rowOriginContext != null) {
+													rowOriginContext.setGraphId(graphId);
+													RetainedEntityGraphs.remember(rowOriginContext.getDbUrl(), exportDialog.getWorkingTableSchema(), graphId);
+												}
+											}
 											@Override
 											protected void validatePrimaryKeys() {
 												try {
@@ -2069,11 +2099,36 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 					theSession.shutDown();
 					theSession = null;
 				}
-				return dbConnectionDialog.connect(reason);
+				boolean connected = dbConnectionDialog.connect(reason);
+				if (connected) {
+					discardRetainedEntityGraphsOfPreviousRuns();
+				}
+				return connected;
 			}
 			return true;
 		} finally {
 			updateMenuItems();
+		}
+	}
+
+	/**
+	 * Gets rid of an entity-graph which a previous run of the application has kept for a row
+	 * origin analysis but could not delete, for instance because it has been killed. Runs in the
+	 * background and never disturbs the connecting.
+	 */
+	private void discardRetainedEntityGraphsOfPreviousRuns() {
+		try {
+			if (dbConnectionDialog == null || dbConnectionDialog.currentConnection == null
+					|| extractionModelEditor == null || extractionModelEditor.dataModel == null) {
+				return;
+			}
+			final DbConnectionDialog.ConnectionInfo connection = dbConnectionDialog.currentConnection;
+			final java.net.URL[] jarURLs = dbConnectionDialog.currentJarURLs();
+			final String password = dbConnectionDialog.getPassword();
+			RetainedEntityGraphs.discardLeftovers(extractionModelEditor.dataModel, connection.url,
+					() -> new BasicDataSource(connection.driverClass, connection.url, connection.user, password, 0, jarURLs));
+		} catch (Throwable t) {
+			LogUtil.warn(t);
 		}
 	}
 
@@ -2089,6 +2144,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 					theSession.shutDown();
 					theSession = null;
 				}
+				discardRetainedEntityGraphsOfPreviousRuns();
 				return true;
 			}
 			return false;

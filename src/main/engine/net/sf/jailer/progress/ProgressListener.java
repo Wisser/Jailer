@@ -84,4 +84,14 @@ public interface ProgressListener {
 	 */
 	void warn(Supplier<String> msgSupplier);
 
+	/**
+	 * The entity-graph has been kept after the export instead of being deleted, so that the
+	 * origin of a collected row can be analyzed afterwards. Fired only if the graph is
+	 * actually retained.
+	 *
+	 * @param graphId the ID of the retained entity-graph
+	 */
+	default void entityGraphRetained(int graphId) {
+	}
+
 }

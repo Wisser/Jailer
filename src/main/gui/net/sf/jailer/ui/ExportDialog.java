@@ -112,6 +112,13 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	private javax.swing.JButton dryRunButton;
 
 	/**
+	 * Keeps the entity-graph after the run, so that the origin of a row can be analyzed.
+	 * Created after {@link #initComponents()}. Deliberately not remembered between runs:
+	 * it leaves data in the database, so it is to be confirmed each time.
+	 */
+	private javax.swing.JCheckBox keepEntityGraphCheckBox;
+
+	/**
 	 * Xml/Sql switch.
 	 */
 	public final ScriptFormat scriptFormat;
@@ -223,6 +230,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
 
 			createDryRunButton();
+			createKeepEntityGraphCheckBox();
 
 			if (jScrollPane2.getHorizontalScrollBar() != null) {
 	        	jScrollPane2.getHorizontalScrollBar().setUnitIncrement(16);
@@ -624,6 +632,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 					workingTableSchemaComboBox.setVisible(!scopeLocal.isSelected());
 					localTempDirLabel.setVisible(scopeLocal.isSelected());
 					localTempDirPanel.setVisible(scopeLocal.isSelected());
+					updateKeepEntityGraphState();
 					updateCLIArea();
 				}
 			};
@@ -2520,6 +2529,50 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		jPanel2.add(cancelButton, gridBagConstraints);
 	}
 
+	/**
+	 * Creates the check box which keeps the entity-graph after the run, so that the origin of a
+	 * single row can be analyzed afterwards.
+	 */
+	private void createKeepEntityGraphCheckBox() {
+		keepEntityGraphCheckBox = new javax.swing.JCheckBox("Enable row origin analysis by keeping the collected rows");
+		keepEntityGraphCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+		keepEntityGraphCheckBox.addActionListener(new java.awt.event.ActionListener() {
+			@Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				updateCLIArea();
+			}
+		});
+		java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 50;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+		jPanel5.add(keepEntityGraphCheckBox, gridBagConstraints);
+	}
+
+	/**
+	 * Keeping the entity-graph only works with the working table scope "global tables": the other
+	 * scopes create the working tables as temporary tables or in a local database, so nothing
+	 * would survive the run.
+	 */
+	private void updateKeepEntityGraphState() {
+		if (keepEntityGraphCheckBox == null) {
+			return;
+		}
+		boolean supported = scopeGlobal.isSelected();
+		keepEntityGraphCheckBox.setEnabled(supported);
+		if (!supported) {
+			keepEntityGraphCheckBox.setSelected(false);
+		}
+		keepEntityGraphCheckBox.setToolTipText(supported?
+				"<html>Keeps the rows collected during this run in the working tables of the database,"
+				+ "<br>so that afterwards it can be analyzed how a single row has found its way into the subset."
+				+ "<br>The rows are discarded when the progress window is closed.</html>"
+				:
+				"<html>Requires the working table scope \"global tables\": the other scopes create the working tables"
+				+ "<br>as temporary tables or in a local database, so nothing would survive the run.</html>");
+	}
+
 	private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
 		run(false);
 	}//GEN-LAST:event_jButton1ActionPerformed
@@ -2873,6 +2926,16 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	}
 
 	/**
+	 * Returns whether the entity-graph is to be kept after the run, so that the origin of a
+	 * single row can be analyzed.
+	 *
+	 * @return <code>true</code> if the entity-graph is to be kept
+	 */
+	public boolean isKeepEntityGraph() {
+		return keepEntityGraphCheckBox != null && keepEntityGraphCheckBox.isEnabled() && keepEntityGraphCheckBox.isSelected();
+	}
+
+	/**
 	 * Fills field content into cli-args.
 	 *
 	 * @param args the argument-list to fill
@@ -2898,6 +2961,9 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		if (!isDryRun && delete.isVisible() && delete.getText().trim().length() > 0) {
 			args.add("-d");
 			args.add(toFileName(delete.getText().trim()));
+		}
+		if (isKeepEntityGraph()) {
+			args.add("-keep-entity-graph");
 		}
 		if (insertIncrementally.isSelected()) {
 			args.add("-limit-transaction-size");

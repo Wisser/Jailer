@@ -1513,6 +1513,18 @@ public class SubsettingEngine {
 	}
 
 	/**
+	 * Checks whether the entity-graph is to be kept after the export, so that the origin of a
+	 * collected row can be analyzed afterwards. Only the working table scope
+	 * {@link WorkingTableScope#GLOBAL} supports this: the other scopes create the working
+	 * tables as temporary tables or in a local database, so nothing would survive the session.
+	 *
+	 * @return <code>true</code> if the entity-graph is to be kept
+	 */
+	private boolean keepEntityGraph() {
+		return executionContext.isKeepEntityGraph() && executionContext.getScope() == WorkingTableScope.GLOBAL;
+	}
+
+	/**
 	 * Exports entities.
 	 *
 	 * @param whereClause optional WHERE clause to restrict the subject rows, or <code>null</code>
@@ -1598,6 +1610,10 @@ public class SubsettingEngine {
 					readLock = workingTablesLock.readLock();
 					readLock.lock();
 				}
+			}
+
+			if (executionContext.isKeepEntityGraph() && !keepEntityGraph()) {
+				_log.warn("ignoring \"keep entity graph\": it requires the working table scope " + WorkingTableScope.GLOBAL + ", but the scope is " + executionContext.getScope());
 			}
 
 			_log.info("" + session.dbms.getSqlDialect());
@@ -1688,6 +1704,7 @@ public class SubsettingEngine {
 			setEntityGraph(graph);
 			setDataModel(extractionModel.dataModel);
 			EntityGraph exportedEntities = null;
+			EntityGraph retainedEntityGraph = null;
 			long exportedCount = 0;
 
 			try {
@@ -1711,6 +1728,14 @@ public class SubsettingEngine {
 
 				if (deleteScriptFileName != null) {
 					exportedEntities = entityGraph.copy(EntityGraph.createUniqueGraphID(), session);
+				}
+
+				if (keepEntityGraph()) {
+					// A snapshot of the state right after the collection. The export phase consumes
+					// the graph as it writes the rows out - "markIndependentEntities" sets the
+					// birthday to 0 and "deleteIndependentEntities" removes the rows - and the row
+					// origin analysis needs exactly the collection step and the collected rows.
+					retainedEntityGraph = entityGraph.copy(EntityGraph.createUniqueGraphID(), session);
 				}
 
 				if (scriptFile != null) {
@@ -1798,6 +1823,10 @@ public class SubsettingEngine {
 				}
 
 				datamodel.deriveFilters();
+				if (retainedEntityGraph != null) {
+					_log.info("keeping entity-graph " + retainedEntityGraph.graphID + " for row origin analysis");
+					executionContext.getProgressListenerRegistry().fireEntityGraphRetained(retainedEntityGraph.graphID);
+				}
 				entityGraph.truncate(executionContext, true);
 				entityGraph.delete();
 				entityGraph.getSession().commitAll();
@@ -1815,6 +1844,9 @@ public class SubsettingEngine {
 						} else {
 							_log.info("skipping clean up of temporary tables");
 						}
+					}
+					if (retainedEntityGraph != null && entityGraph.getSession().scope == WorkingTableScope.GLOBAL) {
+						retainedEntityGraph.delete();
 					}
 					_log.info("cleaned up");
 					entityGraph.close();
@@ -1843,6 +1875,10 @@ public class SubsettingEngine {
 						} else {
 							_log.info("skipping clean up of temporary tables");
 						}
+					}
+					if (retainedEntityGraph != null && entityGraph.getSession().scope == WorkingTableScope.GLOBAL) {
+						EntityGraph finalRetainedEntityGraph = retainedEntityGraph;
+						tryAndIgnore.accept(() -> finalRetainedEntityGraph.delete());
 					}
 					tryAndIgnore.accept(() -> entityGraph.getSession().rollbackAll());
 					tryAndIgnore.accept(() -> entityGraph.close());

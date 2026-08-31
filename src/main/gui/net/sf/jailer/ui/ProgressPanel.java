@@ -265,6 +265,42 @@ public class ProgressPanel extends javax.swing.JPanel {
 		analysisPanel.setAssociationSelector(associationSelector);
 	}
 
+	/**
+	 * Sets the context for the row origin analysis, and the action which discards the retained
+	 * data. Only if one is set and an entity-graph has been retained, the collected rows of an
+	 * association can be inspected.
+	 *
+	 * @param rowOriginContext the context, or <code>null</code>
+	 * @param discardAction discards the retained data, or <code>null</code>
+	 */
+	public void setRowOriginContext(net.sf.jailer.ui.progress.RowOriginContext rowOriginContext, final Runnable discardAction) {
+		analysisPanel.setRowOriginContext(rowOriginContext, discardAction);
+		if (rowOriginContext != null && discardAction != null) {
+			// the retained rows live exactly as long as the window which analyzes them
+			addAncestorListener(new javax.swing.event.AncestorListener() {
+				@Override
+				public void ancestorAdded(javax.swing.event.AncestorEvent event) {
+					Window window = SwingUtilities.getWindowAncestor(ProgressPanel.this);
+					if (window != null) {
+						removeAncestorListener(this);
+						window.addWindowListener(new java.awt.event.WindowAdapter() {
+							@Override
+							public void windowClosed(java.awt.event.WindowEvent e) {
+								discardAction.run();
+							}
+						});
+					}
+				}
+				@Override
+				public void ancestorRemoved(javax.swing.event.AncestorEvent event) {
+				}
+				@Override
+				public void ancestorMoved(javax.swing.event.AncestorEvent event) {
+				}
+			});
+		}
+	}
+
 	/** This method is called from within the constructor to
 	 * initialize the form.
 	 * WARNING: Do NOT modify this code. The content of this method is

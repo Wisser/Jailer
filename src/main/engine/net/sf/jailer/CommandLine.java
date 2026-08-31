@@ -90,6 +90,14 @@ public class CommandLine {
 	@Option(name="-dry-run")
 	public boolean dryRun = false;
 
+	/**
+	 * Keeps the entity-graph after the export instead of deleting it, so that the origin of a
+	 * collected row can be analyzed afterwards. Used by the export dialog.
+	 * Deliberately without a "usage" text, so that it does not appear in the usage output.
+	 */
+	@Option(name="-keep-entity-graph")
+	public boolean keepEntityGraph = false;
+
 	@Option(name="-schema",usage="schema to reduce JDBC-Introspection to", metaVar="schema")
 	public String schema = null;
 

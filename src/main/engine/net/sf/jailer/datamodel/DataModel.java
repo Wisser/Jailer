@@ -934,6 +934,21 @@ public class DataModel {
 	}
 
 	/**
+	 * Gets an association by its ID.
+	 *
+	 * @param id the ID, see {@link Association#getId()}
+	 * @return the association, or <code>null</code> if there is none with that ID
+	 */
+	public Association getAssociationById(int id) {
+		for (Association association: namedAssociations.values()) {
+			if (association.getId() == id) {
+				return association;
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * Gets export modus, SQL or XML. (GUI support).
 	 *
 	 * @return the export modus

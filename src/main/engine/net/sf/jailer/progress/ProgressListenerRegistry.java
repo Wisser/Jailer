@@ -126,4 +126,15 @@ public class ProgressListenerRegistry {
 		}
 	}
 
+	/**
+	 * Notifies all listeners that the entity-graph has been kept after the export.
+	 *
+	 * @param graphId the ID of the retained entity-graph
+	 */
+	public synchronized void fireEntityGraphRetained(int graphId) {
+		for (ProgressListener listener : progressListeners) {
+			listener.entityGraphRetained(graphId);
+		}
+	}
+
 }

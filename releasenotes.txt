@@ -100,6 +100,24 @@
     export is actually made. Note that it saves the time needed to write the file, not the time
     needed to collect the rows. Together with a row limit it can be used to find the association
     which lets a subset explode without waiting for a complete run.
+  - The origin of a single row of the subset can now be analyzed: through which associations, and
+    starting from which subject row, has exactly this row found its way into the subset.
+    - New option "Enable row origin analysis by keeping the collected rows" in the export dialog,
+      switched off by default. With it, the rows collected during the run stay in the working
+      tables after the run instead of being deleted, which is what the analysis reads. It requires
+      the working table scope "global tables"; with the other scopes the working tables do not
+      survive the run, so the option is disabled there.
+    - "Show collected rows..." in the context menu of the "Analysis" tab lists the rows which have
+      been collected through the selected association. Selecting one of them shows the chain from
+      the subject down to that row, one line per step, with the association each step was made
+      through and the key of the row it came from.
+    - Note that this is the way the row has been found first, not every way it could have been
+      reached. That is the answer to the question why the row is part of the subset: without this
+      way it might not be.
+    - The kept rows are discarded when the progress window is closed, when the next run with that
+      option starts, when the application ends, and, should none of that have happened, when the
+      same database is connected to again. "Discard analysis data" in the same context menu
+      removes them at once.
 
 17.2.2
   - Path Finder: candidate tables now show a confidence estimate.

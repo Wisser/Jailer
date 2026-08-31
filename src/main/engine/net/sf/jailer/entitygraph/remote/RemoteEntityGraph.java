@@ -20,6 +20,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -123,6 +124,21 @@ public class RemoteEntityGraph extends EntityGraph {
 	}
 
 	/**
+	 * Attaches to an entity-graph which already exists in the database, without creating one.
+	 * Used to analyze a graph that has been kept after an export.
+	 *
+	 * @param dataModel the data model
+	 * @param graphID the ID of the existing graph
+	 * @param session for executing SQL-Statements
+	 * @param universalPrimaryKey the universal primary key
+	 * @param executionContext the execution context
+	 * @return the entity-graph
+	 */
+	public static RemoteEntityGraph attach(DataModel dataModel, int graphID, Session session, PrimaryKey universalPrimaryKey, ExecutionContext executionContext) throws SQLException {
+		return new RemoteEntityGraph(dataModel, graphID, session, universalPrimaryKey, null, executionContext);
+	}
+
+	/**
 	 * Initializes a new entity-graph.
 	 *
 	 * @param graphID the unique ID of the graph
@@ -152,8 +168,8 @@ public class RemoteEntityGraph extends EntityGraph {
 		RemoteEntityGraph entityGraph = create(dataModel, newGraphID, session, universalPrimaryKey, null, executionContext);
 		entityGraph.setBirthdayOfSubject(birthdayOfSubject);
 		session.executeUpdate(
-				"Insert into " + dmlTableReference(ENTITY, session) + "(r_entitygraph, " + universalPrimaryKey.columnList(null) + ", birthday, orig_birthday, type) " +
-					"Select " + newGraphID + ", " + universalPrimaryKey.columnList(null) + ", birthday, birthday, type From " + dmlTableReference(ENTITY, session) + " Where r_entitygraph=" + graphID + "");
+				"Insert into " + dmlTableReference(ENTITY, session) + "(r_entitygraph, " + universalPrimaryKey.columnList(null) + ", birthday, orig_birthday, type, association) " +
+					"Select " + newGraphID + ", " + universalPrimaryKey.columnList(null) + ", birthday, birthday, type, association From " + dmlTableReference(ENTITY, session) + " Where r_entitygraph=" + graphID + "");
 		entityGraph.setTransformerFactory(getTransformerFactory());
 		return entityGraph;
 	}
@@ -274,7 +290,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 */
 	@Override
 	public long addEntities(Table table, String condition, int today) throws SQLException {
-		return addEntities(table, "T", condition, null, null, null, null, false, today, true);
+		return addEntities(table, "T", condition, null, null, null, null, false, today, true, null);
 	}
 
 	/**
@@ -483,7 +499,7 @@ public class RemoteEntityGraph extends EntityGraph {
 				destAlias = "B";
 				sourceAlias = "A";
 			}
-			return addEntities(association.destination, destAlias, "E.r_entitygraph=" + graphID + " and E.birthday = " + (today - 1) + " and E.type=" + typeName(table) + " and " + pkEqualsEntityID(table, sourceAlias, "E"), table, sourceAlias, association.source, jc, true, today, association.reversed);
+			return addEntities(association.destination, destAlias, "E.r_entitygraph=" + graphID + " and E.birthday = " + (today - 1) + " and E.type=" + typeName(table) + " and " + pkEqualsEntityID(table, sourceAlias, "E"), table, sourceAlias, association.source, jc, true, today, association.reversed, association);
 		}
 		return -1;
 	}
@@ -566,15 +582,20 @@ public class RemoteEntityGraph extends EntityGraph {
 	 *
 	 * @return row-count
 	 */
-	private long addEntities(Table table, String alias, String condition, Table joinedTable, String joinedTableAlias, Table source, String joinCondition, boolean joinWithEntity, int today, boolean isInverseAssociation) throws SQLException {
+	private long addEntities(Table table, String alias, String condition, Table joinedTable, String joinedTableAlias, Table source, String joinCondition, boolean joinWithEntity, int today, boolean isInverseAssociation, Association association) throws SQLException {
 		if (joinCondition != null) {
 			joinCondition = SqlUtil.resolvePseudoColumns(joinCondition, isInverseAssociation? null : "E", isInverseAssociation? "E" : null, today, birthdayOfSubject, inDeleteMode);
 		}
+		// The association through which the entities are found is recorded, so that the origin
+		// of a single row can be traced back later. Subject rows have no association, and for
+		// them the column is simply omitted, which leaves it null.
+		String associationColumn = association != null? ", association" : "";
+		String associationValue = association != null? ", " + association.getId() + " as association" : "";
 		String select;
 		LimitTransactionSizeInfo limitTransactionSize = session.dbms.getLimitTransactionSize();
 		if (joinedTable == null && !joinWithEntity && !limitTransactionSize.isApplicable(executionContext)) {
 			select =
-					"Select " + graphID + " " + limitTransactionSize.afterSelectFragment(executionContext) + "as graph_id, " + pkList(table, alias) + ", " + today + " as birthday, " + typeName(table) + " as type" +
+					"Select " + graphID + " " + limitTransactionSize.afterSelectFragment(executionContext) + "as graph_id, " + pkList(table, alias) + ", " + today + " as birthday, " + typeName(table) + " as type" + associationValue +
 					" From " + quoting.requote(table.getName()) + " " + alias +
 					(condition != null && !SqlUtil.SQL_TRUE.equals(condition) ? " Where (" + condition + ") " : " ") + 
 					limitTransactionSize.additionalWhereConditionFragment(executionContext) +
@@ -586,7 +607,7 @@ public class RemoteEntityGraph extends EntityGraph {
 
 				// TODO is this still necessary?
 				select =
-					"Select " + (joinedTable != null? "distinct " : "") + limitTransactionSize.afterSelectFragment(executionContext) + graphID + " as graph_id, " + pkList(table, alias) + ", " + today + " as birthday, " + typeName(table) + " as type" +
+					"Select " + (joinedTable != null? "distinct " : "") + limitTransactionSize.afterSelectFragment(executionContext) + graphID + " as graph_id, " + pkList(table, alias) + ", " + today + " as birthday, " + typeName(table) + " as type" + associationValue +
 					" From " + quoting.requote(table.getName()) + " " + alias
 						+
 					(joinedTable != null? ", " + quoting.requote(joinedTable.getName()) + " " + joinedTableAlias + " ": "") +
@@ -603,7 +624,7 @@ public class RemoteEntityGraph extends EntityGraph {
 
 			} else {
 				select =
-					"Select " + (joinedTable != null? "distinct " : "") + limitTransactionSize.afterSelectFragment(executionContext) + graphID + " as graph_id, " + pkList(table, alias) + ", " + today + " as birthday, " + typeName(table) + " as type" +
+					"Select " + (joinedTable != null? "distinct " : "") + limitTransactionSize.afterSelectFragment(executionContext) + graphID + " as graph_id, " + pkList(table, alias) + ", " + today + " as birthday, " + typeName(table) + " as type" + associationValue +
 					" From " + quoting.requote(table.getName()) + " " + alias +
 					" left join " + dmlTableReference(ENTITY, session) + " Duplicate on Duplicate.r_entitygraph=" + graphID + " and Duplicate.type=" + typeName(table) + " and " +
 					pkEqualsEntityID(table, alias, "Duplicate") +
@@ -616,7 +637,7 @@ public class RemoteEntityGraph extends EntityGraph {
 		}
 
 		long incrementSize = limitTransactionSize.getSize(executionContext);
-		String insert = "Insert into " + dmlTableReference(ENTITY, session) + " (r_entitygraph, " + upkColumnList(table, null) + ", birthday, type) " + select;
+		String insert = "Insert into " + dmlTableReference(ENTITY, session) + " (r_entitygraph, " + upkColumnList(table, null) + ", birthday, type" + associationColumn + ") " + select;
 		if (DBMS.SYBASE.equals(session.dbms)) session.execute("set forceplan on ");
 		long rc = 0;
 		for (;;) {
@@ -1394,6 +1415,246 @@ public class RemoteEntityGraph extends EntityGraph {
 				sb.append(tableAlias + "." + quoting.requote(tableColumn.name));
 				sb.append(" as " + (columnAliasPrefix == null? "" : columnAliasPrefix) + column.name);
 		   }
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * The entity-graph record of a single row: when it has been collected, and through which
+	 * association.
+	 */
+	public static class EntityRecord {
+
+		/**
+		 * The collection step at which the row has been collected.
+		 */
+		public final int birthday;
+
+		/**
+		 * The ID of the association through which the row has been collected, or
+		 * <code>null</code> if it is a subject row.
+		 */
+		public final Integer associationId;
+
+		EntityRecord(int birthday, Integer associationId) {
+			this.birthday = birthday;
+			this.associationId = associationId;
+		}
+	}
+
+	/**
+	 * Reads the entity-graph record of a single row.
+	 *
+	 * @param table the table of the row
+	 * @param primaryKey the primary key values, in the order of the table's primary key
+	 * @return the record, or <code>null</code> if the row is not part of the graph
+	 */
+	public EntityRecord readEntityRecord(Table table, Object[] primaryKey) throws SQLException {
+		final EntityRecord[] result = new EntityRecord[1];
+		String select =
+				"Select E.birthday, E.association From " + dmlTableReference(ENTITY, session) + " E" +
+				" Where E.r_entitygraph=" + graphID + " and E.type=" + typeName(table) +
+				" and " + upkEqualsValues(table, primaryKey, "E");
+		session.executeQuery(select, new Session.AbstractResultSetReader() {
+			@Override
+			public void readCurrentRow(ResultSet resultSet) throws SQLException {
+				if (result[0] == null) {
+					int birthday = resultSet.getInt(1);
+					int association = resultSet.getInt(2);
+					result[0] = new EntityRecord(birthday, resultSet.wasNull()? null : Integer.valueOf(association));
+				}
+			}
+		});
+		return result[0];
+	}
+
+	/**
+	 * Finds the rows of the source table through which a given row has been collected.
+	 * <p>
+	 * A row is collected from rows which have been collected one step earlier, so the
+	 * predecessors are looked for among the rows of the source table with birthday
+	 * <code>birthday - 1</code>, joined through the (restricted) condition of the association.
+	 * More than one such row can exist; the caller decides what to do with that.
+	 *
+	 * @param association the association through which the row has been collected
+	 * @param table the table of the row
+	 * @param primaryKey the primary key values of the row
+	 * @param birthday the collection step at which the row has been collected
+	 * @param maxRows maximum number of predecessors to read
+	 * @return the primary key values of the predecessors, in the order of the source table's primary key
+	 */
+	public List<Object[]> readPredecessorKeys(Association association, Table table, Object[] primaryKey, int birthday, long maxRows) throws SQLException {
+		final List<Object[]> result = new ArrayList<Object[]>();
+		String jc = association.getJoinCondition();
+		if (jc == null) {
+			return result;
+		}
+		String destAlias, sourceAlias;
+		if (association.reversed) {
+			destAlias = "A";
+			sourceAlias = "B";
+		} else {
+			destAlias = "B";
+			sourceAlias = "A";
+		}
+		jc = SqlUtil.resolvePseudoColumns(jc, association.reversed? null : "E", association.reversed? "E" : null, birthday, birthdayOfSubject, false);
+		final Table source = association.source;
+		final int numberOfPKColumns = rowIdSupport.getPrimaryKey(source).getColumns().size();
+		String select =
+				"Select " + pkSelectList(source, sourceAlias) +
+				" From " + quoting.requote(source.getName()) + " " + sourceAlias +
+				", " + quoting.requote(table.getName()) + " " + destAlias +
+				", " + dmlTableReference(ENTITY, session) + " E" +
+				" Where E.r_entitygraph=" + graphID + " and E.type=" + typeName(source) +
+				" and E.birthday=" + (birthday - 1) +
+				" and " + pkEqualsEntityID(source, sourceAlias, "E") +
+				" and (" + jc + ")" +
+				" and " + pkEqualsValues(table, primaryKey, destAlias);
+		session.executeQuery(select, new Session.AbstractResultSetReader() {
+			@Override
+			public void readCurrentRow(ResultSet resultSet) throws SQLException {
+				CellContentConverter cellContentConverter = new CellContentConverter(getMetaData(resultSet), session, session.dbms);
+				Object[] key = new Object[numberOfPKColumns];
+				for (int i = 0; i < key.length; ++i) {
+					key[i] = cellContentConverter.getObject(resultSet, "PK" + i);
+				}
+				result.add(key);
+			}
+		}, null, null, maxRows);
+		return result;
+	}
+
+	/**
+	 * Reads the birthday of the subject rows from the graph. Subject rows are the rows which
+	 * have been collected without an association.
+	 *
+	 * @return the birthday of the subject rows, or 0 if the graph holds none
+	 */
+	public int readBirthdayOfSubject() throws SQLException {
+		final int[] result = new int[] { 0 };
+		String select =
+				"Select min(birthday) From " + dmlTableReference(ENTITY, session) +
+				" Where r_entitygraph=" + graphID + " and association is null";
+		session.executeQuery(select, new Session.AbstractResultSetReader() {
+			@Override
+			public void readCurrentRow(ResultSet resultSet) throws SQLException {
+				result[0] = resultSet.getInt(1);
+			}
+		});
+		return result[0];
+	}
+
+	/**
+	 * Reads the rows which have been collected through a given association. The primary key
+	 * columns are appended to the selection clause, aliased "PK0", "PK1" and so on.
+	 *
+	 * @param table the destination table of the association
+	 * @param associationId ID of the association
+	 * @param maxRows maximum number of rows to read
+	 * @param reader reads the rows
+	 */
+	public void readCollectedRows(Table table, int associationId, long maxRows, ResultSetReader reader) throws SQLException {
+		String select =
+				"Select T.*, " + pkSelectList(table, "T") +
+				" From " + quoting.requote(table.getName()) + " T, " + dmlTableReference(ENTITY, session) + " E" +
+				" Where E.r_entitygraph=" + graphID + " and E.type=" + typeName(table) +
+				" and E.association=" + associationId +
+				" and " + pkEqualsEntityID(table, "T", "E");
+		session.executeQuery(select, reader, null, null, maxRows);
+	}
+
+	/**
+	 * Gets a converter for rendering values as SQL literals. {@link CellContentConverter#toSql(Object)}
+	 * dispatches on the type of the value and does not use the result set meta data, so none is needed.
+	 *
+	 * @return a converter usable for {@link CellContentConverter#toSql(Object)}
+	 */
+	private CellContentConverter literalConverter() {
+		return new CellContentConverter(null, session, session.dbms);
+	}
+
+	/**
+	 * Gets the primary key columns of a table for a Select clause, aliased "PK0", "PK1" and so on,
+	 * in the order of the table's primary key.
+	 *
+	 * @param table the table
+	 * @param tableAlias the alias for the table
+	 * @return the select list
+	 */
+	private String pkSelectList(Table table, String tableAlias) {
+		List<Column> pkColumns = rowIdSupport.getPrimaryKey(table).getColumns();
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < pkColumns.size(); ++i) {
+			if (i > 0) {
+				sb.append(", ");
+			}
+			sb.append(tableAlias + "." + quoting.requote(pkColumns.get(i).name) + " as PK" + i);
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * Gets a SQL condition comparing the primary key columns of a table with given values.
+	 *
+	 * @param table the table
+	 * @param primaryKey the values, in the order of the table's primary key
+	 * @param tableAlias the alias for the table
+	 * @return the condition
+	 */
+	private String pkEqualsValues(Table table, Object[] primaryKey, String tableAlias) {
+		CellContentConverter cellContentConverter = literalConverter();
+		List<Column> pkColumns = rowIdSupport.getPrimaryKey(table).getColumns();
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < pkColumns.size(); ++i) {
+			if (sb.length() > 0) {
+				sb.append(" and ");
+			}
+			sb.append(tableAlias + "." + quoting.requote(pkColumns.get(i).name));
+			Object value = i < primaryKey.length? primaryKey[i] : null;
+			if (value == null) {
+				sb.append(" is null");
+			} else {
+				sb.append("=" + cellContentConverter.toSql(value));
+			}
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * Gets a SQL condition comparing the universal primary key columns of the entity-table with
+	 * given values. Counterpart of {@link #pkEqualsEntityID(Table, ResultSet, String, String, CellContentConverter)},
+	 * but taking the values from an array instead of a result set.
+	 *
+	 * @param table the table the row belongs to
+	 * @param primaryKey the values, in the order of the table's primary key
+	 * @param entityAlias the alias for the entity-table
+	 * @return the condition
+	 */
+	private String upkEqualsValues(Table table, Object[] primaryKey, String entityAlias) {
+		CellContentConverter cellContentConverter = literalConverter();
+		Map<Column, Column> match = universalPrimaryKey.match(rowIdSupport.getPrimaryKey(table));
+		List<Column> pkColumns = rowIdSupport.getPrimaryKey(table).getColumns();
+		StringBuffer sb = new StringBuffer();
+		for (Column column: universalPrimaryKey.getColumns()) {
+			if (sb.length() > 0) {
+				sb.append(" and ");
+			}
+			sb.append(entityAlias + "." + column.name);
+			Column tableColumn = match.get(column);
+			Object value = null;
+			if (tableColumn != null) {
+				for (int i = 0; i < pkColumns.size(); ++i) {
+					if (pkColumns.get(i).name.equals(tableColumn.name)) {
+						value = i < primaryKey.length? primaryKey[i] : null;
+						break;
+					}
+				}
+			}
+			if (value == null) {
+				sb.append(" is null");
+			} else {
+				sb.append("=" + cellContentConverter.toSql(value));
+			}
 		}
 		return sb.toString();
 	}
