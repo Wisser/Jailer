@@ -58,6 +58,7 @@ public class Colors {
 		Color_0_112_0.init(new Color(0, 112, 0), new Color(0, 215, 0));
 		Color_255_255_255.init(Color.white, new Color(45, 50, 56));
 		consoleCurrentLineHighlightColor.init(new Color(255, 255, 170), new Color(20, 66, 10));
+		rowInSubsetMarkerColor.init(new Color(0, 150, 0), new Color(0, 205, 0));
 		Color_240_240_255.init(new Color(240, 240, 255), new Color(50, 50, 170));
 		Color_242_242_255.init(new Color(242, 242, 255));
 		Color_192_192_192.init(new Color(192, 192, 192), new Color(102, 107, 106));
@@ -406,6 +407,7 @@ public class Colors {
 	public static LAFAwareColor Color_255_250_215 = new LAFAwareColor();
 	public static LAFAwareColor Color_255_255_0_128 = new LAFAwareColor();
 	public static LAFAwareColor consoleCurrentLineHighlightColor = new LAFAwareColor();
+	public static LAFAwareColor rowInSubsetMarkerColor = new LAFAwareColor();
 	public static LAFAwareColor Color_255_255_176 = new LAFAwareColor();
 	public static LAFAwareColor Color_255_255_204 = new LAFAwareColor();
 	public static LAFAwareColor Color_255_255_205 = new LAFAwareColor();

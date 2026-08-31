@@ -81,6 +81,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -1368,6 +1369,40 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 								x[0] + width, y[1], Colors.Color_255_0_0_10);
 						g2d.setPaint(paint);
 						g2d.fillRect(x[0], y[0], x[1] - x[0], y[1] - y[0]);
+					}
+				}
+
+				// rows which are part of the subset of the run that keeps its collected rows.
+				// Only what is on screen is asked for, and only once per row.
+				RowOriginContext rowOriginContext = rowOriginContextForTable();
+				if (rowOriginContext != lastRowOriginContext) {
+					resetRowOriginMembership();
+					lastRowOriginContext = rowOriginContext;
+				}
+				if (rowOriginContext != null && rowsTable.getRowHeight() > 0) {
+					int firstVisible = rowsTable.rowAtPoint(new Point(visRect.x, visRect.y + rowsTable.getRowHeight() / 2));
+					if (firstVisible < 0) {
+						firstVisible = 0;
+					}
+					int lastVisible = rowsTable.rowAtPoint(new Point(visRect.x, visRect.y + visRect.height - rowsTable.getRowHeight() / 2));
+					if (lastVisible < 0) {
+						lastVisible = maxI - 1;
+					}
+					g2d.setPaint(null);
+					g2d.setColor(Colors.rowInSubsetMarkerColor);
+					for (int i = firstVisible; i <= lastVisible && i < maxI; ++i) {
+						int mi = sorter == null? i : sorter.convertRowIndexToModel(i);
+						if (mi >= rows.size()) {
+							continue;
+						}
+						Row row = rows.get(mi);
+						Boolean isMember = rowOriginMembership.get(row.nonEmptyRowId);
+						if (isMember == null) {
+							requestRowOriginMembership(row);
+						} else if (isMember) {
+							Rectangle r = rowsTable.getCellRect(i, 0, false);
+							g2d.fillRect((int) visRect.getMinX(), (int) r.getMinY(), ROW_ORIGIN_MARKER_WIDTH, (int) r.getHeight());
+						}
 					}
 				}
 
@@ -4782,6 +4817,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			setPendingState(true, true);
 			rows.clear();
 			cancelPendingLobBackgroundScans();
+			resetRowOriginMembership();
 			updateMode("loading", cause);
 			setPendingState(false, false);
 			int limit = getOwnReloadLimit();
@@ -5215,6 +5251,163 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	 * @param row the row, or <code>null</code>
 	 * @return the context, or <code>null</code> if the origin of that row cannot be analyzed
 	 */
+	/**
+	 * Verdict per row, keyed by {@link Row#nonEmptyRowId}: is that row part of the subset of the
+	 * run which currently keeps its collected rows? Absent means "not asked yet".
+	 */
+	private final Map<String, Boolean> rowOriginMembership = new HashMap<String, Boolean>();
+
+	/**
+	 * Rows which have been handed to the background scan already. Without this latch every
+	 * repaint would ask again.
+	 */
+	private final Set<String> rowOriginRequested = new HashSet<String>();
+
+	/**
+	 * Rows which have become visible and are waiting for the next scan.
+	 */
+	private final Set<Row> pendingRowOriginRows = new LinkedHashSet<Row>();
+
+	/**
+	 * Cancellation contexts of the scans which are queued or in flight, so that they can be
+	 * cancelled in bulk when the rows are reloaded or the browser is closed.
+	 */
+	private final List<Object> pendingRowOriginContexts = Collections.synchronizedList(new ArrayList<Object>());
+
+	/**
+	 * Collects the rows of one burst of scrolling into a single query.
+	 */
+	private Timer rowOriginTimer;
+
+	/**
+	 * The context the current verdicts belong to. If another run keeps the rows, they are void.
+	 */
+	private RowOriginContext lastRowOriginContext;
+
+	/**
+	 * Maximum number of rows asked for in one statement.
+	 */
+	private static final int MAX_ROW_ORIGIN_CHUNK = 100;
+
+	/**
+	 * Width of the marker at the left edge of a row which is part of the subset.
+	 */
+	private static final int ROW_ORIGIN_MARKER_WIDTH = 4;
+
+	/**
+	 * Notes that a row has become visible and its membership is not known yet.
+	 *
+	 * @param row the row
+	 */
+	private void requestRowOriginMembership(Row row) {
+		if (row.rowId == null || row.rowId.isEmpty()) {
+			return;
+		}
+		if (!rowOriginRequested.add(row.nonEmptyRowId)) {
+			return;
+		}
+		pendingRowOriginRows.add(row);
+		final Timer newTimer = new Timer(150, null);
+		rowOriginTimer = newTimer;
+		newTimer.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (newTimer == rowOriginTimer) {
+					scanRowOriginMembership();
+				}
+			}
+		});
+		newTimer.setRepeats(false);
+		newTimer.start();
+	}
+
+	/**
+	 * Asks the retained entity-graph which of the rows collected so far are part of the subset.
+	 * One statement per chunk, off the event dispatch thread.
+	 */
+	private void scanRowOriginMembership() {
+		final RowOriginContext context = rowOriginContextForTable();
+		if (context == null) {
+			pendingRowOriginRows.clear();
+			return;
+		}
+		final Table originTable = context.getDataModel().getTable(table.getName());
+		if (originTable == null) {
+			pendingRowOriginRows.clear();
+			return;
+		}
+		List<Row> pending = new ArrayList<Row>(pendingRowOriginRows);
+		pendingRowOriginRows.clear();
+		for (int from = 0; from < pending.size(); from += MAX_ROW_ORIGIN_CHUNK) {
+			final List<Row> chunk = new ArrayList<Row>(pending.subList(from, Math.min(from + MAX_ROW_ORIGIN_CHUNK, pending.size())));
+			final List<String> conditions = new ArrayList<String>(chunk.size());
+			for (Row row: chunk) {
+				conditions.add(row.rowId);
+			}
+			final Object scanContext = new Object();
+			pendingRowOriginContexts.add(scanContext);
+			MDSchema.loadMetaData(new Runnable() {
+				@Override
+				public void run() {
+					final Set<Integer> members = new HashSet<Integer>();
+					try {
+						context.getEntityGraph().readMembership(originTable, "B", conditions, scanContext,
+								new Session.AbstractResultSetReader() {
+							@Override
+							public void readCurrentRow(ResultSet resultSet) throws SQLException {
+								members.add(resultSet.getInt(1));
+							}
+						});
+						UIUtil.invokeLater(new Runnable() {
+							@Override
+							public void run() {
+								pendingRowOriginContexts.remove(scanContext);
+								if (lastRowOriginContext != context) {
+									// another run keeps the rows now, the verdicts are void
+									return;
+								}
+								for (int i = 0; i < chunk.size(); ++i) {
+									rowOriginMembership.put(chunk.get(i).nonEmptyRowId, members.contains(i));
+								}
+								rowsTable.repaint();
+							}
+						});
+					} catch (CancellationException ce) {
+						// reloaded or closed in the meantime: no verdict
+						pendingRowOriginContexts.remove(scanContext);
+					} catch (Throwable t) {
+						// the graph may be gone, or the statement too big for this DBMS
+						LogUtil.warn(t);
+						pendingRowOriginContexts.remove(scanContext);
+					} finally {
+						CancellationHandler.reset(scanContext);
+					}
+				}
+			}, 1);
+		}
+	}
+
+	/**
+	 * Forgets all verdicts and stops the scans which are still on their way. The rows they refer
+	 * to are gone, or they belong to another run.
+	 */
+	private void resetRowOriginMembership() {
+		rowOriginMembership.clear();
+		rowOriginRequested.clear();
+		pendingRowOriginRows.clear();
+		rowOriginTimer = null;
+		synchronized (pendingRowOriginContexts) {
+			for (Object context: pendingRowOriginContexts) {
+				try {
+					CancellationHandler.cancelSilently(context);
+				} catch (Throwable t) {
+					// ignore
+				}
+			}
+			pendingRowOriginContexts.clear();
+		}
+	}
+
 	private static final String ROW_ORIGIN_TITLE = "Why is this row in the subset?";
 	private static final String ROW_ORIGIN_TOOLTIP = "Shows how this row has found its way into the subset of the last export: through which associations, and starting from which subject row.";
 	private static final String ROW_ORIGIN_NO_ROW_TOOLTIP = "Select a single row to see how it has found its way into the subset of the last export.";
@@ -10042,6 +10235,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			rows.clear();
 		}
 		cancelPendingLobBackgroundScans();
+		resetRowOriginMembership();
 		rowsTable.setModel(new DefaultTableModel());
 		if (andConditionEditor != null) {
 			andConditionEditor.dispose();
