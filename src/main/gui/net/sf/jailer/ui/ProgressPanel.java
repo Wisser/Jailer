@@ -271,12 +271,14 @@ public class ProgressPanel extends javax.swing.JPanel {
 	 * association can be inspected.
 	 *
 	 * @param rowOriginContext the context, or <code>null</code>
-	 * @param discardAction discards the retained data, or <code>null</code>
+	 * @param discardAction discards the retained data at once, or <code>null</code>
+	 * @param discardOnCloseAction discards the retained data as soon as nothing looks at it any
+	 *        more, used when this window is closed, or <code>null</code>
 	 */
-	public void setRowOriginContext(net.sf.jailer.ui.progress.RowOriginContext rowOriginContext, final Runnable discardAction) {
+	public void setRowOriginContext(net.sf.jailer.ui.progress.RowOriginContext rowOriginContext, final Runnable discardAction, final Runnable discardOnCloseAction) {
 		analysisPanel.setRowOriginContext(rowOriginContext, discardAction);
-		if (rowOriginContext != null && discardAction != null) {
-			// the retained rows live exactly as long as the window which analyzes them
+		if (rowOriginContext != null && discardOnCloseAction != null) {
+			// the retained rows live as long as this window, or as long as a view of them
 			addAncestorListener(new javax.swing.event.AncestorListener() {
 				@Override
 				public void ancestorAdded(javax.swing.event.AncestorEvent event) {
@@ -286,7 +288,7 @@ public class ProgressPanel extends javax.swing.JPanel {
 						window.addWindowListener(new java.awt.event.WindowAdapter() {
 							@Override
 							public void windowClosed(java.awt.event.WindowEvent e) {
-								discardAction.run();
+								discardOnCloseAction.run();
 							}
 						});
 					}

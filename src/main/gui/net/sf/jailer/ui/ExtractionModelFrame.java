@@ -1904,7 +1904,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 													dataSource.dbms,
 													dbConnectionDialog.currentConnection.url);
 											RetainedEntityGraphs.register(rowOriginContext);
-											progressPanel.setRowOriginContext(rowOriginContext, RetainedEntityGraphs.discardAction(ExtractionModelFrame.this));
+											progressPanel.setRowOriginContext(rowOriginContext, RetainedEntityGraphs.discardAction(ExtractionModelFrame.this), RetainedEntityGraphs.discardWhenUnusedAction(ExtractionModelFrame.this));
 										} else {
 											rowOriginContext = null;
 										}

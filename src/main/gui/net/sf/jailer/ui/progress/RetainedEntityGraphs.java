@@ -42,6 +42,11 @@ import net.sf.jailer.util.LogUtil;
  * window is closed, the next run with retention starts, the application ends (shutdown hook),
  * and the next connection to the same database is made. The last one is the only one which
  * survives a crash; for it the ID is written to the UI settings.
+ * <p>
+ * The rows are needed by whoever looks at them, and that is not only the progress window: a
+ * row origin can also be asked for from the Data Browser. Views therefore announce themselves
+ * with {@link #addUser()} and {@link #removeUser(Window)}, and closing the progress window
+ * discards through {@link #discardWhenUnused(Window)}, which waits for the last view to close.
  *
  * @author Ralf Wisser
  */
@@ -66,6 +71,18 @@ public class RetainedEntityGraphs {
 	private static boolean shutdownHookInstalled = false;
 
 	/**
+	 * Number of views which are currently analyzing the retained graph. As long as at least one
+	 * of them is open, the rows are not discarded.
+	 */
+	private static int users = 0;
+
+	/**
+	 * Set if a discard has been asked for while views were still open. The last view which is
+	 * closed carries it out.
+	 */
+	private static boolean discardRequested = false;
+
+	/**
 	 * Registers a newly retained graph. The caller is expected to have discarded a previously
 	 * retained one via {@link #discardCurrent(Window)} beforehand, so that the user sees what
 	 * happens and can cancel it.
@@ -84,6 +101,65 @@ public class RetainedEntityGraphs {
 	 */
 	public static synchronized RowOriginContext getCurrent() {
 		return current;
+	}
+
+	/**
+	 * Gets the graph retained for a given database, if there is anything to analyze in it. This
+	 * is what a second entry point, for instance the Data Browser, has to ask: it knows the
+	 * database it is connected to and nothing else.
+	 *
+	 * @param dbUrl URL of the database
+	 * @return the context, or <code>null</code> if that database has no graph to analyze
+	 */
+	public static synchronized RowOriginContext getCurrentFor(String dbUrl) {
+		if (current == null || dbUrl == null || !current.isAvailable()) {
+			return null;
+		}
+		return dbUrl.equals(current.getDbUrl())? current : null;
+	}
+
+	/**
+	 * Announces a view which analyzes the retained graph. Until it is gone again, see
+	 * {@link #removeUser(Window)}, {@link #discardWhenUnused(Window)} keeps the rows.
+	 */
+	public static synchronized void addUser() {
+		++users;
+	}
+
+	/**
+	 * Announces that a view has been closed. If it was the last one and a discard has been
+	 * asked for in the meantime, it is carried out now.
+	 *
+	 * @param window the owner of the dialog shown while discarding
+	 */
+	public static void removeUser(Window window) {
+		boolean discardNow;
+		synchronized (RetainedEntityGraphs.class) {
+			if (users > 0) {
+				--users;
+			}
+			discardNow = users == 0 && discardRequested;
+		}
+		if (discardNow) {
+			discardCurrent(window);
+		}
+	}
+
+	/**
+	 * Discards the retained graph unless a view is still analyzing it. In that case the discard
+	 * is remembered and carried out as soon as the last view is closed.
+	 *
+	 * @param window the owner of the dialog shown while discarding
+	 * @return <code>true</code> if there was nothing left to discard afterwards
+	 */
+	public static boolean discardWhenUnused(Window window) {
+		synchronized (RetainedEntityGraphs.class) {
+			if (users > 0 && current != null && current.isAvailable()) {
+				discardRequested = true;
+				return false;
+			}
+		}
+		return discardCurrent(window);
 	}
 
 	/**
@@ -130,6 +206,7 @@ public class RetainedEntityGraphs {
 		final RowOriginContext context;
 		synchronized (RetainedEntityGraphs.class) {
 			context = current;
+			discardRequested = false;
 		}
 		if (context == null || !context.isAvailable()) {
 			return true;
@@ -215,6 +292,7 @@ public class RetainedEntityGraphs {
 	 * replaces it and by the shutdown hook.
 	 */
 	private static synchronized void discardCurrentSilently() {
+		discardRequested = false;
 		if (current != null) {
 			String dbUrl = current.getDbUrl();
 			try {
@@ -283,6 +361,31 @@ public class RetainedEntityGraphs {
 						@Override
 						public void run() {
 							discardCurrent(window);
+						}
+					});
+				}
+			}
+		};
+	}
+
+	/**
+	 * Discards the current graph on the event dispatch thread, but only if no view is analyzing
+	 * it any more. For the window which owns the analysis, not for an explicit menu item.
+	 *
+	 * @param window the owner of the dialog
+	 * @return a runnable which discards the current graph as soon as it is unused
+	 */
+	public static Runnable discardWhenUnusedAction(final Window window) {
+		return new Runnable() {
+			@Override
+			public void run() {
+				if (SwingUtilities.isEventDispatchThread()) {
+					discardWhenUnused(window);
+				} else {
+					UIUtil.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							discardWhenUnused(window);
 						}
 					});
 				}

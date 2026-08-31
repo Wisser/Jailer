@@ -124,12 +124,34 @@ public class RowOriginPanel extends JPanel {
 	 * @param primaryKey the primary key values of the row
 	 */
 	public void showOrigin(final Table rowTable, final Object[] primaryKey) {
+		showOrigin(rowTable, new Callable<Object[]>() {
+			@Override
+			public Object[] call() {
+				return primaryKey;
+			}
+		});
+	}
+
+	/**
+	 * Analyzes and shows the origin of a row whose primary key values still have to be read.
+	 * Reading them and following the chain happen in one background run, so the caller does not
+	 * have to leave the event dispatch thread itself.
+	 *
+	 * @param rowTable the table of the row
+	 * @param primaryKeySupplier delivers the primary key values of the row, <code>null</code> if
+	 *        the row cannot be found any more
+	 */
+	public void showOrigin(final Table rowTable, final Callable<Object[]> primaryKeySupplier) {
 		Window window = SwingUtilities.getWindowAncestor(this);
 		RowOrigin origin;
 		try {
 			origin = ConcurrentTaskControl.call(window, new Callable<RowOrigin>() {
 				@Override
 				public RowOrigin call() throws Exception {
+					Object[] primaryKey = primaryKeySupplier.call();
+					if (primaryKey == null) {
+						return null;
+					}
 					return context.createFinder().find(rowTable, primaryKey);
 				}
 			}, "Analyzing origin...", null);
@@ -140,6 +162,9 @@ public class RowOriginPanel extends JPanel {
 			return;
 		}
 		if (origin == null) {
+			steps = new ArrayList<RowOriginStep>();
+			tableModel.fireTableDataChanged();
+			statusLabel.setText("The row could not be found.");
 			return;
 		}
 		steps = origin.getSteps();

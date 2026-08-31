@@ -111,13 +111,20 @@
       been collected through the selected association. Selecting one of them shows the chain from
       the subject down to that row, one line per step, with the association each step was made
       through and the key of the row it came from.
+    - "Why is this row in the subset?" in the context menu of a row in the Data Browser asks the
+      same question for a row one already has in front of oneself, without going through the list
+      of associations. The item appears only while a run keeps its collected rows and the Data
+      Browser, opened from the same application window, is connected to that database. For a row
+      which has not been collected it says so, which answers the opposite question just as well:
+      why is this row not part of the subset.
     - Note that this is the way the row has been found first, not every way it could have been
       reached. That is the answer to the question why the row is part of the subset: without this
       way it might not be.
     - The kept rows are discarded when the progress window is closed, when the next run with that
       option starts, when the application ends, and, should none of that have happened, when the
-      same database is connected to again. "Discard analysis data" in the same context menu
-      removes them at once.
+      same database is connected to again. As long as a window which shows the origin of a row is
+      still open, they are kept, and the last such window closing discards them. "Discard analysis
+      data" in the same context menu removes them at once.
 
 17.2.2
   - Path Finder: candidate tables now show a confidence estimate.

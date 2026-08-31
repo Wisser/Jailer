@@ -90,6 +90,7 @@ import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
+import java.util.concurrent.Callable;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -221,6 +222,9 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.ColumnsTable;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.ui.databrowser.whereconditioneditor.WhereConditionEditorPanel;
+import net.sf.jailer.ui.progress.RetainedEntityGraphs;
+import net.sf.jailer.ui.progress.RowOriginContext;
+import net.sf.jailer.ui.progress.RowOriginWindow;
 import net.sf.jailer.ui.scrollmenu.JScrollC2Menu;
 import net.sf.jailer.ui.scrollmenu.JScrollMenu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
@@ -3346,6 +3350,21 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 				}
 			});
 
+			final RowOriginContext rowOriginContext = rowOriginContextFor(row);
+			if (rowOriginContext != null) {
+				final Row originRow = row;
+				JMenuItem origin = new JMenuItem(ROW_ORIGIN_TITLE);
+				setMenuItemName(origin, "explain.png");
+				origin.setToolTipText(ROW_ORIGIN_TOOLTIP);
+				origin.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						openRowOrigin(originRow, rowOriginContext);
+					}
+				});
+				popup.insert(origin, 1);
+			}
+
 			if (!(table instanceof SqlStatementTable) || resultSetType != null) {
 				if (popup.getComponentCount() > 0) {
 					popup.add(new JSeparator());
@@ -3863,6 +3882,27 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			popup.add(editMode);
 			popup.add(new JSeparator());
 			popup.add(createFindColumnMenuItem(x, y, rowsTable));
+		}
+
+		// asks for the selected row: this menu belongs to the table browser, not to a row. It is
+		// the one the anchor panel turns into buttons, see DataBrowser.addAdditionalActions, and
+		// it comes last so that its button is the last one of that bar. Outside the forNavTree
+		// branch above, so that the thumbnail layout gets it too.
+		final RowOriginContext sqlRowOriginContext = rowOriginContextForTable();
+		if (sqlRowOriginContext != null) {
+			final Row selectedRow = singleSelectedRow();
+			JMenuItem origin = new JMenuItem(ROW_ORIGIN_TITLE);
+			setMenuItemName(origin, "explain.png");
+			origin.setToolTipText(selectedRow != null? ROW_ORIGIN_TOOLTIP : ROW_ORIGIN_NO_ROW_TOOLTIP);
+			origin.setEnabled(selectedRow != null);
+			popup.add(new JSeparator());
+			popup.add(origin);
+			origin.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					openRowOrigin(selectedRow, sqlRowOriginContext);
+				}
+			});
 		}
 		return popup;
 	}
@@ -5164,6 +5204,135 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			return quoting.requote(t.getUnqualifiedName());
 		}
 		return quoting.requote(schema) + "." + quoting.requote(t.getUnqualifiedName());
+	}
+
+	/**
+	 * Gets the context for a row origin analysis of a given row, if that question can be
+	 * answered at all: an export which keeps the collected rows must have run against the
+	 * database this browser is connected to, the row must have a key, and its table must be one
+	 * of the data model of that run.
+	 *
+	 * @param row the row, or <code>null</code>
+	 * @return the context, or <code>null</code> if the origin of that row cannot be analyzed
+	 */
+	private static final String ROW_ORIGIN_TITLE = "Why is this row in the subset?";
+	private static final String ROW_ORIGIN_TOOLTIP = "Shows how this row has found its way into the subset of the last export: through which associations, and starting from which subject row.";
+	private static final String ROW_ORIGIN_NO_ROW_TOOLTIP = "Select a single row to see how it has found its way into the subset of the last export.";
+
+	private RowOriginContext rowOriginContextFor(Row row) {
+		if (row == null || row.rowId.length() == 0) {
+			return null;
+		}
+		return rowOriginContextForTable();
+	}
+
+	/**
+	 * The part of {@link #rowOriginContextFor(Row)} which does not depend on a row: whether the
+	 * table of this browser belongs to a run which has kept its collected rows.
+	 *
+	 * @return the context, or <code>null</code> if nothing can be analyzed here
+	 */
+	private RowOriginContext rowOriginContextForTable() {
+		if (resultSetType != null || table instanceof SqlStatementTable) {
+			return null;
+		}
+		if (session == null || session.dbUrl == null || table.getName() == null) {
+			return null;
+		}
+		RowOriginContext context = RetainedEntityGraphs.getCurrentFor(session.dbUrl);
+		if (context == null) {
+			return null;
+		}
+		Table originTable = context.getDataModel().getTable(table.getName());
+		if (originTable == null || context.getRowIdSupport().getPrimaryKey(originTable).getColumns().isEmpty()) {
+			return null;
+		}
+		return context;
+	}
+
+	/**
+	 * Gets the row a row related action of the browser wide menu works on.
+	 *
+	 * @return the selected row, if exactly one is selected, else <code>null</code>
+	 */
+	private Row singleSelectedRow() {
+		if (rowsTable == null || rows == null || rowsTable.getSelectedRowCount() != 1) {
+			return null;
+		}
+		int i = rowsTable.getSelectedRow();
+		if (i < 0) {
+			return null;
+		}
+		if (rowsTable.getRowSorter() != null) {
+			i = rowsTable.getRowSorter().convertRowIndexToModel(i);
+		}
+		return i >= 0 && i < rows.size()? rows.get(i) : null;
+	}
+
+	/**
+	 * Opens the window which shows how a row has found its way into the subset.
+	 *
+	 * @param row the row
+	 * @param context the context of the run which has kept the collected rows
+	 */
+	private void openRowOrigin(final Row row, final RowOriginContext context) {
+		final Table originTable = context.getDataModel().getTable(table.getName());
+		if (originTable == null) {
+			return;
+		}
+		RowOriginWindow.open(getOwner(), context, originTable, new Callable<Object[]>() {
+			@Override
+			public Object[] call() throws SQLException {
+				return readRowOriginKey(row, originTable, context);
+			}
+		}, dataModel.getDisplayName(table) + "(" + SqlUtil.replaceAliases(row.rowId, null, null) + ")");
+	}
+
+	/**
+	 * Reads the primary key values of a row the way the export run has identified it.
+	 * <p>
+	 * They cannot be taken from the row itself: {@link Row#primaryKey} holds SQL literals, not
+	 * values, and this browser identifies a row with its own settings, which need not be the
+	 * ones of the run - a run which uses rowids has another key than the browser has. So the key
+	 * columns of the run are read once, with the condition of the row.
+	 *
+	 * @param row the row
+	 * @param originTable the table of the row, as of the data model of the run
+	 * @param context the context of the run
+	 * @return the primary key values, in the order of the key of the run, or <code>null</code>
+	 *         if the row does not exist any more
+	 */
+	private Object[] readRowOriginKey(Row row, Table originTable, RowOriginContext context) throws SQLException {
+		List<Column> pkColumns = context.getRowIdSupport().getPrimaryKey(originTable).getColumns();
+		if (pkColumns.isEmpty()) {
+			return null;
+		}
+		Quoting quoting = Quoting.getQuoting(session);
+		StringBuilder selectList = new StringBuilder();
+		for (int i = 0; i < pkColumns.size(); ++i) {
+			if (i > 0) {
+				selectList.append(", ");
+			}
+			selectList.append("B." + quoting.requote(pkColumns.get(i).name) + " as PK" + i);
+		}
+		// Row.rowId is a condition on the alias "B", see reloadRows0
+		String sql = "Select " + selectList + " From " + qualifiedTableName(originTable, quoting) + " B Where (" + row.rowId + ")";
+		final Object[] result = new Object[pkColumns.size()];
+		final boolean[] found = new boolean[1];
+		session.executeQuery(sql, new Session.AbstractResultSetReader() {
+			@Override
+			public void readCurrentRow(ResultSet resultSet) throws SQLException {
+				if (found[0]) {
+					return;
+				}
+				CellContentConverter cellContentConverter = new CellContentConverter(getMetaData(resultSet), session, session.dbms);
+				for (int i = 0; i < result.length; ++i) {
+					result[i] = cellContentConverter.getObject(resultSet, "PK" + i);
+				}
+				found[0] = true;
+			}
+		}, null, null, 1);
+		return found[0]? result : null;
 	}
 
 	/**
