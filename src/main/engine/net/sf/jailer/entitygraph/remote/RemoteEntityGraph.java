@@ -1564,6 +1564,39 @@ public class RemoteEntityGraph extends EntityGraph {
 	}
 
 	/**
+	 * Finds out which of a set of rows are part of the graph.
+	 * <p>
+	 * Each row is described by a condition which identifies exactly that row. The result tells
+	 * which of them have been collected, by the index of their condition, so that the caller
+	 * does not have to recognize its rows by their values again.
+	 *
+	 * @param table the table the rows belong to
+	 * @param tableAlias the alias the conditions use for that table
+	 * @param conditions one condition per row
+	 * @param context cancellation context, or <code>null</code>
+	 * @param reader reads the index of each row which is part of the graph
+	 */
+	public void readMembership(Table table, String tableAlias, List<String> conditions, Object context, ResultSetReader reader) throws SQLException {
+		if (conditions.isEmpty()) {
+			return;
+		}
+		StringBuilder select = new StringBuilder();
+		for (int i = 0; i < conditions.size(); ++i) {
+			if (i > 0) {
+				select.append(" union all ");
+			}
+			select.append(
+				"Select " + i + " as MIDX" +
+				" From " + quoting.requote(table.getName()) + " " + tableAlias +
+				", " + dmlTableReference(ENTITY, session) + " E" +
+				" Where E.r_entitygraph=" + graphID + " and E.type=" + typeName(table) +
+				" and " + pkEqualsEntityID(table, tableAlias, "E") +
+				" and (" + conditions.get(i) + ")");
+		}
+		session.executeQuery(select.toString(), reader, null, context, 0);
+	}
+
+	/**
 	 * Gets a converter for rendering values as SQL literals. {@link CellContentConverter#toSql(Object)}
 	 * dispatches on the type of the value and does not use the result set meta data, so none is needed.
 	 *

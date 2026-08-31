@@ -117,6 +117,12 @@
       Browser, opened from the same application window, is connected to that database. For a row
       which has not been collected it says so, which answers the opposite question just as well:
       why is this row not part of the subset.
+    - The same question can be asked from the button bar which appears next to a table browser
+      when the mouse comes close to it. There it refers to the row currently selected.
+    - While a run keeps its collected rows, the Data Browser marks every row which belongs to the
+      subset with a green bar at the left edge. Only the rows currently on screen are checked, in
+      the background and with one query per scroll, so the marks appear shortly after scrolling.
+      A row without a mark is either not part of the subset or has not been checked yet.
     - Note that this is the way the row has been found first, not every way it could have been
       reached. That is the answer to the question why the row is part of the subset: without this
       way it might not be.
