@@ -56,6 +56,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
@@ -230,6 +231,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
 
 			createDryRunButton();
+			moveCompressedFilesHint();
 			createKeepEntityGraphCheckBox();
 
 			if (jScrollPane2.getHorizontalScrollBar() != null) {
@@ -2487,6 +2489,9 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	 * Creates the "Dry Run" button and puts it left of the "Export Data" button.
 	 * The buttons of the generated form are re-added with new constraints, so that the
 	 * generated code itself remains untouched.
+	 * <p>
+	 * All three buttons sit in the second row of the button panel: the first one holds the
+	 * option which belongs to them, see {@link #createKeepEntityGraphCheckBox()}.
 	 */
 	private void createDryRunButton() {
 		dryRunButton = new javax.swing.JButton(" Dry Run ");
@@ -2505,7 +2510,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
 		java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 0;
+		gridBagConstraints.gridy = 1;
 		gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
 		gridBagConstraints.weightx = 1.0;
 		gridBagConstraints.weighty = 1.0;
@@ -2514,7 +2519,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
 		gridBagConstraints = new java.awt.GridBagConstraints();
 		gridBagConstraints.gridx = 2;
-		gridBagConstraints.gridy = 0;
+		gridBagConstraints.gridy = 1;
 		gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
 		gridBagConstraints.weighty = 1.0;
 		gridBagConstraints.insets = new java.awt.Insets(4, 0, 2, 2);
@@ -2522,11 +2527,82 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
 		gridBagConstraints = new java.awt.GridBagConstraints();
 		gridBagConstraints.gridx = 3;
-		gridBagConstraints.gridy = 0;
+		gridBagConstraints.gridy = 1;
 		gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
 		gridBagConstraints.weighty = 1.0;
 		gridBagConstraints.insets = new java.awt.Insets(4, 0, 2, 6);
 		jPanel2.add(cancelButton, gridBagConstraints);
+	}
+
+	/**
+	 * Moves the hint about compressed files from the button row up to the field it belongs to.
+	 * <p>
+	 * It explains the asterisk of " Into*" and " Generate delete-script* ", so it is put right
+	 * below the latter, greyed out. That also frees the left hand side of the button row for the
+	 * option which belongs there. The generated code stays untouched: the delete-script field is
+	 * re-added, wrapped in a panel which carries the hint below it.
+	 */
+	private void moveCompressedFilesHint() {
+		jPanel2.remove(jLabel2);
+		jLabel2.setEnabled(false);
+
+		jPanel1.remove(delete);
+		JPanel deletePanel = new JPanel(new java.awt.GridBagLayout());
+
+		java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		gridBagConstraints.weightx = 1.0;
+		deletePanel.add(delete, gridBagConstraints);
+
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		deletePanel.add(jLabel2, gridBagConstraints);
+
+		// the constraints the delete-script field had, see initComponents
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 34;
+		gridBagConstraints.gridwidth = 2;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		gridBagConstraints.insets = new java.awt.Insets(0, 0, 1, 0);
+		jPanel1.add(deletePanel, gridBagConstraints);
+
+		highlightCompressedFilesHintOnHover();
+	}
+
+	/**
+	 * Lets the hint light up while the mouse is over one of the fields it is about.
+	 * <p>
+	 * Those are the ones which carry the same text as a tooltip, plus the two "Browse.." buttons:
+	 * under FlatLaf they are drawn inside the fields (see {@link UIUtil#setTrailingComponent}), so
+	 * without them the hint would go out as soon as the mouse reaches the button.
+	 * <p>
+	 * The hint itself is no trigger: it is disabled, and a disabled component delivers no mouse
+	 * events. The set of components currently hovered is needed because when the mouse moves from
+	 * one of them to a neighbor, the entering event can arrive before the leaving one.
+	 */
+	private void highlightCompressedFilesHintOnHover() {
+		final Set<Object> hovered = new HashSet<Object>();
+		java.awt.event.MouseAdapter highlight = new java.awt.event.MouseAdapter() {
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				hovered.add(e.getSource());
+				jLabel2.setEnabled(true);
+			}
+			@Override
+			public void mouseExited(MouseEvent e) {
+				hovered.remove(e.getSource());
+				jLabel2.setEnabled(!hovered.isEmpty());
+			}
+		};
+		for (java.awt.Component component: new java.awt.Component[] {
+				exportLabel, jLabel3, insert, delete, browseInsertButton, browseDeleteButton }) {
+			component.addMouseListener(highlight);
+		}
 	}
 
 	/**
@@ -2542,12 +2618,15 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 				updateCLIArea();
 			}
 		});
+		// it belongs to the buttons which start the run, not to the output options: own row
+		// above them, so that its label does not compete with them for the width
 		java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 50;
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.gridwidth = 4;
 		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-		gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
-		jPanel5.add(keepEntityGraphCheckBox, gridBagConstraints);
+		gridBagConstraints.insets = new java.awt.Insets(4, 6, 0, 4);
+		jPanel2.add(keepEntityGraphCheckBox, gridBagConstraints);
 	}
 
 	/**
