@@ -392,16 +392,16 @@ public class UIUtil {
 	 * @return <code>true</code> if no engine is currently running
 	 */
 	public static boolean canRunJailer() {
-		if (currentConsoleFrame != null) {
-			currentConsoleFrame.toFront();
-			JOptionPane.showMessageDialog(currentConsoleFrame, "Please complete this process before starting another one.", "Engine already running...",
+		if (currentConsoleWindow != null) {
+			currentConsoleWindow.toFront();
+			JOptionPane.showMessageDialog(currentConsoleWindow, "Please complete this process before starting another one.", "Engine already running...",
                     JOptionPane.INFORMATION_MESSAGE);
 			return false;
 		}
 		return true;
 	}
 
-	private static JFrame currentConsoleFrame = null;
+	private static Window currentConsoleWindow = null;
 
 	public interface ResultConsumer {
     	public void consume(boolean result, Throwable t);
@@ -437,14 +437,22 @@ public class UIUtil {
 			return false;
 		}
 		Window dialog;
+		// always a dialog, so that the console belongs to the window it has been started from and
+		// cannot disappear behind it. Whether it is modal is decided here, not by its type.
+		JDialog consoleDialog = new JDialog(ownerOfConsole);
         if (resultConsumer == null) {
-        	dialog = new JDialog(ownerOfConsole);
+        	// modal: the caller waits for the result
+        	consoleDialog.setModal(true);
+        	dialog = consoleDialog;
         } else {
-        	dialog = currentConsoleFrame = new JFrame();
-        	currentConsoleFrame.addWindowListener(new WindowAdapter() {
+        	// not modal: the analysis tab, the origin windows and the Data Browser have to stay
+        	// usable next to it
+        	consoleDialog.setModalityType(Dialog.ModalityType.MODELESS);
+        	dialog = currentConsoleWindow = consoleDialog;
+        	consoleDialog.addWindowListener(new WindowAdapter() {
 				@Override
 				public void windowClosed(WindowEvent e) {
-					currentConsoleFrame = null;
+					currentConsoleWindow = null;
 					checkTermination();
 				}
 			});
@@ -636,7 +644,7 @@ public class UIUtil {
 						public void run() {
                             synchronized (UIUtil.class) {
                             	outputView.dialog.toFront();
-                            	currentConsoleFrame = null;
+                            	currentConsoleWindow = null;
                             	System.setOut(originalOut);
                             	if (resultConsumer != null) { // non-modal
                             		resultConsumer.cleanUp();

@@ -72,8 +72,9 @@ public class JailerConsole {
 		Font f = getJTextPane().getFont();
 		getJTextPane().setFont(new Font(Font.MONOSPACED, f.getStyle(), f.getSize()));
 		getJTextPane().setLineWrap(false);
+		// whether the console is modal is decided by UIUtil.runJailer, which knows whether the
+		// caller waits for the result. The type of the window says nothing about it any more.
 		if (dialog instanceof JDialog) {
-			((JDialog) dialog).setModal(true);
 			((JDialog) dialog).setDefaultCloseOperation(0);
 		} else {
 			((JFrame) dialog).setDefaultCloseOperation(0);

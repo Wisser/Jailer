@@ -3395,9 +3395,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			final RowOriginContext rowOriginContext = rowOriginContextFor(row);
 			if (rowOriginContext != null) {
 				final Row originRow = row;
+				// the missing marker at the left edge already says it, no need for a window
+				boolean notInSubset = isKnownNotInSubset(originRow);
+
 				JMenuItem origin = new JMenuItem(ROW_ORIGIN_TITLE);
 				setMenuItemName(origin, "explain.png");
-				origin.setToolTipText(ROW_ORIGIN_TOOLTIP);
+				origin.setToolTipText(notInSubset? ROW_ORIGIN_NOT_IN_SUBSET_TOOLTIP : ROW_ORIGIN_TOOLTIP);
+				origin.setEnabled(!notInSubset);
 				origin.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
@@ -3408,7 +3412,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
 				JMenuItem originPath = new JMenuItem(ROW_ORIGIN_PATH_TITLE);
 				setMenuItemName(originPath, "subject.png");
-				originPath.setToolTipText(ROW_ORIGIN_PATH_TOOLTIP);
+				originPath.setToolTipText(notInSubset? ROW_ORIGIN_NOT_IN_SUBSET_TOOLTIP : ROW_ORIGIN_PATH_TOOLTIP);
+				originPath.setEnabled(!notInSubset);
 				originPath.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
@@ -3944,10 +3949,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		final RowOriginContext sqlRowOriginContext = rowOriginContextForTable();
 		if (sqlRowOriginContext != null) {
 			final Row selectedRow = singleSelectedRow();
+			boolean notInSubset = isKnownNotInSubset(selectedRow);
+			boolean originEnabled = selectedRow != null && !notInSubset;
+
 			JMenuItem origin = new JMenuItem(ROW_ORIGIN_TITLE);
 			setMenuItemName(origin, "explain.png");
-			origin.setToolTipText(selectedRow != null? ROW_ORIGIN_TOOLTIP : ROW_ORIGIN_NO_ROW_TOOLTIP);
-			origin.setEnabled(selectedRow != null);
+			origin.setToolTipText(selectedRow == null? ROW_ORIGIN_NO_ROW_TOOLTIP
+					: notInSubset? ROW_ORIGIN_NOT_IN_SUBSET_TOOLTIP : ROW_ORIGIN_TOOLTIP);
+			origin.setEnabled(originEnabled);
 			popup.add(new JSeparator());
 			popup.add(origin);
 			origin.addActionListener(new ActionListener() {
@@ -3959,8 +3968,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
 			JMenuItem originPath = new JMenuItem(ROW_ORIGIN_PATH_TITLE);
 			setMenuItemName(originPath, "subject.png");
-			originPath.setToolTipText(selectedRow != null? ROW_ORIGIN_PATH_TOOLTIP : ROW_ORIGIN_PATH_NO_ROW_TOOLTIP);
-			originPath.setEnabled(selectedRow != null);
+			originPath.setToolTipText(selectedRow == null? ROW_ORIGIN_PATH_NO_ROW_TOOLTIP
+					: notInSubset? ROW_ORIGIN_NOT_IN_SUBSET_TOOLTIP : ROW_ORIGIN_PATH_TOOLTIP);
+			originPath.setEnabled(originEnabled);
 			popup.add(originPath);
 			originPath.addActionListener(new ActionListener() {
 				@Override
@@ -5315,6 +5325,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	private RowOriginContext lastRowOriginContext;
 
 	/**
+	 * Id of the graph the current verdicts belong to. The context alone is not enough to tell:
+	 * it is mutable and outlives a change of the graph it points at, see
+	 * {@link RowOriginContext#setGraphId(int)}.
+	 */
+	private int lastRowOriginGraphId = -1;
+
+	/**
 	 * Maximum number of rows asked for in one statement.
 	 */
 	private static final int MAX_ROW_ORIGIN_CHUNK = 100;
@@ -5334,9 +5351,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	 */
 	private RowOriginContext currentRowOriginContext() {
 		RowOriginContext rowOriginContext = rowOriginContextForTable();
-		if (rowOriginContext != lastRowOriginContext) {
+		// object and id together: another run brings another object, and a graph exchanged on the
+		// same object brings another id. The identity check has to stay, since two runs can well
+		// end up with the same id - see EntityGraph.createUniqueGraphID
+		int graphId = rowOriginContext == null? -1 : rowOriginContext.getGraphId();
+		if (rowOriginContext != lastRowOriginContext || graphId != lastRowOriginGraphId) {
 			resetRowOriginMembership();
 			lastRowOriginContext = rowOriginContext;
+			lastRowOriginGraphId = graphId;
 		}
 		return rowOriginContext;
 	}
@@ -5359,6 +5381,30 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			return false;
 		}
 		return isMember;
+	}
+
+	/**
+	 * Whether it is already known that a row is not part of the subset of the run which keeps its
+	 * collected rows.
+	 * <p>
+	 * Only a verdict which has already been read for the marker at the left edge counts. A row
+	 * which has not been checked yet is not "known not to be in the subset", so the question stays
+	 * open and the menu items stay enabled. Nothing is asked here: a popup has to be built at once,
+	 * and an answer arriving later would come too late anyway.
+	 *
+	 * @param row the row
+	 * @return <code>true</code> if the row is known not to belong to the subset
+	 */
+	private boolean isKnownNotInSubset(Row row) {
+		if (row == null || row.rowId == null || row.rowId.length() == 0) {
+			return false;
+		}
+		// not rowOriginContextForTable: only this one drops the verdicts of a previous run, so
+		// that nothing is disabled because of what an earlier graph said
+		if (currentRowOriginContext() == null) {
+			return false;
+		}
+		return Boolean.FALSE.equals(rowOriginMembership.get(row.nonEmptyRowId));
 	}
 
 	/**
@@ -5443,6 +5489,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			pendingRowOriginRows.clear();
 			return;
 		}
+		// the graph this scan asks; if it is exchanged while the query runs, its answers are void
+		final int scanGraphId = context.getGraphId();
 		List<Row> pending = new ArrayList<Row>(pendingRowOriginRows);
 		pendingRowOriginRows.clear();
 		for (int from = 0; from < pending.size(); from += MAX_ROW_ORIGIN_CHUNK) {
@@ -5469,8 +5517,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 							@Override
 							public void run() {
 								pendingRowOriginContexts.remove(scanContext);
-								if (lastRowOriginContext != context) {
-									// another run keeps the rows now, the verdicts are void
+								// asked against the context's current id, not against
+								// lastRowOriginGraphId, so that this does not depend on whether
+								// anything has been repainted in between
+								if (lastRowOriginContext != context || context.getGraphId() != scanGraphId) {
+									// another run keeps the rows now, or the graph has been
+									// exchanged: the verdicts are void
 									return;
 								}
 								for (int i = 0; i < chunk.size(); ++i) {
@@ -5521,13 +5573,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		}
 	}
 
-	private static final String ROW_ORIGIN_TITLE = "Why is this row in the subset?";
+	private static final String ROW_ORIGIN_TITLE = "Why is this Row in the Subset?";
 	private static final String ROW_ORIGIN_TOOLTIP = "Shows how this row has found its way into the subset of the last export: through which associations, and starting from which subject row.";
 	private static final String ROW_ORIGIN_NO_ROW_TOOLTIP = "Select a single row to see how it has found its way into the subset of the last export.";
 
-	private static final String ROW_ORIGIN_PATH_TITLE = "Open path to subject";
+	private static final String ROW_ORIGIN_PATH_TITLE = "Open Path to Subject";
 	private static final String ROW_ORIGIN_PATH_TOOLTIP = "Opens the way of this row into the subset as a chain of table browsers: one per step, from the subject down to this row, each showing the single row it has been collected through.";
 	private static final String ROW_ORIGIN_PATH_NO_ROW_TOOLTIP = "Select a single row to open its way into the subset as a chain of table browsers.";
+
+	private static final String ROW_ORIGIN_NOT_IN_SUBSET_TOOLTIP = "This row is not part of the subset of the last export.";
 
 	private RowOriginContext rowOriginContextFor(Row row) {
 		if (row == null || row.rowId.length() == 0) {

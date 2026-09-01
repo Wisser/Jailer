@@ -1499,13 +1499,23 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 	 */
 	private DataBrowser dataBrowserForAnalysis() {
 		DataBrowser dataBrowser = rowOriginDataBrowser == null? null : rowOriginDataBrowser.get();
-		if (dataBrowser != null && dataBrowser.isDisplayable()) {
-			dataBrowser.toFront();
-			return dataBrowser;
+		if (dataBrowser == null || !dataBrowser.isDisplayable()) {
+			// no root browser: the analysis adds the ones it needs itself
+			dataBrowser = openDataBrowser(null, "");
+			rowOriginDataBrowser = dataBrowser == null? null : new WeakReference<DataBrowser>(dataBrowser);
 		}
-		// no root browser: the analysis adds the ones it needs itself
-		dataBrowser = openDataBrowser(null, "");
-		rowOriginDataBrowser = dataBrowser == null? null : new WeakReference<DataBrowser>(dataBrowser);
+		if (dataBrowser != null) {
+			final DataBrowser toBeRaised = dataBrowser;
+			// deferred: the caller opens browsers afterwards, and the first call rebuilds the whole
+			// desktop, which maximizes a frame through an invokeLater(2, ...) of its own. An
+			// immediate toFront would be overtaken by that.
+			UIUtil.invokeLater(3, new Runnable() {
+				@Override
+				public void run() {
+					toBeRaised.toFront();
+				}
+			});
+		}
 		return dataBrowser;
 	}
 

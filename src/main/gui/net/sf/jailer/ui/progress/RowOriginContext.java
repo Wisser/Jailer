@@ -84,7 +84,12 @@ public class RowOriginContext {
 	 * @param graphId the ID of the retained entity-graph
 	 */
 	public synchronized void setGraphId(int graphId) {
-		this.graphId = graphId;
+		if (this.graphId != graphId) {
+			this.graphId = graphId;
+			// the attached graph belongs to the id it was attached with, see getEntityGraph.
+			// The session is kept: it does not depend on the graph, the next attach reuses it.
+			entityGraph = null;
+		}
 	}
 
 	/**
