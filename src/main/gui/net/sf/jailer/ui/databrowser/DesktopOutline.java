@@ -306,7 +306,7 @@ public class DesktopOutline extends JPanel {
 						} else if (hiddenParent) {
 							g2d.setColor(UIUtil.plaf == PLAF.FLATDARK? Colors.Color_255_255_0.brighter() : Colors.Color_255_255_0.darker());
 						} else {
-							g2d.setColor(desktop.getAssociationColor1(browser.association));
+							g2d.setColor(desktop.getAssociationColor1(browser.association, browser.rowOriginChain));
 						}
 						g2d.drawLine((int) (offX + scale * browser.internalFrame.getBounds().getCenterX() + 0.5), (int)(offY + scale * browser.internalFrame.getBounds().getCenterY() + 0.5), (int) (offX + scale * parentBrowser.internalFrame.getBounds().getCenterX() + 0.5), (int)(offY + scale * parentBrowser.internalFrame.getBounds().getCenterY() + 0.5));
 					}

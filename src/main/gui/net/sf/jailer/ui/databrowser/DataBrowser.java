@@ -5418,10 +5418,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		}
 		RowBrowser last = null;
 		try {
-			UIUtil.setWaitCursor(this);
-			Desktop.noArrangeLayoutOnNewTableBrowser = true;
-			desktop.getiFrameStateChangeRenderer().startAtomic();
-			disableBorderBrowserUpdates = true;
+			beginRowOriginPath();
 			for (RowOriginPath.Step step: path) {
 				Table table = datamodel.get().getTable(step.tableName);
 				Association association = step.associationName == null? null : datamodel.get().namedAssociations.get(step.associationName);
@@ -5436,15 +5433,139 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 				}
 			}
 		} finally {
-			Desktop.noArrangeLayoutOnNewTableBrowser = false;
-			disableBorderBrowserUpdates = false;
-			desktop.getiFrameStateChangeRenderer().endAtomic();
-			desktop.catchUpLastArrangeLayoutOnNewTableBrowser();
-			updateBorderBrowser(null);
-			UIUtil.resetWaitCursor(this);
+			endRowOriginPath();
 		}
 		selectBrowser(last);
 		return last;
+	}
+
+	/**
+	 * Lays out the way a row has taken into the subset as a chain of table browsers, starting at
+	 * the browser the question has been asked in and growing from there towards the subject.
+	 * <p>
+	 * The chain runs the other way round than in {@link #openRowOriginPath(List)}: the browser the
+	 * user already has in front of them is the first link, and each further link is reached by
+	 * navigating the association of that step in reverse. Browsers which are already there are
+	 * reused: if a child browser for the association at hand exists, its condition is extended
+	 * disjunctively, so that it shows the row it showed before and the new one.
+	 *
+	 * @param start the browser of the row in question, the first link of the chain
+	 * @param path the path, subject first, as prepared by {@link RowOriginPath}
+	 * @return the browser of the subject, the end of the chain, or <code>null</code>
+	 */
+	public RowBrowser openRowOriginPathFrom(RowBrowser start, List<RowOriginPath.Step> path) {
+		if (path == null || path.isEmpty()) {
+			return null;
+		}
+		RowBrowser current = start;
+		try {
+			beginRowOriginPath();
+			int i = path.size() - 1;
+			Table rowTable = datamodel.get().getTable(path.get(i).tableName);
+			if (rowTable == null) {
+				return null;
+			}
+			if (current == null || !rowTable.equals(current.browserContentPane.table)) {
+				// no browser to grow from: the row itself becomes the root of the chain
+				current = desktop.addTableBrowser(null, null, rowTable, null, path.get(i).condition, null, true);
+			}
+			for (; i >= 1 && current != null; --i) {
+				// the association of a step leads to it, so its reversal leads away from it
+				Association forward = datamodel.get().namedAssociations.get(path.get(i).associationName);
+				RowOriginPath.Step next = path.get(i - 1);
+				Table table = datamodel.get().getTable(next.tableName);
+				if (forward == null || forward.reversalAssociation == null || table == null) {
+					// the data model has changed since the run: show as much as still resolves
+					break;
+				}
+				current = reuseOrOpenChild(current, forward.reversalAssociation, table, next.condition);
+				// it navigates a switched-off reversal, but the rows did travel along that pair
+				desktop.markAsRowOriginChain(current);
+			}
+		} finally {
+			endRowOriginPath();
+		}
+		selectBrowser(current);
+		return current;
+	}
+
+	/**
+	 * Gets the child browser for an association, reusing the one which is already there.
+	 *
+	 * @param parent the parent browser
+	 * @param association the association leading from the parent to the child
+	 * @param table the table of the child, the destination of the association
+	 * @param condition condition pinning the child to a single row
+	 * @return the child browser, or <code>null</code>
+	 */
+	private RowBrowser reuseOrOpenChild(RowBrowser parent, Association association, Table table, String condition) {
+		// deliberately not "ignoreHidden": that one answers with the grandchildren of a hidden
+		// child, so an existing child would be missed and a second one put next to it
+		for (RowBrowser child: desktop.getChildBrowsers(parent, false)) {
+			if (child.association == association && child.browserContentPane != null
+					&& table.equals(child.browserContentPane.table)) {
+				extendConditionDisjunctively(child.browserContentPane, condition);
+				return child;
+			}
+		}
+		return desktop.addTableBrowser(parent, parent, table, association, condition, null, true);
+	}
+
+	/**
+	 * Widens the condition of a browser so that it shows what it showed before and, in addition,
+	 * the row of the new chain.
+	 *
+	 * @param browserContentPane the browser
+	 * @param condition the condition of the new row
+	 */
+	private void extendConditionDisjunctively(BrowserContentPane browserContentPane, String condition) {
+		String existing = browserContentPane.getAndConditionText();
+		existing = existing == null? "" : existing.trim();
+		if (existing.length() == 0) {
+			// no condition means no restriction, so the row is shown anyway
+			return;
+		}
+		if (existing.equals(condition) || existing.contains("(" + condition + ")")) {
+			// asking twice for the same row must not pile up the same condition
+			return;
+		}
+		// both operands are parenthesized: a condition is an "and" chain itself, and it is put
+		// into the query as "... and (<condition>)"
+		String combined = "(" + existing + ") or (" + condition + ")";
+		browserContentPane.setAndCondition(combined, true);
+		browserContentPane.onConditionChange(combined);
+		browserContentPane.reloadRows();
+	}
+
+	/**
+	 * Prepares the desktop for laying out a chain of browsers at once: no layout run per browser,
+	 * and a single entry in the undo history for the whole chain.
+	 */
+	private void beginRowOriginPath() {
+		UIUtil.setWaitCursor(this);
+		if (desktopUndoManager != null) {
+			String description = "Open Path to Subject";
+			desktopUndoManager.beforeModification(description, description);
+			desktopUndoManager.setEnabled(false);
+		}
+		Desktop.noArrangeLayoutOnNewTableBrowser = true;
+		desktop.getiFrameStateChangeRenderer().startAtomic();
+		disableBorderBrowserUpdates = true;
+	}
+
+	/**
+	 * Counterpart of {@link #beginRowOriginPath()}.
+	 */
+	private void endRowOriginPath() {
+		Desktop.noArrangeLayoutOnNewTableBrowser = false;
+		disableBorderBrowserUpdates = false;
+		desktop.getiFrameStateChangeRenderer().endAtomic();
+		desktop.catchUpLastArrangeLayoutOnNewTableBrowser();
+		updateBorderBrowser(null);
+		if (desktopUndoManager != null) {
+			desktopUndoManager.setEnabled(true);
+		}
+		UIUtil.resetWaitCursor(this);
 	}
 
 	/**

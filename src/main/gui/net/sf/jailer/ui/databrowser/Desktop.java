@@ -480,6 +480,14 @@ public abstract class Desktop extends JDesktopPane {
 		public Association association;
 
 		/**
+		 * Was opened as part of a row origin path. Such a browser navigates the reversal of the
+		 * association its rows have been collected through, and switching that reversal off is
+		 * the normal state of affairs in an extraction model. Its link is therefore not greyed
+		 * out, see {@link Desktop#markAsRowOriginChain(RowBrowser)}.
+		 */
+		public boolean rowOriginChain;
+
+		/**
 		 * Coordinates of the link render.
 		 */
 		public int x1, y1, x2, y2;
@@ -606,8 +614,8 @@ public abstract class Desktop extends JDesktopPane {
 
 		public void updateColor() {
 			if (association != null) {
-				color1 = getAssociationColor1(association);
-				color2 = getAssociationColor2(association);
+				color1 = getAssociationColor1(association, rowOriginChain);
+				color2 = getAssociationColor2(association, rowOriginChain);
 			}
 		}
 
@@ -1015,8 +1023,8 @@ public abstract class Desktop extends JDesktopPane {
 						RowToRowLink rowToRowLink = new RowToRowLink();
 						rowToRowLink.parentRow = parentRow;
 						rowToRowLink.childRow = childRow;
-						rowToRowLink.color1 = getAssociationColor1(association);
-						rowToRowLink.color2 = getAssociationColor2(association);
+						rowToRowLink.color1 = getAssociationColor1(association, tableBrowser.rowOriginChain);
+						rowToRowLink.color2 = getAssociationColor2(association, tableBrowser.rowOriginChain);
 						tableBrowser.rowToRowLinks.add(rowToRowLink);
 					}
 				}
@@ -1501,7 +1509,8 @@ public abstract class Desktop extends JDesktopPane {
 
 			@Override
 			protected void openRowOriginPath(List<RowOriginPath.Step> path) {
-				parentFrame.openRowOriginPath(path);
+				// this browser is the first link, the chain grows from it towards the subject
+				parentFrame.openRowOriginPathFrom(tableBrowser, path);
 			}
 
 			@Override
@@ -1833,8 +1842,12 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	protected Color getAssociationColor1(Association association) {
+		return getAssociationColor1(association, false);
+	}
+
+	protected Color getAssociationColor1(Association association, boolean rowOriginChain) {
 		Color color = Colors.ColorAssoc_1_1;
-		if (association.isIgnored()) {
+		if (isIgnoredForColor(association, rowOriginChain)) {
 			color = Colors.ColorAssoc_1_2;
 		} else if (association.isInsertDestinationBeforeSource()) {
 			color = Colors.ColorAssoc_1_3;
@@ -1844,9 +1857,9 @@ public abstract class Desktop extends JDesktopPane {
 		return color;
 	}
 
-	private Color getAssociationColor2(Association association) {
+	private Color getAssociationColor2(Association association, boolean rowOriginChain) {
 		Color color = Colors.ColorAssoc_2_1;
-		if (association.isIgnored()) {
+		if (isIgnoredForColor(association, rowOriginChain)) {
 			color = Colors.ColorAssoc_2_2;
 		} else if (association.isInsertSourceBeforeDestination()) {
 			color = Colors.ColorAssoc_2_3;
@@ -1854,6 +1867,52 @@ public abstract class Desktop extends JDesktopPane {
 			color = Colors.ColorAssoc_2_4;
 		}
 		return color;
+	}
+
+	/**
+	 * Decides whether a link is to be drawn as switched off.
+	 * <p>
+	 * A browser of a row origin path navigates the reversal of the association its rows have been
+	 * collected through. That reversal is switched off in the extraction model as a matter of
+	 * course - that is how one keeps a subset small - but the rows did travel along the pair, in
+	 * the other direction. Greying such a link out states the truth about the direction nobody is
+	 * asking about, so it is left alone. Are both directions switched off, the statement holds and
+	 * the link stays grey.
+	 * <p>
+	 * Asking the reversal is established practice: the dot icons of the association button
+	 * ({@code BrowserContentPane.initOnSelectionButton}) and those of the export dialog decide
+	 * their grey over {@code a.reversalAssociation.isIgnored()}.
+	 *
+	 * @param association the association of the browser
+	 * @param rowOriginChain whether the browser belongs to a row origin path
+	 * @return <code>true</code> if the link is to be greyed out
+	 */
+	private boolean isIgnoredForColor(Association association, boolean rowOriginChain) {
+		if (!association.isIgnored()) {
+			return false;
+		}
+		return !(rowOriginChain && association.reversalAssociation != null
+				&& !association.reversalAssociation.isIgnored());
+	}
+
+	/**
+	 * Marks a browser as part of a row origin path, so that its link is not greyed out although
+	 * it navigates a switched-off reversal.
+	 * <p>
+	 * The colour belongs to the browser, not to the single row-to-row links
+	 * ({@code RowToRowLink.color1} is written but never read, the paint pass takes
+	 * {@code RowBrowser.color1}), so recomputing it here covers browsers which are newly opened
+	 * and browsers which the path reuses alike.
+	 *
+	 * @param rb the browser
+	 */
+	public void markAsRowOriginChain(RowBrowser rb) {
+		if (rb == null || rb.rowOriginChain) {
+			return;
+		}
+		rb.rowOriginChain = true;
+		rb.updateColor();
+		repaintDesktop();
 	}
 
 	private Rectangle layout(RowBrowser parent, Association association, BrowserContentPane browserContentPane,
