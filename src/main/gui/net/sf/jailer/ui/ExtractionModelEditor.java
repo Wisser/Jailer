@@ -256,6 +256,16 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 	public PendingDecisionsPanel pendingDecisionsPanel;
 
 	/**
+	 * State of the check box "Enable row origin analysis by keeping the collected rows" of the
+	 * export dialog, so that it comes up again as it was left.
+	 * <p>
+	 * Deliberately kept here and nowhere else: it lives as long as this editor and is not written
+	 * to the settings file. Keeping the collected rows costs space in the database, so it is a
+	 * decision for the model one is working on, not one to be inherited silently by the next.
+	 */
+	public boolean keepEntityGraph = false;
+
+	/**
 	 * Multi-line editor for subject condition.
 	 */
 	private NonModalConditionEditor subjectConditionEditor;

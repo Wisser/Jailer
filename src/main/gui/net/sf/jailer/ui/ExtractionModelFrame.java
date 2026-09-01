@@ -1774,7 +1774,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 
 								jmFile = extractionModelEditor.extractionModelFile != null? extractionModelEditor.extractionModelFile : tmpFileName;
 
-								exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), extractionModelEditor.extractionModel.additionalSubjects, session, args, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), checkRI, dbConnectionDialog, extractionModelEditor.extractionModelFile, jmFile, tmpFileName, defaultExportFileName, executionContext) { // lgtm [java/dereferenced-value-may-be-null]
+								exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), extractionModelEditor.extractionModel.additionalSubjects, session, args, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), checkRI, dbConnectionDialog, extractionModelEditor.extractionModelFile, jmFile, tmpFileName, defaultExportFileName, extractionModelEditor.keepEntityGraph, executionContext) { // lgtm [java/dereferenced-value-may-be-null]
 									@Override
 									protected boolean checkForPKs(JRadioButton rowidButton, Runnable saveSettings) {
 										try {
@@ -1819,6 +1819,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 							}
 							session.shutDown();
 							if (exportDialog.isOk()) {
+								// remember it for the next export of this model, as the dialog
+								// leaves it. Not saved anywhere, it lives with the editor.
+								extractionModelEditor.keepEntityGraph = exportDialog.isKeepEntityGraph();
 								if (exportDialog.scriptFormat == ScriptFormat.XML) {
 									UISettings.s16++;
 								}
@@ -1927,8 +1930,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 										progressPanel.setTableOpener(table -> {
 											DataBrowser dataBrowser = dataBrowserForAnalysis();
 											if (dataBrowser != null) {
+												// bring what is there up to date first, then add: a rebuild
+												// would throw the new browser away again
+												dataBrowser.refreshForAnalysis();
 												dataBrowser.openRootBrowser(table);
-												dataBrowser.onAnalysisBrowsersOpened();
 											}
 										});
 
@@ -1954,8 +1959,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 												if (dataBrowser != null) {
 													List<RowOriginPath.Step> path = RowOriginPath.build(dataBrowser, rowOriginContext, steps);
 													if (path != null) {
+														// only now, and before opening: nothing is
+														// refreshed for a cancelled chain, and the
+														// chain must survive the rebuild
+														dataBrowser.refreshForAnalysis();
 														dataBrowser.openRowOriginPath(path);
-														dataBrowser.onAnalysisBrowsersOpened();
 													}
 												}
 											});

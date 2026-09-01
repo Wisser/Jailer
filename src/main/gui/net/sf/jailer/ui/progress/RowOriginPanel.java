@@ -155,7 +155,7 @@ public class RowOriginPanel extends JPanel {
 	public void clear() {
 		steps = new ArrayList<RowOriginStep>();
 		tableModel.fireTableDataChanged();
-		statusLabel.setText("Select a row to see how it has found its way into the subset.");
+		setStatus("Select a row to see how it has found its way into the subset.");
 		updateOpenPathButton();
 	}
 
@@ -207,33 +207,72 @@ public class RowOriginPanel extends JPanel {
 		if (origin == null) {
 			steps = new ArrayList<RowOriginStep>();
 			tableModel.fireTableDataChanged();
-			statusLabel.setText("The row could not be found.");
+			setStatus("The row could not be found.");
 			updateOpenPathButton();
 			return;
 		}
 		steps = origin.getSteps();
 		tableModel.fireTableDataChanged();
-		statusLabel.setText(statusText(origin, rowTable));
+		setStatus(statusText(origin, rowTable));
 		updateOpenPathButton();
+	}
+
+	/**
+	 * Sets the status line, and the same text as its tooltip: the label is a single line and cuts
+	 * off rather than wrapping, so a narrow window would otherwise swallow the end of it.
+	 *
+	 * @param text the text
+	 */
+	private void setStatus(String text) {
+		statusLabel.setText(text);
+		statusLabel.setToolTipText(text.trim().length() > 0? text : null);
 	}
 
 	private String statusText(RowOrigin origin, Table rowTable) {
 		int size = origin.getSteps().size();
+		String text;
 		switch (origin.getStatus()) {
 		case COMPLETE:
-			return size <= 1?
+			text = size <= 1?
 					"This is a subject row: it is the starting point of the collection."
 					: "Collected in " + (size - 1) + (size - 1 == 1? " step" : " steps") + ", starting from the subject.";
+			break;
 		case NOT_COLLECTED:
-			return "This row is not part of the subset.";
+			text = "This row is not part of the subset.";
+			break;
 		case BROKEN:
-			return "The chain could not be followed up to the subject. "
+			text = "The chain could not be followed up to the subject. "
 					+ "Rows may have been removed from the working tables after the collection.";
+			break;
 		case TRUNCATED:
-			return "The chain is longer than the limit and has been cut off.";
+			text = "The chain is longer than the limit and has been cut off.";
+			break;
 		default:
-			return " ";
+			text = " ";
+			break;
 		}
+		// said here rather than in a window of its own: which step it is stands in the column
+		// "Via Association". Holds for a broken chain too, hence not tied to the status above.
+		if (isAmbiguous(origin)) {
+			text += "  The path is not unique: at some step more than one row matches.";
+		}
+		return text;
+	}
+
+	/**
+	 * Returns whether any step of the chain has more than one matching row, so that the way shown
+	 * is one of several.
+	 *
+	 * @param origin the chain
+	 * @return <code>true</code> if the way is not unique
+	 */
+	private boolean isAmbiguous(RowOrigin origin) {
+		for (RowOriginStep step: origin.getSteps()) {
+			if (step.isAmbiguous()) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**

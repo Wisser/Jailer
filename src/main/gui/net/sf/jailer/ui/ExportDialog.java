@@ -120,6 +120,11 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	private javax.swing.JCheckBox keepEntityGraphCheckBox;
 
 	/**
+	 * State the check box is to come up with, remembered by the caller for as long as it sees fit.
+	 */
+	private final boolean keepEntityGraphPreset;
+
+	/**
 	 * Xml/Sql switch.
 	 */
 	public final ScriptFormat scriptFormat;
@@ -200,8 +205,10 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
 	/** Creates new form DbConnectionDialog
 	 */
-	public ExportDialog(java.awt.Frame parent, final DataModel dataModel, final Table subject, String subjectCondition, List<AdditionalSubject> additionalSubjects, final Session session, List<String> initialArgs, String user, String password, boolean showCmd, DbConnectionDialog dbConnectionDialog, String extractionModelFileName, String jmFile, String tmpFileName, StringBuilder defaultExportFileName, ExecutionContext executionContext) {
+	public ExportDialog(java.awt.Frame parent, final DataModel dataModel, final Table subject, String subjectCondition, List<AdditionalSubject> additionalSubjects, final Session session, List<String> initialArgs, String user, String password, boolean showCmd, DbConnectionDialog dbConnectionDialog, String extractionModelFileName, String jmFile, String tmpFileName, StringBuilder defaultExportFileName, boolean keepEntityGraphPreset, ExecutionContext executionContext) {
 		super(parent, true);
+		// assigned before initComponents and createKeepEntityGraphCheckBox, which read it
+		this.keepEntityGraphPreset = keepEntityGraphPreset;
 		this.executionContext = executionContext;
 		this.extractionModelFileName = extractionModelFileName;
 		this.jmFile = jmFile;
@@ -2612,6 +2619,9 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	private void createKeepEntityGraphCheckBox() {
 		keepEntityGraphCheckBox = new javax.swing.JCheckBox("Enable row origin analysis by keeping the collected rows");
 		keepEntityGraphCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+		// as the caller left it. Should the scope not allow it, updateKeepEntityGraphState clears
+		// it again: that runs later, through al.actionPerformed(null) while the scope is set up
+		keepEntityGraphCheckBox.setSelected(keepEntityGraphPreset);
 		keepEntityGraphCheckBox.addActionListener(new java.awt.event.ActionListener() {
 			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {

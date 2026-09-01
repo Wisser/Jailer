@@ -5717,8 +5717,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
 	/**
 	 * Tells what is to be said about a chain before it is laid out, or <code>null</code> if it is
-	 * complete and unambiguous. The chain view says this in its own table, the Data Browser has
-	 * no place for it, so it is said once.
+	 * complete. Only an incomplete chain is reported: laid out on the desktop there is no status
+	 * line to put it in, and that the chain does not reach the subject has to be known before one
+	 * reads the browsers.
+	 * <p>
+	 * That the way is not unique is <b>not</b> reported here. It is the normal case rather than the
+	 * exception, and a window one has to click away before anything is visible is out of all
+	 * proportion to it. The chain view says it instead, in its status line and per step in the
+	 * column "Via Association".
 	 *
 	 * @param origin the chain
 	 * @return the note, or <code>null</code>
@@ -5727,23 +5733,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		if (origin == null) {
 			return null;
 		}
-		StringBuilder sb = new StringBuilder();
 		if (origin.getStatus() == RowOrigin.Status.BROKEN) {
-			sb.append("The chain could not be followed up to the subject. Only the part which is still known is shown.");
-		} else if (origin.getStatus() == RowOrigin.Status.TRUNCATED) {
-			sb.append("The chain is too long to be followed completely. Only its last steps are shown.");
+			return "The chain could not be followed up to the subject. Only the part which is still known is shown.";
 		}
-		for (RowOriginStep step: origin.getSteps()) {
-			if (step.isAmbiguous()) {
-				if (sb.length() > 0) {
-					sb.append("\n\n");
-				}
-				sb.append("More than one row matches at some step of the chain. The way shown is the one\n"
-						+ "the row has been found through first, it is not the only one.");
-				break;
-			}
+		if (origin.getStatus() == RowOrigin.Status.TRUNCATED) {
+			return "The chain is too long to be followed completely. Only its last steps are shown.";
 		}
-		return sb.length() > 0? sb.toString() : null;
+		return null;
 	}
 
 	/**
