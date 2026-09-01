@@ -40,6 +40,7 @@ import net.sf.jailer.database.UpdateTransformer;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.ParameterHandler;
 import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
@@ -1489,6 +1490,17 @@ public class RemoteEntityGraph extends EntityGraph {
 		if (jc == null) {
 			return result;
 		}
+		// The restriction of an association can carry "${...}" placeholders. During a run they are
+		// already gone: the extraction model substitutes them while it is being loaded, see
+		// RestrictionModel.addRestrictionDefinition. This method however runs afterwards, against
+		// the data model of the editor, where they are still in place - unsubstituted they would
+		// reach the database verbatim and break the statement.
+		jc = ParameterHandler.assignParameterValues(jc, executionContext.getParameters());
+		if (jc.contains("${")) {
+			// a placeholder without a value: fall back to the condition without the restriction.
+			// It can match more rows than the run did, which is better than no answer at all.
+			jc = association.getUnrestrictedJoinCondition();
+		}
 		String destAlias, sourceAlias;
 		if (association.reversed) {
 			destAlias = "A";
@@ -1574,7 +1586,9 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * @param tableAlias the alias the conditions use for that table
 	 * @param conditions one condition per row
 	 * @param context cancellation context, or <code>null</code>
-	 * @param reader reads the index of each row which is part of the graph
+	 * @param reader reads one row per collected row: the index of its condition as "MIDX", and the
+	 *        association it has been collected through as "ASSOC", which is <code>null</code> for
+	 *        a subject row
 	 */
 	public void readMembership(Table table, String tableAlias, List<String> conditions, Object context, ResultSetReader reader) throws SQLException {
 		if (conditions.isEmpty()) {
@@ -1586,7 +1600,9 @@ public class RemoteEntityGraph extends EntityGraph {
 				select.append(" union all ");
 			}
 			select.append(
-				"Select " + i + " as MIDX" +
+				// the association tells a subject row from a collected one: it is null for the
+				// rows the collection has started from
+				"Select " + i + " as MIDX, E.association as ASSOC" +
 				" From " + quoting.requote(table.getName()) + " " + tableAlias +
 				", " + dmlTableReference(ENTITY, session) + " E" +
 				" Where E.r_entitygraph=" + graphID + " and E.type=" + typeName(table) +
@@ -1628,13 +1644,19 @@ public class RemoteEntityGraph extends EntityGraph {
 
 	/**
 	 * Gets a SQL condition comparing the primary key columns of a table with given values.
+	 * <p>
+	 * The primary key is the one of the run, as given by the {@link RowIdSupport} of this graph,
+	 * so the values are the ones delivered by {@link #readPredecessorKeys} and carried by a
+	 * {@link net.sf.jailer.entitygraph.RowOriginStep}. The alias is the caller's: the row origin
+	 * view uses it to pin a table browser of the Data Browser to a single row, where the table of
+	 * the browser itself is aliased "A".
 	 *
 	 * @param table the table
 	 * @param primaryKey the values, in the order of the table's primary key
 	 * @param tableAlias the alias for the table
 	 * @return the condition
 	 */
-	private String pkEqualsValues(Table table, Object[] primaryKey, String tableAlias) {
+	public String pkEqualsValues(Table table, Object[] primaryKey, String tableAlias) {
 		CellContentConverter cellContentConverter = literalConverter();
 		List<Column> pkColumns = rowIdSupport.getPrimaryKey(table).getColumns();
 		StringBuffer sb = new StringBuffer();

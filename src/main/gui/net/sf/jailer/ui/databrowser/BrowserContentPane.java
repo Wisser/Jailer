@@ -1396,7 +1396,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 						lastVisible = maxI - 1;
 					}
 					g2d.setPaint(null);
-					g2d.setColor(Colors.rowInSubsetMarkerColor);
 					for (int i = firstVisible; i <= lastVisible && i < maxI; ++i) {
 						int mi = sorter == null? i : sorter.convertRowIndexToModel(i);
 						if (mi >= rows.size()) {
@@ -1407,6 +1406,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 						if (isMember == null) {
 							requestRowOriginMembership(row);
 						} else if (isMember) {
+							// the subject rows are the starting points of the collection and are
+							// told apart by their colour
+							g2d.setColor(rowOriginSubjectRows.contains(row.nonEmptyRowId)?
+									Colors.rowIsSubjectMarkerColor : Colors.rowInSubsetMarkerColor);
 							Rectangle r = rowsTable.getCellRect(i, 0, false);
 							g2d.fillRect((int) visRect.getMinX(), (int) r.getMinY(), ROW_ORIGIN_MARKER_WIDTH, (int) r.getHeight());
 						}
@@ -3397,6 +3400,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 				final Row originRow = row;
 				// the missing marker at the left edge already says it, no need for a window
 				boolean notInSubset = isKnownNotInSubset(originRow);
+				// a subject row is the start of the collection: there is no path to lay out
+				boolean subjectRow = isKnownSubjectRow(originRow);
 
 				JMenuItem origin = new JMenuItem(ROW_ORIGIN_TITLE);
 				setMenuItemName(origin, "explain.png");
@@ -3412,8 +3417,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
 				JMenuItem originPath = new JMenuItem(ROW_ORIGIN_PATH_TITLE);
 				setMenuItemName(originPath, "subject.png");
-				originPath.setToolTipText(notInSubset? ROW_ORIGIN_NOT_IN_SUBSET_TOOLTIP : ROW_ORIGIN_PATH_TOOLTIP);
-				originPath.setEnabled(!notInSubset);
+				originPath.setToolTipText(notInSubset? ROW_ORIGIN_NOT_IN_SUBSET_TOOLTIP
+						: subjectRow? ROW_ORIGIN_PATH_SUBJECT_TOOLTIP : ROW_ORIGIN_PATH_TOOLTIP);
+				originPath.setEnabled(!notInSubset && !subjectRow);
 				originPath.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
@@ -3950,6 +3956,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		if (sqlRowOriginContext != null) {
 			final Row selectedRow = singleSelectedRow();
 			boolean notInSubset = isKnownNotInSubset(selectedRow);
+			boolean subjectRow = isKnownSubjectRow(selectedRow);
 			boolean originEnabled = selectedRow != null && !notInSubset;
 
 			JMenuItem origin = new JMenuItem(ROW_ORIGIN_TITLE);
@@ -3969,8 +3976,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			JMenuItem originPath = new JMenuItem(ROW_ORIGIN_PATH_TITLE);
 			setMenuItemName(originPath, "subject.png");
 			originPath.setToolTipText(selectedRow == null? ROW_ORIGIN_PATH_NO_ROW_TOOLTIP
-					: notInSubset? ROW_ORIGIN_NOT_IN_SUBSET_TOOLTIP : ROW_ORIGIN_PATH_TOOLTIP);
-			originPath.setEnabled(originEnabled);
+					: notInSubset? ROW_ORIGIN_NOT_IN_SUBSET_TOOLTIP
+					: subjectRow? ROW_ORIGIN_PATH_SUBJECT_TOOLTIP : ROW_ORIGIN_PATH_TOOLTIP);
+			originPath.setEnabled(originEnabled && !subjectRow);
 			popup.add(originPath);
 			originPath.addActionListener(new ActionListener() {
 				@Override
@@ -5298,6 +5306,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	private final Map<String, Boolean> rowOriginMembership = new HashMap<String, Boolean>();
 
 	/**
+	 * Rows which are subject rows, that is: collected without an association, the starting points
+	 * of the collection. Only a row whose verdict in {@link #rowOriginMembership} is "true" can be
+	 * in here.
+	 */
+	private final Set<String> rowOriginSubjectRows = new HashSet<String>();
+
+	/**
 	 * Rows which have been handed to the background scan already. Without this latch every
 	 * repaint would ask again.
 	 */
@@ -5384,6 +5399,19 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	}
 
 	/**
+	 * Whether the row shown in the single row view is a subject row, the starting point of the
+	 * collection. Only meaningful together with {@link #isSingleRowInSubset()}.
+	 *
+	 * @return <code>true</code> if the row is known to be a subject row
+	 */
+	private boolean isSingleRowSubject() {
+		if (rows.size() != 1 || noSingleRowDetailsView || currentRowOriginContext() == null) {
+			return false;
+		}
+		return rowOriginSubjectRows.contains(rows.get(0).nonEmptyRowId);
+	}
+
+	/**
 	 * Whether it is already known that a row is not part of the subset of the run which keeps its
 	 * collected rows.
 	 * <p>
@@ -5408,6 +5436,26 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	}
 
 	/**
+	 * Whether it is already known that a row is a subject row, that is: the starting point of the
+	 * collection rather than something collected through an association.
+	 * <p>
+	 * There is no path to open for such a row - the chain consists of the row itself. As with
+	 * {@link #isKnownNotInSubset(Row)} only a verdict already read for the marker counts.
+	 *
+	 * @param row the row
+	 * @return <code>true</code> if the row is known to be a subject row
+	 */
+	private boolean isKnownSubjectRow(Row row) {
+		if (row == null || row.rowId == null || row.rowId.length() == 0) {
+			return false;
+		}
+		if (currentRowOriginContext() == null) {
+			return false;
+		}
+		return rowOriginSubjectRows.contains(row.nonEmptyRowId);
+	}
+
+	/**
 	 * Creates the hint of the single row view and puts it into the header, right of
 	 * " Single Row Details ".
 	 * <p>
@@ -5417,9 +5465,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	 * therefore shown by both kinds of single row view.
 	 */
 	private void createRowInSubsetLabel() {
-		rowInSubsetLabel = new JLabel("Part of Subset ");
+		rowInSubsetLabel = new JLabel(ROW_IN_SUBSET_LABEL);
 		rowInSubsetLabel.setForeground(Colors.rowInSubsetMarkerColor);
-		rowInSubsetLabel.setToolTipText("This row is part of the subset of the last export.");
+		rowInSubsetLabel.setToolTipText(ROW_IN_SUBSET_LABEL_TOOLTIP);
 		rowInSubsetLabel.setVisible(false);
 		java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 		gridBagConstraints.gridx = 2;
@@ -5435,15 +5483,23 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	 * subset. The marker at the left edge alone is easy to miss when there is only one row.
 	 */
 	private void updateRowInSubsetLabel() {
-		if (rowInSubsetLabel != null) {
-			boolean inSubset = isSingleRowInSubset();
-			if (inSubset != rowInSubsetLabel.isVisible()) {
-				rowInSubsetLabel.setVisible(inSubset);
-				// GridBagLayout gives an invisible component no space, so the header has to be
-				// laid out anew when the hint appears or goes
-				jPanel11.revalidate();
-				jPanel11.repaint();
-			}
+		if (rowInSubsetLabel == null) {
+			return;
+		}
+		boolean inSubset = isSingleRowInSubset();
+		boolean subject = inSubset && isSingleRowSubject();
+		String text = subject? ROW_IS_SUBJECT_LABEL : ROW_IN_SUBSET_LABEL;
+		// the text can change while the hint stays visible, and with it its width, so it belongs
+		// in the condition just as much as the visibility
+		if (inSubset != rowInSubsetLabel.isVisible() || !text.equals(rowInSubsetLabel.getText())) {
+			rowInSubsetLabel.setText(text);
+			rowInSubsetLabel.setForeground(subject? Colors.rowIsSubjectMarkerColor : Colors.rowInSubsetMarkerColor);
+			rowInSubsetLabel.setToolTipText(subject? ROW_IS_SUBJECT_LABEL_TOOLTIP : ROW_IN_SUBSET_LABEL_TOOLTIP);
+			rowInSubsetLabel.setVisible(inSubset);
+			// GridBagLayout gives an invisible component no space, so the header has to be
+			// laid out anew when the hint appears, goes or changes its wording
+			jPanel11.revalidate();
+			jPanel11.repaint();
 		}
 	}
 
@@ -5505,12 +5561,20 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 				@Override
 				public void run() {
 					final Set<Integer> members = new HashSet<Integer>();
+					final Set<Integer> subjects = new HashSet<Integer>();
 					try {
 						context.getEntityGraph().readMembership(originTable, "B", conditions, scanContext,
 								new Session.AbstractResultSetReader() {
 							@Override
 							public void readCurrentRow(ResultSet resultSet) throws SQLException {
-								members.add(resultSet.getInt(1));
+								int index = resultSet.getInt(1);
+								members.add(index);
+								// no association means: collected as a subject row. Asked through
+								// wasNull right after reading the column, not by comparing with 0
+								resultSet.getInt(2);
+								if (resultSet.wasNull()) {
+									subjects.add(index);
+								}
 							}
 						});
 						UIUtil.invokeLater(new Runnable() {
@@ -5526,7 +5590,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 									return;
 								}
 								for (int i = 0; i < chunk.size(); ++i) {
-									rowOriginMembership.put(chunk.get(i).nonEmptyRowId, members.contains(i));
+									String rowId = chunk.get(i).nonEmptyRowId;
+									rowOriginMembership.put(rowId, members.contains(i));
+									// removed as well, so that nothing of an earlier run remains
+									if (subjects.contains(i)) {
+										rowOriginSubjectRows.add(rowId);
+									} else {
+										rowOriginSubjectRows.remove(rowId);
+									}
 								}
 								rowsTable.repaint();
 								// the single row view is shown instead of the rows table, so it
@@ -5558,6 +5629,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	 */
 	void resetRowOriginMembership() {
 		rowOriginMembership.clear();
+		rowOriginSubjectRows.clear();
 		rowOriginRequested.clear();
 		pendingRowOriginRows.clear();
 		rowOriginTimer = null;
@@ -5582,6 +5654,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	private static final String ROW_ORIGIN_PATH_NO_ROW_TOOLTIP = "Select a single row to open its way into the subset as a chain of table browsers.";
 
 	private static final String ROW_ORIGIN_NOT_IN_SUBSET_TOOLTIP = "This row is not part of the subset of the last export.";
+
+	private static final String ROW_ORIGIN_PATH_SUBJECT_TOOLTIP = "This row is a subject row: it is the starting point of the collection, so there is no path to open.";
+
+	private static final String ROW_IN_SUBSET_LABEL = "Part of Subset ";
+	private static final String ROW_IS_SUBJECT_LABEL = "Subject Row ";
+	private static final String ROW_IN_SUBSET_LABEL_TOOLTIP = "This row is part of the subset of the last export.";
+	private static final String ROW_IS_SUBJECT_LABEL_TOOLTIP = "This row is a subject row: the collection of the subset has started from it.";
 
 	private RowOriginContext rowOriginContextFor(Row row) {
 		if (row == null || row.rowId.length() == 0) {
@@ -5616,11 +5695,23 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
 	/**
 	 * Gets the row a row related action of the browser wide menu works on.
+	 * <p>
+	 * Holds a browser a single row, that one is meant, selected or not: there is nothing else it
+	 * could be. That is not a rare case but the usual one for these actions - the single row view
+	 * shows no row table to select in at all, and every browser of a row origin path holds exactly
+	 * one row. Without it the buttons of the bar next to a table browser would be disabled in just
+	 * those places where they are wanted most.
 	 *
-	 * @return the selected row, if exactly one is selected, else <code>null</code>
+	 * @return the only row, or the selected one if exactly one is selected, else <code>null</code>
 	 */
 	private Row singleSelectedRow() {
-		if (rowsTable == null || rows == null || rowsTable.getSelectedRowCount() != 1) {
+		if (rows == null) {
+			return null;
+		}
+		if (rows.size() == 1) {
+			return rows.get(0);
+		}
+		if (rowsTable == null || rowsTable.getSelectedRowCount() != 1) {
 			return null;
 		}
 		int i = rowsTable.getSelectedRow();
@@ -6838,7 +6929,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 								Rectangle visRect = singleRowViewContainterPanel.getVisibleRect();
 								Graphics2D g2d = (Graphics2D) graphics;
 								g2d.setPaint(null);
-								g2d.setColor(Colors.rowInSubsetMarkerColor);
+								g2d.setColor(isSingleRowSubject()? Colors.rowIsSubjectMarkerColor : Colors.rowInSubsetMarkerColor);
 								g2d.fillRect((int) visRect.getMinX(), (int) visRect.getMinY(),
 										ROW_ORIGIN_MARKER_WIDTH, (int) visRect.getHeight());
 							}
@@ -6873,6 +6964,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 					@Override
 					protected boolean isInSubset() {
 						return isSingleRowInSubset();
+					}
+					@Override
+					protected boolean isSubjectRow() {
+						return isSingleRowSubject();
 					}
 				};
 				if (additionalMouseAdapter != null) {

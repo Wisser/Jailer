@@ -747,6 +747,16 @@ public class ColumnsTable extends JTable {
 		return false;
 	}
 
+	/**
+	 * Whether the row shown here is a subject row, the starting point of the collection. Only
+	 * asked when {@link #isInSubset()} holds: it decides the colour of the marker.
+	 *
+	 * @return <code>true</code> if the row is a subject row
+	 */
+	protected boolean isSubjectRow() {
+		return false;
+	}
+
 	@Override
 	public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
 		if (!inDesktop) {
@@ -879,7 +889,7 @@ public class ColumnsTable extends JTable {
 		// the whole table shows one row, so the marker goes down the entire left edge
 		if (isInSubset()) {
 			g2d.setPaint(null);
-			g2d.setColor(Colors.rowInSubsetMarkerColor);
+			g2d.setColor(isSubjectRow()? Colors.rowIsSubjectMarkerColor : Colors.rowInSubsetMarkerColor);
 			g2d.fillRect((int) visRect.getMinX(), (int) visRect.getMinY(),
 					BrowserContentPane.ROW_ORIGIN_MARKER_WIDTH, (int) visRect.getHeight());
 		}

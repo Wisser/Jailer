@@ -3015,6 +3015,25 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	}
 
 	/**
+	 * Gets the parameter values as they are handed to the engine, by parameter name.
+	 * <p>
+	 * The row origin analysis needs them: it evaluates the restrictions of the associations
+	 * afterwards, and their "${...}" placeholders are only substituted while the extraction model
+	 * is loaded, which does not happen for the data model of the editor.
+	 *
+	 * @return the values, never <code>null</code>
+	 */
+	public Map<String, String> getParameterValues() {
+		Map<String, String> result = new HashMap<String, String>();
+		if (parameterEditor != null) {
+			for (Map.Entry<String, JTextField> e: parameterEditor.textfieldsPerParameter.entrySet()) {
+				result.put(e.getKey(), e.getValue().getText().trim());
+			}
+		}
+		return result;
+	}
+
+	/**
 	 * Returns whether the entity-graph is to be kept after the run, so that the origin of a
 	 * single row can be analyzed.
 	 *

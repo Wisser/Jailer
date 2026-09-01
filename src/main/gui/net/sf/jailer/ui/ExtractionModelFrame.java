@@ -46,6 +46,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
@@ -1946,6 +1947,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 											originExecutionContext.setWorkingTableSchema(exportDialog.getWorkingTableSchema());
 											originExecutionContext.setUseRowid(exportDialog.isUseRowId());
 											originExecutionContext.setUseRowIdsOnlyForTablesWithoutPK(exportDialog.isUseRowIdsOnlyForTablesWithoutPK());
+											// the restrictions are evaluated again during the analysis, so their
+											// "${...}" placeholders need the values of this run
+											for (Map.Entry<String, String> e: exportDialog.getParameterValues().entrySet()) {
+												originExecutionContext.setParameter(e.getKey(), e.getValue());
+											}
 											rowOriginContext = new RowOriginContext(
 													extractionModelEditor.dataModel,
 													originExecutionContext,

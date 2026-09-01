@@ -146,7 +146,9 @@ public class RowOriginPanel extends JPanel {
 	}
 
 	private void updateOpenPathButton() {
-		openPathButton.setEnabled(pathOpener != null && !steps.isEmpty());
+		// a chain of a single step has no predecessor to lay out - the row is the subject itself,
+		// or the chain is broken right at the start. Either way there is nothing to open.
+		openPathButton.setEnabled(pathOpener != null && steps.size() > 1);
 	}
 
 	/**
