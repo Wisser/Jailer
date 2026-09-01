@@ -1918,6 +1918,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 											DataBrowser dataBrowser = dataBrowserForAnalysis();
 											if (dataBrowser != null) {
 												dataBrowser.openRootBrowser(table);
+												dataBrowser.onAnalysisBrowsersOpened();
 											}
 										});
 
@@ -1944,6 +1945,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 													List<RowOriginPath.Step> path = RowOriginPath.build(dataBrowser, rowOriginContext, steps);
 													if (path != null) {
 														dataBrowser.openRowOriginPath(path);
+														dataBrowser.onAnalysisBrowsersOpened();
 													}
 												}
 											});

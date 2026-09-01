@@ -5504,7 +5504,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	 * Forgets all verdicts and stops the scans which are still on their way. The rows they refer
 	 * to are gone, or they belong to another run.
 	 */
-	private void resetRowOriginMembership() {
+	void resetRowOriginMembership() {
 		rowOriginMembership.clear();
 		rowOriginRequested.clear();
 		pendingRowOriginRows.clear();

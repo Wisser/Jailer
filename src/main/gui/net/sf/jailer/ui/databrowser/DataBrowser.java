@@ -5569,6 +5569,36 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	}
 
 	/**
+	 * Version of the data model this desktop has last been built for.
+	 */
+	private long lastSeenDataModelVersion = -1;
+
+	/**
+	 * Called after a table browser has been opened from the progress window of an export.
+	 * <p>
+	 * Two things can be out of date by then. The verdicts about which rows belong to the subset
+	 * refer to the entity-graph of an earlier run, so they are dropped and asked anew. And
+	 * everything a browser takes from the data model when it is created - the colours of the links
+	 * above all - is not refreshed when a restriction is changed in the extraction model, because
+	 * nothing tells this window about it. The desktop is therefore rebuilt, but only when the data
+	 * model has changed since the last time: a rebuild costs every browser a reload, its selection
+	 * and its scroll position.
+	 */
+	public void onAnalysisBrowsersOpened() {
+		for (RowBrowser rb: desktop.getBrowsers()) {
+			if (rb.browserContentPane != null) {
+				rb.browserContentPane.resetRowOriginMembership();
+				rb.browserContentPane.repaint();
+			}
+		}
+		long version = datamodel.get() == null? -1 : datamodel.get().version;
+		if (version != lastSeenDataModelVersion) {
+			lastSeenDataModelVersion = version;
+			desktop.rebuildDesktop();
+		}
+	}
+
+	/**
 	 * Opens a table browser without any condition, as a root of its own.
 	 *
 	 * @param table the table to browse
@@ -5595,6 +5625,10 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		UIUtil.invokeLater(10, new Runnable() {
 			@Override
 			public void run() {
+				if (rb.internalFrame.getParent() == null) {
+					// the desktop has been rebuilt in the meantime, this frame is gone
+					return;
+				}
 				try {
 					rb.internalFrame.setSelected(true);
 					desktop.getiFrameStateChangeRenderer().onIFrameSelected(rb.internalFrame);

@@ -3542,6 +3542,31 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	/**
+	 * Rebuilds all browsers from a snapshot of the current layout, keeping the data model.
+	 * <p>
+	 * Everything a browser derives from the data model when it is created is computed anew, the
+	 * colours of the links above all: they are determined in {@link RowBrowser#updateColor()} at
+	 * creation time and never again, so a restriction which has been changed in the extraction
+	 * model in the meantime would otherwise not show.
+	 */
+	public void rebuildDesktop() {
+		try {
+			Component pFrame = SwingUtilities.getWindowAncestor(this);
+			if (pFrame == null) {
+				pFrame = this;
+			}
+			String filename = Environment.newFile(".tempsession-" + System.currentTimeMillis()).getPath();
+			storeSession(filename);
+			// toBeAppended == null lets restoreSession close everything first;
+			// the global settings ("Auto Layout") are not to be touched here
+			restoreSession(null, pFrame, filename, false);
+			new File(filename).delete();
+		} catch (Throwable e) {
+			UIUtil.showException(this, "Error", e, session);
+		}
+	}
+
+	/**
 	 * Reloads the data model and replaces the tables in all browser windows.
 	 * @param restoreSess 
 	 * @param newSession 
@@ -3832,7 +3857,10 @@ public abstract class Desktop extends JDesktopPane {
 						+ (rb.association == null ? "" : CsvFile.encodeCell(rb.association.getName())) + "; ";
 			}
 			csv += rb.isHidden() + "; ";
-			csv += rb.browserContentPane.ignoreSortKey? "" : serializedSortKey(rb.browserContentPane.rowsTable) + "; ";
+			// the separator belongs outside the conditional: without it the cell would be missing
+			// altogether and everything behind it would move up one position, while restoreSession
+			// reads fixed positions
+			csv += (rb.browserContentPane.ignoreSortKey? "" : serializedSortKey(rb.browserContentPane.rowsTable)) + "; ";
 			csv += maximum + ";";
 			if (maximum) {
 				try {
@@ -3842,6 +3870,9 @@ public abstract class Desktop extends JDesktopPane {
 				}
 			}
 			csv += (rb.browserContentPane.filteredColumns == null? "" : rb.browserContentPane.filteredColumns.stream().map(c -> String.valueOf(c)).collect(Collectors.joining(","))) + ";";
+			// appended last, so that an older version simply overreads it and an older file
+			// answers "" here, see CsvFile.Line, which pads every line with empty cells
+			csv += rb.rowOriginChain + ";";
 
 			out.append(csv).append(LF);
 			for (RowBrowser child : tableBrowsers) {
@@ -4021,6 +4052,12 @@ public abstract class Desktop extends JDesktopPane {
 							}
 							if (parentRB == null || parentRB == toBeAppended) {
 								toBeLoaded.add(rb);
+							}
+							// only here: a line without the "T" block leaves out three cells, so
+							// the fixed position would not hold. A row origin chain always
+							// browses a real table.
+							if (Boolean.parseBoolean(l.cells.get(16))) {
+								markAsRowOriginChain(rb);
 							}
 						}
 					}
