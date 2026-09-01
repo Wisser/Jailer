@@ -40,6 +40,8 @@ import javax.swing.Timer;
 import net.sf.jailer.database.DMLTransformer;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.entitygraph.RowOriginStep;
 import net.sf.jailer.ui.progress.CollectionAnalysis;
 import net.sf.jailer.ui.progress.CollectionAnalysisPanel;
 
@@ -263,6 +265,26 @@ public class ProgressPanel extends javax.swing.JPanel {
 	 */
 	public void setAssociationSelector(Consumer<Association> associationSelector) {
 		analysisPanel.setAssociationSelector(associationSelector);
+	}
+
+	/**
+	 * Sets the consumer which lays the way of a row into the subset out in a Data Browser.
+	 * If none is set, the chain is shown as a table only.
+	 *
+	 * @param pathOpener the consumer, or <code>null</code>
+	 */
+	public void setPathOpener(Consumer<List<RowOriginStep>> pathOpener) {
+		analysisPanel.setPathOpener(pathOpener);
+	}
+
+	/**
+	 * Sets the consumer which opens a table in a Data Browser.
+	 * If none is set, the analysis does not offer to open one.
+	 *
+	 * @param tableOpener the consumer, or <code>null</code>
+	 */
+	public void setTableOpener(Consumer<Table> tableOpener) {
+		analysisPanel.setTableOpener(tableOpener);
 	}
 
 	/**

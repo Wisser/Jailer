@@ -18,12 +18,17 @@ package net.sf.jailer.ui.progress;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.FlowLayout;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -55,8 +60,11 @@ public class RowOriginPanel extends JPanel {
 	private final JLabel statusLabel;
 	private final JTable table;
 	private final ChainTableModel tableModel;
+	private final JPanel buttonPanel;
+	private final JButton openPathButton;
 
 	private List<RowOriginStep> steps = new ArrayList<RowOriginStep>();
+	private Consumer<List<RowOriginStep>> pathOpener;
 
 	/**
 	 * Constructor.
@@ -104,7 +112,41 @@ public class RowOriginPanel extends JPanel {
 		table.getColumnModel().getColumn(3).setPreferredWidth(200);
 
 		add(new JScrollPane(table), BorderLayout.CENTER);
+
+		openPathButton = new JButton(" Open Path in Data Browser ");
+		openPathButton.setIcon(UIUtil.scaleIcon(openPathButton, UIUtil.readImage("/subject.png")));
+		openPathButton.setToolTipText("Opens the chain as table browsers of the Data Browser: one per step, each showing the single row of that step.");
+		openPathButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (pathOpener != null && !steps.isEmpty()) {
+					pathOpener.accept(steps);
+				}
+			}
+		});
+		buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		buttonPanel.add(openPathButton);
+		// no path opener, no button: the containers which cannot reach a Data Browser show none
+		buttonPanel.setVisible(false);
+		add(buttonPanel, BorderLayout.SOUTH);
+
 		clear();
+	}
+
+	/**
+	 * Sets the action which lays out the chain in a Data Browser. Only if one is set, the panel
+	 * offers to open the path.
+	 *
+	 * @param pathOpener the action, or <code>null</code>
+	 */
+	public void setPathOpener(Consumer<List<RowOriginStep>> pathOpener) {
+		this.pathOpener = pathOpener;
+		buttonPanel.setVisible(pathOpener != null);
+		updateOpenPathButton();
+	}
+
+	private void updateOpenPathButton() {
+		openPathButton.setEnabled(pathOpener != null && !steps.isEmpty());
 	}
 
 	/**
@@ -114,6 +156,7 @@ public class RowOriginPanel extends JPanel {
 		steps = new ArrayList<RowOriginStep>();
 		tableModel.fireTableDataChanged();
 		statusLabel.setText("Select a row to see how it has found its way into the subset.");
+		updateOpenPathButton();
 	}
 
 	/**
@@ -165,11 +208,13 @@ public class RowOriginPanel extends JPanel {
 			steps = new ArrayList<RowOriginStep>();
 			tableModel.fireTableDataChanged();
 			statusLabel.setText("The row could not be found.");
+			updateOpenPathButton();
 			return;
 		}
 		steps = origin.getSteps();
 		tableModel.fireTableDataChanged();
 		statusLabel.setText(statusText(origin, rowTable));
+		updateOpenPathButton();
 	}
 
 	private String statusText(RowOrigin origin, Table rowTable) {

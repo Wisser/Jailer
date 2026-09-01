@@ -200,6 +200,7 @@ import net.sf.jailer.ui.databrowser.sqlconsole.DDLAnalyser;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.ui.databrowser.whereconditioneditor.WhereConditionEditorPanel;
 import net.sf.jailer.ui.ddl_script_generator.DDLScriptGeneratorPanel;
+import net.sf.jailer.ui.progress.RowOriginPath;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
@@ -5398,6 +5399,90 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 			disableBorderBrowserUpdates = false;
 			updateBorderBrowser(null);
 		}
+	}
+
+	/**
+	 * Lays out the way a row has taken into the subset as a chain of table browsers: one browser
+	 * per step, from the subject down to the row, each pinned to the single row of its step and
+	 * linked to its predecessor by the association through which the row has been collected.
+	 * <p>
+	 * A fresh chain is always created; browsers which are already open are left alone, so that
+	 * what is shown is exactly the analyzed chain.
+	 *
+	 * @param path the path, as prepared by {@link RowOriginPath#build(java.awt.Window, net.sf.jailer.ui.progress.RowOriginContext, List)}
+	 * @return the browser of the last step, or <code>null</code> if nothing could be opened
+	 */
+	public RowBrowser openRowOriginPath(List<RowOriginPath.Step> path) {
+		if (path == null || path.isEmpty()) {
+			return null;
+		}
+		RowBrowser last = null;
+		try {
+			UIUtil.setWaitCursor(this);
+			Desktop.noArrangeLayoutOnNewTableBrowser = true;
+			desktop.getiFrameStateChangeRenderer().startAtomic();
+			disableBorderBrowserUpdates = true;
+			for (RowOriginPath.Step step: path) {
+				Table table = datamodel.get().getTable(step.tableName);
+				Association association = step.associationName == null? null : datamodel.get().namedAssociations.get(step.associationName);
+				if (table == null || (step.associationName != null && association == null)) {
+					// the data model has changed since the run: show as much of the chain as
+					// can still be resolved, starting at the subject
+					break;
+				}
+				last = desktop.addTableBrowser(last, last, table, last == null? null : association, step.condition, null, true);
+				if (last == null) {
+					break;
+				}
+			}
+		} finally {
+			Desktop.noArrangeLayoutOnNewTableBrowser = false;
+			disableBorderBrowserUpdates = false;
+			desktop.getiFrameStateChangeRenderer().endAtomic();
+			desktop.catchUpLastArrangeLayoutOnNewTableBrowser();
+			updateBorderBrowser(null);
+			UIUtil.resetWaitCursor(this);
+		}
+		selectBrowser(last);
+		return last;
+	}
+
+	/**
+	 * Opens a table browser without any condition, as a root of its own.
+	 *
+	 * @param table the table to browse
+	 * @return the new browser, or <code>null</code>
+	 */
+	public RowBrowser openRootBrowser(Table table) {
+		if (table == null) {
+			return null;
+		}
+		RowBrowser rb = desktop.addTableBrowser(null, null, table, null, "", null, true);
+		selectBrowser(rb);
+		return rb;
+	}
+
+	/**
+	 * Brings a newly opened browser to the front, once the desktop has settled.
+	 *
+	 * @param rb the browser, may be <code>null</code>
+	 */
+	private void selectBrowser(final RowBrowser rb) {
+		if (rb == null || rb.internalFrame == null) {
+			return;
+		}
+		UIUtil.invokeLater(10, new Runnable() {
+			@Override
+			public void run() {
+				try {
+					rb.internalFrame.setSelected(true);
+					desktop.getiFrameStateChangeRenderer().onIFrameSelected(rb.internalFrame);
+					desktop.scrollToCenter(rb.internalFrame);
+				} catch (PropertyVetoException e) {
+					// ignore
+				}
+			}
+		});
 	}
 
 	private List<RowBrowser> collectChildren(RowBrowser rb) {

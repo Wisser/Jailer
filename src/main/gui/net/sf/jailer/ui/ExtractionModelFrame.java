@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -103,6 +104,7 @@ import net.sf.jailer.ui.ddl_script_generator.DDLScriptGeneratorPanel;
 import net.sf.jailer.ui.progress.ExportAndDeleteStageProgressListener;
 import net.sf.jailer.ui.progress.RetainedEntityGraphs;
 import net.sf.jailer.ui.progress.RowOriginContext;
+import net.sf.jailer.ui.progress.RowOriginPath;
 import net.sf.jailer.ui.util.AnimationController;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.ui.util.UpdateInfoManager;
@@ -1482,6 +1484,31 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 		return null;
 	}
 
+	/**
+	 * The Data Browser the analysis of the last export opens its views in.
+	 */
+	private WeakReference<DataBrowser> rowOriginDataBrowser;
+
+	/**
+	 * Gets the Data Browser the analysis works in, opening one if there is none yet.
+	 * <p>
+	 * The one of the last time is reused: the list of collected rows is not modal, so one path
+	 * after the other can be opened, and each of them in a window of its own would be of no use.
+	 *
+	 * @return the Data Browser, or <code>null</code> if none could be opened
+	 */
+	private DataBrowser dataBrowserForAnalysis() {
+		DataBrowser dataBrowser = rowOriginDataBrowser == null? null : rowOriginDataBrowser.get();
+		if (dataBrowser != null && dataBrowser.isDisplayable()) {
+			dataBrowser.toFront();
+			return dataBrowser;
+		}
+		// no root browser: the analysis adds the ones it needs itself
+		dataBrowser = openDataBrowser(null, "");
+		rowOriginDataBrowser = dataBrowser == null? null : new WeakReference<DataBrowser>(dataBrowser);
+		return dataBrowser;
+	}
+
 	private void openDataModelEditorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openDataModelEditorActionPerformed
 		openDataModelEditor(null, false);
 	}//GEN-LAST:event_openDataModelEditorActionPerformed
@@ -1887,6 +1914,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 											extractionModelEditor.select(association);
 											ExtractionModelFrame.this.toFront();
 										});
+										progressPanel.setTableOpener(table -> {
+											DataBrowser dataBrowser = dataBrowserForAnalysis();
+											if (dataBrowser != null) {
+												dataBrowser.openRootBrowser(table);
+											}
+										});
 
 										final RowOriginContext rowOriginContext;
 										if (exportDialog.isKeepEntityGraph()) {
@@ -1905,6 +1938,15 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 													dbConnectionDialog.currentConnection.url);
 											RetainedEntityGraphs.register(rowOriginContext);
 											progressPanel.setRowOriginContext(rowOriginContext, RetainedEntityGraphs.discardAction(ExtractionModelFrame.this), RetainedEntityGraphs.discardWhenUnusedAction(ExtractionModelFrame.this));
+											progressPanel.setPathOpener(steps -> {
+												DataBrowser dataBrowser = dataBrowserForAnalysis();
+												if (dataBrowser != null) {
+													List<RowOriginPath.Step> path = RowOriginPath.build(dataBrowser, rowOriginContext, steps);
+													if (path != null) {
+														dataBrowser.openRowOriginPath(path);
+													}
+												}
+											});
 										} else {
 											rowOriginContext = null;
 										}

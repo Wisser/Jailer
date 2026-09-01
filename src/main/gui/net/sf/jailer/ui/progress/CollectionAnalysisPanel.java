@@ -52,6 +52,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.ModelElement;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.entitygraph.RowOriginStep;
 import net.sf.jailer.ui.UIUtil;
 
 /**
@@ -117,6 +118,8 @@ public class CollectionAnalysisPanel extends JPanel {
 	private Consumer<Association> associationSelector;
 	private RowOriginContext rowOriginContext;
 	private Runnable discardAction;
+	private Consumer<List<RowOriginStep>> pathOpener;
+	private Consumer<Table> tableOpener;
 
 	private final NumberFormat percentFormat = createPercentFormat();
 
@@ -279,6 +282,26 @@ public class CollectionAnalysisPanel extends JPanel {
 	 */
 	public void setAssociationSelector(Consumer<Association> associationSelector) {
 		this.associationSelector = associationSelector;
+	}
+
+	/**
+	 * Sets the consumer which lays the way of a row into the subset out in a Data Browser.
+	 * If none is set, the chain is shown as a table only.
+	 *
+	 * @param pathOpener the consumer, or <code>null</code>
+	 */
+	public void setPathOpener(Consumer<List<RowOriginStep>> pathOpener) {
+		this.pathOpener = pathOpener;
+	}
+
+	/**
+	 * Sets the consumer which opens a table in a Data Browser.
+	 * If none is set, the corresponding menu item is not offered.
+	 *
+	 * @param tableOpener the consumer, or <code>null</code>
+	 */
+	public void setTableOpener(Consumer<Table> tableOpener) {
+		this.tableOpener = tableOpener;
 	}
 
 	/**
@@ -491,6 +514,26 @@ public class CollectionAnalysisPanel extends JPanel {
 		return row == null? null : row.association;
 	}
 
+	/**
+	 * Gets the table the rows of a row of one of the two tables have been collected into. Also
+	 * known for the row "(subject)", which has no association.
+	 *
+	 * @param e the event which has opened the menu
+	 * @param theTable the table which has been clicked
+	 * @return the table, or <code>null</code>
+	 */
+	private Table destinationAt(MouseEvent e, JTable theTable) {
+		CollectionAnalysis.Contribution contribution;
+		if (theTable == detailsTable) {
+			PredecessorRow row = rowAt(e, detailsTable, predecessorRows);
+			contribution = row == null? null : row.contribution;
+		} else {
+			Row row = rowAt(e, table, rows);
+			contribution = row == null? null : row.contribution;
+		}
+		return contribution == null? null : contribution.getDestination();
+	}
+
 	private void selectInModel(Association association) {
 		if (association != null && associationSelector != null) {
 			associationSelector.accept(association);
@@ -519,6 +562,20 @@ public class CollectionAnalysisPanel extends JPanel {
 			popup.add(restrict);
 			popup.addSeparator();
 		}
+		if (tableOpener != null) {
+			final Table destination = destinationAt(e, theTable);
+			JMenuItem openInBrowser = new JMenuItem("Open in Data Browser");
+			openInBrowser.setToolTipText("Opens the table these rows have been collected into in the Data Browser, without any condition.");
+			openInBrowser.setEnabled(destination != null);
+			openInBrowser.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent evt) {
+					tableOpener.accept(destination);
+				}
+			});
+			popup.add(openInBrowser);
+			popup.addSeparator();
+		}
 		if (rowOriginContext != null && rowOriginContext.isAvailable()) {
 			JMenuItem showRows = new JMenuItem("Show collected rows...");
 			showRows.setToolTipText("Lists the rows collected through this association, and shows for a selected one how it has found its way into the subset.");
@@ -527,7 +584,7 @@ public class CollectionAnalysisPanel extends JPanel {
 				@Override
 				public void actionPerformed(ActionEvent evt) {
 					new RowOriginDialog(SwingUtilities.getWindowAncestor(CollectionAnalysisPanel.this),
-							rowOriginContext, association).setVisible(true);
+							rowOriginContext, association, pathOpener).setVisible(true);
 				}
 			});
 			popup.add(showRows);

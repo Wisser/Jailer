@@ -733,7 +733,20 @@ public class ColumnsTable extends JTable {
 	protected boolean inTempClosure() {
 		return false;
 	}
-	
+
+	/**
+	 * Whether the row shown here is part of the subset of a run which keeps its collected rows.
+	 * If so, a marker is drawn at the left edge, as the rows table does for each of its rows.
+	 * <p>
+	 * Only meaningful where this table shows a single row, which is the single row view of a
+	 * table browser. Everywhere else it stays at <code>false</code>.
+	 *
+	 * @return <code>true</code> if the row is part of the subset
+	 */
+	protected boolean isInSubset() {
+		return false;
+	}
+
 	@Override
 	public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
 		if (!inDesktop) {
@@ -861,6 +874,14 @@ public class ColumnsTable extends JTable {
 					}
 				}
 			}
+		}
+
+		// the whole table shows one row, so the marker goes down the entire left edge
+		if (isInSubset()) {
+			g2d.setPaint(null);
+			g2d.setColor(Colors.rowInSubsetMarkerColor);
+			g2d.fillRect((int) visRect.getMinX(), (int) visRect.getMinY(),
+					BrowserContentPane.ROW_ORIGIN_MARKER_WIDTH, (int) visRect.getHeight());
 		}
 	}
 

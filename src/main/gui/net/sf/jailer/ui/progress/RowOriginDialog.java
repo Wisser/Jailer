@@ -22,12 +22,15 @@ import java.awt.FlowLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -38,6 +41,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.WindowConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
@@ -46,6 +50,7 @@ import javax.swing.table.TableCellRenderer;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.entitygraph.RowOriginStep;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.util.ConcurrentTaskControl;
 import net.sf.jailer.util.CancellationException;
@@ -83,9 +88,13 @@ public class RowOriginDialog extends JDialog {
 	 * @param owner the owner window
 	 * @param context the context to ask
 	 * @param association the association whose collected rows are to be listed
+	 * @param pathOpener lays the chain of the selected row out in a Data Browser, or <code>null</code>
 	 */
-	public RowOriginDialog(Window owner, RowOriginContext context, Association association) {
-		super(owner, "Rows collected through \"" + association.getName() + "\"", ModalityType.APPLICATION_MODAL);
+	public RowOriginDialog(final Window owner, RowOriginContext context, Association association,
+			Consumer<List<RowOriginStep>> pathOpener) {
+		// not modal: a Data Browser showing the path of a row has to be usable next to it, and
+		// one row after the other can be looked at without closing the list in between
+		super(owner, "Rows collected through \"" + association.getName() + "\"", ModalityType.MODELESS);
 		this.context = context;
 		this.table = association.destination;
 		this.numberOfPrimaryKeyColumns = context.getRowIdSupport().getPrimaryKey(table).getColumns().size();
@@ -108,6 +117,7 @@ public class RowOriginDialog extends JDialog {
 		});
 
 		originPanel = new RowOriginPanel(context);
+		originPanel.setPathOpener(pathOpener);
 
 		JPanel rowsPanel = new JPanel(new BorderLayout());
 		rowsPanel.add(headerLabel, BorderLayout.NORTH);
@@ -132,8 +142,24 @@ public class RowOriginDialog extends JDialog {
 		getContentPane().add(splitPane, BorderLayout.CENTER);
 		getContentPane().add(buttonPanel, BorderLayout.SOUTH);
 
+		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		UIUtil.setDialogSize(this, 900, 700);
 		setLocationRelativeTo(owner);
+
+		// as a modeless dialog it outlives the progress window, so it has to hold the retained
+		// rows itself: without this, closing the progress window would discard them right under
+		// the open list, see RetainedEntityGraphs.discardWhenUnused
+		RetainedEntityGraphs.addUser();
+		addWindowListener(new WindowAdapter() {
+			private boolean released = false;
+			@Override
+			public void windowClosed(WindowEvent e) {
+				if (!released) {
+					released = true;
+					RetainedEntityGraphs.removeUser(owner);
+				}
+			}
+		});
 
 		loadRows(association);
 	}

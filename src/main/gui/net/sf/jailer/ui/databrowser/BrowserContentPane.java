@@ -183,6 +183,8 @@ import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.RestrictionDefinition;
 import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.entitygraph.RowOrigin;
+import net.sf.jailer.entitygraph.RowOriginStep;
 import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.extractionmodel.SubjectLimitDefinition;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
@@ -225,12 +227,14 @@ import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.ui.databrowser.whereconditioneditor.WhereConditionEditorPanel;
 import net.sf.jailer.ui.progress.RetainedEntityGraphs;
 import net.sf.jailer.ui.progress.RowOriginContext;
+import net.sf.jailer.ui.progress.RowOriginPath;
 import net.sf.jailer.ui.progress.RowOriginWindow;
 import net.sf.jailer.ui.scrollmenu.JScrollC2Menu;
 import net.sf.jailer.ui.scrollmenu.JScrollMenu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.util.AnimationController;
+import net.sf.jailer.ui.util.ConcurrentTaskControl;
 import net.sf.jailer.ui.util.LightBorderSmallButton;
 import net.sf.jailer.ui.util.SmallButton;
 import net.sf.jailer.ui.util.UISettings;
@@ -910,6 +914,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
 	List<Row> parentRows;
 	private JComponent singleRowDetailsView;
+	/**
+	 * Says in the header of the single row view that the row belongs to the subset. Created after
+	 * {@link #initComponents()}, since its container is generated.
+	 */
+	private JLabel rowInSubsetLabel;
 	private MouseListener rowTableListener;
 	private TempClosureListener tempClosureListener = new TempClosureListener();
 	protected MouseAdapter additionalMouseAdapter;
@@ -1033,7 +1042,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		}
 
 		initComponents(); UIUtil.initComponents(this);
-		
+
+		createRowInSubsetLabel();
+
 		initOnSelectionButton();
 		onLabel.setIcon(emptyScIcon);
 		onLabel.setHorizontalTextPosition(SwingConstants.LEFT);
@@ -1374,11 +1385,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
 				// rows which are part of the subset of the run that keeps its collected rows.
 				// Only what is on screen is asked for, and only once per row.
-				RowOriginContext rowOriginContext = rowOriginContextForTable();
-				if (rowOriginContext != lastRowOriginContext) {
-					resetRowOriginMembership();
-					lastRowOriginContext = rowOriginContext;
-				}
+				RowOriginContext rowOriginContext = currentRowOriginContext();
 				if (rowOriginContext != null && rowsTable.getRowHeight() > 0) {
 					int firstVisible = rowsTable.rowAtPoint(new Point(visRect.x, visRect.y + rowsTable.getRowHeight() / 2));
 					if (firstVisible < 0) {
@@ -3398,6 +3405,17 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 					}
 				});
 				popup.insert(origin, 1);
+
+				JMenuItem originPath = new JMenuItem(ROW_ORIGIN_PATH_TITLE);
+				setMenuItemName(originPath, "subject.png");
+				originPath.setToolTipText(ROW_ORIGIN_PATH_TOOLTIP);
+				originPath.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						openRowOriginPathFor(originRow, rowOriginContext);
+					}
+				});
+				popup.insert(originPath, 2);
 			}
 
 			if (!(table instanceof SqlStatementTable) || resultSetType != null) {
@@ -3936,6 +3954,18 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					openRowOrigin(selectedRow, sqlRowOriginContext);
+				}
+			});
+
+			JMenuItem originPath = new JMenuItem(ROW_ORIGIN_PATH_TITLE);
+			setMenuItemName(originPath, "subject.png");
+			originPath.setToolTipText(selectedRow != null? ROW_ORIGIN_PATH_TOOLTIP : ROW_ORIGIN_PATH_NO_ROW_TOOLTIP);
+			originPath.setEnabled(selectedRow != null);
+			popup.add(originPath);
+			originPath.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					openRowOriginPathFor(selectedRow, sqlRowOriginContext);
 				}
 			});
 		}
@@ -5290,9 +5320,86 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	private static final int MAX_ROW_ORIGIN_CHUNK = 100;
 
 	/**
-	 * Width of the marker at the left edge of a row which is part of the subset.
+	 * Width of the marker at the left edge of a row which is part of the subset. Also used by the
+	 * single row view, see {@link net.sf.jailer.ui.databrowser.sqlconsole.ColumnsTable#isInSubset()}.
 	 */
-	private static final int ROW_ORIGIN_MARKER_WIDTH = 4;
+	public static final int ROW_ORIGIN_MARKER_WIDTH = 4;
+
+	/**
+	 * Gets the context whose collected rows the marks refer to, dropping the verdicts of a
+	 * previous run. Called from both the rows table and the single row view, since only one of
+	 * the two is painted at a time.
+	 *
+	 * @return the context, or <code>null</code> if nothing is marked here
+	 */
+	private RowOriginContext currentRowOriginContext() {
+		RowOriginContext rowOriginContext = rowOriginContextForTable();
+		if (rowOriginContext != lastRowOriginContext) {
+			resetRowOriginMembership();
+			lastRowOriginContext = rowOriginContext;
+		}
+		return rowOriginContext;
+	}
+
+	/**
+	 * Whether the row shown in the single row view is part of the subset of the run which keeps
+	 * its collected rows. Asks in the background if the verdict is not known yet.
+	 *
+	 * @return <code>true</code> if the row is known to be part of the subset
+	 */
+	private boolean isSingleRowInSubset() {
+		// same condition as the one which brings the single row view up, see updateTableModel
+		if (rows.size() != 1 || noSingleRowDetailsView || currentRowOriginContext() == null) {
+			return false;
+		}
+		Row row = rows.get(0);
+		Boolean isMember = rowOriginMembership.get(row.nonEmptyRowId);
+		if (isMember == null) {
+			requestRowOriginMembership(row);
+			return false;
+		}
+		return isMember;
+	}
+
+	/**
+	 * Creates the hint of the single row view and puts it into the header, right of
+	 * " Single Row Details ".
+	 * <p>
+	 * The header ({@code jPanel11}) and its label are generated by the form editor, so the hint is
+	 * added here instead of in {@link #initComponents()}, which would lose it on the next round
+	 * through the designer. The header belongs to {@code singleRowViewScrollPaneContainer} and is
+	 * therefore shown by both kinds of single row view.
+	 */
+	private void createRowInSubsetLabel() {
+		rowInSubsetLabel = new JLabel("Part of Subset ");
+		rowInSubsetLabel.setForeground(Colors.rowInSubsetMarkerColor);
+		rowInSubsetLabel.setToolTipText("This row is part of the subset of the last export.");
+		rowInSubsetLabel.setVisible(false);
+		java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 2;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+		gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 2);
+		jPanel11.add(rowInSubsetLabel, gridBagConstraints);
+	}
+
+	/**
+	 * Shows or hides the hint which says that the row of the single row view is part of the
+	 * subset. The marker at the left edge alone is easy to miss when there is only one row.
+	 */
+	private void updateRowInSubsetLabel() {
+		if (rowInSubsetLabel != null) {
+			boolean inSubset = isSingleRowInSubset();
+			if (inSubset != rowInSubsetLabel.isVisible()) {
+				rowInSubsetLabel.setVisible(inSubset);
+				// GridBagLayout gives an invisible component no space, so the header has to be
+				// laid out anew when the hint appears or goes
+				jPanel11.revalidate();
+				jPanel11.repaint();
+			}
+		}
+	}
 
 	/**
 	 * Notes that a row has become visible and its membership is not known yet.
@@ -5370,6 +5477,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 									rowOriginMembership.put(chunk.get(i).nonEmptyRowId, members.contains(i));
 								}
 								rowsTable.repaint();
+								// the single row view is shown instead of the rows table, so it
+								// has to be told as well
+								if (singleRowDetailsView != null) {
+									singleRowDetailsView.repaint();
+								}
+								updateRowInSubsetLabel();
 							}
 						});
 					} catch (CancellationException ce) {
@@ -5411,6 +5524,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	private static final String ROW_ORIGIN_TITLE = "Why is this row in the subset?";
 	private static final String ROW_ORIGIN_TOOLTIP = "Shows how this row has found its way into the subset of the last export: through which associations, and starting from which subject row.";
 	private static final String ROW_ORIGIN_NO_ROW_TOOLTIP = "Select a single row to see how it has found its way into the subset of the last export.";
+
+	private static final String ROW_ORIGIN_PATH_TITLE = "Open path to subject";
+	private static final String ROW_ORIGIN_PATH_TOOLTIP = "Opens the way of this row into the subset as a chain of table browsers: one per step, from the subject down to this row, each showing the single row it has been collected through.";
+	private static final String ROW_ORIGIN_PATH_NO_ROW_TOOLTIP = "Select a single row to open its way into the subset as a chain of table browsers.";
 
 	private RowOriginContext rowOriginContextFor(Row row) {
 		if (row == null || row.rowId.length() == 0) {
@@ -5478,7 +5595,110 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			public Object[] call() throws SQLException {
 				return readRowOriginKey(row, originTable, context);
 			}
-		}, dataModel.getDisplayName(table) + "(" + SqlUtil.replaceAliases(row.rowId, null, null) + ")");
+		}, dataModel.getDisplayName(table) + "(" + SqlUtil.replaceAliases(row.rowId, null, null) + ")",
+		new Consumer<List<RowOriginStep>>() {
+			@Override
+			public void accept(List<RowOriginStep> steps) {
+				List<RowOriginPath.Step> path = RowOriginPath.build(getOwner(), context, steps);
+				if (path != null) {
+					openRowOriginPath(path);
+				}
+			}
+		});
+	}
+
+	/**
+	 * Opens the way a row has taken into the subset as a chain of table browsers.
+	 * <p>
+	 * Reading the key of the row, following the chain and describing it happen in one background
+	 * run, so that the row is looked up only once.
+	 *
+	 * @param row the row
+	 * @param context the context of the run which has kept the collected rows
+	 */
+	private void openRowOriginPathFor(final Row row, final RowOriginContext context) {
+		final Table originTable = context.getDataModel().getTable(table.getName());
+		if (originTable == null) {
+			return;
+		}
+		final RowOrigin[] originHolder = new RowOrigin[1];
+		List<RowOriginPath.Step> path;
+		try {
+			path = ConcurrentTaskControl.call(getOwner(), new Callable<List<RowOriginPath.Step>>() {
+				@Override
+				public List<RowOriginPath.Step> call() throws Exception {
+					Object[] primaryKey = readRowOriginKey(row, originTable, context);
+					if (primaryKey == null) {
+						return null;
+					}
+					RowOrigin origin = context.createFinder().find(originTable, primaryKey);
+					originHolder[0] = origin;
+					if (origin.getSteps().isEmpty()) {
+						return null;
+					}
+					return RowOriginPath.describe(context, origin.getSteps());
+				}
+			}, "Analyzing origin...", null);
+		} catch (CancellationException e) {
+			return;
+		} catch (Throwable t) {
+			UIUtil.showException(this, "Error", t);
+			return;
+		}
+		RowOrigin origin = originHolder[0];
+		if (path == null || path.isEmpty()) {
+			JOptionPane.showMessageDialog(this,
+					origin == null?
+							"The row could not be found." :
+							"This row is not part of the subset of the last export.",
+					ROW_ORIGIN_PATH_TITLE, JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
+		String note = rowOriginPathNote(origin);
+		if (note != null) {
+			JOptionPane.showMessageDialog(this, note, ROW_ORIGIN_PATH_TITLE, JOptionPane.INFORMATION_MESSAGE);
+		}
+		openRowOriginPath(path);
+	}
+
+	/**
+	 * Tells what is to be said about a chain before it is laid out, or <code>null</code> if it is
+	 * complete and unambiguous. The chain view says this in its own table, the Data Browser has
+	 * no place for it, so it is said once.
+	 *
+	 * @param origin the chain
+	 * @return the note, or <code>null</code>
+	 */
+	private String rowOriginPathNote(RowOrigin origin) {
+		if (origin == null) {
+			return null;
+		}
+		StringBuilder sb = new StringBuilder();
+		if (origin.getStatus() == RowOrigin.Status.BROKEN) {
+			sb.append("The chain could not be followed up to the subject. Only the part which is still known is shown.");
+		} else if (origin.getStatus() == RowOrigin.Status.TRUNCATED) {
+			sb.append("The chain is too long to be followed completely. Only its last steps are shown.");
+		}
+		for (RowOriginStep step: origin.getSteps()) {
+			if (step.isAmbiguous()) {
+				if (sb.length() > 0) {
+					sb.append("\n\n");
+				}
+				sb.append("More than one row matches at some step of the chain. The way shown is the one\n"
+						+ "the row has been found through first, it is not the only one.");
+				break;
+			}
+		}
+		return sb.length() > 0? sb.toString() : null;
+	}
+
+	/**
+	 * Lays out the way of a row into the subset as a chain of table browsers. Implemented where
+	 * there is a desktop to lay it out on.
+	 *
+	 * @param path the path, subject first
+	 */
+	protected void openRowOriginPath(List<RowOriginPath.Step> path) {
 	}
 
 	/**
@@ -6172,6 +6392,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		singleRowDetailsView = null;
 		singleRowViewScrollPaneContainer.setVisible(false);
 		rowsTableContainerPanel.setVisible(true);
+		updateRowInSubsetLabel();
 		boolean noFilter = true;
 		int rn = 0;
 		if (true /* rows.size() != 1 || isEditMode || noSingleRowDetailsView */) {
@@ -6562,6 +6783,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 								g2d.fillRect(x[0], y[0], x[1] - x[0], y[1] - y[0]);
 								g2d.setPaint(null);
 							}
+							// the view shows one row, so the marker goes down the entire left edge
+							if (isSingleRowInSubset()) {
+								Rectangle visRect = singleRowViewContainterPanel.getVisibleRect();
+								Graphics2D g2d = (Graphics2D) graphics;
+								g2d.setPaint(null);
+								g2d.setColor(Colors.rowInSubsetMarkerColor);
+								g2d.fillRect((int) visRect.getMinX(), (int) visRect.getMinY(),
+										ROW_ORIGIN_MARKER_WIDTH, (int) visRect.getHeight());
+							}
 						}
 					};
 					detailsPanel.add(((DetailsView) singleRowDetailsView).getDetailsPanel(), java.awt.BorderLayout.CENTER);
@@ -6590,6 +6820,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 					protected boolean isLobViewerEnabled() {
 						return true;
 					}
+					@Override
+					protected boolean isInSubset() {
+						return isSingleRowInSubset();
+					}
 				};
 				if (additionalMouseAdapter != null) {
 					singleRowDetailsView.addMouseListener(additionalMouseAdapter);
@@ -6608,6 +6842,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 				rowsTableContainerPanel.setVisible(false);
 				deselectButton.setVisible(deselect);
 			}
+			// for both kinds of single row view: the hint sits in their common header
+			updateRowInSubsetLabel();
 		}
 
 		if (additionalMouseAdapter != null) {

@@ -23,9 +23,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.lang.ref.WeakReference;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -33,6 +35,7 @@ import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.entitygraph.RowOriginStep;
 import net.sf.jailer.ui.UIUtil;
 
 /**
@@ -75,9 +78,10 @@ public class RowOriginWindow extends JDialog {
 	 * @param primaryKeySupplier delivers the primary key values of the row, off the event
 	 *        dispatch thread
 	 * @param rowTitle names the row, for the title of the window
+	 * @param pathOpener lays the chain out in a Data Browser, or <code>null</code>
 	 */
 	public static void open(Window owner, RowOriginContext context, Table table,
-			Callable<Object[]> primaryKeySupplier, String rowTitle) {
+			Callable<Object[]> primaryKeySupplier, String rowTitle, Consumer<List<RowOriginStep>> pathOpener) {
 		RowOriginWindow window = windows.get(owner);
 		if (window != null && window.context != context) {
 			window.releaseAndDispose();
@@ -87,6 +91,8 @@ public class RowOriginWindow extends JDialog {
 			window = new RowOriginWindow(owner, context);
 			windows.put(owner, window);
 		}
+		// the window is reused, so the opener is set anew each time
+		window.originPanel.setPathOpener(pathOpener);
 		window.showRow(table, primaryKeySupplier, rowTitle);
 	}
 

@@ -133,6 +133,7 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.ColumnsTable;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.ui.databrowser.whereconditioneditor.WhereConditionEditorPanel;
+import net.sf.jailer.ui.progress.RowOriginPath;
 import net.sf.jailer.ui.util.HSLColor;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.CancellationException;
@@ -1496,6 +1497,11 @@ public abstract class Desktop extends JDesktopPane {
 			@Override
 			protected void findPathTo(Table table) {
 				Desktop.this.findPathTo(table);
+			}
+
+			@Override
+			protected void openRowOriginPath(List<RowOriginPath.Step> path) {
+				parentFrame.openRowOriginPath(path);
 			}
 
 			@Override
