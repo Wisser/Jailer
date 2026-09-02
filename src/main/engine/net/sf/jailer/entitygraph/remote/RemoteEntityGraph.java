@@ -1676,6 +1676,31 @@ public class RemoteEntityGraph extends EntityGraph {
 	}
 
 	/**
+	 * Gets a condition which holds for exactly those rows of a table which have been collected in
+	 * a given step of the run.
+	 * <p>
+	 * Meant as the "and"-condition of a table browser, and such a condition can only be a boolean
+	 * expression - a second table in the "from" clause is not possible there. The entity-table is
+	 * therefore brought in through an "exists", which selects the same rows a join would.
+	 * <p>
+	 * The comment is put in front as a <b>block</b> comment. A line comment would not do: the
+	 * condition is appended to a statement which is assembled in one line, so everything behind it
+	 * would be swallowed.
+	 *
+	 * @param table the table
+	 * @param birthday the collection step
+	 * @param tableAlias the alias the browser uses for the table, "A"
+	 * @param comment tells what the condition means, in plain words
+	 * @return the condition
+	 */
+	public String collectedInStepCondition(Table table, int birthday, String tableAlias, String comment) throws SQLException {
+		return "/* " + comment + " */ exists (select 1 from " + dmlTableReference(ENTITY, session) + " E"
+				+ " where E.r_entitygraph=" + graphID + " and E.type=" + typeName(table)
+				+ " and E.birthday=" + birthday
+				+ " and " + pkEqualsEntityID(table, tableAlias, "E") + ")";
+	}
+
+	/**
 	 * Gets a SQL condition comparing the universal primary key columns of the entity-table with
 	 * given values. Counterpart of {@link #pkEqualsEntityID(Table, ResultSet, String, String, CellContentConverter)},
 	 * but taking the values from an array instead of a result set.

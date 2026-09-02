@@ -51,8 +51,9 @@ public class RowOriginPath {
 		public final String tableName;
 
 		/**
-		 * Name of the association leading here from the previous step, <code>null</code> for the
-		 * subject row, which is the root of the chain.
+		 * Name of the association leading here from the previous step, <code>null</code> for a
+		 * root. Which end is the root depends on the caller: for the way of a single row it is the
+		 * subject row, for the way out of a cell of the progress table it is the cell itself.
 		 */
 		public final String associationName;
 

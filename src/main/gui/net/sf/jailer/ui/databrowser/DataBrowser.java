@@ -5515,8 +5515,8 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	 * reused here: every browser is to show exactly the rows of its own step, and widening a
 	 * condition disjunctively would defeat that.
 	 *
-	 * @param path the steps, the starting point first
-	 * @return the browser of the last link of the chain, or <code>null</code>
+	 * @param path the steps, the root of the tree first
+	 * @return the browser of the far end of the chain, or <code>null</code>
 	 */
 	public RowBrowser openRowOriginTree(List<RowOriginPath.Step> path) {
 		if (path == null || path.isEmpty()) {
@@ -5566,15 +5566,19 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 			endRowOriginPath();
 		}
 		final RowBrowser end = last;
+		final RowBrowser root = browsers[0];
 		// deferred and outside the block above: arrangeLayout must not run while
-		// noArrangeLayoutOnNewTableBrowser is set. It selects the anchor and scrolls to it, so no
-		// selectBrowser is needed here.
+		// noArrangeLayoutOnNewTableBrowser is set
 		UIUtil.invokeLater(10, new Runnable() {
 			@Override
 			public void run() {
 				if (end != null && end.internalFrame != null && end.internalFrame.getParent() != null) {
+					// aligns the way from the root up to the anchor, so the whole chain lies in one
+					// row. It selects the anchor, which is the far end of the chain - the browser
+					// the user started from is brought to the front afterwards
 					alignHorizontally(end);
 				}
+				selectBrowser(root);
 			}
 		});
 		return last;
