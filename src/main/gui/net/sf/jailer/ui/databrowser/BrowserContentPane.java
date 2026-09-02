@@ -7176,12 +7176,20 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 				cleRelevant = false;
 			}
 		}
+		// a browser is joined against the rows its parent has loaded, so a limit further up can
+		// leave it empty although its own query would find something
+		boolean emptyDueToLimitAbove = size == 0 && !limitExceeded && theParentWithExceededLimit != null;
 		boolean bold = false;
 		if (limitExceeded || theParentWithExceededLimit != null) {
-			if (getWidth() > 300) {
+			if (emptyDueToLimitAbove) {
+				// " 0 rows" alone would read as "there is nothing", which is not what happened here
+				rowsCount.setText(" 0 rows, row limit above exceeded");
+			} else {
+				// no width check: a truncated hint still beats a silently missing one, and the
+				// tool tip carries the full wording anyway
 				rowsCount.setText(rowsCount.getText() + " (limited)");
 			}
-			if (cle || !cleRelevant) {
+			if (cle || !cleRelevant || emptyDueToLimitAbove) {
 				rowsCount.setForeground(Colors.Color_255_0_0);
 				bold = true;
 			} else {
@@ -7196,7 +7204,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			rowsCount.setFont(rowsCount.getFont().deriveFont(rowsCount.getFont().getStyle() & ~Font.BOLD));
 		}
 
-		if (cle && cleRelevant) {
+		if (emptyDueToLimitAbove) {
+			rowsCount.setToolTipText("empty because " + theParentWithExceededLimit.getTitle() + " exceeded row limit");
+		} else if (cle && cleRelevant) {
 			rowsCount.setToolTipText("row selection incomplete");
 		} else if (!limitExceeded && theParentWithExceededLimit != null) {
 			rowsCount.setToolTipText("potentially incomplete because " + theParentWithExceededLimit.getTitle() + " exceeded row limit");

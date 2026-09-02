@@ -552,41 +552,79 @@ public class CollectionAnalysisPanel extends JPanel {
 			return path;
 		}
 		RemoteEntityGraph entityGraph = context.getEntityGraph();
+
+		// walked from the cell towards the subject - only from there is it known which predecessor
+		// contributed more - and written out the other way round afterwards
+		List<Link> chain = new ArrayList<Link>();
 		String currentName = tableName;
 		int step = day;
-		int parentIndex = -1;
-		String associationName = null;
-		String reachedThrough = null;
 		while (currentName != null && step >= 1) {
 			Table currentTable = runDataModel.getTable(currentName);
 			if (currentTable == null) {
 				break;
 			}
-			int index = path.size();
-			path.add(new RowOriginPath.Step(currentName, associationName,
-					entityGraph.collectedInStepCondition(currentTable, step, "A", commentFor(step, reachedThrough)),
-					parentIndex));
-
 			// every way into this table in this step: one of them carries the chain on, the others
 			// are opened beside this link and not followed further
 			List<CollectionAnalysis.Contribution> into = contributionsInto(currentName, step);
+			Link link = new Link();
+			link.table = currentTable;
+			link.step = step;
+			link.into = into;
+			chain.add(link);
 			if (into.isEmpty()) {
 				break;
-			}
-			for (int i = 1; i < into.size(); ++i) {
-				addAlternative(path, runDataModel, entityGraph, into.get(i), step, index);
 			}
 			Association main = into.get(0).getAssociation();
 			if (main == null) {
 				break;      // subject rows: the start of the collection
 			}
+			link.main = main;
 			currentName = main.source.getName();
-			associationName = reversalNameOf(main);
-			reachedThrough = main.getName();
-			parentIndex = index;
 			step -= 1;
 		}
+
+		// the chain first, subject to the left, the cell to the right: a link is reached through
+		// the association which has brought its rows, whose source is the table of its parent
+		for (int i = chain.size() - 1; i >= 0; --i) {
+			Link link = chain.get(i);
+			boolean isRoot = i == chain.size() - 1;
+			// link.main brought the rows of this very link, and its source is the table of the
+			// parent - so it is the association which leads from the parent to here
+			Association reachedThrough = isRoot? null : link.main;
+			path.add(new RowOriginPath.Step(link.table.getName(),
+					reachedThrough == null? null : reachedThrough.getName(),
+					entityGraph.collectedInStepCondition(link.table, link.step, "A",
+							commentFor(link.step, reachedThrough == null? null : reachedThrough.getName())),
+					isRoot? -1 : path.size() - 1,
+					rowsCollectedIn(link.table.getName(), link.step)));
+		}
+
+		// the alternatives afterwards, so that the chain stays the linear opening stretch of the
+		// list and its end can be found without a mark of its own
+		for (int i = chain.size() - 1; i >= 0; --i) {
+			Link link = chain.get(i);
+			int linkIndex = chain.size() - 1 - i;
+			for (int k = 1; k < link.into.size(); ++k) {
+				addAlternative(path, runDataModel, entityGraph, link.into.get(k), link.step, linkIndex);
+			}
+		}
 		return path;
+	}
+
+	/**
+	 * One link while the chain is being walked, before it is written out the other way round.
+	 */
+	private static class Link {
+		Table table;
+		int step;
+		/**
+		 * All ways into this table in this step, the strongest first.
+		 */
+		List<CollectionAnalysis.Contribution> into;
+		/**
+		 * The association the chain follows out of this link, towards the subject.
+		 */
+		Association main;
 	}
 
 	/**
@@ -607,7 +645,25 @@ public class CollectionAnalysisPanel extends JPanel {
 		path.add(new RowOriginPath.Step(source.getName(), reversalNameOf(association),
 				entityGraph.collectedInStepCondition(source, step - 1, "A",
 						commentFor(step - 1, association.getName()) + ", an alternative way"),
-				parentIndex));
+				parentIndex,
+				rowsCollectedIn(source.getName(), step - 1)));
+	}
+
+	/**
+	 * Gets how many rows have been collected into a table in a step. Every row is collected once
+	 * and attributed to one contribution, so summing them gives the rows the condition of that
+	 * link selects.
+	 *
+	 * @param tableName name of the table
+	 * @param step the collection step
+	 * @return the number of rows, capped at {@link Integer#MAX_VALUE}
+	 */
+	private int rowsCollectedIn(String tableName, int step) {
+		long sum = 0;
+		for (CollectionAnalysis.Contribution contribution: contributionsInto(tableName, step)) {
+			sum += rowsAt(contribution, step);
+		}
+		return sum > Integer.MAX_VALUE? Integer.MAX_VALUE : (int) sum;
 	}
 
 	/**

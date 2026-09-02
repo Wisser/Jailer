@@ -72,6 +72,16 @@ public class RowOriginPath {
 		public final int parentIndex;
 
 		/**
+		 * Number of rows this browser has to be able to show, <code>0</code> if unknown.
+		 * <p>
+		 * A link cut off by the row limit leaves everything behind it empty: its children are
+		 * joined against the rows which have been <b>loaded</b>, so a pinned row which did not make
+		 * it into that first block is simply gone. Where the number is known beforehand, the limit
+		 * is raised to fit it.
+		 */
+		public final int minRowCount;
+
+		/**
 		 * Constructor for a step of a plain chain, hanging on the step before it.
 		 *
 		 * @param tableName name of the table to browse
@@ -79,7 +89,7 @@ public class RowOriginPath {
 		 * @param condition condition pinning the browser to the row of this step
 		 */
 		public Step(String tableName, String associationName, String condition) {
-			this(tableName, associationName, condition, -1);
+			this(tableName, associationName, condition, -1, 0);
 		}
 
 		/**
@@ -91,10 +101,24 @@ public class RowOriginPath {
 		 * @param parentIndex index of the step this one hangs on, <code>-1</code> for a root
 		 */
 		public Step(String tableName, String associationName, String condition, int parentIndex) {
+			this(tableName, associationName, condition, parentIndex, 0);
+		}
+
+		/**
+		 * Constructor.
+		 *
+		 * @param tableName name of the table to browse
+		 * @param associationName name of the association leading here, or <code>null</code>
+		 * @param condition condition of this step
+		 * @param parentIndex index of the step this one hangs on, <code>-1</code> for a root
+		 * @param minRowCount number of rows this browser has to be able to show, 0 if unknown
+		 */
+		public Step(String tableName, String associationName, String condition, int parentIndex, int minRowCount) {
 			this.tableName = tableName;
 			this.associationName = associationName;
 			this.condition = condition;
 			this.parentIndex = parentIndex;
+			this.minRowCount = minRowCount;
 		}
 
 		@Override

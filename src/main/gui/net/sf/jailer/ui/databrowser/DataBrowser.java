@@ -719,19 +719,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 					String description = "Align Horizontally";
 					desktopUndoManager.beforeModification(description, description);
 				}
-				try {
-					anchor.internalFrame.setSelected(true);
-				} catch (PropertyVetoException e) {
-					// ignore
-				}
-				anchor.browserContentPane.rowsClosure.hAlignedPath.clear();
-				anchor.browserContentPane.rowsClosure.hAlignedPathOnSelection = false;
-				for (RowBrowser rb = anchor; rb != null; rb = rb.parent) {
-					if (!rb.isHidden()) {
-						anchor.browserContentPane.rowsClosure.hAlignedPath.add(rb.browserContentPane);
-					}
-				}
-				arrangeLayout(true, anchor, true);
+				alignHorizontally(anchor);
 			}
 
 			@Override
@@ -5492,6 +5480,33 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	}
 
 	/**
+	 * Aligns the path from a browser up to its root horizontally and selects that browser.
+	 * <p>
+	 * The body of the "Align Horizontally" action, so that it can be used from elsewhere. Records
+	 * nothing in the undo history: the caller decides what counts as one step.
+	 *
+	 * @param anchor the browser the path is aligned on, the right hand end of it
+	 */
+	public void alignHorizontally(RowBrowser anchor) {
+		if (anchor == null || anchor.internalFrame == null || anchor.browserContentPane == null) {
+			return;
+		}
+		try {
+			anchor.internalFrame.setSelected(true);
+		} catch (PropertyVetoException e) {
+			// ignore
+		}
+		anchor.browserContentPane.rowsClosure.hAlignedPath.clear();
+		anchor.browserContentPane.rowsClosure.hAlignedPathOnSelection = false;
+		for (RowBrowser rb = anchor; rb != null; rb = rb.parent) {
+			if (!rb.isHidden()) {
+				anchor.browserContentPane.rowsClosure.hAlignedPath.add(rb.browserContentPane);
+			}
+		}
+		arrangeLayout(true, anchor, true);
+	}
+
+	/**
 	 * Lays out a branching path as table browsers: a chain in which every link can carry the
 	 * alternatives it was not followed through beside it.
 	 * <p>
@@ -5522,21 +5537,74 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 					// show what still resolves
 					continue;
 				}
+				// created without loading: the limit has to stand before the first load, and
+				// setOwnReloadLimit would trigger one. The root is loaded at the end, the children
+				// follow through onContentChange - the way restoreSession does it.
 				browsers[i] = desktop.addTableBrowser(parent, parent, table, parent == null? null : association,
-						step.condition, null, true);
-				if (browsers[i] != null && step.parentIndex >= 0) {
-					// only the links of the chain proper, the alternatives are not followed
+						step.condition, null, false);
+				if (browsers[i] != null) {
+					raiseRowLimit(browsers[i].browserContentPane, step.minRowCount);
+				}
+			}
+			// the chain is the linear opening stretch of the list: the first alternative breaks the
+			// sequence, because its parentIndex jumps back
+			for (int i = 0; i < path.size(); ++i) {
+				if (path.get(i).parentIndex != i - 1) {
+					break;
+				}
+				if (browsers[i] != null) {
 					last = browsers[i];
 				}
 			}
-			if (last == null) {
-				last = browsers[0];
+			// the roots carry the loading, the children follow through onContentChange
+			for (int i = 0; i < path.size(); ++i) {
+				if (browsers[i] != null && path.get(i).parentIndex < 0) {
+					browsers[i].browserContentPane.reloadRows();
+				}
 			}
 		} finally {
 			endRowOriginPath();
 		}
-		selectBrowser(last);
+		final RowBrowser end = last;
+		// deferred and outside the block above: arrangeLayout must not run while
+		// noArrangeLayoutOnNewTableBrowser is set. It selects the anchor and scrolls to it, so no
+		// selectBrowser is needed here.
+		UIUtil.invokeLater(10, new Runnable() {
+			@Override
+			public void run() {
+				if (end != null && end.internalFrame != null && end.internalFrame.getParent() != null) {
+					alignHorizontally(end);
+				}
+			}
+		});
 		return last;
+	}
+
+	/**
+	 * Raises the row limit of a browser so that it can show a known number of rows.
+	 * <p>
+	 * A link cut off by the limit leaves everything behind it empty, so where the number is known
+	 * it is worth raising. Not freely, but to the smallest value of the ladder the Data Browser
+	 * offers anyway ({@link #ROW_LIMITS}); is even the largest too small, the limit stays and the
+	 * row count of the browser says why the ones behind it are empty. So nobody loads a hundred
+	 * thousand rows by accident.
+	 * <p>
+	 * The field is assigned directly, as {@code Desktop.restoreSession} does:
+	 * {@code setOwnReloadLimit} would trigger a load, and here nothing has been loaded yet.
+	 *
+	 * @param browserContentPane the browser
+	 * @param minRowCount the number of rows it has to be able to show, 0 if unknown
+	 */
+	private void raiseRowLimit(BrowserContentPane browserContentPane, int minRowCount) {
+		if (minRowCount <= 0 || minRowCount <= browserContentPane.getOwnReloadLimit()) {
+			return;
+		}
+		for (Integer limit: ROW_LIMITS) {
+			if (limit != null && limit >= minRowCount) {
+				browserContentPane.ownLimit = limit;
+				return;
+			}
+		}
 	}
 
 	/**
@@ -5554,6 +5622,13 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		for (RowBrowser child: desktop.getChildBrowsers(parent, false)) {
 			if (child.association == association && child.browserContentPane != null
 					&& table.equals(child.browserContentPane.table)) {
+				String existing = child.browserContentPane.getAndConditionText();
+				if (existing == null || existing.trim().isEmpty()) {
+					// an unrestricted browser shows the row only if the row limit reaches that far,
+					// and everything behind it is joined against what has been loaded. So rather a
+					// pinned one beside it than a chain which breaks off at this link
+					break;
+				}
 				extendConditionDisjunctively(child.browserContentPane, condition);
 				return child;
 			}
