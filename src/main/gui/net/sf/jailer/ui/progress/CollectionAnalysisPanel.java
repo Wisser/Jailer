@@ -23,10 +23,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.sql.SQLException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
@@ -53,7 +56,10 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.ModelElement;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.RowOriginStep;
+import net.sf.jailer.entitygraph.remote.RemoteEntityGraph;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.util.ConcurrentTaskControl;
+import net.sf.jailer.util.CancellationException;
 
 /**
  * Shows which association is responsible for how many rows of the subset.
@@ -478,6 +484,176 @@ public class CollectionAnalysisPanel extends JPanel {
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * Describes the way from a cell of the progress table back to a subject, as browsers for the
+	 * Data Browser.
+	 * <p>
+	 * The chain follows, at every fork, the predecessor which has contributed <b>more</b> rows,
+	 * measured with {@link #rowsOneStepBefore} - the same yardstick the lower table uses for its
+	 * possible predecessors. The other predecessors of each link are added beside it, one level
+	 * deep and not followed further, so that what has been chosen is visible next to what has not.
+	 * <p>
+	 * Every browser is restricted to exactly the rows collected in its own step, which is why the
+	 * retained entity-graph is needed. Talks to the database, so it must not be called on the event
+	 * dispatch thread.
+	 *
+	 * @param tableName name of the table of the cell
+	 * @param day the collection step of the cell
+	 * @param context the context holding the retained rows
+	 * @return the steps, the cell first, or an empty list if nothing is known about that cell
+	 */
+	/**
+	 * Returns whether a run keeps its collected rows, so that a way through the steps can be
+	 * described at all.
+	 *
+	 * @return <code>true</code> if there is something to analyze
+	 */
+	public boolean hasRetainedRows() {
+		return rowOriginContext != null && rowOriginContext.isAvailable();
+	}
+
+	/**
+	 * Describes the way from a cell of the progress table to a subject, off the event dispatch
+	 * thread, showing a dialog that can be cancelled.
+	 *
+	 * @param tableName name of the table of the cell
+	 * @param day the collection step of the cell
+	 * @return the steps, or <code>null</code> if cancelled, failed or nothing is retained
+	 */
+	public List<RowOriginPath.Step> buildPathFromCell(final String tableName, final int day) {
+		if (!hasRetainedRows()) {
+			return null;
+		}
+		final RowOriginContext context = rowOriginContext;
+		try {
+			return ConcurrentTaskControl.call(SwingUtilities.getWindowAncestor(this),
+					new Callable<List<RowOriginPath.Step>>() {
+				@Override
+				public List<RowOriginPath.Step> call() throws Exception {
+					return pathFromCell(tableName, day, context);
+				}
+			}, "Preparing path...", null);
+		} catch (CancellationException e) {
+			return null;
+		} catch (Throwable t) {
+			UIUtil.showException(this, "Error", t);
+			return null;
+		}
+	}
+
+	public List<RowOriginPath.Step> pathFromCell(String tableName, int day, RowOriginContext context) throws Exception {
+		List<RowOriginPath.Step> path = new ArrayList<RowOriginPath.Step>();
+		// the model of the run, not the one of the editor: the condition is held against the
+		// rowIdSupport of the graph, and the two models have different universal primary keys
+		DataModel runDataModel = context.getDataModel();
+		if (runDataModel == null) {
+			return path;
+		}
+		RemoteEntityGraph entityGraph = context.getEntityGraph();
+		String currentName = tableName;
+		int step = day;
+		int parentIndex = -1;
+		String associationName = null;
+		String reachedThrough = null;
+		while (currentName != null && step >= 1) {
+			Table currentTable = runDataModel.getTable(currentName);
+			if (currentTable == null) {
+				break;
+			}
+			int index = path.size();
+			path.add(new RowOriginPath.Step(currentName, associationName,
+					entityGraph.collectedInStepCondition(currentTable, step, "A", commentFor(step, reachedThrough)),
+					parentIndex));
+
+			// every way into this table in this step: one of them carries the chain on, the others
+			// are opened beside this link and not followed further
+			List<CollectionAnalysis.Contribution> into = contributionsInto(currentName, step);
+			if (into.isEmpty()) {
+				break;
+			}
+			for (int i = 1; i < into.size(); ++i) {
+				addAlternative(path, runDataModel, entityGraph, into.get(i), step, index);
+			}
+			Association main = into.get(0).getAssociation();
+			if (main == null) {
+				break;      // subject rows: the start of the collection
+			}
+			currentName = main.source.getName();
+			associationName = reversalNameOf(main);
+			reachedThrough = main.getName();
+			parentIndex = index;
+			step -= 1;
+		}
+		return path;
+	}
+
+	/**
+	 * Adds the browser of an alternative way into a link: the source table of that association,
+	 * one step earlier, hanging on the link itself.
+	 */
+	private void addAlternative(List<RowOriginPath.Step> path, DataModel runDataModel, RemoteEntityGraph entityGraph,
+			CollectionAnalysis.Contribution alternative, int step, int parentIndex) throws SQLException {
+		Association association = alternative.getAssociation();
+		if (association == null || step - 1 < 1) {
+			return;
+		}
+		// by name, out of the model of the run: see pathFromCell
+		Table source = runDataModel.getTable(association.source.getName());
+		if (source == null) {
+			return;
+		}
+		path.add(new RowOriginPath.Step(source.getName(), reversalNameOf(association),
+				entityGraph.collectedInStepCondition(source, step - 1, "A",
+						commentFor(step - 1, association.getName()) + ", an alternative way"),
+				parentIndex));
+	}
+
+	/**
+	 * Gets the contributions which have brought rows into a table in a given step, the one with
+	 * the most rows first. That is the yardstick for "which predecessor contributed more".
+	 */
+	private List<CollectionAnalysis.Contribution> contributionsInto(String tableName, final int day) {
+		List<CollectionAnalysis.Contribution> result = new ArrayList<CollectionAnalysis.Contribution>();
+		for (CollectionAnalysis.Contribution candidate: contributions) {
+			if (candidate.getDestination() == null || !candidate.getDestination().getName().equals(tableName)) {
+				continue;
+			}
+			if (candidate.getRowsPerDay().get(Integer.valueOf(day)) != null) {
+				result.add(candidate);
+			}
+		}
+		Collections.sort(result, new Comparator<CollectionAnalysis.Contribution>() {
+			@Override
+			public int compare(CollectionAnalysis.Contribution a, CollectionAnalysis.Contribution b) {
+				return Long.compare(rowsAt(b, day), rowsAt(a, day));
+			}
+		});
+		return result;
+	}
+
+	private static long rowsAt(CollectionAnalysis.Contribution contribution, int day) {
+		Long rows = contribution.getRowsPerDay().get(Integer.valueOf(day));
+		return rows == null? 0 : rows.longValue();
+	}
+
+	/**
+	 * The comment which goes in front of the condition of a browser, so that the statement says
+	 * what it selects.
+	 */
+	private static String commentFor(int step, String associationName) {
+		return associationName == null?
+				"collected in step " + step
+				: "collected in step " + step + " through " + associationName;
+	}
+
+	/**
+	 * The chain runs towards smaller steps, so a link is reached by navigating the association
+	 * which has brought its parent's rows in the other direction.
+	 */
+	private static String reversalNameOf(Association association) {
+		return association.reversalAssociation == null? null : association.reversalAssociation.getName();
 	}
 
 	private Row selectedRow() {

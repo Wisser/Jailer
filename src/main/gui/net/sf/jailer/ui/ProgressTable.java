@@ -24,6 +24,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.Path2D;
@@ -81,6 +82,10 @@ public class ProgressTable extends JTable {
 		public boolean excludeFromDeletion;
 		// Calculated
 		public int row, column;
+		/**
+		 * The collection step this cell belongs to.
+		 */
+		public int day;
 		public List<CellInfo> parents;
 		public boolean inProgress = false;
 		public boolean hasSelectedChild = false;
@@ -690,6 +695,9 @@ public class ProgressTable extends JTable {
 					rowIsEmpty = false;
 					cellInfo.column = x;
 					cellInfo.row = y;
+					// the day column can name several days, but only empty ones are folded in:
+					// every cell of this line belongs to the day this line has been added for
+					cellInfo.day = day;
 					rowO[x + 1] = cellInfo;
 				}
 			}
@@ -761,6 +769,25 @@ public class ProgressTable extends JTable {
 	 */
 	public void setTotalNumberOfCollectedRows(long totalNumberOfCollectedRows) {
 		this.totalNumberOfCollectedRows = totalNumberOfCollectedRows;
+	}
+
+	/**
+	 * Gets the cell at a point of this table, if there is one.
+	 * <p>
+	 * The first column holds the day, the cells start behind it - the same offset the renderer and
+	 * {@link #addRow(List, int, boolean)} use.
+	 *
+	 * @param point the point, in the coordinates of this table
+	 * @return the cell, or <code>null</code> where there is none
+	 */
+	public CellInfo cellAtPoint(Point point) {
+		int row = rowAtPoint(point);
+		int column = columnAtPoint(point);
+		if (row < 0 || column < 0) {
+			return null;
+		}
+		Object value = getModel().getValueAt(row, convertColumnIndexToModel(column));
+		return value instanceof CellInfo? (CellInfo) value : null;
 	}
 
 	/**

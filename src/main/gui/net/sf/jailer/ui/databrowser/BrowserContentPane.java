@@ -5347,6 +5347,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	private int lastRowOriginGraphId = -1;
 
 	/**
+	 * The context a failure of the membership scan has already been reported for, so that it is
+	 * said once and not with every burst of scrolling.
+	 */
+	private RowOriginContext rowOriginScanFailureReported;
+
+	/**
 	 * Maximum number of rows asked for in one statement.
 	 */
 	private static final int MAX_ROW_ORIGIN_CHUNK = 100;
@@ -5611,10 +5617,23 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 					} catch (CancellationException ce) {
 						// reloaded or closed in the meantime: no verdict
 						pendingRowOriginContexts.remove(scanContext);
-					} catch (Throwable t) {
+					} catch (final Throwable t) {
 						// the graph may be gone, or the statement too big for this DBMS
 						LogUtil.warn(t);
 						pendingRowOriginContexts.remove(scanContext);
+						// said once per run, then silence: swallowing this completely is what let a
+						// mismatching universal primary key go unnoticed - the marks simply stayed
+						// away, with nothing to go on
+						UIUtil.invokeLater(new Runnable() {
+							@Override
+							public void run() {
+								if (lastRowOriginContext == context && rowOriginScanFailureReported != context) {
+									rowOriginScanFailureReported = context;
+									UIUtil.showException(BrowserContentPane.this,
+											"The rows of the subset could not be determined. The marks stay away.", t);
+								}
+							}
+						});
 					} finally {
 						CancellationHandler.reset(scanContext);
 					}

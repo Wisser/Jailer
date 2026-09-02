@@ -63,16 +63,38 @@ public class RowOriginPath {
 		public final String condition;
 
 		/**
-		 * Constructor.
+		 * Index of the step this one hangs on, or <code>-1</code> for a root.
+		 * <p>
+		 * A chain is a list in which every step hangs on its predecessor, and that is what the
+		 * short constructor sets. A path which branches - a chain with the alternatives of each
+		 * link beside it - needs to say it, hence this.
+		 */
+		public final int parentIndex;
+
+		/**
+		 * Constructor for a step of a plain chain, hanging on the step before it.
 		 *
 		 * @param tableName name of the table to browse
 		 * @param associationName name of the association leading here, or <code>null</code>
 		 * @param condition condition pinning the browser to the row of this step
 		 */
 		public Step(String tableName, String associationName, String condition) {
+			this(tableName, associationName, condition, -1);
+		}
+
+		/**
+		 * Constructor.
+		 *
+		 * @param tableName name of the table to browse
+		 * @param associationName name of the association leading here, or <code>null</code>
+		 * @param condition condition of this step
+		 * @param parentIndex index of the step this one hangs on, <code>-1</code> for a root
+		 */
+		public Step(String tableName, String associationName, String condition, int parentIndex) {
 			this.tableName = tableName;
 			this.associationName = associationName;
 			this.condition = condition;
+			this.parentIndex = parentIndex;
 		}
 
 		@Override

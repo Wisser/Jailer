@@ -1952,15 +1952,32 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 											for (Map.Entry<String, String> e: exportDialog.getParameterValues().entrySet()) {
 												originExecutionContext.setParameter(e.getKey(), e.getValue());
 											}
+											// the same scope the working tables have been created with, see the
+											// call further up in this method: only then is the universal primary
+											// key as wide as the PK columns of JAILER_ENTITY really are
+											if (!originExecutionContext.isIndependentWorkingTables()) {
+												PrimaryKeyFactory.createUPKScope(tmpFileName != null? tmpFileName : jmFile, originExecutionContext);
+											}
+											// a data model of its own: the one of the editor has been loaded
+											// without that scope and carries a wider key
+											DataModel originDataModel = new DataModel(
+													originExecutionContext.getSourceSchemaMapping(), originExecutionContext, false);
 											rowOriginContext = new RowOriginContext(
-													extractionModelEditor.dataModel,
+													originDataModel,
 													originExecutionContext,
 													() -> new BasicDataSource(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4), 0, dbConnectionDialog.currentJarURLs()),
 													dataSource.dbms,
 													dbConnectionDialog.currentConnection.url);
 											RetainedEntityGraphs.register(rowOriginContext);
 											progressPanel.setRowOriginContext(rowOriginContext, RetainedEntityGraphs.discardAction(ExtractionModelFrame.this), RetainedEntityGraphs.discardWhenUnusedAction(ExtractionModelFrame.this));
-											progressPanel.setPathOpener(steps -> {
+											progressPanel.setCellPathOpener(path -> {
+											DataBrowser dataBrowser = dataBrowserForAnalysis();
+											if (dataBrowser != null) {
+												dataBrowser.refreshForAnalysis();
+												dataBrowser.openRowOriginTree(path);
+											}
+										});
+										progressPanel.setPathOpener(steps -> {
 												DataBrowser dataBrowser = dataBrowserForAnalysis();
 												if (dataBrowser != null) {
 													List<RowOriginPath.Step> path = RowOriginPath.build(dataBrowser, rowOriginContext, steps);

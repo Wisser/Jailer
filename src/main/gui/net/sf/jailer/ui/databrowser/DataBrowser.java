@@ -5492,6 +5492,54 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	}
 
 	/**
+	 * Lays out a branching path as table browsers: a chain in which every link can carry the
+	 * alternatives it was not followed through beside it.
+	 * <p>
+	 * Unlike {@link #openRowOriginPathFrom(RowBrowser, List)} the steps are taken in list order and
+	 * each hangs on the step its {@code parentIndex} names, so siblings are possible. Nothing is
+	 * reused here: every browser is to show exactly the rows of its own step, and widening a
+	 * condition disjunctively would defeat that.
+	 *
+	 * @param path the steps, the starting point first
+	 * @return the browser of the last link of the chain, or <code>null</code>
+	 */
+	public RowBrowser openRowOriginTree(List<RowOriginPath.Step> path) {
+		if (path == null || path.isEmpty()) {
+			return null;
+		}
+		RowBrowser[] browsers = new RowBrowser[path.size()];
+		RowBrowser last = null;
+		try {
+			beginRowOriginPath();
+			for (int i = 0; i < path.size(); ++i) {
+				RowOriginPath.Step step = path.get(i);
+				Table table = datamodel.get().getTable(step.tableName);
+				Association association = step.associationName == null? null : datamodel.get().namedAssociations.get(step.associationName);
+				RowBrowser parent = step.parentIndex >= 0 && step.parentIndex < i? browsers[step.parentIndex] : null;
+				if (table == null || (step.associationName != null && association == null)
+						|| (step.parentIndex >= 0 && parent == null)) {
+					// the data model has changed since the run, or the parent could not be opened:
+					// show what still resolves
+					continue;
+				}
+				browsers[i] = desktop.addTableBrowser(parent, parent, table, parent == null? null : association,
+						step.condition, null, true);
+				if (browsers[i] != null && step.parentIndex >= 0) {
+					// only the links of the chain proper, the alternatives are not followed
+					last = browsers[i];
+				}
+			}
+			if (last == null) {
+				last = browsers[0];
+			}
+		} finally {
+			endRowOriginPath();
+		}
+		selectBrowser(last);
+		return last;
+	}
+
+	/**
 	 * Gets the child browser for an association, reusing the one which is already there.
 	 *
 	 * @param parent the parent browser

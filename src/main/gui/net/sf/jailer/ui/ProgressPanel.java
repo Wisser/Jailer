@@ -21,6 +21,7 @@ import java.awt.GridBagConstraints;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
@@ -33,7 +34,9 @@ import java.util.Map.Entry;
 import java.util.function.Consumer;
 
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
@@ -44,6 +47,7 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.RowOriginStep;
 import net.sf.jailer.ui.progress.CollectionAnalysis;
 import net.sf.jailer.ui.progress.CollectionAnalysisPanel;
+import net.sf.jailer.ui.progress.RowOriginPath;
 
 /**
  * Progress panel.
@@ -86,6 +90,7 @@ public class ProgressPanel extends javax.swing.JPanel {
 			jTabbedPane1.remove(panel4);
 		}
 		analysisPanel = new CollectionAnalysisPanel();
+		initCellPathAction();
 		UIUtil.initComponents(analysisPanel);
 		jTabbedPane1.addTab("Analysis", analysisPanel);
 		jTabbedPane1.setToolTipTextAt(jTabbedPane1.indexOfComponent(analysisPanel),
@@ -285,6 +290,77 @@ public class ProgressPanel extends javax.swing.JPanel {
 	 */
 	public void setTableOpener(Consumer<Table> tableOpener) {
 		analysisPanel.setTableOpener(tableOpener);
+	}
+
+	/**
+	 * Sets the consumer which lays a branching path out in a Data Browser. Only if one is set, a
+	 * cell of the progress table offers to open its way to a subject.
+	 *
+	 * @param cellPathOpener the consumer, or <code>null</code>
+	 */
+	public void setCellPathOpener(Consumer<List<RowOriginPath.Step>> cellPathOpener) {
+		this.cellPathOpener = cellPathOpener;
+	}
+
+	private Consumer<List<RowOriginPath.Step>> cellPathOpener;
+
+	private static final String CELL_PATH_TITLE = "Open Path to Subject";
+	private static final String CELL_PATH_TOOLTIP = "Opens the way of these rows to a subject as table browsers: one per step, each showing exactly the rows collected in it. Where several associations have brought rows into a step, the chain follows the one which contributed most and shows the others beside it.";
+	private static final String CELL_PATH_NO_GRAPH_TOOLTIP = "Requires a run which keeps its collected rows: switch on \"Enable row origin analysis by keeping the collected rows\" in the export dialog.";
+
+	/**
+	 * Offers the way to a subject on the cells of the progress table, through the context menu and
+	 * through a double click.
+	 */
+	private void initCellPathAction() {
+		MouseAdapter listener = new MouseAdapter() {
+			@Override
+			public void mousePressed(java.awt.event.MouseEvent e) {
+				maybeShowPopup(e);
+			}
+			@Override
+			public void mouseReleased(java.awt.event.MouseEvent e) {
+				maybeShowPopup(e);
+			}
+			@Override
+			public void mouseClicked(java.awt.event.MouseEvent e) {
+				if (e.getClickCount() == 2 && !e.isPopupTrigger()) {
+					openPath(progressTable.cellAtPoint(e.getPoint()));
+				}
+			}
+			private void maybeShowPopup(java.awt.event.MouseEvent e) {
+				if (!e.isPopupTrigger()) {
+					return;
+				}
+				final ProgressTable.CellInfo cell = progressTable.cellAtPoint(e.getPoint());
+				if (cell == null) {
+					return;
+				}
+				boolean available = cellPathOpener != null && analysisPanel.hasRetainedRows();
+				JPopupMenu popup = new JPopupMenu();
+				JMenuItem item = new JMenuItem(CELL_PATH_TITLE);
+				item.setToolTipText(available? CELL_PATH_TOOLTIP : CELL_PATH_NO_GRAPH_TOOLTIP);
+				item.setEnabled(available);
+				item.addActionListener(new java.awt.event.ActionListener() {
+					@Override
+					public void actionPerformed(java.awt.event.ActionEvent evt) {
+						openPath(cell);
+					}
+				});
+				popup.add(item);
+				popup.show(progressTable, e.getX(), e.getY());
+			}
+			private void openPath(ProgressTable.CellInfo cell) {
+				if (cell == null || cellPathOpener == null || !analysisPanel.hasRetainedRows()) {
+					return;
+				}
+				List<RowOriginPath.Step> path = analysisPanel.buildPathFromCell(cell.tableName, cell.day);
+				if (path != null && !path.isEmpty()) {
+					cellPathOpener.accept(path);
+				}
+			}
+		};
+		progressTable.addMouseListener(listener);
 	}
 
 	/**
