@@ -529,23 +529,22 @@ public class CollectionAnalysisPanel extends JPanel {
 	 * Describes the way from a cell of the progress table back to a subject, as browsers for the
 	 * Data Browser.
 	 * <p>
-	 * The cell is the root, and every further link goes one step back, up to a subject table. The
-	 * chain follows, at every fork, the predecessor which has contributed <b>more</b> rows - the
+	 * The chain follows, at every fork, the predecessor which has contributed <b>more</b> rows - the
 	 * same yardstick the lower table uses for its possible predecessors. The other predecessors of
 	 * each link are added beside it, one level deep and not followed further, so that what has been
 	 * chosen is visible next to what has not.
 	 * <p>
 	 * Every browser is restricted to exactly the rows collected in its own step, which is why the
 	 * retained entity-graph is needed. A link additionally shows only what can be joined to the
-	 * rows its parent shows, which is why the chain runs from the cell backwards: that way the
-	 * narrowing follows the direction in which the rows have been collected.
+	 * rows its parent shows, so which end of the chain is the root decides which way that narrowing
+	 * runs: {@link RowOriginPath#pathFromSelectionToSubject()}.
 	 * <p>
 	 * Talks to the database, so it must not be called on the event dispatch thread.
 	 *
 	 * @param tableName name of the table of the cell
 	 * @param day the collection step of the cell
 	 * @param context the context holding the retained rows
-	 * @return the steps, the cell first, or an empty list if nothing is known about that cell
+	 * @return the steps, the root first, or an empty list if nothing is known about that cell
 	 */
 	public List<RowOriginPath.Step> pathFromCell(String tableName, int day, RowOriginContext context) throws Exception {
 		List<RowOriginPath.Step> path = new ArrayList<RowOriginPath.Step>();
@@ -587,35 +586,54 @@ public class CollectionAnalysisPanel extends JPanel {
 			step -= 1;
 		}
 
-		// the chain first, the cell to the left, the subject to the right
-		for (int i = 0; i < chain.size(); ++i) {
-			Link link = chain.get(i);
-			// the association of the parent brought the parent's rows and its source is the table
-			// of this link, so its reversal is the way from the parent to here - the same shape the
-			// alternatives have
-			Association ofParent = i == 0? null : chain.get(i - 1).main;
-			path.add(new RowOriginPath.Step(link.table.getName(),
-					ofParent == null? null : reversalNameOf(ofParent),
-					entityGraph.collectedInStepCondition(link.table, link.step, "A",
-							commentFor(link.step, link.main == null? null : link.main.getName())),
-					i - 1,
-					rowsCollectedIn(link.table.getName(), link.step)));
+		// the chain first. The comment always names the association which has brought the rows of a
+		// link, whichever way the browsers are linked
+		if (RowOriginPath.pathFromSelectionToSubject()) {
+			// the cell to the left, the subject to the right
+			for (int i = 0; i < chain.size(); ++i) {
+				Link link = chain.get(i);
+				// the association of the parent brought the parent's rows and its source is the
+				// table of this link, so its reversal is the way from the parent to here - the same
+				// shape the alternatives have
+				Association ofParent = i == 0? null : chain.get(i - 1).main;
+				path.add(new RowOriginPath.Step(link.table.getName(),
+						ofParent == null? null : reversalNameOf(ofParent),
+						entityGraph.collectedInStepCondition(link.table, link.step, "A",
+								commentFor(link.step, link.main == null? null : link.main.getName())),
+						i - 1,
+						rowsCollectedIn(link.table.getName(), link.step)));
+			}
+		} else {
+			// the subject to the left, the cell to the right: a link is reached through the
+			// association which has brought its rows, whose source is the table of its parent
+			for (int i = chain.size() - 1; i >= 0; --i) {
+				Link link = chain.get(i);
+				boolean isRoot = i == chain.size() - 1;
+				path.add(new RowOriginPath.Step(link.table.getName(),
+						isRoot || link.main == null? null : link.main.getName(),
+						entityGraph.collectedInStepCondition(link.table, link.step, "A",
+								commentFor(link.step, link.main == null? null : link.main.getName())),
+						isRoot? -1 : path.size() - 1,
+						rowsCollectedIn(link.table.getName(), link.step)));
+			}
 		}
 
 		// the alternatives afterwards, so that the chain stays the linear opening stretch of the
 		// list and its end can be found without a mark of its own
 		for (int i = 0; i < chain.size(); ++i) {
 			Link link = chain.get(i);
+			int linkIndex = RowOriginPath.pathFromSelectionToSubject()? i : chain.size() - 1 - i;
 			for (int k = 1; k < link.into.size(); ++k) {
-				addAlternative(path, runDataModel, entityGraph, link.into.get(k), link.step, i);
+				addAlternative(path, runDataModel, entityGraph, link.into.get(k), link.step, linkIndex);
 			}
 		}
 		return path;
 	}
 
 	/**
-	 * One link of the chain, in the order in which it is walked and written out: the cell first,
-	 * the subject last.
+	 * One link of the chain, in the order in which it is walked: the cell first, the subject last.
+	 * Written out in that order or the other way round, see
+	 * {@link RowOriginPath#pathFromSelectionToSubject()}.
 	 */
 	private static class Link {
 		Table table;

@@ -1986,7 +1986,13 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 														// refreshed for a cancelled chain, and the
 														// chain must survive the rebuild
 														dataBrowser.refreshForAnalysis();
-														dataBrowser.openRowOriginPath(path);
+														if (RowOriginPath.pathFromSelectionToSubject()) {
+															// no browser to grow from: the row
+															// itself becomes the root of the chain
+															dataBrowser.openRowOriginPathFrom(null, path);
+														} else {
+															dataBrowser.openRowOriginPath(path);
+														}
 													}
 												}
 											});

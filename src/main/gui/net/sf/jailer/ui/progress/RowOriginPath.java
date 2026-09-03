@@ -41,6 +41,23 @@ import net.sf.jailer.util.CancellationException;
 public class RowOriginPath {
 
 	/**
+	 * Tells which end of a way to a subject is the root of the layout, and with it the direction in
+	 * which the way is built.
+	 * <p>
+	 * <code>true</code>: the row or the cell the question has been asked for is the root, on the
+	 * left, and the chain runs from there back to a subject. <code>false</code>: a subject is the
+	 * root and the chain ends at that row or cell.
+	 * <p>
+	 * Not merely a matter of taste: a link shows only the rows which can be joined to the rows its
+	 * parent shows, so the direction decides which way that narrowing runs.
+	 *
+	 * @return <code>true</code> if the chain starts at the row or cell in question
+	 */
+	public static boolean pathFromSelectionToSubject() {
+		return true;
+	}
+
+	/**
 	 * One table browser of the chain.
 	 */
 	public static class Step {

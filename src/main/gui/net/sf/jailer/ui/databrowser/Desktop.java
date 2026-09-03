@@ -1509,8 +1509,12 @@ public abstract class Desktop extends JDesktopPane {
 
 			@Override
 			protected void openRowOriginPath(List<RowOriginPath.Step> path) {
-				// this browser is the first link, the chain grows from it towards the subject
-				parentFrame.openRowOriginPathFrom(tableBrowser, path);
+				if (RowOriginPath.pathFromSelectionToSubject()) {
+					// this browser is the first link, the chain grows from it towards the subject
+					parentFrame.openRowOriginPathFrom(tableBrowser, path);
+				} else {
+					parentFrame.openRowOriginPath(path);
+				}
 			}
 
 			@Override

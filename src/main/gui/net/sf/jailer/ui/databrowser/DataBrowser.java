@@ -5581,7 +5581,9 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 			endRowOriginPath();
 		}
 		final RowBrowser end = last;
-		final RowBrowser root = browsers[0];
+		// the browser of the cell the question has been asked for: depending on the direction that
+		// is the root of the tree or the far end of the chain
+		final RowBrowser selection = RowOriginPath.pathFromSelectionToSubject()? browsers[0] : last;
 		// deferred and outside the block above: arrangeLayout must not run while
 		// noArrangeLayoutOnNewTableBrowser is set
 		UIUtil.invokeLater(10, new Runnable() {
@@ -5593,7 +5595,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 					// the user started from is brought to the front afterwards
 					alignHorizontally(end);
 				}
-				selectBrowser(root);
+				selectBrowser(selection);
 			}
 		});
 		return last;
