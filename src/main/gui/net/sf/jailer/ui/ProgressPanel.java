@@ -16,6 +16,7 @@
 package net.sf.jailer.ui;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.Window;
@@ -354,13 +355,51 @@ public class ProgressPanel extends javax.swing.JPanel {
 				if (cell == null || cellPathOpener == null || !analysisPanel.hasRetainedRows()) {
 					return;
 				}
-				List<RowOriginPath.Step> path = analysisPanel.buildPathFromCell(cell.tableName, cell.day);
-				if (path != null && !path.isEmpty()) {
-					cellPathOpener.accept(path);
+				// the cursor first, the work only in the next event: laying the chain out runs on
+				// the event dispatch thread from beginning to end - opening the Data Browser,
+				// rebuilding the desktop, adding the browsers - and a cursor set right before that
+				// would not be painted any more
+				final List<Component> waiting = waitCursorComponents();
+				for (Component component: waiting) {
+					UIUtil.setWaitCursor(component);
 				}
+				UIUtil.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						try {
+							List<RowOriginPath.Step> path = analysisPanel.buildPathFromCell(cell.tableName, cell.day);
+							if (path != null && !path.isEmpty()) {
+								cellPathOpener.accept(path);
+							}
+						} finally {
+							for (Component component: waiting) {
+								UIUtil.resetWaitCursor(component);
+							}
+						}
+					}
+				});
 			}
 		};
 		progressTable.addMouseListener(listener);
+	}
+
+	/**
+	 * The components which are to show the wait cursor while the way of a cell to a subject is
+	 * being prepared and laid out: this window, the "Export" tab and the progress table in it. Each
+	 * of them separately, since a component with a cursor of its own does not inherit the one of
+	 * its window.
+	 *
+	 * @return the components, without the ones which are not there
+	 */
+	private List<Component> waitCursorComponents() {
+		List<Component> components = new ArrayList<Component>();
+		for (Component component: new Component[] {
+				SwingUtilities.getWindowAncestor(this), panel3, progressTableHolder, progressTable }) {
+			if (component != null) {
+				components.add(component);
+			}
+		}
+		return components;
 	}
 
 	/**

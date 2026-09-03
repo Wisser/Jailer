@@ -22,7 +22,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GradientPaint;
@@ -1411,7 +1410,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 							g2d.setColor(rowOriginSubjectRows.contains(row.nonEmptyRowId)?
 									Colors.rowIsSubjectMarkerColor : Colors.rowInSubsetMarkerColor);
 							Rectangle r = rowsTable.getCellRect(i, 0, false);
-							g2d.fillRect((int) visRect.getMinX(), (int) r.getMinY(), ROW_ORIGIN_MARKER_WIDTH, (int) r.getHeight());
+							g2d.fillRect(0, (int) r.getMinY(), ROW_ORIGIN_MARKER_WIDTH, (int) r.getHeight());
 						}
 					}
 				}
@@ -6943,13 +6942,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 								g2d.fillRect(x[0], y[0], x[1] - x[0], y[1] - y[0]);
 								g2d.setPaint(null);
 							}
-							// the view shows one row, so the marker goes down the entire left edge
+							// the view shows one row, so the marker goes down the entire left edge.
+							// Its own visible area, not the one of the container above it: the
+							// rectangle has to be in the coordinates this is painted in
 							if (isSingleRowInSubset()) {
-								Rectangle visRect = singleRowViewContainterPanel.getVisibleRect();
+								Rectangle visRect = getVisibleRect();
 								Graphics2D g2d = (Graphics2D) graphics;
 								g2d.setPaint(null);
 								g2d.setColor(isSingleRowSubject()? Colors.rowIsSubjectMarkerColor : Colors.rowInSubsetMarkerColor);
-								g2d.fillRect((int) visRect.getMinX(), (int) visRect.getMinY(),
+								g2d.fillRect(0, (int) visRect.getMinY(),
 										ROW_ORIGIN_MARKER_WIDTH, (int) visRect.getHeight());
 							}
 						}

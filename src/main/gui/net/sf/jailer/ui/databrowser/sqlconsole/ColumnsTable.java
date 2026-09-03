@@ -21,7 +21,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
@@ -890,7 +889,7 @@ public class ColumnsTable extends JTable {
 		if (isInSubset()) {
 			g2d.setPaint(null);
 			g2d.setColor(isSubjectRow()? Colors.rowIsSubjectMarkerColor : Colors.rowInSubsetMarkerColor);
-			g2d.fillRect((int) visRect.getMinX(), (int) visRect.getMinY(),
+			g2d.fillRect(0, (int) visRect.getMinY(),
 					BrowserContentPane.ROW_ORIGIN_MARKER_WIDTH, (int) visRect.getHeight());
 		}
 	}

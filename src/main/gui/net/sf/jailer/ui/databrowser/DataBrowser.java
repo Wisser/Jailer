@@ -1245,6 +1245,21 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		initAnimationSteptime();
 
 		jScrollPane1.setViewportView(desktop);
+		// the subset marker sits at the left edge of what can be seen of a browser, so it has to be
+		// drawn anew whenever that edge moves. A blitting viewport shifts the content of the frames
+		// instead of painting them, which would leave the marker where it was
+		jScrollPane1.getViewport().addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				Rectangle viewRect = jScrollPane1.getViewport().getViewRect();
+				for (RowBrowser rb: desktop.getBrowsers()) {
+					if (rb.internalFrame != null && rb.browserContentPane != null
+							&& rb.internalFrame.getX() < viewRect.x) {
+						rb.browserContentPane.repaint();
+					}
+				}
+			}
+		});
 		addWindowListener(new WindowListener() {
 			@Override
 			public void windowOpened(WindowEvent e) {
