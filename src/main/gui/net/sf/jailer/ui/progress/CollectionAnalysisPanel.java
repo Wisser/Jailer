@@ -28,7 +28,9 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
@@ -529,10 +531,12 @@ public class CollectionAnalysisPanel extends JPanel {
 	 * Describes the way from a cell of the progress table back to a subject, as browsers for the
 	 * Data Browser.
 	 * <p>
-	 * The chain follows, at every fork, the predecessor which has contributed <b>more</b> rows - the
-	 * same yardstick the lower table uses for its possible predecessors. The other predecessors of
-	 * each link are added beside it, one level deep and not followed further, so that what has been
-	 * chosen is visible next to what has not.
+	 * The chain follows one of the rows of the cell back to a subject, as
+	 * {@link net.sf.jailer.entitygraph.RowOriginFinder} finds it. That way has really been taken,
+	 * so the chain holds together - one picked from row counts alone would not, since a choice
+	 * which is the strongest in its own step need not lead out of the rows the step before it
+	 * shows. The other ways into each link are added beside it, one level deep and not followed
+	 * further, so that what has been taken is visible next to what has not.
 	 * <p>
 	 * Every browser is restricted to exactly the rows collected in its own step, which is why the
 	 * retained entity-graph is needed. A link additionally shows only what can be joined to the
@@ -556,34 +560,36 @@ public class CollectionAnalysisPanel extends JPanel {
 		}
 		RemoteEntityGraph entityGraph = context.getEntityGraph();
 
-		// walked from the cell towards the subject, and written out in that same order: the cell is
-		// the root, and every further link goes one step back
+		Table cellTable = runDataModel.getTable(tableName);
+		if (cellTable == null) {
+			return path;
+		}
+
+		// the backbone is a way which has really been taken: one of the rows of the cell, followed
+		// back to a subject through the entity-graph. Which row it is does not matter - any of them
+		// answers which tables and associations the chain consists of, and being a real way it
+		// cannot fall apart the way a chain picked from row counts alone can
+		Object[] referenceKey = entityGraph.readAnyCollectedKey(cellTable, day);
+		List<RowOriginStep> steps = referenceKey == null?
+				null : context.createFinder().find(cellTable, referenceKey).getSteps();
+
+		// what has been collected where, asked once per table and step
+		Map<String, Map<Integer, Long>> collected = new HashMap<String, Map<Integer, Long>>();
+
+		// the finder answers subject first, the chain is held the other way round: the cell first,
+		// every further link one step back
 		List<Link> chain = new ArrayList<Link>();
-		String currentName = tableName;
-		int step = day;
-		while (currentName != null && step >= 0) {
-			Table currentTable = runDataModel.getTable(currentName);
-			if (currentTable == null) {
-				break;
+		if (steps == null || steps.isEmpty()) {
+			// no row to follow: at least the cell itself, with the ways into it beside it
+			chain.add(linkFor(cellTable, day, null, runDataModel, entityGraph, collected));
+		} else {
+			for (int i = steps.size() - 1; i >= 0; --i) {
+				RowOriginStep step = steps.get(i);
+				// the association which has brought this row, so its source is the table of the
+				// next link - the same meaning the chain has always given this field
+				chain.add(linkFor(step.getTable(), step.getBirthday(), step.getIncomingAssociation(),
+						runDataModel, entityGraph, collected));
 			}
-			// every way into this table in this step: one of them carries the chain on, the others
-			// are opened beside this link and not followed further
-			List<CollectionAnalysis.Contribution> into = contributionsInto(currentName, step);
-			Link link = new Link();
-			link.table = currentTable;
-			link.step = step;
-			link.into = into;
-			chain.add(link);
-			if (into.isEmpty()) {
-				break;
-			}
-			Association main = into.get(0).getAssociation();
-			if (main == null) {
-				break;      // subject rows: the start of the collection
-			}
-			link.main = main;
-			currentName = main.source.getName();
-			step -= 1;
 		}
 
 		// the chain first. The comment always names the association which has brought the rows of a
@@ -601,7 +607,7 @@ public class CollectionAnalysisPanel extends JPanel {
 						entityGraph.collectedInStepCondition(link.table, link.step, "A",
 								commentFor(link.step, link.main == null? null : link.main.getName())),
 						i - 1,
-						rowsCollectedIn(link.table.getName(), link.step)));
+						link.rowCount));
 			}
 		} else {
 			// the subject to the left, the cell to the right: a link is reached through the
@@ -614,7 +620,7 @@ public class CollectionAnalysisPanel extends JPanel {
 						entityGraph.collectedInStepCondition(link.table, link.step, "A",
 								commentFor(link.step, link.main == null? null : link.main.getName())),
 						isRoot? -1 : path.size() - 1,
-						rowsCollectedIn(link.table.getName(), link.step)));
+						link.rowCount));
 			}
 		}
 
@@ -623,11 +629,109 @@ public class CollectionAnalysisPanel extends JPanel {
 		for (int i = 0; i < chain.size(); ++i) {
 			Link link = chain.get(i);
 			int linkIndex = RowOriginPath.pathFromSelectionToSubject()? i : chain.size() - 1 - i;
-			for (int k = 1; k < link.into.size(); ++k) {
-				addAlternative(path, runDataModel, entityGraph, link.into.get(k), link.step, linkIndex);
+			for (Association branch: link.branches) {
+				addAlternative(path, runDataModel, entityGraph, branch, link.step, linkIndex, collected);
 			}
 		}
 		return path;
+	}
+
+	/**
+	 * Builds one link of the chain out of what the entity-graph knows about its step: how many rows
+	 * have been collected into that table, and through which associations.
+	 *
+	 * @param table the table of the link
+	 * @param step the collection step
+	 * @param main the association the chain follows out of this link, <code>null</code> for the
+	 *        subject end
+	 * @param runDataModel the data model of the run, which the association ids are resolved against
+	 * @param entityGraph the graph
+	 * @param collected what has been collected per table and step, filled as it is asked for
+	 * @return the link
+	 */
+	private static Link linkFor(Table table, int step, Association main, DataModel runDataModel,
+			RemoteEntityGraph entityGraph, Map<String, Map<Integer, Long>> collected) throws SQLException {
+		Link link = new Link();
+		link.table = table;
+		link.step = step;
+		link.main = main;
+		Map<Integer, Long> perAssociation = collectedIn(table, step, entityGraph, collected);
+		link.rowCount = totalOf(perAssociation);
+		link.branches = new ArrayList<Association>();
+		for (Map.Entry<Integer, Long> e: perAssociation.entrySet()) {
+			if (e.getKey() == null) {
+				continue;   // subject rows: no association, so no source table to open
+			}
+			if (main != null && e.getKey().intValue() == main.getId()) {
+				continue;   // the way the chain itself follows, not to be opened a second time
+			}
+			Association association = runDataModel.getAssociationById(e.getKey().intValue());
+			if (association != null) {
+				// unknown means the data model has changed since the run: leave that branch out
+				link.branches.add(association);
+			}
+		}
+		sortByRows(link.branches, perAssociation);
+		while (link.branches.size() > MAX_BRANCHES_PER_LINK) {
+			link.branches.remove(link.branches.size() - 1);
+		}
+		return link;
+	}
+
+	/**
+	 * How many branches are opened beside a link at most. Sorted by the number of rows they have
+	 * brought, so what is left out are the weakest ways into that step.
+	 */
+	private static final int MAX_BRANCHES_PER_LINK = 4;
+
+	/**
+	 * Gets what has been collected into a table in a step, per association, asking the graph only
+	 * once per table and step. A chain and its branches ask for the same steps repeatedly.
+	 *
+	 * @param table the table
+	 * @param step the collection step
+	 * @param entityGraph the graph
+	 * @param collected the answers so far
+	 * @return the number of rows per association id, the key <code>null</code> for subject rows
+	 */
+	private static Map<Integer, Long> collectedIn(Table table, int step, RemoteEntityGraph entityGraph,
+			Map<String, Map<Integer, Long>> collected) throws SQLException {
+		String key = table.getName() + "@" + step;
+		Map<Integer, Long> perAssociation = collected.get(key);
+		if (perAssociation == null) {
+			perAssociation = entityGraph.readCollectedPerAssociation(table, step);
+			collected.put(key, perAssociation);
+		}
+		return perAssociation;
+	}
+
+	/**
+	 * The rows a "collected in this step" condition selects: everything of that step, whichever
+	 * association has brought it.
+	 *
+	 * @param perAssociation the rows per association
+	 * @return the number of rows, capped at {@link Integer#MAX_VALUE}
+	 */
+	private static int totalOf(Map<Integer, Long> perAssociation) {
+		long sum = 0;
+		for (Long rows: perAssociation.values()) {
+			sum += rows.longValue();
+		}
+		return sum > Integer.MAX_VALUE? Integer.MAX_VALUE : (int) sum;
+	}
+
+	/**
+	 * Sorts associations by the number of rows they have brought, the strongest first.
+	 */
+	private static void sortByRows(List<Association> associations, final Map<Integer, Long> perAssociation) {
+		Collections.sort(associations, new Comparator<Association>() {
+			@Override
+			public int compare(Association a, Association b) {
+				Long rowsA = perAssociation.get(Integer.valueOf(a.getId()));
+				Long rowsB = perAssociation.get(Integer.valueOf(b.getId()));
+				return Long.compare(rowsB == null? 0 : rowsB.longValue(), rowsA == null? 0 : rowsA.longValue());
+			}
+		});
 	}
 
 	/**
@@ -639,9 +743,15 @@ public class CollectionAnalysisPanel extends JPanel {
 		Table table;
 		int step;
 		/**
-		 * All ways into this table in this step, the strongest first.
+		 * Number of rows collected into this table in this step, which is what the condition of
+		 * this link selects.
 		 */
-		List<CollectionAnalysis.Contribution> into;
+		int rowCount;
+		/**
+		 * The <b>other</b> ways into this table in this step, the strongest first: opened beside
+		 * this link and not followed further. The one the chain follows is not among them.
+		 */
+		List<Association> branches;
 		/**
 		 * The association the chain follows out of this link, towards the subject.
 		 */
@@ -653,9 +763,8 @@ public class CollectionAnalysisPanel extends JPanel {
 	 * one step earlier, hanging on the link itself.
 	 */
 	private void addAlternative(List<RowOriginPath.Step> path, DataModel runDataModel, RemoteEntityGraph entityGraph,
-			CollectionAnalysis.Contribution alternative, int step, int parentIndex) throws SQLException {
-		Association association = alternative.getAssociation();
-		if (association == null || step - 1 < 0) {
+			Association association, int step, int parentIndex, Map<String, Map<Integer, Long>> collected) throws SQLException {
+		if (step - 1 < 0) {
 			return;
 		}
 		// by name, out of the model of the run: see pathFromCell
@@ -667,52 +776,7 @@ public class CollectionAnalysisPanel extends JPanel {
 				entityGraph.collectedInStepCondition(source, step - 1, "A",
 						commentFor(step - 1, association.getName()) + ", an alternative way"),
 				parentIndex,
-				rowsCollectedIn(source.getName(), step - 1)));
-	}
-
-	/**
-	 * Gets how many rows have been collected into a table in a step. Every row is collected once
-	 * and attributed to one contribution, so summing them gives the rows the condition of that
-	 * link selects.
-	 *
-	 * @param tableName name of the table
-	 * @param step the collection step
-	 * @return the number of rows, capped at {@link Integer#MAX_VALUE}
-	 */
-	private int rowsCollectedIn(String tableName, int step) {
-		long sum = 0;
-		for (CollectionAnalysis.Contribution contribution: contributionsInto(tableName, step)) {
-			sum += rowsAt(contribution, step);
-		}
-		return sum > Integer.MAX_VALUE? Integer.MAX_VALUE : (int) sum;
-	}
-
-	/**
-	 * Gets the contributions which have brought rows into a table in a given step, the one with
-	 * the most rows first. That is the yardstick for "which predecessor contributed more".
-	 */
-	private List<CollectionAnalysis.Contribution> contributionsInto(String tableName, final int day) {
-		List<CollectionAnalysis.Contribution> result = new ArrayList<CollectionAnalysis.Contribution>();
-		for (CollectionAnalysis.Contribution candidate: contributions) {
-			if (candidate.getDestination() == null || !candidate.getDestination().getName().equals(tableName)) {
-				continue;
-			}
-			if (candidate.getRowsPerDay().get(Integer.valueOf(day)) != null) {
-				result.add(candidate);
-			}
-		}
-		Collections.sort(result, new Comparator<CollectionAnalysis.Contribution>() {
-			@Override
-			public int compare(CollectionAnalysis.Contribution a, CollectionAnalysis.Contribution b) {
-				return Long.compare(rowsAt(b, day), rowsAt(a, day));
-			}
-		});
-		return result;
-	}
-
-	private static long rowsAt(CollectionAnalysis.Contribution contribution, int day) {
-		Long rows = contribution.getRowsPerDay().get(Integer.valueOf(day));
-		return rows == null? 0 : rows.longValue();
+				totalOf(collectedIn(source, step - 1, entityGraph, collected))));
 	}
 
 	/**

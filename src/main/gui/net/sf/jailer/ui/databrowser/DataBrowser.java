@@ -5563,12 +5563,27 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 			}
 			// the chain is the linear opening stretch of the list: the first alternative breaks the
 			// sequence, because its parentIndex jumps back
+			int chainLength = 0;
 			for (int i = 0; i < path.size(); ++i) {
 				if (path.get(i).parentIndex != i - 1) {
 					break;
 				}
+				chainLength = i + 1;
 				if (browsers[i] != null) {
 					last = browsers[i];
+				}
+			}
+			// a browser which navigates the reversal of the association its rows have been
+			// collected through is not to be greyed out for that reversal being switched off: the
+			// rows did travel along the pair, in the other direction. A link of the chain navigates
+			// a reversal only where the tree runs from the selection towards the subject, a branch
+			// always - it goes one step back whichever way the chain is laid out
+			for (int i = 0; i < path.size(); ++i) {
+				if (browsers[i] == null || path.get(i).parentIndex < 0) {
+					continue;
+				}
+				if (i >= chainLength || RowOriginPath.pathFromSelectionToSubject()) {
+					desktop.markAsRowOriginChain(browsers[i]);
 				}
 			}
 			// the roots carry the loading, the children follow through onContentChange

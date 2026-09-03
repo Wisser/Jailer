@@ -111,26 +111,68 @@
       been collected through the selected association. Selecting one of them shows the chain from
       the subject down to that row, one line per step, with the association each step was made
       through and the key of the row it came from.
-    - "Why is this row in the subset?" in the context menu of a row in the Data Browser asks the
+    - "Why is this Row in the Subset?" in the context menu of a row in the Data Browser asks the
       same question for a row one already has in front of oneself, without going through the list
       of associations. The item appears only while a run keeps its collected rows and the Data
-      Browser, opened from the same application window, is connected to that database. For a row
-      which has not been collected it says so, which answers the opposite question just as well:
-      why is this row not part of the subset.
+      Browser, opened from the same application window, is connected to that database. Where a row
+      has already been checked for the mark and turned out not to belong to the subset, the item
+      and "Open Path to Subject" are disabled and say so in their tooltip, so that no window has to
+      be opened for an answer the missing mark gives already. For a row which has not been checked
+      yet both stay available, and the answer then names the case as well.
     - The same question can be asked from the button bar which appears next to a table browser
       when the mouse comes close to it. There it refers to the row currently selected.
     - While a run keeps its collected rows, the Data Browser marks every row which belongs to the
       subset with a green bar at the left edge. Only the rows currently on screen are checked, in
       the background and with one query per scroll, so the marks appear shortly after scrolling.
       A row without a mark is either not part of the subset or has not been checked yet.
+    - A table browser which holds a single row shows no row table but the single row view. It
+      carries the same mark at its left edge, plus the words "Part of Subset" next to its
+      title, since a bar alone is easy to overlook where there is only one row. This is the view
+      one ends up in after following an association to a single row.
+    - "Open Path to Subject" lays that chain out in the Data Browser instead of listing it: one
+      table browser per step, linked by the associations the row has been collected through, and
+      each of them showing exactly the one row of its step. So the rows themselves can be looked
+      at, not just their keys. The item sits next to "Why is this Row in the Subset?" in the
+      context menu of a row and in the button bar of a table browser, and the window which shows
+      the chain offers it as a button as well.
+      The chain starts at the table browser the question was asked in: that one is the first link,
+      and the chain grows from it towards the subject, so nothing is opened twice for the row one
+      already has in front of oneself. Table browsers which are already there are reused. Asking
+      again for another row of the same table therefore does not pile up windows: as long as the
+      way leads through the same associations, the browsers of the chain simply widen their
+      condition and show both rows. The whole chain is one step in the undo history.
+      Opened from the "Analysis" tab, where there is no browser to start from, the chain is laid
+      out the other way round, from the subject down to the row.
+    - "Open in Data Browser" in the context menu of the "Analysis" tab opens the table an
+      association has collected its rows into, unrestricted. It does not need the collected rows,
+      so it also works once they have been discarded.
+    - "Open Path to Subject" in the context menu of a cell of the "Export" tab, or by double
+      clicking it, does the same for a whole step: it lays the way of these rows to a subject out
+      as table browsers, one per step, and each of them shows exactly the rows collected in that
+      step. Where several associations have brought rows into a step, the chain follows the one
+      which contributed most and opens the others beside that link, one level deep, so that what
+      was chosen stands next to what was not. The condition of every browser names its step and
+      its association as an SQL comment, so the statement says what it selects.
+    - The Data Browser the analysis opens its views in is brought up to date whenever it is used
+      again from the progress window: the subset marks are asked anew, and if the extraction model
+      has been edited in the meantime, the table browsers are rebuilt, so that the colours of the
+      links reflect the restrictions as they are now. Layouts remember which browsers belong to
+      such a path, and layouts written by earlier versions are read as before.
+  - Saving a layout no longer loses the sort order and the column filters of a table browser whose
+    sort key is inherited rather than set by hand. One cell was left out of the layout file for
+    those browsers, which moved every following entry out of place.
     - Note that this is the way the row has been found first, not every way it could have been
       reached. That is the answer to the question why the row is part of the subset: without this
-      way it might not be.
+      way it might not be. Where more than one row matches at some step, the chain says so.
     - The kept rows are discarded when the progress window is closed, when the next run with that
       option starts, when the application ends, and, should none of that have happened, when the
       same database is connected to again. As long as a window which shows the origin of a row is
       still open, they are kept, and the last such window closing discards them. "Discard analysis
       data" in the same context menu removes them at once.
+  - The progress window of a run now belongs to the window it was started from and therefore stays
+    in front of it instead of disappearing behind it. It is still not modal, so the analysis, the
+    origin windows and the Data Browser remain usable next to it. Being an owned window, it no
+    longer has an entry of its own in the task bar and is minimized together with its owner.
 
 17.2.2
   - Path Finder: candidate tables now show a confidence estimate.

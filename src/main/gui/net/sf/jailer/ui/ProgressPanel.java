@@ -306,7 +306,7 @@ public class ProgressPanel extends javax.swing.JPanel {
 	private Consumer<List<RowOriginPath.Step>> cellPathOpener;
 
 	private static final String CELL_PATH_TITLE = "Open Path to Subject";
-	private static final String CELL_PATH_TOOLTIP = "Opens the way of these rows to a subject as table browsers: one per step, each showing exactly the rows collected in it. Where several associations have brought rows into a step, the chain follows the one which contributed most and shows the others beside it.";
+	private static final String CELL_PATH_TOOLTIP = "Opens the way of these rows to a subject as table browsers: one per step, each showing exactly the rows collected in it. The chain follows one of these rows back to a subject; where other associations have brought rows into a step, they are shown beside it.";
 	private static final String CELL_PATH_NO_GRAPH_TOOLTIP = "Requires a run which keeps its collected rows: switch on \"Enable row origin analysis by keeping the collected rows\" in the export dialog.";
 
 	/**

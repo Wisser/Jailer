@@ -1537,6 +1537,69 @@ public class RemoteEntityGraph extends EntityGraph {
 	}
 
 	/**
+	 * Reads the primary key of one of the rows which have been collected into a table in a given
+	 * step. Which one it is does not matter: it serves as the starting point of a reference way
+	 * through the steps, and every collected row has one.
+	 *
+	 * @param table the table
+	 * @param birthday the collection step
+	 * @return the primary key values, in the order of the table's primary key, or <code>null</code>
+	 *         if nothing has been collected into that table in that step
+	 */
+	public Object[] readAnyCollectedKey(Table table, final int birthday) throws SQLException {
+		final List<Object[]> result = new ArrayList<Object[]>();
+		final int numberOfPKColumns = rowIdSupport.getPrimaryKey(table).getColumns().size();
+		String select =
+				"Select " + pkSelectList(table, "T") +
+				" From " + quoting.requote(table.getName()) + " T" +
+				", " + dmlTableReference(ENTITY, session) + " E" +
+				" Where E.r_entitygraph=" + graphID + " and E.type=" + typeName(table) +
+				" and E.birthday=" + birthday +
+				" and " + pkEqualsEntityID(table, "T", "E");
+		session.executeQuery(select, new Session.AbstractResultSetReader() {
+			@Override
+			public void readCurrentRow(ResultSet resultSet) throws SQLException {
+				CellContentConverter cellContentConverter = new CellContentConverter(getMetaData(resultSet), session, session.dbms);
+				Object[] key = new Object[numberOfPKColumns];
+				for (int i = 0; i < key.length; ++i) {
+					key[i] = cellContentConverter.getObject(resultSet, "PK" + i);
+				}
+				result.add(key);
+			}
+		}, null, null, 1);
+		return result.isEmpty()? null : result.get(0);
+	}
+
+	/**
+	 * Reads which associations have collected rows into a table in a given step, and how many rows
+	 * each of them has brought. Every collected row carries the association it came in through, so
+	 * this is the complete picture, unlike the counters of a progress listener.
+	 *
+	 * @param table the table
+	 * @param birthday the collection step
+	 * @return the number of rows per association id, in no particular order; the key
+	 *         <code>null</code> stands for the rows collected without an association, the subject
+	 *         rows
+	 */
+	public Map<Integer, Long> readCollectedPerAssociation(Table table, int birthday) throws SQLException {
+		final Map<Integer, Long> result = new HashMap<Integer, Long>();
+		String select =
+				"Select E.association, count(*) From " + dmlTableReference(ENTITY, session) + " E" +
+				" Where E.r_entitygraph=" + graphID + " and E.type=" + typeName(table) +
+				" and E.birthday=" + birthday +
+				" Group by E.association";
+		session.executeQuery(select, new Session.AbstractResultSetReader() {
+			@Override
+			public void readCurrentRow(ResultSet resultSet) throws SQLException {
+				int associationId = resultSet.getInt(1);
+				Integer key = resultSet.wasNull()? null : Integer.valueOf(associationId);
+				result.put(key, resultSet.getLong(2));
+			}
+		});
+		return result;
+	}
+
+	/**
 	 * Reads the birthday of the subject rows from the graph. Subject rows are the rows which
 	 * have been collected without an association.
 	 *
