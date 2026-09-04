@@ -72,6 +72,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -5418,29 +5420,66 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	 * @return the browser of the last step, or <code>null</code> if nothing could be opened
 	 */
 	public RowBrowser openRowOriginPath(List<RowOriginPath.Step> path) {
-		if (path == null || path.isEmpty()) {
+		return openRowOriginPaths(Collections.singletonList(path));
+	}
+
+	/**
+	 * Lays out the ways of several rows at once, as {@link #openRowOriginPath(List)} does for one.
+	 * <p>
+	 * All of them in one go: laid out one after the other, each way would be its own step in the
+	 * undo history, would arrange the layout anew and would bring its own browser to the front.
+	 *
+	 * @param paths the paths
+	 * @return the browser of the last step of the last path, or <code>null</code>
+	 */
+	public RowBrowser openRowOriginPaths(List<List<RowOriginPath.Step>> paths) {
+		if (paths == null || paths.isEmpty() || !confirmRowOriginBrowsers(numberOfSteps(paths))) {
 			return null;
 		}
 		RowBrowser last = null;
 		try {
 			beginRowOriginPath();
-			for (RowOriginPath.Step step: path) {
-				Table table = datamodel.get().getTable(step.tableName);
-				Association association = step.associationName == null? null : datamodel.get().namedAssociations.get(step.associationName);
-				if (table == null || (step.associationName != null && association == null)) {
-					// the data model has changed since the run: show as much of the chain as
-					// can still be resolved, starting at the subject
-					break;
-				}
-				last = desktop.addTableBrowser(last, last, table, last == null? null : association, step.condition, null, true);
-				if (last == null) {
-					break;
+			for (List<RowOriginPath.Step> path: paths) {
+				RowBrowser end = openRowOriginPath0(path);
+				if (end != null) {
+					last = end;
 				}
 			}
 		} finally {
 			endRowOriginPath();
 		}
 		selectBrowser(last);
+		return last;
+	}
+
+	/**
+	 * Lays out one way, without the bracket which the undo history and the layout need. See
+	 * {@link #openRowOriginPaths(List)}.
+	 *
+	 * @param path the path
+	 * @return the browser of the last step, or <code>null</code> if nothing could be opened
+	 */
+	private RowBrowser openRowOriginPath0(List<RowOriginPath.Step> path) {
+		if (path == null || path.isEmpty()) {
+			return null;
+		}
+		RowBrowser last = null;
+		for (RowOriginPath.Step step: path) {
+			Table table = datamodel.get().getTable(step.tableName);
+			Association association = step.associationName == null? null : datamodel.get().namedAssociations.get(step.associationName);
+			if (table == null || (step.associationName != null && association == null)) {
+				// the data model has changed since the run: show as much of the chain as
+				// can still be resolved, starting at the subject
+				break;
+			}
+			// created without loading: everything is loaded once at the end of the block, see
+			// flushRowOriginPath
+			last = desktop.addTableBrowser(last, last, table, last == null? null : association, step.condition, null, false);
+			if (last == null) {
+				break;
+			}
+			pendingLoads.add(last);
+		}
 		return last;
 	}
 
@@ -5459,38 +5498,82 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	 * @return the browser of the subject, the end of the chain, or <code>null</code>
 	 */
 	public RowBrowser openRowOriginPathFrom(RowBrowser start, List<RowOriginPath.Step> path) {
-		if (path == null || path.isEmpty()) {
+		return openRowOriginPathsFrom(start, Collections.singletonList(path));
+	}
+
+	/**
+	 * Lays out the ways of several rows at once, as {@link #openRowOriginPathFrom(RowBrowser, List)}
+	 * does for one.
+	 * <p>
+	 * All of them in one go: laid out one after the other, each way would be its own step in the
+	 * undo history, would arrange the layout anew and would bring its own browser to the front. The
+	 * ways grow into each other as they are laid out - a browser which is already there is reused
+	 * and its condition widened - so rows which have taken the same way share one chain, whose
+	 * links then show them all.
+	 *
+	 * @param start the browser of the rows in question, the first link of every chain
+	 * @param paths the paths, each subject first
+	 * @return the browser of the end of the last chain, or <code>null</code>
+	 */
+	public RowBrowser openRowOriginPathsFrom(RowBrowser start, List<List<RowOriginPath.Step>> paths) {
+		if (paths == null || paths.isEmpty() || !confirmRowOriginBrowsers(numberOfNewBrowsers(start, paths))) {
 			return null;
 		}
-		RowBrowser current = start;
+		RowBrowser last = null;
 		try {
 			beginRowOriginPath();
-			int i = path.size() - 1;
-			Table rowTable = datamodel.get().getTable(path.get(i).tableName);
-			if (rowTable == null) {
-				return null;
-			}
-			if (current == null || !rowTable.equals(current.browserContentPane.table)) {
-				// no browser to grow from: the row itself becomes the root of the chain
-				current = desktop.addTableBrowser(null, null, rowTable, null, path.get(i).condition, null, true);
-			}
-			for (; i >= 1 && current != null; --i) {
-				// the association of a step leads to it, so its reversal leads away from it
-				Association forward = datamodel.get().namedAssociations.get(path.get(i).associationName);
-				RowOriginPath.Step next = path.get(i - 1);
-				Table table = datamodel.get().getTable(next.tableName);
-				if (forward == null || forward.reversalAssociation == null || table == null) {
-					// the data model has changed since the run: show as much as still resolves
-					break;
+			for (List<RowOriginPath.Step> path: paths) {
+				RowBrowser end = openRowOriginPathFrom0(start, path);
+				if (end != null) {
+					last = end;
 				}
-				current = reuseOrOpenChild(current, forward.reversalAssociation, table, next.condition);
-				// it navigates a switched-off reversal, but the rows did travel along that pair
-				desktop.markAsRowOriginChain(current);
 			}
 		} finally {
 			endRowOriginPath();
 		}
-		selectBrowser(current);
+		selectBrowser(last);
+		return last;
+	}
+
+	/**
+	 * Lays out one way, without the bracket which the undo history and the layout need. See
+	 * {@link #openRowOriginPathsFrom(RowBrowser, List)}.
+	 *
+	 * @param start the browser of the row in question, the first link of the chain
+	 * @param path the path, subject first
+	 * @return the browser of the subject, the end of the chain, or <code>null</code>
+	 */
+	private RowBrowser openRowOriginPathFrom0(RowBrowser start, List<RowOriginPath.Step> path) {
+		if (path == null || path.isEmpty()) {
+			return null;
+		}
+		RowBrowser current = start;
+		int i = path.size() - 1;
+		Table rowTable = datamodel.get().getTable(path.get(i).tableName);
+		if (rowTable == null) {
+			return null;
+		}
+		if (current == null || !rowTable.equals(current.browserContentPane.table)) {
+			// no browser to grow from: the row itself becomes the root of the chain. Created
+			// without loading: everything is loaded once at the end of the block
+			current = desktop.addTableBrowser(null, null, rowTable, null, path.get(i).condition, null, false);
+			if (current != null) {
+				pendingLoads.add(current);
+			}
+		}
+		for (; i >= 1 && current != null; --i) {
+			// the association of a step leads to it, so its reversal leads away from it
+			Association forward = datamodel.get().namedAssociations.get(path.get(i).associationName);
+			RowOriginPath.Step next = path.get(i - 1);
+			Table table = datamodel.get().getTable(next.tableName);
+			if (forward == null || forward.reversalAssociation == null || table == null) {
+				// the data model has changed since the run: show as much as still resolves
+				break;
+			}
+			current = reuseOrOpenChild(current, forward.reversalAssociation, table, next.condition);
+			// it navigates a switched-off reversal, but the rows did travel along that pair
+			desktop.markAsRowOriginChain(current);
+		}
 		return current;
 	}
 
@@ -5534,7 +5617,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	 * @return the browser of the far end of the chain, or <code>null</code>
 	 */
 	public RowBrowser openRowOriginTree(List<RowOriginPath.Step> path) {
-		if (path == null || path.isEmpty()) {
+		if (path == null || path.isEmpty() || !confirmRowOriginBrowsers(path.size())) {
 			return null;
 		}
 		RowBrowser[] browsers = new RowBrowser[path.size()];
@@ -5586,10 +5669,11 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 					desktop.markAsRowOriginChain(browsers[i]);
 				}
 			}
-			// the roots carry the loading, the children follow through onContentChange
+			// the roots carry the loading, the children follow through onContentChange. Done once
+			// for all of them at the end of the block, see flushRowOriginPath
 			for (int i = 0; i < path.size(); ++i) {
 				if (browsers[i] != null && path.get(i).parentIndex < 0) {
-					browsers[i].browserContentPane.reloadRows();
+					pendingLoads.add(browsers[i]);
 				}
 			}
 		} finally {
@@ -5614,6 +5698,147 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 			}
 		});
 		return last;
+	}
+
+	/**
+	 * Number of table browsers a way to a subject may open without asking first.
+	 */
+	private static final int MAX_ROW_ORIGIN_BROWSERS = 50;
+
+	/**
+	 * Asks whether that many table browsers may be opened. Below the limit it does not ask.
+	 *
+	 * @param numberOfBrowsers number of browsers to be opened at most
+	 * @return <code>true</code> if it may go ahead
+	 */
+	private boolean confirmRowOriginBrowsers(int numberOfBrowsers) {
+		if (numberOfBrowsers <= MAX_ROW_ORIGIN_BROWSERS) {
+			return true;
+		}
+		// "up to": browsers which are already there are reused, and steps which the data model no
+		// longer resolves fall out - it can become fewer, never more
+		return JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this,
+				"Do you really want to open up to " + numberOfBrowsers + " table browsers?",
+				"Opening a lot of table browsers", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+	}
+
+	/**
+	 * The number of browsers a set of ways would open at most: one per step. For the ways which
+	 * reuse what is already there, see {@link #numberOfNewBrowsers(RowBrowser, List)}.
+	 *
+	 * @param paths the paths
+	 * @return the number of steps
+	 */
+	private static int numberOfSteps(List<List<RowOriginPath.Step>> paths) {
+		int result = 0;
+		for (List<RowOriginPath.Step> path: paths) {
+			if (path != null) {
+				result += path.size();
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * One browser of a chain while it is being counted: either one which is already on the desktop
+	 * or one which the counting has thought up, plus what hangs on it.
+	 */
+	private static class CountedBrowser {
+
+		/**
+		 * The browser on the desktop, as long as the way runs over what is already there;
+		 * <code>null</code> from the first link which would have to be opened.
+		 */
+		final RowBrowser real;
+
+		/**
+		 * What the ways counted so far have hung on this one, by association and table.
+		 */
+		final Map<String, CountedBrowser> children = new HashMap<String, CountedBrowser>();
+
+		CountedBrowser(RowBrowser real) {
+			this.real = real;
+		}
+	}
+
+	/**
+	 * The number of table browsers laying these ways out would add.
+	 * <p>
+	 * The ways are walked exactly as {@link #openRowOriginPathFrom0(RowBrowser, List)} walks them,
+	 * and a link which finds a browser to reuse costs nothing - one which is already on the desktop
+	 * ({@link #reusableChild(RowBrowser, Association, Table)}) as well as one an earlier way of this
+	 * very call has opened. That is what makes the difference in the common case: many rows which
+	 * have taken the same way share a single chain.
+	 *
+	 * @param start the browser the ways grow from
+	 * @param paths the paths, each subject first
+	 * @return the number of browsers to be opened
+	 */
+	private int numberOfNewBrowsers(RowBrowser start, List<List<RowOriginPath.Step>> paths) {
+		int[] count = new int[1];
+		Map<String, CountedBrowser> roots = new HashMap<String, CountedBrowser>();
+		for (List<RowOriginPath.Step> path: paths) {
+			if (path == null || path.isEmpty()) {
+				continue;
+			}
+			int i = path.size() - 1;
+			Table rowTable = datamodel.get().getTable(path.get(i).tableName);
+			if (rowTable == null) {
+				continue;
+			}
+			CountedBrowser current;
+			if (start != null && rowTable.equals(start.browserContentPane.table)) {
+				// the browser the question has been asked in, no new one
+				current = root(roots, "", start, count, false);
+			} else {
+				// no browser to grow from: the row itself becomes the root of a chain of its own
+				current = root(roots, rowTable.getName(), null, count, true);
+			}
+			for (; i >= 1; --i) {
+				Association forward = datamodel.get().namedAssociations.get(path.get(i).associationName);
+				RowOriginPath.Step next = path.get(i - 1);
+				Table table = datamodel.get().getTable(next.tableName);
+				if (forward == null || forward.reversalAssociation == null || table == null) {
+					// the data model has changed since the run: the opener stops here as well
+					break;
+				}
+				current = child(current, forward.reversalAssociation, table, count);
+			}
+		}
+		return count[0];
+	}
+
+	/**
+	 * Gets the node a way starts at, counting it as a new browser if it is one and if no earlier
+	 * way has started there already.
+	 */
+	private CountedBrowser root(Map<String, CountedBrowser> roots, String key, RowBrowser real, int[] count, boolean isNew) {
+		CountedBrowser node = roots.get(key);
+		if (node == null) {
+			node = new CountedBrowser(real);
+			roots.put(key, node);
+			if (isNew) {
+				++count[0];
+			}
+		}
+		return node;
+	}
+
+	/**
+	 * Gets the node a link leads to, counting it as a new browser unless there is one to reuse.
+	 */
+	private CountedBrowser child(CountedBrowser parent, Association association, Table table, int[] count) {
+		String key = association.getName() + " -> " + table.getName();
+		CountedBrowser node = parent.children.get(key);
+		if (node == null) {
+			RowBrowser reusable = parent.real == null? null : reusableChild(parent.real, association, table);
+			node = new CountedBrowser(reusable);
+			parent.children.put(key, node);
+			if (reusable == null) {
+				++count[0];
+			}
+		}
+		return node;
 	}
 
 	/**
@@ -5653,6 +5878,32 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	 * @return the child browser, or <code>null</code>
 	 */
 	private RowBrowser reuseOrOpenChild(RowBrowser parent, Association association, Table table, String condition) {
+		RowBrowser child = reusableChild(parent, association, table);
+		if (child != null) {
+			extendConditionDisjunctively(child, condition);
+			return child;
+		}
+		// created without loading: everything is loaded once at the end of the block, see
+		// flushRowOriginPath
+		child = desktop.addTableBrowser(parent, parent, table, association, condition, null, false);
+		if (child != null) {
+			pendingLoads.add(child);
+		}
+		return child;
+	}
+
+	/**
+	 * Gets the child browser a chain would reuse instead of opening one of its own.
+	 * <p>
+	 * The one rule both the laying out and the counting beforehand go by, see
+	 * {@link #numberOfNewBrowsers(RowBrowser, List)}.
+	 *
+	 * @param parent the parent browser
+	 * @param association the association leading from the parent to the child
+	 * @param table the table of the child, the destination of the association
+	 * @return the browser to reuse, or <code>null</code> if there is none
+	 */
+	private RowBrowser reusableChild(RowBrowser parent, Association association, Table table) {
 		// deliberately not "ignoreHidden": that one answers with the grandchildren of a hidden
 		// child, so an existing child would be missed and a second one put next to it
 		for (RowBrowser child: desktop.getChildBrowsers(parent, false)) {
@@ -5665,37 +5916,44 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 					// pinned one beside it than a chain which breaks off at this link
 					break;
 				}
-				extendConditionDisjunctively(child.browserContentPane, condition);
 				return child;
 			}
 		}
-		return desktop.addTableBrowser(parent, parent, table, association, condition, null, true);
+		return null;
 	}
 
 	/**
-	 * Widens the condition of a browser so that it shows what it showed before and, in addition,
-	 * the row of the new chain.
+	 * Notes that the condition of a browser is to be widened, so that it shows what it showed
+	 * before and, in addition, the row of the new chain.
+	 * <p>
+	 * Only noted, not set: ways which run together meet the same browser again and again, and every
+	 * change of the condition would load it anew. {@link #flushRowOriginPath()} sets them all at
+	 * once, at the end of the block.
 	 *
-	 * @param browserContentPane the browser
+	 * @param rowBrowser the browser
 	 * @param condition the condition of the new row
 	 */
-	private void extendConditionDisjunctively(BrowserContentPane browserContentPane, String condition) {
-		String existing = browserContentPane.getAndConditionText();
+	private void extendConditionDisjunctively(RowBrowser rowBrowser, String condition) {
+		String existing = rowBrowser.browserContentPane.getAndConditionText();
 		existing = existing == null? "" : existing.trim();
 		if (existing.length() == 0) {
 			// no condition means no restriction, so the row is shown anyway
 			return;
 		}
-		if (existing.equals(condition) || existing.contains("(" + condition + ")")) {
-			// asking twice for the same row must not pile up the same condition
+		List<String> disjuncts = pendingConditions.get(rowBrowser);
+		// asking twice for the same row must not pile up the same condition. Every operand is
+		// parenthesized: a condition is an "and" chain itself, and it is put into the query as
+		// "... and (<condition>)"
+		if (existing.equals(condition) || existing.contains("(" + condition + ")")
+				|| (disjuncts != null && disjuncts.contains(condition))) {
 			return;
 		}
-		// both operands are parenthesized: a condition is an "and" chain itself, and it is put
-		// into the query as "... and (<condition>)"
-		String combined = "(" + existing + ") or (" + condition + ")";
-		browserContentPane.setAndCondition(combined, true);
-		browserContentPane.onConditionChange(combined);
-		browserContentPane.reloadRows();
+		if (disjuncts == null) {
+			// noted only now: an entry without a disjunct would mean a browser loaded for nothing
+			disjuncts = new ArrayList<String>();
+			pendingConditions.put(rowBrowser, disjuncts);
+		}
+		disjuncts.add(condition);
 	}
 
 	/**
@@ -5703,6 +5961,8 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	 * and a single entry in the undo history for the whole chain.
 	 */
 	private void beginRowOriginPath() {
+		pendingConditions.clear();
+		pendingLoads.clear();
 		UIUtil.setWaitCursor(this);
 		if (desktopUndoManager != null) {
 			String description = "Open Path to Subject";
@@ -5715,9 +5975,58 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	}
 
 	/**
+	 * The disjuncts a browser is to be widened by, gathered while the ways are laid out and applied
+	 * in one go afterwards. Ways which run together meet the same browser again and again, and
+	 * setting its condition means loading it anew each time.
+	 */
+	private final Map<RowBrowser, List<String>> pendingConditions = new LinkedHashMap<RowBrowser, List<String>>();
+
+	/**
+	 * The browsers whose rows are to be loaded once the ways are laid out.
+	 */
+	private final Set<RowBrowser> pendingLoads = new LinkedHashSet<RowBrowser>();
+
+	/**
+	 * Widens the conditions gathered along the ways and loads what has to be loaded, each browser
+	 * exactly once.
+	 * <p>
+	 * Only the topmost browsers are loaded: a browser whose parent is loaded as well follows
+	 * through {@code onContentChange}, so loading it here would be the second time.
+	 */
+	private void flushRowOriginPath() {
+		for (Map.Entry<RowBrowser, List<String>> e: pendingConditions.entrySet()) {
+			BrowserContentPane browserContentPane = e.getKey().browserContentPane;
+			String condition = browserContentPane.getAndConditionText();
+			condition = condition == null? "" : condition.trim();
+			StringBuilder combined = new StringBuilder("(" + condition + ")");
+			for (String disjunct: e.getValue()) {
+				combined.append(" or (").append(disjunct).append(")");
+			}
+			browserContentPane.setAndCondition(combined.toString(), true);
+			browserContentPane.onConditionChange(combined.toString());
+			pendingLoads.add(e.getKey());
+		}
+		for (RowBrowser rb: pendingLoads) {
+			boolean coveredByParent = false;
+			for (RowBrowser parent = rb.parent; parent != null; parent = parent.parent) {
+				if (pendingLoads.contains(parent)) {
+					coveredByParent = true;
+					break;
+				}
+			}
+			if (!coveredByParent && rb.browserContentPane != null) {
+				rb.browserContentPane.reloadRows();
+			}
+		}
+		pendingConditions.clear();
+		pendingLoads.clear();
+	}
+
+	/**
 	 * Counterpart of {@link #beginRowOriginPath()}.
 	 */
 	private void endRowOriginPath() {
+		flushRowOriginPath();
 		Desktop.noArrangeLayoutOnNewTableBrowser = false;
 		disableBorderBrowserUpdates = false;
 		desktop.getiFrameStateChangeRenderer().endAtomic();

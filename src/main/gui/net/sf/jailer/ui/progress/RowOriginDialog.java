@@ -156,7 +156,7 @@ public class RowOriginDialog extends JDialog {
 			public void windowClosed(WindowEvent e) {
 				if (!released) {
 					released = true;
-					RetainedEntityGraphs.removeUser(owner);
+					RetainedEntityGraphs.removeUser();
 				}
 			}
 		});

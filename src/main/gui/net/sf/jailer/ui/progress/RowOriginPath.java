@@ -185,7 +185,7 @@ public class RowOriginPath {
 				public List<Step> call() throws Exception {
 					return describe(context, steps);
 				}
-			}, "Preparing path...", null);
+			}, "Preparing path...", UIUtil.blinkingInfoLabel(null));
 		} catch (CancellationException e) {
 			return null;
 		} catch (Throwable t) {

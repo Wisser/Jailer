@@ -92,6 +92,7 @@ import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -183,6 +184,7 @@ import net.sf.jailer.datamodel.RestrictionDefinition;
 import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.RowOrigin;
+import net.sf.jailer.entitygraph.RowOriginFinder;
 import net.sf.jailer.entitygraph.RowOriginStep;
 import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.extractionmodel.SubjectLimitDefinition;
@@ -3414,15 +3416,41 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 				});
 				popup.insert(origin, 1);
 
-				JMenuItem originPath = new JMenuItem(ROW_ORIGIN_PATH_TITLE);
+				// with more than one row selected the ways of all of them are laid out, as the script
+				// items above do their work for all of them
+				final List<Row> pathRows = new ArrayList<Row>();
+				if (selectedRowsIndexes != null && selectedRowsIndexes.size() > 1) {
+					for (Integer si: selectedRowsIndexes) {
+						if (si >= 0 && si < rows.size()) {
+							pathRows.add(rows.get(si));
+						}
+					}
+				}
+				boolean severalRows = pathRows.size() > 1;
+				if (!severalRows) {
+					pathRows.clear();
+					pathRows.add(originRow);
+				}
+				// enabled as soon as one of them has a way; the others drop out while it runs
+				boolean anyWithPath = false;
+				for (Row r: pathRows) {
+					if (!isKnownNotInSubset(r) && !isKnownSubjectRow(r)) {
+						anyWithPath = true;
+						break;
+					}
+				}
+
+				JMenuItem originPath = new JMenuItem(ROW_ORIGIN_PATH_TITLE
+						+ (severalRows? " (" + pathRows.size() + " selected rows)" : ""));
 				setMenuItemName(originPath, "subject.png");
-				originPath.setToolTipText(notInSubset? ROW_ORIGIN_NOT_IN_SUBSET_TOOLTIP
+				originPath.setToolTipText(severalRows? ROW_ORIGIN_PATH_TOOLTIP
+						: notInSubset? ROW_ORIGIN_NOT_IN_SUBSET_TOOLTIP
 						: subjectRow? ROW_ORIGIN_PATH_SUBJECT_TOOLTIP : ROW_ORIGIN_PATH_TOOLTIP);
-				originPath.setEnabled(!notInSubset && !subjectRow);
+				originPath.setEnabled(anyWithPath);
 				originPath.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						openRowOriginPathFor(originRow, rowOriginContext);
+						openRowOriginPathFor(pathRows, rowOriginContext);
 					}
 				});
 				popup.insert(originPath, 2);
@@ -3972,17 +4000,33 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 				}
 			});
 
-			JMenuItem originPath = new JMenuItem(ROW_ORIGIN_PATH_TITLE);
+			// the way is laid out for all selected rows, not only for a single one
+			final List<Row> pathRows = rowsForOriginPath();
+			boolean severalRows = pathRows.size() > 1;
+			// enabled as soon as one of them has a way; the others drop out while it runs
+			boolean anyWithPath = false;
+			for (Row r: pathRows) {
+				if (!isKnownNotInSubset(r) && !isKnownSubjectRow(r)) {
+					anyWithPath = true;
+					break;
+				}
+			}
+
+			JMenuItem originPath = new JMenuItem(ROW_ORIGIN_PATH_TITLE
+					+ (severalRows? " (" + pathRows.size() + " selected rows)" : ""));
 			setMenuItemName(originPath, "subject.png");
-			originPath.setToolTipText(selectedRow == null? ROW_ORIGIN_PATH_NO_ROW_TOOLTIP
+			// the anchor bar takes the tool tip as the explanation of its button, not the text, so
+			// the number of rows has to be in there as well
+			originPath.setToolTipText(pathRows.isEmpty()? ROW_ORIGIN_PATH_NO_ROW_TOOLTIP
+					: severalRows? ROW_ORIGIN_PATH_ROWS_TOOLTIP_1 + pathRows.size() + ROW_ORIGIN_PATH_ROWS_TOOLTIP_2
 					: notInSubset? ROW_ORIGIN_NOT_IN_SUBSET_TOOLTIP
 					: subjectRow? ROW_ORIGIN_PATH_SUBJECT_TOOLTIP : ROW_ORIGIN_PATH_TOOLTIP);
-			originPath.setEnabled(originEnabled && !subjectRow);
+			originPath.setEnabled(anyWithPath);
 			popup.add(originPath);
 			originPath.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					openRowOriginPathFor(selectedRow, sqlRowOriginContext);
+					openRowOriginPathFor(pathRows, sqlRowOriginContext);
 				}
 			});
 		}
@@ -5471,7 +5515,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	 */
 	private void createRowInSubsetLabel() {
 		rowInSubsetLabel = new JLabel(ROW_IN_SUBSET_LABEL);
-		rowInSubsetLabel.setForeground(Colors.rowInSubsetMarkerColor);
+		rowInSubsetLabel.setForeground(Colors.opaque(Colors.rowInSubsetMarkerColor));
 		rowInSubsetLabel.setToolTipText(ROW_IN_SUBSET_LABEL_TOOLTIP);
 		rowInSubsetLabel.setVisible(false);
 		java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -5498,7 +5542,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		// in the condition just as much as the visibility
 		if (inSubset != rowInSubsetLabel.isVisible() || !text.equals(rowInSubsetLabel.getText())) {
 			rowInSubsetLabel.setText(text);
-			rowInSubsetLabel.setForeground(subject? Colors.rowIsSubjectMarkerColor : Colors.rowInSubsetMarkerColor);
+			rowInSubsetLabel.setForeground(Colors.opaque(subject? Colors.rowIsSubjectMarkerColor : Colors.rowInSubsetMarkerColor));
 			rowInSubsetLabel.setToolTipText(subject? ROW_IS_SUBJECT_LABEL_TOOLTIP : ROW_IN_SUBSET_LABEL_TOOLTIP);
 			rowInSubsetLabel.setVisible(inSubset);
 			// GridBagLayout gives an invisible component no space, so the header has to be
@@ -5669,7 +5713,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
 	private static final String ROW_ORIGIN_PATH_TITLE = "Open Path to Subject";
 	private static final String ROW_ORIGIN_PATH_TOOLTIP = "Opens the way of this row into the subset as a chain of table browsers: one per step, from the subject down to this row, each showing the single row it has been collected through.";
-	private static final String ROW_ORIGIN_PATH_NO_ROW_TOOLTIP = "Select a single row to open its way into the subset as a chain of table browsers.";
+	private static final String ROW_ORIGIN_PATH_NO_ROW_TOOLTIP = "Select one or more rows to open their way into the subset as a chain of table browsers.";
+	private static final String ROW_ORIGIN_PATH_ROWS_TOOLTIP_1 = "Opens the ways of the ";
+	private static final String ROW_ORIGIN_PATH_ROWS_TOOLTIP_2 = " selected rows into the subset as chains of table browsers: one browser per step. Where the rows have taken the same way they share one chain, whose browsers then show them all.";
 
 	private static final String ROW_ORIGIN_NOT_IN_SUBSET_TOOLTIP = "This row is not part of the subset of the last export.";
 
@@ -5743,6 +5789,40 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	}
 
 	/**
+	 * Gets the rows a way to a subject is to be laid out for, asked from the table itself: that
+	 * menu belongs to the table browser, not to a row.
+	 * <p>
+	 * The same reading {@link #singleSelectedRow()} has - the only row of the browser, or what is
+	 * selected - only that several selected rows are an answer here rather than none.
+	 *
+	 * @return the rows, possibly empty
+	 */
+	private List<Row> rowsForOriginPath() {
+		List<Row> result = new ArrayList<Row>();
+		if (rows == null) {
+			return result;
+		}
+		if (rows.size() == 1) {
+			result.add(rows.get(0));
+			return result;
+		}
+		if (rowsTable == null) {
+			return result;
+		}
+		try {
+			for (int si: rowsTable.getSelectedRows()) {
+				int i = rowsTable.getRowSorter() != null? rowsTable.getRowSorter().convertRowIndexToModel(si) : si;
+				if (i >= 0 && i < rows.size()) {
+					result.add(rows.get(i));
+				}
+			}
+		} catch (Exception e) {
+			LogUtil.warn(e);
+		}
+		return result;
+	}
+
+	/**
 	 * Opens the window which shows how a row has found its way into the subset.
 	 *
 	 * @param row the row
@@ -5764,64 +5844,163 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			public void accept(List<RowOriginStep> steps) {
 				List<RowOriginPath.Step> path = RowOriginPath.build(getOwner(), context, steps);
 				if (path != null) {
-					openRowOriginPath(path);
+					openRowOriginPaths(Collections.singletonList(path));
 				}
 			}
 		});
 	}
 
 	/**
-	 * Opens the way a row has taken into the subset as a chain of table browsers.
+	 * Opens the ways rows have taken into the subset as chains of table browsers.
 	 * <p>
-	 * Reading the key of the row, following the chain and describing it happen in one background
-	 * run, so that the row is looked up only once.
+	 * Reading the keys, following the chains and describing them happen in one background run: one
+	 * window to wait at, one place to cancel, and every row looked up only once. What is to be said
+	 * afterwards - rows which are not part of the subset, chains which do not reach a subject - is
+	 * gathered and said in a single message instead of one per row.
 	 *
-	 * @param row the row
+	 * @param theRows the rows
 	 * @param context the context of the run which has kept the collected rows
 	 */
-	private void openRowOriginPathFor(final Row row, final RowOriginContext context) {
+	private void openRowOriginPathFor(final Collection<Row> theRows, final RowOriginContext context) {
 		final Table originTable = context.getDataModel().getTable(table.getName());
-		if (originTable == null) {
+		if (originTable == null || theRows.isEmpty()) {
 			return;
 		}
-		final RowOrigin[] originHolder = new RowOrigin[1];
-		List<RowOriginPath.Step> path;
+		final List<String> notes = new ArrayList<String>();
+		final int[] notFound = new int[1];
+		final int[] notInSubset = new int[1];
+		final AtomicReference<JLabel> infoLabel = new AtomicReference<JLabel>();
+		// the widest wording the counter can take, so that the dialog is packed for it: it does not
+		// grow with the text afterwards. Nobody sees it - the first real message is set before the
+		// dialog has faded in, which takes about 400 ms
+		String info = theRows.size() == 1? ROW_ORIGIN_ANALYZING : rowOriginProgress(theRows.size(), theRows.size());
+		List<List<RowOriginPath.Step>> paths;
 		try {
-			path = ConcurrentTaskControl.call(getOwner(), new Callable<List<RowOriginPath.Step>>() {
+			paths = ConcurrentTaskControl.call(getOwner(), new Callable<List<List<RowOriginPath.Step>>>() {
 				@Override
-				public List<RowOriginPath.Step> call() throws Exception {
-					Object[] primaryKey = readRowOriginKey(row, originTable, context);
-					if (primaryKey == null) {
-						return null;
+				public List<List<RowOriginPath.Step>> call() throws Exception {
+					List<List<RowOriginPath.Step>> result = new ArrayList<List<RowOriginPath.Step>>();
+					// one finder for all of them: each one asks the graph once for the birthday of
+					// the subject rows
+					RowOriginFinder finder = context.createFinder();
+					int done = 0;
+					for (Row row: theRows) {
+						if (theRows.size() > 1) {
+							showProgress(infoLabel, rowOriginProgress(++done, theRows.size()));
+						}
+						Object[] primaryKey = readRowOriginKey(row, originTable, context);
+						if (primaryKey == null) {
+							++notFound[0];
+							continue;
+						}
+						RowOrigin origin = finder.find(originTable, primaryKey);
+						if (origin.getSteps().isEmpty()) {
+							++notInSubset[0];
+							continue;
+						}
+						String note = rowOriginPathNote(origin);
+						if (note != null && !notes.contains(note)) {
+							notes.add(note);
+						}
+						result.add(RowOriginPath.describe(context, origin.getSteps()));
 					}
-					RowOrigin origin = context.createFinder().find(originTable, primaryKey);
-					originHolder[0] = origin;
-					if (origin.getSteps().isEmpty()) {
-						return null;
-					}
-					return RowOriginPath.describe(context, origin.getSteps());
+					return result;
 				}
-			}, "Analyzing origin...", null);
+			}, info, UIUtil.blinkingInfoLabel(infoLabel));
 		} catch (CancellationException e) {
 			return;
 		} catch (Throwable t) {
 			UIUtil.showException(this, "Error", t);
 			return;
 		}
-		RowOrigin origin = originHolder[0];
-		if (path == null || path.isEmpty()) {
-			JOptionPane.showMessageDialog(this,
-					origin == null?
-							"The row could not be found." :
-							"This row is not part of the subset of the last export.",
+		if (paths == null || paths.isEmpty()) {
+			JOptionPane.showMessageDialog(this, nothingToShowMessage(theRows.size(), notFound[0]),
 					ROW_ORIGIN_PATH_TITLE, JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
-		String note = rowOriginPathNote(origin);
-		if (note != null) {
-			JOptionPane.showMessageDialog(this, note, ROW_ORIGIN_PATH_TITLE, JOptionPane.INFORMATION_MESSAGE);
+		String message = leftOutMessage(notFound[0], notInSubset[0]);
+		for (String note: notes) {
+			message = message.isEmpty()? note : message + "\n" + note;
 		}
-		openRowOriginPath(path);
+		if (!message.isEmpty()) {
+			JOptionPane.showMessageDialog(this, message, ROW_ORIGIN_PATH_TITLE, JOptionPane.INFORMATION_MESSAGE);
+		}
+		openRowOriginPaths(paths);
+	}
+
+	private static final String ROW_ORIGIN_ANALYZING = "Analyzing origin...";
+
+	/**
+	 * The wording of the progress while the ways of several rows are being analyzed.
+	 *
+	 * @param done number of the row in hand
+	 * @param numberOfRows number of rows altogether
+	 * @return the text
+	 */
+	private static String rowOriginProgress(int done, int numberOfRows) {
+		return ROW_ORIGIN_ANALYZING + " " + done + " of " + numberOfRows;
+	}
+
+	/**
+	 * Writes a progress text into the info label of a running {@link ConcurrentTaskControl}, from
+	 * whatever thread the task runs on.
+	 *
+	 * @param infoLabel the label, filled in by {@link UIUtil#blinkingInfoLabel(AtomicReference)}
+	 * @param text the text
+	 */
+	private static void showProgress(final AtomicReference<JLabel> infoLabel, final String text) {
+		UIUtil.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				JLabel label = infoLabel.get();
+				if (label != null) {
+					label.setText(text);
+				}
+			}
+		});
+	}
+
+	/**
+	 * The message for the case that not a single way could be laid out.
+	 *
+	 * @param numberOfRows number of rows asked about
+	 * @param notFound number of rows which could not be found
+	 * @return the message
+	 */
+	private String nothingToShowMessage(int numberOfRows, int notFound) {
+		if (numberOfRows == 1) {
+			return notFound > 0?
+					"The row could not be found." :
+					"This row is not part of the subset of the last export.";
+		}
+		if (notFound >= numberOfRows) {
+			return "None of the " + numberOfRows + " rows could be found.";
+		}
+		return "None of the " + numberOfRows + " rows is part of the subset of the last export.";
+	}
+
+	/**
+	 * What is to be said about the rows which have been left out, or an empty text if there are
+	 * none. Only the rows which are left out are worth a word; that the others are being laid out
+	 * is about to be seen anyway.
+	 *
+	 * @param notFound number of rows which could not be found
+	 * @param notInSubset number of rows which are not part of the subset
+	 * @return the message, possibly empty
+	 */
+	private String leftOutMessage(int notFound, int notInSubset) {
+		String reason = "";
+		if (notInSubset > 0) {
+			reason = notInSubset + (notInSubset == 1? " is" : " are") + " not part of the subset of the last export";
+		}
+		if (notFound > 0) {
+			reason += (reason.isEmpty()? "" : ", ") + notFound + " could not be found";
+		}
+		if (reason.isEmpty()) {
+			return "";
+		}
+		int left = notFound + notInSubset;
+		return (left == 1? "One row has" : left + " rows have") + " been left out: " + reason + ".";
 	}
 
 	/**
@@ -5852,12 +6031,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	}
 
 	/**
-	 * Lays out the way of a row into the subset as a chain of table browsers. Implemented where
-	 * there is a desktop to lay it out on.
+	 * Lays out the ways of rows into the subset as chains of table browsers. Implemented where
+	 * there is a desktop to lay them out on.
 	 *
-	 * @param path the path, subject first
+	 * @param paths the paths, each subject first
 	 */
-	protected void openRowOriginPath(List<RowOriginPath.Step> path) {
+	protected void openRowOriginPaths(List<List<RowOriginPath.Step>> paths) {
 	}
 
 	/**

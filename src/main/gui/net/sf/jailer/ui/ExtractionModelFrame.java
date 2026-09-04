@@ -1941,7 +1941,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 										final RowOriginContext rowOriginContext;
 										if (exportDialog.isKeepEntityGraph()) {
 											// at most one retained graph at a time
-											RetainedEntityGraphs.discardCurrent(ExtractionModelFrame.this);
+											RetainedEntityGraphs.discardCurrent();
 											ExecutionContext originExecutionContext = new ExecutionContext(executionContext);
 											originExecutionContext.setScope(WorkingTableScope.GLOBAL);
 											originExecutionContext.setWorkingTableSchema(exportDialog.getWorkingTableSchema());
@@ -1969,7 +1969,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 													dataSource.dbms,
 													dbConnectionDialog.currentConnection.url);
 											RetainedEntityGraphs.register(rowOriginContext);
-											progressPanel.setRowOriginContext(rowOriginContext, RetainedEntityGraphs.discardAction(ExtractionModelFrame.this), RetainedEntityGraphs.discardWhenUnusedAction(ExtractionModelFrame.this));
+											progressPanel.setRowOriginContext(rowOriginContext, RetainedEntityGraphs.discardAction(), RetainedEntityGraphs.discardWhenUnusedAction());
 											progressPanel.setCellPathOpener(path -> {
 											DataBrowser dataBrowser = dataBrowserForAnalysis();
 											if (dataBrowser != null) {

@@ -2403,3 +2403,8 @@ public class GraphicalDataModelView extends JPanel {
 	private static final long serialVersionUID = -5938101712807557555L;
 
 }
+
+
+//TODO
+//TODO associationrendering verbessern, insb. reflektive
+

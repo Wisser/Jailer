@@ -15,22 +15,17 @@
  */
 package net.sf.jailer.ui.progress;
 
-import java.awt.Window;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
-import javax.swing.SwingUtilities;
-
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.BasicDataSource;
+import net.sf.jailer.database.Session;
 import net.sf.jailer.database.WorkingTableScope;
 import net.sf.jailer.datamodel.DataModel;
-import net.sf.jailer.ui.UIUtil;
-import net.sf.jailer.ui.util.ConcurrentTaskControl;
 import net.sf.jailer.ui.util.UISettings;
-import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.LogUtil;
 
 /**
@@ -45,8 +40,8 @@ import net.sf.jailer.util.LogUtil;
  * <p>
  * The rows are needed by whoever looks at them, and that is not only the progress window: a
  * row origin can also be asked for from the Data Browser. Views therefore announce themselves
- * with {@link #addUser()} and {@link #removeUser(Window)}, and closing the progress window
- * discards through {@link #discardWhenUnused(Window)}, which waits for the last view to close.
+ * with {@link #addUser()} and {@link #removeUser()}, and closing the progress window
+ * discards through {@link #discardWhenUnused()}, which waits for the last view to close.
  *
  * @author Ralf Wisser
  */
@@ -84,7 +79,7 @@ public class RetainedEntityGraphs {
 
 	/**
 	 * Registers a newly retained graph. The caller is expected to have discarded a previously
-	 * retained one via {@link #discardCurrent(Window)} beforehand, so that the user sees what
+	 * retained one via {@link #discardCurrent()} beforehand, so that the user sees what
 	 * happens and can cancel it.
 	 *
 	 * @param context the context of the new graph
@@ -120,7 +115,7 @@ public class RetainedEntityGraphs {
 
 	/**
 	 * Announces a view which analyzes the retained graph. Until it is gone again, see
-	 * {@link #removeUser(Window)}, {@link #discardWhenUnused(Window)} keeps the rows.
+	 * {@link #removeUser()}, {@link #discardWhenUnused()} keeps the rows.
 	 */
 	public static synchronized void addUser() {
 		++users;
@@ -129,10 +124,8 @@ public class RetainedEntityGraphs {
 	/**
 	 * Announces that a view has been closed. If it was the last one and a discard has been
 	 * asked for in the meantime, it is carried out now.
-	 *
-	 * @param window the owner of the dialog shown while discarding
 	 */
-	public static void removeUser(Window window) {
+	public static void removeUser() {
 		boolean discardNow;
 		synchronized (RetainedEntityGraphs.class) {
 			if (users > 0) {
@@ -141,25 +134,22 @@ public class RetainedEntityGraphs {
 			discardNow = users == 0 && discardRequested;
 		}
 		if (discardNow) {
-			discardCurrent(window);
+			discardCurrent();
 		}
 	}
 
 	/**
 	 * Discards the retained graph unless a view is still analyzing it. In that case the discard
 	 * is remembered and carried out as soon as the last view is closed.
-	 *
-	 * @param window the owner of the dialog shown while discarding
-	 * @return <code>true</code> if there was nothing left to discard afterwards
 	 */
-	public static boolean discardWhenUnused(Window window) {
+	public static void discardWhenUnused() {
 		synchronized (RetainedEntityGraphs.class) {
 			if (users > 0 && current != null && current.isAvailable()) {
 				discardRequested = true;
-				return false;
+				return;
 			}
 		}
-		return discardCurrent(window);
+		discardCurrent();
 	}
 
 	/**
@@ -196,43 +186,43 @@ public class RetainedEntityGraphs {
 	}
 
 	/**
-	 * Discards the graph currently retained by this application, showing a dialog which can be
-	 * cancelled.
-	 *
-	 * @param window the owner of that dialog
-	 * @return <code>true</code> if there was nothing left to discard afterwards
+	 * Discards the graph currently retained by this application, in the background.
+	 * <p>
+	 * Deleting the rows out of the working tables can take a while, and there is nothing to decide
+	 * while it runs, so nobody is kept waiting for it: it happens on a thread of its own, and the
+	 * caller carries on at once.
 	 */
-	public static boolean discardCurrent(Window window) {
+	public static void discardCurrent() {
 		final RowOriginContext context;
 		synchronized (RetainedEntityGraphs.class) {
 			context = current;
 			discardRequested = false;
-		}
-		if (context == null || !context.isAvailable()) {
-			return true;
-		}
-		try {
-			ConcurrentTaskControl.call(window, new Callable<Object>() {
-				@Override
-				public Object call() throws Exception {
-					context.discard();
-					return null;
-				}
-			}, "Discarding analysis data...", null);
-		} catch (CancellationException e) {
-			return false;
-		} catch (Throwable t) {
-			LogUtil.warn(t);
-			UIUtil.showException(window, "Error", t);
-			return false;
-		}
-		synchronized (RetainedEntityGraphs.class) {
-			if (current == context) {
-				current = null;
+			if (context == null || !context.isAvailable()) {
+				return;
 			}
+			// out of the way before the deleting begins: the next run may register its graph while
+			// this one is still going, and a second discard must not start on the same context.
+			// The two do not get in each other's way, deleting goes by the graph id
+			current = null;
 		}
-		forget(context.getDbUrl());
-		return true;
+		Thread thread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					// as ConcurrentTaskControl does for its own worker: the session is not this
+					// thread's own, it is shared with whoever else is looking at that graph
+					Session.setThreadSharesConnection();
+					context.discard();
+					// only now: what could not be deleted stays in the list and is cleaned up on
+					// the next connection to that database
+					forget(context.getDbUrl());
+				} catch (Throwable t) {
+					LogUtil.warn(t);
+				}
+			}
+		}, "discard-retained-entity-graph");
+		thread.setDaemon(true);
+		thread.start();
 	}
 
 	/**
@@ -269,6 +259,7 @@ public class RetainedEntityGraphs {
 			@Override
 			public void run() {
 				try {
+					Session.setThreadSharesConnection();
 					ExecutionContext executionContext = new ExecutionContext();
 					executionContext.setScope(WorkingTableScope.GLOBAL);
 					executionContext.setWorkingTableSchema(workingTableSchema);
@@ -321,6 +312,7 @@ public class RetainedEntityGraphs {
 				Thread worker = new Thread(new Runnable() {
 					@Override
 					public void run() {
+						Session.setThreadSharesConnection();
 						discardCurrentSilently();
 					}
 				}, "discard-retained-entity-graph-on-exit");
@@ -345,50 +337,31 @@ public class RetainedEntityGraphs {
 	}
 
 	/**
-	 * Discards the current graph on the event dispatch thread, for use as a menu action.
+	 * Discards the current graph, for use as a menu action. Any thread may run it: the state is
+	 * guarded, and the deleting happens in the background anyway.
 	 *
-	 * @param window the owner of the dialog
 	 * @return a runnable which discards the current graph
 	 */
-	public static Runnable discardAction(final Window window) {
+	public static Runnable discardAction() {
 		return new Runnable() {
 			@Override
 			public void run() {
-				if (SwingUtilities.isEventDispatchThread()) {
-					discardCurrent(window);
-				} else {
-					UIUtil.invokeLater(new Runnable() {
-						@Override
-						public void run() {
-							discardCurrent(window);
-						}
-					});
-				}
+				discardCurrent();
 			}
 		};
 	}
 
 	/**
-	 * Discards the current graph on the event dispatch thread, but only if no view is analyzing
-	 * it any more. For the window which owns the analysis, not for an explicit menu item.
+	 * Discards the current graph, but only if no view is analyzing it any more. For the window
+	 * which owns the analysis, not for an explicit menu item.
 	 *
-	 * @param window the owner of the dialog
 	 * @return a runnable which discards the current graph as soon as it is unused
 	 */
-	public static Runnable discardWhenUnusedAction(final Window window) {
+	public static Runnable discardWhenUnusedAction() {
 		return new Runnable() {
 			@Override
 			public void run() {
-				if (SwingUtilities.isEventDispatchThread()) {
-					discardWhenUnused(window);
-				} else {
-					UIUtil.invokeLater(new Runnable() {
-						@Override
-						public void run() {
-							discardWhenUnused(window);
-						}
-					});
-				}
+				discardWhenUnused();
 			}
 		};
 	}

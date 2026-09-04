@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.ui.util;
 
+import java.awt.GridBagConstraints;
 import java.awt.Window;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -30,6 +31,7 @@ import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
+import net.sf.jailer.database.Session;
 import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.util.CancellationException;
@@ -99,6 +101,7 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(8, 8, 8, 8);
@@ -154,6 +157,7 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
 			@Override
 			public void run() {
 				try {
+					Session.setThreadSharesConnection();
 					task.run();
 					cancelled = true;
 				} catch (final Throwable e) {
@@ -240,6 +244,7 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
 		control.setBorder(BorderFactory.createLineBorder(Colors.Color_128_128_128));
 		dialog.getContentPane().add(control);
 		dialog.pack();
+		dialog.setSize(dialog.getWidth() + 16, dialog.getHeight() + 4);
  		dialog.setLocation(windowAncestor.getX() + (windowAncestor.getWidth() - dialog.getWidth()) / 2, windowAncestor.getY() + (windowAncestor.getHeight() - dialog.getHeight()) / 2);
  		UIUtil.fit(dialog);
  		

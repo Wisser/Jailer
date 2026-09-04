@@ -58,8 +58,8 @@ public class Colors {
 		Color_0_112_0.init(new Color(0, 112, 0), new Color(0, 215, 0));
 		Color_255_255_255.init(Color.white, new Color(45, 50, 56));
 		consoleCurrentLineHighlightColor.init(new Color(255, 255, 170), new Color(20, 66, 10));
-		rowInSubsetMarkerColor.init(new Color(0, 150, 0), new Color(0, 205, 0));
-		rowIsSubjectMarkerColor.init(new Color(0, 100, 255), new Color(0, 176, 255));
+		rowInSubsetMarkerColor.init(new Color(0, 150, 0, ROW_ORIGIN_MARKER_ALPHA), new Color(0, 205, 0, ROW_ORIGIN_MARKER_ALPHA));
+		rowIsSubjectMarkerColor.init(new Color(0, 100, 255, ROW_ORIGIN_MARKER_ALPHA), new Color(0, 176, 255, ROW_ORIGIN_MARKER_ALPHA));
 		Color_240_240_255.init(new Color(240, 240, 255), new Color(50, 50, 170));
 		Color_242_242_255.init(new Color(242, 242, 255));
 		Color_192_192_192.init(new Color(192, 192, 192), new Color(102, 107, 106));
@@ -408,6 +408,13 @@ public class Colors {
 	public static LAFAwareColor Color_255_250_215 = new LAFAwareColor();
 	public static LAFAwareColor Color_255_255_0_128 = new LAFAwareColor();
 	public static LAFAwareColor consoleCurrentLineHighlightColor = new LAFAwareColor();
+	/**
+	 * Alpha of the two markers of a row of the subset: a little translucent, so that what lies
+	 * underneath stays visible. Text painted in these colours takes them opaque, see
+	 * {@link #opaque(java.awt.Color)}.
+	 */
+	private static final int ROW_ORIGIN_MARKER_ALPHA = 140;
+
 	public static LAFAwareColor rowInSubsetMarkerColor = new LAFAwareColor();
 	public static LAFAwareColor rowIsSubjectMarkerColor = new LAFAwareColor();
 	public static LAFAwareColor Color_255_255_176 = new LAFAwareColor();
@@ -472,7 +479,24 @@ public class Colors {
 	
 	private static boolean timerIsInitialized = false;
 	private static boolean inDarkLAFMode = false;
-	
+
+	/**
+	 * Gets a color without its transparency. For text: a translucent one looks washed out, while a
+	 * shape painted in it lets what lies underneath show through, which is the point of it.
+	 * <p>
+	 * Asked for anew whenever it is needed and never kept: a {@link LAFAwareColor} changes its
+	 * value when the PLaF is switched.
+	 *
+	 * @param color the color
+	 * @return the color with full alpha
+	 */
+	public static Color opaque(Color color) {
+		if (color.getAlpha() == 255) {
+			return color;
+		}
+		return new Color(color.getRed(), color.getGreen(), color.getBlue());
+	}
+
 	/**
 	 * Initializes all colors according to the current PLaF and triggers a repaint of all windows.
 	 */

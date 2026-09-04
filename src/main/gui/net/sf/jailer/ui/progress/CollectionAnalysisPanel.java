@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
@@ -511,14 +512,28 @@ public class CollectionAnalysisPanel extends JPanel {
 			return null;
 		}
 		final RowOriginContext context = rowOriginContext;
+		final AtomicReference<JLabel> infoLabel = new AtomicReference<JLabel>();
 		try {
 			return ConcurrentTaskControl.call(SwingUtilities.getWindowAncestor(this),
 					new Callable<List<RowOriginPath.Step>>() {
 				@Override
 				public List<RowOriginPath.Step> call() throws Exception {
-					return pathFromCell(tableName, day, context);
+					return pathFromCell(tableName, day, context, new Consumer<String>() {
+						@Override
+						public void accept(final String text) {
+							UIUtil.invokeLater(new Runnable() {
+								@Override
+								public void run() {
+									JLabel label = infoLabel.get();
+									if (label != null) {
+										label.setText(text);
+									}
+								}
+							});
+						}
+					});
 				}
-			}, "Preparing path...", null);
+				}, PROGRESS_WIDTH_RESERVE, UIUtil.blinkingInfoLabel(infoLabel));
 		} catch (CancellationException e) {
 			return null;
 		} catch (Throwable t) {
@@ -548,9 +563,11 @@ public class CollectionAnalysisPanel extends JPanel {
 	 * @param tableName name of the table of the cell
 	 * @param day the collection step of the cell
 	 * @param context the context holding the retained rows
+	 * @param progress told what is being worked on, or <code>null</code>
 	 * @return the steps, the root first, or an empty list if nothing is known about that cell
 	 */
-	public List<RowOriginPath.Step> pathFromCell(String tableName, int day, RowOriginContext context) throws Exception {
+	public List<RowOriginPath.Step> pathFromCell(String tableName, int day, RowOriginContext context,
+			Consumer<String> progress) throws Exception {
 		List<RowOriginPath.Step> path = new ArrayList<RowOriginPath.Step>();
 		// the model of the run, not the one of the editor: the condition is held against the
 		// rowIdSupport of the graph, and the two models have different universal primary keys
@@ -569,6 +586,7 @@ public class CollectionAnalysisPanel extends JPanel {
 		// back to a subject through the entity-graph. Which row it is does not matter - any of them
 		// answers which tables and associations the chain consists of, and being a real way it
 		// cannot fall apart the way a chain picked from row counts alone can
+		report(progress, "following the chain");
 		Object[] referenceKey = entityGraph.readAnyCollectedKey(cellTable, day);
 		List<RowOriginStep> steps = referenceKey == null?
 				null : context.createFinder().find(cellTable, referenceKey).getSteps();
@@ -585,6 +603,7 @@ public class CollectionAnalysisPanel extends JPanel {
 		} else {
 			for (int i = steps.size() - 1; i >= 0; --i) {
 				RowOriginStep step = steps.get(i);
+				report(progress, "step " + (steps.size() - i) + " of " + steps.size());
 				// the association which has brought this row, so its source is the table of the
 				// next link - the same meaning the chain has always given this field
 				chain.add(linkFor(step.getTable(), step.getBirthday(), step.getIncomingAssociation(),
@@ -629,12 +648,46 @@ public class CollectionAnalysisPanel extends JPanel {
 		for (int i = 0; i < chain.size(); ++i) {
 			Link link = chain.get(i);
 			int linkIndex = RowOriginPath.pathFromSelectionToSubject()? i : chain.size() - 1 - i;
-			for (Association branch: link.branches) {
-				addAlternative(path, runDataModel, entityGraph, branch, link.step, linkIndex, collected);
+			int branch = 0;
+			for (Association association: link.branches) {
+				report(progress, "side branch " + (++branch) + " of step " + (i + 1));
+				addAlternative(path, runDataModel, entityGraph, association, link.step, linkIndex, collected);
 			}
 		}
 		return path;
 	}
+
+	/**
+	 * Tells what is being worked on, if anybody is listening.
+	 *
+	 * @param progress the listener, or <code>null</code>
+	 * @param what what is being worked on
+	 */
+	private static void report(Consumer<String> progress, String what) {
+		if (progress != null) {
+			progress.accept(progressText(what));
+		}
+	}
+
+	/**
+	 * The wording of the progress.
+	 *
+	 * @param what what is being worked on
+	 * @return the text
+	 */
+	private static String progressText(String what) {
+		return "Preparing path... " + what;
+	}
+
+	/**
+	 * The widest wording the progress can take.
+	 * <p>
+	 * The dialog is packed for the text it is opened with and does not grow afterwards, so it is
+	 * opened with this one; the first real message replaces it before the dialog has faded in. The
+	 * messages stay below it: a link carries at most {@link #MAX_BRANCHES_PER_LINK} branches, and
+	 * chains of more than 999 steps do not occur.
+	 */
+	private static final String PROGRESS_WIDTH_RESERVE = progressText("side branch 99 of step 999");
 
 	/**
 	 * Builds one link of the chain out of what the entity-graph knows about its step: how many rows

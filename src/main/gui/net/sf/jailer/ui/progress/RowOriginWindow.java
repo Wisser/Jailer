@@ -156,7 +156,7 @@ public class RowOriginWindow extends JDialog {
 			if (owner != null && windows.get(owner) == this) {
 				windows.remove(owner);
 			}
-			RetainedEntityGraphs.removeUser(owner != null? owner : getOwner());
+			RetainedEntityGraphs.removeUser();
 		}
 	}
 

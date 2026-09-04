@@ -87,6 +87,7 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -1931,13 +1932,35 @@ public class UIUtil {
 			public BasicDataSource call() throws Exception {
 				return new BasicDataSource(driverClassName, dbUrl, dbUser, dbPassword, maxPoolSize, jdbcDriverURL);
 			}
-		}, "  Connecting...  ",
-		infoLabel -> {
+		}, "  Connecting...  ", blinkingInfoLabel(null));
+	}
+
+	/**
+	 * Lets the info label of a {@link ConcurrentTaskControl} pulse while its task runs, so that a
+	 * long wait does not look like a hang. To be passed as the {@code initInfoLabel} of
+	 * {@link ConcurrentTaskControl#call(Window, java.util.concurrent.Callable, String, Consumer)}.
+	 * <p>
+	 * The pulsing stops of its own accord as soon as the label is no longer showing, so a task
+	 * which has finished or been cancelled leaves no timer behind.
+	 * <p>
+	 * <b>Whoever writes progress into the label</b> has to open the dialog with a text at least as
+	 * wide as every later one: the dialog is packed for the text it is given and does not grow with
+	 * it afterwards, so anything longer is cut off.
+	 *
+	 * @param label where the label is handed to the caller, so that a task can write its progress
+	 *        into it, or <code>null</code> if that is not wanted
+	 * @return the consumer to pass on
+	 */
+	public static Consumer<JLabel> blinkingInfoLabel(AtomicReference<JLabel> label) {
+		return infoLabel -> {
+			if (label != null) {
+				label.set(infoLabel);
+			}
 			new Runnable() {
 				Timer timer;
 				@Override
 				public void run() {
-					timer = new Timer(500, e -> {
+					timer = new Timer(300, e -> {
 						if (!infoLabel.isShowing()) {
 							timer.setRepeats(false);
 						}
@@ -1949,7 +1972,7 @@ public class UIUtil {
 			        timer.start();
 				}
 			}.run();
-		});
+		};
 	}
 
 	public static boolean checkFileExistsAndWarn(String file, Component parent) {
