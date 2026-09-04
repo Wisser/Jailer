@@ -157,6 +157,7 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
 			@Override
 			public void run() {
 				try {
+					Session.setThreadSharesConnection();
 					task.run();
 					cancelled = true;
 				} catch (final Throwable e) {
