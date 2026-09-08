@@ -113,18 +113,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	private javax.swing.JButton dryRunButton;
 
 	/**
-	 * Keeps the entity-graph after the run, so that the origin of a row can be analyzed.
-	 * Created after {@link #initComponents()}. Deliberately not remembered between runs:
-	 * it leaves data in the database, so it is to be confirmed each time.
-	 */
-	private javax.swing.JCheckBox keepEntityGraphCheckBox;
-
-	/**
-	 * State the check box is to come up with, remembered by the caller for as long as it sees fit.
-	 */
-	private final boolean keepEntityGraphPreset;
-
-	/**
 	 * Xml/Sql switch.
 	 */
 	public final ScriptFormat scriptFormat;
@@ -205,10 +193,8 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
 	/** Creates new form DbConnectionDialog
 	 */
-	public ExportDialog(java.awt.Frame parent, final DataModel dataModel, final Table subject, String subjectCondition, List<AdditionalSubject> additionalSubjects, final Session session, List<String> initialArgs, String user, String password, boolean showCmd, DbConnectionDialog dbConnectionDialog, String extractionModelFileName, String jmFile, String tmpFileName, StringBuilder defaultExportFileName, boolean keepEntityGraphPreset, ExecutionContext executionContext) {
+	public ExportDialog(java.awt.Frame parent, final DataModel dataModel, final Table subject, String subjectCondition, List<AdditionalSubject> additionalSubjects, final Session session, List<String> initialArgs, String user, String password, boolean showCmd, DbConnectionDialog dbConnectionDialog, String extractionModelFileName, String jmFile, String tmpFileName, StringBuilder defaultExportFileName, ExecutionContext executionContext) {
 		super(parent, true);
-		// assigned before initComponents and createKeepEntityGraphCheckBox, which read it
-		this.keepEntityGraphPreset = keepEntityGraphPreset;
 		this.executionContext = executionContext;
 		this.extractionModelFileName = extractionModelFileName;
 		this.jmFile = jmFile;
@@ -239,7 +225,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
 			createDryRunButton();
 			moveCompressedFilesHint();
-			createKeepEntityGraphCheckBox();
 
 			if (jScrollPane2.getHorizontalScrollBar() != null) {
 	        	jScrollPane2.getHorizontalScrollBar().setUnitIncrement(16);
@@ -641,7 +626,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 					workingTableSchemaComboBox.setVisible(!scopeLocal.isSelected());
 					localTempDirLabel.setVisible(scopeLocal.isSelected());
 					localTempDirPanel.setVisible(scopeLocal.isSelected());
-					updateKeepEntityGraphState();
+					updateDryRunButtonState();
 					updateCLIArea();
 				}
 			};
@@ -985,6 +970,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			}
 		}
 		fillCLIArgs(args);
+		args.remove("-keep-entity-graph");
 		String cmd = "sh jailer.sh";
 		if (System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH).startsWith("windows")) {
 			cmd = "jailer.bat";
@@ -2496,12 +2482,10 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	 * Creates the "Dry Run" button and puts it left of the "Export Data" button.
 	 * The buttons of the generated form are re-added with new constraints, so that the
 	 * generated code itself remains untouched.
-	 * <p>
-	 * All three buttons sit in the second row of the button panel: the first one holds the
-	 * option which belongs to them, see {@link #createKeepEntityGraphCheckBox()}.
 	 */
 	private void createDryRunButton() {
 		dryRunButton = new javax.swing.JButton(" Dry Run ");
+		dryRunButton.setIcon(dryRunIcon);
 		dryRunButton.setToolTipText(
 				"<html>Collect the rows and analyze the result, but don't write an export file."
 				+ "<br>Note that this saves the time needed to write the file, not the time needed to collect the rows.</html>");
@@ -2539,6 +2523,22 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		gridBagConstraints.weighty = 1.0;
 		gridBagConstraints.insets = new java.awt.Insets(4, 0, 2, 6);
 		jPanel2.add(cancelButton, gridBagConstraints);
+	}
+
+	/**
+	 * Enables the "Dry Run" button only when row-origin analysis will be available afterwards -
+	 * see {@link #isKeepEntityGraph()}. Dry-running is pointless otherwise: its only purpose beyond
+	 * "Export Data" is analyzing the result, and this could be no different from a full export.
+	 */
+	private void updateDryRunButtonState() {
+		boolean available = isKeepEntityGraph();
+		dryRunButton.setEnabled(available);
+		dryRunButton.setToolTipText(available ?
+				"<html>Collect the rows and analyze the result, but don't write an export file."
+				+ "<br>Note that this saves the time needed to write the file, not the time needed to collect the rows.</html>"
+				:
+				"<html>Requires the working table scope \"global tables\": the other scopes create the working tables"
+				+ "<br>as temporary tables or in a local database, so nothing would survive the run to analyze.</html>");
 	}
 
 	/**
@@ -2610,56 +2610,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 				exportLabel, jLabel3, insert, delete, browseInsertButton, browseDeleteButton }) {
 			component.addMouseListener(highlight);
 		}
-	}
-
-	/**
-	 * Creates the check box which keeps the entity-graph after the run, so that the origin of a
-	 * single row can be analyzed afterwards.
-	 */
-	private void createKeepEntityGraphCheckBox() {
-		keepEntityGraphCheckBox = new javax.swing.JCheckBox("Enable row origin analysis by keeping the collected rows");
-		keepEntityGraphCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-		// as the caller left it. Should the scope not allow it, updateKeepEntityGraphState clears
-		// it again: that runs later, through al.actionPerformed(null) while the scope is set up
-		keepEntityGraphCheckBox.setSelected(keepEntityGraphPreset);
-		keepEntityGraphCheckBox.addActionListener(new java.awt.event.ActionListener() {
-			@Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				updateCLIArea();
-			}
-		});
-		// it belongs to the buttons which start the run, not to the output options: own row
-		// above them, so that its label does not compete with them for the width
-		java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 0;
-		gridBagConstraints.gridwidth = 4;
-		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-		gridBagConstraints.insets = new java.awt.Insets(4, 6, 0, 4);
-		jPanel2.add(keepEntityGraphCheckBox, gridBagConstraints);
-	}
-
-	/**
-	 * Keeping the entity-graph only works with the working table scope "global tables": the other
-	 * scopes create the working tables as temporary tables or in a local database, so nothing
-	 * would survive the run.
-	 */
-	private void updateKeepEntityGraphState() {
-		if (keepEntityGraphCheckBox == null) {
-			return;
-		}
-		boolean supported = scopeGlobal.isSelected();
-		keepEntityGraphCheckBox.setEnabled(supported);
-		if (!supported) {
-			keepEntityGraphCheckBox.setSelected(false);
-		}
-		keepEntityGraphCheckBox.setToolTipText(supported?
-				"<html>Keeps the rows collected during this run in the working tables of the database,"
-				+ "<br>so that afterwards it can be analyzed how a single row has found its way into the subset."
-				+ "<br>The rows are discarded when the progress window is closed.</html>"
-				:
-				"<html>Requires the working table scope \"global tables\": the other scopes create the working tables"
-				+ "<br>as temporary tables or in a local database, so nothing would survive the run.</html>");
 	}
 
 	private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
@@ -3035,12 +2985,14 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
 	/**
 	 * Returns whether the entity-graph is to be kept after the run, so that the origin of a
-	 * single row can be analyzed.
+	 * single row can be analyzed. Follows the working table scope: only "global tables" survives
+	 * the run, the other scopes create the working tables as temporary tables or in a local
+	 * database.
 	 *
 	 * @return <code>true</code> if the entity-graph is to be kept
 	 */
 	public boolean isKeepEntityGraph() {
-		return keepEntityGraphCheckBox != null && keepEntityGraphCheckBox.isEnabled() && keepEntityGraphCheckBox.isSelected();
+		return scopeGlobal.isSelected();
 	}
 
 	/**
@@ -3497,7 +3449,8 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	private ImageIcon cancelIcon;
 	private ImageIcon copyIcon;
 	private ImageIcon warnIcon;
-	
+	private ImageIcon dryRunIcon;
+
 	{
         // load images
         cancelIcon = UIUtil.readImage("/buttoncancel.png");
@@ -3509,6 +3462,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         resetIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/reset.png"));
         copyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/copy.png"));
         warnIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/wanr.png"));
+        dryRunIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/explain.png"));
 	}
 
 }

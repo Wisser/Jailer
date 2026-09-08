@@ -77,6 +77,12 @@ public class UISettings {
 	public static final String LAST_SESSIONS = "LAST_SESSIONS";
 
 	/**
+	 * Name of property (boolean) holding whether the "Subset Insight" info box in the progress
+	 * dialog is expanded.
+	 */
+	public static final String SUBSET_INSIGHT_EXPANDED = "SUBSET_INSIGHT_EXPANDED";
+
+	/**
 	 * Maximum size of any "recent" list.
 	 */
 	private final static int MAX_RECENT_LIST_SIZE = 24;

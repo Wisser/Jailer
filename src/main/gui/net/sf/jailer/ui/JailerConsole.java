@@ -241,7 +241,7 @@ public class JailerConsole {
 	private JPanel getJPanel() {
 		if (jPanel == null) {
 			GridBagConstraints gridBagConstraints29 = new GridBagConstraints();
-			gridBagConstraints29.anchor = GridBagConstraints.EAST;
+			gridBagConstraints29.anchor = GridBagConstraints.SOUTHEAST;
 			gridBagConstraints29.gridx = 6;
 			gridBagConstraints29.gridy = 1;
 			gridBagConstraints29.weightx = 0.0;
@@ -249,6 +249,7 @@ public class JailerConsole {
 			GridBagConstraints gridBagConstraints2 = new GridBagConstraints();
 			gridBagConstraints2.gridx = 3;
 			gridBagConstraints2.gridy = 1;
+			gridBagConstraints2.anchor = GridBagConstraints.SOUTHEAST;
 			gridBagConstraints2.insets = new Insets(4, 4, 4, 0);
 			GridBagConstraints gridBagConstraints1 = new GridBagConstraints();
 			gridBagConstraints1.gridx = 1;
@@ -283,6 +284,17 @@ public class JailerConsole {
 			gridBagConstraints.gridx = 5;
 			gridBagConstraints.insets = new Insets(4, 4, 4, 0);
 			jPanel.add(getOpenResultButton(), gridBagConstraints);
+
+			if (progressPanel != null && progressPanel.getSubsetInsightBox() != null) {
+				GridBagConstraints gridBagConstraintsSubsetInsight = new GridBagConstraints();
+				gridBagConstraintsSubsetInsight.gridx = 0;
+				gridBagConstraintsSubsetInsight.gridy = 1;
+				gridBagConstraintsSubsetInsight.anchor = GridBagConstraints.SOUTHWEST;
+				gridBagConstraintsSubsetInsight.weightx = 1.0;
+				gridBagConstraintsSubsetInsight.fill = GridBagConstraints.HORIZONTAL;
+				gridBagConstraintsSubsetInsight.insets = new Insets(4, 4, 4, 4);
+				jPanel.add(progressPanel.getSubsetInsightBox(), gridBagConstraintsSubsetInsight);
+			}
 		}
 		return jPanel;
 	}

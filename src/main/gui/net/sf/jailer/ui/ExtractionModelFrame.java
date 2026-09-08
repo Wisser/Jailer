@@ -1775,7 +1775,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 
 								jmFile = extractionModelEditor.extractionModelFile != null? extractionModelEditor.extractionModelFile : tmpFileName;
 
-								exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), extractionModelEditor.extractionModel.additionalSubjects, session, args, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), checkRI, dbConnectionDialog, extractionModelEditor.extractionModelFile, jmFile, tmpFileName, defaultExportFileName, extractionModelEditor.keepEntityGraph, executionContext) { // lgtm [java/dereferenced-value-may-be-null]
+								exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), extractionModelEditor.extractionModel.additionalSubjects, session, args, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), checkRI, dbConnectionDialog, extractionModelEditor.extractionModelFile, jmFile, tmpFileName, defaultExportFileName, executionContext) { // lgtm [java/dereferenced-value-may-be-null]
 									@Override
 									protected boolean checkForPKs(JRadioButton rowidButton, Runnable saveSettings) {
 										try {
@@ -1820,9 +1820,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 							}
 							session.shutDown();
 							if (exportDialog.isOk()) {
-								// remember it for the next export of this model, as the dialog
-								// leaves it. Not saved anywhere, it lives with the editor.
-								extractionModelEditor.keepEntityGraph = exportDialog.isKeepEntityGraph();
 								if (exportDialog.scriptFormat == ScriptFormat.XML) {
 									UISettings.s16++;
 								}
@@ -2006,6 +2003,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 												if (rowOriginContext != null) {
 													rowOriginContext.setGraphId(graphId);
 													RetainedEntityGraphs.remember(rowOriginContext.getDbUrl(), exportDialog.getWorkingTableSchema(), graphId);
+													progressPanel.refreshSubsetInsightAvailability();
 												}
 											}
 											@Override

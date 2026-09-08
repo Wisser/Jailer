@@ -7599,6 +7599,13 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	 * not declared as foreign key constraints.
 	 */
 	private void discoverAssociations() {
+		if (session == null) {
+			// the menu is built before the connection is made (initMenu in the constructor), and a
+			// browser whose connection has failed keeps its menus
+			JOptionPane.showMessageDialog(this, "Connect to a database first.",
+					"Discover Associations", JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
 		AssociationDiscoveryView discoveryView = new AssociationDiscoveryView(this, datamodel.get(), session, executionContext);
 		if (discoveryView.isAccepted()) {
 			openDataModelEditor(true);

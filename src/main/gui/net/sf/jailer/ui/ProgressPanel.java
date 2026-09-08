@@ -15,8 +15,10 @@
  */
 package net.sf.jailer.ui;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.Window;
@@ -34,9 +36,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
 
+import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -49,6 +54,7 @@ import net.sf.jailer.entitygraph.RowOriginStep;
 import net.sf.jailer.ui.progress.CollectionAnalysis;
 import net.sf.jailer.ui.progress.CollectionAnalysisPanel;
 import net.sf.jailer.ui.progress.RowOriginPath;
+import net.sf.jailer.ui.util.UISettings;
 
 /**
  * Progress panel.
@@ -62,6 +68,12 @@ public class ProgressPanel extends javax.swing.JPanel {
 	private final ProgressTable progressTable;
 	private final ProgressTable deleteProgressTable;
 	private final CollectionAnalysisPanel analysisPanel;
+	private javax.swing.JToggleButton subsetInsightToggleButton;
+	private JPanel subsetInsightContentPanel;
+	private JPanel subsetInsightBox;
+	private boolean subsetInsightApplicable;
+	private boolean subsetInsightTransactional;
+	private Icon subsetInsightWarnIcon;
 
 	/**
 	 * Creates new form ProgressPanel.
@@ -96,6 +108,7 @@ public class ProgressPanel extends javax.swing.JPanel {
 		jTabbedPane1.addTab("Analysis", analysisPanel);
 		jTabbedPane1.setToolTipTextAt(jTabbedPane1.indexOfComponent(analysisPanel),
 				"Which association is responsible for how many rows of the subset");
+		createSubsetInsightInfoBox();
 		stepLabelColor = stepLabel.getForeground();
 		initialStepLabelColor = stepLabelColor;
 		stepLabel.addPropertyChangeListener("text", new PropertyChangeListener() {
@@ -307,7 +320,12 @@ public class ProgressPanel extends javax.swing.JPanel {
 
 	private static final String CELL_PATH_TITLE = "Open Path to Subject";
 	private static final String CELL_PATH_TOOLTIP = "Opens the way of these rows to a subject as table browsers: one per step, each showing exactly the rows collected in it. The chain follows one of these rows back to a subject; where other associations have brought rows into a step, they are shown beside it.";
-	private static final String CELL_PATH_NO_GRAPH_TOOLTIP = "Requires a run which keeps its collected rows: switch on \"Enable row origin analysis by keeping the collected rows\" in the export dialog.";
+	private static final String CELL_PATH_NO_GRAPH_TOOLTIP = "Requires the working table scope \"global tables\": the other scopes create the working tables as temporary tables or in a local database, so nothing survives the run to analyze.";
+
+	private static final String SUBSET_INSIGHT_TITLE = "Subset Insight";
+	private static final String SUBSET_INSIGHT_MESSAGE =
+			"Analyze afterwards which association is responsible for how many rows of the subset,\n"
+			+ "and why a specific row ended up in it - through the \"Analysis\" tab and \"Open Path to Subject\".";
 
 	/**
 	 * Offers the way to a subject on the cells of the progress table, through the context menu and
@@ -413,6 +431,9 @@ public class ProgressPanel extends javax.swing.JPanel {
 	 *        more, used when this window is closed, or <code>null</code>
 	 */
 	public void setRowOriginContext(net.sf.jailer.ui.progress.RowOriginContext rowOriginContext, final Runnable discardAction, final Runnable discardOnCloseAction) {
+		subsetInsightApplicable = rowOriginContext != null;
+		subsetInsightTransactional = rowOriginContext != null && rowOriginContext.isTransactional();
+		updateSubsetInsightInfoBar();
 		analysisPanel.setRowOriginContext(rowOriginContext, discardAction);
 		if (rowOriginContext != null && discardOnCloseAction != null) {
 			// the retained rows live as long as this window, or as long as a view of them
@@ -438,6 +459,136 @@ public class ProgressPanel extends javax.swing.JPanel {
 				}
 			});
 		}
+	}
+
+	/**
+	 * Re-checks whether the retained entity-graph has become available, and updates the "Subset
+	 * Insight" info box accordingly. Called once the run actually retains the graph - there is no
+	 * listener for this, so the caller (which owns the {@link net.sf.jailer.ui.progress.RowOriginContext})
+	 * has to call this explicitly.
+	 */
+	public void refreshSubsetInsightAvailability() {
+		updateSubsetInsightInfoBar();
+	}
+
+	/**
+	 * Builds the collapsible "Subset Insight" info box and puts it above the tabbed pane, replacing
+	 * the tabbed pane's direct placement in {@code jPanel4} from the generated code with one that
+	 * leaves room for the box above it.
+	 */
+	private void createSubsetInsightInfoBox() {
+		subsetInsightWarnIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/wanr.png"));
+
+		subsetInsightToggleButton = new javax.swing.JToggleButton("▶");
+		subsetInsightToggleButton.setForeground(Colors.Color_0_0_255);
+		subsetInsightToggleButton.setToolTipText("Show/hide the Subset Insight info box");
+		subsetInsightToggleButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				boolean expanded = subsetInsightToggleButton.isSelected();
+				setSubsetInsightExpanded(expanded);
+				UISettings.store(UISettings.SUBSET_INSIGHT_EXPANDED, expanded);
+			}
+		});
+
+		JPanel toggleButtonWrapper = new JPanel(new BorderLayout());
+		toggleButtonWrapper.setBorder(BorderFactory.createEmptyBorder(12, 0, 0, 4));
+		toggleButtonWrapper.add(subsetInsightToggleButton, BorderLayout.NORTH);
+
+		subsetInsightContentPanel = new JPanel(new BorderLayout());
+		updateSubsetInsightInfoBar();
+
+		subsetInsightBox = new JPanel(new BorderLayout());
+		subsetInsightBox.add(toggleButtonWrapper, BorderLayout.WEST);
+		subsetInsightBox.add(subsetInsightContentPanel, BorderLayout.CENTER);
+
+		boolean expanded = !Boolean.FALSE.equals(UISettings.restore(UISettings.SUBSET_INSIGHT_EXPANDED));
+		subsetInsightToggleButton.setSelected(expanded);
+		setSubsetInsightExpanded(expanded);
+	}
+
+	/**
+	 * Gets the "Subset Insight" toggle button + info box, for the caller to place wherever it stays
+	 * visible across every tab (e.g. {@link JailerConsole}'s button bar) - not owned by this panel's
+	 * own layout.
+	 *
+	 * @return the box, or <code>null</code> before the panel has finished constructing
+	 */
+	public JPanel getSubsetInsightBox() {
+		return subsetInsightBox;
+	}
+
+	/**
+	 * Shows or hides the "Subset Insight" info box's content; the toggle button itself always stays
+	 * visible, only its glyph changes to match.
+	 *
+	 * @param expanded <code>true</code> to show the content, <code>false</code> to collapse it
+	 */
+	private void setSubsetInsightExpanded(boolean expanded) {
+		subsetInsightContentPanel.setVisible(expanded);
+		subsetInsightToggleButton.setText(expanded? "▼" : "▶ " + SUBSET_INSIGHT_TITLE);
+		revalidate();
+		repaint();
+	}
+
+	private static final int SUBSET_INSIGHT_FOOTER_LINES = 3;
+
+	/**
+	 * Builds extra message lines with always the same number of lines
+	 * ({@link #SUBSET_INSIGHT_FOOTER_LINES}, padded with blank ones), so the box's height stays
+	 * constant whether or not there is anything to say. Plain text, appended to
+	 * {@link #SUBSET_INSIGHT_MESSAGE} and passed through {@link InfoBar}'s "message" parameter
+	 * (one plain {@code JLabel} per line) rather than its "footer" parameter - the latter is a
+	 * single HTML {@code JLabel}, whose renderer reserves more vertical room than plain text does.
+	 *
+	 * @param lines the lines to show, top to bottom; fewer than the fixed count is padded blank
+	 * @return the lines, each preceded by a newline, ready to append to a message string
+	 */
+	private static String subsetInsightFooterLines(String... lines) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < SUBSET_INSIGHT_FOOTER_LINES; i++) {
+			sb.append('\n').append(i < lines.length? lines[i] : "");
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * Rebuilds the "Subset Insight" info box's body to reflect whether the feature is applicable to
+	 * this run at all, and, if so, whether the retained rows are available yet.
+	 */
+	private void updateSubsetInsightInfoBar() {
+		if (subsetInsightContentPanel == null) {
+			// not built yet: setRowOriginContext can run before createSubsetInsightInfoBox does not
+			// happen in practice, but guard against it anyway
+			return;
+		}
+		String extraLines;
+		Icon icon = null;
+		if (!subsetInsightApplicable) {
+			extraLines = subsetInsightFooterLines(
+					"Not available for this run: requires the working table scope \"global tables\".",
+					"The other scopes create the working tables as temporary tables or in a local",
+					"database, so nothing survives the run to analyze.");
+			icon = subsetInsightWarnIcon;
+		} else if (!analysisPanel.hasRetainedRows()) {
+			extraLines = subsetInsightTransactional?
+					subsetInsightFooterLines(
+							"Not yet available: this run uses a single transaction (-transactional), so analysis",
+							"only becomes available once the whole run has completed.")
+					:
+					subsetInsightFooterLines("Not yet available: becomes available once the rows have been collected.");
+		} else {
+			extraLines = subsetInsightFooterLines();
+		}
+		subsetInsightContentPanel.removeAll();
+		InfoBar infoBar = new InfoBar(SUBSET_INSIGHT_TITLE, SUBSET_INSIGHT_MESSAGE + extraLines, null);
+		if (icon != null) {
+			infoBar.setIcon(icon);
+		}
+		infoBar.shrink();
+		subsetInsightContentPanel.add(infoBar, BorderLayout.CENTER);
+		subsetInsightContentPanel.revalidate();
+		subsetInsightContentPanel.repaint();
 	}
 
 	/** This method is called from within the constructor to

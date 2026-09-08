@@ -515,6 +515,8 @@ public class SubsettingEngine {
 		}
 		jobManager.executeJobs(jobs);
 
+		maybeUpdateRetainedSnapshot(today);
+
 		return progress;
 	}
 
@@ -1525,6 +1527,57 @@ public class SubsettingEngine {
 	}
 
 	/**
+	 * The entity-graph retained for row origin analysis, updated progressively during collection -
+	 * see {@link #maybeUpdateRetainedSnapshot()}.
+	 */
+	private EntityGraph retainedEntityGraph;
+
+	/**
+	 * The birthday up to which {@link #retainedEntityGraph} already holds a copy of the collected
+	 * rows; -1 if no snapshot has been taken yet.
+	 */
+	private int retainedSnapshotBirthday = -1;
+
+	/**
+	 * When {@link #retainedEntityGraph} was last updated, in milliseconds since the epoch.
+	 */
+	private long lastSnapshotTime = 0;
+
+	/**
+	 * Minimum time between two progressive updates of {@link #retainedEntityGraph} during
+	 * collection, so that a run with many "days" does not spend disproportionate time keeping it
+	 * up to date.
+	 */
+	private static final long MIN_SNAPSHOT_INTERVAL_MS = 5000;
+
+	/**
+	 * Progressively updates the retained entity-graph during collection, so that row origin
+	 * analysis is already available before the whole run finishes - not just for the copy taken
+	 * right after collection (see the call in the main export method). A no-op unless
+	 * {@link #keepEntityGraph()} and not throttled; always a no-op in "-transactional" mode, since
+	 * nothing would be visible to another connection before the run's single final commit anyway.
+	 */
+	private void maybeUpdateRetainedSnapshot(int today) throws SQLException {
+		if (!keepEntityGraph() || executionContext.getTransactional()) {
+			return;
+		}
+		long now = System.currentTimeMillis();
+		if (retainedEntityGraph != null && now - lastSnapshotTime < MIN_SNAPSHOT_INTERVAL_MS) {
+			return;
+		}
+		if (retainedEntityGraph == null) {
+			retainedEntityGraph = entityGraph.copy(EntityGraph.createUniqueGraphID(), entityGraph.getSession());
+		} else {
+			((RemoteEntityGraph) entityGraph).appendNewRowsTo(retainedEntityGraph.graphID, retainedSnapshotBirthday, entityGraph.getSession());
+		}
+		// not entityGraph.getAge(): the caller already bumped that one day ahead of "today", the
+		// birthday the rows just inserted this call actually carry (RemoteEntityGraph.java:613 etc.)
+		retainedSnapshotBirthday = today;
+		lastSnapshotTime = now;
+		executionContext.getProgressListenerRegistry().fireEntityGraphRetained(retainedEntityGraph.graphID);
+	}
+
+	/**
 	 * Exports entities.
 	 *
 	 * @param whereClause optional WHERE clause to restrict the subject rows, or <code>null</code>
@@ -1704,7 +1757,9 @@ public class SubsettingEngine {
 			setEntityGraph(graph);
 			setDataModel(extractionModel.dataModel);
 			EntityGraph exportedEntities = null;
-			EntityGraph retainedEntityGraph = null;
+			retainedEntityGraph = null;
+			retainedSnapshotBirthday = -1;
+			lastSnapshotTime = 0;
 			long exportedCount = 0;
 
 			try {
@@ -1735,7 +1790,16 @@ public class SubsettingEngine {
 					// the graph as it writes the rows out - "markIndependentEntities" sets the
 					// birthday to 0 and "deleteIndependentEntities" removes the rows - and the row
 					// origin analysis needs exactly the collection step and the collected rows.
-					retainedEntityGraph = entityGraph.copy(EntityGraph.createUniqueGraphID(), session);
+					// If maybeUpdateRetainedSnapshot() already took a snapshot during collection
+					// (progressive availability), this only tops it up with what has been collected
+					// since; otherwise it takes the one and only copy now, as before.
+					int currentAge = entityGraph.getAge();
+					if (retainedEntityGraph == null) {
+						retainedEntityGraph = entityGraph.copy(EntityGraph.createUniqueGraphID(), session);
+					} else {
+						((RemoteEntityGraph) entityGraph).appendNewRowsTo(retainedEntityGraph.graphID, retainedSnapshotBirthday, session);
+					}
+					retainedSnapshotBirthday = currentAge;
 				}
 
 				if (scriptFile != null) {
@@ -1823,13 +1887,15 @@ public class SubsettingEngine {
 				}
 
 				datamodel.deriveFilters();
-				if (retainedEntityGraph != null) {
-					_log.info("keeping entity-graph " + retainedEntityGraph.graphID + " for row origin analysis");
-					executionContext.getProgressListenerRegistry().fireEntityGraphRetained(retainedEntityGraph.graphID);
-				}
 				entityGraph.truncate(executionContext, true);
 				entityGraph.delete();
 				entityGraph.getSession().commitAll();
+				if (retainedEntityGraph != null) {
+					// fired only after commitAll(): in "-transactional" mode nothing about the
+					// retained graph is visible to another connection before that commit
+					_log.info("keeping entity-graph " + retainedEntityGraph.graphID + " for row origin analysis");
+					executionContext.getProgressListenerRegistry().fireEntityGraphRetained(retainedEntityGraph.graphID);
+				}
 				entityGraph.close();
 			} catch (CancellationException e) {
 				try {

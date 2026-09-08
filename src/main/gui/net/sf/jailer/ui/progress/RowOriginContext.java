@@ -112,6 +112,16 @@ public class RowOriginContext {
 	}
 
 	/**
+	 * Whether the run this graph belongs to uses a single transaction (-transactional) - if so,
+	 * nothing about it is visible to another connection until the whole run has committed.
+	 *
+	 * @return <code>true</code> if the run uses a single transaction
+	 */
+	public boolean isTransactional() {
+		return executionContext.getTransactional();
+	}
+
+	/**
 	 * Gets the data model.
 	 *
 	 * @return the data model

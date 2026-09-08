@@ -176,6 +176,20 @@ public class RemoteEntityGraph extends EntityGraph {
 	}
 
 	/**
+	 * Appends the rows collected since a given birthday to an already-existing copy of this graph,
+	 * for progressively updating a retained snapshot without re-copying what it already has.
+	 *
+	 * @param targetGraphID the id of the existing graph to append to
+	 * @param sinceBirthday only rows with a greater birthday are appended
+	 * @param session for executing SQL statements
+	 */
+	public void appendNewRowsTo(int targetGraphID, int sinceBirthday, Session session) throws SQLException {
+		session.executeUpdate(
+				"Insert into " + dmlTableReference(ENTITY, session) + "(r_entitygraph, " + universalPrimaryKey.columnList(null) + ", birthday, orig_birthday, type, association) " +
+					"Select " + targetGraphID + ", " + universalPrimaryKey.columnList(null) + ", birthday, birthday, type, association From " + dmlTableReference(ENTITY, session) + " Where r_entitygraph=" + graphID + " and birthday>" + sinceBirthday);
+	}
+
+	/**
 	 * Creates a new entity-graph of same type and session.
 	 *
 	 * @return the newly created entity-graph
