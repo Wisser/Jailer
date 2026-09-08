@@ -97,6 +97,7 @@ public class JailerConsole {
 		if (progressPanel != null) {
 			jPanel.remove(getJScrollPane());
 			JTabbedPane contentPane = new JTabbedPane();
+			contentPane.setBorder(javax.swing.BorderFactory.createEmptyBorder());
 			contentPane.add(progressPanel, "Progress");
 			contentPane.add(getJScrollPane(), "Console");
 			GridBagConstraints gridBagConstraints = new GridBagConstraints();
@@ -250,10 +251,10 @@ public class JailerConsole {
 			gridBagConstraints2.gridx = 3;
 			gridBagConstraints2.gridy = 1;
 			gridBagConstraints2.anchor = GridBagConstraints.SOUTHEAST;
-			gridBagConstraints2.insets = new Insets(4, 4, 4, 0);
+			gridBagConstraints2.insets = new Insets(4, 4, 4, 16);
 			GridBagConstraints gridBagConstraints1 = new GridBagConstraints();
 			gridBagConstraints1.gridx = 1;
-			gridBagConstraints1.weightx = 1.0;
+			gridBagConstraints1.weightx = 0;
 			gridBagConstraints1.anchor = GridBagConstraints.EAST;
 			gridBagConstraints1.gridy = 1;
 			GridBagConstraints gridBagConstraints = new GridBagConstraints();
@@ -275,11 +276,13 @@ public class JailerConsole {
 			gridBagConstraints.gridy = 1;
 			gridBagConstraints.gridx = 4;
 			gridBagConstraints.insets = new Insets(4, 4, 4, 2);
-			gridBagConstraints.weightx = 1.0;
+			gridBagConstraints.weightx = 0;
 			jPanel.add(new JLabel(" "), gridBagConstraints);
 			
 			gridBagConstraints = new GridBagConstraints();
 			gridBagConstraints29.anchor = GridBagConstraints.EAST;
+			gridBagConstraints.anchor = GridBagConstraints.SOUTH;
+			gridBagConstraints.weightx = 0;
 			gridBagConstraints.gridy = 1;
 			gridBagConstraints.gridx = 5;
 			gridBagConstraints.insets = new Insets(4, 4, 4, 0);
@@ -289,7 +292,7 @@ public class JailerConsole {
 				GridBagConstraints gridBagConstraintsSubsetInsight = new GridBagConstraints();
 				gridBagConstraintsSubsetInsight.gridx = 0;
 				gridBagConstraintsSubsetInsight.gridy = 1;
-				gridBagConstraintsSubsetInsight.anchor = GridBagConstraints.SOUTHWEST;
+				gridBagConstraintsSubsetInsight.anchor = GridBagConstraints.NORTHWEST;
 				gridBagConstraintsSubsetInsight.weightx = 1.0;
 				gridBagConstraintsSubsetInsight.fill = GridBagConstraints.HORIZONTAL;
 				gridBagConstraintsSubsetInsight.insets = new Insets(4, 4, 4, 4);

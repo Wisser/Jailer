@@ -320,11 +320,11 @@ public class ProgressPanel extends javax.swing.JPanel {
 
 	private static final String CELL_PATH_TITLE = "Open Path to Subject";
 	private static final String CELL_PATH_TOOLTIP = "Opens the way of these rows to a subject as table browsers: one per step, each showing exactly the rows collected in it. The chain follows one of these rows back to a subject; where other associations have brought rows into a step, they are shown beside it.";
-	private static final String CELL_PATH_NO_GRAPH_TOOLTIP = "Requires the working table scope \"global tables\": the other scopes create the working tables as temporary tables or in a local database, so nothing survives the run to analyze.";
+	private static final String CELL_PATH_NO_GRAPH_TOOLTIP = "Requires the working table scope \"global tables\".";
 
-	private static final String SUBSET_INSIGHT_TITLE = "Subset Insight";
+	private static final String SUBSET_INSIGHT_TITLE = "Subset Insight Guide";
 	private static final String SUBSET_INSIGHT_MESSAGE =
-			"Analyze afterwards which association is responsible for how many rows of the subset,\n"
+			"Analyze afterwards which association is responsible for how many rows of the subset,<br>"
 			+ "and why a specific row ended up in it - through the \"Analysis\" tab and \"Open Path to Subject\".";
 
 	/**
@@ -492,7 +492,7 @@ public class ProgressPanel extends javax.swing.JPanel {
 		});
 
 		JPanel toggleButtonWrapper = new JPanel(new BorderLayout());
-		toggleButtonWrapper.setBorder(BorderFactory.createEmptyBorder(12, 0, 0, 4));
+		toggleButtonWrapper.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 4));
 		toggleButtonWrapper.add(subsetInsightToggleButton, BorderLayout.NORTH);
 
 		subsetInsightContentPanel = new JPanel(new BorderLayout());
@@ -531,29 +531,23 @@ public class ProgressPanel extends javax.swing.JPanel {
 		repaint();
 	}
 
-	private static final int SUBSET_INSIGHT_FOOTER_LINES = 3;
-
 	/**
-	 * Builds extra message lines with always the same number of lines
-	 * ({@link #SUBSET_INSIGHT_FOOTER_LINES}, padded with blank ones), so the box's height stays
-	 * constant whether or not there is anything to say. Plain text, appended to
-	 * {@link #SUBSET_INSIGHT_MESSAGE} and passed through {@link InfoBar}'s "message" parameter
-	 * (one plain {@code JLabel} per line) rather than its "footer" parameter - the latter is a
-	 * single HTML {@code JLabel}, whose renderer reserves more vertical room than plain text does.
+	 * Builds extra message lines, each preceded by a {@code <br>}, ready to append to the HTML
+	 * message - no padding, so nothing but the given lines themselves show up.
 	 *
-	 * @param lines the lines to show, top to bottom; fewer than the fixed count is padded blank
-	 * @return the lines, each preceded by a newline, ready to append to a message string
+	 * @param lines the lines to show, top to bottom
+	 * @return the lines, each preceded by a {@code <br>}, ready to append to the HTML message
 	 */
 	private static String subsetInsightFooterLines(String... lines) {
 		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < SUBSET_INSIGHT_FOOTER_LINES; i++) {
-			sb.append('\n').append(i < lines.length? lines[i] : "");
+		for (String line: lines) {
+			sb.append("<br>").append(line);
 		}
 		return sb.toString();
 	}
 
 	/**
-	 * Rebuilds the "Subset Insight" info box's body to reflect whether the feature is applicable to
+	 * Rebuilds the "Subset Insight" guide label to reflect whether the feature is applicable to
 	 * this run at all, and, if so, whether the retained rows are available yet.
 	 */
 	private void updateSubsetInsightInfoBar() {
@@ -566,9 +560,7 @@ public class ProgressPanel extends javax.swing.JPanel {
 		Icon icon = null;
 		if (!subsetInsightApplicable) {
 			extraLines = subsetInsightFooterLines(
-					"Not available for this run: requires the working table scope \"global tables\".",
-					"The other scopes create the working tables as temporary tables or in a local",
-					"database, so nothing survives the run to analyze.");
+					"Not available for this run: requires the working table scope \"global tables\".");
 			icon = subsetInsightWarnIcon;
 		} else if (!analysisPanel.hasRetainedRows()) {
 			extraLines = subsetInsightTransactional?
@@ -576,17 +568,17 @@ public class ProgressPanel extends javax.swing.JPanel {
 							"Not yet available: this run uses a single transaction (-transactional), so analysis",
 							"only becomes available once the whole run has completed.")
 					:
-					subsetInsightFooterLines("Not yet available: becomes available once the rows have been collected.");
+					subsetInsightFooterLines();
 		} else {
 			extraLines = subsetInsightFooterLines();
 		}
 		subsetInsightContentPanel.removeAll();
-		InfoBar infoBar = new InfoBar(SUBSET_INSIGHT_TITLE, SUBSET_INSIGHT_MESSAGE + extraLines, null);
+		JLabel label = new JLabel("<html><b>" + SUBSET_INSIGHT_TITLE + "</b><br>" + SUBSET_INSIGHT_MESSAGE + extraLines + "</html>");
 		if (icon != null) {
-			infoBar.setIcon(icon);
+			label.setIcon(icon);
+			label.setIconTextGap(8);
 		}
-		infoBar.shrink();
-		subsetInsightContentPanel.add(infoBar, BorderLayout.CENTER);
+		subsetInsightContentPanel.add(label, BorderLayout.CENTER);
 		subsetInsightContentPanel.revalidate();
 		subsetInsightContentPanel.repaint();
 	}
