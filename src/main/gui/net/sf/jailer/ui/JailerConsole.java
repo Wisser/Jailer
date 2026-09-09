@@ -114,7 +114,7 @@ public class JailerConsole {
 			dialog.setSize(new Dimension(1110, 740));
 			UIUtil.setInitialWindowLocation(dialog, owner, 10, 50);
 		} else {
-			dialog.setSize(new Dimension(600, 400));
+			dialog.setSize(new Dimension(660, 400));
 			UIUtil.setInitialWindowLocation(dialog, owner, 10, 50);
 		}
 		if (dialog instanceof JDialog) {

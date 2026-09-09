@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import net.sf.jailer.configuration.Configuration;
@@ -152,6 +153,29 @@ public class UISettings {
 	public static synchronized Object restore(String name) {
 		loadUISettings();
 		return properties.get(name);
+	}
+
+	/**
+	 * Returns the path of the settings file and a formatted line per stored entry, for the hidden
+	 * "Debug" menu item.
+	 *
+	 * @return the path, followed by "key = value" lines, sorted by key
+	 */
+	public static synchronized String dump() {
+		loadUISettings();
+		StringBuilder sb = new StringBuilder();
+		sb.append(Environment.newFile(FILENAME).getAbsolutePath()).append("\n\n");
+		for (String key : new TreeMap<String, Object>(properties).keySet()) {
+			sb.append(key).append(" = ").append(format(properties.get(key))).append("\n");
+		}
+		return sb.toString();
+	}
+
+	private static String format(Object value) {
+		if (value != null && value.getClass().isArray()) {
+			return java.util.Arrays.deepToString((Object[]) value);
+		}
+		return String.valueOf(value);
 	}
 
 	public static volatile int s1, s3, s4, s6, s8, s9;

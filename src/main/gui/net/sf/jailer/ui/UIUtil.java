@@ -119,6 +119,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JToolTip;
 import javax.swing.KeyStroke;
@@ -1112,6 +1113,25 @@ public class UIUtil {
             }
         }
         System.exit(0);
+    }
+
+    /**
+     * Shows a block of preformatted text in a scrollable dialog. Used by hidden debug menu items.
+     *
+     * @param parent the parent component
+     * @param title the dialog title
+     * @param text the text to show
+     */
+    public static void showTextDump(Component parent, String title, String text) {
+        JTextArea textArea = new JTextArea(text);
+        textArea.setEditable(false);
+        textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setPreferredSize(new Dimension(700, 500));
+        JOptionPane pane = new JOptionPane(scrollPane, JOptionPane.PLAIN_MESSAGE);
+        JDialog dialog = pane.createDialog(parent, title);
+        dialog.setResizable(true);
+        dialog.setVisible(true);
     }
 
     private static int issueCount = 0;

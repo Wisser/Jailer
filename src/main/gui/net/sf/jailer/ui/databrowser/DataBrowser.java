@@ -66,6 +66,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -140,6 +141,7 @@ import javax.swing.tree.TreePath;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.database.BasicDataSource;
+import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
@@ -147,6 +149,7 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.DataModel.DataModelNotFoundException;
 import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.render.HtmlDataModelRenderer;
@@ -393,6 +396,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		initWorkbenchTabbedPane();
 
 		initMenu();
+		initDebugMenu();
 		initNavTree();
 		initTabSelectionAnimationManager();
 		searchPanelSplitSizerPanel.setCursor(Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR));
@@ -2200,6 +2204,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 				if (session != null) {
 					desktop.session = session;
 					onNewSession(session);
+					discardRetainedEntityGraphsOfPreviousRuns();
 					desktop.openSchemaMappingDialog(true);
 					updateStatusBar();
 					desktop.updateMenu();
@@ -2217,6 +2222,26 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * Gets rid of an entity-graph which a previous run of the application has kept for a row
+	 * origin analysis but could not delete, for instance because it has been killed. Shows a
+	 * cancellable progress dialog while it does so.
+	 */
+	private void discardRetainedEntityGraphsOfPreviousRuns() {
+		try {
+			if (dbConnectionDialog == null || dbConnectionDialog.currentConnection == null || datamodel.get() == null) {
+				return;
+			}
+			final ConnectionInfo connection = dbConnectionDialog.currentConnection;
+			final java.net.URL[] jarURLs = dbConnectionDialog.currentJarURLs();
+			final String password = dbConnectionDialog.getPassword();
+			RetainedEntityGraphs.discardLeftovers(this, datamodel.get(), connection.url,
+					() -> new BasicDataSource(connection.driverClass, connection.url, connection.user, password, 0, jarURLs));
+		} catch (Throwable t) {
+			LogUtil.warn(t);
+		}
 	}
 
 	private String currentDatabaseName;
@@ -6096,10 +6121,21 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	 * @return the new browser, or <code>null</code>
 	 */
 	public RowBrowser openRootBrowser(Table table) {
+		return openRootBrowser(table, "");
+	}
+
+	/**
+	 * Opens a table browser restricted to a condition, as a root of its own.
+	 *
+	 * @param table the table to browse
+	 * @param condition the SQL condition to restrict it to, or "" for none
+	 * @return the new browser, or <code>null</code>
+	 */
+	public RowBrowser openRootBrowser(Table table, String condition) {
 		if (table == null) {
 			return null;
 		}
-		RowBrowser rb = desktop.addTableBrowser(null, null, table, null, "", null, true);
+		RowBrowser rb = desktop.addTableBrowser(null, null, table, null, condition, null, true);
 		selectBrowser(rb);
 		return rb;
 	}
@@ -7560,6 +7596,61 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		}
 		discoverAssociationsItem.addActionListener(e -> discoverAssociations());
 		net.sf.jailer.ui.UIUtil.insertAfter(menuTools, analyseSQLMenuItem1, discoverAssociationsItem);
+	}
+
+	private void initDebugMenu() {
+		if (CommandLineInstance.getInstance().debug) {
+			JMenu debugMenu = new JMenu("Debug");
+			menuBar.add(debugMenu);
+			JMenuItem showUISettings = new JMenuItem("uisettings");
+			showUISettings.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					UIUtil.showTextDump(DataBrowser.this, "UI Settings", UISettings.dump());
+				}
+			});
+			debugMenu.add(showUISettings);
+			JMenuItem showEntityGraphs = new JMenuItem("entitygraphs");
+			showEntityGraphs.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					showEntityGraphsDump();
+				}
+			});
+			debugMenu.add(showEntityGraphs);
+		}
+	}
+
+	private void showEntityGraphsDump() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Remembered in .uisettings:\n");
+		List<String> remembered = RetainedEntityGraphs.describeRemembered();
+		if (remembered.isEmpty()) {
+			sb.append("  (none)\n");
+		} else {
+			for (String line : remembered) {
+				sb.append("  ").append(line).append("\n");
+			}
+		}
+		sb.append("\nCurrently in the connected database:\n");
+		if (session == null) {
+			sb.append("  (not connected)\n");
+		} else {
+			try {
+				final List<String> ids = new ArrayList<String>();
+				session.executeQuery("Select id From " + SQLDialect.dmlTableReference(EntityGraph.ENTITY_GRAPH, session, executionContext) + " order by id",
+						new Session.AbstractResultSetReader() {
+							@Override
+							public void readCurrentRow(ResultSet resultSet) throws SQLException {
+								ids.add(resultSet.getString(1));
+							}
+						});
+				sb.append(ids.isEmpty()? "  (none)\n" : "  graph ids: " + ids + "\n");
+			} catch (Throwable t) {
+				sb.append("  error: ").append(t.getMessage()).append("\n");
+			}
+		}
+		UIUtil.showTextDump(this, "Entity Graphs", sb.toString());
 	}
 
 	private void saveScriptAsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_saveScriptAsMenuItemActionPerformed

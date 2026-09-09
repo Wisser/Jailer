@@ -54,52 +54,36 @@ public class JailerVersion {
 
 // TODO
 // TODO project_subset_insight.md:
-// TODO tables: adjust width
-// TODO statt "possible predecessors" tablelle den "show zcollected rows" dialog hier einbetten
-// TODO Tabellen mit full text search und limitierung
-// TODO ohne "keep" checkbox: im Analyse-Tab erwähnen, dass man die "keep" checkbox aktivieren muss
 // TODO test: $-Expressions (parameter, $IS_SUBJECT)
-// TODO Analyse-Tab: auch Tabellen (neben Associations) anzeigen, und deren Rows dann darunter
-// TODO im Analyse-Tab: erklärtext, was das kann und wie man es benutzt
+
 // TODO dokumentieren
-// TODO aufräumen alter Entity-Graphen ermöglichen. Vielleicht Timestamp in JAILER_PROPERTY?
 // TODO ExportDialog: layout im Buttonbereich unten verbessern
-// TODO "Analye"-Tab: Doppelklick -> "open in DataBrowser"
-// TODO kein öffnen von datenbrowser wenn nicht "keep" gesetzt ist
 // TODO test: JAILER_ENTITY in eigenem Schema
 
 // TODO
-// TODO ExtractionModelEditor - graphview: associationrendering verbessern
+// TODO wenn entitygrahtabellen droppen sind alle EntityGraph-Instanzen, die damit verbunden sind, ungültig. insbes. müssen dann alle DataBrowser, die damit verbunden sind, geschlossen werden
 
-// TODO export im databrowser zb. kann entitygrahtabellen droppen. dann sind retained-graphen ungültig
+//TODO export im databrowser: "Select Association" sinnvoll?
+//TODO databrowser für originAnalysis: wenn entitygrahtabellen droppen oder der mit dem DBrowser verbundene gelöscht wird, soll der DBrowser geschlossen werden
 
-// TODO export dialog, wenn checkbox "keep" disabled, grund im tooltip erklären.
-// TODO "keep" cli-argument nicht im ExDialog anzeigen.
+// TODO 
+// TODO next big thing: testen, ob retained Entitigraphen nach neustart gelöscht werden und wie (silent?)
+
 
 // TODO Analyse-Datenbrowser: bei Schliessen nicht layout persistieren
 
-// TODO 
-// TODO "open path to subject": warning of number of tables to be opened, if more than 100. With option to continue anyway. (or maybe even a limit of 100 tables, with option to continue anyway and store that decition. But ask again if next limit is 100 tables more 
 
-// TODO ProgressDialog: bereits während des Sammelns die Analysefeatures nutzen können, oder alternative die Tooltips anpassen.
-// TODO kein kompakter schlüssel, wenn "keep" gesetzt ist. Aber: besser nicht, da sonst die working-tables gedropped werden.
-
-// TODO wenn EntityGraph gelöscht wird (auch bei drop der Tabellen), dann müssen alle BrowserContentPanes geschlossen werden, 
-// TODO die auf diesen EntityGraph zugreifen. Erkennbar an " E.r_entitygraph=25835" in condition
+// TODO wenn EntityGraph gelöscht wird (auch bei drop der Tabellen), dann müssen alle DataBrowser, die damit verbunden sind. geschlossen werden
 
 // TODO ExportDialog: "mandatory field empty" warning. Grundsätzlich verbessern. ggf. erwähnen, dass man die "keep" checkbox aktiv sein sollte
 
+// TODO BrCoPa context menu "open path to subject": Icon - nimm grünen Pfeil nach unten. Auch für AnchorControl.
 
-// TODO subset indikatoren etwas transparent zeichnen
+// TODO silent delete EntityGraph nach schliessen ProgressView, dann direkt ExportDialog öffnen: wenn Löschen lange dauert, verzögert sich Laden der Schemainfos im ExportDialog, da selbe Connection und Löschen in einem einzigen DELETE
+// TODO Laden Schemainfo ist abbrechbar. Wird es abgebrochen und Schemainfo vom Letzten Mal ist noch da, dann wird es nicht neu geladen. Dann werden die genommen mit JOptionPane, der das erklärt.
+
+// TODO discover assocs: status line: also shown number of already known associations discovered
 
 
-// TODO was bei "open path to subject" item in BrCoPa-Popup, wenn mehrere Rows selektiert?
-
-// TODO concurrent-dialog bei EntityGraph-Löschen: muss eigentlich nicht modal sein? Prüfen.
-
-
-// TODO concurrent-dialog ist zu unauffällig. (im ProgressDialog) verzögerung muss similiert werden. Sind auch Waitcursor gesetzt?: nein! Die also früher setzen.
-
-// TODO ExportDialog: "Copy to Clipboard": Tooltip falls nicht da. Und besseres Layouting.
-
+// TODO extrmodeleditor: titel: "Subject"
 

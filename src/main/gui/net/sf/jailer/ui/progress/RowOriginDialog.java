@@ -129,6 +129,7 @@ public class RowOriginDialog extends JDialog {
 
 		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		JButton closeButton = new JButton(" Close ");
+		closeButton.setIcon(UIUtil.scaleIcon(closeButton, UIUtil.readImage("/buttoncancel.png")));
 		closeButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -247,8 +248,8 @@ public class RowOriginDialog extends JDialog {
 		};
 		for (int i = 0; i < rowsTable.getColumnModel().getColumnCount(); ++i) {
 			rowsTable.getColumnModel().getColumn(i).setCellRenderer(renderer);
-			rowsTable.getColumnModel().getColumn(i).setPreferredWidth(120);
 		}
+		UIUtil.adjustTableColumnsWidth(rowsTable, false);
 	}
 
 	private void onRowSelected() {

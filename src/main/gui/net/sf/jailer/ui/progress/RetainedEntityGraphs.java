@@ -15,7 +15,10 @@
  */
 package net.sf.jailer.ui.progress;
 
+import java.awt.Window;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -25,7 +28,11 @@ import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.WorkingTableScope;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.util.ConcurrentTaskControl;
 import net.sf.jailer.ui.util.UISettings;
+import net.sf.jailer.util.CancellationException;
+import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.LogUtil;
 
 /**
@@ -33,10 +40,10 @@ import net.sf.jailer.util.LogUtil;
  * of it again.
  * <p>
  * The database itself says nothing about the age or the owner of an entity-graph, so the
- * application that has created one has to remember it. Four occasions delete it: the progress
- * window is closed, the next run with retention starts, the application ends (shutdown hook),
- * and the next connection to the same database is made. The last one is the only one which
- * survives a crash; for it the ID is written to the UI settings.
+ * application that has created one has to remember it. Three occasions delete it: the progress
+ * window is closed, the next run with retention starts, and the next connection to the same
+ * database is made. The last one is the only one which survives a crash; for it the ID is
+ * written to the UI settings.
  * <p>
  * The rows are needed by whoever looks at them, and that is not only the progress window: a
  * row origin can also be asked for from the Data Browser. Views therefore announce themselves
@@ -63,8 +70,6 @@ public class RetainedEntityGraphs {
 	 */
 	private static RowOriginContext current;
 
-	private static boolean shutdownHookInstalled = false;
-
 	/**
 	 * Number of views which are currently analyzing the retained graph. As long as at least one
 	 * of them is open, the rows are not discarded.
@@ -86,7 +91,6 @@ public class RetainedEntityGraphs {
 	 */
 	public static synchronized void register(RowOriginContext context) {
 		current = context;
-		installShutdownHook();
 	}
 
 	/**
@@ -227,13 +231,15 @@ public class RetainedEntityGraphs {
 
 	/**
 	 * Discards graphs of a database which have been retained by an earlier run of the
-	 * application. Runs in the background and never disturbs the caller.
+	 * application. Shows a cancellable progress dialog while it deletes the rows, so the user is
+	 * not left wondering what is going on, and can stop it if it takes too long.
 	 *
+	 * @param owner the window to show the progress dialog over
 	 * @param dataModel the data model
 	 * @param dbUrl URL of the database
 	 * @param dataSourceFactory creates a data source for that database
 	 */
-	public static void discardLeftovers(final DataModel dataModel, final String dbUrl,
+	public static void discardLeftovers(final Window owner, final DataModel dataModel, final String dbUrl,
 			final Callable<BasicDataSource> dataSourceFactory) {
 		final String entry;
 		synchronized (RetainedEntityGraphs.class) {
@@ -255,76 +261,74 @@ public class RetainedEntityGraphs {
 			forget(dbUrl);
 			return;
 		}
-		Thread thread = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					Session.setThreadSharesConnection();
-					ExecutionContext executionContext = new ExecutionContext();
-					executionContext.setScope(WorkingTableScope.GLOBAL);
-					executionContext.setWorkingTableSchema(workingTableSchema);
-					RowOriginContext context = new RowOriginContext(dataModel, executionContext, dataSourceFactory, null, dbUrl);
-					context.setGraphId(graphId);
-					context.discard();
-				} catch (Throwable t) {
-					// the graph may be gone already, or the working tables may have been recreated
-					LogUtil.warn(t);
-				} finally {
-					forget(dbUrl);
-				}
-			}
-		}, "discard-retained-entity-graph");
-		thread.setDaemon(true);
-		thread.start();
-	}
 
-	/**
-	 * Discards the current graph without a dialog and without complaining. Used when a new run
-	 * replaces it and by the shutdown hook.
-	 */
-	private static synchronized void discardCurrentSilently() {
-		discardRequested = false;
-		if (current != null) {
-			String dbUrl = current.getDbUrl();
-			try {
-				current.discard();
-			} catch (Throwable t) {
-				LogUtil.warn(t);
-			}
-			current = null;
-			forget(dbUrl);
-		}
-	}
+		ExecutionContext executionContext = new ExecutionContext();
+		executionContext.setScope(WorkingTableScope.GLOBAL);
+		executionContext.setWorkingTableSchema(workingTableSchema);
+		final RowOriginContext context = new RowOriginContext(dataModel, executionContext, dataSourceFactory, null, dbUrl);
+		context.setGraphId(graphId);
 
-	/**
-	 * The shutdown hook is the last resort. It must not hold up the JVM, so it gets a short
-	 * time limit and stays silent; what it does not manage is cleaned up on the next connection
-	 * to that database.
-	 */
-	private static synchronized void installShutdownHook() {
-		if (shutdownHookInstalled) {
-			return;
-		}
-		shutdownHookInstalled = true;
-		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+		final ConcurrentTaskControl concurrentTaskControl = new ConcurrentTaskControl(owner,
+				"Discarding rows left over from a previous run...") {
 			@Override
-			public void run() {
-				Thread worker = new Thread(new Runnable() {
+			protected void onError(Throwable error) {
+				// the graph may be gone already, or the working tables may have been recreated
+				LogUtil.warn(error);
+				closeWindow();
+			}
+			@Override
+			protected void onCancellation() {
+				master.cancelButton.setText("Stopping...");
+				master.cancelButton.setEnabled(false);
+				CancellationHandler.cancel(context.getCancellationContext());
+				UIUtil.invokeLater(new Runnable() {
 					@Override
 					public void run() {
-						Session.setThreadSharesConnection();
-						discardCurrentSilently();
+						closeWindow();
 					}
-				}, "discard-retained-entity-graph-on-exit");
-				worker.setDaemon(true);
-				worker.start();
-				try {
-					worker.join(4000);
-				} catch (InterruptedException e) {
-					// ignore
-				}
+				});
 			}
-		}, "jailer-shutdown-hook"));
+		};
+		ConcurrentTaskControl.openInModalDialog(owner, concurrentTaskControl, new ConcurrentTaskControl.Task() {
+			@Override
+			public void run() throws Throwable {
+				try {
+					context.discard();
+				} catch (CancellationException e) {
+					// left in the list: retried on the next connection, or the next run of the application
+					throw e;
+				}
+				forget(dbUrl);
+				UIUtil.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						if (concurrentTaskControl.master.isShowing()) {
+							concurrentTaskControl.closeWindow();
+						}
+					}
+				});
+			}
+		}, "Discarding rows left over from a previous run...", UIUtil.blinkingInfoLabel(null));
+		CancellationHandler.reset(context.getCancellationContext());
+	}
+
+	/**
+	 * Returns the retained-graph entries currently remembered in the UI settings, one description
+	 * per database URL, for the hidden "entitygraphs" debug menu item.
+	 *
+	 * @return one "dbUrl: graphId=..., schema=..., [this run|other run/leftover]" line per entry
+	 */
+	public static synchronized List<String> describeRemembered() {
+		List<String> lines = new ArrayList<String>();
+		for (Map.Entry<String, String> entry : load().entrySet()) {
+			String[] parts = entry.getValue().split("\t", -1);
+			boolean own = parts.length == 3 && SESSION_ID.equals(parts[0]);
+			String schema = parts.length > 1 && parts[1].length() > 0? parts[1] : "(default)";
+			String graphId = parts.length > 2? parts[2] : "?";
+			lines.add(entry.getKey() + ": graphId=" + graphId + ", schema=" + schema
+					+ (own? " [this run]" : " [other run/leftover]"));
+		}
+		return lines;
 	}
 
 	@SuppressWarnings("unchecked")

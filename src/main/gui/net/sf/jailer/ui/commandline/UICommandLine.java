@@ -70,6 +70,13 @@ public class UICommandLine {
 	@Option(name="-", usage="do not interpret the next word as an option, even if it begins with '-'. For example, if the username is \"-abc\", use \"- -abc\".")
 	public List<String> escapedWords = new ArrayList<String>();
 
+	/**
+	 * Enables the hidden "Debug" menu in the model editor and the Data Browser.
+	 * Deliberately without a "usage" text, so that it does not appear in the usage output.
+	 */
+	@Option(name="-debug")
+	public boolean debug = false;
+
 	// Connection alias, to be set via DMMD
 	public String alias;
 

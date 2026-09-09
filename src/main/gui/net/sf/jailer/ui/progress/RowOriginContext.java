@@ -52,6 +52,12 @@ public class RowOriginContext {
 	private boolean discarded = false;
 
 	/**
+	 * Own cancellation context for {@link #discard()}, so it neither gets blocked by, nor
+	 * interferes with, an unrelated run's cancellation state (see {@link CancellationHandler}).
+	 */
+	private final Object cancellationContext = new Object();
+
+	/**
 	 * Constructor.
 	 *
 	 * @param dataModel the data model the graph has been collected with
@@ -183,12 +189,22 @@ public class RowOriginContext {
 			return;
 		}
 		try {
-			getEntityGraph().delete();
+			getEntityGraph().delete(false, cancellationContext);
 			session.commitAll();
 		} finally {
 			discarded = true;
 			closeSession();
 		}
+	}
+
+	/**
+	 * Gets the cancellation context {@link #discard()} checks, so that a caller running it in the
+	 * background can offer to cancel it.
+	 *
+	 * @return the context
+	 */
+	public Object getCancellationContext() {
+		return cancellationContext;
 	}
 
 	/**

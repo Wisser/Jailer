@@ -841,10 +841,23 @@ public class Session {
 	 * @return update-count
 	 */
 	public int executeUpdate(String sqlUpdate) throws SQLException {
+		return executeUpdate(sqlUpdate, (Object) null);
+	}
+
+	/**
+	 * Executes a SQL-Update (INSERT, DELETE or UPDATE).
+	 *
+	 * @param sqlUpdate the update in SQL
+	 * @param context cancellation context to check/register the statement under, or <code>null</code>
+	 *        for the shared default context
+	 *
+	 * @return update-count
+	 */
+	public int executeUpdate(String sqlUpdate, Object context) throws SQLException {
 		if (getLogStatements()) {
 			_log.info(logPrefix + sqlUpdate);
 		}
-		CancellationHandler.checkForCancellation(null);
+		CancellationHandler.checkForCancellation(context);
 		try {
 			int rowCount = 0;
 			int failures = 0;
@@ -858,7 +871,7 @@ public class Session {
 				try {
 					con = connectionFactory.getConnection();
 					statement = con.createStatement();
-					begin(statement, null);
+					begin(statement, context);
 					if (serializeAccess) {
 						boolean acquired;
 						try {
@@ -893,7 +906,7 @@ public class Session {
 						}
 					}
 
-					end(statement, null);
+					end(statement, context);
 					releaseConnection(con);
 					ok = true;
 					if (getLogStatements()) {
@@ -904,8 +917,8 @@ public class Session {
 						markConnectionAsPotentiallyInvalid(con);
 					}
 					checkKilled();
-					CancellationHandler.checkForCancellation(null);
-					end(statement, null);
+					CancellationHandler.checkForCancellation(context);
+					end(statement, context);
 
 					boolean isRetrieable = isRetrieable(e);
 					if (++failures > MAXIMUM_NUMBER_OF_FAILURES || !isRetrieable) {
@@ -927,7 +940,7 @@ public class Session {
 			}
 			return rowCount;
 		} catch (SQLException e) {
-			CancellationHandler.checkForCancellation(null);
+			CancellationHandler.checkForCancellation(context);
 			if (!silent) {
 				_log.error(logPrefix + "Error executing statement", e);
 			} else {

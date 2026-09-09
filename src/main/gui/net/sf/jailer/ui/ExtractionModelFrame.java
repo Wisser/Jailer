@@ -36,6 +36,7 @@ import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -72,6 +73,7 @@ import net.sf.jailer.JailerVersion;
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.database.DMLTransformer;
+import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.WorkingTableScope;
 import net.sf.jailer.datamodel.Association;
@@ -81,6 +83,7 @@ import net.sf.jailer.datamodel.DataModel.NoPrimaryKeyException;
 import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ddl.DDLCreator;
+import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
@@ -176,6 +179,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 		initComponents(); UIUtil.initComponents(this);
 		initMenu();
 		initSandbox();
+		initDebugMenu();
         AnimationController.registerWindow(this, new AnimationController.AnimationControl() {
 			@Override
 			public void setEnabled(boolean enabled) {
@@ -229,6 +233,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 			dbConnectionDialog = new DbConnectionDialog(this, JailerVersion.APPLICATION_NAME, null, null, executionContext);
 		}
         dbConnectionDialog.autoConnect();
+        if (dbConnectionDialog.isConnected) {
+        	discardRetainedEntityGraphsOfPreviousRuns();
+        }
 
         final String bmFile = CommandLineInstance.getInstance().bookmark;
 		if (bmFile != null && !"".equals(bmFile) && new File(bmFile).exists()) {
@@ -503,6 +510,71 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void initDebugMenu() {
+		if (CommandLineInstance.getInstance().debug) {
+			JMenu debugMenu = new JMenu("Debug");
+			jMenuBar2.add(debugMenu);
+			JMenuItem showUISettings = new JMenuItem("uisettings");
+			showUISettings.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					UIUtil.showTextDump(ExtractionModelFrame.this, "UI Settings", UISettings.dump());
+				}
+			});
+			debugMenu.add(showUISettings);
+			JMenuItem showEntityGraphs = new JMenuItem("entitygraphs");
+			showEntityGraphs.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					showEntityGraphsDump();
+				}
+			});
+			debugMenu.add(showEntityGraphs);
+		}
+	}
+
+	private void showEntityGraphsDump() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Remembered in .uisettings:\n");
+		List<String> remembered = RetainedEntityGraphs.describeRemembered();
+		if (remembered.isEmpty()) {
+			sb.append("  (none)\n");
+		} else {
+			for (String line : remembered) {
+				sb.append("  ").append(line).append("\n");
+			}
+		}
+		sb.append("\nCurrently in the connected database:\n");
+		if (dbConnectionDialog == null || !dbConnectionDialog.isConnected) {
+			sb.append("  (not connected)\n");
+		} else {
+			try {
+				if (theSession == null) {
+					BasicDataSource dataSource = new BasicDataSource(dbConnectionDialog.currentConnection.driverClass,
+							dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user,
+							dbConnectionDialog.getPassword(), 0, dbConnectionDialog.currentJarURLs());
+					theSession = SessionForUI.createSession(dataSource, dataSource.dbms, executionContext.getIsolationLevel(), true, true, this);
+				}
+				if (theSession == null) {
+					sb.append("  (connection failed)\n");
+				} else {
+					final List<String> ids = new ArrayList<String>();
+					theSession.executeQuery("Select id From " + SQLDialect.dmlTableReference(EntityGraph.ENTITY_GRAPH, theSession, dbConnectionDialog.getExecutionContext()) + " order by id",
+							new Session.AbstractResultSetReader() {
+								@Override
+								public void readCurrentRow(ResultSet resultSet) throws SQLException {
+									ids.add(resultSet.getString(1));
+								}
+							});
+					sb.append(ids.isEmpty()? "  (none)\n" : "  graph ids: " + ids + "\n");
+				}
+			} catch (Throwable t) {
+				sb.append("  error: ").append(t.getMessage()).append("\n");
+			}
+		}
+		UIUtil.showTextDump(this, "Entity Graphs", sb.toString());
 	}
 
 	Color origCSBG, origL2BG;
@@ -1967,6 +2039,22 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 													dbConnectionDialog.currentConnection.url);
 											RetainedEntityGraphs.register(rowOriginContext);
 											progressPanel.setRowOriginContext(rowOriginContext, RetainedEntityGraphs.discardAction(), RetainedEntityGraphs.discardWhenUnusedAction());
+											progressPanel.setCollectedRowsOpener(tableName -> {
+												DataBrowser dataBrowser = dataBrowserForAnalysis();
+												if (dataBrowser != null) {
+													Table originTable = rowOriginContext.getDataModel().getTable(tableName);
+													Table editorTable = extractionModelEditor.dataModel.getTable(tableName);
+													if (originTable != null && editorTable != null) {
+														try {
+															String condition = rowOriginContext.getEntityGraph().collectedCondition(originTable, "A", "collected rows");
+															dataBrowser.refreshForAnalysis();
+															dataBrowser.openRootBrowser(editorTable, condition);
+														} catch (Exception e) {
+															UIUtil.showException(ExtractionModelFrame.this, "Error", e);
+														}
+													}
+												}
+											});
 											progressPanel.setCellPathOpener(path -> {
 											DataBrowser dataBrowser = dataBrowserForAnalysis();
 											if (dataBrowser != null) {
@@ -2202,8 +2290,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 
 	/**
 	 * Gets rid of an entity-graph which a previous run of the application has kept for a row
-	 * origin analysis but could not delete, for instance because it has been killed. Runs in the
-	 * background and never disturbs the connecting.
+	 * origin analysis but could not delete, for instance because it has been killed. Shows a
+	 * cancellable progress dialog while it does so.
 	 */
 	private void discardRetainedEntityGraphsOfPreviousRuns() {
 		try {
@@ -2214,7 +2302,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 			final DbConnectionDialog.ConnectionInfo connection = dbConnectionDialog.currentConnection;
 			final java.net.URL[] jarURLs = dbConnectionDialog.currentJarURLs();
 			final String password = dbConnectionDialog.getPassword();
-			RetainedEntityGraphs.discardLeftovers(extractionModelEditor.dataModel, connection.url,
+			RetainedEntityGraphs.discardLeftovers(this, extractionModelEditor.dataModel, connection.url,
 					() -> new BasicDataSource(connection.driverClass, connection.url, connection.user, password, 0, jarURLs));
 		} catch (Throwable t) {
 			LogUtil.warn(t);

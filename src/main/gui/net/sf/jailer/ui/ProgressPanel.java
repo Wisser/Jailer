@@ -163,6 +163,7 @@ public class ProgressPanel extends javax.swing.JPanel {
 			gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
 //            gridBagConstraints.insets = new Insets(2, 0, 2, 0);
 			rowsPerTablePanel.add(l, gridBagConstraints);
+			attachCollectedRowsAction(l, tableName);
 
 			l = new JLabel("" + UIUtil.format(rowsPerTable.get(tableName)) + "  ");
 			l.setBackground(bgColor);
@@ -176,6 +177,7 @@ public class ProgressPanel extends javax.swing.JPanel {
 			gridBagConstraints.weightx = 1.0;
 //            gridBagConstraints.insets = new Insets(2, 0, 2, 0);
 			rowsPerTablePanel.add(l, gridBagConstraints);
+			attachCollectedRowsAction(l, tableName);
 
 			l = new JLabel(" ");
 			reductionLabels.put(tableName, l);
@@ -194,6 +196,7 @@ public class ProgressPanel extends javax.swing.JPanel {
 			gridBagConstraints.weightx = 0;
 //            gridBagConstraints.insets = new Insets(2, 0, 2, 0);
 			rowsPerTablePanel.add(l, gridBagConstraints);
+			attachCollectedRowsAction(l, tableName);
 
 			++y;
 		}
@@ -206,6 +209,53 @@ public class ProgressPanel extends javax.swing.JPanel {
 		rowsPerTablePanel.add(l, gridBagConstraints);
 
 		rowsPerTablePanel.repaint();
+	}
+
+	/**
+	 * Offers a table's already-collected rows in the Data Browser, through a double click, the
+	 * context menu, and a tooltip - on a label of its row in the "Rows per Table" list.
+	 *
+	 * @param label the label to attach the behavior to
+	 * @param tableName the table the label belongs to
+	 */
+	private void attachCollectedRowsAction(final JLabel label, final String tableName) {
+		MouseAdapter listener = new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (e.getClickCount() == 2 && !e.isPopupTrigger()) {
+					openCollectedRows(tableName);
+				}
+			}
+			@Override
+			public void mousePressed(MouseEvent e) {
+				maybeShowPopup(e);
+			}
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				maybeShowPopup(e);
+			}
+			private void maybeShowPopup(MouseEvent e) {
+				if (!e.isPopupTrigger()) {
+					return;
+				}
+				boolean available = collectedRowsOpener != null && analysisPanel.hasRetainedRows();
+				JPopupMenu popup = new JPopupMenu();
+				JMenuItem item = new JMenuItem(OPEN_TABLE_TITLE);
+				item.setToolTipText(available? OPEN_TABLE_TOOLTIP : CELL_PATH_NO_GRAPH_TOOLTIP);
+				item.setEnabled(available);
+				item.addActionListener(evt -> openCollectedRows(tableName));
+				popup.add(item);
+				popup.show(label, e.getX(), e.getY());
+			}
+		};
+		label.addMouseListener(listener);
+		label.setToolTipText(analysisPanel.hasRetainedRows()? OPEN_TABLE_TOOLTIP : CELL_PATH_NO_GRAPH_TOOLTIP);
+	}
+
+	private void openCollectedRows(String tableName) {
+		if (tableName != null && collectedRowsOpener != null && analysisPanel.hasRetainedRows()) {
+			collectedRowsOpener.accept(tableName);
+		}
 	}
 
 	private int currentlySelectedRow = -1;
@@ -306,6 +356,18 @@ public class ProgressPanel extends javax.swing.JPanel {
 		analysisPanel.setTableOpener(tableOpener);
 	}
 
+	private Consumer<String> collectedRowsOpener;
+
+	/**
+	 * Sets the consumer which opens a table's already-collected rows in a Data Browser. Only if one
+	 * is set, and the retained entity-graph is available, does the "Rows per Table" list offer this.
+	 *
+	 * @param collectedRowsOpener the consumer (given the table name), or <code>null</code>
+	 */
+	public void setCollectedRowsOpener(Consumer<String> collectedRowsOpener) {
+		this.collectedRowsOpener = collectedRowsOpener;
+	}
+
 	/**
 	 * Sets the consumer which lays a branching path out in a Data Browser. Only if one is set, a
 	 * cell of the progress table offers to open its way to a subject.
@@ -322,10 +384,19 @@ public class ProgressPanel extends javax.swing.JPanel {
 	private static final String CELL_PATH_TOOLTIP = "Opens the way of these rows to a subject as table browsers: one per step, each showing exactly the rows collected in it. The chain follows one of these rows back to a subject; where other associations have brought rows into a step, they are shown beside it.";
 	private static final String CELL_PATH_NO_GRAPH_TOOLTIP = "Requires the working table scope \"global tables\".";
 
+	private static final String OPEN_TABLE_TITLE = "Open Collected Rows in Data Browser";
+	private static final String OPEN_TABLE_TOOLTIP = "Double-click to open the rows already collected for this table in the Data Browser.";
+
 	private static final String SUBSET_INSIGHT_TITLE = "Subset Insight Guide";
 	private static final String SUBSET_INSIGHT_MESSAGE =
-			"Analyze afterwards which association is responsible for how many rows of the subset,<br>"
-			+ "and why a specific row ended up in it - through the \"Analysis\" tab and \"Open Path to Subject\".";
+			"Find out why a specific row ended up in the subset,<br>"
+			+ "and which association is responsible for how many rows of it. Ways to view rows in the Data Browser:"
+			+ "<ul>"
+			+ "<li><b>Rows per Table</b> above: double-click a table, or right-click it for \"" + OPEN_TABLE_TITLE + "\" - only the rows collected so far.</li>"
+			+ "<li><b>Export</b> tab (progress table): double-click or right-click a cell for \"" + CELL_PATH_TITLE + "\" - the chain of rows leading to the subject.</li>"
+			+ "<li><b>Analysis</b> tab: right-click a row for \"Open in Data Browser\" - the whole table, unfiltered.</li>"
+			+ "<li>In the Data Browser itself: right-click any row for \"Why is this Row in the Subset?\" or \"" + CELL_PATH_TITLE + "\".</li>"
+			+ "</ul>";
 
 	/**
 	 * Offers the way to a subject on the cells of the progress table, through the context menu and
@@ -532,21 +603,6 @@ public class ProgressPanel extends javax.swing.JPanel {
 	}
 
 	/**
-	 * Builds extra message lines, each preceded by a {@code <br>}, ready to append to the HTML
-	 * message - no padding, so nothing but the given lines themselves show up.
-	 *
-	 * @param lines the lines to show, top to bottom
-	 * @return the lines, each preceded by a {@code <br>}, ready to append to the HTML message
-	 */
-	private static String subsetInsightFooterLines(String... lines) {
-		StringBuilder sb = new StringBuilder();
-		for (String line: lines) {
-			sb.append("<br>").append(line);
-		}
-		return sb.toString();
-	}
-
-	/**
 	 * Rebuilds the "Subset Insight" guide label to reflect whether the feature is applicable to
 	 * this run at all, and, if so, whether the retained rows are available yet.
 	 */
@@ -556,29 +612,30 @@ public class ProgressPanel extends javax.swing.JPanel {
 			// happen in practice, but guard against it anyway
 			return;
 		}
-		String extraLines;
+		String status = null;
 		Icon icon = null;
 		if (!subsetInsightApplicable) {
-			extraLines = subsetInsightFooterLines(
-					"Not available for this run: requires the working table scope \"global tables\".");
+			status = "Not available for this run: requires the working table scope \"global tables\".";
 			icon = subsetInsightWarnIcon;
-		} else if (!analysisPanel.hasRetainedRows()) {
-			extraLines = subsetInsightTransactional?
-					subsetInsightFooterLines(
-							"Not yet available: this run uses a single transaction (-transactional), so analysis",
-							"only becomes available once the whole run has completed.")
-					:
-					subsetInsightFooterLines();
-		} else {
-			extraLines = subsetInsightFooterLines();
+		} else if (!analysisPanel.hasRetainedRows() && subsetInsightTransactional) {
+			status = "Not yet available: -transactional run, available once it completes.";
 		}
+
 		subsetInsightContentPanel.removeAll();
-		JLabel label = new JLabel("<html><b>" + SUBSET_INSIGHT_TITLE + "</b><br>" + SUBSET_INSIGHT_MESSAGE + extraLines + "</html>");
-		if (icon != null) {
-			label.setIcon(icon);
-			label.setIconTextGap(8);
+
+		JPanel header = new JPanel(new BorderLayout());
+		header.add(new JLabel("<html><b>" + SUBSET_INSIGHT_TITLE + "</b></html>"), BorderLayout.WEST);
+		if (status != null) {
+			JLabel statusLabel = new JLabel("<html>" + status + "</html>");
+			if (icon != null) {
+				statusLabel.setIcon(icon);
+				statusLabel.setIconTextGap(0);
+				statusLabel.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
+			}
+			header.add(statusLabel, BorderLayout.CENTER);
 		}
-		subsetInsightContentPanel.add(label, BorderLayout.CENTER);
+		subsetInsightContentPanel.add(header, BorderLayout.NORTH);
+		subsetInsightContentPanel.add(new JLabel("<html>" + SUBSET_INSIGHT_MESSAGE + "</html>"), BorderLayout.CENTER);
 		subsetInsightContentPanel.revalidate();
 		subsetInsightContentPanel.repaint();
 	}

@@ -18,7 +18,6 @@ package net.sf.jailer.ui.progress;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -906,7 +905,13 @@ public class CollectionAnalysisPanel extends JPanel {
 
 	private void selectInModel(Association association) {
 		if (association != null && associationSelector != null) {
-			associationSelector.accept(association);
+			// association belongs to the run's own data model, a different load than the editor's -
+			// re-resolve it by name against the editor's model before handing it off, the same way
+			// pathFromCell already has to (see runDataModel.getTable(...) there)
+			Association resolved = dataModel.namedAssociations.get(association.getName());
+			if (resolved != null) {
+				associationSelector.accept(resolved);
+			}
 		}
 	}
 
@@ -920,17 +925,30 @@ public class CollectionAnalysisPanel extends JPanel {
 		}
 		JPopupMenu popup = new JPopupMenu();
 		if (associationSelector != null) {
-			JMenuItem restrict = new JMenuItem("Restrict Association");
-			restrict.setToolTipText("Select this association in the extraction model, in order to restrict it.");
-			restrict.setEnabled(association != null);
-			restrict.addActionListener(new ActionListener() {
+			JMenuItem select = new JMenuItem("Select Association");
+			select.setToolTipText("Select this association in the extraction model, in order to restrict it.");
+			select.setEnabled(association != null);
+			select.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent evt) {
 					selectInModel(association);
 				}
 			});
-			popup.add(restrict);
+			popup.add(select);
 			popup.addSeparator();
+		}
+		if (rowOriginContext != null && rowOriginContext.isAvailable()) {
+			JMenuItem showRows = new JMenuItem("Show Collected Rows");
+			showRows.setToolTipText("Lists the rows collected through this association, and shows for a selected one how it has found its way into the subset.");
+			showRows.setEnabled(association != null);
+			showRows.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent evt) {
+					new RowOriginDialog(SwingUtilities.getWindowAncestor(CollectionAnalysisPanel.this),
+							rowOriginContext, association, pathOpener).setVisible(true);
+				}
+			});
+			popup.add(showRows);
 		}
 		if (tableOpener != null) {
 			final Table destination = destinationAt(e, theTable);
@@ -944,71 +962,8 @@ public class CollectionAnalysisPanel extends JPanel {
 				}
 			});
 			popup.add(openInBrowser);
-			popup.addSeparator();
 		}
-		if (rowOriginContext != null && rowOriginContext.isAvailable()) {
-			JMenuItem showRows = new JMenuItem("Show collected rows...");
-			showRows.setToolTipText("Lists the rows collected through this association, and shows for a selected one how it has found its way into the subset.");
-			showRows.setEnabled(association != null);
-			showRows.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent evt) {
-					new RowOriginDialog(SwingUtilities.getWindowAncestor(CollectionAnalysisPanel.this),
-							rowOriginContext, association, pathOpener).setVisible(true);
-				}
-			});
-			popup.add(showRows);
-			if (discardAction != null) {
-				JMenuItem discard = new JMenuItem("Discard analysis data");
-				discard.setToolTipText("Deletes the collected rows from the working tables. Afterwards the origin of a row can no longer be analyzed.");
-				discard.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent evt) {
-						discardAction.run();
-					}
-				});
-				popup.add(discard);
-			}
-			popup.addSeparator();
-		}
-		JMenuItem copy = new JMenuItem("Copy to Clipboard");
-		copy.setToolTipText("Copy the whole table as text, in the order shown.");
-		copy.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				UIUtil.setClipboardContent(new StringSelection(asText()));
-			}
-		});
-		popup.add(copy);
 		popup.show(theTable, e.getX(), e.getY());
-	}
-
-	/**
-	 * Gets the content of the upper table as tab separated text, in the order currently shown.
-	 *
-	 * @return the content as text
-	 */
-	private String asText() {
-		StringBuilder result = new StringBuilder();
-		for (int i = 0; i < tableModel.getColumnCount(); ++i) {
-			result.append(i > 0? "\t" : "").append(tableModel.getColumnName(i));
-		}
-		result.append("\n");
-		for (int viewRow = 0; viewRow < table.getRowCount(); ++viewRow) {
-			int modelRow = table.convertRowIndexToModel(viewRow);
-			if (modelRow < 0 || modelRow >= rows.size()) {
-				continue;
-			}
-			Row row = rows.get(modelRow);
-			result.append(row.name).append("\t")
-				.append(row.from).append("\t")
-				.append(row.to).append("\t")
-				.append(row.rows).append("\t")
-				.append(percentFormat.format(row.share)).append("\t")
-				.append(percentFormat.format(row.cumulatedShare)).append("\t")
-				.append(row.step).append("\n");
-		}
-		return result.toString();
 	}
 
 	/**

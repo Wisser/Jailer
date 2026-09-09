@@ -295,6 +295,26 @@ public class RemoteEntityGraph extends EntityGraph {
 	}
 
 	/**
+	 * Deletes the graph, checking/registering cancellation under a caller-supplied context instead
+	 * of the shared default one - for a caller (like a background discard) that must not be blocked
+	 * by, or interfere with, an unrelated run's cancellation state.
+	 *
+	 * @param force unused, kept for symmetry with {@link #delete(boolean)}
+	 * @param cancellationContext the context to check/register cancellation under
+	 */
+	public void delete(boolean force, Object cancellationContext) {
+		if (!isTruncated) {
+			try {
+				deleteRows(session, dmlTableReference(DEPENDENCY, session), "r_entitygraph=" + graphID + "", cancellationContext);
+				deleteRows(session, dmlTableReference(ENTITY, session), "r_entitygraph=" + graphID + "", cancellationContext);
+				deleteRows(session, dmlTableReference(ENTITY_GRAPH, session), "id=" + graphID + "", cancellationContext);
+			} catch (SQLException e) {
+				// ignore
+			}
+		}
+	}
+
+	/**
 	 * Adds entities to the graph.
 	 *
 	 * @param table the table
@@ -1774,6 +1794,24 @@ public class RemoteEntityGraph extends EntityGraph {
 		return "/* " + comment + " */ exists (select 1 from " + dmlTableReference(ENTITY, session) + " E"
 				+ " where E.r_entitygraph=" + graphID + " and E.type=" + typeName(table)
 				+ " and E.birthday=" + birthday
+				+ " and " + pkEqualsEntityID(table, tableAlias, "E") + ")";
+	}
+
+	/**
+	 * Gets a condition which holds for exactly those rows of a table which have already been
+	 * collected in this graph, regardless of which step collected them. See
+	 * {@link #collectedInStepCondition(Table, int, String, String)} for what the alias/comment mean
+	 * and why this is built as an "exists" rather than a join.
+	 *
+	 * @param table the table
+	 * @param tableAlias the alias the browser uses for the table, "A"
+	 * @param comment tells what the condition means, in plain words
+	 * @return the condition
+	 */
+	public String collectedCondition(Table table, String tableAlias, String comment) throws SQLException {
+		return "/* " + comment + " */ exists (select 1 from " + dmlTableReference(ENTITY, session) + " E"
+				+ " where E.r_entitygraph=" + graphID + " and E.type=" + typeName(table)
+				+ " and E.birthday>=0"
 				+ " and " + pkEqualsEntityID(table, tableAlias, "E") + ")";
 	}
 

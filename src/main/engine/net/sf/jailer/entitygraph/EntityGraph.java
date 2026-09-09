@@ -599,6 +599,22 @@ public abstract class EntityGraph {
 	 * @return row count
 	 */
 	protected long deleteRows(Session session, String table, String where) throws SQLException {
+		return deleteRows(session, table, where, null);
+	}
+
+	/**
+	 * Deletes rows from a table, checking/registering cancellation under a caller-supplied
+	 * context instead of the shared default one.
+	 *
+	 * @param session the session
+	 * @param table the table
+	 * @param where the "where" condition
+	 * @param cancellationContext the context to check/register cancellation under, or
+	 *        <code>null</code> for the shared default context
+	 *
+	 * @return row count
+	 */
+	protected long deleteRows(Session session, String table, String where, Object cancellationContext) throws SQLException {
 		LimitTransactionSizeInfo limitTransactionSize = session.dbms.getLimitTransactionSize();
 		long rc = 0;
 
@@ -609,7 +625,7 @@ public abstract class EntityGraph {
 					c = session.executeUpdate("Delete " + limitTransactionSize.afterSelectFragment(executionContext)
 							+ "from " + table + " where (" + where + ") "
 							+ limitTransactionSize.additionalWhereConditionFragment(executionContext)
-							+ limitTransactionSize.statementSuffixFragment(executionContext));
+							+ limitTransactionSize.statementSuffixFragment(executionContext), cancellationContext);
 					rc += c;
 				} while (c > 0 && c == limitTransactionSize.getLimit());
 				return rc;
@@ -618,7 +634,7 @@ public abstract class EntityGraph {
 			}
 		}
 
-		return rc + session.executeUpdate("Delete from " + table + " where " + where);
+		return rc + session.executeUpdate("Delete from " + table + " where " + where, cancellationContext);
 	}
 
 	/**

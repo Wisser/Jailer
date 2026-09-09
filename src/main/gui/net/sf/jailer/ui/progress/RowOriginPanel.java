@@ -124,7 +124,8 @@ public class RowOriginPanel extends JPanel {
 				}
 			}
 		});
-		buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
+		buttonPanel.setBorder(BorderFactory.createEmptyBorder(4, 0, 0, 0));
 		buttonPanel.add(openPathButton);
 		// no path opener, no button: the containers which cannot reach a Data Browser show none
 		buttonPanel.setVisible(false);
