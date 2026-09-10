@@ -272,6 +272,8 @@ public class NamingRulesEditor extends JPanel {
 			c.gridy = 4;
 			c.gridwidth = 2;
 			detailsPanel.add(hint, c);
+
+			UIUtil.initToolTips(detailsPanel);
 		}
 		return detailsPanel;
 	}

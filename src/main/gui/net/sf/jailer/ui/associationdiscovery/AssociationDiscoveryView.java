@@ -750,7 +750,7 @@ public class AssociationDiscoveryView extends JPanel {
 					dataModel.getDisplayName(candidate.child),
 					dataModel.getDisplayName(candidate.parent),
 					candidate.getCondition(),
-					candidate.withoutDataCheck? null : Double.valueOf(candidate.confidence),
+					candidate.withoutDataCheck? Double.valueOf(100.0) : Double.valueOf(candidate.confidence),
 					candidate.cardinality == null? "" : candidate.cardinality.toString(),
 					candidate.getEvidenceText() });
 		}
