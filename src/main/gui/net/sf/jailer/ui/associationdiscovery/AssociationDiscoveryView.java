@@ -66,6 +66,7 @@ import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.associationproposer.AssociationProposalWriter;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
@@ -242,7 +243,9 @@ public class AssociationDiscoveryView extends JPanel {
 		startButton.setToolTipText("Search the database for associations: profiles the tables, then verifies "
 				+ "every candidate with a query. Closing the dialog cancels a running discovery.");
 		startButton.addActionListener(e -> start());
-		panel.add(startButton, optionsGbc(0, 3, 2, 1));
+		GridBagConstraints startGbc = optionsGbc(0, 3, 2, 1);
+		startGbc.insets = new Insets(6, 4, 2, 4);
+		panel.add(startButton, startGbc);
 
 		return panel;
 	}
@@ -384,6 +387,7 @@ public class AssociationDiscoveryView extends JPanel {
 		progressBar = new JProgressBar(0, 1);
 		panel.add(progressBar, gbc(0, 1, 1, GridBagConstraints.HORIZONTAL, 0));
 		statusLabel = new JLabel(" ");
+		statusLabel.setFont(statusLabel.getFont().deriveFont(java.awt.Font.BOLD));
 		defaultForeground = statusLabel.getForeground();
 		panel.add(statusLabel, gbc(0, 2, 1, GridBagConstraints.HORIZONTAL, 0));
 		return panel;
@@ -786,13 +790,18 @@ public class AssociationDiscoveryView extends JPanel {
 				int candidateCount = nameCandidates + dataCandidates;
 				StringBuilder text = new StringBuilder(proposals.size() + " of " + candidateCount + " candidates confirmed");
 				text.append(" (" + nameCandidates + " from names, " + dataCandidates + " from the data scan)");
+				int known = knownModel.getRowCount();
+				if (known > 0) {
+					text.append(", " + known + " already known");
+				}
 				if (rejected > 0) {
 					text.append(", " + rejected + " rejected");
 				}
-				text.append(", " + statements + " verification queries");
+//				text.append(", " + statements + " verification queries");
 				if (unchecked > 0) {
 					text.append(", " + unchecked + " accepted without data check");
 				}
+				statusLabel.setForeground(Colors.Color_0_80_200);
 				statusLabel.setText(text.toString());
 			}
 		});

@@ -3442,7 +3442,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
 				JMenuItem originPath = new JMenuItem(ROW_ORIGIN_PATH_TITLE
 						+ (severalRows? " (" + pathRows.size() + " selected rows)" : ""));
-				setMenuItemName(originPath, "subject.png");
+				setMenuItemName(originPath, "source.png");
 				originPath.setToolTipText(severalRows? ROW_ORIGIN_PATH_TOOLTIP
 						: notInSubset? ROW_ORIGIN_NOT_IN_SUBSET_TOOLTIP
 						: subjectRow? ROW_ORIGIN_PATH_SUBJECT_TOOLTIP : ROW_ORIGIN_PATH_TOOLTIP);
@@ -4014,7 +4014,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
 			JMenuItem originPath = new JMenuItem(ROW_ORIGIN_PATH_TITLE
 					+ (severalRows? " (" + pathRows.size() + " selected rows)" : ""));
-			setMenuItemName(originPath, "subject.png");
+			setMenuItemName(originPath, "source.png");
 			// the anchor bar takes the tool tip as the explanation of its button, not the text, so
 			// the number of rows has to be in there as well
 			originPath.setToolTipText(pathRows.isEmpty()? ROW_ORIGIN_PATH_NO_ROW_TOOLTIP

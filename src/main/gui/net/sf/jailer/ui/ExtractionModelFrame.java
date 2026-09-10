@@ -420,6 +420,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 	 * not declared as foreign key constraints.
 	 */
 	private void discoverAssociations() {
+		if (extractionModelEditor.dataModel.getTables().isEmpty()) {
+			JOptionPane.showMessageDialog(this, "The data model has no tables, so there is nothing to discover associations for. "
+					+ "Add tables to the data model first, for instance via \"Analyze Database\".",
+					"Discover Associations", JOptionPane.WARNING_MESSAGE);
+			return;
+		}
 		try {
 			if (dbConnectionDialog.isConnected || dbConnectionDialog.connect("Discover Associations")) {
 				BasicDataSource dataSource = new BasicDataSource(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword(), 0, dbConnectionDialog.currentJarURLs());
@@ -1575,6 +1581,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 		if (dataBrowser == null || !dataBrowser.isDisplayable()) {
 			// no root browser: the analysis adds the ones it needs itself
 			dataBrowser = openDataBrowser(null, "");
+			if (dataBrowser != null) {
+				// its ad-hoc arrangement of root browsers is not a session worth restoring later
+				dataBrowser.setPersistLayoutOnClose(false);
+				dataBrowser.setOriginAnalysisBrowser(true);
+			}
 			rowOriginDataBrowser = dataBrowser == null? null : new WeakReference<DataBrowser>(dataBrowser);
 		}
 		if (dataBrowser != null) {
@@ -1585,6 +1596,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 			UIUtil.invokeLater(3, new Runnable() {
 				@Override
 				public void run() {
+					if ((toBeRaised.getExtendedState() & Frame.ICONIFIED) != 0) {
+						toBeRaised.setExtendedState(toBeRaised.getExtendedState() & ~Frame.ICONIFIED);
+					}
 					toBeRaised.toFront();
 				}
 			});
@@ -1980,12 +1994,19 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 											}
 										}
 									};
-									if (!exportDialog.getTemporaryTableScope().equals(WorkingTableScope.GLOBAL) || UIUtil.isDDLUptodate(ddlCreator, ExtractionModelFrame.this, dataSource, dataSource.dbms, exportDialog.isUseRowId(), exportDialog.isUseRowIdsOnlyForTablesWithoutPK(), exportDialog.getWorkingTableSchema()) || UIUtil.runJailer(this, ddlArgs, true, true, true,
+									boolean workingTableScopeIsGlobal = exportDialog.getTemporaryTableScope().equals(WorkingTableScope.GLOBAL);
+									boolean ddlUptodate = !workingTableScopeIsGlobal || UIUtil.isDDLUptodate(ddlCreator, ExtractionModelFrame.this, dataSource, dataSource.dbms, exportDialog.isUseRowId(), exportDialog.isUseRowIdsOnlyForTablesWithoutPK(), exportDialog.getWorkingTableSchema());
+									if (ddlUptodate || UIUtil.runJailer(this, ddlArgs, true, true, true,
 										"Automatic creation of working-tables failed!\n" +
 										"Please execute the Jailer-DDL manually (jailer_ddl.sql),\n" +
 										"try another \"Working table schema\"," +
 										"or use the Working table scope \"local database\"\n\n" +
 										"Continue Data Export?", dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, true, false, true, null, executionContext)) {
+										if (workingTableScopeIsGlobal && !ddlUptodate) {
+											// the working tables were just dropped and recreated by the runJailer(...) call above -
+											// any Data Browser still connected to this database refers to rows that are gone now
+											DataBrowser.closeAllConnectedTo(ddlArgs.get(2));
+										}
 										if (!ensureTmpModelFile(tmpFileName, this)) {
 											exportDialog.dispose();
 											return;
@@ -1993,10 +2014,15 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 										ProgressTable progressTable = new ProgressTable();
 										ProgressTable progressTableForDelete = new ProgressTable();
 										final ProgressPanel progressPanel = new ProgressPanel(progressTable, progressTableForDelete, exportDialog.hasDeleteScript());
-										progressPanel.setAssociationSelector(association -> {
-											extractionModelEditor.select(association);
-											ExtractionModelFrame.this.toFront();
-										});
+										if (isVisible()) {
+											// selecting an association in the editor and raising this frame makes
+											// no sense if it isn't visible - e.g. when Export is triggered from
+											// the DataBrowser, this frame is created invisible just to run it
+											progressPanel.setAssociationSelector(association -> {
+												extractionModelEditor.select(association);
+												ExtractionModelFrame.this.toFront();
+											});
+										}
 										progressPanel.setTableOpener(table -> {
 											DataBrowser dataBrowser = dataBrowserForAnalysis();
 											if (dataBrowser != null) {
@@ -2040,45 +2066,60 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 											RetainedEntityGraphs.register(rowOriginContext);
 											progressPanel.setRowOriginContext(rowOriginContext, RetainedEntityGraphs.discardAction(), RetainedEntityGraphs.discardWhenUnusedAction());
 											progressPanel.setCollectedRowsOpener(tableName -> {
-												DataBrowser dataBrowser = dataBrowserForAnalysis();
-												if (dataBrowser != null) {
-													Table originTable = rowOriginContext.getDataModel().getTable(tableName);
-													Table editorTable = extractionModelEditor.dataModel.getTable(tableName);
-													if (originTable != null && editorTable != null) {
-														try {
-															String condition = rowOriginContext.getEntityGraph().collectedCondition(originTable, "A", "collected rows");
-															dataBrowser.refreshForAnalysis();
-															dataBrowser.openRootBrowser(editorTable, condition);
-														} catch (Exception e) {
-															UIUtil.showException(ExtractionModelFrame.this, "Error", e);
+												UIUtil.setWaitCursor(progressPanel);
+												try {
+													DataBrowser dataBrowser = dataBrowserForAnalysis();
+													if (dataBrowser != null) {
+														Table originTable = rowOriginContext.getDataModel().getTable(tableName);
+														Table editorTable = extractionModelEditor.dataModel.getTable(tableName);
+														if (originTable != null && editorTable != null) {
+															try {
+																String condition = rowOriginContext.getEntityGraph().collectedCondition(originTable, "A", "collected rows");
+																dataBrowser.refreshForAnalysis();
+																dataBrowser.openRootBrowser(editorTable, condition);
+															} catch (Exception e) {
+																UIUtil.showException(ExtractionModelFrame.this, "Error", e);
+															}
 														}
 													}
+												} finally {
+													UIUtil.resetWaitCursor(progressPanel);
 												}
 											});
 											progressPanel.setCellPathOpener(path -> {
-											DataBrowser dataBrowser = dataBrowserForAnalysis();
-											if (dataBrowser != null) {
-												dataBrowser.refreshForAnalysis();
-												dataBrowser.openRowOriginTree(path);
+											UIUtil.setWaitCursor(progressPanel);
+											try {
+												DataBrowser dataBrowser = dataBrowserForAnalysis();
+												if (dataBrowser != null) {
+													dataBrowser.refreshForAnalysis();
+													dataBrowser.openRowOriginTree(path);
+												}
+											} finally {
+												UIUtil.resetWaitCursor(progressPanel);
 											}
 										});
 										progressPanel.setPathOpener(steps -> {
-												DataBrowser dataBrowser = dataBrowserForAnalysis();
-												if (dataBrowser != null) {
-													List<RowOriginPath.Step> path = RowOriginPath.build(dataBrowser, rowOriginContext, steps);
-													if (path != null) {
-														// only now, and before opening: nothing is
-														// refreshed for a cancelled chain, and the
-														// chain must survive the rebuild
-														dataBrowser.refreshForAnalysis();
-														if (RowOriginPath.pathFromSelectionToSubject()) {
-															// no browser to grow from: the row
-															// itself becomes the root of the chain
-															dataBrowser.openRowOriginPathFrom(null, path);
-														} else {
-															dataBrowser.openRowOriginPath(path);
+												UIUtil.setWaitCursor(progressPanel);
+												try {
+													DataBrowser dataBrowser = dataBrowserForAnalysis();
+													if (dataBrowser != null) {
+														List<RowOriginPath.Step> path = RowOriginPath.build(dataBrowser, rowOriginContext, steps);
+														if (path != null) {
+															// only now, and before opening: nothing is
+															// refreshed for a cancelled chain, and the
+															// chain must survive the rebuild
+															dataBrowser.refreshForAnalysis();
+															if (RowOriginPath.pathFromSelectionToSubject()) {
+																// no browser to grow from: the row
+																// itself becomes the root of the chain
+																dataBrowser.openRowOriginPathFrom(null, path);
+															} else {
+																dataBrowser.openRowOriginPath(path);
+															}
 														}
 													}
+												} finally {
+													UIUtil.resetWaitCursor(progressPanel);
 												}
 											});
 										} else {

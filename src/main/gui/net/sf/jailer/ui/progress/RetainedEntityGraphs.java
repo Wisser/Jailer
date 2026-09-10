@@ -29,6 +29,7 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.database.WorkingTableScope;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.databrowser.DataBrowser;
 import net.sf.jailer.ui.util.ConcurrentTaskControl;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.CancellationException;
@@ -209,6 +210,7 @@ public class RetainedEntityGraphs {
 			// The two do not get in each other's way, deleting goes by the graph id
 			current = null;
 		}
+		DataBrowser.closeAllConnectedTo(context.getDbUrl());
 		Thread thread = new Thread(new Runnable() {
 			@Override
 			public void run() {

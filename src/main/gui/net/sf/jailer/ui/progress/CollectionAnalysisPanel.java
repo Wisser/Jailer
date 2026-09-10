@@ -837,7 +837,7 @@ public class CollectionAnalysisPanel extends JPanel {
 	 */
 	private static String commentFor(int step, String associationName) {
 		return associationName == null?
-				"collected in step " + step
+				"collected in step " + step + " (the subject rows)"
 				: "collected in step " + step + " through " + associationName;
 	}
 

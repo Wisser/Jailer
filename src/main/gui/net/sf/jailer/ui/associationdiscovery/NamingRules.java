@@ -73,8 +73,8 @@ public class NamingRules {
 	 * order of their specificity, and without the completion option, which is what the
 	 * built-in matching does as well. <br>
 	 * What is <b>not</b> in here, because it cannot be written as a rule, stays behind the
-	 * "use the built-in naming conventions" flag: name equality, the tolerance towards the
-	 * affixes of a foreign key column, and the primary key name without the table prefix.
+	 * "use the built-in naming conventions" flag: the tolerance towards the affixes of a
+	 * foreign key column, and the primary key name without the table prefix.
 	 *
 	 * @return the rules
 	 */
@@ -85,7 +85,7 @@ public class NamingRules {
 		for (String pattern: new String[] {
 				table + "_" + pk, table + pk,
 				table + "_ID", table + "ID", table + "_KEY",
-				table + "_NO", table + "NO", table + "_NR", table + "_CODE" }) {
+				table + "_NO", table + "NO", table + "_NR", table + "_CODE", table }) {
 			// completing a composite key by identical names is the usual shape; the built-in
 			// conventions are heuristics though, so their matches have to be checked
 			result.add(new NamingRule(Kind.TEMPLATE, pattern, true, false));

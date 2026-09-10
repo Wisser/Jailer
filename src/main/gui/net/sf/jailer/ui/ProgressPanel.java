@@ -563,17 +563,17 @@ public class ProgressPanel extends javax.swing.JPanel {
 		});
 
 		JPanel toggleButtonWrapper = new JPanel(new BorderLayout());
-		toggleButtonWrapper.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 4));
-		toggleButtonWrapper.add(subsetInsightToggleButton, BorderLayout.NORTH);
+		toggleButtonWrapper.setBorder(BorderFactory.createEmptyBorder(0, 0, 4, 0));
+		toggleButtonWrapper.add(subsetInsightToggleButton, BorderLayout.WEST);
 
 		subsetInsightContentPanel = new JPanel(new BorderLayout());
 		updateSubsetInsightInfoBar();
 
 		subsetInsightBox = new JPanel(new BorderLayout());
-		subsetInsightBox.add(toggleButtonWrapper, BorderLayout.WEST);
+		subsetInsightBox.add(toggleButtonWrapper, BorderLayout.NORTH);
 		subsetInsightBox.add(subsetInsightContentPanel, BorderLayout.CENTER);
 
-		boolean expanded = !Boolean.FALSE.equals(UISettings.restore(UISettings.SUBSET_INSIGHT_EXPANDED));
+		boolean expanded = Boolean.TRUE.equals(UISettings.restore(UISettings.SUBSET_INSIGHT_EXPANDED));
 		subsetInsightToggleButton.setSelected(expanded);
 		setSubsetInsightExpanded(expanded);
 	}
@@ -597,7 +597,7 @@ public class ProgressPanel extends javax.swing.JPanel {
 	 */
 	private void setSubsetInsightExpanded(boolean expanded) {
 		subsetInsightContentPanel.setVisible(expanded);
-		subsetInsightToggleButton.setText(expanded? "▼" : "▶ " + SUBSET_INSIGHT_TITLE);
+		subsetInsightToggleButton.setText((expanded? "▼ " : "▶ ") + SUBSET_INSIGHT_TITLE);
 		revalidate();
 		repaint();
 	}
@@ -624,7 +624,6 @@ public class ProgressPanel extends javax.swing.JPanel {
 		subsetInsightContentPanel.removeAll();
 
 		JPanel header = new JPanel(new BorderLayout());
-		header.add(new JLabel("<html><b>" + SUBSET_INSIGHT_TITLE + "</b></html>"), BorderLayout.WEST);
 		if (status != null) {
 			JLabel statusLabel = new JLabel("<html>" + status + "</html>");
 			if (icon != null) {
@@ -632,7 +631,7 @@ public class ProgressPanel extends javax.swing.JPanel {
 				statusLabel.setIconTextGap(0);
 				statusLabel.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
 			}
-			header.add(statusLabel, BorderLayout.CENTER);
+			header.add(statusLabel, BorderLayout.WEST);
 		}
 		subsetInsightContentPanel.add(header, BorderLayout.NORTH);
 		subsetInsightContentPanel.add(new JLabel("<html>" + SUBSET_INSIGHT_MESSAGE + "</html>"), BorderLayout.CENTER);

@@ -1295,7 +1295,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 
 			@Override
 			public void windowClosed(WindowEvent e) {
-				if (wasConnected) {
+				if (wasConnected && persistLayoutOnClose) {
 					storeLastSession();
 				}
 				desktop.stop();
@@ -2186,6 +2186,38 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 
 	private boolean wasConnected = false;
 
+	/**
+	 * Whether closing this window stores the desktop layout as the "last session"/default
+	 * bookmark, see {@link #storeLastSession()}. The row-origin-analysis Data Browser (see
+	 * {@link net.sf.jailer.ui.ExtractionModelFrame#dataBrowserForAnalysis()}) sets this to
+	 * <code>false</code>: its ad-hoc arrangement of root browsers is meaningless to restore later
+	 * and would otherwise overwrite the layout of a real session.
+	 */
+	private boolean persistLayoutOnClose = true;
+
+	/**
+	 * Sets whether closing this window persists its layout, see {@link #persistLayoutOnClose}.
+	 *
+	 * @param persistLayoutOnClose <code>false</code> to skip persisting the layout on close
+	 */
+	public void setPersistLayoutOnClose(boolean persistLayoutOnClose) {
+		this.persistLayoutOnClose = persistLayoutOnClose;
+	}
+
+	/**
+	 * Whether this window was opened for row-origin analysis (see
+	 * {@link net.sf.jailer.ui.ExtractionModelFrame#dataBrowserForAnalysis()}), rather than as an
+	 * ordinary Data Browser - {@link #closeAllConnectedTo(String)} only ever closes these.
+	 */
+	private boolean originAnalysisBrowser = false;
+
+	/**
+	 * Marks this window as the one opened for row-origin analysis, see {@link #originAnalysisBrowser}.
+	 */
+	public void setOriginAnalysisBrowser(boolean originAnalysisBrowser) {
+		this.originAnalysisBrowser = originAnalysisBrowser;
+	}
+
 	protected boolean setConnection(DbConnectionDialog dbConnectionDialog) throws Exception {
 		String prevDatabaseName = currentDatabaseName;
 		if (dbConnectionDialog != null) {
@@ -2241,6 +2273,27 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 					() -> new BasicDataSource(connection.driverClass, connection.url, connection.user, password, 0, jarURLs));
 		} catch (Throwable t) {
 			LogUtil.warn(t);
+		}
+	}
+
+	/**
+	 * Closes every currently open Data Browser window opened for row-origin analysis and connected
+	 * to the given database - used when that database's working tables have just been dropped and
+	 * recreated (e.g. by a DDL update during export), which invalidates any entity-graph rows such
+	 * a window still refers to. An ordinary Data Browser window is left alone.
+	 *
+	 * @param dbUrl URL of the database whose working tables were just dropped
+	 */
+	public static void closeAllConnectedTo(String dbUrl) {
+		for (Window window : Window.getWindows()) {
+			if (window instanceof DataBrowser) {
+				DataBrowser dataBrowser = (DataBrowser) window;
+				Desktop desktop = dataBrowser.desktop;
+				if (dataBrowser.originAnalysisBrowser && desktop != null && desktop.session != null
+						&& dbUrl.equals(desktop.session.dbUrl)) {
+					window.dispatchEvent(new WindowEvent(window, WindowEvent.WINDOW_CLOSING));
+				}
+			}
 		}
 	}
 
@@ -7695,6 +7748,12 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 			// browser whose connection has failed keeps its menus
 			JOptionPane.showMessageDialog(this, "Connect to a database first.",
 					"Discover Associations", JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
+		if (datamodel.get().getTables().isEmpty()) {
+			JOptionPane.showMessageDialog(this, "The data model has no tables, so there is nothing to discover associations for. "
+					+ "Add tables to the data model first, for instance via \"Analyze Database\".",
+					"Discover Associations", JOptionPane.WARNING_MESSAGE);
 			return;
 		}
 		AssociationDiscoveryView discoveryView = new AssociationDiscoveryView(this, datamodel.get(), session, executionContext);

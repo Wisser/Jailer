@@ -220,6 +220,7 @@ public class NamingRulesEditor extends JPanel {
 			c.gridwidth = 2;
 			c.weightx = 1;
 			c.fill = GridBagConstraints.HORIZONTAL;
+			c.insets = new Insets(2, 4, 0, 4);
 			detailsPanel.add(completeByNameCheckBox, c);
 
 			// the text is put into a cell of a fixed width, otherwise every paragraph
@@ -234,9 +235,10 @@ public class NamingRulesEditor extends JPanel {
 			c.gridwidth = 2;
 			c.weightx = 1;
 			c.fill = GridBagConstraints.HORIZONTAL;
+			c.insets = new Insets(0, 4, 2, 4);
 			detailsPanel.add(withoutDataCheckCheckBox, c);
 
-			JLabel hint = new JLabel("<html><table cellpadding=0 cellspacing=0><tr><td width=" + HINT_WIDTH + "><i>"
+			JLabel hint = new JLabel("<html><table cellpadding=0 cellspacing=0><tr><td width=" + HINT_WIDTH + "><br><br><i>"
 					+ "<b>Template</b>: the name of the column, with " + NamingRule.TABLE_PLACEHOLDER
 					+ " for the parent table (singular and plural forms are tried) and " + NamingRule.PK_PLACEHOLDER
 					+ " for its primary key column.<br>"
@@ -280,7 +282,7 @@ public class NamingRulesEditor extends JPanel {
 	private class RuleListEditor extends ListEditor<NamingRule> {
 
 		public RuleListEditor() {
-			super(new String[] { "Kind", "Pattern", "Rest by name", "No data check" }, "Naming Rule", true, false);
+			super(new String[] { "Kind", "Pattern", "Remaining key columns by name", "Accept without checking data" }, "Naming Rule", true, false);
 			hideUpAndDownButton();
 		}
 

@@ -329,6 +329,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 
 		boolean saveNeedsSave = needsSave;
 		initComponents(); UIUtil.initComponents(this);
+		jPanel3.setBorder(BorderFactory.createTitledBorder("<html><b>Subject</b></html>"));
 //		jPanel3.setName("no-tt-indicator");
 		subjectTable = new JComboBox2() {
 			@Override

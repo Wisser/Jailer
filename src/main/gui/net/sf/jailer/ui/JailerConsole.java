@@ -114,7 +114,7 @@ public class JailerConsole {
 			dialog.setSize(new Dimension(1110, 740));
 			UIUtil.setInitialWindowLocation(dialog, owner, 10, 50);
 		} else {
-			dialog.setSize(new Dimension(660, 400));
+			dialog.setSize(new Dimension(680, 400));
 			UIUtil.setInitialWindowLocation(dialog, owner, 10, 50);
 		}
 		if (dialog instanceof JDialog) {
@@ -152,7 +152,12 @@ public class JailerConsole {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (hasFinished) {
+					// dispose, not just hide: only dispose() fires windowClosed, which is what
+					// triggers the immediate discard of the retained entity-graph (see
+					// ProgressPanel.setRowOriginContext's windowClosed listener) - merely hiding
+					// the dialog left that graph undiscarded until something else got to it
 					dialog.setVisible(false);
+					dialog.dispose();
 					return;
 				}
 				if (JOptionPane.showConfirmDialog(dialog,

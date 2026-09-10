@@ -239,6 +239,10 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 				commandLinePanel.setVisible(false);
 			}
 
+			@SuppressWarnings("unchecked")
+			final List<String> cachedSchemaInfo = (List<String>) session.getSessionProperty(ExportDialog.class, "schemaInfo");
+			final String cachedDefaultSchema = (String) session.getSessionProperty(ExportDialog.class, "defaultSchema");
+
 			final ConcurrentTaskControl concurrentTaskControl = new ConcurrentTaskControl(
 					this, "Retrieving schema info...") {
 				@Override
@@ -255,7 +259,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 				@Override
 				public void run() {
 					if (concurrentTaskControl.master != null) {
-						concurrentTaskControl.master.cancelButton.setText("continue without info");
+						concurrentTaskControl.master.cancelButton.setText(cachedSchemaInfo != null? "continue with previous info" : "continue without info");
 					}
 				}
 			});
@@ -301,7 +305,15 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			List<String> allSchemas;
 			synchronized (schemaInfo) {
 				allSchemas = new ArrayList<String>(schemaInfo);
-				if (!schemaInfoRead.get()) {
+				if (schemaInfoRead.get()) {
+					session.setSessionProperty(ExportDialog.class, "schemaInfo", new ArrayList<String>(allSchemas));
+					session.setSessionProperty(ExportDialog.class, "defaultSchema", defaultSchema);
+				} else if (cachedSchemaInfo != null) {
+					// cancelled, but an earlier load in this session already succeeded - use that
+					// instead of falling back to "no schema info"
+					allSchemas = new ArrayList<String>(cachedSchemaInfo);
+					defaultSchema = cachedDefaultSchema;
+				} else {
 					allSchemas.add((String) NO_SCHEMA_INFO);
 				}
 			}
@@ -1629,7 +1641,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 34;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         jPanel1.add(jLabel3, gridBagConstraints);
 
         jLabel6.setText(" Parallel threads "); // NOI18N
@@ -1827,6 +1839,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         jPanel1.add(jPanel8, gridBagConstraints);
 
         jLabel21.setText(" With"); // NOI18N
+        jLabel21.setToolTipText("Values for the parameters (\"${...}\") used in the subject condition or in association restrictions");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 24;
@@ -1882,7 +1895,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(2, 8, 0, 0);
         commandLinePanel.add(copyButton, gridBagConstraints);
 
         cliArea.setEditable(false);
@@ -2680,7 +2693,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			}
 		}
 		if (err) {
-			JOptionPane.showMessageDialog(this, "Unfilled mandatory fields" + (errLabel == null? "" : " (\"" + errLabel.getText().trim() + "\")"), "Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, "Please fill in the mandatory field" + (errLabel == null? "" : " \"" + errLabel.getText().trim() + "\"") + ".", "Error", JOptionPane.ERROR_MESSAGE);
 			if (errComp != null) {
 				errComp.grabFocus();
 			}
