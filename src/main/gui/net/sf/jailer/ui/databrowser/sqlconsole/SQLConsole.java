@@ -1415,8 +1415,34 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                     } finally {
 						if (transactional && con != null) {
 							if (status != null && !status.failed) {
+								final int execStatements = status.numStatements;
+								final int execRowsRead = status.numRowsRead;
+								final int execRowsUpdated = status.numRowsUpdated;
+								final boolean[] commit = { true };
+								if (execRowsUpdated > 0) {
+									try {
+										SwingUtilities.invokeAndWait(() -> {
+											String stats = execStatements + " statement" + (execStatements == 1? "" : "s") + " executed, "
+													+ (execRowsRead > 0? execRowsRead + " row" + (execRowsRead == 1? "" : "s") + " read, " : "")
+													+ execRowsUpdated + " row" + (execRowsUpdated == 1? "" : "s") + " affected.";
+											int choice = JOptionPane.showConfirmDialog(SQLConsole.this,
+													"Commit the changes made by the executed statements?\n\n" + stats,
+													"Transactional", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+											commit[0] = choice == JOptionPane.YES_OPTION;
+										});
+									} catch (InterruptedException ex) {
+										Thread.currentThread().interrupt();
+									} catch (java.lang.reflect.InvocationTargetException ex) {
+										LogUtil.warn(ex);
+									}
+								}
 								try {
-									con.commit();
+									if (commit[0]) {
+										con.commit();
+									} else {
+										con.rollback();
+										status.rolledback = true;
+									}
 								} catch (SQLException e) {
 									UIUtil.invokeLater(() -> UIUtil.showException(SQLConsole.this, "Error", e));
 								}
@@ -5123,9 +5149,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		return tempFileBased;
 	}
 	
-	// TODO 
-	// TODO transactional: ask user if he wants to commit at end
-		
 	// TODO StringSearch component for historie (and than inc hist size a lot)
 
 }

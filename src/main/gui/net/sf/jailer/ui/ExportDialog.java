@@ -3475,7 +3475,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         resetIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/reset.png"));
         copyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/copy.png"));
         warnIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/wanr.png"));
-        dryRunIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/explain.png"));
+        dryRunIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/dryrun.png"));
 	}
 
 }
