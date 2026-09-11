@@ -563,7 +563,15 @@ public class GraphicalDataModelView extends JPanel {
 		layout = new ForceDirectedLayout(graph) {
 			@Override
 			protected float getMassValue(VisualItem n) {
-				return zoomBoxControl.getRenderer().isBoxItem(n)? 0.01f : showTableDetails? 2.0f : 1.0f;
+				if (zoomBoxControl.getRenderer().isBoxItem(n)) {
+					return 0.01f;
+				}
+				Association association = (Association) n.get("association");
+				if (association != null && association.source == association.destination) {
+					// light, so that the repulsion from its own table doesn't push it away
+					return 0.3f;
+				}
+				return showTableDetails? 2.0f : 1.0f;
 			}
 		};
 		for (Force force: layout.getForceSimulator().getForces()) {
@@ -2403,8 +2411,4 @@ public class GraphicalDataModelView extends JPanel {
 	private static final long serialVersionUID = -5938101712807557555L;
 
 }
-
-
-//TODO
-//TODO associationrendering verbessern, insb. reflektive
 

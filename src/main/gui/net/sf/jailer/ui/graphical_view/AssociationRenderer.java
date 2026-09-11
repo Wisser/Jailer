@@ -23,6 +23,7 @@ import java.awt.Polygon;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.awt.geom.QuadCurve2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.Map;
@@ -97,6 +98,15 @@ public class AssociationRenderer extends EdgeRenderer {
 	private double starTheta;
 
 	/**
+	 * Arc shape for the two edges of a reflexive association. Both edges connect the same
+	 * pair of nodes, so they are bowed to opposite sides to keep them visible and selectable.
+	 */
+	private final QuadCurve2D.Double m_reflexiveCurve = new QuadCurve2D.Double();
+	private static final double REFLEXIVE_BOW_FACTOR = 0.11;
+	private static final double REFLEXIVE_MIN_BOW = 8;
+	private static final double REFLEXIVE_MAX_BOW = 18;
+
+	/**
 	 * Return a non-transformed shape for the visual representation of the
 	 * {@link Association}.
 	 *
@@ -109,13 +119,8 @@ public class AssociationRenderer extends EdgeRenderer {
 		VisualItem item1 = edge.getSourceItem();
 		VisualItem item2 = edge.getTargetItem();
 
-		int type = m_edgeType;
-		boolean reversedCurve = false;
 		Association association = (Association) item.get("association");
-		if (association != null && association.source == association.destination) {
-			type = Constants.EDGE_TYPE_CURVE;
-			reversedCurve = association.reversed;
-		}
+		boolean reflexive = association != null && association.source == association.destination;
 
 		getAlignedPoint(m_tmpPoints[0], item1.getBounds(),
 						m_xAlign1, m_yAlign1);
@@ -151,38 +156,42 @@ public class AssociationRenderer extends EdgeRenderer {
 			m_tmpPoints[reversed? 1 : 0].setLocation(midX, midY);
 		}
 
+		// control point of the arc of a reflexive association
+		if (reflexive) {
+			double dx = end.getX() - start.getX();
+			double dy = end.getY() - start.getY();
+			double len = Math.sqrt(dx * dx + dy * dy);
+			if (len > 1) {
+				double bow = Math.max(REFLEXIVE_MIN_BOW, Math.min(REFLEXIVE_BOW_FACTOR * len, REFLEXIVE_MAX_BOW));
+				// both edges of the pair connect the same two nodes, so they bow to opposite sides
+				double offset = 2 * bow * (association.reversed? 1 : -1);
+				m_ctrlPoints[0].setLocation(
+						(start.getX() + end.getX()) / 2 - dy / len * offset,
+						(start.getY() + end.getY()) / 2 + dx / len * offset);
+			} else {
+				reflexive = false;
+			}
+		}
+
 		// create the arrow head, if needed
 		if ( e.isDirected() && m_edgeArrow != Constants.EDGE_ARROW_NONE) {
-			if (type == Constants.EDGE_TYPE_CURVE) {
-				AffineTransform t = new AffineTransform();
-				t.setToRotation(Math.PI/4 * (reversedCurve? 1 : -1));
-				Point2D p = new Point2D.Double(), shift = new Point2D.Double();
-				double d = start.distance(end) / 5.0;
-				p.setLocation((end.getX() - start.getX()) / d, (end.getY() - start.getY()) / d);
-				t.transform(p, shift);
-				start.setLocation(start.getX() + shift.getX(), start.getY() + shift.getY());
-				end.setLocation(end.getX() + shift.getX(), end.getY() + shift.getY());
-			}
+			// the arc arrives from its control point, a straight edge from its start point
+			Point2D arrowFrom = reflexive? m_ctrlPoints[0] : start;
 
 			// compute the intersection with the target bounding box
 			VisualItem dest = forward ? e.getTargetItem() : e.getSourceItem();
-			int i = GraphicsLib.intersectLineRectangle(start, end,
+			int i = GraphicsLib.intersectLineRectangle(arrowFrom, end,
 					dest.getBounds(), m_isctPoints);
 			if ( i > 0 ) end = m_isctPoints[0];
 
 			// create the arrow head shape
-			AffineTransform at = getArrowTrans(start, end, m_curWidth);
+			AffineTransform at = getArrowTrans(arrowFrom, end, m_curWidth);
 			m_curArrow = at.createTransformedShape(m_arrowHead);
 
 			// update the endpoints for the edge shape
 			// need to bias this by arrow head size
-			if (type == Constants.EDGE_TYPE_CURVE) {
-				if (association == null || !isAggregation(association) || !isObjectNatationFormat(association)) {
-					m_curArrow = null;
-				}
-			}
 			Point2D lineEnd = m_tmpPoints[forward?1:0];
-			lineEnd.setLocation(0, type == Constants.EDGE_TYPE_CURVE? 0 : -m_arrowHeight);
+			lineEnd.setLocation(0, -m_arrowHeight);
 			at.transform(lineEnd, lineEnd);
 		} else {
 			m_curArrow = null;
@@ -194,9 +203,14 @@ public class AssociationRenderer extends EdgeRenderer {
 		double n1y = m_tmpPoints[0].getY();
 		double n2x = m_tmpPoints[1].getX();
 		double n2y = m_tmpPoints[1].getY();
-		m_line.setLine(n1x, n1y, n2x, n2y);
-		shape = m_line;
-		
+		if (reflexive) {
+			m_reflexiveCurve.setCurve(n1x, n1y, m_ctrlPoints[0].getX(), m_ctrlPoints[0].getY(), n2x, n2y);
+			shape = m_reflexiveCurve;
+		} else {
+			m_line.setLine(n1x, n1y, n2x, n2y);
+			shape = m_line;
+		}
+
 		if (association == null) {
 			return shape;
 		}
@@ -204,7 +218,14 @@ public class AssociationRenderer extends EdgeRenderer {
 		starBounds = null;
 		starPosition = null;
 		starTheta = 0;
-		midPosition = new Point2D.Double((n1x + n2x) / 2, (n1y + n2y) / 2);
+		if (reflexive) {
+			// apex of the arc, so that the marker sits on the visible curve
+			midPosition = new Point2D.Double(
+					0.25 * n1x + 0.5 * m_ctrlPoints[0].getX() + 0.25 * n2x,
+					0.25 * n1y + 0.5 * m_ctrlPoints[0].getY() + 0.25 * n2y);
+		} else {
+			midPosition = new Point2D.Double((n1x + n2x) / 2, (n1y + n2y) / 2);
+		}
 
 		if (!forward && (Cardinality.MANY_TO_MANY.equals(association.getCardinality()) || Cardinality.MANY_TO_ONE.equals(association.getCardinality()))
 		||   forward && (Cardinality.MANY_TO_MANY.equals(association.getCardinality()) || Cardinality.ONE_TO_MANY.equals(association.getCardinality()))) {
