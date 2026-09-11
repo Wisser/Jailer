@@ -333,5 +333,8 @@ public class OsmTileLayer {
 			}
 		}.execute();
 	}
-
 }
+
+// TODO 
+// TODO if tile cannot be fetched, show a placeholder tile with a "no tile" icon or text, so the user knows it's not just a blank area.
+

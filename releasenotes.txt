@@ -87,27 +87,31 @@
       the total, the cumulated share and the step at which it has been resolved, the biggest one
       first. A row is counted for the association through which it has been collected first, so
       rows which are reachable via several associations are not counted more than once.
-    - "Restrict Association" in the context menu, or a double click, selects the association in
+    - "Select Association" in the context menu, or a double click, selects the association in
       the extraction model, ready to be restricted.
     - For the selected association, the lower part lists the associations which have brought rows
       into its source table one step earlier. Often it is not the association with the most rows
       which has to be restricted, but one of those a few steps ahead of it. This is an assignment
       by step and table, not the origin of a single row: if several associations feed the same
       table, all of them are shown. A double click walks one step further towards the subject.
-    - "Copy to Clipboard" copies the analysis as text.
   - New button "Dry Run" in the export dialog: the rows are collected and analyzed, but neither
     an export- nor a delete-script is written. This gives the analysis described above before an
     export is actually made. Note that it saves the time needed to write the file, not the time
     needed to collect the rows. Together with a row limit it can be used to find the association
     which lets a subset explode without waiting for a complete run.
   - The origin of a single row of the subset can now be analyzed: through which associations, and
-    starting from which subject row, has exactly this row found its way into the subset.
-    - New option "Enable row origin analysis by keeping the collected rows" in the export dialog,
-      switched off by default. With it, the rows collected during the run stay in the working
-      tables after the run instead of being deleted, which is what the analysis reads. It requires
-      the working table scope "global tables"; with the other scopes the working tables do not
-      survive the run, so the option is disabled there.
-    - "Show collected rows..." in the context menu of the "Analysis" tab lists the rows which have
+    starting from which subject row, has exactly this row found its way into the subset. In the UI
+    this is called "Subset Insight".
+    - This requires the working table scope "global tables" and is then available automatically -
+      there is no separate option to turn it on. With the other scopes the working tables do not
+      survive the run, so the rows the analysis reads are not there.
+    - The rows collected so far can already be analyzed while the run is still going, not just
+      after it finishes. The one exception is a "-transactional" run: nothing is visible outside
+      its single transaction before it commits, so the analysis only becomes available once the
+      whole run has finished.
+    - A collapsible "Subset Insight Guide" box above the progress window's tabs explains, and links
+      to, every way to look at the collected rows described below.
+    - "Show Collected Rows" in the context menu of the "Analysis" tab lists the rows which have
       been collected through the selected association. Selecting one of them shows the chain from
       the subject down to that row, one line per step, with the association each step was made
       through and the key of the row it came from.
@@ -146,6 +150,9 @@
     - "Open in Data Browser" in the context menu of the "Analysis" tab opens the table an
       association has collected its rows into, unrestricted. It does not need the collected rows,
       so it also works once they have been discarded.
+    - "Open Collected Rows in Data Browser" in the context menu of a table in the "Rows per Table"
+      list, or a double click, opens the rows collected for that table so far, filtered to just
+      those - available while the run is still going, unlike "Open in Data Browser" above.
     - "Open Path to Subject" in the context menu of a cell of the "Export" tab, or by double
       clicking it, does the same for a whole step: it lays the way of these rows to a subject out
       as table browsers, one per step, and each of them shows exactly the rows collected in that
@@ -164,11 +171,14 @@
     - Note that this is the way the row has been found first, not every way it could have been
       reached. That is the answer to the question why the row is part of the subset: without this
       way it might not be. Where more than one row matches at some step, the chain says so.
-    - The kept rows are discarded when the progress window is closed, when the next run with that
-      option starts, when the application ends, and, should none of that have happened, when the
-      same database is connected to again. As long as a window which shows the origin of a row is
-      still open, they are kept, and the last such window closing discards them. "Discard analysis
-      data" in the same context menu removes them at once.
+    - The kept rows are discarded when the progress window is closed, when the next run starts, and,
+      should neither of that have happened, when the same database is connected to again - shown as
+      a cancellable progress dialog, since it can take a while. As long as a window which shows the
+      origin of a row is still open, they are kept, and the last such window closing discards them.
+      "Discard analysis data" in the same context menu removes them at once. Dropping and recreating
+      the working tables (e.g. during a DDL update at the start of an export) discards them as well
+      and closes any Data Browser window still analyzing them, since their rows are gone the moment
+      the tables are recreated.
   - The progress window of a run now belongs to the window it was started from and therefore stays
     in front of it instead of disappearing behind it. It is still not modal, so the analysis, the
     origin windows and the Data Browser remain usable next to it. Being an owned window, it no
