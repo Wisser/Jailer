@@ -68,6 +68,7 @@ import net.sf.jailer.ui.scrollmenu.JScrollMenu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.undo.CompensationAction;
 import net.sf.jailer.ui.util.UISettings;
+import net.sf.jailer.util.SqlUtil;
 import prefuse.Display;
 import prefuse.Visualization;
 import prefuse.action.Action;
@@ -1912,8 +1913,14 @@ public class GraphicalDataModelView extends JPanel {
 				if (showTable(g, a.destination)) {
 					result.add(a.destination);
 				}
-				String tooltip = a.getUnrestrictedJoinCondition();
+				String pending = "";
+				if (a.getDataModel().decisionPending.contains(a.getName()) || a.getDataModel().decisionPending.contains(a.reversalAssociation.getName())) {
+					pending = "This association was added after the last change to this extraction model. "
+							+ "Use the Model Migration Tool to decide whether to accept it.<hr>";
+				}
+				String tooltip = "<html>" + pending + associationToolTip(a) + "</html>";
 				if (!associationIsUnique(a)) {
+					String reversalTooltip = "<html>" + pending + associationToolTip(a.reversalAssociation) + "</html>";
 					Node an = g.addNode();
 					an.set("association", a);
 					an.setString("label", a.getName() + "#");
@@ -1922,7 +1929,7 @@ public class GraphicalDataModelView extends JPanel {
 					Edge ae = g.addEdge(an, tableNodes.get(a.source));
 					ae.set("association", a.reversalAssociation);
 					ae.set("full", Boolean.FALSE);
-					ae.setString("tooltip", tooltip);
+					ae.setString("tooltip", reversalTooltip);
 					renderedAssociations.put(a.reversalAssociation, ae);
 					Edge be = g.addEdge(an, tableNodes.get(a.destination));
 					be.set("association", a);
@@ -1939,6 +1946,42 @@ public class GraphicalDataModelView extends JPanel {
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * Creates the tool tip for an association: the join condition with the aliases A and B
+	 * resolved into the table names. For a reflexive association the aliases are kept (resolving
+	 * them would render conditions like "B.tenant=A.tenant" as an apparent tautology) and a line
+	 * explaining the direction of this association is added instead.
+	 *
+	 * @param a the association
+	 * @return HTML fragment (without the enclosing html-tag)
+	 */
+	private String associationToolTip(Association a) {
+		DataModel dataModel = a.getDataModel();
+		String joinCondition = a.getUnrestrictedJoinCondition();
+		if (a.reversed) {
+			joinCondition = SqlUtil.reversRestrictionCondition(joinCondition);
+		}
+		String sourceName = dataModel.getDisplayName(a.source);
+		String destinationName = dataModel.getDisplayName(a.destination);
+		boolean reflexive = a.source == a.destination;
+		if (!reflexive) {
+			joinCondition = SqlUtil.replaceAliases(joinCondition, sourceName, destinationName);
+		}
+		StringBuilder tooltip = new StringBuilder(UIUtil.toHTMLFragment(joinCondition, 250) + "<br><hr>");
+		if (reflexive) {
+			String type = "associated with";
+			if (a.isInsertDestinationBeforeSource()) {
+				type = "depends on (has parent)";
+			} else if (a.isInsertSourceBeforeDestination()) {
+				type = "has dependent (has child)";
+			}
+			tooltip.append(UIUtil.toHTMLFragment(sourceName + " A " + type + " " + destinationName + " B", 250) + "<br>");
+		}
+		return tooltip.append("FK:&nbsp;<i><font color=" + Colors.HTMLColor_0000dd + ">"
+				+ UIUtil.toHTMLFragment(a.reversed? a.reversalAssociation.getName() : a.getName(), 0)
+				+ "</font></i>").toString();
 	}
 
 	/**
