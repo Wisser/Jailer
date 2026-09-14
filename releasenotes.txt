@@ -32,37 +32,6 @@
       belong to the data model: they are stored as "naming_rules.csv" in its folder and travel
       with it. Proposals found this way are labeled "Matches a naming rule" and are verified
       against the data like any other candidate.
-    - Primary keys that say nothing about their table are not matched by name equality alone:
-      neither generic names ("ID", "NO", "KEY", ...) nor a column combination that is the
-      primary key of a large part of the data model (a technical object id together with a
-      tenant and a version, for instance). Such columns exist in nearly every table, so
-      accepting them would turn every pair of tables into a candidate. The qualified forms
-      ("CUSTOMER_ID") and the data scan are unaffected.
-    - Every proposal is labeled with a confidence in percent. It combines the fraction of
-      matching rows with the strength of the name evidence and with the number of distinct
-      values of the column, so that columns with few distinct values - which match almost any
-      key by chance - are rated down. The detected cardinality (n:1 or 1:1) is shown as well.
-    - Option "Also find candidates without matching column names": additionally scans the data
-      for columns whose values are contained in a primary key although their names give no
-      hint. To keep the number of queries manageable, all tables are profiled first (row
-      count, value range and number of distinct values per column) and only the column pairs
-      that survive this pre-filter are verified. Composite keys are covered as well: the
-      pre-filter runs per key column and only the surviving columns are combined, at most three
-      per key column and at most four combinations per pair of tables, the most plausible ones
-      first. If combinations had to be left out, the number of affected table pairs is reported
-      in the "Problems" tab. For a key that most tables of the model share, at least one of the
-      columns must name the parent table - otherwise every table would be proposed as a
-      reference to every other one.
-    - The minimum fraction of matching rows can be chosen (95% by default). Candidates are
-      verified in the order of their evidence, the strongest first, so the most reliable
-      proposals appear first while the run is still going. The status line reports how many
-      candidates were confirmed, how many came from names and from the data scan, and how
-      many queries were executed.
-    - Associations that already exist in the data model are listed separately under "Already
-      known" instead of being proposed again. All executed statements, and all problems (e.g.
-      a table that could not be profiled), are shown in their own tabs.
-    - Accepted proposals are handed over to the Data Model Editor, exactly like those of
-      "Analyze SQL Script".
   - The data model can now be exported as an ER diagram in text form and as a vector image.
     - New menu item "File" -> "Export graph as Mermaid ER diagram" writes the data model as a
       Mermaid "erDiagram" - either the whole model or only the tables currently visible in the
@@ -72,49 +41,12 @@
       Tables are rendered with their primary key and foreign key columns, associations with their
       cardinality; restricted associations are drawn as non-identifying (dashed) relationships,
       disabled associations are omitted.
-    - New command line command "render-mermaid" prints the same diagram of the (restricted) data
-      model to stdout, so documentation can be generated in a build pipeline.
     - "File" -> "Export graph as image..." now offers "SVG" in addition to the raster formats.
       An SVG stays sharp at any zoom level and its text remains selectable and searchable.
       The format box of the file chooser now preselects PNG.
-  - New tab "Analysis" in the progress window of an export: which association is responsible for
-    how many rows of the subset.
-    - The rows of a subset are collected by resolving associations. Up to now the progress window
-      showed the number of collected rows per table and per step, but not the association through
-      which they came in. If a subset turns out to be far bigger than expected, the association to
-      be restricted had to be guessed.
-    - The new tab lists every association with the number of rows it has collected, its share of
-      the total, the cumulated share and the step at which it has been resolved, the biggest one
-      first. A row is counted for the association through which it has been collected first, so
-      rows which are reachable via several associations are not counted more than once.
-    - "Select Association" in the context menu, or a double click, selects the association in
-      the extraction model, ready to be restricted.
-    - For the selected association, the lower part lists the associations which have brought rows
-      into its source table one step earlier. Often it is not the association with the most rows
-      which has to be restricted, but one of those a few steps ahead of it. This is an assignment
-      by step and table, not the origin of a single row: if several associations feed the same
-      table, all of them are shown. A double click walks one step further towards the subject.
-  - New button "Dry Run" in the export dialog: the rows are collected and analyzed, but neither
-    an export- nor a delete-script is written. This gives the analysis described above before an
-    export is actually made. Note that it saves the time needed to write the file, not the time
-    needed to collect the rows. Together with a row limit it can be used to find the association
-    which lets a subset explode without waiting for a complete run.
   - The origin of a single row of the subset can now be analyzed: through which associations, and
     starting from which subject row, has exactly this row found its way into the subset. In the UI
     this is called "Subset Insight".
-    - This requires the working table scope "global tables" and is then available automatically -
-      there is no separate option to turn it on. With the other scopes the working tables do not
-      survive the run, so the rows the analysis reads are not there.
-    - The rows collected so far can already be analyzed while the run is still going, not just
-      after it finishes. The one exception is a "-transactional" run: nothing is visible outside
-      its single transaction before it commits, so the analysis only becomes available once the
-      whole run has finished.
-    - A collapsible "Subset Insight Guide" box above the progress window's tabs explains, and links
-      to, every way to look at the collected rows described below.
-    - "Show Collected Rows" in the context menu of the "Analysis" tab lists the rows which have
-      been collected through the selected association. Selecting one of them shows the chain from
-      the subject down to that row, one line per step, with the association each step was made
-      through and the key of the row it came from.
     - "Why is this Row in the Subset?" in the context menu of a row in the Data Browser asks the
       same question for a row one already has in front of oneself, without going through the list
       of associations. The item appears only while a run keeps its collected rows and the Data
@@ -123,16 +55,6 @@
       and "Open Path to Subject" are disabled and say so in their tooltip, so that no window has to
       be opened for an answer the missing mark gives already. For a row which has not been checked
       yet both stay available, and the answer then names the case as well.
-    - The same question can be asked from the button bar which appears next to a table browser
-      when the mouse comes close to it. There it refers to the row currently selected.
-    - While a run keeps its collected rows, the Data Browser marks every row which belongs to the
-      subset with a green bar at the left edge. Only the rows currently on screen are checked, in
-      the background and with one query per scroll, so the marks appear shortly after scrolling.
-      A row without a mark is either not part of the subset or has not been checked yet.
-    - A table browser which holds a single row shows no row table but the single row view. It
-      carries the same mark at its left edge, plus the words "Part of Subset" next to its
-      title, since a bar alone is easy to overlook where there is only one row. This is the view
-      one ends up in after following an association to a single row.
     - "Open Path to Subject" lays that chain out in the Data Browser instead of listing it: one
       table browser per step, linked by the associations the row has been collected through, and
       each of them showing exactly the one row of its step. So the rows themselves can be looked
@@ -147,12 +69,6 @@
       condition and show both rows. The whole chain is one step in the undo history.
       Opened from the "Analysis" tab, where there is no browser to start from, the chain is laid
       out the other way round, from the subject down to the row.
-    - "Open in Data Browser" in the context menu of the "Analysis" tab opens the table an
-      association has collected its rows into, unrestricted. It does not need the collected rows,
-      so it also works once they have been discarded.
-    - "Open Collected Rows in Data Browser" in the context menu of a table in the "Rows per Table"
-      list, or a double click, opens the rows collected for that table so far, filtered to just
-      those - available while the run is still going, unlike "Open in Data Browser" above.
     - "Open Path to Subject" in the context menu of a cell of the "Export" tab, or by double
       clicking it, does the same for a whole step: it lays the way of these rows to a subject out
       as table browsers, one per step, and each of them shows exactly the rows collected in that
@@ -165,24 +81,6 @@
       has been edited in the meantime, the table browsers are rebuilt, so that the colours of the
       links reflect the restrictions as they are now. Layouts remember which browsers belong to
       such a path, and layouts written by earlier versions are read as before.
-  - Saving a layout no longer loses the sort order and the column filters of a table browser whose
-    sort key is inherited rather than set by hand. One cell was left out of the layout file for
-    those browsers, which moved every following entry out of place.
-    - Note that this is the way the row has been found first, not every way it could have been
-      reached. That is the answer to the question why the row is part of the subset: without this
-      way it might not be. Where more than one row matches at some step, the chain says so.
-    - The kept rows are discarded when the progress window is closed, when the next run starts, and,
-      should neither of that have happened, when the same database is connected to again - shown as
-      a cancellable progress dialog, since it can take a while. As long as a window which shows the
-      origin of a row is still open, they are kept, and the last such window closing discards them.
-      "Discard analysis data" in the same context menu removes them at once. Dropping and recreating
-      the working tables (e.g. during a DDL update at the start of an export) discards them as well
-      and closes any Data Browser window still analyzing them, since their rows are gone the moment
-      the tables are recreated.
-  - The progress window of a run now belongs to the window it was started from and therefore stays
-    in front of it instead of disappearing behind it. It is still not modal, so the analysis, the
-    origin windows and the Data Browser remain usable next to it. Being an owned window, it no
-    longer has an entry of its own in the task bar and is minimized together with its owner.
 
 17.2.2
   - Path Finder: candidate tables now show a confidence estimate.
