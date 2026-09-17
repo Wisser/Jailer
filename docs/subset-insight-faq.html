@@ -1,0 +1,255 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+
+  <title>Jailer - Subset Insight</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii" />
+  <meta name="keywords" content="Data Export Tool" />
+  <meta name="description" content="data export referential integrity java jdbc dbms" />
+  <link rel="stylesheet" type="text/css" href="styles.css" />
+  <link rel="shortcut icon" href="favicon.ico" />
+</head>
+
+<body left-margin="0" top-margin="0">
+  <div align="left">
+    <table style="text-align: left; position: absolute; left: 0pt; top: 0pt;" border="0"
+    cellpadding="0" cellspacing="0" height="407" width="100%">
+      <tbody>
+        <tr>
+          <td colspan="2" class="bannerbackground" height="33" width="100%">
+            <table border="0" cellpadding="4" cellspacing="0" width="100%">
+              <tbody>
+                <tr>
+                  <td><a href="https://github.com/Wisser/Jailer"><img src="logo.png" hspace="10" /></td> <td class="slogan" width="100%"></a>
+
+
+
+                  <td style="text-align: right; width: 100%;"><table border="0" cellpadding="0" cellspacing="0">
+                      <tbody>
+                        <tr>
+                           <td><a href="https://github.com/Wisser/Jailer"><img src="GitHub-Mark-64px.png" title="GitHub" /></a> </td></tr><tr style="height: 100%;"><td>&nbsp;</td>
+                        </tr>
+                      </tbody>
+                    </table> </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td colspan="2" class="nav1background"  width="100%">&nbsp;
+          <b><font color="#FFFFFF"><a href="home.htm" target="_self" class=
+          "tlink">&nbsp;Home&nbsp;</a> <a href="quicktour.htm" target="_self"
+          class="tlink">&nbsp;Quick Tour&nbsp;</a> <a href="exporting-data.htm"
+          target="_self" class="tlink">&nbsp;Tutorial&nbsp;</a> <a href=
+          "data-browsing.html" target="_self" class="tlink">&nbsp;Data Browser&nbsp;</a> <a class="tlink" href="videos.html" target="_self">&nbsp;Videos&nbsp;</a>
+          <a href="faq.html" target="_self" class="tlinkA">&nbsp;FAQ&nbsp;</a>
+          <a href="api.html" target="_self" class="tlink">&nbsp;API&nbsp;</a>
+          <a href="design.htm" target="_self" class=
+          "tlink">&nbsp;Technical Reference&nbsp;</a> <a href=
+          "forum.html" target="_self" class=
+          "tlink">&nbsp;Forum&nbsp;</a> <a href=
+          "download.html" target="_self"
+          class="tlink">&nbsp;Download&nbsp;</a>  &nbsp;&nbsp;&nbsp;
+          &nbsp;&nbsp;&nbsp;</font></b></td>
+        </tr>
+
+        <tr>
+          <td colspan="2" class="spacer" width="100%"></td> </tr><tr><td class="lmenucontainer">&nbsp;</td>
+        </tr>
+
+        <tr>
+          <td class="lmenucontainer" height="100%" valign="top" width="14%">
+            <div align="center">
+              <center>
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                  <tbody>
+                    <tr>
+                      <td height="6px" width="100%"> </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </center>
+            </div>
+
+            <ul>
+              <li>FAQ</li>
+              <ul>
+                <li><a href="faq.html" target="_self" class="llink">General Questions</a></li>
+                <li><a href="analyse-sql-script.html" target="_self" class="llink">Analyse SQL Script</a></li>
+                <li><a href="discover-associations.html" target="_self" class="llink">Discover Associations</a></li>
+                <li><a href="model-migration-tool.html" target="_self" class="llink">Model Migration Tool</a></li>
+                <li><a href="find-path.html" target="_self" class="llink">Find Path to...</a></li>
+                <li><a href="subset-by-example-faq.html" target="_self" class="llink">Subset by Example</a></li>
+                <li><a href="subset-insight-faq.html" target="_self" class="llinkA">Subset Insight</a></li>
+                <li><a href="query-builder-faq.html" target="_self" class="llink">Query Builder</a></li>
+              </ul>
+            </ul>
+
+            <table border="0" cellpadding="5" cellspacing="0" width="100%">
+              <tbody>
+                <tr>
+                  <td class="content2background"><img style="width: 160px; height: 1px;"
+                  alt="" src="architecture-Dateien/vgradp.gif" /></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <p>&nbsp;</p>
+          </td>
+
+          <td class="contentbackground" height="418" valign="top" width="86%">
+            <div align="right">
+              <table border="0" cellpadding="0" cellspacing="0" height="542" width="98%">
+                <tbody>
+                  <tr>
+                    <td class="contentbackground" height="21" width="100%">&nbsp;</td>
+                  </tr>
+
+                  <tr>
+                    <td class="content" height="520" valign="top" width="100%">
+
+                      <big><span style="font-weight: bold;">The &quot;Subset Insight&quot; Feature<br />
+                      <br /></span></big>
+
+                      <span>Once an export has collected rows into the subset, it can be hard to
+                      see <span style="font-style: italic;">why</span> a particular row is in
+                      there - which association brought it in, and how it connects back to the
+                      subject row where the export started. <span style="font-style: italic;">Subset
+                      Insight</span> answers exactly that, right from the Progress dialog and the
+                      Data Browser.<br /><br /></span>
+
+                      <table style="text-align: left;" border="0" cellpadding="3"
+                      cellspacing="0">
+                        <tbody>
+
+                          <!-- Q1 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">What is &quot;Subset Insight&quot; and when should I use it?&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>An export doesn't just show <span style="font-style: italic;">that</span>
+                            a row was collected - it can also explain <span style=
+                            "font-style: italic;">why</span>: which association brought it in, and
+                            the whole chain of rows back to the subject. This is invaluable when an
+                            extraction model pulls in more rows than expected and you need to find
+                            the association responsible (see also the &quot;Why am I getting so
+                            much data back?&quot; question on the <a href="faq.html">General
+                            Questions</a> FAQ page, and <a href="exporting-data.htm">Step&nbsp;4 of
+                            the Tutorial</a>).<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q2 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">How do I enable it?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>There is nothing to turn on separately - it is available
+                            automatically whenever the export uses the <span style=
+                            "font-style: italic;">global tables</span> working-table scope (the
+                            default) in the <span style="font-style: italic;">Data Export</span>
+                            dialog.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q3 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Can I inspect this while the export is still running, or only afterwards?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>Both. Rows already collected can be inspected while the collection
+                            is still in progress, not just after it finishes - with one exception:
+                            a run started with <span style="font-family: monospace;">-transactional</span>
+                            keeps everything inside a single database transaction, so nothing is
+                            visible until the whole run has committed.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q4 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Where do I find this in the Progress dialog?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>A collapsible <span style="font-weight: bold;">Subset Insight
+                            Guide</span> box lists every way to open the collected rows in the Data
+                            Browser:<br /><br />
+                            <ul>
+                              <li><span style="font-weight: bold;">Rows per Table</span>:
+                              double-click a table, or right-click it for <span style=
+                              "font-style: italic;">Open Collected Rows in Data Browser</span> -
+                              only the rows collected for that table so far.</li>
+                              <li><span style="font-weight: bold;">Export</span> tab (the progress
+                              table): double-click or right-click a cell for <span style=
+                              "font-style: italic;">Show Collected Rows</span> - the chain of rows
+                              leading from the subject down to it.</li>
+                              <li><span style="font-weight: bold;">Analysis</span> tab:
+                              right-click a row for <span style="font-style: italic;">Open in Data
+                              Browser</span> - the whole table, unfiltered.</li>
+                              <li>Once rows are open in the Data Browser itself: right-click any
+                              row for <span style="font-style: italic;">Why is this Row in the
+                              Subset?</span> or <span style="font-style: italic;">Open Path to
+                              Subject</span>.</li>
+                            </ul>
+                            <br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q5 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">What does &quot;Open Path to Subject&quot; show me?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>It opens the chain as a sequence of table browsers in the Data
+                            Browser: one browser per step, from the subject down to the row you
+                            selected, each showing the single row it was collected
+                            through.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                          <!-- Q6 -->
+                          <tr>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+                            <td style="font-weight: bold; background-color: rgb(242, 242, 242);">What happens to this analysis data afterwards - is it left behind in my database?</td>
+                          </tr>
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+                            <td>No. It is held only temporarily, in the same working tables the
+                            export itself uses, and is discarded automatically once you close the
+                            Progress window, start another run, or reconnect to the database -
+                            whichever comes first. Nothing is left behind for you to clean
+                            up.<br />&nbsp;<br />&nbsp;<br /></td>
+                          </tr>
+
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <p><br /></p>
+
+            <p><br /></p>
+
+            <p><br />
+            &nbsp;</p>
+          </td>
+        </tr>
+
+        <tr>
+          <td height="12" valign="top" width="14%"><br /></td>
+
+          <td><br /></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
