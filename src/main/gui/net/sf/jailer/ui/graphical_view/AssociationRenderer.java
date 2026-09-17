@@ -21,7 +21,9 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Polygon;
 import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.QuadCurve2D;
 import java.awt.geom.Rectangle2D;
@@ -92,10 +94,23 @@ public class AssociationRenderer extends EdgeRenderer {
 	 * Temporary used in getRawShape.
 	 */
 	private Point2D m_isctPoints2[] = new Point2D[2];
-	private Point2D starPosition = null;
+	private Path2D.Double crowsFoot = null;
 	private Point2D midPosition = null;
 	private Point2D pendingPosition = null;
-	private double starTheta;
+
+	/**
+	 * Direction of the edge at the end at which the arrow head is drawn. For a reflexive
+	 * association this is the tangent of the arc, not the direction of the chord.
+	 */
+	private double markerTheta;
+
+	/**
+	 * Geometry of the crow's foot which marks the "many" end of an association.
+	 */
+	private static final double CROWS_FOOT_LENGTH = 11.0;
+	private static final double CROWS_FOOT_SPREAD = 5.5;
+	private static final double CROWS_FOOT_GAP = 2.0;
+	private static final float CROWS_FOOT_WIDTH = 1.3f;
 
 	/**
 	 * Arc shape for the two edges of a reflexive association. Both edges connect the same
@@ -183,6 +198,7 @@ public class AssociationRenderer extends EdgeRenderer {
 			int i = GraphicsLib.intersectLineRectangle(arrowFrom, end,
 					dest.getBounds(), m_isctPoints);
 			if ( i > 0 ) end = m_isctPoints[0];
+			markerTheta = Math.atan2(end.getY() - arrowFrom.getY(), end.getX() - arrowFrom.getX());
 
 			// create the arrow head shape
 			AffineTransform at = getArrowTrans(arrowFrom, end, m_curWidth);
@@ -195,6 +211,7 @@ public class AssociationRenderer extends EdgeRenderer {
 			at.transform(lineEnd, lineEnd);
 		} else {
 			m_curArrow = null;
+			markerTheta = Math.atan2(end.getY() - start.getY(), end.getX() - start.getX());
 		}
 
 		// create the edge shape
@@ -215,9 +232,8 @@ public class AssociationRenderer extends EdgeRenderer {
 			return shape;
 		}
 
-		starBounds = null;
-		starPosition = null;
-		starTheta = 0;
+		crowsFootBounds = null;
+		crowsFoot = null;
 		if (reflexive) {
 			// apex of the arc, so that the marker sits on the visible curve
 			midPosition = new Point2D.Double(
@@ -229,18 +245,30 @@ public class AssociationRenderer extends EdgeRenderer {
 
 		if (!forward && (Cardinality.MANY_TO_MANY.equals(association.getCardinality()) || Cardinality.MANY_TO_ONE.equals(association.getCardinality()))
 		||   forward && (Cardinality.MANY_TO_MANY.equals(association.getCardinality()) || Cardinality.ONE_TO_MANY.equals(association.getCardinality()))) {
-			starPosition = new Point2D.Double(m_tmpPoints[forward? 1:0].getX(), m_tmpPoints[forward? 1:0].getY());
-			start = starPosition;
-			end = m_tmpPoints[forward? 0:1];
-			AffineTransform t = new AffineTransform();
-			t.setToRotation(-Math.PI/4.5);
-			Point2D p = new Point2D.Double(), shift = new Point2D.Double();
-			double d = m_tmpPoints[0].distance(m_tmpPoints[1]) / 9.0;
-			p.setLocation((end.getX() - start.getX()) / d, (end.getY() - start.getY()) / d);
-			t.transform(p, shift);
-			starTheta = Math.atan2(end.getY() - start.getY(), end.getX() - start.getX());
-			starPosition.setLocation(starPosition.getX() + shift.getX(), starPosition.getY() + shift.getY());
-			starBounds = new Rectangle2D.Double(starPosition.getX() - STAR_SIZE * (starWidth / 2), starPosition.getY() - STAR_SIZE * (starHeight / 2), starWidth * STAR_SIZE, starHeight * STAR_SIZE);
+			// the foot sits on the line right behind the arrow head and opens towards the table
+			Point2D tip = m_tmpPoints[forward? 1:0];
+			double ux = Math.cos(markerTheta), uy = Math.sin(markerTheta);
+			double nx = -uy, ny = ux;
+			double scale = Math.max(1.0, m_curWidth / 2); // as in getArrowTrans
+			double gap = CROWS_FOOT_GAP * scale;
+			double spread = CROWS_FOOT_SPREAD * scale;
+			// on a short edge the line ends at the middle of the edge, so don't reach beyond it
+			double len = Math.min(CROWS_FOOT_LENGTH * scale, 0.45 * m_tmpPoints[0].distance(m_tmpPoints[1]));
+			if (len > 1) {
+				double tx = tip.getX() - ux * gap, ty = tip.getY() - uy * gap;
+				double ax = tip.getX() - ux * (gap + len), ay = tip.getY() - uy * (gap + len);
+				crowsFoot = new Path2D.Double();
+				crowsFoot.moveTo(ax, ay);
+				crowsFoot.lineTo(tx, ty);
+				crowsFoot.moveTo(ax, ay);
+				crowsFoot.lineTo(tx + nx * spread, ty + ny * spread);
+				crowsFoot.moveTo(ax, ay);
+				crowsFoot.lineTo(tx - nx * spread, ty - ny * spread);
+				crowsFootBounds = crowsFoot.getBounds2D();
+				double pad = CROWS_FOOT_WIDTH * Math.max(1, m_curWidth);
+				crowsFootBounds.setRect(crowsFootBounds.getX() - pad, crowsFootBounds.getY() - pad,
+						crowsFootBounds.getWidth() + 2 * pad, crowsFootBounds.getHeight() + 2 * pad);
+			}
 		}
 
 		pendingBounds = null;
@@ -352,20 +380,18 @@ public class AssociationRenderer extends EdgeRenderer {
 			}
 			arrowIsPotAggregation = false;
 		}
-		starPosition = null;
+		crowsFoot = null;
 		pendingPosition = null;
 		midPosition = null;
 		render(g, item);
-		if (starPosition != null && starImage != null) {
-			double size = STAR_SIZE;
-			AffineTransform t2 = new AffineTransform();
-			t2.translate(starWidth / 2, starHeight / 2);
-			t2.rotate(starTheta - Math.PI / 8.0);
-			t2.translate(-starWidth / 2, -starHeight / 2);
-			transform.setTransform(size, 0, 0, size, starPosition.getX() - size * (starWidth / 2), starPosition.getY() - size * (starHeight / 2));
-			transform.concatenate(t2);
-			g.drawImage(starImage, transform, null);
-			starPosition = null;
+		if (crowsFoot != null) {
+			// solid, no matter whether the edge is dashed (restricted) or animated (selected)
+			Stroke oldStroke = g.getStroke();
+			g.setColor(new Color(color));
+			g.setStroke(new BasicStroke(CROWS_FOOT_WIDTH * Math.max(1, m_curWidth), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+			g.draw(crowsFoot);
+			g.setStroke(oldStroke);
+			crowsFoot = null;
 		}
 		if (pendingPosition != null && pendingImage != null) {
 			double size = PENDING_SIZE;
@@ -398,10 +424,10 @@ public class AssociationRenderer extends EdgeRenderer {
 	@Override
 	public void setBounds(VisualItem item) {
 		super.setBounds(item);
-		if (starBounds != null ) {
+		if (crowsFootBounds != null ) {
 			Rectangle2D bbox = (Rectangle2D)item.get(VisualItem.BOUNDS);
 			if (bbox != null) {
-				Rectangle2D.union(bbox, starBounds, bbox);
+				Rectangle2D.union(bbox, crowsFootBounds, bbox);
 			}
 		}
 		if (pendingBounds != null ) {
@@ -414,7 +440,7 @@ public class AssociationRenderer extends EdgeRenderer {
 
 	private boolean arrowIsPotAggregation = false;
 	private AffineTransform transform = new AffineTransform();
-	private Rectangle2D starBounds = null;
+	private Rectangle2D crowsFootBounds = null;
 	private Rectangle2D pendingBounds = null;
 	private long lastDataModelVersion = -1;
 	private Map<Association, Boolean> withNullFK = new HashMap<Association, Boolean>();
@@ -506,23 +532,12 @@ public class AssociationRenderer extends EdgeRenderer {
 		}
 	}
 	
-	private Image starImage = null;
-	private double starWidth = 0;
-	private double starHeight = 0;
-	private final double STAR_SIZE = 0.25;
 	private Image pendingImage = null;
 	private double pendingWidth = 0;
 	private double pendingHeight = 0;
 	private final double PENDING_SIZE = 0.32;
 	{
-		// load images
-		try {
-			starImage = UIUtil.readImage("/star.png").getImage();
-			starWidth = starImage.getWidth(null);
-			starHeight = starImage.getHeight(null);
-		} catch (Throwable t) {
-			// ignore
-		}
+		// load image
 		try {
 			pendingImage = UIUtil.readImage("/wanr.png").getImage();
 			pendingWidth = pendingImage.getWidth(null);
