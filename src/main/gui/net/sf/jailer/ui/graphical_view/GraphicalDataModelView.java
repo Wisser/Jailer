@@ -186,6 +186,13 @@ public class GraphicalDataModelView extends JPanel {
 	private boolean showTableDetails;
 
 	private NBodyForce force;
+
+	/**
+	 * Distance kept between the box of a table and the node of its reflexive association,
+	 * on top of half the box diagonal.
+	 */
+	private static final double REFLEXIVE_NODE_MARGIN = 24;
+
 	private volatile boolean layoutHasBeenSet = false;
 	private final ExecutionContext executionContext;
 
@@ -573,6 +580,26 @@ public class GraphicalDataModelView extends JPanel {
 					return 0.3f;
 				}
 				return showTableDetails? 2.0f : 1.0f;
+			}
+			@Override
+			protected float getSpringLength(EdgeItem e) {
+				Association association = (Association) e.get("association");
+				if (association != null && association.source == association.destination) {
+					// Both edges of a reflexive association pull its node towards the same table,
+					// so with the default rest length the node settles inside the table box and
+					// the association is drawn across its own columns. Keep it clear of the box.
+					// Half the diagonal is the distance from the centre to a corner, so the node
+					// clears the box in every direction, not just horizontally.
+					double half = 0.5 * Math.max(diagonal(e.getSourceItem().getBounds()),
+							diagonal(e.getTargetItem().getBounds()));
+					if (half > 0) {
+						return (float) (half + REFLEXIVE_NODE_MARGIN);
+					}
+				}
+				return -1f;
+			}
+			private double diagonal(Rectangle2D b) {
+				return b == null? 0 : Math.hypot(b.getWidth(), b.getHeight());
 			}
 		};
 		for (Force force: layout.getForceSimulator().getForces()) {

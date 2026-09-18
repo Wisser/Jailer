@@ -94,6 +94,8 @@ public class AssociationRenderer extends EdgeRenderer {
 	 * Temporary used in getRawShape.
 	 */
 	private Point2D m_isctPoints2[] = new Point2D[2];
+	/** Temporary used to clip the arrow head when its origin lies inside the target box. */
+	private final Point2D.Double m_outsidePoint = new Point2D.Double();
 	private Path2D.Double crowsFoot = null;
 	private Point2D midPosition = null;
 	private Point2D pendingPosition = null;
@@ -174,16 +176,26 @@ public class AssociationRenderer extends EdgeRenderer {
 
 		// control point of the arc of a reflexive association
 		if (reflexive) {
-			double dx = end.getX() - start.getX();
-			double dy = end.getY() - start.getY();
+			// The chord ends at the border of the table box, not at its centre. Measured from the
+			// centre, the midpoint of the chord lies inside the box, and since the two edges of a
+			// pair bow to opposite sides, one of them would always bow into the box - across the
+			// columns of the very table it belongs to.
+			Point2D chordEnd = end;
+			VisualItem destItem = forward ? e.getTargetItem() : e.getSourceItem();
+			int ci = GraphicsLib.intersectLineRectangle(start, end, destItem.getBounds(), m_isctPoints);
+			if (ci > 0) {
+				chordEnd = m_isctPoints[0];
+			}
+			double dx = chordEnd.getX() - start.getX();
+			double dy = chordEnd.getY() - start.getY();
 			double len = Math.sqrt(dx * dx + dy * dy);
 			if (len > 1) {
 				double bow = Math.max(REFLEXIVE_MIN_BOW, Math.min(REFLEXIVE_BOW_FACTOR * len, REFLEXIVE_MAX_BOW));
 				// both edges of the pair connect the same two nodes, so they bow to opposite sides
 				double offset = 2 * bow * (association.reversed? 1 : -1);
 				m_ctrlPoints[0].setLocation(
-						(start.getX() + end.getX()) / 2 - dy / len * offset,
-						(start.getY() + end.getY()) / 2 + dx / len * offset);
+						(start.getX() + chordEnd.getX()) / 2 - dy / len * offset,
+						(start.getY() + chordEnd.getY()) / 2 + dx / len * offset);
 			} else {
 				reflexive = false;
 			}
@@ -198,6 +210,21 @@ public class AssociationRenderer extends EdgeRenderer {
 			VisualItem dest = forward ? e.getTargetItem() : e.getSourceItem();
 			int i = GraphicsLib.intersectLineRectangle(arrowFrom, end,
 					dest.getBounds(), m_isctPoints);
+			if (i == 0) {
+				// arrowFrom lies inside the target box - the node of a reflexive association can
+				// end up there, and so can a table dragged over another one - so the segment never
+				// crosses the border and the arrow head would stay at the centre of the box. Move
+				// the far point out along the same direction until it is certainly outside, and
+				// clip again, which keeps the head on the border.
+				Rectangle2D bounds = dest.getBounds();
+				double dx = arrowFrom.getX() - end.getX(), dy = arrowFrom.getY() - end.getY();
+				double d = Math.sqrt(dx * dx + dy * dy);
+				if (d > 0.001 && bounds != null) {
+					double reach = Math.hypot(bounds.getWidth(), bounds.getHeight()) + d;
+					m_outsidePoint.setLocation(end.getX() + dx / d * reach, end.getY() + dy / d * reach);
+					i = GraphicsLib.intersectLineRectangle(m_outsidePoint, end, bounds, m_isctPoints);
+				}
+			}
 			if ( i > 0 ) end = m_isctPoints[0];
 			markerTheta = Math.atan2(end.getY() - arrowFrom.getY(), end.getX() - arrowFrom.getX());
 
