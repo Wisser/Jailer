@@ -99,8 +99,10 @@ public class AssociationRenderer extends EdgeRenderer {
 	private Point2D pendingPosition = null;
 
 	/**
-	 * Direction of the edge at the end at which the arrow head is drawn. For a reflexive
-	 * association this is the tangent of the arc, not the direction of the chord.
+	 * Direction of the edge at the end at which the arrow head is drawn. Read by
+	 * {@link #pointBack(boolean, boolean, double, Point2D)} for a straight edge. The arc of a
+	 * reflexive association is followed point by point instead, because its tangent turns along
+	 * the way.
 	 */
 	private double markerTheta;
 
@@ -110,7 +112,6 @@ public class AssociationRenderer extends EdgeRenderer {
 	private static final double CROWS_FOOT_LENGTH = 11.0;
 	private static final double CROWS_FOOT_SPREAD = 5.5;
 	private static final double CROWS_FOOT_GAP = 2.0;
-	private static final float CROWS_FOOT_WIDTH = 1.3f;
 
 	/**
 	 * Arc shape for the two edges of a reflexive association. Both edges connect the same
@@ -245,27 +246,28 @@ public class AssociationRenderer extends EdgeRenderer {
 
 		if (!forward && (Cardinality.MANY_TO_MANY.equals(association.getCardinality()) || Cardinality.MANY_TO_ONE.equals(association.getCardinality()))
 		||   forward && (Cardinality.MANY_TO_MANY.equals(association.getCardinality()) || Cardinality.ONE_TO_MANY.equals(association.getCardinality()))) {
-			// the foot sits on the line right behind the arrow head and opens towards the table
-			Point2D tip = m_tmpPoints[forward? 1:0];
-			double ux = Math.cos(markerTheta), uy = Math.sin(markerTheta);
-			double nx = -uy, ny = ux;
+			// the foot sits on the edge right behind the arrow head and opens towards the table
 			double scale = Math.max(1.0, m_curWidth / 2); // as in getArrowTrans
 			double gap = CROWS_FOOT_GAP * scale;
 			double spread = CROWS_FOOT_SPREAD * scale;
 			// on a short edge the line ends at the middle of the edge, so don't reach beyond it
 			double len = Math.min(CROWS_FOOT_LENGTH * scale, 0.45 * m_tmpPoints[0].distance(m_tmpPoints[1]));
 			if (len > 1) {
-				double tx = tip.getX() - ux * gap, ty = tip.getY() - uy * gap;
-				double ax = tip.getX() - ux * (gap + len), ay = tip.getY() - uy * (gap + len);
+				// both anchors are taken from the edge itself, so the foot bends with the arc of
+				// a reflexive association instead of drifting off it along the end tangent
+				Point2D tangent = new Point2D.Double();
+				Point2D toe = pointBack(reflexive, forward, gap, tangent);
+				Point2D apex = pointBack(reflexive, forward, gap + len, null);
+				double nx = -tangent.getY(), ny = tangent.getX();
+				// no middle toe: the association line is the third stroke of the notation, and on
+				// a curved edge a straight middle toe is the prong that diverges most visibly
 				crowsFoot = new Path2D.Double();
-				crowsFoot.moveTo(ax, ay);
-				crowsFoot.lineTo(tx, ty);
-				crowsFoot.moveTo(ax, ay);
-				crowsFoot.lineTo(tx + nx * spread, ty + ny * spread);
-				crowsFoot.moveTo(ax, ay);
-				crowsFoot.lineTo(tx - nx * spread, ty - ny * spread);
+				crowsFoot.moveTo(apex.getX(), apex.getY());
+				crowsFoot.lineTo(toe.getX() + nx * spread, toe.getY() + ny * spread);
+				crowsFoot.moveTo(apex.getX(), apex.getY());
+				crowsFoot.lineTo(toe.getX() - nx * spread, toe.getY() - ny * spread);
 				crowsFootBounds = crowsFoot.getBounds2D();
-				double pad = CROWS_FOOT_WIDTH * Math.max(1, m_curWidth);
+				double pad = Math.max(1, m_curWidth);
 				crowsFootBounds.setRect(crowsFootBounds.getX() - pad, crowsFootBounds.getY() - pad,
 						crowsFootBounds.getWidth() + 2 * pad, crowsFootBounds.getHeight() + 2 * pad);
 			}
@@ -288,6 +290,65 @@ public class AssociationRenderer extends EdgeRenderer {
 		}
 
 		return shape;
+	}
+
+	/**
+	 * Number of steps used to walk the arc of a reflexive association in {@link #pointBack}.
+	 */
+	private static final int ARC_STEPS = 64;
+
+	/**
+	 * Point on the drawn edge at arc distance <code>dist</code> back from the end at which the
+	 * arrow head sits, together with the unit tangent there, pointing towards that end.
+	 * <p>
+	 * A straight edge is simply a step along the line. The arc of a reflexive association is
+	 * followed point by point, so that a marker placed on it bends with the edge rather than
+	 * drifting off its chord. The end of the arc already is the base of the arrow head, because
+	 * the bias by <code>m_arrowHeight</code> is applied before the curve is built.
+	 *
+	 * @param reflexive <code>true</code> to follow the arc instead of the straight line
+	 * @param forward <code>true</code> if the arrow head sits at the second end point
+	 * @param dist arc distance from that end
+	 * @param tangentOut receives the unit tangent, may be <code>null</code>
+	 * @return the point on the edge
+	 */
+	private Point2D pointBack(boolean reflexive, boolean forward, double dist, Point2D tangentOut) {
+		if (!reflexive) {
+			Point2D tip = m_tmpPoints[forward? 1:0];
+			double ux = Math.cos(markerTheta), uy = Math.sin(markerTheta);
+			if (tangentOut != null) {
+				tangentOut.setLocation(ux, uy);
+			}
+			return new Point2D.Double(tip.getX() - ux * dist, tip.getY() - uy * dist);
+		}
+		double p0x = m_tmpPoints[0].getX(), p0y = m_tmpPoints[0].getY();
+		double cx = m_ctrlPoints[0].getX(), cy = m_ctrlPoints[0].getY();
+		double p2x = m_tmpPoints[1].getX(), p2y = m_tmpPoints[1].getY();
+		double s0 = forward? 1 : 0, dir = forward? -1 : 1;
+		double px = forward? p2x : p0x, py = forward? p2y : p0y;
+		double acc = 0;
+		for (int i = 1; i <= ARC_STEPS; i++) {
+			double s = s0 + dir * i / (double) ARC_STEPS;
+			double t = 1 - s;
+			double qx = t * t * p0x + 2 * t * s * cx + s * s * p2x;
+			double qy = t * t * p0y + 2 * t * s * cy + s * s * p2y;
+			double seg = Math.hypot(qx - px, qy - py);
+			if (acc + seg >= dist && seg > 0) {
+				double f = (dist - acc) / seg;
+				if (tangentOut != null) {
+					tangentOut.setLocation((px - qx) / seg, (py - qy) / seg);
+				}
+				return new Point2D.Double(px + (qx - px) * f, py + (qy - py) * f);
+			}
+			acc += seg;
+			px = qx; py = qy;
+		}
+		// dist reaches beyond the far end of the arc
+		if (tangentOut != null) {
+			double ux = Math.cos(markerTheta), uy = Math.sin(markerTheta);
+			tangentOut.setLocation(ux, uy);
+		}
+		return new Point2D.Double(px, py);
 	}
 
 	/**
@@ -388,7 +449,9 @@ public class AssociationRenderer extends EdgeRenderer {
 			// solid, no matter whether the edge is dashed (restricted) or animated (selected)
 			Stroke oldStroke = g.getStroke();
 			g.setColor(new Color(color));
-			g.setStroke(new BasicStroke(CROWS_FOOT_WIDTH * Math.max(1, m_curWidth), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+			// the same width the edge itself is stroked with: prefuse derives the edge stroke as
+			// StrokeLib.getDerivedStroke(item.getStroke(), m_curWidth) over a width-1.0 default
+			g.setStroke(new BasicStroke(Math.max(1, m_curWidth), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 			g.draw(crowsFoot);
 			g.setStroke(oldStroke);
 			crowsFoot = null;
