@@ -131,7 +131,7 @@ public class Colors {
 		Color_0_0_245_60.init(new Color(0, 225, 0, 120), new Color(140, 255, 140, 120));
 		Color_190_255_180.init(new Color(190, 255, 180), new Color(29, 67, 22));
 
-		Color_255_255_238.init(new Color(255, 255, 238), new Color(0, 12, 50));
+		Color_255_255_238.init(new Color(255, 255, 247), new Color(0, 12, 50));
 		Color_248_252_255.init(new Color(244, 248, 255), new Color(0, 30, 0));
 
 		Color_NeigbBG.init(new Color(255, 255, 255, 200), new Color(31, 39, 42));
