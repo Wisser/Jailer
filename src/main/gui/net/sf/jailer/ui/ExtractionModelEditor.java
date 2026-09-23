@@ -2804,7 +2804,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 			}
 			if (isPk) {
 				restrictionEditor.fk20DisabledHintLabel.setText("(Foreign key is also primary key)");
-			} else {
+			} else if (isFiltered) {
 				restrictionEditor.fk20DisabledHintLabel.setText("(Foreign key has filter)");
 			}
 			restrictionEditor.fkToNullCheckBox.setToolTipText("<html><i>in export-script (SQL)</i>: set all foreign keys to null to which the row with the corresponding primary key is not exported <br><hr>\n<i>in delete-script</i>: set all foreign keys in the rows that cannot be deleted to null when the row with the corresponding primary key is deleted "

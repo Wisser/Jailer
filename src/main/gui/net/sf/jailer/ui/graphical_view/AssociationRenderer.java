@@ -20,9 +20,12 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Polygon;
+import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.QuadCurve2D;
@@ -39,6 +42,7 @@ import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
 import prefuse.Constants;
 import prefuse.render.EdgeRenderer;
+import prefuse.util.ColorLib;
 import prefuse.util.GraphicsLib;
 import prefuse.visual.EdgeItem;
 import prefuse.visual.VisualItem;
@@ -288,10 +292,11 @@ public class AssociationRenderer extends EdgeRenderer {
 				double nx = -tangent.getY(), ny = tangent.getX();
 				// no middle toe: the association line is the third stroke of the notation, and on
 				// a curved edge a straight middle toe is the prong that diverges most visibly
+				// one continuous path: the apex is stroked once, as a round join, instead of twice
+				// as two round caps which reach half a stroke width beyond it
 				crowsFoot = new Path2D.Double();
-				crowsFoot.moveTo(apex.getX(), apex.getY());
-				crowsFoot.lineTo(toe.getX() + nx * spread, toe.getY() + ny * spread);
-				crowsFoot.moveTo(apex.getX(), apex.getY());
+				crowsFoot.moveTo(toe.getX() + nx * spread, toe.getY() + ny * spread);
+				crowsFoot.lineTo(apex.getX(), apex.getY());
 				crowsFoot.lineTo(toe.getX() - nx * spread, toe.getY() - ny * spread);
 				crowsFootBounds = crowsFoot.getBounds2D();
 				double pad = Math.max(1, m_curWidth);
@@ -398,6 +403,35 @@ public class AssociationRenderer extends EdgeRenderer {
 	}
 
 	/**
+	 * Draws the edge itself.
+	 * <p>
+	 * {@link GraphicsLib#paint} hands a {@link Line2D} to
+	 * {@link Graphics2D#drawLine(int, int, int, int)} with both end points rounded to whole
+	 * units as soon as the display is zoomed out to a scale of 1.5 or less, an optimization for
+	 * the Windows JRE of 2008 which buys nothing here because the display draws antialiased
+	 * anyway. The markers of the edge - arrow head, crow's foot, the circle of a nulled foreign
+	 * key - sit at the exact geometry, so the line moved away from them by up to half a unit at
+	 * each end. The arc of a reflexive association is a {@link QuadCurve2D} and was never
+	 * affected.
+	 */
+	@Override
+	protected void drawShape(Graphics2D g, VisualItem item, Shape shape) {
+		if (!(shape instanceof Line2D) || getRenderType(item) != RENDER_TYPE_DRAW) {
+			super.drawShape(g, item, shape);
+			return;
+		}
+		Color strokeColor = ColorLib.getColor(item.getStrokeColor());
+		if (strokeColor.getAlpha() == 0) {
+			return;
+		}
+		Stroke oldStroke = g.getStroke();
+		g.setStroke(getStroke(item));
+		g.setPaint(strokeColor);
+		g.draw(shape);
+		g.setStroke(oldStroke);
+	}
+
+	/**
 	 * Renders an {@link Association}.
 	 *
 	 * @param g the 2D graphics
@@ -471,6 +505,13 @@ public class AssociationRenderer extends EdgeRenderer {
 		crowsFoot = null;
 		pendingPosition = null;
 		midPosition = null;
+		// The edge and its markers are separate draw calls. Under the default STROKE_NORMALIZE
+		// Java2D snaps each of them to the pixel grid on its own, in device space and therefore
+		// after the display's pan and zoom, so the crow's foot could land up to a pixel beside
+		// the very line it is placed on. Measured: worst case 1.0 px at zoom 1.33, 0.5 .. 0.8 px
+		// at other zoom levels, against 0.1 px with exact geometry.
+		Object oldStrokeControl = g.getRenderingHint(RenderingHints.KEY_STROKE_CONTROL);
+		g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 		render(g, item);
 		if (crowsFoot != null) {
 			// solid, no matter whether the edge is dashed (restricted) or animated (selected)
@@ -503,9 +544,13 @@ public class AssociationRenderer extends EdgeRenderer {
 				int r = 5;
 				g.setStroke(new BasicStroke(1.5f));
 				g.setColor(new Color(color));
-				g.drawOval((int) midPosition.getX() - r, (int) midPosition.getY() - r, 2 * r, 2 * r);
+				g.draw(new Ellipse2D.Double(midPosition.getX() - r, midPosition.getY() - r, 2 * r, 2 * r));
 			}
 		}
+		// getRenderingHint answers null when the hint was never set, and setRenderingHint rejects
+		// null, so fall back to the documented default
+		g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
+				oldStrokeControl != null? oldStrokeControl : RenderingHints.VALUE_STROKE_NORMALIZE);
 	}
 
 	/**
