@@ -1,3 +1,7 @@
+17.2.4
+  - The graphical view now shows the cardinality of an association in crow's foot notation: the
+    "many" end of a line ends in a crow's foot instead of the star used so far.
+
 17.2.3
   - New feature "Discover Associations": proposes associations for databases that have no
     foreign key constraints.

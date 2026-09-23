@@ -36,8 +36,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.geom.AffineTransform;
@@ -179,7 +177,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         jPanel21.setBorder(javax.swing.BorderFactory.createLineBorder(Colors.Color_204_204_204));
 
 		dummyContent.setVisible(false);
-		disabledPanel.setVisible(false);
+		setDisabledPanelVisible(false);
 		DbConnectionDetailsEditor.addNewDatamodelListener(() -> {
 			loadModelList();
 			refresh();
@@ -424,7 +422,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		this.module = module;
 		initComponents(); UIUtil.initComponents(this);
 
-		disabledPanel.setVisible(false);
+		setDisabledPanelVisible(false);
 		DbConnectionDetailsEditor.addNewDatamodelListener(() -> {
 			loadModelList();
 			refresh();
@@ -919,13 +917,13 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 							ConnectionInfo ci = e.getValue();
 							UIUtil.subModule += 1;
 							setWaitCursor();
-							(master == null? DataModelManagerDialog.this : master).disabledPanel.setVisible(true);
+							(master == null? DataModelManagerDialog.this : master).setDisabledPanelVisible(true);
 							UIUtil.invokeLater(() -> {
 								try {
 									dmmd.openBookmark(new BookmarkId(bookmark.bookmark, bookmark.datamodelFolder, bookmark.connectionAlias, bookmark.rawSchemaMapping), ci);
 									dmmd.closeAndDispose();
 								} finally {
-									(master == null? DataModelManagerDialog.this : master).disabledPanel.setVisible(false);
+									(master == null? DataModelManagerDialog.this : master).setDisabledPanelVisible(false);
 									resetWaitCursor();
 								}
 							});
@@ -945,6 +943,18 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 						dmmd.welcomeContainerPanel.setVisible(true);
 					});
 		}
+	}
+
+	/**
+	 * Shows or hides the "busy" veil.
+	 * <p>
+	 * {@code jPanel8} is the container of {@link #disabledPanel} in the MODAL_LAYER. It has
+	 * to be hidden along with the veil. Otherwise it covers the whole window and suppresses
+	 * every mouse cursor change of the components underneath it.
+	 */
+	private void setDisabledPanelVisible(boolean visible) {
+		disabledPanel.setVisible(visible);
+		jPanel8.setVisible(visible);
 	}
 
 	private void setWaitCursor() {
@@ -1059,7 +1069,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					lastSessionRestored = true;
-					(master == null? DataModelManagerDialog.this : master).disabledPanel.setVisible(true);
+					(master == null? DataModelManagerDialog.this : master).setDisabledPanelVisible(true);
 					UIUtil.invokeLater(() -> {
 						try {
 							BookmarkId bookmark = new BookmarkId(forEMEditor? lastSession.bookmark : "", lastSession.datamodelFolder, lastSession.connectionAlias, lastSession.rawSchemaMapping);
@@ -1069,7 +1079,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 							closeAndDispose();
 						} finally {
 							resetWaitCursor();
-							(master == null? DataModelManagerDialog.this : master).disabledPanel.setVisible(false);
+							(master == null? DataModelManagerDialog.this : master).setDisabledPanelVisible(false);
 						}
 					});
 				}
@@ -1336,13 +1346,13 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				if (i >= 0 && i < bookmarksListModel.size()) {
 					BookmarkId bookmark = bookmarksListModel.get(i);
 					ConnectionInfo ci = ciOfBookmark.get(bookmark);
-					(master == null? DataModelManagerDialog.this : master).disabledPanel.setVisible(true);
+					(master == null? DataModelManagerDialog.this : master).setDisabledPanelVisible(true);
 					UIUtil.invokeLater(() -> {
 						try {
 							openBookmark(new BookmarkId(bookmark.bookmark, bookmark.datamodelFolder, bookmark.connectionAlias, bookmark.rawSchemaMapping), ci);
 							closeAndDispose();
 						} finally {
-							(master == null? DataModelManagerDialog.this : master).disabledPanel.setVisible(false);
+							(master == null? DataModelManagerDialog.this : master).setDisabledPanelVisible(false);
 						}
 					});
 				}
@@ -1497,10 +1507,10 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			}
 			@Override
 			protected void prepareTestingConnectivity() {
-				(master == null? DataModelManagerDialog.this : master).disabledPanel.setVisible(true);
+				(master == null? DataModelManagerDialog.this : master).setDisabledPanelVisible(true);
 			}
 			protected void followUpTestingConnectivity() {
-				(master == null? DataModelManagerDialog.this : master).disabledPanel.setVisible(false);
+				(master == null? DataModelManagerDialog.this : master).setDisabledPanelVisible(false);
 			}
 			@Override
 			protected void onConnect(ConnectionInfo currentConnection) {
@@ -1508,7 +1518,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 					JOptionPane.showMessageDialog(DataModelManagerDialog.this,
 							"Data Model \"" + currentConnection.dataModelFolder + "\" does not exist.\n");
 				} else {
-					(master == null? DataModelManagerDialog.this : master).disabledPanel.setVisible(true);
+					(master == null? DataModelManagerDialog.this : master).setDisabledPanelVisible(true);
 					UIUtil.invokeLater(() -> {
 						try {
 							DataModelManager.setCurrentModelSubfolder(currentConnection.dataModelFolder, executionContext);
@@ -1521,7 +1531,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 							resetWaitCursor();
 							DataModelManagerDialog.this.closeAndDispose();
 						} finally {
-							(master == null? DataModelManagerDialog.this : master).disabledPanel.setVisible(false);
+							(master == null? DataModelManagerDialog.this : master).setDisabledPanelVisible(false);
 						}
 					});
 				}
@@ -2957,7 +2967,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
 		hasSelectedModel = true;
 		setWaitCursor();
-		(master == null? this : master).disabledPanel.setVisible(true);
+		(master == null? this : master).setDisabledPanelVisible(true);
 		UIUtil.invokeLater(() -> {
 			try {
 				store();
@@ -2966,7 +2976,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			} catch (Throwable t) {
 				UIUtil.showException(this, "Error", t);
 			} finally {
-				(master == null? this : master).disabledPanel.setVisible(false);
+				(master == null? this : master).setDisabledPanelVisible(false);
 				resetWaitCursor();
 			}
 			closeAndDispose();
