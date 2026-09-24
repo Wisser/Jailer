@@ -17,9 +17,7 @@ package net.sf.jailer.ui;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -33,6 +31,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
 import net.sf.jailer.configuration.DBMS;
+import net.sf.jailer.ui.util.SafeFileWriter;
 
 /**
  * Persists settings of formular fields.
@@ -133,17 +132,7 @@ public abstract class Settings  {
 			settings.put(name.trim(), setting);
 			currentSetting = name;
 			try {
-				File file = new File(FILENAME);
-				file.delete();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			try {
-				File file = new File(FILENAME);
-				ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file)); // lgtm [java/output-resource-leak]
-				out.writeObject(settings);
-				out.writeObject(currentSetting);
-				out.close();
+				SafeFileWriter.writeObjects(new File(FILENAME), settings, currentSetting);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

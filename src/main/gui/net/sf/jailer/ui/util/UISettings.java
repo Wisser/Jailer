@@ -18,9 +18,7 @@ package net.sf.jailer.ui.util;
 import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -128,9 +126,7 @@ public class UISettings {
 		for (int retry = 0; retry < 4; ++retry) {
 			try {
 				synchronized (UISettings.class) {
-					ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file)); // lgtm [java/output-resource-leak]
-					out.writeObject(properties);
-					out.close();
+					SafeFileWriter.writeObjects(file, properties);
 				}
 				return;
 			} catch (Exception e) {
