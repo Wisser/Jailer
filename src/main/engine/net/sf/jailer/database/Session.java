@@ -420,6 +420,15 @@ public class Session {
 		init();
 	}
 
+	/**
+	 * Removes a closed connection from all bookkeeping structures.
+	 */
+	private void forget(Connection con) {
+		connections.remove(con);
+		metaData.remove(con);
+		lastConnectionActiviyTimeStamp.remove(con);
+	}
+
 	protected void setConnection(Connection con) {
 		connection.set(con);
 		synchronized (this) {
@@ -484,6 +493,7 @@ public class Session {
 			} catch (Throwable e) { // SQLException e) {
 				// ignore
 			}
+			forget(con);
 			setConnection(null);
 			if (con == temporaryTableSession) {
 				temporaryTableSession = null;
@@ -1375,7 +1385,14 @@ public class Session {
 	 * Rolls back and closes all connections.
 	 */
 	public void rollbackAll() throws SQLException {
-		for (Connection con: connections) {
+		List<Connection> closing;
+		synchronized (connections) {
+			closing = new ArrayList<Connection>(connections);
+			connections.clear();
+		}
+		for (Connection con: closing) {
+			metaData.remove(con);
+			lastConnectionActiviyTimeStamp.remove(con);
 			try {
 				con.rollback();
 			} catch(SQLException e) {
@@ -1404,7 +1421,11 @@ public class Session {
 	 * Commits all connections.
 	 */
 	public void commitAll() throws SQLException {
-		for (Connection con: connections) {
+		List<Connection> committing;
+		synchronized (connections) {
+			committing = new ArrayList<Connection>(connections);
+		}
+		for (Connection con: committing) {
 			try {
 				con.commit();
 			} catch(SQLException e) {

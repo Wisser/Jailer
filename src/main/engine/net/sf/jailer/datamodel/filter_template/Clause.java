@@ -204,7 +204,7 @@ public class Clause {
 
 		private static Map<String, Pattern> compiledPattern = new HashMap<String, Pattern>();
 		
-		protected synchronized boolean matches(String subject, String pattern) {
+		protected static synchronized boolean matches(String subject, String pattern) {
 			try {
 				Pattern pat = compiledPattern.get(pattern);
 				if (pat == null) {

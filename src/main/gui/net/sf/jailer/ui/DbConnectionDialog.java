@@ -44,6 +44,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.stream.Collectors;
 
@@ -453,7 +454,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		this.infoBar = infoBar;
 		this.dataModelAware = dataModelAware;
 		this.showOnlyRecentyUsedConnections = showOnlyRecentyUsedConnections;
-		allDialogs.put(this, this);
+		allDialogs.add(this);
 		initComponents(); UIUtil.initComponents(this);
 		loadConnectionList(showOnlyRecentyUsedConnections);
 		jButton1.setIcon(UIUtil.scaleIcon(jButton1, okIcon));
@@ -798,14 +799,14 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	}
 	
 	private static void onConnectionListChangedReload() {
-		allDialogs.forEach((a, b) -> a.loadConnectionList(false));
+		new ArrayList<>(allDialogs).forEach(a -> a.loadConnectionList(false));
 	}
 
 	private static void onConnectionListChangedAll() {
-		allDialogs.forEach((a, b) -> a.onConnectionListChanged());
+		new ArrayList<>(allDialogs).forEach(a -> a.onConnectionListChanged());
 	}
 
-	private static Map<DbConnectionDialog, DbConnectionDialog> allDialogs = new WeakHashMap<DbConnectionDialog, DbConnectionDialog>();
+	private static Set<DbConnectionDialog> allDialogs = Collections.newSetFromMap(new WeakHashMap<DbConnectionDialog, Boolean>());
 
 	/**
 	 * Loads connection list.
