@@ -35,6 +35,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -109,6 +110,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -177,6 +179,7 @@ import net.sf.jailer.ui.databrowser.BrowserContentCellEditor;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.LoadJob;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.RowsClosure;
+import net.sf.jailer.ui.databrowser.compare.CompareTabs;
 import net.sf.jailer.ui.databrowser.DataBrowser;
 import net.sf.jailer.ui.databrowser.Desktop;
 import net.sf.jailer.ui.databrowser.Desktop.FindClosureContext;
@@ -196,6 +199,7 @@ import net.sf.jailer.ui.databrowser.metadata.ResultSetRenderer;
 import net.sf.jailer.ui.databrowser.whereconditioneditor.WCTypeAnalyser;
 import net.sf.jailer.ui.databrowser.whereconditioneditor.WCTypeAnalyser.Result;
 import net.sf.jailer.ui.databrowser.whereconditioneditor.WhereConditionEditorPanel;
+import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.syntaxtextarea.SQLAutoCompletion;
 import net.sf.jailer.ui.syntaxtextarea.SQLCompletionProvider;
@@ -288,6 +292,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         this.datamodel = datamodel;
         this.executionContext = executionContext;
         initComponents(); UIUtil.initComponents(this);
+        initResultTabPopup();
         jToolBar1.setFloatable(false);
         aiSilentStatusPanel.setVisible(false);
         aiSilentCancelButton.setIcon(UIUtil.scaleIcon(this, cancelIcon));
@@ -3580,6 +3585,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         public void initSecondaryCondition() {
 			openConditionEditor(null, -1, null);
 		}
+		@Override
+		protected JMenuItem createCompareWithResultMenu() {
+			TitelPanel tp = titelPanelOf(this);
+			return tp == null? null : createCompareWithMenu(tp);
+		}
     	public Set<Integer> getPkColumnsConsole() {
     		HashSet<Integer> result = new HashSet<Integer>(pkColumns);
     		result.addAll(pkColumnsConsole);
@@ -4292,6 +4302,79 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		}
     }
     
+    /**
+     * Context menu of the result tabs' headers: "Compare with..." another result tab.
+     */
+    private void initResultTabPopup() {
+    	jTabbedPane1.addMouseListener(new MouseAdapter() {
+    		@Override
+    		public void mousePressed(MouseEvent e) {
+    			maybeShowPopup(e);
+    		}
+    		@Override
+    		public void mouseReleased(MouseEvent e) {
+    			maybeShowPopup(e);
+    		}
+    		private void maybeShowPopup(MouseEvent e) {
+    			if (!e.isPopupTrigger()) {
+    				return;
+    			}
+    			int index = jTabbedPane1.indexAtLocation(e.getX(), e.getY());
+    			if (index < 0 || !(jTabbedPane1.getTabComponentAt(index) instanceof TitelPanel)) {
+    				return;
+    			}
+    			TitelPanel tp = (TitelPanel) jTabbedPane1.getTabComponentAt(index);
+    			if (tp.rb == null) {
+    				return;
+    			}
+    			JPopupMenu popup = new JPopupMenu();
+    			JMenu compare = createCompareWithMenu(tp);
+    			compare.setIcon(UIUtil.scaleIcon(compare, UIUtil.readImage("/diff.png"), 0.8));
+    			popup.add(compare);
+    			UIUtil.showPopup(e.getComponent(), e.getX(), e.getY(), popup);
+    		}
+    	});
+    }
+
+    /**
+     * Creates the menu "Compare with..." listing the other result tabs.
+     */
+    private JMenu createCompareWithMenu(TitelPanel tp) {
+    	JMenu compare = new JMenu("Compare with...");
+    	String tpTitle = "Tab " + (jTabbedPane1.indexOfTabComponent(tp) + 1) + ": " + tp.titleLbl.getText();
+    	for (int i = 0; i < jTabbedPane1.getTabCount(); ++i) {
+    		if (jTabbedPane1.getTabComponentAt(i) instanceof TitelPanel && jTabbedPane1.getTabComponentAt(i) != tp) {
+    			TitelPanel other = (TitelPanel) jTabbedPane1.getTabComponentAt(i);
+    			if (other.rb != null) {
+    				String otherTitle = "Tab " + (i + 1) + ": " + other.titleLbl.getText();
+    				JMenuItem item = new JMenuItem(otherTitle);
+    				if (other.executedSQL != null && !other.executedSQL.trim().isEmpty()) {
+    					item.setToolTipText(UIUtil.toHTML(new BasicFormatterImpl().format(other.executedSQL), 200));
+    				}
+    				item.addActionListener(evt -> CompareTabs.compare(SwingUtilities.getWindowAncestor(SQLConsole.this),
+    						tpTitle, tp.rb, otherTitle, other.rb));
+    				compare.add(item);
+    			}
+    		}
+    	}
+    	compare.setEnabled(compare.getItemCount() > 0);
+    	compare.setToolTipText(compare.getItemCount() > 0? "Compares the rows of this result with the rows of another result, paired by key columns."
+    			: "There is no other result to compare with.");
+    	return compare;
+    }
+
+    /**
+     * Gets the header of the result tab showing a given result, or <code>null</code>.
+     */
+    private TitelPanel titelPanelOf(BrowserContentPane rb) {
+    	for (int i = 0; i < jTabbedPane1.getTabCount(); ++i) {
+    		if (jTabbedPane1.getTabComponentAt(i) instanceof TitelPanel && ((TitelPanel) jTabbedPane1.getTabComponentAt(i)).rb == rb) {
+    			return (TitelPanel) jTabbedPane1.getTabComponentAt(i);
+    		}
+    	}
+    	return null;
+    }
+
     private TitelPanel getTitlePanel(final JTabbedPane tabbedPane, final JComponent rTabContainer, TabContentPanel tabContentPanel, String title, ResultContentPane rb, int loc, String executedSQL) {
         return new TitelPanel(tabbedPane, rTabContainer, tabContentPanel, title, rb, loc, executedSQL);
     }

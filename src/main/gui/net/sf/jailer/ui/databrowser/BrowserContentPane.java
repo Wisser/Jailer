@@ -93,6 +93,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -211,6 +212,9 @@ import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.ui.databrowser.Desktop.RowToRowLink;
 import net.sf.jailer.ui.databrowser.Desktop.RunnableWithPriority;
 import net.sf.jailer.ui.databrowser.RowCounter.RowCount;
+import net.sf.jailer.ui.databrowser.compare.CompareDialog;
+import net.sf.jailer.ui.databrowser.compare.CompareWithConnection;
+import net.sf.jailer.ui.databrowser.compare.RowComparison;
 import net.sf.jailer.ui.databrowser.lob.BlobLengthPlaceholder;
 import net.sf.jailer.ui.databrowser.lob.LobCellValue;
 import net.sf.jailer.ui.databrowser.lob.LobContent;
@@ -3456,6 +3460,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 				popup.insert(originPath, 2);
 			}
 
+			final List<JMenuItem> compareItems = addCompareMenuItems(popup, rowOriginContext != null? 3 : 1, row, selectedRowsIndexes);
+
 			if (!(table instanceof SqlStatementTable) || resultSetType != null) {
 				if (popup.getComponentCount() > 0) {
 					popup.add(new JSeparator());
@@ -3551,6 +3557,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 						script.setIcon(genSQLIcon);
 						script.setToolTipText("Generate SQL statements (Update/Insert/Delete) for this row.");
 						popup.add(script);
+						for (JMenuItem item: compareItems) {
+							popup.add(item);
+						}
 					} else {
 						script = sql;
 						sql.removeAll();
@@ -5848,6 +5857,138 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 				}
 			}
 		});
+	}
+
+	/**
+	 * Whether the rows have been cut by the row limit.
+	 */
+	public boolean isRowLimitExceeded() {
+		return isLimitExceeded;
+	}
+
+	/**
+	 * Gets the indexes of the columns known to belong to a primary key.
+	 */
+	public Set<Integer> getPrimaryKeyColumnIndexes() {
+		Set<Integer> result = new TreeSet<Integer>(pkColumns);
+		result.addAll(pkColumnsConsole);
+		return result;
+	}
+
+	/**
+	 * Gets the indexes of the columns known to belong to a foreign key.
+	 */
+	public Set<Integer> getForeignKeyColumnIndexes() {
+		Set<Integer> result = new TreeSet<Integer>(fkColumns);
+		result.addAll(fkColumnsConsole);
+		return result;
+	}
+
+	/**
+	 * Adds the submenu "Compare" (with each other, with a connection, with another result) to the row context menu.
+	 *
+	 * @param popup the menu
+	 * @param index insert position
+	 * @param row the row the menu is opened for
+	 * @param selectedRowsIndexes model indexes of the selected rows
+	 * @return the added items
+	 */
+	private List<JMenuItem> addCompareMenuItems(JPopupMenu popup, int index, Row row, Set<Integer> selectedRowsIndexes) {
+		JMenu compareMenu = new JMenu("Compare");
+		compareMenu.setIcon(compareIcon);
+		final List<Row> selectedRows = new ArrayList<Row>();
+		if (selectedRowsIndexes != null) {
+			for (Integer si: selectedRowsIndexes) {
+				if (si >= 0 && si < rows.size()) {
+					selectedRows.add(rows.get(si));
+				}
+			}
+		}
+		if (selectedRows.isEmpty() && row != null) {
+			selectedRows.add(row);
+		}
+		List<String> columnNames = new ArrayList<String>();
+		for (int i = 0; i < rowsTable.getModel().getColumnCount(); ++i) {
+			columnNames.add(rowsTable.getModel().getColumnName(i));
+		}
+		BiFunction<Integer, Object, String> display = (column, value) -> browserContentCellEditor.cellContentToText(column, value);
+
+		JMenuItem compareRows = new JMenuItem("Compare with Each Other");
+		compareRows.setToolTipText(selectedRows.size() == 2? "Compares the two selected rows with each other, column by column."
+				: "Select exactly two rows to compare them with each other (" + (selectedRows.size() == 1? "one row is" : selectedRows.size() + " rows are") + " selected).");
+		compareRows.setEnabled(selectedRows.size() == 2);
+		compareRows.addActionListener(e -> {
+			RowComparison comparison = new RowComparison(
+					new RowComparison.Side("Row " + (rows.indexOf(selectedRows.get(0)) + 1), columnNames, Collections.singletonList(selectedRows.get(0).values), false, display)
+						.withKeyColumns(getPrimaryKeyColumnIndexes(), getForeignKeyColumnIndexes()),
+					new RowComparison.Side("Row " + (rows.indexOf(selectedRows.get(1)) + 1), columnNames, Collections.singletonList(selectedRows.get(1).values), false, display)
+						.withKeyColumns(getPrimaryKeyColumnIndexes(), getForeignKeyColumnIndexes()));
+			new CompareDialog(getOwner(), "Compare with Each Other - " + (table instanceof SqlStatementTable? "Result" : table.getUnqualifiedName()), comparison,
+					Collections.singletonList(comparison.pair("", selectedRows.get(0).values, selectedRows.get(1).values)));
+		});
+		compareMenu.add(compareRows);
+
+		String reason = null;
+		List<Column> columns = null;
+		List<Integer> pkIndexes = new ArrayList<Integer>();
+		if (table == null || table instanceof SqlStatementTable) {
+			reason = "Only available for rows of a table of the data model.";
+		} else {
+			PrimaryKey pk = rowIdSupport.getPrimaryKey(table, session, true);
+			columns = rowIdSupport.getColumns(table, session, true);
+			if (pk == null || pk.getColumns().isEmpty()) {
+				reason = "The table has no primary key.";
+			} else {
+				for (Column pkColumn: pk.getColumns()) {
+					int i = -1;
+					for (int ci = 0; ci < columns.size(); ++ci) {
+						if (Quoting.equalsIgnoreQuotingAndCase(columns.get(ci).name, pkColumn.name)) {
+							i = ci;
+							break;
+						}
+					}
+					if (i < 0 || rowIdSupport.isRowIdColumn(pkColumn)) {
+						reason = "The table has no primary key.";
+						break;
+					}
+					pkIndexes.add(i);
+				}
+			}
+		}
+		if (reason == null && selectedRows.isEmpty()) {
+			reason = "Select the rows to compare.";
+		}
+		JMenuItem compareWithConnection = new JMenuItem("Compare with Rows in..."
+				+ (selectedRows.size() > 1? " (" + selectedRows.size() + " selected rows)" : ""));
+		compareWithConnection.setToolTipText(reason != null? reason
+				: "Compares the selected rows with the rows having the same primary key in another database. The connection to it is chosen next.");
+		compareWithConnection.setEnabled(reason == null);
+		final List<Column> theColumns = columns;
+		compareWithConnection.addActionListener(e -> {
+			List<Object[]> values = new ArrayList<Object[]>();
+			for (Row r: selectedRows) {
+				values.add(r.values);
+			}
+			CompareWithConnection.compare(getOwner(), getDbConnectionDialog(), executionContext, table, theColumns, pkIndexes, getForeignKeyColumnIndexes(), values, display);
+		});
+		compareMenu.add(compareWithConnection);
+
+		JMenuItem compareWithResult = createCompareWithResultMenu();
+		if (compareWithResult != null) {
+			compareMenu.add(compareWithResult);
+		}
+		compareMenu.setToolTipText(compareWithResult != null
+				? "Compares rows column by column: with each other, with the rows in another database or with the rows of another result."
+				: "Compares rows column by column: with each other or with the rows in another database.");
+		popup.insert(compareMenu, index);
+		return Collections.singletonList(compareMenu);
+	}
+
+	/**
+	 * Creates a menu to compare this browser's rows with those of another result, or <code>null</code>.
+	 */
+	protected JMenuItem createCompareWithResultMenu() {
+		return null;
 	}
 
 	/**
@@ -10877,6 +11018,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	private static ImageIcon copyIcon;
 	private static ImageIcon ecopyIcon;
 	private static ImageIcon detailsIcon;
+	private static ImageIcon compareIcon;
 	private static ImageIcon selectIcon;
 	private static ImageIcon menuIcon;
 	private static ImageIcon allDotIcon;
@@ -10913,6 +11055,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	      	copyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/copy.png"));
 	      	ecopyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/ecopy.png"));
 	      	detailsIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/ieditdetails_64.png"));
+	      	compareIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/diff.png"), 0.8);
 	     	selectIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/select.png"));
 	     	menuIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/menu.png"));
 	     	allDotIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/alldot.gif"));

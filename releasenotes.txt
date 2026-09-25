@@ -1,4 +1,19 @@
 17.2.4
+  - Rows can now be compared column by column. The new submenu "Compare" in the context menu of a
+    row offers the comparisons below. Differences are highlighted, columns present on one side
+    only are shown as such, and "Only differences" hides the equal columns.
+    - "Compare with Each Other" compares two selected rows of a table browser or of a result of
+      the SQL Console.
+    - "Compare with Rows in..." reads the rows having the same primary key from the database of
+      another connection, for instance the target database of a subset, and compares them with
+      the selected rows. The overview lists which rows are equal, which differ and which are
+      missing in the other database. LOB contents are not compared. Available for tables with a
+      primary key.
+    - "Compare with..." compares two results of the SQL Console. It is found in the submenu
+      "Compare" of the rows of a result and in the context menu of a result tab, and lists the
+      other results as "Tab <n>: ...". The rows are paired by key columns, which are chosen
+      before; the primary key columns are preselected. Rows found in one result only are listed
+      as well. If a result has been cut by the row limit, the comparison says so.
   - The graphical view now shows the cardinality of an association in crow's foot notation: the
     "many" end of a line ends in a crow's foot instead of the star used so far.
 
