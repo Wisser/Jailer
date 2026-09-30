@@ -32,6 +32,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -77,7 +78,7 @@ public class CompareTabs {
 	 */
 	public static void compare(Window owner, String leftTitle, BrowserContentPane left, String rightTitle, BrowserContentPane right) {
 		compare(owner, TITLE, new RowComparison(side(leftTitle, left), side(rightTitle, right)),
-				left.getPrimaryKeyColumnIndexes(), right.getPrimaryKeyColumnIndexes());
+				left.getPrimaryKeyColumnIndexes(), right.getPrimaryKeyColumnIndexes(), null);
 	}
 
 	/**
@@ -93,7 +94,27 @@ public class CompareTabs {
 	 * @param executor executes the reading (in the thread and transaction of the SQL Console)
 	 */
 	public static void compareWithCurrentData(Window owner, String title, BrowserContentPane pane, String sql, int limit, Session session, Consumer<Runnable> executor) {
+		// the snapshot, compared with the current rows again on each refresh
 		Side left = side(title, pane);
+		Side right = readCurrentData(owner, left, sql, limit, session, executor);
+		if (right == null) {
+			return;
+		}
+		Set<Integer> pk = pane.getPrimaryKeyColumnIndexes();
+		compare(owner, "Compare with Current Data", new RowComparison(left, right), pk, right.columns == left.columns? pk : Collections.<Integer>emptySet(),
+				o -> {
+					Side r = readCurrentData(o, left, sql, limit, session, executor);
+					return r == null? null : new RowComparison(left, r);
+				});
+	}
+
+	/**
+	 * Executes the statement of a result again and reads the current rows.
+	 *
+	 * @param left the rows of the result
+	 * @return the current rows, or <code>null</code> if cancelled or failed (the error is shown)
+	 */
+	private static Side readCurrentData(Window owner, Side left, String sql, int limit, Session session, Consumer<Runnable> executor) {
 		Object context = new Object();
 		AtomicBoolean cancelled = new AtomicBoolean(false);
 		try {
@@ -124,9 +145,7 @@ public class CompareTabs {
 
 			// same shape: the columns are aligned by position
 			boolean sameShape = labels.size() == left.columns.size();
-			Side right = new Side(CURRENT_DATA, sameShape? left.columns : labels, rows, truncated[0], null);
-			Set<Integer> pk = pane.getPrimaryKeyColumnIndexes();
-			compare(owner, "Compare with Current Data", new RowComparison(left, right), pk, sameShape? pk : Collections.<Integer>emptySet());
+			return new Side(CURRENT_DATA, sameShape? left.columns : labels, rows, truncated[0], null);
 		} catch (CancellationException e) {
 			cancelled.set(true);
 			CancellationHandler.cancel(context);
@@ -135,6 +154,7 @@ public class CompareTabs {
 		} finally {
 			CancellationHandler.reset(context);
 		}
+		return null;
 	}
 
 	/**
@@ -176,7 +196,13 @@ public class CompareTabs {
 		return result;
 	}
 
-	private static void compare(Window owner, String title, RowComparison comparison, Set<Integer> leftPK, Set<Integer> rightPK) {
+	/**
+	 * Lets the user choose the key columns and shows the comparison.
+	 *
+	 * @param recompare compares again for a refresh of the dialog, or <code>null</code> if it can't be refreshed
+	 */
+	private static void compare(Window owner, String title, RowComparison comparison, Set<Integer> leftPK, Set<Integer> rightPK,
+			Function<Window, RowComparison> recompare) {
 		List<Integer> common = comparison.commonColumns();
 		if (common.isEmpty()) {
 			JOptionPane.showMessageDialog(owner, "The two results have no column in common.", title, JOptionPane.INFORMATION_MESSAGE);
@@ -233,7 +259,7 @@ public class CompareTabs {
 			}
 		}
 		List<RowPair> pairs = comparison.matchByKey(keyColumns);
-		new CompareDialog(owner, title, comparison, pairs);
+		new CompareDialog(owner, title, comparison, pairs, keyColumns, recompare);
 	}
 
 	private static Side side(String title, BrowserContentPane pane) {

@@ -3,7 +3,10 @@
     row offers the comparisons below. Differences are highlighted, columns present on one side
     only are shown as such, and "Only differences" hides the equal columns. The column comparison
     has a full text search (Ctrl+F) covering all rows of the overview; it selects the next row
-    containing the search text when needed. The column names can be sorted.
+    containing the search text when needed, and the column "Matches" of the overview shows the
+    number of matches per row. The column names can be sorted. Comparisons with the rows in a
+    database ("Compare with Rows in...", "Compare with Current Data") can be repeated with
+    "Refresh" without closing the dialog.
     - "Compare with Each Other" compares two selected rows of a table browser or of a result of
       the SQL Console.
     - "Compare with Rows in..." reads the rows having the same primary key from the database of

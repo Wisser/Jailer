@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.CancellationException;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.BasicDataSource;
@@ -42,7 +43,6 @@ import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.DataBrowserContext;
 import net.sf.jailer.ui.databrowser.SchemaMappingDialog;
-import net.sf.jailer.ui.databrowser.compare.RowComparison.RowPair;
 import net.sf.jailer.ui.databrowser.compare.RowComparison.Side;
 import net.sf.jailer.ui.util.ConcurrentTaskControl;
 import net.sf.jailer.util.CancellationHandler;
@@ -138,32 +138,45 @@ public class CompareWithConnection {
 	}
 
 	/**
-	 * Reads the rows with the same primary keys from a table and shows the comparison.
+	 * Reads the rows with the same primary keys from a table and shows the comparison, which can be refreshed.
 	 */
 	private static void compare(Window owner, String title, Session session, String tableName, String leftTitle, String rightTitle, String readingFrom,
 			List<Column> columns, List<Integer> pkIndexes, Set<Integer> fkIndexes, List<Object[]> rows, boolean truncated, BiFunction<Integer, Object, String> display) {
+		List<String> columnNames = new ArrayList<String>();
+		for (Column column: columns) {
+			columnNames.add(Quoting.staticUnquote(column.name));
+		}
+		// the left side doesn't change, so the aligned indexes of its columns (the key) don't either
+		Side left = new Side(leftTitle, columnNames, rows, truncated, display).withKeyColumns(new HashSet<Integer>(pkIndexes), fkIndexes);
+		Function<Window, RowComparison> recompare = o -> readComparison(o, title, session, tableName, rightTitle, readingFrom, columns, pkIndexes, left);
+		RowComparison comparison = recompare.apply(owner);
+		if (comparison != null) {
+			List<Integer> keyColumns = new ArrayList<Integer>(pkIndexes);
+			new CompareDialog(owner, title, comparison, comparison.matchByKey(keyColumns), keyColumns, recompare);
+		}
+	}
+
+	/**
+	 * Reads the rows with the same primary keys from a table and compares them with the given ones.
+	 *
+	 * @return the comparison, or <code>null</code> if cancelled or failed (the error is shown)
+	 */
+	private static RowComparison readComparison(Window owner, String title, Session session, String tableName, String rightTitle, String readingFrom,
+			List<Column> columns, List<Integer> pkIndexes, Side left) {
 		Object context = new Object();
 		try {
 			List<String> otherColumns = new ArrayList<String>();
-			List<Object[]> otherRows = ConcurrentTaskControl.call(owner, () -> readRows(session, tableName, columns, pkIndexes, rows, otherColumns, context),
-					"Reading " + rows.size() + " row" + (rows.size() == 1? "" : "s") + readingFrom + "...", null);
+			List<Object[]> otherRows = ConcurrentTaskControl.call(owner, () -> readRows(session, tableName, columns, pkIndexes, left.rows, otherColumns, context),
+					"Reading " + left.rows.size() + " row" + (left.rows.size() == 1? "" : "s") + readingFrom + "...", null);
 
-			List<String> columnNames = new ArrayList<String>();
-			for (Column column: columns) {
-				columnNames.add(Quoting.staticUnquote(column.name));
-			}
-			RowComparison comparison = new RowComparison(
-					new Side(leftTitle, columnNames, rows, truncated, display).withKeyColumns(new HashSet<Integer>(pkIndexes), fkIndexes),
-					new Side(rightTitle, otherColumns, otherRows, false, null));
-			List<Integer> keyColumns = new ArrayList<Integer>(pkIndexes);
-			for (int k: keyColumns) {
+			RowComparison comparison = new RowComparison(left, new Side(rightTitle, otherColumns, otherRows, false, null));
+			for (int k: pkIndexes) {
 				if (comparison.rightIndex(k) < 0) {
-					UIUtil.showException(owner, title, new SQLException("Primary key column \"" + columnNames.get(k) + "\" not found in table \"" + tableName + "\"."), UIUtil.EXCEPTION_CONTEXT_USER_ERROR);
-					return;
+					UIUtil.showException(owner, title, new SQLException("Primary key column \"" + left.columns.get(k) + "\" not found in table \"" + tableName + "\"."), UIUtil.EXCEPTION_CONTEXT_USER_ERROR);
+					return null;
 				}
 			}
-			List<RowPair> pairs = comparison.matchByKey(keyColumns);
-			new CompareDialog(owner, title, comparison, pairs);
+			return comparison;
 		} catch (CancellationException e) {
 			CancellationHandler.cancel(context);
 		} catch (Throwable t) {
@@ -171,6 +184,7 @@ public class CompareWithConnection {
 		} finally {
 			CancellationHandler.reset(context);
 		}
+		return null;
 	}
 
 	/**

@@ -4360,8 +4360,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     	currentData.setEnabled(reexecutable);
     	currentData.setToolTipText(reexecutable? "Executes the statement of this result again and compares the rows with the current ones. The result itself is not reloaded."
     			: "The statement of this result cannot be executed again.");
-    	currentData.addActionListener(evt -> CompareTabs.compareWithCurrentData(SwingUtilities.getWindowAncestor(SQLConsole.this),
-    			tpTitle, tp.rb, sql, tp.rb.getOwnReloadLimit(), session, queue::add));
+    	currentData.addActionListener(evt -> {
+    		// cut by the limit: as many rows as are shown. Else at least as many, so that a smaller limit selected now
+    		// doesn't make rows look deleted.
+    		int shown = tp.rb.rows.size();
+    		int limit = tp.rb.isRowLimitExceeded()? shown : Math.max(shown, tp.rb.getOwnReloadLimit());
+    		CompareTabs.compareWithCurrentData(SwingUtilities.getWindowAncestor(SQLConsole.this),
+    				tpTitle, tp.rb, sql, limit, session, queue::add);
+    	});
     	return currentData;
     }
 

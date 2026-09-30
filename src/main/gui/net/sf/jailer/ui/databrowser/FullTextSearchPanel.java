@@ -458,7 +458,10 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 						Component comp = renderer.getTableCellRendererComponent(table, dm.getValueAt(y, x), false, false, y, x);
 						if (comp instanceof JLabel) {
 							String value = ((JLabel) comp).getText();
-							if (value != null && value.toUpperCase(Locale.ENGLISH).contains(searchTextUC)) {
+							// the same rules as matches(), which searches outside of the table
+							String matchedText = value == null? null : matchedText(searchText, value);
+							if (matchedText != null) {
+								searchTextUC = matchedText;
 								String markedValue = null;
 								int i;
 								int offset = 0;
@@ -466,15 +469,6 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 									offset += 1;
 								}
 								String core = value.trim();
-								if (searchText.startsWith(" ") && !core.toUpperCase(Locale.ENGLISH).startsWith(searchTextUC)) {
-									continue;
-								}
-								if (searchText.endsWith(" ") && !core.toUpperCase(Locale.ENGLISH).endsWith(searchTextUC)) {
-									continue;
-								}
-								if (searchText.startsWith(" ") && searchText.endsWith(" ") && !core.toUpperCase(Locale.ENGLISH).equals(searchTextUC)) {
-									continue;
-								}
 								i = searchText.endsWith(" ")? core.toUpperCase(Locale.ENGLISH).lastIndexOf(searchTextUC) : core.toUpperCase(Locale.ENGLISH).indexOf(searchTextUC);
 								if (i < 0) {
 									continue;
@@ -740,21 +734,37 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 	 * @param value the cell text
 	 */
 	public boolean matches(String searchText, String value) {
+		return matchedText(searchText, value) != null;
+	}
+
+	/**
+	 * Gets the text matched by the search text in a cell text (upper case), or <code>null</code> if it doesn't match.
+	 * <p>
+	 * Search for items that contain the search criteria as prefix if it starts with a space, as suffix if it
+	 * ends with a space, else as substring (* = any string, ? = any character).
+	 *
+	 * @param searchText the search text
+	 * @param value the cell text
+	 */
+	private String matchedText(String searchText, String value) {
 		if (value == null || searchText.trim().isEmpty()) {
-			return false;
+			return null;
 		}
 		String core = value.trim().toUpperCase(Locale.ENGLISH);
 		String searchTextUC = extendedSearchText(searchText, value.trim()).toUpperCase(Locale.ENGLISH);
 		if (!core.contains(searchTextUC)) {
-			return false;
+			return null;
 		}
 		if (searchText.startsWith(" ") && searchText.endsWith(" ")) {
-			return core.equals(searchTextUC);
+			return core.equals(searchTextUC)? searchTextUC : null;
 		}
 		if (searchText.startsWith(" ") && !core.startsWith(searchTextUC)) {
-			return false;
+			return null;
 		}
-		return !searchText.endsWith(" ") || core.endsWith(searchTextUC);
+		if (searchText.endsWith(" ") && !core.endsWith(searchTextUC)) {
+			return null;
+		}
+		return searchTextUC;
 	}
 
 	private void scrollToCurrentPosition() {
