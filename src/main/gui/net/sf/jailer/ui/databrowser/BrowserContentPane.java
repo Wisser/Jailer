@@ -5955,6 +5955,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 				}
 			}
 		}
+		String reasonCurrentData = reason;
+		if (reasonCurrentData == null && rows.isEmpty()) {
+			reasonCurrentData = "There are no rows to compare.";
+		}
 		if (reason == null && selectedRows.isEmpty()) {
 			reason = "Select the rows to compare.";
 		}
@@ -5973,13 +5977,28 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		});
 		compareMenu.add(compareWithConnection);
 
+		JMenuItem compareWithCurrentData = createCompareWithCurrentDataMenuItem();
+		if (compareWithCurrentData == null) {
+			compareWithCurrentData = new JMenuItem("Compare with Current Data");
+			compareWithCurrentData.setToolTipText(reasonCurrentData != null? reasonCurrentData
+					: "Reads all rows of this table browser again by primary key and compares them with the rows shown. Rows added since are not found.");
+			compareWithCurrentData.setEnabled(reasonCurrentData == null);
+			compareWithCurrentData.addActionListener(e -> {
+				List<Object[]> values = new ArrayList<Object[]>();
+				for (Row r: rows) {
+					values.add(r.values);
+				}
+				CompareWithConnection.compareWithCurrentData(getOwner(), session, table, theColumns, pkIndexes, getForeignKeyColumnIndexes(), values, isRowLimitExceeded(), display);
+			});
+		}
+		compareMenu.add(compareWithCurrentData);
 		JMenuItem compareWithResult = createCompareWithResultMenu();
 		if (compareWithResult != null) {
 			compareMenu.add(compareWithResult);
 		}
 		compareMenu.setToolTipText(compareWithResult != null
-				? "Compares rows column by column: with each other, with the rows in another database or with the rows of another result."
-				: "Compares rows column by column: with each other or with the rows in another database.");
+				? "Compares rows column by column: with each other, with the rows in another database, with the current data or with the rows of another result."
+				: "Compares rows column by column: with each other, with the rows in another database or with the current data.");
 		popup.insert(compareMenu, index);
 		return Collections.singletonList(compareMenu);
 	}
@@ -5988,6 +6007,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	 * Creates a menu to compare this browser's rows with those of another result, or <code>null</code>.
 	 */
 	protected JMenuItem createCompareWithResultMenu() {
+		return null;
+	}
+
+	/**
+	 * Creates an item to compare this browser's rows with the current data, or <code>null</code>.
+	 */
+	protected JMenuItem createCompareWithCurrentDataMenuItem() {
 		return null;
 	}
 

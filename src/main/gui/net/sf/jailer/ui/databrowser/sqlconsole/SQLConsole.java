@@ -1912,6 +1912,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         rb.setColumnHeaderColors(columnHeaderColors);
                         rb.setTableFilterEnabled(wcBaseTable == null && metaDataDetails.getSize() > 1 && metaDataDetails.getSize() <= limit);
                         rb.setStatementForReloading(finalSqlStatement);
+                        rb.reexecutable = !explain && finalLoadButtonIsVisible;
                         metaDataDetails.reset();
                         LoadJob loadJob = rb.newLoadJob(metaDataDetails, limit);
                         loadJob.run();
@@ -3567,7 +3568,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     	private final String origSql;
     	private final int origStartOffset;
         private Map<Column, Pair<Integer, Integer>> positivesPos = new HashMap<Column, Pair<Integer, Integer>>();
-        
+        /**
+         * Whether the statement can be executed again (not for explain and SQL*Plus results).
+         */
+        boolean reexecutable = false;
+
         public ResultContentPane(DataModel dataModel, WCTypeAnalyser.Result wcBaseTable, Table table, String condition, Session session,
                 List<Row> parentRows, Association association, Frame parentFrame,
                 RowsClosure rowsClosure, Boolean selectDistinct,
@@ -3589,6 +3594,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		protected JMenuItem createCompareWithResultMenu() {
 			TitelPanel tp = titelPanelOf(this);
 			return tp == null? null : createCompareWithMenu(tp);
+		}
+		@Override
+		protected JMenuItem createCompareWithCurrentDataMenuItem() {
+			TitelPanel tp = titelPanelOf(this);
+			return tp == null? null : createCompareWithCurrentDataItem(tp);
 		}
     	public Set<Integer> getPkColumnsConsole() {
     		HashSet<Integer> result = new HashSet<Integer>(pkColumns);
@@ -4328,12 +4338,31 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     				return;
     			}
     			JPopupMenu popup = new JPopupMenu();
+    			JMenuItem currentData = createCompareWithCurrentDataItem(tp);
+    			currentData.setIcon(UIUtil.scaleIcon(currentData, UIUtil.readImage("/diff.png"), 0.8));
+    			popup.add(currentData);
     			JMenu compare = createCompareWithMenu(tp);
     			compare.setIcon(UIUtil.scaleIcon(compare, UIUtil.readImage("/diff.png"), 0.8));
     			popup.add(compare);
     			UIUtil.showPopup(e.getComponent(), e.getX(), e.getY(), popup);
     		}
     	});
+    }
+
+    /**
+     * Creates the item "Compare with Current Data".
+     */
+    private JMenuItem createCompareWithCurrentDataItem(TitelPanel tp) {
+    	JMenuItem currentData = new JMenuItem("Compare with " + CompareTabs.CURRENT_DATA);
+    	String tpTitle = "Tab " + (jTabbedPane1.indexOfTabComponent(tp) + 1) + ": " + tp.titleLbl.getText();
+    	String sql = tp.rb.getStatementForReloading();
+    	boolean reexecutable = tp.rb.reexecutable && sql != null && !sql.trim().isEmpty();
+    	currentData.setEnabled(reexecutable);
+    	currentData.setToolTipText(reexecutable? "Executes the statement of this result again and compares the rows with the current ones. The result itself is not reloaded."
+    			: "The statement of this result cannot be executed again.");
+    	currentData.addActionListener(evt -> CompareTabs.compareWithCurrentData(SwingUtilities.getWindowAncestor(SQLConsole.this),
+    			tpTitle, tp.rb, sql, tp.rb.getOwnReloadLimit(), session, queue::add));
+    	return currentData;
     }
 
     /**

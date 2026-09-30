@@ -102,29 +102,68 @@ public class CompareWithConnection {
 		String otherTableName = schema.isEmpty()? table.getUnqualifiedName() : schema + "." + table.getUnqualifiedName();
 
 		String currentAlias = currentConnectionDialog != null && currentConnectionDialog.currentConnection != null? currentConnectionDialog.currentConnection.alias : "current connection";
+		Session session;
+		try {
+			session = session(owner, ci, executionContext);
+		} catch (CancellationException e) {
+			return;
+		} catch (Throwable t) {
+			UIUtil.showException(owner, "Error", t);
+			return;
+		}
+		compare(owner, TITLE + " \"" + ci.alias + "\" - " + table.getUnqualifiedName(), session, otherTableName,
+				currentAlias, ci.alias, " from \"" + ci.alias + "\"", columns, pkIndexes, fkIndexes, rows, false, display);
+	}
+
+	/**
+	 * Reads the current rows having the same primary keys as the given rows from the database of the given session
+	 * and shows the comparison.
+	 *
+	 * @param owner the owner window
+	 * @param session the session of the rows
+	 * @param table the table
+	 * @param columns the columns of the rows' values
+	 * @param pkIndexes indexes of the primary key columns in <code>columns</code>
+	 * @param fkIndexes indexes of the foreign key columns in <code>columns</code>
+	 * @param rows the rows to compare
+	 * @param truncated <code>true</code> if the rows have been cut by a row limit
+	 * @param display renders a cell value as text
+	 */
+	public static void compareWithCurrentData(Window owner, Session session, Table table, List<Column> columns, List<Integer> pkIndexes,
+			Set<Integer> fkIndexes, List<Object[]> rows, boolean truncated, BiFunction<Integer, Object, String> display) {
+		String schema = table.getSchema("");
+		String tableName = schema.isEmpty()? table.getUnqualifiedName() : schema + "." + table.getUnqualifiedName();
+		compare(owner, "Compare with Current Data - " + table.getUnqualifiedName(), session, tableName,
+				"Rows shown", CompareTabs.CURRENT_DATA, "", columns, pkIndexes, fkIndexes, rows, truncated, display);
+	}
+
+	/**
+	 * Reads the rows with the same primary keys from a table and shows the comparison.
+	 */
+	private static void compare(Window owner, String title, Session session, String tableName, String leftTitle, String rightTitle, String readingFrom,
+			List<Column> columns, List<Integer> pkIndexes, Set<Integer> fkIndexes, List<Object[]> rows, boolean truncated, BiFunction<Integer, Object, String> display) {
 		Object context = new Object();
 		try {
-			Session session = session(owner, ci, executionContext);
 			List<String> otherColumns = new ArrayList<String>();
-			List<Object[]> otherRows = ConcurrentTaskControl.call(owner, () -> readRows(session, otherTableName, columns, pkIndexes, rows, otherColumns, context),
-					"Reading " + rows.size() + " row" + (rows.size() == 1? "" : "s") + " from \"" + ci.alias + "\"...", null);
+			List<Object[]> otherRows = ConcurrentTaskControl.call(owner, () -> readRows(session, tableName, columns, pkIndexes, rows, otherColumns, context),
+					"Reading " + rows.size() + " row" + (rows.size() == 1? "" : "s") + readingFrom + "...", null);
 
 			List<String> columnNames = new ArrayList<String>();
 			for (Column column: columns) {
 				columnNames.add(Quoting.staticUnquote(column.name));
 			}
 			RowComparison comparison = new RowComparison(
-					new Side(currentAlias, columnNames, rows, false, display).withKeyColumns(new HashSet<Integer>(pkIndexes), fkIndexes),
-					new Side(ci.alias, otherColumns, otherRows, false, null));
+					new Side(leftTitle, columnNames, rows, truncated, display).withKeyColumns(new HashSet<Integer>(pkIndexes), fkIndexes),
+					new Side(rightTitle, otherColumns, otherRows, false, null));
 			List<Integer> keyColumns = new ArrayList<Integer>(pkIndexes);
 			for (int k: keyColumns) {
 				if (comparison.rightIndex(k) < 0) {
-					UIUtil.showException(owner, TITLE, new SQLException("Primary key column \"" + columnNames.get(k) + "\" not found in table \"" + otherTableName + "\"."), UIUtil.EXCEPTION_CONTEXT_USER_ERROR);
+					UIUtil.showException(owner, title, new SQLException("Primary key column \"" + columnNames.get(k) + "\" not found in table \"" + tableName + "\"."), UIUtil.EXCEPTION_CONTEXT_USER_ERROR);
 					return;
 				}
 			}
 			List<RowPair> pairs = comparison.matchByKey(keyColumns);
-			new CompareDialog(owner, TITLE + " \"" + ci.alias + "\" - " + table.getUnqualifiedName(), comparison, pairs);
+			new CompareDialog(owner, title, comparison, pairs);
 		} catch (CancellationException e) {
 			CancellationHandler.cancel(context);
 		} catch (Throwable t) {
