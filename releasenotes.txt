@@ -1,7 +1,9 @@
 17.2.4
   - Rows can now be compared column by column. The new submenu "Compare" in the context menu of a
     row offers the comparisons below. Differences are highlighted, columns present on one side
-    only are shown as such, and "Only differences" hides the equal columns.
+    only are shown as such, and "Only differences" hides the equal columns. The column comparison
+    has a full text search (Ctrl+F) covering all rows of the overview; it selects the next row
+    containing the search text when needed. The column names can be sorted.
     - "Compare with Each Other" compares two selected rows of a table browser or of a result of
       the SQL Console.
     - "Compare with Rows in..." reads the rows having the same primary key from the database of
@@ -14,6 +16,12 @@
       other results as "Tab <n>: ...". The rows are paired by key columns, which are chosen
       before; the primary key columns are preselected. Rows found in one result only are listed
       as well. If a result has been cut by the row limit, the comparison says so.
+    - "Compare with Current Data" compares the rows shown with the current ones, for instance to
+      see the effect of an update. The rows shown are not reloaded. For a result of the SQL
+      Console, the statement is executed again; changes not yet committed in the transaction of
+      the SQL Console are included. Not available for explain results. For a table browser, all
+      its rows are read again by primary key, so rows added since are not found. Available for
+      tables with a primary key.
   - The graphical view now shows the cardinality of an association in crow's foot notation: the
     "many" end of a line ends in a crow's foot instead of the star used so far.
 

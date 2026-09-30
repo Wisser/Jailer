@@ -34,6 +34,7 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -168,7 +169,10 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 			private void updateFullTextSearchPanel() {
 				long lastFTSearchTimeStart = System.currentTimeMillis();
 				FullTextSearchPanel.this.update(searchField.getText(), true);
-				scrollToCurrentPosition();
+				// no occurrence here, but maybe in another content of the table
+				if (!markedValuePerPosition.isEmpty() || !moveToNeighbor(true)) {
+					scrollToCurrentPosition();
+				}
 				lastFTSearchTimeEnd = System.currentTimeMillis();
 				lastFTSearchDuration = lastFTSearchTimeEnd - lastFTSearchTimeStart;
 			}
@@ -310,6 +314,22 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 	}
 
 	/**
+	 * Removes the border of the tool bar, for instance to align the search field with other components.
+	 */
+	public void removeToolBarBorder() {
+		jToolBar1.setBorder(BorderFactory.createEmptyBorder());
+	}
+
+	/**
+	 * Searches again, for instance after the content of the table has changed without a new model being set.
+	 */
+	public void refresh() {
+		if (isVisible()) {
+			update(searchField.getText(), false);
+		}
+	}
+
+	/**
 	 * Closes the search panel, or clears the search field if the panel is permanently open.
 	 */
 	public void close() {
@@ -425,6 +445,9 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 				boolean stop = false;
 				for (int y = 0; y < rc; ++y) {
 					for (int x = 0; x < cc; ++x) {
+						if (!isSearchable(x)) {
+							continue;
+						}
 						Object v = dm.getValueAt(y, x);
 						if (v != null) {
 							searchTextUC = extendedSearchText(searchText, v.toString().trim()).toUpperCase(Locale.ENGLISH);
@@ -498,7 +521,7 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 			}
 			updateErrorState();
 			if (setCurrentPosition) {
-				if (!searchTextTrim.isEmpty() && markedValuePerPosition.isEmpty() && wasOk) {
+				if (!searchTextTrim.isEmpty() && markedValuePerPosition.isEmpty() && wasOk && !hasOccurrencesElsewhere(searchText)) {
 					beep();
 				}
 				
@@ -520,7 +543,7 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 
 	private void updateErrorState() {
 		String searchText = searchField.getText();
-		if (searchText.trim().isEmpty() || !markedValuePerPosition.isEmpty()) {
+		if (searchText.trim().isEmpty() || !markedValuePerPosition.isEmpty() || hasOccurrencesElsewhere(searchText)) {
 			searchField.setBackground(origBackground);
 			nextButton.setEnabled(true);
 			prevButton.setEnabled(true);
@@ -540,6 +563,16 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 				counterLabel.setText(ordinalPerViewPosition.get(currentPosition) + " / " + size);
 			} else {
 				counterLabel.setText("" + size);
+			}
+		}
+		String searchText = searchField.getText();
+		Integer all = searchText.trim().isEmpty()? null : numberOfAllOccurrences(searchText);
+		if (all != null) {
+			// one counter across all contents
+			if (currentPosition != null && ordinalPerViewPosition.containsKey(currentPosition)) {
+				counterLabel.setText((numberOfOccurrencesBefore(searchText) + ordinalPerViewPosition.get(currentPosition)) + " / " + all);
+			} else {
+				counterLabel.setText(all == 0? "" : String.valueOf(all));
 			}
 		}
 		table.repaint();
@@ -593,13 +626,19 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 	}
 	
 	private void prev() {
-		if (!markedValuePerPosition.isEmpty()) {
+		if (markedValuePerPosition.isEmpty()) {
+			moveToNeighbor(false);
+		} else {
 			if (currentPosition != null && markedValuePerPosition.containsKey(currentPosition)) {
-				currentPosition = markedValuePerPosition.floorKey(currentPosition - 1);
-				if (currentPosition == null) {
+				Integer prev = markedValuePerPosition.floorKey(currentPosition - 1);
+				if (prev == null) {
+					if (moveToNeighbor(false)) {
+						return;
+					}
 					beep();
-					currentPosition = markedValuePerPosition.lastKey();
+					prev = markedValuePerPosition.lastKey();
 				}
+				currentPosition = prev;
 			} else {
 				currentPosition = markedValuePerPosition.lastKey();
 			}
@@ -608,18 +647,114 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 	}
 
 	private void next() {
-		if (!markedValuePerPosition.isEmpty()) {
+		if (markedValuePerPosition.isEmpty()) {
+			moveToNeighbor(true);
+		} else {
 			if (currentPosition != null && markedValuePerPosition.containsKey(currentPosition)) {
-				currentPosition = markedValuePerPosition.ceilingKey(currentPosition + 1);
-				if (currentPosition == null) {
+				Integer next = markedValuePerPosition.ceilingKey(currentPosition + 1);
+				if (next == null) {
+					if (moveToNeighbor(true)) {
+						return;
+					}
 					beep();
-					currentPosition = markedValuePerPosition.firstKey();
+					next = markedValuePerPosition.firstKey();
 				}
+				currentPosition = next;
 			} else {
 				currentPosition = markedValuePerPosition.firstKey();
 			}
-		scrollToCurrentPosition();
+			scrollToCurrentPosition();
 		}
+	}
+
+	/**
+	 * Lets the owner show another content of the table having occurrences and goes to its first or last one.
+	 *
+	 * @param forward direction
+	 * @return <code>true</code> if another content is shown
+	 */
+	private boolean moveToNeighbor(boolean forward) {
+		String searchText = searchField.getText();
+		if (searchText.trim().isEmpty() || !showNeighbor(searchText, forward)) {
+			return false;
+		}
+		update(searchText, false);
+		currentPosition = markedValuePerPosition.isEmpty()? null : forward? markedValuePerPosition.firstKey() : markedValuePerPosition.lastKey();
+		scrollToCurrentPosition();
+		return true;
+	}
+
+	/**
+	 * Hook for a table that shows one of several contents (for instance the details of one of several rows):
+	 * shows the next (or previous) content having occurrences of the search text.
+	 *
+	 * @param searchText the search text
+	 * @param forward direction
+	 * @return <code>true</code> if another content is shown now
+	 */
+	protected boolean showNeighbor(String searchText, boolean forward) {
+		return false;
+	}
+
+	/**
+	 * Hook: whether a column of the table is searched.
+	 *
+	 * @param modelColumn the column (model index)
+	 */
+	protected boolean isSearchable(int modelColumn) {
+		return true;
+	}
+
+	/**
+	 * Hook for a table that shows one of several contents: whether another content has occurrences of the search text.
+	 *
+	 * @param searchText the search text
+	 */
+	protected boolean hasOccurrencesElsewhere(String searchText) {
+		return false;
+	}
+
+	/**
+	 * Hook for a table that shows one of several contents: the number of occurrences in all contents, or <code>null</code>.
+	 *
+	 * @param searchText the search text
+	 */
+	protected Integer numberOfAllOccurrences(String searchText) {
+		return null;
+	}
+
+	/**
+	 * Hook for a table that shows one of several contents: the number of occurrences in the contents
+	 * before the one shown. Used together with {@link #numberOfAllOccurrences(String)}.
+	 *
+	 * @param searchText the search text
+	 */
+	protected int numberOfOccurrencesBefore(String searchText) {
+		return 0;
+	}
+
+	/**
+	 * Whether a cell text contains the search text, using the same rules as the search in the table.
+	 *
+	 * @param searchText the search text
+	 * @param value the cell text
+	 */
+	public boolean matches(String searchText, String value) {
+		if (value == null || searchText.trim().isEmpty()) {
+			return false;
+		}
+		String core = value.trim().toUpperCase(Locale.ENGLISH);
+		String searchTextUC = extendedSearchText(searchText, value.trim()).toUpperCase(Locale.ENGLISH);
+		if (!core.contains(searchTextUC)) {
+			return false;
+		}
+		if (searchText.startsWith(" ") && searchText.endsWith(" ")) {
+			return core.equals(searchTextUC);
+		}
+		if (searchText.startsWith(" ") && !core.startsWith(searchTextUC)) {
+			return false;
+		}
+		return !searchText.endsWith(" ") || core.endsWith(searchTextUC);
 	}
 
 	private void scrollToCurrentPosition() {

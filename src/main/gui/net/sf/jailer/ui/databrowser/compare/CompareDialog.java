@@ -23,10 +23,17 @@ import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -39,9 +46,12 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableRowSorter;
 
 import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.databrowser.BrowserContentPane;
+import net.sf.jailer.ui.databrowser.FullTextSearchPanel;
 import net.sf.jailer.ui.databrowser.compare.RowComparison.CellStatus;
 import net.sf.jailer.ui.databrowser.compare.RowComparison.RowPair;
 import net.sf.jailer.ui.databrowser.compare.RowComparison.Status;
@@ -105,17 +115,42 @@ public class CompareDialog extends JDialog {
 		}
 		@Override
 		public Object getValueAt(int rowIndex, int columnIndex) {
-			int column = visibleColumns.get(rowIndex);
-			if (columnIndex == 0) {
-				return comparison.columns.get(column);
-			}
-			return currentPair == null? null : text(currentPair, column, columnIndex == 1);
+			return cellText(currentPair, visibleColumns.get(rowIndex), columnIndex);
 		}
 	};
+
+	/**
+	 * Text of a cell of the column comparison of a pair.
+	 *
+	 * @param pair the pair, or <code>null</code>
+	 * @param column aligned column index
+	 * @param columnIndex 0 (column name), 1 (left) or 2 (right)
+	 */
+	private String cellText(RowPair pair, int column, int columnIndex) {
+		if (columnIndex == 0) {
+			return comparison.columns.get(column);
+		}
+		if (pair == null) {
+			return null;
+		}
+		boolean isLeft = columnIndex == 1;
+		String text = text(pair, column, isLeft);
+		if (text == null) {
+			// part of the model (not only of the rendering) to be found by the full text search
+			return (isLeft? pair.left : pair.right) == null? "(no row)" : "(no column)";
+		}
+		return text;
+	}
 
 	// created in the constructor: the models need the comparison to answer the column names
 	private final JTable overviewTable;
 	private final JTable detailTable;
+	private final FullTextSearchPanel detailSearchPanel;
+
+	/**
+	 * Number of occurrences of a search text per pair.
+	 */
+	private final Map<String, Map<RowPair, Integer>> occurrencesCache = new HashMap<String, Map<RowPair, Integer>>();
 
 	/**
 	 * Opens the dialog.
@@ -131,6 +166,56 @@ public class CompareDialog extends JDialog {
 		this.allPairs = pairs;
 		this.overviewTable = new JTable(overviewModel);
 		this.detailTable = new JTable(detailModel);
+		// only the column names are sortable; set before the search panel is created, which listens to the sorter
+		TableRowSorter<AbstractTableModel> detailSorter = new TableRowSorter<AbstractTableModel>(detailModel);
+		detailSorter.setComparator(0, String.CASE_INSENSITIVE_ORDER);
+		detailSorter.setSortable(1, false);
+		detailSorter.setSortable(2, false);
+		detailTable.setRowSorter(detailSorter);
+		// searches the column comparisons of all pairs shown in the overview, selecting another pair if needed
+		this.detailSearchPanel = new FullTextSearchPanel(detailTable) {
+			@Override
+			protected boolean isSearchable(int modelColumn) {
+				// only the values, not the column names
+				return modelColumn != 0;
+			}
+			@Override
+			protected boolean showNeighbor(String searchText, boolean forward) {
+				return selectPairWithOccurrences(searchText, forward);
+			}
+			@Override
+			protected boolean hasOccurrencesElsewhere(String searchText) {
+				for (RowPair pair: searchablePairs()) {
+					if (pair != currentPair && numberOfOccurrences(pair, searchText) > 0) {
+						return true;
+					}
+				}
+				return false;
+			}
+			@Override
+			protected Integer numberOfAllOccurrences(String searchText) {
+				List<RowPair> pairs = searchablePairs();
+				if (pairs.size() <= 1) {
+					return null;
+				}
+				int n = 0;
+				for (RowPair pair: pairs) {
+					n += numberOfOccurrences(pair, searchText);
+				}
+				return n;
+			}
+			@Override
+			protected int numberOfOccurrencesBefore(String searchText) {
+				int n = 0;
+				for (RowPair pair: searchablePairs()) {
+					if (pair == currentPair) {
+						return n;
+					}
+					n += numberOfOccurrences(pair, searchText);
+				}
+				return 0;
+			}
+		};
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
 		JPanel content = new JPanel(new BorderLayout(0, 4));
@@ -162,7 +247,8 @@ public class CompareDialog extends JDialog {
 		detailTable.getColumnModel().getColumn(1).setPreferredWidth(300);
 		detailTable.getColumnModel().getColumn(2).setPreferredWidth(300);
 
-		JScrollPane detailScrollPane = new JScrollPane(detailTable);
+		JPanel detailPanel = new JPanel(new BorderLayout());
+		detailPanel.add(new JScrollPane(detailTable), BorderLayout.CENTER);
 		boolean withOverview = pairs.size() != 1;
 		if (withOverview) {
 			JPanel overviewPanel = new JPanel(new BorderLayout());
@@ -172,15 +258,20 @@ public class CompareDialog extends JDialog {
 			filterPanel.add(showMissingRows);
 			overviewPanel.add(filterPanel, BorderLayout.NORTH);
 			overviewPanel.add(new JScrollPane(overviewTable), BorderLayout.CENTER);
-			JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, overviewPanel, detailScrollPane);
+			JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, overviewPanel, detailPanel);
 			splitPane.setResizeWeight(0.4);
 			content.add(splitPane, BorderLayout.CENTER);
 		} else {
-			content.add(detailScrollPane, BorderLayout.CENTER);
+			content.add(detailPanel, BorderLayout.CENTER);
 		}
+		initSearch();
 
 		JPanel buttonPanel = new JPanel(new BorderLayout());
-		JPanel leftButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+		// no leading gap: the search field is flush with the left edge of the table above
+		JPanel leftButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+		detailSearchPanel.removeToolBarBorder();
+		leftButtons.add(detailSearchPanel);
+		leftButtons.add(Box.createHorizontalStrut(8));
 		leftButtons.add(onlyDifferences);
 		buttonPanel.add(leftButtons, BorderLayout.WEST);
 		JPanel rightButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
@@ -198,7 +289,11 @@ public class CompareDialog extends JDialog {
 
 		showEqualRows.addActionListener(e -> updateOverview());
 		showMissingRows.addActionListener(e -> updateOverview());
-		onlyDifferences.addActionListener(e -> updateDetails());
+		onlyDifferences.addActionListener(e -> {
+			// changes the columns searched
+			occurrencesCache.clear();
+			updateDetails();
+		});
 
 		boolean anyDifference = pairs.stream().anyMatch(p -> p.status != Status.EQUAL);
 		showEqualRows.setSelected(!anyDifference);
@@ -217,6 +312,20 @@ public class CompareDialog extends JDialog {
 		UIUtil.setInitialWindowLocation(this, owner, 100, 100);
 		UIUtil.fit(this);
 		setVisible(true);
+	}
+
+	/**
+	 * Opens the full text search panel of the column comparison. Ctrl+F focuses it.
+	 */
+	private void initSearch() {
+		detailSearchPanel.openPermanently();
+		getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(BrowserContentPane.KS_FIND, "find");
+		getRootPane().getActionMap().put("find", new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				detailSearchPanel.open();
+			}
+		});
 	}
 
 	private void updateOverview() {
@@ -245,22 +354,91 @@ public class CompareDialog extends JDialog {
 			currentPair = null;
 			updateDetails();
 		}
+		// the pairs searched have changed
+		detailSearchPanel.refresh();
 	}
 
 	private void updateDetails() {
 		visibleColumns.clear();
+		visibleColumns.addAll(visibleColumnsOf(currentPair));
+		detailModel.fireTableDataChanged();
+		UIUtil.adjustTableColumnsWidth(detailTable, false);
+		detailSearchPanel.refresh();
+	}
+
+	/**
+	 * Gets the aligned indexes of the columns shown in the column comparison of a pair.
+	 */
+	private List<Integer> visibleColumnsOf(RowPair pair) {
+		List<Integer> result = new ArrayList<Integer>();
 		for (int i = 0; i < comparison.columns.size(); ++i) {
-			if (onlyDifferences.isSelected() && currentPair != null) {
-				CellStatus s = comparison.cellStatus(currentPair, i);
-				if (s == CellStatus.EQUAL || (s == CellStatus.MISSING && currentPair.left != null && currentPair.right != null
+			if (onlyDifferences.isSelected() && pair != null) {
+				CellStatus s = comparison.cellStatus(pair, i);
+				if (s == CellStatus.EQUAL || (s == CellStatus.MISSING && pair.left != null && pair.right != null
 						&& comparison.leftIndex(i) >= 0 && comparison.rightIndex(i) >= 0)) {
 					continue;
 				}
 			}
-			visibleColumns.add(i);
+			result.add(i);
 		}
-		detailModel.fireTableDataChanged();
-		UIUtil.adjustTableColumnsWidth(detailTable, false);
+		return result;
+	}
+
+	/**
+	 * Gets the pairs the full text search covers: those of the overview, or the only pair.
+	 */
+	private List<RowPair> searchablePairs() {
+		if (!visiblePairs.isEmpty()) {
+			return visiblePairs;
+		}
+		return currentPair == null? Collections.<RowPair>emptyList() : Collections.singletonList(currentPair);
+	}
+
+	/**
+	 * Counts the cells of the column comparison of a pair containing the search text.
+	 */
+	private int numberOfOccurrences(RowPair pair, String searchText) {
+		if (occurrencesCache.size() > 32 && !occurrencesCache.containsKey(searchText)) {
+			occurrencesCache.clear();
+		}
+		Map<RowPair, Integer> perPair = occurrencesCache.computeIfAbsent(searchText, t -> new IdentityHashMap<RowPair, Integer>());
+		Integer n = perPair.get(pair);
+		if (n == null) {
+			n = 0;
+			for (int column: visibleColumnsOf(pair)) {
+				// the values only, not the column name (see isSearchable)
+				for (int columnIndex = 1; columnIndex < 3; ++columnIndex) {
+					if (detailSearchPanel.matches(searchText, cellText(pair, column, columnIndex))) {
+						++n;
+					}
+				}
+			}
+			perPair.put(pair, n);
+		}
+		return n;
+	}
+
+	/**
+	 * Selects the next (or previous) pair of the overview whose column comparison contains the search text.
+	 *
+	 * @return <code>true</code> if another pair has been selected
+	 */
+	private boolean selectPairWithOccurrences(String searchText, boolean forward) {
+		int n = visiblePairs.size();
+		int current = visiblePairs.indexOf(currentPair);
+		for (int k = 1; k < n || (current < 0 && k == n); ++k) {
+			int i = current < 0? (forward? k - 1 : n - k) : Math.floorMod(current + (forward? k : -k), n);
+			if (numberOfOccurrences(visiblePairs.get(i), searchText) > 0) {
+				if (current >= 0 && (forward? i < current : i > current)) {
+					// wrapped around, like the search within a table
+					Toolkit.getDefaultToolkit().beep();
+				}
+				overviewTable.getSelectionModel().setSelectionInterval(i, i);
+				overviewTable.scrollRectToVisible(overviewTable.getCellRect(i, 0, true));
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private String text(RowPair pair, int column, boolean isLeft) {
@@ -328,8 +506,10 @@ public class CompareDialog extends JDialog {
 			if (c instanceof JComponent) {
 				((JComponent) c).setToolTipText(null);
 			}
-			if (column > 0 && currentPair != null && row < visibleColumns.size()) {
-				int aligned = visibleColumns.get(row);
+			// the rows may be sorted by column name
+			int modelRow = row >= 0 && row < table.getRowCount()? table.convertRowIndexToModel(row) : -1;
+			if (column > 0 && currentPair != null && modelRow >= 0 && modelRow < visibleColumns.size()) {
+				int aligned = visibleColumns.get(modelRow);
 				CellStatus s = comparison.cellStatus(currentPair, aligned);
 				boolean isLeft = column == 1;
 				boolean sideMissing = (isLeft? currentPair.left == null || comparison.leftIndex(aligned) < 0
@@ -348,8 +528,7 @@ public class CompareDialog extends JDialog {
 						font = font.deriveFont(Font.ITALIC);
 					}
 				}
-				if (sideMissing && c instanceof JLabel) {
-					((JLabel) c).setText(currentPair.left == null && isLeft || currentPair.right == null && !isLeft? "(no row)" : "(no column)");
+				if (sideMissing) {
 					font = font.deriveFont(Font.ITALIC);
 				}
 				if (s == CellStatus.NOT_COMPARED && c instanceof JComponent) {
@@ -362,7 +541,7 @@ public class CompareDialog extends JDialog {
 				if (column == 0) {
 					// the name column looks like the one of the single row view (ColumnsTable)
 					c.setBackground(row % 2 == 0? UIUtil.TABLE_BACKGROUND_COLOR_1_INCLOSURE : UIUtil.TABLE_BACKGROUND_COLOR_2_INCLOSURE);
-					int aligned = row < visibleColumns.size()? visibleColumns.get(row) : -1;
+					int aligned = modelRow >= 0 && modelRow < visibleColumns.size()? visibleColumns.get(modelRow) : -1;
 					c.setForeground(aligned >= 0 && comparison.isPrimaryKey(aligned)? UIUtil.FG_PK
 							: aligned >= 0 && comparison.isForeignKey(aligned)? UIUtil.FG_FK : table.getForeground());
 				} else {
@@ -371,7 +550,7 @@ public class CompareDialog extends JDialog {
 				}
 			}
 			c.setFont(font);
-			return c;
+			return c instanceof JLabel? detailSearchPanel.markOccurrence((JLabel) c, column, row) : c;
 		}
 	}
 
