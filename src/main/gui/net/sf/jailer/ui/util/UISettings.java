@@ -82,6 +82,18 @@ public class UISettings {
 	public static final String SUBSET_INSIGHT_EXPANDED = "SUBSET_INSIGHT_EXPANDED";
 
 	/**
+	 * Name of property (map from alias to alias) holding the connection last chosen in "Compare with other Database..."
+	 * per alias of the current connection.
+	 */
+	public static final String COMPARE_TARGET_ALIASES = "COMPARE_TARGET_ALIASES";
+
+	/**
+	 * Name of property (map from alias and schema to schema) holding the schema chosen in "Compare with other Database..."
+	 * for a table not found in the schema of the current connection.
+	 */
+	public static final String COMPARE_SCHEMAS = "COMPARE_SCHEMAS";
+
+	/**
 	 * Maximum size of any "recent" list.
 	 */
 	private final static int MAX_RECENT_LIST_SIZE = 24;

@@ -339,7 +339,7 @@ public class SQLDMLBuilder {
 	 * @param cellContentConverter the converter used to produce SQL literals
 	 * @return SQL literal or <code>null</code>
 	 */
-	private static String getSQLLiteral(Object value, CellContentConverter cellContentConverter) {
+	public static String getSQLLiteral(Object value, CellContentConverter cellContentConverter) {
 		if (value instanceof LobValue) {
 			return null;
 		}

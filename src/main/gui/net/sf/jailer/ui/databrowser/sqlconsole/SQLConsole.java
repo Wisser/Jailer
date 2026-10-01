@@ -28,6 +28,7 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.datatransfer.StringSelection;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -439,6 +440,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         	protected void appendPopupMenu(JPopupMenu menu) {
         		menu.add(new JSeparator());
         		menu.add(menuItemToSingleLine);
+        		menu.add(createToggleCommentMenuItem());
         		menu.add(menuItemToggle);
         		menu.add(menuItemSubstituteVariables);
         		menu.add(new JSeparator());
@@ -3461,10 +3463,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 					Component tc = jTabbedPane1.getTabComponentAt(i);
 					if (tc instanceof TitelPanel && ((TitelPanel) tc).statementLoc == loc.a) {
 						TitelPanel tp = (TitelPanel) tc;
-						if (tp.executedSQL != null) {
-							String currentSQL = normalizeSQL(editorPane.getDocument().getText(startOffset, endOffset - startOffset));
-							if (tp.executedSQL.equals(currentSQL)) break;
-						}
+						if (isExecutedStatement(tp, editorPane.getDocument().getText(startOffset, endOffset - startOffset))) break;
 						for (int line = loc.a; line <= loc.b; line++) {
 							executedStmtHighlightTags.add(editorPane.addLineHighlight(line, executedStmtHighlightColor));
 						}
@@ -3480,6 +3479,30 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		highlightPainter.setPaintBorder(true);
 	}
 	
+	/**
+	 * Whether a statement of the editor is the one a result tab has executed.
+	 */
+	private static boolean isExecutedStatement(TitelPanel tp, String statement) {
+		return tp.executedSQL != null && tp.executedSQL.equals(normalizeSQL(statement));
+	}
+
+	/**
+	 * Whether the caret is at the statement a result tab has executed.
+	 */
+	private boolean isStatementAtCaret(TitelPanel tp) {
+		try {
+			Pair<Integer, Integer> loc = editorPane.getCurrentStatementLocation(true, true, null, false);
+			if (loc == null || loc.a < 0 || tp.statementLoc != loc.a) {
+				return false;
+			}
+			int startOffset = editorPane.getLineStartOffset(loc.a);
+			int endOffset = editorPane.getLineEndOffset(loc.b);
+			return startOffset < endOffset && isExecutedStatement(tp, editorPane.getDocument().getText(startOffset, endOffset - startOffset));
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
 	private static String normalizeSQL(String sql) {
 		if (sql == null) return null;
 		return sql
@@ -3600,6 +3623,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			TitelPanel tp = titelPanelOf(this);
 			return tp == null? null : createCompareWithCurrentDataItem(tp);
 		}
+		@Override
+		protected String getStatementForCompareToolTip() {
+			TitelPanel tp = titelPanelOf(this);
+			return tp != null && tp.executedSQL != null? tp.executedSQL : getStatementForReloading();
+		}
     	public Set<Integer> getPkColumnsConsole() {
     		HashSet<Integer> result = new HashSet<Integer>(pkColumns);
     		result.addAll(pkColumnsConsole);
@@ -3680,7 +3708,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         }
         @Override
         protected DbConnectionDialog getDbConnectionDialog() {
-            return null;
+            return SQLConsole.this.getDbConnectionDialog();
         }
         @Override
         protected List<RowBrowser> getChildBrowsers() {
@@ -4272,6 +4300,21 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     	public String executedSQL;
     	private final JLabel titleLbl;
     	private final JTabbedPane tabbedPane;
+    	private final JLabel menuIndicator;
+    	private final Icon menuIndicatorIcon;
+    	private final Icon noMenuIndicatorIcon;
+
+    	/**
+    	 * Shows or hides the arrow indicating the context menu (it keeps its space, so the tab doesn't change its width).
+    	 */
+    	public void setMenuIndicatorVisible(boolean visible) {
+    		if (menuIndicator != null) {
+    			Icon icon = visible? menuIndicatorIcon : noMenuIndicatorIcon;
+    			if (menuIndicator.getIcon() != icon) {
+    				menuIndicator.setIcon(icon);
+    			}
+    		}
+    	}
 
     	public TitelPanel(final JTabbedPane tabbedPane, final JComponent rTabContainer, TabContentPanel tabContentPanel, String title, ResultContentPane rb, int statementLoc, String executedSQL) {
     		super(new FlowLayout(FlowLayout.LEFT, 0, 0));
@@ -4285,21 +4328,53 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     		titleLbl = new JLabel(title);
     		titleLbl.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
     		add(titleLbl);
+    		if (rb != null) {
+    			// shown while the mouse is over the tab: the tab has a context menu, which a click on it opens too
+    			menuIndicator = new JLabel();
+    			ImageIcon arrow = UIUtil.scaleIcon(menuIndicator, menuIndicatorImage);
+    			menuIndicatorIcon = arrow;
+    			noMenuIndicatorIcon = new ImageIcon(new java.awt.image.BufferedImage(Math.max(1, arrow.getIconWidth()), Math.max(1, arrow.getIconHeight()), java.awt.image.BufferedImage.TYPE_INT_ARGB));
+    			menuIndicator.setIcon(noMenuIndicatorIcon);
+    			menuIndicator.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 4));
+    			menuIndicator.setToolTipText("Compare this result (also by right-clicking the tab).");
+    			menuIndicator.addMouseListener(new MouseAdapter() {
+    				@Override
+    				public void mouseEntered(MouseEvent e) {
+    					setMenuIndicatorVisible(true);
+    				}
+    				@Override
+    				public void mousePressed(MouseEvent e) {
+    					UIUtil.showPopup(menuIndicator, 0, menuIndicator.getHeight(), createResultTabPopup(TitelPanel.this));
+    				}
+    			});
+    			add(menuIndicator);
+    		} else {
+    			menuIndicator = null;
+    			menuIndicatorIcon = null;
+    			noMenuIndicatorIcon = null;
+    		}
     		SmallButton closeButton = new SmallButton(closeIcon) {
     			@Override
     			protected void onClick(MouseEvent e) {
-    				tabbedPane.remove(rTabContainer);
-    				if (tabContentPanel != null) {
-    					tabContentPanel.destroy();
-    	        	}
-    				if (rb != null) {
-    					rb.destroy();
-    				}
-    	            updateResultUI();
-    	            updateExecutedStatementHighlight();
+    				close();
     			}
     		};
     		add(closeButton);
+    	}
+
+    	/**
+    	 * Closes the tab.
+    	 */
+    	public void close() {
+    		tabbedPane.remove(rTabContainer);
+    		if (tabContentPanel != null) {
+    			tabContentPanel.destroy();
+    		}
+    		if (rb != null) {
+    			rb.destroy();
+    		}
+    		updateResultUI();
+    		updateExecutedStatementHighlight();
     	}
 
 		@Override
@@ -4313,7 +4388,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     }
     
     /**
-     * Context menu of the result tabs' headers: "Compare with..." another result tab.
+     * Context menu of the result tabs' headers: compares all rows with the current data,
+     * with another result tab or with the rows in another database.
      */
     private void initResultTabPopup() {
     	jTabbedPane1.addMouseListener(new MouseAdapter() {
@@ -4337,16 +4413,147 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     			if (tp.rb == null) {
     				return;
     			}
-    			JPopupMenu popup = new JPopupMenu();
-    			JMenuItem currentData = createCompareWithCurrentDataItem(tp);
-    			currentData.setIcon(UIUtil.scaleIcon(currentData, UIUtil.readImage("/diff.png"), 0.8));
-    			popup.add(currentData);
-    			JMenu compare = createCompareWithMenu(tp);
-    			compare.setIcon(UIUtil.scaleIcon(compare, UIUtil.readImage("/diff.png"), 0.8));
-    			popup.add(compare);
-    			UIUtil.showPopup(e.getComponent(), e.getX(), e.getY(), popup);
+    			UIUtil.showPopup(e.getComponent(), e.getX(), e.getY(), createResultTabPopup(tp));
     		}
     	});
+    	// the arrow of the tab under the mouse shows that the tab has a context menu
+    	jTabbedPane1.addMouseMotionListener(new MouseAdapter() {
+    		@Override
+    		public void mouseMoved(MouseEvent e) {
+    			showMenuIndicator(jTabbedPane1.indexAtLocation(e.getX(), e.getY()));
+    		}
+    	});
+    	jTabbedPane1.addMouseListener(new MouseAdapter() {
+    		@Override
+    		public void mouseExited(MouseEvent e) {
+    			// still over the tab if the mouse is on its close button
+    			showMenuIndicator(jTabbedPane1.indexAtLocation(e.getX(), e.getY()));
+    		}
+    	});
+    }
+
+    /**
+     * Shows the menu arrow of the result tab with a given index, hides the ones of the other tabs.
+     *
+     * @param index the index, or -1 to hide all
+     */
+    private void showMenuIndicator(int index) {
+    	for (int i = 0; i < jTabbedPane1.getTabCount(); ++i) {
+    		if (jTabbedPane1.getTabComponentAt(i) instanceof TitelPanel) {
+    			((TitelPanel) jTabbedPane1.getTabComponentAt(i)).setMenuIndicatorVisible(i == index);
+    		}
+    	}
+    }
+
+    /**
+     * Creates the context menu of a result tab.
+     */
+    private JPopupMenu createResultTabPopup(TitelPanel tp) {
+    	JPopupMenu popup = new JPopupMenu();
+    	String sql = tp.rb.getStatementForReloading();
+    	boolean hasStatement = sql != null && !sql.trim().isEmpty();
+
+    	JMenuItem reexecute = new JMenuItem("Re-execute");
+    	reexecute.setIcon(UIUtil.scaleIcon(reexecute, runIcon));
+    	JButton loadButton = tp.tabContentPanel != null? tp.tabContentPanel.loadButton : null;
+    	boolean canReexecute = loadButton != null && loadButton.isVisible() && loadButton.isEnabled();
+    	reexecute.setEnabled(canReexecute);
+    	reexecute.setToolTipText(canReexecute? "Executes the statement of this result again and shows the new result in this tab."
+    			: "The statement of this result cannot be executed again.");
+    	// like the "Reload" button of the tab, which keeps sorting, scroll positions and search
+    	reexecute.addActionListener(e -> loadButton.doClick());
+    	popup.add(reexecute);
+
+    	JMenuItem showStatement = new JMenuItem("Show Statement in Editor");
+    	showStatement.setIcon(UIUtil.scaleIcon(showStatement, UIUtil.readImage("/select.png")));
+    	boolean atCaret = hasStatement && isStatementAtCaret(tp);
+    	showStatement.setEnabled(hasStatement && !atCaret);
+    	showStatement.setToolTipText(atCaret? "The cursor is at the statement of this result already." : "Selects the statement of this result in the editor.");
+    	showStatement.addActionListener(e -> {
+    		if (findAndSetCaretPosition(sql, tp.tabContentPanel)) {
+    			editorPane.grabFocus();
+    		} else {
+    			JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(SQLConsole.this), "The statement is no longer in the editor.",
+    					"Show Statement in Editor", JOptionPane.INFORMATION_MESSAGE);
+    		}
+    	});
+    	popup.add(showStatement);
+
+    	JMenuItem copyStatement = new JMenuItem("Copy Statement");
+    	copyStatement.setIcon(UIUtil.scaleIcon(copyStatement, UIUtil.readImage("/copy.png")));
+    	copyStatement.setEnabled(hasStatement);
+    	copyStatement.setToolTipText("Copies the statement of this result to the clipboard.");
+    	copyStatement.addActionListener(e -> Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(sql), null));
+    	popup.add(copyStatement);
+    	popup.add(new JSeparator());
+
+    	JMenuItem currentData = createCompareWithCurrentDataItem(tp);
+    	currentData.setIcon(UIUtil.scaleIcon(currentData, UIUtil.readImage("/diff.png"), 0.8));
+    	popup.add(currentData);
+    	JMenu compare = createCompareWithMenu(tp);
+    	compare.setIcon(UIUtil.scaleIcon(compare, UIUtil.readImage("/diff.png"), 0.8));
+    	popup.add(compare);
+    	JMenuItem rowsIn = tp.rb.createCompareWithConnectionMenuItem(new ArrayList<Row>(tp.rb.rows), "Compare with other Database...",
+    			"Compares all rows of this result with the rows having the same primary key in another database. The connection to it is chosen next.",
+    			"There are no rows to compare.");
+    	rowsIn.setIcon(UIUtil.scaleIcon(rowsIn, UIUtil.readImage("/diff.png"), 0.8));
+    	popup.add(rowsIn);
+    	popup.add(new JSeparator());
+
+    	List<TitelPanel> tabs = new ArrayList<TitelPanel>();
+    	for (int i = 0; i < jTabbedPane1.getTabCount(); ++i) {
+    		if (jTabbedPane1.getTabComponentAt(i) instanceof TitelPanel) {
+    			tabs.add((TitelPanel) jTabbedPane1.getTabComponentAt(i));
+    		}
+    	}
+    	JMenuItem close = new JMenuItem("Close");
+    	close.setIcon(UIUtil.scaleIcon(close, closeIcon instanceof ImageIcon? (ImageIcon) closeIcon : null));
+    	close.setToolTipText("Closes this result.");
+    	close.addActionListener(e -> tp.close());
+    	popup.add(close);
+    	JMenuItem closeOthers = new JMenuItem("Close Others");
+    	closeOthers.setIcon(UIUtil.scaleIcon(closeOthers, UIUtil.readImage("/closeothers.png")));
+    	closeOthers.setEnabled(tabs.size() > 1);
+    	closeOthers.setToolTipText("Closes all results except this one.");
+    	closeOthers.addActionListener(e -> {
+    		for (TitelPanel other: tabs) {
+    			if (other != tp) {
+    				other.close();
+    			}
+    		}
+    	});
+    	popup.add(closeOthers);
+    	int index = tabs.indexOf(tp);
+    	JMenuItem closeLeft = new JMenuItem("Close Tabs to the Left");
+    	closeLeft.setIcon(UIUtil.scaleIcon(closeLeft, UIUtil.readImage("/closeleft.png")));
+    	closeLeft.setEnabled(index > 0);
+    	closeLeft.setToolTipText("Closes the results to the left of this one.");
+    	closeLeft.addActionListener(e -> {
+    		for (TitelPanel tab: new ArrayList<TitelPanel>(tabs.subList(0, index))) {
+    			tab.close();
+    		}
+    	});
+    	popup.add(closeLeft);
+    	JMenuItem closeRight = new JMenuItem("Close Tabs to the Right");
+    	closeRight.setIcon(UIUtil.scaleIcon(closeRight, UIUtil.readImage("/closeright.png")));
+    	closeRight.setEnabled(index >= 0 && index < tabs.size() - 1);
+    	closeRight.setToolTipText("Closes the results to the right of this one.");
+    	closeRight.addActionListener(e -> {
+    		for (TitelPanel tab: new ArrayList<TitelPanel>(tabs.subList(index + 1, tabs.size()))) {
+    			tab.close();
+    		}
+    	});
+    	popup.add(closeRight);
+    	JMenuItem closeAll = new JMenuItem("Close All");
+    	closeAll.setIcon(UIUtil.scaleIcon(closeAll, UIUtil.readImage("/closeall.png")));
+    	closeAll.setToolTipText("Closes all results.");
+    	closeAll.addActionListener(e -> {
+    		for (TitelPanel tab: tabs) {
+    			tab.close();
+    		}
+    	});
+    	popup.add(closeAll);
+    	return popup;
     }
 
     /**
@@ -4387,7 +4594,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     					item.setToolTipText(UIUtil.toHTML(new BasicFormatterImpl().format(other.executedSQL), 200));
     				}
     				item.addActionListener(evt -> CompareTabs.compare(SwingUtilities.getWindowAncestor(SQLConsole.this),
-    						tpTitle, tp.rb, otherTitle, other.rb));
+    						tpTitle, tp.rb, otherTitle, other.rb, tp.executedSQL, other.executedSQL));
     				compare.add(item);
     			}
     		}
@@ -4421,10 +4628,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
     private Icon closeIcon;
     private ImageIcon clearIcon;
+    private ImageIcon menuIndicatorImage;
     {
         // load images
     	closeIcon = UIUtil.readImage("/Close-16-1.png");
     	clearIcon = UIUtil.readImage("/clear.png");
+    	menuIndicatorImage = UIUtil.readImage("/menu.png");
     }
 
     /**
@@ -5142,6 +5351,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
 	protected abstract void onContentStateChange(File file, boolean dirty);
     protected abstract void setReloadLimit(int limit);
+
+	/**
+	 * Gets the connection dialog of the session's connection, or <code>null</code>.
+	 */
+	protected DbConnectionDialog getDbConnectionDialog() {
+		return null;
+	}
 
 	static private ImageIcon runIcon;
     static private ImageIcon runAllIcon;

@@ -55,6 +55,7 @@ import org.fife.rsta.ui.search.FindDialog;
 import org.fife.rsta.ui.search.ReplaceDialog;
 import org.fife.rsta.ui.search.SearchEvent;
 import org.fife.rsta.ui.search.SearchListener;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextAreaEditorKit;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.SearchContext;
 import org.fife.ui.rtextarea.SearchEngine;
@@ -84,7 +85,8 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 	public static KeyStroke KS_RUN_BLOCK = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK);
 	public static KeyStroke KS_RUN_ALL = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.ALT_DOWN_MASK);
 	public static KeyStroke KS_FORMAT = KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.SHIFT_DOWN_MASK|InputEvent.CTRL_DOWN_MASK);
-	public static KeyStroke KS_SELECTTABLE = KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0);
+	public static KeyStroke KS_TOGGLE_COMMENT = KeyStroke.getKeyStroke(KeyEvent.VK_7, InputEvent.SHIFT_DOWN_MASK|InputEvent.CTRL_DOWN_MASK);
+	public static KeyStroke KS_SELECTTABLE =KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0);
 	public static KeyStroke KS_ZOOMIN = KeyStroke.getKeyStroke(KeyEvent.VK_PLUS, InputEvent.CTRL_DOWN_MASK);
 	public static KeyStroke KS_ZOOMOUT = KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, InputEvent.CTRL_DOWN_MASK);
 	public static KeyStroke KS_ZOOMRESET = KeyStroke.getKeyStroke(KeyEvent.VK_0, InputEvent.CTRL_DOWN_MASK);
@@ -253,6 +255,10 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 		im.put(KS_RUN_ALL, runAll);
 		am = getActionMap();
 		am.put(runAll, runAll);
+
+		// RSyntaxTextArea's ctrl + "/" isn't typed on keyboards where "/" needs Shift (Shift+7 on a German one)
+		im.put(KS_TOGGLE_COMMENT, RSyntaxTextAreaEditorKit.rstaToggleCommentAction);
+		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_DIVIDE, InputEvent.CTRL_DOWN_MASK), RSyntaxTextAreaEditorKit.rstaToggleCommentAction);
 		
 		if (selectTableAction != null) {
 			im = getInputMap();
@@ -429,6 +435,20 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextAreaWithTheme 
 	}
 
 	protected void appendPopupMenu(JPopupMenu menu) {
+	}
+
+	/**
+	 * Creates the menu item that comments out the selected lines (or the line at the caret), or removes the comment.
+	 *
+	 * @return the item
+	 */
+	public JMenuItem createToggleCommentMenuItem() {
+		JMenuItem item = new JMenuItem("Toggle Comment");
+		item.setIcon(UIUtil.scaleIcon(item, UIUtil.readImage("/togglecomment.png")));
+		item.setAccelerator(KS_TOGGLE_COMMENT);
+		item.setToolTipText("Comments out the selected lines (or the line at the cursor) with \"--\", or removes the comment if they all are commented out.");
+		item.addActionListener(e -> new RSyntaxTextAreaEditorKit.ToggleCommentAction().actionPerformedImpl(e, this));
+		return item;
 	}
 
 	/**

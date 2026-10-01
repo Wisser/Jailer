@@ -17,6 +17,7 @@ package net.sf.jailer.ui.databrowser;
 
 import java.awt.GridBagConstraints;
 import java.awt.Point;
+import java.awt.Window;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
@@ -28,6 +29,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 
 import org.fife.ui.rtextarea.RTextScrollPane;
@@ -95,6 +98,14 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 		executeButton.setIcon(runIcon);
 		sqlConsoleButton.setIcon(runAllIcon);
 		clipboardButton.setIcon(copyIcon);
+		saveButton.setIcon(saveIcon);
+
+		saveButton.setToolTipText("Save the statements to a file.");
+		clipboardButton.setToolTipText("Copy the statements to the clipboard.");
+		singleLineCheckBox.setToolTipText("Show each statement on a single line.");
+		sqlConsoleButton.setToolTipText("Append the statements to the SQL Console, without executing them, and close this dialog.");
+		executeButton.setToolTipText("Execute the statements in one transaction. If one fails, all changes are rolled back.");
+		closeButton.setToolTipText("Close this dialog.");
 
 		this.sqlTextArea = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false) {
 			@Override
@@ -102,11 +113,23 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 				super.runBlock();
 				executeButtonActionPerformed(null);
 			}
+			@Override
+			protected void appendPopupMenu(JPopupMenu menu) {
+				// e.g. to delete the rows whose Deletes are commented out in a synchronization script
+				menu.add(new JSeparator());
+				menu.add(createToggleCommentMenuItem());
+			}
 		};
-		try {
-			MetaDataBasedSQLCompletionProvider provider = new MetaDataBasedSQLCompletionProvider(session, metaDataSource);
-			new SQLAutoCompletion(provider, sqlTextArea);
-		} catch (SQLException e) {
+		if (metaDataSource != null) {
+			try {
+				MetaDataBasedSQLCompletionProvider provider = new MetaDataBasedSQLCompletionProvider(session, metaDataSource);
+				new SQLAutoCompletion(provider, sqlTextArea);
+			} catch (SQLException e) {
+			}
+		}
+		// the session may be one without a SQL Console, e.g. of another database
+		if (sqlConsole == null) {
+			sqlConsoleButton.setVisible(false);
 		}
 
 		scrollPane = new RTextScrollPane();
@@ -129,7 +152,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 		UIUtil.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				sqlConsoleButton.grabFocus();
+				(sqlConsole == null? executeButton : sqlConsoleButton).grabFocus();
 			}
 		});
 	}
@@ -215,6 +238,8 @@ public class SQLDMLPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         jPanel2.add(singleLineCheckBox, gridBagConstraints);
 
@@ -353,7 +378,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 	 * Prompts the user for confirmation and executes the SQL statements in the editor.
 	 */
 	protected void doExecute() {
-		if (!UIUtil.canRunJailer()) {
+		if (!executable || !UIUtil.canRunJailer()) {
 			return;
 		}
 		if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this, "Execute Statements?", "Execute", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
@@ -397,9 +422,50 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 
     private void sqlConsoleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sqlConsoleButtonActionPerformed
         switchToConsole.run();
-    	UIUtil.invokeLater(8, () -> sqlConsole.appendStatement(sqlTextArea.getText(), false));
+        Window owner = dialog.getOwner();
+        String message = consoleAppendedMessage;
+    	UIUtil.invokeLater(8, () -> {
+    		sqlConsole.appendStatement(sqlTextArea.getText(), false);
+    		if (message != null) {
+    			JOptionPane.showMessageDialog(owner, message, "SQL Console", JOptionPane.INFORMATION_MESSAGE);
+    		}
+    	});
         dialog.dispose();
     }//GEN-LAST:event_sqlConsoleButtonActionPerformed
+
+    /**
+     * Message confirming that the statements have been appended to the SQL Console.
+     */
+    private String consoleAppendedMessage;
+
+    /**
+     * Sets the message confirming that the statements have been appended to the SQL Console,
+     * for when the console isn't visible (e.g. behind the window this dialog has been opened from).
+     *
+     * @param message the message, or <code>null</code> for none (default)
+     */
+    public void setConsoleAppendedMessage(String message) {
+    	this.consoleAppendedMessage = message;
+    }
+
+    /**
+     * Whether the statements can be executed here.
+     */
+    private boolean executable = true;
+
+    /**
+     * Sets whether the statements can be executed here. If not, they can only be saved, copied or appended to the SQL Console
+     * (e.g. a script that is to be executed elsewhere).
+     *
+     * @param executable whether the statements can be executed
+     */
+    public void setExecutable(boolean executable) {
+    	this.executable = executable;
+    	executeButton.setVisible(executable);
+    	if (!executable && sqlConsole == null) {
+    		UIUtil.invokeLater(() -> saveButton.grabFocus());
+    	}
+    }
 
     private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeButtonActionPerformed
     	dialog.dispose();
@@ -428,12 +494,14 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 	private static ImageIcon runIcon;
 	private static ImageIcon runAllIcon;
 	private static ImageIcon copyIcon;
+	private static ImageIcon saveIcon;
 	static {
 		// load images
 		closeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/buttoncancel.png"));
 		runIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/run.png"));
 		runAllIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/runall.png"));
         copyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/copy.png"));
+        saveIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/save.png"));
 	}
 
 }

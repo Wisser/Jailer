@@ -220,6 +220,20 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
 	 * @param initInfoLabel optional consumer to customize the info label, or {@code null}
 	 */
 	public static void openInModalDialog(Window windowAncestor, final ConcurrentTaskControl concurrentTaskControl, final Task task, String title, Consumer<JLabel> initInfoLabel) {
+		openInModalDialog(windowAncestor, concurrentTaskControl, task, title, initInfoLabel, true);
+	}
+
+	/**
+	 * Opens a modal dialog that displays this control while the given task runs.
+	 *
+	 * @param windowAncestor the parent window for the dialog
+	 * @param concurrentTaskControl the control whose callbacks are invoked on completion or error
+	 * @param task the task to execute
+	 * @param title the dialog title
+	 * @param initInfoLabel optional consumer to customize the info label, or {@code null}
+	 * @param fadeIn whether the dialog fades in (and so stays invisible for short tasks), else it's visible at once
+	 */
+	public static void openInModalDialog(Window windowAncestor, final ConcurrentTaskControl concurrentTaskControl, final Task task, String title, Consumer<JLabel> initInfoLabel, boolean fadeIn) {
 		final JDialog dialog = new JDialog(windowAncestor);
 		dialog.setUndecorated(true);
 		dialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -254,7 +268,11 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
 				task.run();
 			}
  		});
- 		
+
+ 		if (!fadeIn) {
+ 			dialog.setVisible(true);
+ 			return;
+ 		}
  		fadeStart = System.currentTimeMillis();
 		int fadeTime = 800;
 		if (fadeTimer != null) {
@@ -302,6 +320,22 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
 	 * @throws Exception if the callable throws an exception or the operation is cancelled
 	 */
 	public static <T> T call(Window window, final Callable<T> call, String info, Consumer<JLabel> initInfoLabel) throws Exception {
+		return call(window, call, info, initInfoLabel, true);
+	}
+
+	/**
+	 * Calls a {@link Callable} in a separate thread while showing a modal dialog.
+	 *
+	 * @param <T> the return type of the callable
+	 * @param window the parent window for the dialog
+	 * @param call the callable to execute
+	 * @param info the informational text to display while the callable is running
+	 * @param initInfoLabel optional consumer to customize the info label, or {@code null}
+	 * @param fadeIn whether the dialog fades in (and so stays invisible for short tasks), else it's visible at once
+	 * @return the result of the callable
+	 * @throws Exception if the callable throws an exception or the operation is cancelled
+	 */
+	public static <T> T call(Window window, final Callable<T> call, String info, Consumer<JLabel> initInfoLabel, boolean fadeIn) throws Exception {
 		final AtomicReference<Exception> exception = new AtomicReference<Exception>();
 		final AtomicReference<T> result = new AtomicReference<T>();
 		final AtomicBoolean done = new AtomicBoolean(false);
@@ -337,7 +371,7 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
 					});
 				}
 			}
-		}, info, initInfoLabel);
+		}, info, initInfoLabel, fadeIn);
 		
 		if (exception.get() != null) {
 			throw exception.get();

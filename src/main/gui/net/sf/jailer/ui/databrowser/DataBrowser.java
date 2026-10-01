@@ -7309,6 +7309,11 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		protected void setReloadLimit(int limit) {
 			desktop.setRowLimit(limit);
 		}
+
+		@Override
+		protected DbConnectionDialog getDbConnectionDialog() {
+			return dbConnectionDialog;
+		}
 	}
 
 	private int sqlConsoleNr = 0;

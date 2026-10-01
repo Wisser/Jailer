@@ -213,6 +213,7 @@ import net.sf.jailer.ui.databrowser.Desktop.RowToRowLink;
 import net.sf.jailer.ui.databrowser.Desktop.RunnableWithPriority;
 import net.sf.jailer.ui.databrowser.RowCounter.RowCount;
 import net.sf.jailer.ui.databrowser.compare.CompareDialog;
+import net.sf.jailer.ui.databrowser.compare.CompareTabs;
 import net.sf.jailer.ui.databrowser.compare.CompareWithConnection;
 import net.sf.jailer.ui.databrowser.compare.RowComparison;
 import net.sf.jailer.ui.databrowser.lob.BlobLengthPlaceholder;
@@ -3000,7 +3001,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		return null;
 	};
 
-	protected String hardWrap(String text) {
+	public static String hardWrap(String text) {
 		final int MAXLENTH = 400;
 		if (text != null && text.length() > MAXLENTH) {
 			if (text.length() > MAXLENTH * 5) {
@@ -3850,6 +3851,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		insert.setEnabled(rows.size() > 0);
 		update.setEnabled(hasPK && rows.size() > 0);
 		delete.setEnabled(hasPK && rows.size() > 0);
+		// all rows (the row context menu compares the selected ones)
+		popup.add(createCompareAllRowsMenu());
 
 		popup.add(new JSeparator());
 		JMenuItem exportData = new JMenuItem("Export Data from here");
@@ -5885,7 +5888,115 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	}
 
 	/**
-	 * Adds the submenu "Compare" (with each other, with a connection, with another result) to the row context menu.
+	 * Gets the columns of the rows' values and the primary key of the table of the data model the rows belong to.
+	 *
+	 * @param columnsOut receives the columns of the rows' values
+	 * @param pkIndexesOut receives the indexes of the primary key columns in <code>columnsOut</code>
+	 * @return <code>null</code>, or the reason why the rows can't be identified by the primary key of a table
+	 */
+	private String tablePrimaryKey(List<Column> columnsOut, List<Integer> pkIndexesOut) {
+		if (table == null || table instanceof SqlStatementTable) {
+			return "Only available for rows of a table of the data model.";
+		}
+		PrimaryKey pk = rowIdSupport.getPrimaryKey(table, session, true);
+		List<Column> columns = rowIdSupport.getColumns(table, session, true);
+		columnsOut.addAll(columns);
+		if (pk == null || pk.getColumns().isEmpty()) {
+			return "The table has no primary key.";
+		}
+		for (Column pkColumn: pk.getColumns()) {
+			int i = -1;
+			for (int ci = 0; ci < columns.size(); ++ci) {
+				if (Quoting.equalsIgnoreQuotingAndCase(columns.get(ci).name, pkColumn.name)) {
+					i = ci;
+					break;
+				}
+			}
+			if (i < 0 || rowIdSupport.isRowIdColumn(pkColumn)) {
+				return "The table has no primary key.";
+			}
+			pkIndexesOut.add(i);
+		}
+		return null;
+	}
+
+	/**
+	 * Creates the handler that makes rows of the table equal to other ones (see {@link CompareDialog}),
+	 * executed in the session of this browser.
+	 *
+	 * @param reloadAfterExecution whether to reload the rows after the script has been executed
+	 * @return the handler, or <code>null</code> if the rows don't belong to a table of the data model with primary key
+	 */
+	public CompareDialog.SyncHandler createSyncHandler(boolean reloadAfterExecution) {
+		return createSyncHandler(reloadAfterExecution, null);
+	}
+
+	/**
+	 * Creates the handler that makes rows of the table equal to other ones (see {@link CompareDialog}),
+	 * executed in the session of this browser.
+	 *
+	 * @param reloadAfterExecution whether to reload the rows after the script has been executed
+	 * @param sourceColumns names of the table's columns of the other rows (the left side), used for a column this browser knows no name of, or <code>null</code>
+	 * @return the handler, or <code>null</code> if the rows don't belong to a table of the data model with primary key
+	 */
+	public CompareDialog.SyncHandler createSyncHandler(boolean reloadAfterExecution, List<String> sourceColumns) {
+		return createSyncHandler(reloadAfterExecution, sourceColumns, false);
+	}
+
+	/**
+	 * Creates the handler that makes rows of the table equal to other ones (see {@link CompareDialog}),
+	 * executed in the session of this browser.
+	 *
+	 * @param reloadAfterExecution whether to reload the rows after the script has been executed
+	 * @param sourceColumns names of the table's columns of the other rows (the left side), used for a column this browser knows no name of, or <code>null</code>
+	 * @param namesAsRead whether the rows to change (the right side) are not these rows but have been read from the table, with its column names
+	 * @return the handler, or <code>null</code> if the rows don't belong to a table of the data model with primary key
+	 */
+	public CompareDialog.SyncHandler createSyncHandler(boolean reloadAfterExecution, List<String> sourceColumns, boolean namesAsRead) {
+		List<String> targetColumns = syncTargetColumns();
+		if (targetColumns == null) {
+			return null;
+		}
+		return CompareWithConnection.syncHandler(session, CompareWithConnection.tableName(table), namesAsRead? null : targetColumns, sourceColumns,
+				getSqlConsole(false), getMetaDataSource(), () -> getSqlConsole(true), reloadAfterExecution? this::reloadRows : null, executionContext);
+	}
+
+	/**
+	 * Creates the handler that creates a script that repeats the changes made since these rows have been read
+	 * (see {@link CompareWithConnection#replayHandler(Session, String, List, SQLConsole, MetaDataSource, Runnable, ExecutionContext, String)}).
+	 *
+	 * @param note additional comment in the head of the script, or <code>null</code>
+	 * @return the handler, or <code>null</code> if the rows don't belong to a table of the data model with primary key
+	 */
+	public CompareDialog.SyncHandler createReplayHandler(String note) {
+		List<String> targetColumns = syncTargetColumns();
+		if (targetColumns == null) {
+			return null;
+		}
+		return CompareWithConnection.replayHandler(session, CompareWithConnection.tableName(table), targetColumns,
+				getSqlConsole(false), getMetaDataSource(), () -> getSqlConsole(true), executionContext, note);
+	}
+
+	/**
+	 * Gets the name in the table per column of the rows, <code>null</code> for a column that is none of the table's
+	 * (an expression of a result of the SQL Console, a virtual column).
+	 *
+	 * @return the names, or <code>null</code> if the rows don't belong to a table of the data model with primary key
+	 */
+	public List<String> syncTargetColumns() {
+		List<Column> columns = new ArrayList<Column>();
+		if (tablePrimaryKey(columns, new ArrayList<Integer>()) != null || columns.size() != rowsTable.getModel().getColumnCount()) {
+			return null;
+		}
+		List<String> targetColumns = new ArrayList<String>();
+		for (Column column: columns) {
+			targetColumns.add(column.name == null || column.isVirtual()? null : column.name);
+		}
+		return targetColumns;
+	}
+
+	/**
+	 * Adds the submenu "Compare" (with each other, with the current data, with another result, with a connection) to the row context menu.
 	 *
 	 * @param popup the menu
 	 * @param index insert position
@@ -5913,94 +6024,157 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		}
 		BiFunction<Integer, Object, String> display = (column, value) -> browserContentCellEditor.cellContentToText(column, value);
 
+		Supplier<CompareDialog.SyncHandler> sync = () -> createSyncHandler(true);
+
 		JMenuItem compareRows = new JMenuItem("Compare with Each Other");
 		compareRows.setToolTipText(selectedRows.size() == 2? "Compares the two selected rows with each other, column by column."
 				: "Select exactly two rows to compare them with each other (" + (selectedRows.size() == 1? "one row is" : selectedRows.size() + " rows are") + " selected).");
 		compareRows.setEnabled(selectedRows.size() == 2);
 		compareRows.addActionListener(e -> {
+			String title0 = "Row " + (rows.indexOf(selectedRows.get(0)) + 1);
+			String title1 = "Row " + (rows.indexOf(selectedRows.get(1)) + 1);
+			String statement = getStatementForCompareToolTip();
 			RowComparison comparison = new RowComparison(
-					new RowComparison.Side("Row " + (rows.indexOf(selectedRows.get(0)) + 1), columnNames, Collections.singletonList(selectedRows.get(0).values), false, display)
-						.withKeyColumns(getPrimaryKeyColumnIndexes(), getForeignKeyColumnIndexes()),
-					new RowComparison.Side("Row " + (rows.indexOf(selectedRows.get(1)) + 1), columnNames, Collections.singletonList(selectedRows.get(1).values), false, display)
-						.withKeyColumns(getPrimaryKeyColumnIndexes(), getForeignKeyColumnIndexes()));
+					new RowComparison.Side(title0, columnNames, Collections.singletonList(selectedRows.get(0).values), false, display)
+						.withKeyColumns(getPrimaryKeyColumnIndexes(), getForeignKeyColumnIndexes()).withToolTip(CompareTabs.sqlToolTip(title0, statement))
+						.withCharColumns(getCharColumnIndexes()),
+					new RowComparison.Side(title1, columnNames, Collections.singletonList(selectedRows.get(1).values), false, display)
+						.withKeyColumns(getPrimaryKeyColumnIndexes(), getForeignKeyColumnIndexes()).withToolTip(CompareTabs.sqlToolTip(title1, statement))
+						.withCharColumns(getCharColumnIndexes()));
+			// both rows are in the table, so either can be made equal to the other one
+			CompareDialog.SyncHandler syncHandler = sync.get();
 			new CompareDialog(getOwner(), "Compare with Each Other - " + (table instanceof SqlStatementTable? "Result" : table.getUnqualifiedName()), comparison,
-					Collections.singletonList(comparison.pair("", selectedRows.get(0).values, selectedRows.get(1).values)));
+					Collections.singletonList(comparison.pair("", selectedRows.get(0).values, selectedRows.get(1).values)), null, null, syncHandler, syncHandler,
+					getIgnoredColumnsKey());
 		});
 		compareMenu.add(compareRows);
 
-		String reason = null;
-		List<Column> columns = null;
-		List<Integer> pkIndexes = new ArrayList<Integer>();
-		if (table == null || table instanceof SqlStatementTable) {
-			reason = "Only available for rows of a table of the data model.";
-		} else {
-			PrimaryKey pk = rowIdSupport.getPrimaryKey(table, session, true);
-			columns = rowIdSupport.getColumns(table, session, true);
-			if (pk == null || pk.getColumns().isEmpty()) {
-				reason = "The table has no primary key.";
-			} else {
-				for (Column pkColumn: pk.getColumns()) {
-					int i = -1;
-					for (int ci = 0; ci < columns.size(); ++ci) {
-						if (Quoting.equalsIgnoreQuotingAndCase(columns.get(ci).name, pkColumn.name)) {
-							i = ci;
-							break;
-						}
-					}
-					if (i < 0 || rowIdSupport.isRowIdColumn(pkColumn)) {
-						reason = "The table has no primary key.";
-						break;
-					}
-					pkIndexes.add(i);
-				}
-			}
-		}
-		String reasonCurrentData = reason;
-		if (reasonCurrentData == null && rows.isEmpty()) {
-			reasonCurrentData = "There are no rows to compare.";
-		}
-		if (reason == null && selectedRows.isEmpty()) {
-			reason = "Select the rows to compare.";
-		}
-		JMenuItem compareWithConnection = new JMenuItem("Compare with Rows in..."
-				+ (selectedRows.size() > 1? " (" + selectedRows.size() + " selected rows)" : ""));
-		compareWithConnection.setToolTipText(reason != null? reason
-				: "Compares the selected rows with the rows having the same primary key in another database. The connection to it is chosen next.");
-		compareWithConnection.setEnabled(reason == null);
-		final List<Column> theColumns = columns;
-		compareWithConnection.addActionListener(e -> {
-			List<Object[]> values = new ArrayList<Object[]>();
-			for (Row r: selectedRows) {
-				values.add(r.values);
-			}
-			CompareWithConnection.compare(getOwner(), getDbConnectionDialog(), executionContext, table, theColumns, pkIndexes, getForeignKeyColumnIndexes(), values, display);
-		});
-		compareMenu.add(compareWithConnection);
-
-		JMenuItem compareWithCurrentData = createCompareWithCurrentDataMenuItem();
-		if (compareWithCurrentData == null) {
-			compareWithCurrentData = new JMenuItem("Compare with Current Data");
-			compareWithCurrentData.setToolTipText(reasonCurrentData != null? reasonCurrentData
-					: "Reads all rows of this table browser again by primary key and compares them with the rows shown. Rows added since are not found.");
-			compareWithCurrentData.setEnabled(reasonCurrentData == null);
-			compareWithCurrentData.addActionListener(e -> {
-				List<Object[]> values = new ArrayList<Object[]>();
-				for (Row r: rows) {
-					values.add(r.values);
-				}
-				CompareWithConnection.compareWithCurrentData(getOwner(), session, table, theColumns, pkIndexes, getForeignKeyColumnIndexes(), values, isRowLimitExceeded(), display);
-			});
-		}
-		compareMenu.add(compareWithCurrentData);
+		compareMenu.add(createCompareWithCurrentDataItem(""));
 		JMenuItem compareWithResult = createCompareWithResultMenu();
 		if (compareWithResult != null) {
 			compareMenu.add(compareWithResult);
 		}
+		compareMenu.add(createCompareWithConnectionMenuItem(selectedRows,
+				"Compare with other Database..." + (selectedRows.size() > 1? " (" + selectedRows.size() + " selected rows)" : ""),
+				"Compares the selected rows with the rows having the same primary key in another database. The connection to it is chosen next.",
+				"Select the rows to compare."));
 		compareMenu.setToolTipText(compareWithResult != null
-				? "Compares rows column by column: with each other, with the rows in another database, with the current data or with the rows of another result."
-				: "Compares rows column by column: with each other, with the rows in another database or with the current data.");
+				? "Compares rows column by column: with each other, with the current data, with the rows of another result or with the rows in another database."
+				: "Compares rows column by column: with each other, with the current data or with the rows in another database.");
 		popup.insert(compareMenu, index);
 		return Collections.singletonList(compareMenu);
+	}
+
+	/**
+	 * Creates the item "Compare with Current Data", which compares all rows with the current ones.
+	 *
+	 * @param suffix appended to the item's text
+	 */
+	private JMenuItem createCompareWithCurrentDataItem(String suffix) {
+		JMenuItem compareWithCurrentData = createCompareWithCurrentDataMenuItem();
+		if (compareWithCurrentData != null) {
+			return compareWithCurrentData;
+		}
+		List<Column> columns = new ArrayList<Column>();
+		List<Integer> pkIndexes = new ArrayList<Integer>();
+		String reason = tablePrimaryKey(columns, pkIndexes);
+		if (reason == null && (rows == null || rows.isEmpty())) {
+			reason = "There are no rows to compare.";
+		}
+		compareWithCurrentData = new JMenuItem("Compare with Current Data" + suffix);
+		compareWithCurrentData.setToolTipText(reason != null? reason
+				: "Reads all rows of this table browser again by primary key and compares them with the rows shown. Rows added since are not found.");
+		compareWithCurrentData.setEnabled(reason == null);
+		compareWithCurrentData.addActionListener(e -> {
+			List<Object[]> values = new ArrayList<Object[]>();
+			for (Row r: rows) {
+				values.add(r.values);
+			}
+			BiFunction<Integer, Object, String> display = (column, value) -> browserContentCellEditor.cellContentToText(column, value);
+			CompareWithConnection.compareWithCurrentData(getOwner(), session, table, columns, pkIndexes, getForeignKeyColumnIndexes(), values, isRowLimitExceeded(), display,
+					// the current rows are read with the column names of the table
+					createSyncHandler(true, null, true),
+					createReplayHandler("Rows added since they were shown are not included, the rows are read again by primary key."));
+		});
+		return compareWithCurrentData;
+	}
+
+	/**
+	 * Creates the submenu "Compare" of the menu of this table browser, which compares all rows
+	 * (with the current data, with another result, with the rows in another database).
+	 */
+	private JMenu createCompareAllRowsMenu() {
+		JMenu compareMenu = new JMenu("Compare");
+		compareMenu.setIcon(compareIcon);
+		// unlike the row context menu, which compares the selected rows
+		int n = rows == null? 0 : rows.size();
+		String allRows = n == 0? "" : n == 1? " (the row)" : " (all " + n + " rows)";
+		compareMenu.add(createCompareWithCurrentDataItem(allRows));
+		JMenuItem compareWithResult = createCompareWithResultMenu();
+		if (compareWithResult != null) {
+			compareMenu.add(compareWithResult);
+		}
+		compareMenu.add(createCompareWithConnectionMenuItem(rows == null? new ArrayList<Row>() : new ArrayList<Row>(rows), "Compare with other Database..." + allRows,
+				"Compares all rows of this table browser with the rows having the same primary key in another database. The connection to it is chosen next.",
+				"There are no rows to compare."));
+		compareMenu.setToolTipText(compareWithResult != null
+				? "Compares all rows column by column: with the current data, with the rows of another result or with the rows in another database."
+				: "Compares all rows of this table browser column by column: with the current data or with the rows in another database.");
+		return compareMenu;
+	}
+
+	/**
+	 * Gets the indexes of the columns of type CHAR (or NCHAR), whose trailing blanks are padding.
+	 */
+	public Set<Integer> getCharColumnIndexes() {
+		Set<Integer> result = new HashSet<Integer>();
+		int[] columnTypes = browserContentCellEditor.getColumnTypes();
+		for (int i = 0; columnTypes != null && i < columnTypes.length; ++i) {
+			if (columnTypes[i] == Types.CHAR || columnTypes[i] == Types.NCHAR) {
+				result.add(i);
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Identifies the table of the rows whose columns excluded from comparisons are remembered (see {@link CompareDialog}).
+	 *
+	 * @return the key, or <code>null</code> if the rows don't belong to a table of the data model
+	 */
+	public String getIgnoredColumnsKey() {
+		return table == null || table instanceof SqlStatementTable? null : CompareWithConnection.ignoredColumnsKey(CompareWithConnection.tableName(table));
+	}
+
+	/**
+	 * Creates the item "Compare with other Database..." that compares rows with the rows having the same primary key in another database.
+	 *
+	 * @param theRows the rows to compare
+	 * @param text the item's text
+	 * @param toolTip the item's tool tip if it is enabled
+	 * @param noRowsReason the item's tool tip if there are no rows
+	 * @return the item
+	 */
+	public JMenuItem createCompareWithConnectionMenuItem(List<Row> theRows, String text, String toolTip, String noRowsReason) {
+		List<Column> columns = new ArrayList<Column>();
+		List<Integer> pkIndexes = new ArrayList<Integer>();
+		String reason = tablePrimaryKey(columns, pkIndexes);
+		if (reason == null && theRows.isEmpty()) {
+			reason = noRowsReason;
+		}
+		JMenuItem compareWithConnection = new JMenuItem(text);
+		compareWithConnection.setToolTipText(reason != null? reason : toolTip);
+		compareWithConnection.setEnabled(reason == null);
+		compareWithConnection.addActionListener(e -> {
+			List<Object[]> values = new ArrayList<Object[]>();
+			for (Row r: theRows) {
+				values.add(r.values);
+			}
+			BiFunction<Integer, Object, String> display = (column, value) -> browserContentCellEditor.cellContentToText(column, value);
+			CompareWithConnection.compare(getOwner(), getDbConnectionDialog(), executionContext, table, columns, pkIndexes, getForeignKeyColumnIndexes(), values, display,
+					session, createSyncHandler(true));
+		});
+		return compareWithConnection;
 	}
 
 	/**
@@ -6014,6 +6188,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	 * Creates an item to compare this browser's rows with the current data, or <code>null</code>.
 	 */
 	protected JMenuItem createCompareWithCurrentDataMenuItem() {
+		return null;
+	}
+
+	/**
+	 * Gets the statement the rows have been read with, shown in the tool tips of the comparison dialog.
+	 *
+	 * @return the statement, or <code>null</code> if there is none to show
+	 */
+	protected String getStatementForCompareToolTip() {
 		return null;
 	}
 

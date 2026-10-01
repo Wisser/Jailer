@@ -19,9 +19,13 @@ import java.math.BigDecimal;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.SQLXML;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -76,6 +80,8 @@ public class RowComparison {
 		private final BiFunction<Integer, Object, String> display;
 		private Set<Integer> pkColumns = Collections.emptySet();
 		private Set<Integer> fkColumns = Collections.emptySet();
+		private Set<Integer> charColumns = Collections.emptySet();
+		private String toolTip;
 
 		/**
 		 * @param title title of the side (alias, tab name, ...)
@@ -101,6 +107,41 @@ public class RowComparison {
 			this.pkColumns = pk == null? Collections.<Integer>emptySet() : pk;
 			this.fkColumns = fk == null? Collections.<Integer>emptySet() : fk;
 			return this;
+		}
+
+		/**
+		 * Sets the indexes of the columns of type CHAR (or NCHAR), whose trailing blanks are padding.
+		 *
+		 * @return this side
+		 */
+		public Side withCharColumns(Set<Integer> charColumns) {
+			this.charColumns = charColumns == null? Collections.<Integer>emptySet() : charColumns;
+			return this;
+		}
+
+		/**
+		 * Whether a column of this side is of type CHAR (or NCHAR).
+		 */
+		public boolean isCharColumn(int index) {
+			return charColumns.contains(index);
+		}
+
+		/**
+		 * Sets the tool tip describing this side (e.g. the statement of a result).
+		 *
+		 * @param toolTip the tool tip (HTML), or <code>null</code> for the title
+		 * @return this side
+		 */
+		public Side withToolTip(String toolTip) {
+			this.toolTip = toolTip;
+			return this;
+		}
+
+		/**
+		 * Gets the tool tip describing this side, or <code>null</code> if there is none but the title.
+		 */
+		public String getToolTip() {
+			return toolTip;
 		}
 
 		/**
@@ -155,6 +196,34 @@ public class RowComparison {
 	 */
 	private final List<Integer> leftIndex = new ArrayList<Integer>();
 	private final List<Integer> rightIndex = new ArrayList<Integer>();
+
+	/**
+	 * Aligned columns excluded from the comparison.
+	 */
+	private final Set<Integer> ignoredColumns = new HashSet<Integer>();
+
+	/**
+	 * Whether values differing in trailing blanks only are equal (the sides are of different DBMS).
+	 */
+	private boolean ignoreTrailingBlanks;
+
+	/**
+	 * Lets values differing in trailing blanks only be equal (not keys), for sides of different DBMS,
+	 * whose padding of CHAR columns differs.
+	 *
+	 * @return this comparison
+	 */
+	public RowComparison withIgnoreTrailingBlanks(boolean ignoreTrailingBlanks) {
+		this.ignoreTrailingBlanks = ignoreTrailingBlanks;
+		return this;
+	}
+
+	/**
+	 * Whether values differing in trailing blanks only are equal.
+	 */
+	public boolean isIgnoreTrailingBlanks() {
+		return ignoreTrailingBlanks;
+	}
 
 	public RowComparison(Side left, Side right) {
 		this.left = left;
@@ -237,6 +306,16 @@ public class RowComparison {
 	}
 
 	/**
+	 * Whether an aligned column is present on both sides and belongs to the primary key of one of them.
+	 * Doesn't depend on which side is the left one.
+	 */
+	public boolean isPrimaryKeyOfBoth(int column) {
+		int l = leftIndex.get(column);
+		int r = rightIndex.get(column);
+		return l >= 0 && r >= 0 && (left.pkColumns.contains(l) || right.pkColumns.contains(r));
+	}
+
+	/**
 	 * Whether an aligned column belongs to a foreign key (as known by the left side, or else the right side).
 	 */
 	public boolean isForeignKey(int column) {
@@ -255,6 +334,48 @@ public class RowComparison {
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * Excludes columns from the comparison: their values are {@link CellStatus#NOT_COMPARED}.
+	 * Only columns present on both sides are excluded. Pairs created before must be created again (see {@link #rePair(RowPair)}).
+	 *
+	 * @param names the names of the columns (normalized, see {@link #normalizeName(String)})
+	 */
+	public void setIgnoredColumns(Set<String> names) {
+		ignoredColumns.clear();
+		for (int i = 0; i < columns.size(); ++i) {
+			if (leftIndex.get(i) >= 0 && rightIndex.get(i) >= 0 && names.contains(normalizeName(columns.get(i)))) {
+				ignoredColumns.add(i);
+			}
+		}
+	}
+
+	/**
+	 * Whether an aligned column is excluded from the comparison.
+	 */
+	public boolean isIgnored(int column) {
+		return ignoredColumns.contains(column);
+	}
+
+	/**
+	 * Gets the names of the columns excluded from the comparison, in the order of the columns.
+	 */
+	public List<String> ignoredColumnNames() {
+		List<String> result = new ArrayList<String>();
+		for (int i = 0; i < columns.size(); ++i) {
+			if (ignoredColumns.contains(i)) {
+				result.add(columns.get(i));
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Creates a pair again, e.g. after the columns excluded from the comparison have changed.
+	 */
+	public RowPair rePair(RowPair pair) {
+		return pair(pair.key, pair.left, pair.right, pair.duplicateKey);
 	}
 
 	/**
@@ -280,6 +401,9 @@ public class RowComparison {
 		if (pair.left == null || pair.right == null || leftIndex.get(column) < 0 || rightIndex.get(column) < 0) {
 			return CellStatus.MISSING;
 		}
+		if (ignoredColumns.contains(column)) {
+			return CellStatus.NOT_COMPARED;
+		}
 		Object l = leftValue(pair, column);
 		Object r = rightValue(pair, column);
 		if (l == null || r == null) {
@@ -288,7 +412,7 @@ public class RowComparison {
 		if (isLob(l) || isLob(r)) {
 			return CellStatus.NOT_COMPARED;
 		}
-		return normalize(l).equals(normalize(r))? CellStatus.EQUAL : CellStatus.CHANGED;
+		return normalize(l, ignoreTrailingBlanks).equals(normalize(r, ignoreTrailingBlanks))? CellStatus.EQUAL : CellStatus.CHANGED;
 	}
 
 	/**
@@ -352,7 +476,7 @@ public class RowComparison {
 		for (int c: keyColumns) {
 			int i = isLeft? leftIndex.get(c) : rightIndex.get(c);
 			Object v = i < 0 || i >= row.length? null : row[i];
-			sb.append(v == null? "\u0000" : normalize(v)).append('\u0001');
+			sb.append(v == null? "\u0000" : normalize(v, false)).append('\u0001');
 		}
 		return sb.toString();
 	}
@@ -383,11 +507,19 @@ public class RowComparison {
 	}
 
 	/**
-	 * Normalizes a value for comparison: numbers are compared by value (1 equals 1.0).
+	 * Normalizes a value for comparison, so that equal values read from different DBMS are equal:
+	 * numbers are compared by value (1 equals 1.0), a date equals the timestamp at midnight of that day,
+	 * booleans equal 1 and 0, and if asked, trailing blanks of strings are ignored.
+	 *
+	 * @param trimTrailingBlanks whether trailing blanks of strings are ignored: the padding of CHAR columns differs
+	 *                           between DBMS. Never for keys, 'A' and 'A ' may be different rows.
 	 */
-	public static String normalize(Object value) {
+	public static String normalize(Object value, boolean trimTrailingBlanks) {
 		if (value == null) {
 			return "";
+		}
+		if (value instanceof Boolean) {
+			return ((Boolean) value)? "1" : "0";
 		}
 		if (value instanceof Number) {
 			try {
@@ -395,6 +527,26 @@ public class RowComparison {
 			} catch (NumberFormatException e) {
 				// NaN, Infinity
 			}
+		}
+		if (value instanceof Timestamp) {
+			return ((Timestamp) value).toLocalDateTime().toString();
+		}
+		if (value instanceof java.sql.Date) {
+			return ((java.sql.Date) value).toLocalDate().atStartOfDay().toString();
+		}
+		if (value instanceof LocalDateTime) {
+			return value.toString();
+		}
+		if (value instanceof LocalDate) {
+			return ((LocalDate) value).atStartOfDay().toString();
+		}
+		if (value instanceof String && trimTrailingBlanks) {
+			String s = (String) value;
+			int end = s.length();
+			while (end > 0 && s.charAt(end - 1) == ' ') {
+				--end;
+			}
+			return s.substring(0, end);
 		}
 		return value.toString();
 	}

@@ -1,4 +1,4 @@
-17.2.4
+17.2.5
   - Rows can now be compared column by column. The new submenu "Compare" in the context menu of a
     row offers the comparisons below. Differences are highlighted, columns present on one side
     only are shown as such, and "Only differences" hides the equal columns. The column comparison
@@ -6,14 +6,26 @@
     containing the search text when needed, and the column "Matches" of the overview shows the
     number of matches per row. The column names can be sorted. Comparisons with the rows in a
     database ("Compare with Rows in...", "Compare with Current Data") can be repeated with
-    "Refresh" without closing the dialog.
+    "Refresh" without closing the dialog. Values are compared independent of the DBMS they have
+    been read from: a date equals the timestamp at midnight of that day, a boolean equals 1 or 0,
+    and trailing blanks (padding of CHAR columns) are ignored.
+    For rows of a table with a primary key, the button "Synchronize..." creates a SQL script that
+    makes the rows of one side equal to the other one: it inserts the missing rows and updates the
+    different columns, the primary key and LOBs are left unchanged. The script can be executed
+    directly, after which the comparison is repeated. For results of the SQL Console it is
+    available if they are rows of a table of the data model, for "Compare with..." if both
+    results are rows of the same table.
     - "Compare with Each Other" compares two selected rows of a table browser or of a result of
-      the SQL Console.
+      the SQL Console. "Synchronize..." makes either row equal to the other one.
     - "Compare with Rows in..." reads the rows having the same primary key from the database of
       another connection, for instance the target database of a subset, and compares them with
       the selected rows. The overview lists which rows are equal, which differ and which are
       missing in the other database. LOB contents are not compared. Available for tables with a
-      primary key.
+      primary key. "Synchronize..." makes the rows in the other database equal to the selected
+      ones, or the other way round. Rows missing in the other database are not deleted in the
+      current one: the script lists their Delete as a comment. It also creates scripts that
+      repeat the changes between both databases in either direction, for instance to bring
+      further databases to the same state.
     - "Compare with..." compares two results of the SQL Console. It is found in the submenu
       "Compare" of the rows of a result and in the context menu of a result tab, and lists the
       other results as "Tab <n>: ...". The rows are paired by key columns, which are chosen
@@ -24,7 +36,10 @@
       Console, the statement is executed again; changes not yet committed in the transaction of
       the SQL Console are included. Not available for explain results. For a table browser, all
       its rows are read again by primary key, so rows added since are not found. Available for
-      tables with a primary key.
+      tables with a primary key. "Synchronize..." restores the rows shown, or creates a script
+      that repeats the changes made since, for instance to apply them to another database.
+
+17.2.4
   - The graphical view now shows the cardinality of an association in crow's foot notation: the
     "many" end of a line ends in a crow's foot instead of the star used so far.
 

@@ -21,8 +21,10 @@ import java.awt.Window;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +49,8 @@ import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
 import net.sf.jailer.ui.databrowser.Row;
+import net.sf.jailer.ui.databrowser.compare.CompareDialog.SyncHandler;
+import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.databrowser.compare.RowComparison.RowPair;
 import net.sf.jailer.ui.databrowser.compare.RowComparison.Side;
 import net.sf.jailer.ui.util.ConcurrentTaskControl;
@@ -75,10 +79,21 @@ public class CompareTabs {
 	 * @param left the first result
 	 * @param rightTitle title of the second result
 	 * @param right the second result
+	 * @param leftSql the statement of the first result, or <code>null</code>
+	 * @param rightSql the statement of the second result, or <code>null</code>
 	 */
-	public static void compare(Window owner, String leftTitle, BrowserContentPane left, String rightTitle, BrowserContentPane right) {
-		compare(owner, TITLE, new RowComparison(side(leftTitle, left), side(rightTitle, right)),
-				left.getPrimaryKeyColumnIndexes(), right.getPrimaryKeyColumnIndexes(), null);
+	public static void compare(Window owner, String leftTitle, BrowserContentPane left, String rightTitle, BrowserContentPane right, String leftSql, String rightSql) {
+		// both results are rows of the same table (with primary key), so the rows in the table can be made equal to either of them.
+		// The results are not reloaded, one of them may be the state to go back to.
+		// a column one result knows no name of may be known by the other one
+		SyncHandler toRight = right.createSyncHandler(false, left.syncTargetColumns());
+		SyncHandler toLeft = left.createSyncHandler(false, right.syncTargetColumns());
+		boolean sameTable = toRight != null && toLeft != null
+				&& CompareWithConnection.tableName(left.table).equalsIgnoreCase(CompareWithConnection.tableName(right.table));
+		compare(owner, TITLE, new RowComparison(side(leftTitle, left).withToolTip(sqlToolTip(leftTitle, leftSql)), side(rightTitle, right).withToolTip(sqlToolTip(rightTitle, rightSql))),
+				left.getPrimaryKeyColumnIndexes(), right.getPrimaryKeyColumnIndexes(), null,
+				sameTable? toRight : null, sameTable? toLeft : null,
+				sameTable? left.getIgnoredColumnsKey() : null);
 	}
 
 	/**
@@ -95,17 +110,22 @@ public class CompareTabs {
 	 */
 	public static void compareWithCurrentData(Window owner, String title, BrowserContentPane pane, String sql, int limit, Session session, Consumer<Runnable> executor) {
 		// the snapshot, compared with the current rows again on each refresh
-		Side left = side(title, pane);
+		Side left = side(title, pane).withToolTip(sqlToolTip(title, sql));
 		Side right = readCurrentData(owner, left, sql, limit, session, executor);
 		if (right == null) {
 			return;
 		}
 		Set<Integer> pk = pane.getPrimaryKeyColumnIndexes();
-		compare(owner, "Compare with Current Data", new RowComparison(left, right), pk, right.columns == left.columns? pk : Collections.<Integer>emptySet(),
+		boolean sameShape = right.columns == left.columns;
+		// restores the rows shown (the columns of the table are those of the result, so the current rows must have the same ones),
+		// or creates a script that repeats the changes made since
+		SyncHandler sync = sameShape? pane.createSyncHandler(false) : null;
+		SyncHandler replay = sameShape? pane.createReplayHandler(null) : null;
+		compare(owner, "Compare with Current Data", new RowComparison(left, right), pk, sameShape? pk : Collections.<Integer>emptySet(),
 				o -> {
 					Side r = readCurrentData(o, left, sql, limit, session, executor);
 					return r == null? null : new RowComparison(left, r);
-				});
+				}, sync, replay, pane.getIgnoredColumnsKey());
 	}
 
 	/**
@@ -119,6 +139,7 @@ public class CompareTabs {
 		AtomicBoolean cancelled = new AtomicBoolean(false);
 		try {
 			List<String> labels = new ArrayList<String>();
+			Set<Integer> charColumns = new HashSet<Integer>();
 			boolean[] truncated = new boolean[1];
 			List<Object[]> rows = ConcurrentTaskControl.call(owner, () -> {
 				CompletableFuture<List<Object[]>> future = new CompletableFuture<List<Object[]>>();
@@ -128,7 +149,7 @@ public class CompareTabs {
 						return;
 					}
 					try {
-						future.complete(readRows(session, sql, limit, labels, truncated, context));
+						future.complete(readRows(session, sql, limit, labels, charColumns, truncated, context));
 					} catch (Throwable t) {
 						future.completeExceptionally(t);
 					}
@@ -141,11 +162,13 @@ public class CompareTabs {
 					}
 					throw e;
 				}
-			}, "Executing statement...", null);
+			}, "Executing statement...", UIUtil.blinkingInfoLabel(null), false);
 
 			// same shape: the columns are aligned by position
 			boolean sameShape = labels.size() == left.columns.size();
-			return new Side(CURRENT_DATA, sameShape? left.columns : labels, rows, truncated[0], null);
+			return new Side(CURRENT_DATA, sameShape? left.columns : labels, rows, truncated[0], null)
+					.withToolTip(sqlToolTip(CURRENT_DATA + " (the statement executed again)", sql))
+					.withCharColumns(charColumns);
 		} catch (CancellationException e) {
 			cancelled.set(true);
 			CancellationHandler.cancel(context);
@@ -159,8 +182,10 @@ public class CompareTabs {
 
 	/**
 	 * Executes a statement and reads the rows.
+	 *
+	 * @param charColumns receives the indexes of the columns of type CHAR (or NCHAR)
 	 */
-	private static List<Object[]> readRows(Session session, String sql, int limit, List<String> labels, boolean[] truncated, Object context) throws SQLException {
+	private static List<Object[]> readRows(Session session, String sql, int limit, List<String> labels, Set<Integer> charColumns, boolean[] truncated, Object context) throws SQLException {
 		List<Object[]> result = new ArrayList<Object[]>();
 		session.executeQuery(sql, new AbstractResultSetReader() {
 			@Override
@@ -170,6 +195,9 @@ public class CompareTabs {
 				if (labels.isEmpty()) {
 					for (int i = 1; i <= count; ++i) {
 						labels.add(metaData.getColumnLabel(i));
+						if (metaData.getColumnType(i) == Types.CHAR || metaData.getColumnType(i) == Types.NCHAR) {
+							charColumns.add(i - 1);
+						}
 					}
 				}
 				if (result.size() >= limit) {
@@ -200,9 +228,12 @@ public class CompareTabs {
 	 * Lets the user choose the key columns and shows the comparison.
 	 *
 	 * @param recompare compares again for a refresh of the dialog, or <code>null</code> if it can't be refreshed
+	 * @param sync makes the right side equal to the left side, or <code>null</code>
+	 * @param reverseSync makes the left side equal to the right side, or <code>null</code>
+	 * @param ignoredColumnsKey identifies the table whose columns excluded from the comparison are remembered, or <code>null</code>
 	 */
 	private static void compare(Window owner, String title, RowComparison comparison, Set<Integer> leftPK, Set<Integer> rightPK,
-			Function<Window, RowComparison> recompare) {
+			Function<Window, RowComparison> recompare, SyncHandler sync, SyncHandler reverseSync, String ignoredColumnsKey) {
 		List<Integer> common = comparison.commonColumns();
 		if (common.isEmpty()) {
 			JOptionPane.showMessageDialog(owner, "The two results have no column in common.", title, JOptionPane.INFORMATION_MESSAGE);
@@ -259,7 +290,19 @@ public class CompareTabs {
 			}
 		}
 		List<RowPair> pairs = comparison.matchByKey(keyColumns);
-		new CompareDialog(owner, title, comparison, pairs, keyColumns, recompare);
+		new CompareDialog(owner, title, comparison, pairs, keyColumns, recompare, sync, reverseSync, ignoredColumnsKey);
+	}
+
+	/**
+	 * Gets the tool tip of the side of a result: its title and its statement, like the menu "Compare with..." shows it.
+	 *
+	 * @return the tool tip, or <code>null</code> if the statement is unknown
+	 */
+	public static String sqlToolTip(String title, String sql) {
+		if (sql == null || sql.trim().isEmpty()) {
+			return null;
+		}
+		return "<html><b>" + UIUtil.toHTMLFragment(title, 0) + "</b><hr>" + UIUtil.toHTMLFragment(new BasicFormatterImpl().format(sql), 200) + "</html>";
 	}
 
 	private static Side side(String title, BrowserContentPane pane) {
@@ -273,7 +316,8 @@ public class CompareTabs {
 		}
 		return new Side(title, columns, rows, pane.isRowLimitExceeded(),
 				(column, value) -> pane.browserContentCellEditor.cellContentToText(column, value))
-				.withKeyColumns(pane.getPrimaryKeyColumnIndexes(), pane.getForeignKeyColumnIndexes());
+				.withKeyColumns(pane.getPrimaryKeyColumnIndexes(), pane.getForeignKeyColumnIndexes())
+				.withCharColumns(pane.getCharColumnIndexes());
 	}
 
 }
