@@ -3614,14 +3614,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			openConditionEditor(null, -1, null);
 		}
 		@Override
-		protected JMenuItem createCompareWithResultMenu() {
+		protected JMenuItem createCompareWithResultMenu(List<Row> selectedRows) {
 			TitelPanel tp = titelPanelOf(this);
-			return tp == null? null : createCompareWithMenu(tp);
+			return tp == null? null : createCompareWithMenu(tp, selectedRows);
 		}
 		@Override
-		protected JMenuItem createCompareWithCurrentDataMenuItem() {
+		protected JMenuItem createCompareWithCurrentDataMenuItem(List<Row> selectedRows) {
 			TitelPanel tp = titelPanelOf(this);
-			return tp == null? null : createCompareWithCurrentDataItem(tp);
+			return tp == null? null : createCompareWithCurrentDataItem(tp, selectedRows);
 		}
 		@Override
 		protected String getStatementForCompareToolTip() {
@@ -4487,10 +4487,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     	popup.add(copyStatement);
     	popup.add(new JSeparator());
 
-    	JMenuItem currentData = createCompareWithCurrentDataItem(tp);
+    	// all rows (the row context menu compares the selected ones)
+    	JMenuItem currentData = createCompareWithCurrentDataItem(tp, null);
     	currentData.setIcon(UIUtil.scaleIcon(currentData, UIUtil.readImage("/diff.png"), 0.8));
     	popup.add(currentData);
-    	JMenu compare = createCompareWithMenu(tp);
+    	JMenu compare = createCompareWithMenu(tp, null);
     	compare.setIcon(UIUtil.scaleIcon(compare, UIUtil.readImage("/diff.png"), 0.8));
     	popup.add(compare);
     	JMenuItem rowsIn = tp.rb.createCompareWithConnectionMenuItem(new ArrayList<Row>(tp.rb.rows), "Compare with other Database...",
@@ -4558,32 +4559,52 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
     /**
      * Creates the item "Compare with Current Data".
+     *
+     * @param selectedRows the rows to compare, or <code>null</code> for all
      */
-    private JMenuItem createCompareWithCurrentDataItem(TitelPanel tp) {
-    	JMenuItem currentData = new JMenuItem("Compare with " + CompareTabs.CURRENT_DATA);
-    	String tpTitle = "Tab " + (jTabbedPane1.indexOfTabComponent(tp) + 1) + ": " + tp.titleLbl.getText();
+    private JMenuItem createCompareWithCurrentDataItem(TitelPanel tp, List<Row> selectedRows) {
+    	JMenuItem currentData = new JMenuItem("Compare with " + CompareTabs.CURRENT_DATA + (selectedRows != null? BrowserContentPane.selectedRowsSuffix(selectedRows) : ""));
+    	String tpTitle = compareSideTitle(tp, selectedRows);
     	String sql = tp.rb.getStatementForReloading();
     	boolean reexecutable = tp.rb.reexecutable && sql != null && !sql.trim().isEmpty();
-    	currentData.setEnabled(reexecutable);
-    	currentData.setToolTipText(reexecutable? "Executes the statement of this result again and compares the rows with the current ones. The result itself is not reloaded."
-    			: "The statement of this result cannot be executed again.");
+    	boolean noRows = selectedRows != null && selectedRows.isEmpty();
+    	currentData.setEnabled(reexecutable && !noRows);
+    	currentData.setToolTipText(!reexecutable? "The statement of this result cannot be executed again."
+    			: noRows? "Select the rows to compare."
+    			: selectedRows != null? "Executes the statement of this result again and compares the selected rows with the current ones. The result itself is not reloaded."
+    			: "Executes the statement of this result again and compares the rows with the current ones. The result itself is not reloaded.");
     	currentData.addActionListener(evt -> {
     		// cut by the limit: as many rows as are shown. Else at least as many, so that a smaller limit selected now
     		// doesn't make rows look deleted.
     		int shown = tp.rb.rows.size();
     		int limit = tp.rb.isRowLimitExceeded()? shown : Math.max(shown, tp.rb.getOwnReloadLimit());
     		CompareTabs.compareWithCurrentData(SwingUtilities.getWindowAncestor(SQLConsole.this),
-    				tpTitle, tp.rb, sql, limit, session, queue::add);
+    				tpTitle, tp.rb, selectedRows, sql, limit, session, queue::add);
     	});
     	return currentData;
     }
 
     /**
-     * Creates the menu "Compare with..." listing the other result tabs.
+     * Gets the title of the side of a result tab in a comparison.
+     *
+     * @param selectedRows the rows to compare, or <code>null</code> for all
      */
-    private JMenu createCompareWithMenu(TitelPanel tp) {
-    	JMenu compare = new JMenu("Compare with...");
-    	String tpTitle = "Tab " + (jTabbedPane1.indexOfTabComponent(tp) + 1) + ": " + tp.titleLbl.getText();
+    private String compareSideTitle(TitelPanel tp, List<Row> selectedRows) {
+    	String title = "Tab " + (jTabbedPane1.indexOfTabComponent(tp) + 1) + ": " + tp.titleLbl.getText();
+    	if (selectedRows != null) {
+    		title += selectedRows.size() == 1? " (selected row)" : " (" + selectedRows.size() + " selected rows)";
+    	}
+    	return title;
+    }
+
+    /**
+     * Creates the menu "Compare with..." listing the other result tabs.
+     *
+     * @param selectedRows the rows to compare, or <code>null</code> for all
+     */
+    private JMenu createCompareWithMenu(TitelPanel tp, List<Row> selectedRows) {
+    	JMenu compare = new JMenu("Compare with..." + (selectedRows != null? BrowserContentPane.selectedRowsSuffix(selectedRows) : ""));
+    	String tpTitle = compareSideTitle(tp, selectedRows);
     	for (int i = 0; i < jTabbedPane1.getTabCount(); ++i) {
     		if (jTabbedPane1.getTabComponentAt(i) instanceof TitelPanel && jTabbedPane1.getTabComponentAt(i) != tp) {
     			TitelPanel other = (TitelPanel) jTabbedPane1.getTabComponentAt(i);
@@ -4594,14 +4615,17 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     					item.setToolTipText(UIUtil.toHTML(new BasicFormatterImpl().format(other.executedSQL), 200));
     				}
     				item.addActionListener(evt -> CompareTabs.compare(SwingUtilities.getWindowAncestor(SQLConsole.this),
-    						tpTitle, tp.rb, otherTitle, other.rb, tp.executedSQL, other.executedSQL));
+    						tpTitle, tp.rb, selectedRows, otherTitle, other.rb, tp.executedSQL, other.executedSQL));
     				compare.add(item);
     			}
     		}
     	}
-    	compare.setEnabled(compare.getItemCount() > 0);
-    	compare.setToolTipText(compare.getItemCount() > 0? "Compares the rows of this result with the rows of another result, paired by key columns."
-    			: "There is no other result to compare with.");
+    	boolean noRows = selectedRows != null && selectedRows.isEmpty();
+    	compare.setEnabled(compare.getItemCount() > 0 && !noRows);
+    	compare.setToolTipText(compare.getItemCount() == 0? "There is no other result to compare with."
+    			: noRows? "Select the rows to compare."
+    			: selectedRows != null? "Compares the selected rows of this result with the rows of another result, paired by key columns."
+    			: "Compares the rows of this result with the rows of another result, paired by key columns.");
     	return compare;
     }
 

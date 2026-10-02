@@ -77,12 +77,13 @@ public class CompareTabs {
 	 * @param owner the owner window
 	 * @param leftTitle title of the first result
 	 * @param left the first result
+	 * @param selectedRows the rows of the first result to compare, or <code>null</code> for all
 	 * @param rightTitle title of the second result
 	 * @param right the second result
 	 * @param leftSql the statement of the first result, or <code>null</code>
 	 * @param rightSql the statement of the second result, or <code>null</code>
 	 */
-	public static void compare(Window owner, String leftTitle, BrowserContentPane left, String rightTitle, BrowserContentPane right, String leftSql, String rightSql) {
+	public static void compare(Window owner, String leftTitle, BrowserContentPane left, List<Row> selectedRows, String rightTitle, BrowserContentPane right, String leftSql, String rightSql) {
 		// both results are rows of the same table (with primary key), so the rows in the table can be made equal to either of them.
 		// The results are not reloaded, one of them may be the state to go back to.
 		// a column one result knows no name of may be known by the other one
@@ -90,7 +91,7 @@ public class CompareTabs {
 		SyncHandler toLeft = left.createSyncHandler(false, right.syncTargetColumns());
 		boolean sameTable = toRight != null && toLeft != null
 				&& CompareWithConnection.tableName(left.table).equalsIgnoreCase(CompareWithConnection.tableName(right.table));
-		compare(owner, TITLE, new RowComparison(side(leftTitle, left).withToolTip(sqlToolTip(leftTitle, leftSql)), side(rightTitle, right).withToolTip(sqlToolTip(rightTitle, rightSql))),
+		compare(owner, TITLE, new RowComparison(side(leftTitle, left, selectedRows).withToolTip(sqlToolTip(leftTitle, leftSql)), side(rightTitle, right, null).withToolTip(sqlToolTip(rightTitle, rightSql))),
 				left.getPrimaryKeyColumnIndexes(), right.getPrimaryKeyColumnIndexes(), null,
 				sameTable? toRight : null, sameTable? toLeft : null,
 				sameTable? left.getIgnoredColumnsKey() : null);
@@ -103,14 +104,15 @@ public class CompareTabs {
 	 * @param owner the owner window
 	 * @param title title of the result
 	 * @param pane the result
+	 * @param selectedRows the rows of the result to compare, or <code>null</code> for all
 	 * @param sql the statement of the result
 	 * @param limit row limit
 	 * @param session the session of the result
 	 * @param executor executes the reading (in the thread and transaction of the SQL Console)
 	 */
-	public static void compareWithCurrentData(Window owner, String title, BrowserContentPane pane, String sql, int limit, Session session, Consumer<Runnable> executor) {
+	public static void compareWithCurrentData(Window owner, String title, BrowserContentPane pane, List<Row> selectedRows, String sql, int limit, Session session, Consumer<Runnable> executor) {
 		// the snapshot, compared with the current rows again on each refresh
-		Side left = side(title, pane).withToolTip(sqlToolTip(title, sql));
+		Side left = side(title, pane, selectedRows).withToolTip(sqlToolTip(title, sql));
 		Side right = readCurrentData(owner, left, sql, limit, session, executor);
 		if (right == null) {
 			return;
@@ -305,19 +307,25 @@ public class CompareTabs {
 		return "<html><b>" + UIUtil.toHTMLFragment(title, 0) + "</b><hr>" + UIUtil.toHTMLFragment(new BasicFormatterImpl().format(sql), 200) + "</html>";
 	}
 
-	private static Side side(String title, BrowserContentPane pane) {
+	/**
+	 * Gets the side of a result.
+	 *
+	 * @param selectedRows the rows of the result, or <code>null</code> for all
+	 */
+	private static Side side(String title, BrowserContentPane pane, List<Row> selectedRows) {
 		List<String> columns = new ArrayList<String>();
 		for (int i = 0; i < pane.rowsTable.getModel().getColumnCount(); ++i) {
 			columns.add(pane.rowsTable.getModel().getColumnName(i));
 		}
 		List<Object[]> rows = new ArrayList<Object[]>();
-		for (Row row: pane.rows) {
+		for (Row row: selectedRows != null? selectedRows : pane.rows) {
 			rows.add(row.values);
 		}
-		return new Side(title, columns, rows, pane.isRowLimitExceeded(),
+		Side side = new Side(title, columns, rows, selectedRows == null && pane.isRowLimitExceeded(),
 				(column, value) -> pane.browserContentCellEditor.cellContentToText(column, value))
 				.withKeyColumns(pane.getPrimaryKeyColumnIndexes(), pane.getForeignKeyColumnIndexes())
 				.withCharColumns(pane.getCharColumnIndexes());
+		return selectedRows != null? side.withSelection() : side;
 	}
 
 }

@@ -82,6 +82,7 @@ public class RowComparison {
 		private Set<Integer> fkColumns = Collections.emptySet();
 		private Set<Integer> charColumns = Collections.emptySet();
 		private String toolTip;
+		private boolean selection;
 
 		/**
 		 * @param title title of the side (alias, tab name, ...)
@@ -142,6 +143,24 @@ public class RowComparison {
 		 */
 		public String getToolTip() {
 			return toolTip;
+		}
+
+		/**
+		 * Marks the rows of this side as a selection of the rows of a result.
+		 * As the left side, rows only present on the right side are not compared then (see {@link RowComparison#matchByKey(List)}).
+		 *
+		 * @return this side
+		 */
+		public Side withSelection() {
+			this.selection = true;
+			return this;
+		}
+
+		/**
+		 * Whether the rows of this side are a selection of the rows of a result.
+		 */
+		public boolean isSelection() {
+			return selection;
 		}
 
 		/**
@@ -445,6 +464,7 @@ public class RowComparison {
 	 *
 	 * @param keyColumns aligned column indexes forming the key (must be present on both sides)
 	 * @return the pairs, in the order of the left side, followed by the rows only present on the right side
+	 *         (unless the left side is a selection, see {@link Side#withSelection()})
 	 */
 	public List<RowPair> matchByKey(List<Integer> keyColumns) {
 		Map<String, List<Object[]>> rightByKey = new LinkedHashMap<String, List<Object[]>>();
@@ -462,6 +482,10 @@ public class RowComparison {
 			Object[] r = candidates == null || candidates.isEmpty()? null : candidates.remove(0);
 			boolean dup = leftCount.get(key) > 1 || (candidates != null && !candidates.isEmpty());
 			result.add(pair(displayKey(l, keyColumns, true), l, r, dup));
+		}
+		if (left.selection) {
+			// the other rows of the right side are not selected, rather than missing on the left side
+			return result;
 		}
 		for (List<Object[]> rest: rightByKey.values()) {
 			for (Object[] r: rest) {

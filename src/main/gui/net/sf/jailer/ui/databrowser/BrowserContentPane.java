@@ -6049,49 +6049,63 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		});
 		compareMenu.add(compareRows);
 
-		compareMenu.add(createCompareWithCurrentDataItem(""));
-		JMenuItem compareWithResult = createCompareWithResultMenu();
+		// like all items of this menu, the following ones compare the selected rows (the menu of the table browser compares all rows)
+		String selected = selectedRowsSuffix(selectedRows);
+		compareMenu.add(createCompareWithCurrentDataItem(selectedRows, selected));
+		JMenuItem compareWithResult = createCompareWithResultMenu(selectedRows);
 		if (compareWithResult != null) {
 			compareMenu.add(compareWithResult);
 		}
 		compareMenu.add(createCompareWithConnectionMenuItem(selectedRows,
-				"Compare with other Database..." + (selectedRows.size() > 1? " (" + selectedRows.size() + " selected rows)" : ""),
+				"Compare with other Database..." + selected,
 				"Compares the selected rows with the rows having the same primary key in another database. The connection to it is chosen next.",
 				"Select the rows to compare."));
 		compareMenu.setToolTipText(compareWithResult != null
-				? "Compares rows column by column: with each other, with the current data, with the rows of another result or with the rows in another database."
-				: "Compares rows column by column: with each other, with the current data or with the rows in another database.");
+				? "Compares the selected rows column by column: with each other, with the current data, with the rows of another result or with the rows in another database."
+				: "Compares the selected rows column by column: with each other, with the current data or with the rows in another database.");
 		popup.insert(compareMenu, index);
 		return Collections.singletonList(compareMenu);
 	}
 
 	/**
-	 * Creates the item "Compare with Current Data", which compares all rows with the current ones.
+	 * Gets the suffix of the texts of the compare items of the row context menu, telling the number of selected rows.
 	 *
+	 * @param selectedRows the selected rows
+	 */
+	public static String selectedRowsSuffix(List<Row> selectedRows) {
+		return selectedRows.size() > 1? " (" + selectedRows.size() + " selected rows)" : "";
+	}
+
+	/**
+	 * Creates the item "Compare with Current Data", which compares rows with the current ones.
+	 *
+	 * @param selectedRows the rows to compare, or <code>null</code> for all
 	 * @param suffix appended to the item's text
 	 */
-	private JMenuItem createCompareWithCurrentDataItem(String suffix) {
-		JMenuItem compareWithCurrentData = createCompareWithCurrentDataMenuItem();
+	private JMenuItem createCompareWithCurrentDataItem(List<Row> selectedRows, String suffix) {
+		JMenuItem compareWithCurrentData = createCompareWithCurrentDataMenuItem(selectedRows);
 		if (compareWithCurrentData != null) {
 			return compareWithCurrentData;
 		}
+		List<Row> theRows = selectedRows != null? selectedRows : rows == null? new ArrayList<Row>() : rows;
 		List<Column> columns = new ArrayList<Column>();
 		List<Integer> pkIndexes = new ArrayList<Integer>();
 		String reason = tablePrimaryKey(columns, pkIndexes);
-		if (reason == null && (rows == null || rows.isEmpty())) {
-			reason = "There are no rows to compare.";
+		if (reason == null && theRows.isEmpty()) {
+			reason = selectedRows != null? "Select the rows to compare." : "There are no rows to compare.";
 		}
 		compareWithCurrentData = new JMenuItem("Compare with Current Data" + suffix);
 		compareWithCurrentData.setToolTipText(reason != null? reason
+				: selectedRows != null? "Reads the selected rows again by primary key and compares them with the rows shown."
 				: "Reads all rows of this table browser again by primary key and compares them with the rows shown. Rows added since are not found.");
 		compareWithCurrentData.setEnabled(reason == null);
 		compareWithCurrentData.addActionListener(e -> {
 			List<Object[]> values = new ArrayList<Object[]>();
-			for (Row r: rows) {
+			for (Row r: theRows) {
 				values.add(r.values);
 			}
 			BiFunction<Integer, Object, String> display = (column, value) -> browserContentCellEditor.cellContentToText(column, value);
-			CompareWithConnection.compareWithCurrentData(getOwner(), session, table, columns, pkIndexes, getForeignKeyColumnIndexes(), values, isRowLimitExceeded(), display,
+			CompareWithConnection.compareWithCurrentData(getOwner(), session, table, columns, pkIndexes, getForeignKeyColumnIndexes(), values, selectedRows == null && isRowLimitExceeded(), display,
 					// the current rows are read with the column names of the table
 					createSyncHandler(true, null, true),
 					createReplayHandler("Rows added since they were shown are not included, the rows are read again by primary key."));
@@ -6109,8 +6123,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		// unlike the row context menu, which compares the selected rows
 		int n = rows == null? 0 : rows.size();
 		String allRows = n == 0? "" : n == 1? " (the row)" : " (all " + n + " rows)";
-		compareMenu.add(createCompareWithCurrentDataItem(allRows));
-		JMenuItem compareWithResult = createCompareWithResultMenu();
+		compareMenu.add(createCompareWithCurrentDataItem(null, allRows));
+		JMenuItem compareWithResult = createCompareWithResultMenu(null);
 		if (compareWithResult != null) {
 			compareMenu.add(compareWithResult);
 		}
@@ -6179,15 +6193,19 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
 	/**
 	 * Creates a menu to compare this browser's rows with those of another result, or <code>null</code>.
+	 *
+	 * @param selectedRows the rows to compare, or <code>null</code> for all
 	 */
-	protected JMenuItem createCompareWithResultMenu() {
+	protected JMenuItem createCompareWithResultMenu(List<Row> selectedRows) {
 		return null;
 	}
 
 	/**
 	 * Creates an item to compare this browser's rows with the current data, or <code>null</code>.
+	 *
+	 * @param selectedRows the rows to compare, or <code>null</code> for all
 	 */
-	protected JMenuItem createCompareWithCurrentDataMenuItem() {
+	protected JMenuItem createCompareWithCurrentDataMenuItem(List<Row> selectedRows) {
 		return null;
 	}
 
