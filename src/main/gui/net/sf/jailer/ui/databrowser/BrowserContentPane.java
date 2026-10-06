@@ -80,7 +80,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -90,9 +89,7 @@ import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
-import java.util.concurrent.Callable;
 import java.util.concurrent.PriorityBlockingQueue;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -184,9 +181,6 @@ import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.RestrictionDefinition;
 import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
-import net.sf.jailer.entitygraph.RowOrigin;
-import net.sf.jailer.entitygraph.RowOriginFinder;
-import net.sf.jailer.entitygraph.RowOriginStep;
 import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.extractionmodel.SubjectLimitDefinition;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
@@ -234,13 +228,11 @@ import net.sf.jailer.ui.databrowser.whereconditioneditor.WhereConditionEditorPan
 import net.sf.jailer.ui.progress.RetainedEntityGraphs;
 import net.sf.jailer.ui.progress.RowOriginContext;
 import net.sf.jailer.ui.progress.RowOriginPath;
-import net.sf.jailer.ui.progress.RowOriginWindow;
 import net.sf.jailer.ui.scrollmenu.JScrollC2Menu;
 import net.sf.jailer.ui.scrollmenu.JScrollMenu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.util.AnimationController;
-import net.sf.jailer.ui.util.ConcurrentTaskControl;
 import net.sf.jailer.ui.util.LightBorderSmallButton;
 import net.sf.jailer.ui.util.SmallButton;
 import net.sf.jailer.ui.util.UISettings;
@@ -1408,13 +1400,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 							continue;
 						}
 						Row row = rows.get(mi);
-						Boolean isMember = rowOriginMembership.get(row.nonEmptyRowId);
+						Boolean isMember = rowOriginMembership.getVerdict(row);
 						if (isMember == null) {
 							requestRowOriginMembership(row);
 						} else if (isMember) {
 							// the subject rows are the starting points of the collection and are
 							// told apart by their colour
-							g2d.setColor(rowOriginSubjectRows.contains(row.nonEmptyRowId)?
+							g2d.setColor(rowOriginMembership.isSubject(row)?
 									Colors.rowIsSubjectMarkerColor : Colors.rowInSubsetMarkerColor);
 							Rectangle r = rowsTable.getCellRect(i, 0, false);
 							g2d.fillRect(0, (int) r.getMinY(), ROW_ORIGIN_MARKER_WIDTH, (int) r.getHeight());
@@ -5337,7 +5329,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	 * @param t the table
 	 * @return qualified name of t
 	 */
-	private String qualifiedTableName(Table t, Quoting quoting) {
+	static String qualifiedTableName(Table t, Quoting quoting) {
 		String schema = t.getSchema("");
 		if (schema.length() == 0) {
 			return quoting.requote(t.getUnqualifiedName());
@@ -5355,62 +5347,62 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	 * @return the context, or <code>null</code> if the origin of that row cannot be analyzed
 	 */
 	/**
-	 * Verdict per row, keyed by {@link Row#nonEmptyRowId}: is that row part of the subset of the
-	 * run which currently keeps its collected rows? Absent means "not asked yet".
+	 * Which rows of this browser are part of the subset of the run which keeps its collected rows.
 	 */
-	private final Map<String, Boolean> rowOriginMembership = new HashMap<String, Boolean>();
+	private final RowOriginMembership rowOriginMembership = new RowOriginMembership(new RowOriginMembership.Host() {
+		@Override
+		public RowOriginContext rowOriginContextForTable() {
+			return BrowserContentPane.this.rowOriginContextForTable();
+		}
+		@Override
+		public String getTableName() {
+			return table.getName();
+		}
+		@Override
+		public void membershipChanged() {
+			rowsTable.repaint();
+			// the single row view is shown instead of the rows table, so it
+			// has to be told as well
+			if (singleRowDetailsView != null) {
+				singleRowDetailsView.repaint();
+			}
+			updateRowInSubsetLabel();
+		}
+		@Override
+		public Component getComponent() {
+			return BrowserContentPane.this;
+		}
+	});
 
 	/**
-	 * Rows which are subject rows, that is: collected without an association, the starting points
-	 * of the collection. Only a row whose verdict in {@link #rowOriginMembership} is "true" can be
-	 * in here.
+	 * Opens the views which show how rows of this browser have found their way into the subset.
 	 */
-	private final Set<String> rowOriginSubjectRows = new HashSet<String>();
-
-	/**
-	 * Rows which have been handed to the background scan already. Without this latch every
-	 * repaint would ask again.
-	 */
-	private final Set<String> rowOriginRequested = new HashSet<String>();
-
-	/**
-	 * Rows which have become visible and are waiting for the next scan.
-	 */
-	private final Set<Row> pendingRowOriginRows = new LinkedHashSet<Row>();
-
-	/**
-	 * Cancellation contexts of the scans which are queued or in flight, so that they can be
-	 * cancelled in bulk when the rows are reloaded or the browser is closed.
-	 */
-	private final List<Object> pendingRowOriginContexts = Collections.synchronizedList(new ArrayList<Object>());
-
-	/**
-	 * Collects the rows of one burst of scrolling into a single query.
-	 */
-	private Timer rowOriginTimer;
-
-	/**
-	 * The context the current verdicts belong to. If another run keeps the rows, they are void.
-	 */
-	private RowOriginContext lastRowOriginContext;
-
-	/**
-	 * Id of the graph the current verdicts belong to. The context alone is not enough to tell:
-	 * it is mutable and outlives a change of the graph it points at, see
-	 * {@link RowOriginContext#setGraphId(int)}.
-	 */
-	private int lastRowOriginGraphId = -1;
-
-	/**
-	 * The context a failure of the membership scan has already been reported for, so that it is
-	 * said once and not with every burst of scrolling.
-	 */
-	private RowOriginContext rowOriginScanFailureReported;
-
-	/**
-	 * Maximum number of rows asked for in one statement.
-	 */
-	private static final int MAX_ROW_ORIGIN_CHUNK = 100;
+	private final RowOriginOpener rowOriginOpener = new RowOriginOpener(new RowOriginOpener.Host() {
+		@Override
+		public JFrame getOwner() {
+			return BrowserContentPane.this.getOwner();
+		}
+		@Override
+		public Component getComponent() {
+			return BrowserContentPane.this;
+		}
+		@Override
+		public String getTableName() {
+			return table.getName();
+		}
+		@Override
+		public String getDisplayName() {
+			return dataModel.getDisplayName(table);
+		}
+		@Override
+		public Session getSession() {
+			return session;
+		}
+		@Override
+		public void openRowOriginPaths(List<List<RowOriginPath.Step>> paths) {
+			BrowserContentPane.this.openRowOriginPaths(paths);
+		}
+	});
 
 	/**
 	 * Width of the marker at the left edge of a row which is part of the subset. Also used by the
@@ -5426,17 +5418,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	 * @return the context, or <code>null</code> if nothing is marked here
 	 */
 	private RowOriginContext currentRowOriginContext() {
-		RowOriginContext rowOriginContext = rowOriginContextForTable();
-		// object and id together: another run brings another object, and a graph exchanged on the
-		// same object brings another id. The identity check has to stay, since two runs can well
-		// end up with the same id - see EntityGraph.createUniqueGraphID
-		int graphId = rowOriginContext == null? -1 : rowOriginContext.getGraphId();
-		if (rowOriginContext != lastRowOriginContext || graphId != lastRowOriginGraphId) {
-			resetRowOriginMembership();
-			lastRowOriginContext = rowOriginContext;
-			lastRowOriginGraphId = graphId;
-		}
-		return rowOriginContext;
+		return rowOriginMembership.currentRowOriginContext();
 	}
 
 	/**
@@ -5451,7 +5433,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			return false;
 		}
 		Row row = rows.get(0);
-		Boolean isMember = rowOriginMembership.get(row.nonEmptyRowId);
+		Boolean isMember = rowOriginMembership.getVerdict(row);
 		if (isMember == null) {
 			requestRowOriginMembership(row);
 			return false;
@@ -5469,7 +5451,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		if (rows.size() != 1 || noSingleRowDetailsView || currentRowOriginContext() == null) {
 			return false;
 		}
-		return rowOriginSubjectRows.contains(rows.get(0).nonEmptyRowId);
+		return rowOriginMembership.isSubject(rows.get(0));
 	}
 
 	/**
@@ -5485,15 +5467,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	 * @return <code>true</code> if the row is known not to belong to the subset
 	 */
 	private boolean isKnownNotInSubset(Row row) {
-		if (row == null || row.rowId == null || row.rowId.length() == 0) {
-			return false;
-		}
-		// not rowOriginContextForTable: only this one drops the verdicts of a previous run, so
-		// that nothing is disabled because of what an earlier graph said
-		if (currentRowOriginContext() == null) {
-			return false;
-		}
-		return Boolean.FALSE.equals(rowOriginMembership.get(row.nonEmptyRowId));
+		return rowOriginMembership.isKnownNotInSubset(row);
 	}
 
 	/**
@@ -5507,13 +5481,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	 * @return <code>true</code> if the row is known to be a subject row
 	 */
 	private boolean isKnownSubjectRow(Row row) {
-		if (row == null || row.rowId == null || row.rowId.length() == 0) {
-			return false;
-		}
-		if (currentRowOriginContext() == null) {
-			return false;
-		}
-		return rowOriginSubjectRows.contains(row.nonEmptyRowId);
+		return rowOriginMembership.isKnownSubjectRow(row);
 	}
 
 	/**
@@ -5570,131 +5538,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	 * @param row the row
 	 */
 	private void requestRowOriginMembership(Row row) {
-		if (row.rowId == null || row.rowId.isEmpty()) {
-			return;
-		}
-		if (!rowOriginRequested.add(row.nonEmptyRowId)) {
-			return;
-		}
-		pendingRowOriginRows.add(row);
-		final Timer newTimer = new Timer(150, null);
-		rowOriginTimer = newTimer;
-		newTimer.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (newTimer == rowOriginTimer) {
-					scanRowOriginMembership();
-				}
-			}
-		});
-		newTimer.setRepeats(false);
-		newTimer.start();
-	}
-
-	/**
-	 * Asks the retained entity-graph which of the rows collected so far are part of the subset.
-	 * One statement per chunk, off the event dispatch thread.
-	 */
-	private void scanRowOriginMembership() {
-		final RowOriginContext context = rowOriginContextForTable();
-		if (context == null) {
-			pendingRowOriginRows.clear();
-			return;
-		}
-		final Table originTable = context.getDataModel().getTable(table.getName());
-		if (originTable == null) {
-			pendingRowOriginRows.clear();
-			return;
-		}
-		// the graph this scan asks; if it is exchanged while the query runs, its answers are void
-		final int scanGraphId = context.getGraphId();
-		List<Row> pending = new ArrayList<Row>(pendingRowOriginRows);
-		pendingRowOriginRows.clear();
-		for (int from = 0; from < pending.size(); from += MAX_ROW_ORIGIN_CHUNK) {
-			final List<Row> chunk = new ArrayList<Row>(pending.subList(from, Math.min(from + MAX_ROW_ORIGIN_CHUNK, pending.size())));
-			final List<String> conditions = new ArrayList<String>(chunk.size());
-			for (Row row: chunk) {
-				conditions.add(row.rowId);
-			}
-			final Object scanContext = new Object();
-			pendingRowOriginContexts.add(scanContext);
-			MDSchema.loadMetaData(new Runnable() {
-				@Override
-				public void run() {
-					final Set<Integer> members = new HashSet<Integer>();
-					final Set<Integer> subjects = new HashSet<Integer>();
-					try {
-						context.getEntityGraph().readMembership(originTable, "B", conditions, scanContext,
-								new Session.AbstractResultSetReader() {
-							@Override
-							public void readCurrentRow(ResultSet resultSet) throws SQLException {
-								int index = resultSet.getInt(1);
-								members.add(index);
-								// no association means: collected as a subject row. Asked through
-								// wasNull right after reading the column, not by comparing with 0
-								resultSet.getInt(2);
-								if (resultSet.wasNull()) {
-									subjects.add(index);
-								}
-							}
-						});
-						UIUtil.invokeLater(new Runnable() {
-							@Override
-							public void run() {
-								pendingRowOriginContexts.remove(scanContext);
-								// asked against the context's current id, not against
-								// lastRowOriginGraphId, so that this does not depend on whether
-								// anything has been repainted in between
-								if (lastRowOriginContext != context || context.getGraphId() != scanGraphId) {
-									// another run keeps the rows now, or the graph has been
-									// exchanged: the verdicts are void
-									return;
-								}
-								for (int i = 0; i < chunk.size(); ++i) {
-									String rowId = chunk.get(i).nonEmptyRowId;
-									rowOriginMembership.put(rowId, members.contains(i));
-									// removed as well, so that nothing of an earlier run remains
-									if (subjects.contains(i)) {
-										rowOriginSubjectRows.add(rowId);
-									} else {
-										rowOriginSubjectRows.remove(rowId);
-									}
-								}
-								rowsTable.repaint();
-								// the single row view is shown instead of the rows table, so it
-								// has to be told as well
-								if (singleRowDetailsView != null) {
-									singleRowDetailsView.repaint();
-								}
-								updateRowInSubsetLabel();
-							}
-						});
-					} catch (CancellationException ce) {
-						// reloaded or closed in the meantime: no verdict
-						pendingRowOriginContexts.remove(scanContext);
-					} catch (final Throwable t) {
-						// the graph may be gone, or the statement too big for this DBMS
-						LogUtil.warn(t);
-						pendingRowOriginContexts.remove(scanContext);
-						// said once per run, then silence: swallowing this completely is what let a
-						// mismatching universal primary key go unnoticed - the marks simply stayed
-						// away, with nothing to go on
-						UIUtil.invokeLater(new Runnable() {
-							@Override
-							public void run() {
-								if (lastRowOriginContext == context && rowOriginScanFailureReported != context) {
-									rowOriginScanFailureReported = context;
-									UIUtil.showException(BrowserContentPane.this,
-											"The rows of the subset could not be determined. The marks stay away.", t);
-								}
-							}
-						});
-					} finally {
-						CancellationHandler.reset(scanContext);
-					}
-				}
-			}, 1);
-		}
+		rowOriginMembership.requestRowOriginMembership(row);
 	}
 
 	/**
@@ -5702,28 +5546,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	 * to are gone, or they belong to another run.
 	 */
 	void resetRowOriginMembership() {
-		rowOriginMembership.clear();
-		rowOriginSubjectRows.clear();
-		rowOriginRequested.clear();
-		pendingRowOriginRows.clear();
-		rowOriginTimer = null;
-		synchronized (pendingRowOriginContexts) {
-			for (Object context: pendingRowOriginContexts) {
-				try {
-					CancellationHandler.cancelSilently(context);
-				} catch (Throwable t) {
-					// ignore
-				}
-			}
-			pendingRowOriginContexts.clear();
-		}
+		rowOriginMembership.resetRowOriginMembership();
 	}
 
 	private static final String ROW_ORIGIN_TITLE = "Why is this Row in the Subset?";
 	private static final String ROW_ORIGIN_TOOLTIP = "Shows how this row has found its way into the subset of the last export: through which associations, and starting from which subject row.";
 	private static final String ROW_ORIGIN_NO_ROW_TOOLTIP = "Select a single row to see how it has found its way into the subset of the last export.";
 
-	private static final String ROW_ORIGIN_PATH_TITLE = "Open Path to Subject";
+	static final String ROW_ORIGIN_PATH_TITLE = "Open Path to Subject";
 	private static final String ROW_ORIGIN_PATH_TOOLTIP = "Opens the way of this row into the subset as a chain of table browsers: one per step, from the subject down to this row, each showing the single row it has been collected through.";
 	private static final String ROW_ORIGIN_PATH_NO_ROW_TOOLTIP = "Select one or more rows to open their way into the subset as a chain of table browsers.";
 	private static final String ROW_ORIGIN_PATH_ROWS_TOOLTIP_1 = "Opens the ways of the ";
@@ -5841,25 +5671,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	 * @param context the context of the run which has kept the collected rows
 	 */
 	private void openRowOrigin(final Row row, final RowOriginContext context) {
-		final Table originTable = context.getDataModel().getTable(table.getName());
-		if (originTable == null) {
-			return;
-		}
-		RowOriginWindow.open(getOwner(), context, originTable, new Callable<Object[]>() {
-			@Override
-			public Object[] call() throws SQLException {
-				return readRowOriginKey(row, originTable, context);
-			}
-		}, dataModel.getDisplayName(table) + "(" + SqlUtil.replaceAliases(row.rowId, null, null) + ")",
-		new Consumer<List<RowOriginStep>>() {
-			@Override
-			public void accept(List<RowOriginStep> steps) {
-				List<RowOriginPath.Step> path = RowOriginPath.build(getOwner(), context, steps);
-				if (path != null) {
-					openRowOriginPaths(Collections.singletonList(path));
-				}
-			}
-		});
+		rowOriginOpener.openRowOrigin(row, context);
 	}
 
 	/**
@@ -6220,182 +6032,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
 	/**
 	 * Opens the ways rows have taken into the subset as chains of table browsers.
-	 * <p>
-	 * Reading the keys, following the chains and describing them happen in one background run: one
-	 * window to wait at, one place to cancel, and every row looked up only once. What is to be said
-	 * afterwards - rows which are not part of the subset, chains which do not reach a subject - is
-	 * gathered and said in a single message instead of one per row.
 	 *
 	 * @param theRows the rows
 	 * @param context the context of the run which has kept the collected rows
 	 */
 	private void openRowOriginPathFor(final Collection<Row> theRows, final RowOriginContext context) {
-		final Table originTable = context.getDataModel().getTable(table.getName());
-		if (originTable == null || theRows.isEmpty()) {
-			return;
-		}
-		final List<String> notes = new ArrayList<String>();
-		final int[] notFound = new int[1];
-		final int[] notInSubset = new int[1];
-		final AtomicReference<JLabel> infoLabel = new AtomicReference<JLabel>();
-		// the widest wording the counter can take, so that the dialog is packed for it: it does not
-		// grow with the text afterwards. Nobody sees it - the first real message is set before the
-		// dialog has faded in, which takes about 400 ms
-		String info = theRows.size() == 1? ROW_ORIGIN_ANALYZING : rowOriginProgress(theRows.size(), theRows.size());
-		List<List<RowOriginPath.Step>> paths;
-		try {
-			paths = ConcurrentTaskControl.call(getOwner(), new Callable<List<List<RowOriginPath.Step>>>() {
-				@Override
-				public List<List<RowOriginPath.Step>> call() throws Exception {
-					List<List<RowOriginPath.Step>> result = new ArrayList<List<RowOriginPath.Step>>();
-					// one finder for all of them: each one asks the graph once for the birthday of
-					// the subject rows
-					RowOriginFinder finder = context.createFinder();
-					int done = 0;
-					for (Row row: theRows) {
-						if (theRows.size() > 1) {
-							showProgress(infoLabel, rowOriginProgress(++done, theRows.size()));
-						}
-						Object[] primaryKey = readRowOriginKey(row, originTable, context);
-						if (primaryKey == null) {
-							++notFound[0];
-							continue;
-						}
-						RowOrigin origin = finder.find(originTable, primaryKey);
-						if (origin.getSteps().isEmpty()) {
-							++notInSubset[0];
-							continue;
-						}
-						String note = rowOriginPathNote(origin);
-						if (note != null && !notes.contains(note)) {
-							notes.add(note);
-						}
-						result.add(RowOriginPath.describe(context, origin.getSteps()));
-					}
-					return result;
-				}
-			}, info, UIUtil.blinkingInfoLabel(infoLabel));
-		} catch (CancellationException e) {
-			return;
-		} catch (Throwable t) {
-			UIUtil.showException(this, "Error", t);
-			return;
-		}
-		if (paths == null || paths.isEmpty()) {
-			JOptionPane.showMessageDialog(this, nothingToShowMessage(theRows.size(), notFound[0]),
-					ROW_ORIGIN_PATH_TITLE, JOptionPane.INFORMATION_MESSAGE);
-			return;
-		}
-		String message = leftOutMessage(notFound[0], notInSubset[0]);
-		for (String note: notes) {
-			message = message.isEmpty()? note : message + "\n" + note;
-		}
-		if (!message.isEmpty()) {
-			JOptionPane.showMessageDialog(this, message, ROW_ORIGIN_PATH_TITLE, JOptionPane.INFORMATION_MESSAGE);
-		}
-		openRowOriginPaths(paths);
-	}
-
-	private static final String ROW_ORIGIN_ANALYZING = "Analyzing origin...";
-
-	/**
-	 * The wording of the progress while the ways of several rows are being analyzed.
-	 *
-	 * @param done number of the row in hand
-	 * @param numberOfRows number of rows altogether
-	 * @return the text
-	 */
-	private static String rowOriginProgress(int done, int numberOfRows) {
-		return ROW_ORIGIN_ANALYZING + " " + done + " of " + numberOfRows;
-	}
-
-	/**
-	 * Writes a progress text into the info label of a running {@link ConcurrentTaskControl}, from
-	 * whatever thread the task runs on.
-	 *
-	 * @param infoLabel the label, filled in by {@link UIUtil#blinkingInfoLabel(AtomicReference)}
-	 * @param text the text
-	 */
-	private static void showProgress(final AtomicReference<JLabel> infoLabel, final String text) {
-		UIUtil.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				JLabel label = infoLabel.get();
-				if (label != null) {
-					label.setText(text);
-				}
-			}
-		});
-	}
-
-	/**
-	 * The message for the case that not a single way could be laid out.
-	 *
-	 * @param numberOfRows number of rows asked about
-	 * @param notFound number of rows which could not be found
-	 * @return the message
-	 */
-	private String nothingToShowMessage(int numberOfRows, int notFound) {
-		if (numberOfRows == 1) {
-			return notFound > 0?
-					"The row could not be found." :
-					"This row is not part of the subset of the last export.";
-		}
-		if (notFound >= numberOfRows) {
-			return "None of the " + numberOfRows + " rows could be found.";
-		}
-		return "None of the " + numberOfRows + " rows is part of the subset of the last export.";
-	}
-
-	/**
-	 * What is to be said about the rows which have been left out, or an empty text if there are
-	 * none. Only the rows which are left out are worth a word; that the others are being laid out
-	 * is about to be seen anyway.
-	 *
-	 * @param notFound number of rows which could not be found
-	 * @param notInSubset number of rows which are not part of the subset
-	 * @return the message, possibly empty
-	 */
-	private String leftOutMessage(int notFound, int notInSubset) {
-		String reason = "";
-		if (notInSubset > 0) {
-			reason = notInSubset + (notInSubset == 1? " is" : " are") + " not part of the subset of the last export";
-		}
-		if (notFound > 0) {
-			reason += (reason.isEmpty()? "" : ", ") + notFound + " could not be found";
-		}
-		if (reason.isEmpty()) {
-			return "";
-		}
-		int left = notFound + notInSubset;
-		return (left == 1? "One row has" : left + " rows have") + " been left out: " + reason + ".";
-	}
-
-	/**
-	 * Tells what is to be said about a chain before it is laid out, or <code>null</code> if it is
-	 * complete. Only an incomplete chain is reported: laid out on the desktop there is no status
-	 * line to put it in, and that the chain does not reach the subject has to be known before one
-	 * reads the browsers.
-	 * <p>
-	 * That the way is not unique is <b>not</b> reported here. It is the normal case rather than the
-	 * exception, and a window one has to click away before anything is visible is out of all
-	 * proportion to it. The chain view says it instead, in its status line and per step in the
-	 * column "Via Association".
-	 *
-	 * @param origin the chain
-	 * @return the note, or <code>null</code>
-	 */
-	private String rowOriginPathNote(RowOrigin origin) {
-		if (origin == null) {
-			return null;
-		}
-		if (origin.getStatus() == RowOrigin.Status.BROKEN) {
-			return "The chain could not be followed up to the subject. Only the part which is still known is shown.";
-		}
-		if (origin.getStatus() == RowOrigin.Status.TRUNCATED) {
-			return "The chain is too long to be followed completely. Only its last steps are shown.";
-		}
-		return null;
+		rowOriginOpener.openRowOriginPathFor(theRows, context);
 	}
 
 	/**
@@ -6405,53 +6047,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	 * @param paths the paths, each subject first
 	 */
 	protected void openRowOriginPaths(List<List<RowOriginPath.Step>> paths) {
-	}
-
-	/**
-	 * Reads the primary key values of a row the way the export run has identified it.
-	 * <p>
-	 * They cannot be taken from the row itself: {@link Row#primaryKey} holds SQL literals, not
-	 * values, and this browser identifies a row with its own settings, which need not be the
-	 * ones of the run - a run which uses rowids has another key than the browser has. So the key
-	 * columns of the run are read once, with the condition of the row.
-	 *
-	 * @param row the row
-	 * @param originTable the table of the row, as of the data model of the run
-	 * @param context the context of the run
-	 * @return the primary key values, in the order of the key of the run, or <code>null</code>
-	 *         if the row does not exist any more
-	 */
-	private Object[] readRowOriginKey(Row row, Table originTable, RowOriginContext context) throws SQLException {
-		List<Column> pkColumns = context.getRowIdSupport().getPrimaryKey(originTable).getColumns();
-		if (pkColumns.isEmpty()) {
-			return null;
-		}
-		Quoting quoting = Quoting.getQuoting(session);
-		StringBuilder selectList = new StringBuilder();
-		for (int i = 0; i < pkColumns.size(); ++i) {
-			if (i > 0) {
-				selectList.append(", ");
-			}
-			selectList.append("B." + quoting.requote(pkColumns.get(i).name) + " as PK" + i);
-		}
-		// Row.rowId is a condition on the alias "B", see reloadRows0
-		String sql = "Select " + selectList + " From " + qualifiedTableName(originTable, quoting) + " B Where (" + row.rowId + ")";
-		final Object[] result = new Object[pkColumns.size()];
-		final boolean[] found = new boolean[1];
-		session.executeQuery(sql, new Session.AbstractResultSetReader() {
-			@Override
-			public void readCurrentRow(ResultSet resultSet) throws SQLException {
-				if (found[0]) {
-					return;
-				}
-				CellContentConverter cellContentConverter = new CellContentConverter(getMetaData(resultSet), session, session.dbms);
-				for (int i = 0; i < result.length; ++i) {
-					result[i] = cellContentConverter.getObject(resultSet, "PK" + i);
-				}
-				found[0] = true;
-			}
-		}, null, null, 1);
-		return found[0]? result : null;
 	}
 
 	/**
