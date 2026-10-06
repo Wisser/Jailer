@@ -62,6 +62,7 @@ import javax.swing.table.DefaultTableModel;
 
 import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+import org.fife.ui.rtextarea.RTextScrollPane;
 
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.ui.Colors;
@@ -253,7 +254,7 @@ public class LobViewerPanel extends JPanel {
 		// as capped, so the notice is shown even in the rare case the content's true
 		// length is exactly the cap (pre-existing, harmless imprecision).
 		String text = content.getTextForDisplay(TEXT_DISPLAY_CAP);
-		return buildTextView(text, text.length() >= TEXT_DISPLAY_CAP, content.getType().syntaxStyle);
+		return buildTextView(text, text.length() >= TEXT_DISPLAY_CAP, content.getType());
 	}
 
 	/**
@@ -275,8 +276,11 @@ public class LobViewerPanel extends JPanel {
 	 * showing the (already capped) <code>text</code>, with a notice if
 	 * <code>capped</code>. Also sets {@link #textForCopy} for the "Copy to
 	 * clipboard" button.
+	 *
+	 * @param type the type of the text, or <code>null</code> for plain text
 	 */
-	private JComponent buildTextView(String text, boolean capped, String syntaxStyle) {
+	private JComponent buildTextView(String text, boolean capped, LobContentType type) {
+		String syntaxStyle = type != null? type.syntaxStyle : null;
 		textArea = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false) {
 			private static final long serialVersionUID = 1L;
 			@Override
@@ -291,18 +295,115 @@ public class LobViewerPanel extends JPanel {
 		textArea.setText(textForCopy);
 		textArea.setEditable(false);
 		textArea.setCaretPosition(0);
+		if (!capped && (type == LobContentType.JSON || type == LobContentType.XML)) {
+			// formatted right away, so that the viewer is also big enough for the formatted text
+			// (and "Format" just has to show it)
+			try {
+				formattedText = type == LobContentType.JSON? LobFormatter.formatJson(text) : LobFormatter.formatXml(text);
+			} catch (Exception e) {
+				// not well-formed - said when "Format" is used
+				formattedText = null;
+			}
+		}
+		boolean wrap = longestLineLength(text) > WRAP_THRESHOLD;
+		if (wrap || formattedText != null) {
+			setViewSize(text, formattedText, wrap);
+		}
+		JScrollPane textScrollPane;
+		if (wrap) {
+			// a long line (e.g. JSON without line breaks) would make the viewer very wide and
+			// very flat; wrapped, columns and rows give the viewer a sensible size instead
+			textArea.setLineWrap(true);
+			textArea.setWrapStyleWord(false);
+			// line numbers make the wrapping visible: a continuation row has no number of its own
+			RTextScrollPane rTextScrollPane = new RTextScrollPane();
+			rTextScrollPane.setViewportView(textArea);
+			rTextScrollPane.setLineNumbersEnabled(true);
+			rTextScrollPane.getVerticalScrollBar().setUnitIncrement(SCROLL_UNIT);
+			rTextScrollPane.getHorizontalScrollBar().setUnitIncrement(SCROLL_UNIT);
+			textScrollPane = rTextScrollPane;
+		} else {
+			textScrollPane = scrollPane(textArea);
+		}
 		if (!capped) {
-			return scrollPane(textArea);
+			return textScrollPane;
 		}
 		// the on-screen text was capped - tell the user (the full content is still exported)
 		JPanel panel = new JPanel(new BorderLayout());
-		panel.add(scrollPane(textArea), BorderLayout.CENTER);
+		panel.add(textScrollPane, BorderLayout.CENTER);
 		JLabel notice = new JLabel("Showing the first " + String.format("%,d", TEXT_DISPLAY_CAP)
 				+ " characters — use „Save to file…“ for the full content.");
 		notice.setBorder(BorderFactory.createEmptyBorder(4, 10, 4, 10));
 		notice.setForeground(Colors.Color_128_128_128);
 		panel.add(notice, BorderLayout.SOUTH);
 		return panel;
+	}
+
+	/** Lines longer than this are wrapped. */
+	private static final int WRAP_THRESHOLD = 200;
+	/** Maximum width of the viewer in columns if its size is set from the text. */
+	private static final int WRAP_COLUMNS = 120;
+	/** Minimum width of the viewer in columns if its size is set from the text. */
+	private static final int MIN_COLUMNS = 40;
+	/** Maximum height of the viewer in rows if its size is set from the text. */
+	private static final int WRAP_MAX_ROWS = 40;
+	/** Minimum height of the viewer in rows if its size is set from the text. */
+	private static final int WRAP_MIN_ROWS = 5;
+
+	/**
+	 * Sets columns and rows of the text area, and with it the initial size of the viewer,
+	 * so that both the text and its formatted version fit.
+	 *
+	 * @param text the text
+	 * @param formatted the formatted text, or <code>null</code>
+	 * @param wrap whether lines are wrapped
+	 */
+	private void setViewSize(String text, String formatted, boolean wrap) {
+		int longest = longestLineLength(text);
+		if (formatted != null) {
+			longest = Math.max(wrap? 0 : longest, longestLineLength(formatted));
+		}
+		int columns = Math.max(MIN_COLUMNS, Math.min(WRAP_COLUMNS, longest));
+		int rows = wrappedRows(text, wrap? columns : Integer.MAX_VALUE);
+		if (formatted != null) {
+			rows = Math.max(rows, wrappedRows(formatted, wrap? columns : Integer.MAX_VALUE));
+		}
+		textArea.setColumns(columns);
+		textArea.setRows(Math.max(WRAP_MIN_ROWS, Math.min(WRAP_MAX_ROWS, rows)));
+	}
+
+	private static int longestLineLength(String text) {
+		int longest = 0;
+		int length = 0;
+		for (int i = 0; i < text.length(); ++i) {
+			char c = text.charAt(i);
+			if (c == '\n' || c == '\r') {
+				length = 0;
+			} else if (++length > longest) {
+				longest = length;
+			}
+		}
+		return longest;
+	}
+
+	/**
+	 * Estimates the number of rows the text takes when wrapped at the given number of
+	 * columns. Counting stops at {@link #WRAP_MAX_ROWS}.
+	 *
+	 * @param columns the columns, {@link Integer#MAX_VALUE} for no wrapping
+	 */
+	private static int wrappedRows(String text, int columns) {
+		int rows = 0;
+		int length = 0;
+		for (int i = 0; i <= text.length() && rows < WRAP_MAX_ROWS; ++i) {
+			if (i == text.length() || text.charAt(i) == '\n') {
+				rows += Math.max(1, (int) ((length + (long) columns - 1) / columns));
+				length = 0;
+			} else if (text.charAt(i) != '\r') {
+				++length;
+			}
+		}
+		return rows;
 	}
 
 	private JComponent buildHex() throws IOException {
@@ -593,7 +694,7 @@ public class LobViewerPanel extends JPanel {
 			return "unknown size";
 		}
 		if (chars) {
-			return length + (length == 1 ? " char" : " chars");
+			return String.format("%,d", length) + (length == 1 ? " char" : " chars");
 		}
 		if (length < 1024) {
 			return length + " B";

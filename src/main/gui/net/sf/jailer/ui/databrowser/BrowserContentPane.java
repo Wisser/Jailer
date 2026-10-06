@@ -9667,24 +9667,47 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	 * Retrieves the full content of a LOB cell and shows it in the content viewer.
 	 */
 	public void openLobViewer(Row row, int columnModelIndex, final java.awt.Component viewerParent) {
+		if (lobViewerLoading) {
+			// still reading the previous one - a second click must not open a second viewer
+			return;
+		}
+		lobViewerLoading = true;
+		final java.awt.Component cursorComponent = viewerParent != null ? viewerParent : BrowserContentPane.this;
+		UIUtil.setWaitCursor(cursorComponent);
 		retrieveFullLobContent(row, columnModelIndex, new LobRetrievalCallback() {
+			private void done() {
+				lobViewerLoading = false;
+				UIUtil.resetWaitCursor(cursorComponent);
+			}
 			@Override
 			public void onSuccess(LobContent content) {
-				LobViewerPanel.showViewer(viewerParent != null ? viewerParent : BrowserContentPane.this, content);
+				try {
+					LobViewerPanel.showViewer(viewerParent != null ? viewerParent : BrowserContentPane.this, content);
+				} finally {
+					done();
+				}
 			}
 			@Override
 			public void onError(Throwable t) {
+				done();
 				UIUtil.showException(BrowserContentPane.this, "Error", t);
 			}
 			@Override
 			public void onUnavailable(String reason) {
+				done();
 				JOptionPane.showMessageDialog(BrowserContentPane.this, reason, "Content not available", JOptionPane.INFORMATION_MESSAGE);
 			}
 			@Override
 			public void onCancelled() {
+				done();
 			}
 		});
 	}
+
+	/**
+	 * Whether the content of a LOB is being read for the content viewer.
+	 */
+	private boolean lobViewerLoading = false;
 
 	public void openDetails(int rowIndex, final int x, final int y) {
 		final JDialog d = new JDialog(getOwner(), (table instanceof SqlStatementTable)? "" : dataModel.getDisplayName(table), false);
