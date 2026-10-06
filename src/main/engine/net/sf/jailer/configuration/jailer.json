@@ -790,7 +790,11 @@
 				"scriptFileName": "script/informix/update_statistics.sql"
 			},
 			"jdbcProperties": null,
-			"stringLiteralEscapeSequences": null,
+			"stringLiteralEscapeSequences": {
+				"\\n": "' || CHR(10) || '",
+				"\\r": "' || CHR(13) || '",
+				"'": "''"
+			},
 			"sqlLimitSuffix": "FIRST %s",
 			"tableProperties": "",
 			"sessionTemporaryTableManager": {
@@ -1273,7 +1277,11 @@
 				"scriptFileName": "script/firebird/update_statistics.sql"
 			},
 			"jdbcProperties": null,
-			"stringLiteralEscapeSequences": null,
+			"stringLiteralEscapeSequences": {
+				"\\n": "' || ASCII_CHAR(10) || '",
+				"\\r": "' || ASCII_CHAR(13) || '",
+				"'": "''"
+			},
 			"sqlLimitSuffix": null,
 			"tableProperties": "",
 			"sessionTemporaryTableManager": null,
@@ -1439,7 +1447,11 @@
 				"scriptFileName": "script/sybase/update_statistics.sql"
 			},
 			"jdbcProperties": null,
-			"stringLiteralEscapeSequences": null,
+			"stringLiteralEscapeSequences": {
+				"\\n": "' + char(10) + '",
+				"\\r": "' + char(13) + '",
+				"'": "''"
+			},
 			"sqlLimitSuffix": "TOP %s",
 			"tableProperties": "",
 			"sessionTemporaryTableManager": {
@@ -1540,7 +1552,11 @@
 			},
 			"statisticRenovator": null,
 			"jdbcProperties": null,
-			"stringLiteralEscapeSequences": null,
+			"stringLiteralEscapeSequences": {
+				"\\n": "' || char(10) || '",
+				"\\r": "' || char(13) || '",
+				"'": "''"
+			},
 			"sqlLimitSuffix": "LIMIT %s",
 			"tableProperties": "",
 			"sessionTemporaryTableManager": {
@@ -1633,7 +1649,11 @@
 			},
 			"statisticRenovator": null,
 			"jdbcProperties": null,
-			"stringLiteralEscapeSequences": null,
+			"stringLiteralEscapeSequences": {
+				"\\n": "' || CHAR(10) || '",
+				"\\r": "' || CHAR(13) || '",
+				"'": "''"
+			},
 			"sqlLimitSuffix": "LIMIT %s",
 			"tableProperties": "NOLOGGING",
 			"sessionTemporaryTableManager": null,

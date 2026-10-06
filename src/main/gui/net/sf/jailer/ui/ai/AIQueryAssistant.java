@@ -829,7 +829,7 @@ public class AIQueryAssistant {
                         msg += " (check your API URL — it must point to the chat endpoint, e.g. a path ending in \"" + expectedPath + "\", not just the server's base URL)";
                     }
                     msg += "\n  URL: " + currentUrl;
-                    msg += "\n  Headers: " + headers + "\n  Request: " + new String(bodyBytes, StandardCharsets.UTF_8);
+                    msg += "\n  (request details are in the debug log)";
                     throw new IOException(msg);
                 }
                 // Check if response is streamed

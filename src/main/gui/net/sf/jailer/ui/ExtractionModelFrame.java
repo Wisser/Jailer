@@ -277,6 +277,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 				}
 			}
 		}
+		saveAs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, mask | InputEvent.SHIFT_DOWN_MASK));
 		scalingMenu.setVisible(false);
 		zoomToFit.setIcon(UIUtil.scaleIcon(zoomToFit, UIUtil.readImage("/maximizec.png")));
 		jMenuItem2.setIcon(UIUtil.scaleIcon(jMenuItem2, UIUtil.readImage("/filter.png")));
@@ -910,7 +911,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
         });
         fileMenu.add(save);
 
-        saveAs.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        saveAs.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.SHIFT_DOWN_MASK | java.awt.event.InputEvent.CTRL_DOWN_MASK));
         saveAs.setText("Save as...");
         saveAs.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

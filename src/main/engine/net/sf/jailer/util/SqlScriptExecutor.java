@@ -277,16 +277,35 @@ public class SqlScriptExecutor {
 			boolean tryMode = false;
 			int lineNumber = 0;
 			int currentStatementlineNumber = 1;
+			boolean inLiteral = false;
 			while ((line = lineReader.readLine()) != null) {
 				++lineNumber;
-				line = line.trim();
-				if (line.length() == 0 || "GO".equalsIgnoreCase(line)) {
+				boolean startsInLiteral = inLiteral;
+				if (startsInLiteral) {
+					// line starts inside a multi-line string literal, keep it as it is
+					inLiteral = endsInLiteral(line, true);
+					if (inLiteral) {
+						currentStatement.append(line + lineReader.getLineTerminator());
+						continue;
+					}
+					line = trimTrailing(line);
+				} else {
+					String untrimmedLine = line;
+					line = line.trim();
+					if (line.length() > 0 && !line.startsWith("--") && endsInLiteral(line, false)) {
+						// line ends inside a multi-line string literal, keep trailing whitespace
+						inLiteral = true;
+						currentStatement.append(untrimmedLine.substring(untrimmedLine.indexOf(line)) + lineReader.getLineTerminator());
+						continue;
+					}
+				}
+				if (!startsInLiteral && (line.length() == 0 || "GO".equalsIgnoreCase(line))) {
 					if (currentStatement.length() == 0) {
 						++currentStatementlineNumber;
 					}
 					continue;
 				}
-				if (line.startsWith("--")) {
+				if (!startsInLiteral && line.startsWith("--")) {
 					if (currentStatement.length() == 0) {
 						++currentStatementlineNumber;
 					}
@@ -479,22 +498,131 @@ public class SqlScriptExecutor {
 		}
 	}
 
+	/**
+	 * Checks whether a line ends inside a string literal.
+	 *
+	 * @param line the line
+	 * @param inLiteral <code>true</code> if the line starts inside a string literal
+	 * @return <code>true</code> if the line ends inside a string literal
+	 */
+	private static boolean endsInLiteral(String line, boolean inLiteral) {
+		boolean inQuotedIdentifier = false;
+		for (int i = 0; i < line.length(); ++i) {
+			char c = line.charAt(i);
+			if (inLiteral) {
+				if (c == '\'') {
+					inLiteral = false; // an escaped quote ('') toggles twice
+				}
+			} else if (inQuotedIdentifier) {
+				if (c == '"') {
+					inQuotedIdentifier = false;
+				}
+			} else if (c == '\'') {
+				inLiteral = true;
+			} else if (c == '"') {
+				inQuotedIdentifier = true;
+			} else if (c == '-' && i + 1 < line.length() && line.charAt(i + 1) == '-') {
+				break; // rest of line is a comment
+			}
+		}
+		return inLiteral;
+	}
+
+	private static String trimTrailing(String line) {
+		int end = line.length();
+		while (end > 0 && line.charAt(end - 1) <= ' ') {
+			--end;
+		}
+		return line.substring(0, end);
+	}
+
 	private static class LineReader {
 
 		private final BufferedReader reader;
 		private boolean eofRead = false;
-		
+		private final char[] buffer = new char[8192];
+		private int bufferPos = 0;
+		private int bufferEnd = 0;
+		private String lineTerminator = "\n";
+
 		public LineReader(BufferedReader reader) {
 			this.reader = reader;
 		}
 
 		public String readLine() throws IOException {
-			String line = reader.readLine();
+			String line = readLineKeepTerminator();
 			if (line == null && !eofRead) {
 				eofRead = true;
+				lineTerminator = "\n";
 				return ";";
 			}
 			return line;
+		}
+
+		/**
+		 * Gets the terminator ("\n", "\r\n", "\r" or "") of the last line read.
+		 */
+		public String getLineTerminator() {
+			return lineTerminator;
+		}
+
+		/**
+		 * Like {@link BufferedReader#readLine()}, but remembers the line terminator.
+		 */
+		private String readLineKeepTerminator() throws IOException {
+			StringBuilder line = null;
+			for (;;) {
+				if (bufferPos >= bufferEnd) {
+					bufferEnd = reader.read(buffer, 0, buffer.length);
+					bufferPos = 0;
+					if (bufferEnd <= 0) {
+						bufferEnd = 0;
+						lineTerminator = lineTerminator.equals("\r?")? "\r" : "";
+						return line == null? null : line.toString();
+					}
+				}
+				if (line == null) {
+					line = new StringBuilder();
+				}
+				if (lineTerminator.equals("\r?")) {
+					// a CR was read at the end of the previous buffer
+					if (buffer[bufferPos] == '\n') {
+						++bufferPos;
+						lineTerminator = "\r\n";
+					} else {
+						lineTerminator = "\r";
+					}
+					return line.toString();
+				}
+				int start = bufferPos;
+				while (bufferPos < bufferEnd) {
+					char c = buffer[bufferPos];
+					if (c == '\n' || c == '\r') {
+						line.append(buffer, start, bufferPos - start);
+						++bufferPos;
+						if (c == '\n') {
+							lineTerminator = "\n";
+							return line.toString();
+						}
+						if (bufferPos < bufferEnd) {
+							if (buffer[bufferPos] == '\n') {
+								++bufferPos;
+								lineTerminator = "\r\n";
+							} else {
+								lineTerminator = "\r";
+							}
+							return line.toString();
+						}
+						lineTerminator = "\r?";
+						start = bufferPos;
+						break;
+					}
+					++bufferPos;
+				}
+				if (!lineTerminator.equals("\r?")) {
+					line.append(buffer, start, bufferPos - start);
+				}
+			}
 		}
 	}
 	
