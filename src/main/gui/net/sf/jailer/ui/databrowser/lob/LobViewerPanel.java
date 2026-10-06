@@ -55,6 +55,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
@@ -105,6 +106,12 @@ public class LobViewerPanel extends JPanel {
 	private PdfViewPanel pdfPanel;
 	private BufferedImage image;
 	private String textForCopy;
+	/** The text as read, shown when "Format" is off. */
+	private String originalText;
+	/** The formatted text, computed on first use of "Format". */
+	private String formattedText;
+	/** Whether the text shown has been cut at {@link #TEXT_DISPLAY_CAP}. */
+	private boolean textCapped;
 	private volatile boolean modalChildOpen;
 
 	/** Whether a modal child (e.g. the save file chooser) is currently open; suppresses focus-loss auto-close. */
@@ -147,6 +154,9 @@ public class LobViewerPanel extends JPanel {
 		dispose();
 		image = null;
 		textForCopy = null;
+		originalText = null;
+		formattedText = null;
+		textCapped = false;
 		// A LOB that holds a single compressed file (a GZIP stream, or a ZIP with
 		// exactly one entry) is shown decompressed: unwrap it and render the inner
 		// file as if it were the content. Failure leaves the archive itself shown.
@@ -276,6 +286,8 @@ public class LobViewerPanel extends JPanel {
 		};
 		textArea.setSyntaxEditingStyle(syntaxStyle != null ? syntaxStyle : SyntaxConstants.SYNTAX_STYLE_NONE);
 		textForCopy = text;
+		originalText = text;
+		textCapped = capped;
 		textArea.setText(textForCopy);
 		textArea.setEditable(false);
 		textArea.setCaretPosition(0);
@@ -406,6 +418,7 @@ public class LobViewerPanel extends JPanel {
 	private static final ImageIcon OPEN_EXTERNAL_ICON = loadButtonIcon("/showinnewwindow.png");
 	private static final ImageIcon COPY_ICON = loadButtonIcon("/copy.png");
 	private static final ImageIcon CLOSE_ICON = loadButtonIcon("/Cancel.png");
+	private static final ImageIcon FORMAT_ICON = loadButtonIcon("/formatsql.png");
 
 	private static ImageIcon loadButtonIcon(String resource) {
 		try {
@@ -416,7 +429,9 @@ public class LobViewerPanel extends JPanel {
 	}
 
 	private JComponent buildToolBar() {
+		JPanel toolBar = new JPanel(new BorderLayout());
 		JPanel bar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 4));
+		toolBar.add(bar, BorderLayout.CENTER);
 		JButton save = new JButton("Save to file…");
 		save.setIcon(SAVE_ICON);
 		save.addActionListener(new ActionListener() {
@@ -437,6 +452,29 @@ public class LobViewerPanel extends JPanel {
 			}
 		});
 		bar.add(openExternal);
+
+		final LobContentType type = content.getType();
+		if (textArea != null && (type == LobContentType.JSON || type == LobContentType.XML)) {
+			final JToggleButton format = new JToggleButton("Format");
+			format.setIcon(FORMAT_ICON);
+			if (textCapped) {
+				format.setEnabled(false);
+				format.setToolTipText("Only the first " + String.format("%,d", TEXT_DISPLAY_CAP)
+						+ " characters are shown; formatting needs the complete content.");
+			} else {
+				format.setToolTipText("Show the " + type.displayName + " content indented (the content itself is not changed)");
+			}
+			format.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					toggleFormat(format, type);
+				}
+			});
+			// on the left, apart from the buttons acting on the content as a whole
+			JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
+			left.add(format);
+			toolBar.add(left, BorderLayout.WEST);
+		}
 
 		if (textForCopy != null || image != null) {
 			JButton copy = new JButton("Copy to clipboard");
@@ -462,7 +500,47 @@ public class LobViewerPanel extends JPanel {
 			}
 		});
 		bar.add(close);
-		return bar;
+		return toolBar;
+	}
+
+	/**
+	 * Switches between the formatted and the original JSON/XML text. Only the view and
+	 * "Copy to clipboard" are affected, "Save to file…" still exports the original content.
+	 */
+	private void toggleFormat(JToggleButton button, LobContentType type) {
+		if (textArea == null || originalText == null) {
+			return;
+		}
+		if (!button.isSelected()) {
+			showText(originalText);
+			return;
+		}
+		if (formattedText == null) {
+			UIUtil.setWaitCursor(this);
+			try {
+				formattedText = type == LobContentType.JSON? LobFormatter.formatJson(originalText) : LobFormatter.formatXml(originalText);
+			} catch (Exception e) {
+				button.setSelected(false);
+				modalChildOpen = true;
+				try {
+					javax.swing.JOptionPane.showMessageDialog(this,
+							"The content is not well-formed " + type.displayName + ":\n" + e.getMessage(),
+							"Format", javax.swing.JOptionPane.WARNING_MESSAGE);
+				} finally {
+					modalChildOpen = false;
+				}
+				return;
+			} finally {
+				UIUtil.resetWaitCursor(this);
+			}
+		}
+		showText(formattedText);
+	}
+
+	private void showText(String text) {
+		textForCopy = text;
+		textArea.setText(text);
+		textArea.setCaretPosition(0);
 	}
 
 	private void saveToFile() {
