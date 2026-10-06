@@ -386,7 +386,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 				valueList.append(cVal);
 				namedValues.append(cVal + " " + columnLabel[i]);
 			}
-			String identityColumnInsertClause = tableHasIdentityColumn && session.dbms != null && session.dbms.getIdentityColumnInsertClause() != null? session.dbms.getIdentityColumnInsertClause() + " ": "";
+			String identityColumnInsertClause = tableHasIdentityColumn && targetDBMSConfiguration.getIdentityColumnInsertClause() != null? targetDBMSConfiguration.getIdentityColumnInsertClause() + " ": "";
 			if (table.getUpsert() || upsertOnly) {
 				if (table.getNonVirtualPKColumns(session).isEmpty()) {
 					throw new DataModel.NoPrimaryKeyException(table, "has no " +

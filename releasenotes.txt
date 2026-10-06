@@ -1,3 +1,18 @@
+17.3
+  - Fixed: SQL scripts exported for SQLite, HSQLDB, Firebird, Sybase, Informix, Derby or Cloudscape
+    could not be imported reliably if a text value contained line breaks. Inside such a value,
+    a line ending with ";" broke the statement, and blank lines, leading and trailing blanks and
+    lines starting with "--" got lost. Carriage returns (CR) were dropped as well.
+    For SQLite, HSQLDB, Firebird, Sybase and Informix, line breaks are now exported as
+    char(10)/char(13) expressions, so each value stays on one line of the script.
+    The import now keeps multi-line string literals unchanged, including carriage returns. This
+    also makes scripts exported for Derby and Cloudscape, and scripts exported with earlier
+    versions, importable.
+  - The shortcut of "Save as..." in the extraction model editor is now Ctrl+Shift+S instead of
+    Ctrl+A, which conflicted with "Select all".
+  - AI Assistant: the error message of a failed API request no longer contains the complete
+    request (prompt and schema).
+
 17.2.5
   - Rows can now be compared column by column. The new submenu "Compare" in the context menu of a
     row offers the comparisons below. It compares the selected rows, while the submenu "Compare"

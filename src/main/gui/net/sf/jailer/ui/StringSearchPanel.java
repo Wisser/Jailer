@@ -577,7 +577,36 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	private String showAllLabel;
 	private boolean keepSearchText = false;
 	private boolean isFiltered = true;
-	
+
+	/**
+	 * Client property of the combo box: if set to a positive number, the items are long multi-line
+	 * texts (like SQL statements). They are then matched and shown with their whitespace collapsed,
+	 * shown cut down to that many characters around the match, and items which are equal apart from
+	 * whitespace are listed only once.
+	 */
+	public static final String MAX_ITEM_DISPLAY_LENGTH = "StringSearchPanel.maxItemDisplayLength";
+
+	private int maxItemDisplayLength = 0;
+	private final Map<String, String> normalizedItems = new HashMap<String, String>();
+
+	/**
+	 * Gets an item with its whitespace collapsed, if {@link #MAX_ITEM_DISPLAY_LENGTH} is set.
+	 *
+	 * @param item the item
+	 * @return the item to match and show
+	 */
+	private String normalizedItem(String item) {
+		if (maxItemDisplayLength <= 0) {
+			return item;
+		}
+		String normalized = normalizedItems.get(item);
+		if (normalized == null) {
+			normalized = item.replaceAll("\\s+", " ").trim();
+			normalizedItems.put(item, normalized);
+		}
+		return normalized;
+	}
+
 	/**
 	 * Updates the search result list, applying the current search filter.
 	 */
@@ -608,19 +637,27 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		boolean withSuffix = !text.endsWith(" ");
 		DefaultComboBoxModel<String> model = (DefaultComboBoxModel) combobox.getModel();
 		int size = model.getSize();
+		// items which are equal apart from whitespace, see MAX_ITEM_DISPLAY_LENGTH
+		Map<String, String> seenNormalized = new HashMap<String, String>();
 		for (int i = 0; i < size; ++i) {
 			String item = model.getElementAt(i);
 			if (!item.isEmpty()) {
-				String searchText = extendedSearchText(text, item).toUpperCase(Locale.ENGLISH);
-				final String itemUpperCase = item.toUpperCase(Locale.ENGLISH);
+				String matchItem = normalizedItem(item);
+				String searchText = extendedSearchText(text, matchItem).toUpperCase(Locale.ENGLISH);
+				final String itemUpperCase = matchItem.toUpperCase(Locale.ENGLISH);
 				if (!filter
-						|| searchText.isEmpty() 
+						|| searchText.isEmpty()
 						|| withPrefix && withSuffix && itemUpperCase.contains(searchText)
 						|| !withPrefix && withSuffix && itemUpperCase.startsWith(searchText)
 						|| withPrefix && !withSuffix && itemUpperCase.endsWith(searchText)
 						|| !withPrefix && !withSuffix && itemUpperCase.equals(searchText)
 						) {
-					if (!searchText.isEmpty() && !allowDuplicates) {
+					if (maxItemDisplayLength > 0) {
+						String previous = seenNormalized.put(matchItem, item);
+						if (previous != null) {
+							matches.removeElement(previous);
+						}
+					} else if (!searchText.isEmpty() && !allowDuplicates) {
 						if (seen.contains(item)) {
 							matches.removeElement(item);
 						}
@@ -669,6 +706,10 @@ public class StringSearchPanel extends javax.swing.JPanel {
     	this.prepare = prepare;
     	this.onSuccess = onSuccess;
     	this.renderConsumer = renderConsumer;
+    	Object maxLengthProperty = combobox == null? null : combobox.getClientProperty(MAX_ITEM_DISPLAY_LENGTH);
+    	if (maxLengthProperty instanceof Integer) {
+    		this.maxItemDisplayLength = (Integer) maxLengthProperty;
+    	}
         initComponents(); UIUtil.initComponents(this);
         
         if (jScrollPane2.getHorizontalScrollBar() != null) {
@@ -836,11 +877,22 @@ public class StringSearchPanel extends javax.swing.JPanel {
 					fgColor = Colors.Color_255_255_255;
 					hlColor = "color=" + Colors.HTMLColor_ff9999 + "";
 				}
-				String item = value.toString();
+				String item = normalizedItem(value.toString());
 				item = UIUtil.indicateLeadingAndTrailingSpaces(item, !indicateLeadingAndTrailingSpaces);
-				
+
 				String search = extendedSearchText(searchTextField.getText(), item).toUpperCase(Locale.ENGLISH);
 				int i = searchTextField.getText().endsWith(" ")? item.toUpperCase(Locale.ENGLISH).lastIndexOf(search) : item.toUpperCase(Locale.ENGLISH).indexOf(search);
+				if (maxItemDisplayLength > 0 && item.length() > maxItemDisplayLength) {
+					// a long item is cut down to a window around the match, so that the match stays visible
+					int from = i >= 0? Math.max(0, i - maxItemDisplayLength / 3) : 0;
+					int to = Math.min(item.length(), from + maxItemDisplayLength);
+					from = Math.max(0, to - maxItemDisplayLength);
+					String prefix = from > 0? "..." : "";
+					item = prefix + item.substring(from, to) + (to < item.length()? "..." : "");
+					if (i >= 0) {
+						i = i - from + prefix.length();
+					}
+				}
 				if (i >= 0) {
 					i = Math.min(i, item.length());
 					if (i + search.length() <= item.length()) {
@@ -869,7 +921,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 				}
 				if (render instanceof JLabel) {
 					String text = ((JLabel) render).getText();
-					((JLabel) render).setToolTipText(text);
+					((JLabel) render).setToolTipText(maxItemDisplayLength > 0? UIUtil.toHTML(value.toString(), 100) : text);
 				}
 				if (isSelected) {
 					render.setBackground(bgColor);

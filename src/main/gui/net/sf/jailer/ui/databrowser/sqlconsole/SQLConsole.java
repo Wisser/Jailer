@@ -169,6 +169,7 @@ import net.sf.jailer.ui.JComboBox2;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.SessionForUI;
+import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.StringSearchPanel.StringSearchDialog;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.UIUtil.PLAF;
@@ -230,7 +231,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	private static final Logger logger = LoggerFactory.getLogger(MetaDataDetailsPanel.class);
 
     private static final int MAX_TAB_COUNT = 8;
-    private static final int MAX_HISTORY_SIZE = 100;
+    private static final int MAX_HISTORY_SIZE = 300;
+    /**
+     * Maximum total length of the statements in the history. The history file is read again
+     * whenever the console is switched to, so it must not grow too big.
+     */
+    private static final int MAX_HISTORY_CHARS = 300000;
 
     private Session session;
     MetaDataSource metaDataSource;
@@ -308,6 +314,16 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 16);
         jPanel5.add(historyComboBox, gridBagConstraints);
+
+        // the statements of the history are long and span several lines
+        historyComboBox.putClientProperty(StringSearchPanel.MAX_ITEM_DISPLAY_LENGTH, 160);
+        JToggleButton historySearchButton = StringSearchPanel.createSearchButton(null, historyComboBox, "Find in History", null);
+        historySearchButton.setToolTipText("Find in History");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 17;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
+        jPanel5.add(historySearchButton, gridBagConstraints);
 
         updateResultUI();
         
@@ -4976,6 +4992,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             if (history.size() > MAX_HISTORY_SIZE) {
                 history.remove(history.size() - 1);
             }
+            long totalLength = 0;
+            for (String s: history) {
+                totalLength += s.length();
+            }
+            while (totalLength > MAX_HISTORY_CHARS && history.size() > 1) {
+                totalLength -= history.remove(history.size() - 1).length();
+            }
         }
     }
 
@@ -5506,7 +5529,5 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	public boolean isTempFileBased() {
 		return tempFileBased;
 	}
-	
-	// TODO StringSearch component for historie (and than inc hist size a lot)
 
 }
