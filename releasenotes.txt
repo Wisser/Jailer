@@ -8,10 +8,37 @@
     The import now keeps multi-line string literals unchanged, including carriage returns. This
     also makes scripts exported for Derby and Cloudscape, and scripts exported with earlier
     versions, importable.
+  - Content viewer for BLOB/CLOB values:
+    - New button "Format" shows JSON and XML content indented. "Save to file..." and "Open
+      externally" still use the original content.
+    - Long lines are wrapped. Line numbers are then shown, so that it can be seen where a line
+      actually begins.
+    - The initial size of the viewer fits the content, including its formatted form.
+    - A wait cursor is shown while the content is read from the database, and clicking again
+      in the meantime no longer opens a second viewer.
+  - SQL Console: new result tab "Pivot" next to "Chart". It shows a cross table of the rows:
+    - The fields are chosen in a side bar. Row fields and column fields can be nested (e.g.
+      DEPTNO, then JOB), with subtotals per group. "Totals of single-element groups" also shows
+      subtotals of groups with only one subgroup.
+    - Several values, each with its own aggregate function: Count, Count distinct, Sum, Avg, Min
+      or Max. "(rows)" counts the rows.
+    - Totals are computed from the rows themselves, so that they are also correct for Avg and
+      Count distinct.
+    - The values of a row or column field can be filtered (filter button next to the field).
+      Filtered rows are not counted, also not in the totals.
+    - Clicking the header of a value column sorts the groups by this value (descending,
+      ascending, by key). Groups can be collapsed and expanded by clicking their label, or all
+      at once ("Collapse all", "Expand all").
+    - Double-clicking a cell selects its rows in the "Rows" tab and sorts the rows accordingly.
+    - "Chart" shows the pivot table as chart (the groups, without subtotals and totals).
+    - "SQL..." generates the SQL statement that computes the pivot table.
+    - "Copy" copies the pivot table with header to the clipboard, "Save as CSV..." saves it as
+      CSV file.
+    - "Save as Excel..." saves an Excel workbook (.xlsx, can also be opened with LibreOffice)
+      with an Excel PivotTable, the pivot table as formulas over the rows (with collapsible
+      groups and AutoFilter), and the rows themselves.
   - The shortcut of "Save as..." in the extraction model editor is now Ctrl+Shift+S instead of
     Ctrl+A, which conflicted with "Select all".
-  - AI Assistant: the error message of a failed API request no longer contains the complete
-    request (prompt and schema).
 
 17.2.5
   - Rows can now be compared column by column. The new submenu "Compare" in the context menu of a

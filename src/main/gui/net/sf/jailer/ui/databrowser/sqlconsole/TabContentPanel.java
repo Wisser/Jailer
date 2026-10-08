@@ -659,6 +659,14 @@ public class TabContentPanel extends javax.swing.JPanel {
 					chartPanel.setTable(theRowsTable);
 				}
 			});
+			pivotPanel = new SQLConsolePivotPanel(rowColumnTypes, rowBrowser);
+			pivotPanel.setShowRowsTabAction(() -> tabbedPane.setSelectedComponent(contentPanel));
+			tabbedPane.insertTab("Pivot", null, pivotPanel, null, tabbedPane.indexOfComponent(chartPanel) + 1);
+			tabbedPane.addChangeListener(e -> {
+				if (tabbedPane.getSelectedComponent() == pivotPanel && theRowsTable != null) {
+					pivotPanel.setTable(theRowsTable);
+				}
+			});
 		}
 
 		mapOverlayPanel = new GeometryPreviewPanel();
@@ -911,6 +919,9 @@ public class TabContentPanel extends javax.swing.JPanel {
     	theRowsTable = rowsTable;
 		if (chartPanel != null && tabbedPane.getSelectedComponent() == chartPanel) {
 			chartPanel.setTable(rowsTable);
+		}
+		if (pivotPanel != null && tabbedPane.getSelectedComponent() == pivotPanel) {
+			pivotPanel.setTable(rowsTable);
 		}
 		Object sep = getSeparatorFromCombobox();
     	StringBuilder sb = createContent(rowsTable, sep, false, false, null, rowAndColumnsLimit, rowAndColumnsLimit, new boolean[2]);
@@ -1628,6 +1639,7 @@ public class TabContentPanel extends javax.swing.JPanel {
     }
     
     SQLConsoleChartPanel chartPanel;
+    SQLConsolePivotPanel pivotPanel;
     private final RSyntaxTextAreaWithSQLSyntaxStyle textArea;
     final Pair<Integer, Integer> caretDotMark;
     private final List<Integer> rowColumnTypes;

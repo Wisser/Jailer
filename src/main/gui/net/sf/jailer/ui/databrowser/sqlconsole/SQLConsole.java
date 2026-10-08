@@ -67,6 +67,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1703,6 +1704,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 }
                 final String columnLabels[] = new String[columnCount];
                 final String columnLabelsFull[] = new String[columnCount];
+                final String resultColumnLabels[] = new String[columnCount]; // unchanged, e.g. to refer to the columns in generated SQL
+                for (int i = 0; i < columnCount; ++i) {
+                	resultColumnLabels[i] = metaData.getColumnLabel(i + 1);
+                }
                 final Color columnHeaderColors[] = new Color[columnCount];
                 int a = 10;
                 final Color hBG[] = new Color[] {
@@ -1953,6 +1958,18 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         				origTabContentPanel == null? null : origTabContentPanel.shimPanel,
                         				caretDotMark,
                         				rb.rowColumnTypes, false, false);
+						if (tabContentPanel.pivotPanel != null) {
+							// the pivot table aggregates all rows if the row limit is exceeded, but executes only queries again
+							tabContentPanel.pivotPanel.setAllRowsSource(() -> {
+								String stmt = rb.getStatementForReloading();
+								if (!rb.reexecutable || stmt == null) {
+									return null;
+								}
+								String start = SQLCompletionProvider.removeCommentsAndLiterals(stmt).toLowerCase(Locale.ENGLISH).trim();
+								return start.startsWith("select") || start.startsWith("with")? stmt : null;
+							}, session, queue::add);
+							tabContentPanel.pivotPanel.setSqlSource(Arrays.asList(resultColumnLabels), SQLConsole.this, executionContext);
+						}
 						if (origTabContentPanel != null && origTabContentPanel.rowBrowser != null) {
 							rb.lastColumnConfig = origTabContentPanel.rowBrowser.lastColumnConfig;
 							rb.userColumnConfig = origTabContentPanel.rowBrowser.userColumnConfig;
@@ -2161,11 +2178,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         String title = shortSQL(sqlE, MAXLENGTH);
                         final int loc = status != null && status.location != null? status.location.a : -1;
                         if (initialTabbedPaneSelection >= 0 && initialTabbedPaneSelectionLoc == loc) {
-                        	if (initialTabbedPaneSelection < tabContentPanel.tabbedPane.getTabCount()) {
+                        	if (initialTabbedPaneSelection < tabContentPanel.tabbedPane.getTabCount()
+                        			// new result tabs never open in the pivot tab, only reloaded ones keep it
+                        			&& !(origTabContentPanel == null && tabContentPanel.tabbedPane.getComponentAt(initialTabbedPaneSelection) == tabContentPanel.pivotPanel)) {
                         		SQLConsoleChartPanel chartPanelToCopyFrom = lastChartPanel;
                         		tabContentPanel.tabbedPane.setSelectedIndex(initialTabbedPaneSelection);
-                        		String selTitle = tabContentPanel.tabbedPane.getTitleAt(initialTabbedPaneSelection);
-                        		if ("Chart".equals(selTitle) && chartPanelToCopyFrom != null && tabContentPanel.chartPanel != null
+                        		if (tabContentPanel.tabbedPane.getSelectedComponent() == tabContentPanel.chartPanel && chartPanelToCopyFrom != null && tabContentPanel.chartPanel != null
                         				&& chartPanelToCopyFrom != tabContentPanel.chartPanel) {
                         			tabContentPanel.chartPanel.copySettingsFrom(chartPanelToCopyFrom);
                         			lastChartPanel = tabContentPanel.chartPanel;
@@ -2196,7 +2214,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							public void stateChanged(ChangeEvent e) {
 								int sel = tabContentPanel.tabbedPane.getSelectedIndex();
 								initialTabbedPaneSelection = sel;
-								if ("Chart".equals(tabContentPanel.tabbedPane.getTitleAt(sel))) {
+								if (tabContentPanel.tabbedPane.getComponentAt(sel) == tabContentPanel.chartPanel) {
 									lastChartPanel = tabContentPanel.chartPanel;
 								}
 								initialTabbedPaneSelectionLoc = loc;

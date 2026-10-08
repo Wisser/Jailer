@@ -582,6 +582,115 @@ public class QueryTypeAnalyser {
 		return null;
 	}
 
+	/**
+	 * The select list of a query, e.g. for rewriting it.
+	 */
+	public static class SelectList {
+		/**
+		 * The (simplified) query.
+		 */
+		public final String sql;
+		/**
+		 * Start and end of the select list in {@link #sql}.
+		 */
+		public final int start, end;
+		/**
+		 * Whether it is a "select distinct".
+		 */
+		public final boolean distinct;
+		/**
+		 * Per column of the result: either { expression } or { table alias, column name } (for columns selected with "*").
+		 */
+		public final List<String[]> columns;
+
+		SelectList(String sql, int start, int end, boolean distinct, List<String[]> columns) {
+			this.sql = sql;
+			this.start = start;
+			this.end = end;
+			this.distinct = distinct;
+			this.columns = columns;
+		}
+	}
+
+	/**
+	 * Gets the select list of a query: the SQL of each column of the result.
+	 *
+	 * @param sqlSelect the query
+	 * @param metaDataSource to get the columns of the tables of "*"
+	 * @return the select list, or <code>null</code> if the query is too complex (e.g. a UNION or WITH)
+	 */
+	public static SelectList getSelectList(String sqlSelect, MetaDataSource metaDataSource) {
+		try {
+			String simplifiedSQL = SqlUtil.removeNonMeaningfulFragments(sqlSelect);
+			net.sf.jsqlparser.statement.Statement st = JSqlParserUtil.parse(simplifiedSQL, 2);
+			if (!(st instanceof Select)) {
+				return null;
+			}
+			Select select = (Select) st;
+			if (select.getWithItemsList() != null && !select.getWithItemsList().isEmpty() || !(select.getSelectBody() instanceof PlainSelect)) {
+				return null;
+			}
+			PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+			List<SelectItem> selectItems = plainSelect.getSelectItems();
+			if (selectItems == null || selectItems.isEmpty()) {
+				return null;
+			}
+			SimpleNode first = selectItems.get(0).getASTNode();
+			SimpleNode last = selectItems.get(selectItems.size() - 1).getASTNode();
+			if (first == null || last == null) {
+				return null;
+			}
+			int start = first.jjtGetFirstToken().absoluteBegin - 1;
+			int end = last.jjtGetLastToken().absoluteEnd - 1;
+			if (start < 0 || end > simplifiedSQL.length() || start >= end) {
+				return null;
+			}
+			final LinkedHashMap<String, MDTable> fromClause = analyseFromClause(st, new HashMap<Pair<String, String>, Collection<Pair<String, String>>>(), metaDataSource);
+			final List<String[]> columns = new ArrayList<String[]>();
+			for (SelectItem si: selectItems) {
+				si.accept(new SelectItemVisitor() {
+					@Override
+					public void visit(SelectExpressionItem selectExpressionItem) {
+						SimpleNode node = selectExpressionItem.getExpression() instanceof ASTNodeAccess ? ((ASTNodeAccess) selectExpressionItem.getExpression()).getASTNode() : null;
+						if (node == null) {
+							throw new QueryTooComplexException();
+						}
+						columns.add(new String[] { simplifiedSQL.substring(node.jjtGetFirstToken().absoluteBegin - 1, node.jjtGetLastToken().absoluteEnd - 1) });
+					}
+
+					@Override
+					public void visit(AllTableColumns allTableColumns) {
+						String tableAlias = allTableColumns.getTable().getName() == null ? null : findTable(allTableColumns.getTable().getName(), fromClause);
+						addColumns(tableAlias == null ? null : fromClause.get(tableAlias), tableAlias);
+					}
+
+					@Override
+					public void visit(AllColumns allColumns) {
+						for (Entry<String, MDTable> e: fromClause.entrySet()) {
+							addColumns(e.getValue(), e.getKey());
+						}
+					}
+
+					private void addColumns(MDTable mdTable, String tableAlias) {
+						if (mdTable == null) {
+							throw new QueryTooComplexException();
+						}
+						try {
+							for (String col: mdTable.getColumns(false)) {
+								columns.add(new String[] { tableAlias, col });
+							}
+						} catch (SQLException e) {
+							throw new QueryTooComplexException();
+						}
+					}
+				});
+			}
+			return new SelectList(simplifiedSQL, start, end, plainSelect.getDistinct() != null, columns);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
 	private static String findTable(String tableName, LinkedHashMap<String, MDTable> fromClause) {
 		for (boolean strict: new boolean[] { false, true }) {
 			for (Entry<String, MDTable> e: fromClause.entrySet()) {

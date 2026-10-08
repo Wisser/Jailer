@@ -560,6 +560,15 @@ public class SQLConsoleChartPanel extends JPanel {
 
     // -------------------------------------------------------------------------
 
+    /**
+     * Selects the columns used as Y values when the table is set next time (see {@link #setTable(JTable)}).
+     *
+     * @param columns names of the columns
+     */
+    public void setPendingYColumns(List<String> columns) {
+        pendingYColumns = new ArrayList<>(columns);
+    }
+
     public void setTable(JTable table) {
         this.currentTable = table;
         userXByChartType.clear();
