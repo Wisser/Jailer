@@ -311,7 +311,7 @@ public class SQLConsolePivotPanel extends JPanel {
 			}
 		});
 		resultTable.setDefaultRenderer(Object.class, new PivotCellRenderer());
-		resultTable.setToolTipText("Click a group label to collapse or expand the group. Double-click a cell to select its rows in the Rows tab");
+		resultTable.setToolTipText("Click a group label to collapse or expand the group. Double-click a cell to select its rows in the table of the rows");
 		resultTable.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -714,7 +714,7 @@ public class SQLConsolePivotPanel extends JPanel {
 	}
 
 	private void refreshCombos() {
-		if (currentTable == null || currentTable.getColumnModel().getColumnCount() == 0) {
+		if (currentTable == null || currentTable.getColumnModel().getColumnCount() == 0 || isSingleRowView()) {
 			// e.g. while the rows are reloaded: keep the selection
 			return;
 		}
@@ -1326,8 +1326,20 @@ public class SQLConsolePivotPanel extends JPanel {
 		}
 	}
 
+	/**
+	 * Whether the table shows a single row as details (a table browser of the Data Browser does that), so that its columns are not those of the rows.
+	 */
+	private boolean isSingleRowView() {
+		return rowBrowser != null && rowBrowser.rows.size() == 1 && currentTable != null
+				&& currentTable.getModel().getColumnCount() != rowBrowser.rows.get(0).values.length;
+	}
+
 	private void updatePivot() {
 		if (currentTable == null) {
+			return;
+		}
+		if (isSingleRowView()) {
+			showMessage("The pivot table needs more than one row.");
 			return;
 		}
 		TableColumnModel cm = currentTable.getColumnModel();

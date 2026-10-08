@@ -18,6 +18,7 @@ package net.sf.jailer.ui.databrowser;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Dialog;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -224,6 +225,8 @@ import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.ColumnsTable;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
+import net.sf.jailer.ui.databrowser.sqlconsole.PivotIcon;
+import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsolePivotPanel;
 import net.sf.jailer.ui.databrowser.whereconditioneditor.WhereConditionEditorPanel;
 import net.sf.jailer.ui.progress.RetainedEntityGraphs;
 import net.sf.jailer.ui.progress.RowOriginContext;
@@ -3845,6 +3848,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		delete.setEnabled(hasPK && rows.size() > 0);
 		// all rows (the row context menu compares the selected ones)
 		popup.add(createCompareAllRowsMenu());
+		if (getQueryBuilderDialog() != null) { // !SQL Console (it has the result tab "Pivot")
+			JMenuItem pivot = new JMenuItem("Pivot...");
+			pivot.setToolTipText("Shows a pivot table (cross table) of the rows of this table browser in a separate window.");
+			pivot.setIcon(PivotIcon.forMenu(pivot));
+			pivot.addActionListener(e -> openPivot());
+			popup.add(pivot);
+		}
 
 		popup.add(new JSeparator());
 		JMenuItem exportData = new JMenuItem("Export Data from here");
@@ -10817,6 +10827,43 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			andConditionEditor.dispose();
 			andConditionEditor = null;
 		}
+		if (pivotDialog != null) {
+			pivotDialog.dispose();
+			pivotDialog = null;
+		}
+	}
+
+	/**
+	 * The window with the pivot table of the rows, or <code>null</code>.
+	 */
+	private JDialog pivotDialog;
+
+	/**
+	 * Shows a pivot table of the (loaded) rows in a separate window. It follows the reloads of the rows.
+	 */
+	private void openPivot() {
+		if (pivotDialog != null && pivotDialog.isVisible()) {
+			pivotDialog.toFront();
+			return;
+		}
+		JFrame owner = getOwner();
+		pivotDialog = new JDialog(owner, "Pivot - " + (table == null ? "" : dataModel.getDisplayName(table)), Dialog.ModalityType.MODELESS);
+		pivotDialog.setIconImages(Arrays.asList(PivotIcon.image(16), PivotIcon.image(32)));
+		pivotDialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+		SQLConsolePivotPanel pivotPanel = new SQLConsolePivotPanel(rowColumnTypes, this);
+		pivotPanel.setAllRowsSource(() -> null, session, null); // no statement to execute again, only the session (for the configuration)
+		pivotPanel.setShowRowsTabAction(() -> {
+			if (owner != null) {
+				owner.toFront();
+			}
+		});
+		pivotDialog.getContentPane().add(pivotPanel);
+		java.awt.geom.Rectangle2D screen = UIUtil.getScreenBounds();
+		pivotDialog.setSize((int) Math.min(1000, screen.getWidth() * 0.8), (int) Math.min(600, screen.getHeight() * 0.8));
+		UIUtil.setInitialWindowLocation(pivotDialog, owner, 100, 100);
+		UIUtil.fit(pivotDialog);
+		pivotDialog.setVisible(true);
+		pivotPanel.setTable(rowsTable);
 	}
 
 	@Override
