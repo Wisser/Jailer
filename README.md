@@ -7,10 +7,13 @@
 [![Stars](https://img.shields.io/github/stars/Wisser/Jailer?style=social)](https://github.com/Wisser/Jailer/stargazers)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](license.txt)
 
-| | |
-|---|---|
-| **Subsetter** | Extracts small, consistent and referentially intact slices of your database, for test data, development and local problem analysis with relevant production data. Exports topologically sorted SQL, JSON, YAML, XML or DbUnit. |
-| **Data Browser** | Navigates through your database in both directions, following foreign keys or user-defined relationships. Includes an SQL Console with code completion, charts, pivot tables and AI assistance. |
+ - **Subsetter**: Extracts small, consistent and referentially intact slices of your database
+   as SQL (topologically sorted), JSON, YAML, XML or DbUnit records.
+
+   Ideal for creating small samples of test data or for local problem analysis with relevant production data.
+
+ - **Data Browser**: Navigates through your database in both directions, following foreign keys or user-defined relationships.
+   Includes an SQL Console with code completion, charts, pivot tables and AI assistance.
 
 Works with any database that has a JDBC driver, with dedicated support for PostgreSQL, Oracle, MySQL, MariaDB, SQL Server, Db2, SQLite and [more](#supported-databases).
 
