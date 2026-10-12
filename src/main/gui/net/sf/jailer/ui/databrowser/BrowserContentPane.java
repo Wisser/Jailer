@@ -91,6 +91,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -111,6 +113,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -236,6 +239,8 @@ import net.sf.jailer.ui.scrollmenu.JScrollMenu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.util.AnimationController;
+import net.sf.jailer.ui.util.ConcurrentTaskControl;
+import net.sf.jailer.ui.util.CsvOptionsDialog;
 import net.sf.jailer.ui.util.LightBorderSmallButton;
 import net.sf.jailer.ui.util.SmallButton;
 import net.sf.jailer.ui.util.UISettings;
@@ -3656,6 +3661,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 					}
 				});
 				popup.add(ecopyItem);
+				JMenuItem saveCsvItem = new JMenuItem("Save as CSV...");
+				saveCsvItem.setIcon(UIUtil.scaleIcon(saveCsvItem, UIUtil.readImage("/save.png")));
+				saveCsvItem.setToolTipText("Saves all rows of the result as CSV file (as shown: columns, order, filter).");
+				saveCsvItem.addActionListener(e -> saveAsCsv());
+				popup.add(saveCsvItem);
 			}
 			if (!withSingleRow ||
 					BrowserContentPane.this.getQueryBuilderDialog() == null // SQL Console
@@ -3696,16 +3706,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
 		if (row != null && getQueryBuilderDialog() != null /* SQL Console */) {
 			popup.add(new JSeparator());
-			JMenu window = new JMenu("Menu");
-			window.setIcon(menuIcon);
-			window.setToolTipText("All available actions for this table browser.");
-			popup.add(window);
+			JMenu tableMenu = new JMenu(table == null ? "Menu" : dataModel.getDisplayName(table));
+			tableMenu.setIcon(menuIcon);
+			tableMenu.setToolTipText("All available actions for this table browser (applied to all rows, not only to the selected ones).");
+			popup.add(tableMenu);
 			for (Component comp: createPopupMenu(null, -1, 0, 0, false, false, false).getComponents()) {
-				window.add(comp);
+				tableMenu.add(comp);
 			}
 			popup.add(new JSeparator());
 			for (Component comp: createSqlPopupMenu(0, x, y, false, BrowserContentPane.this).getComponents()) {
-				window.add(comp);
+				tableMenu.add(comp);
 			}
 		}
 
@@ -7221,6 +7231,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		}
 		selectDistinctCheckBox.setVisible(nndr > 0);
 		selectDistinctCheckBox.setText("distinct (-" + nndr + ")");
+		String duplicates = nndr + (nndr == 1 ? " row" : " rows");
+		selectDistinctCheckBox.setToolTipText(selectDistinctCheckBox.isSelected()
+				? "<html>Each row is shown only once, although it belongs to several parent rows.<br>Without \"distinct\", such rows are shown once per parent row (" + duplicates + " more).</html>"
+				: "<html>Rows belonging to several parent rows are shown once per parent row (" + duplicates + " more than with \"distinct\").<br>With \"distinct\", each row is shown only once.</html>");
 		if (getParentBrowser() != null) {
 			BrowserContentPane pBrowser = getParentBrowser().browserContentPane;
 			if (pBrowser.selectDistinctCheckBox.isVisible() && !pBrowser.selectDistinctCheckBox.isSelected()) {
@@ -10857,13 +10871,314 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 				owner.toFront();
 			}
 		});
-		pivotDialog.getContentPane().add(pivotPanel);
+		Runnable switchToConsole = () -> {
+			getSqlConsole(true);
+			if (owner != null) {
+				owner.toFront();
+			}
+		};
+		JDialog dialog = pivotDialog;
+		dialog.getContentPane().add(pivotPanel, BorderLayout.CENTER);
+		// the pivot table of the join with the tables of the parent browsers (initially, if there is a parent)
+		JCheckBox includeParents = new JCheckBox("Include parent tables");
+		includeParents.setToolTipText(association != null
+				? "Joins the table with the tables of the parent browsers. The pivot table is then based on all rows of the join."
+				: "There are no parent browsers.");
+		includeParents.setSelected(association != null);
+		includeParents.setEnabled(association != null);
+		JPanel northPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+		northPanel.add(includeParents);
+		// the tables the pivot table is based on
+		String ownTable = pivotTablesText(Collections.singletonList(dataModel.getDisplayName(table)));
+		JLabel tablesLabel = new JLabel(ownTable);
+		northPanel.add(tablesLabel);
+		dialog.getContentPane().add(northPanel, BorderLayout.NORTH);
+		// the SQL of the pivot table of the loaded rows is based on the path to the root (the rows of all parent rows)
+		AtomicReference<String> pathSql = new AtomicReference<>(createPivotPathSql());
+		List<String> labels = new ArrayList<>();
+		for (Column column: table.getColumns()) {
+			labels.add(Quoting.staticUnquote(column.name));
+		}
+		pivotPanel.setSqlSource(labels, getSqlConsole(false), executionContext, pathSql::get);
+		pivotPanel.setSwitchToConsoleAction(switchToConsole);
+
+		AtomicReference<SQLConsolePivotPanel> joinedPivotPanel = new AtomicReference<>();
+		AtomicReference<JTable> joinedColumnsTable = new AtomicReference<>();
+		AtomicReference<String> joinSql = new AtomicReference<>();
+		AtomicBoolean refreshPending = new AtomicBoolean(false);
+		java.beans.PropertyChangeListener reloadListener = e -> {
+			if (!refreshPending.getAndSet(true)) {
+				UIUtil.invokeLater(() -> {
+					refreshPending.set(false);
+					if (!dialog.isDisplayable()) {
+						return;
+					}
+					pathSql.set(createPivotPathSql());
+					if (includeParents.isSelected() && joinedPivotPanel.get() != null) {
+						try {
+							List<String> tables = new ArrayList<>();
+							joinSql.set(createPivotJoinSql(null, false, tables));
+							tablesLabel.setText(pivotTablesText(tables));
+						} catch (Throwable t) {
+							UIUtil.showException(dialog, "Error", t);
+							return;
+						}
+						joinedPivotPanel.get().refresh();
+					}
+				});
+			}
+		};
+		rowsTable.addPropertyChangeListener("model", reloadListener);
+		dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+			@Override
+			public void windowClosed(java.awt.event.WindowEvent e) {
+				rowsTable.removePropertyChangeListener("model", reloadListener);
+			}
+		});
+		Runnable applyIncludeParents = null;
+		if (association != null) {
+			applyIncludeParents = () -> {
+				SQLConsolePivotPanel joined = joinedPivotPanel.get();
+				boolean isNew = false;
+				if (includeParents.isSelected()) {
+					try {
+						List<String> columnTables = new ArrayList<>();
+						List<String> tables = new ArrayList<>();
+						String sql = createPivotJoinSql(columnTables, false, tables);
+						joinSql.set(sql);
+						tablesLabel.setText(pivotTablesText(tables));
+						if (joined == null) {
+							joined = createJoinedPivotPanel(sql, columnTables, joinSql::get, joinedColumnsTable, dialog);
+							if (joined == null) {
+								includeParents.setSelected(false);
+								tablesLabel.setText(ownTable);
+								return;
+							}
+							joinedPivotPanel.set(joined);
+							isNew = true;
+						}
+					} catch (Throwable t) {
+						UIUtil.showException(dialog, "Error", t);
+						includeParents.setSelected(false);
+						tablesLabel.setText(ownTable);
+						return;
+					}
+					dialog.getContentPane().remove(pivotPanel);
+					dialog.getContentPane().add(joined, BorderLayout.CENTER);
+				} else {
+					tablesLabel.setText(ownTable);
+					if (joined != null) {
+						dialog.getContentPane().remove(joined);
+						dialog.getContentPane().add(pivotPanel, BorderLayout.CENTER);
+					}
+				}
+				dialog.getContentPane().revalidate();
+				dialog.getContentPane().repaint();
+				if (includeParents.isSelected()) {
+					// in the dialog: the reading of the rows shows a dialog with "Cancel" over it
+					SQLConsolePivotPanel finalJoined = joined;
+					boolean finalIsNew = isNew;
+					UIUtil.invokeLater(() -> {
+						if (finalIsNew) {
+							finalJoined.setTable(joinedColumnsTable.get());
+						} else {
+							finalJoined.refresh();
+						}
+					});
+				}
+			};
+			Runnable apply = applyIncludeParents;
+			includeParents.addActionListener(e -> apply.run());
+		}
 		java.awt.geom.Rectangle2D screen = UIUtil.getScreenBounds();
 		pivotDialog.setSize((int) Math.min(1000, screen.getWidth() * 0.8), (int) Math.min(600, screen.getHeight() * 0.8));
 		UIUtil.setInitialWindowLocation(pivotDialog, owner, 100, 100);
 		UIUtil.fit(pivotDialog);
 		pivotDialog.setVisible(true);
 		pivotPanel.setTable(rowsTable);
+		if (applyIncludeParents != null) {
+			UIUtil.invokeLater(applyIncludeParents);
+		}
+	}
+
+	/**
+	 * Saves all rows as shown (columns, order, filter) as CSV file, in the format the user chooses
+	 * (see {@link CsvOptionsDialog}).
+	 */
+	public void saveAsCsv() {
+		CsvOptionsDialog.CsvFormat format = CsvOptionsDialog.show(this);
+		if (format == null) {
+			return;
+		}
+		String fileName = CsvOptionsDialog.chooseFile(this);
+		if (fileName == null) {
+			return;
+		}
+		javax.swing.table.TableColumnModel columnModel = rowsTable.getColumnModel();
+		TableModel model = rowsTable.getModel();
+		RowSorter<? extends TableModel> sorter = rowsTable.getRowSorter();
+		int rowCount = sorter == null ? model.getRowCount() : sorter.getViewRowCount();
+		StringBuilder csv = new StringBuilder();
+		if (format.header) {
+			for (int c = 0; c < columnModel.getColumnCount(); ++c) {
+				if (c > 0) {
+					csv.append(format.separator);
+				}
+				String header = String.valueOf(model.getColumnName(columnModel.getColumn(c).getModelIndex()));
+				if (header.startsWith("<html>")) {
+					Matcher m = Pattern.compile("<b>(.*?)</b>").matcher(header);
+					header = UIUtil.fromHTMLFragment(m.find() ? m.group(1) : header.replaceAll("<br>", " ").replaceAll("<[^>]*>", "")).trim();
+				}
+				csv.append(format.cell(header, true));
+			}
+			csv.append(format.lineBreak);
+		}
+		for (int r = 0; r < rowCount; ++r) {
+			int modelRow = sorter == null ? r : sorter.convertRowIndexToModel(r);
+			for (int c = 0; c < columnModel.getColumnCount(); ++c) {
+				if (c > 0) {
+					csv.append(format.separator);
+				}
+				Object value = model.getValueAt(modelRow, columnModel.getColumn(c).getModelIndex());
+				if (value instanceof TableModelItem) {
+					value = ((TableModelItem) value).value;
+				}
+				csv.append(format.value(value));
+			}
+			csv.append(format.lineBreak);
+		}
+		try {
+			format.write(fileName, csv.toString());
+		} catch (Throwable t) {
+			UIUtil.showException(this, "Error", t);
+		}
+	}
+
+	/**
+	 * Gets the text showing the tables a pivot table is based on (the tables in the color of the tables in the column headers of the SQL Console).
+	 */
+	private static String pivotTablesText(List<String> tables) {
+		return "<html><nobr>" + (tables.size() == 1 ? "Table: " : "Tables: ") + "<font color=" + Colors.HTMLColor_0066ff + ">"
+				+ tables.stream().map(t -> UIUtil.toHTMLFragment(t, 0)).collect(Collectors.joining(", ")) + "</font></nobr></html>";
+	}
+
+	/**
+	 * Creates the query of the rows of the table along the path to the root (joined with the tables of the parent browsers,
+	 * with their conditions), selecting the columns of the table only.
+	 *
+	 * @return the query, or <code>null</code> if it can't be created
+	 */
+	private String createPivotPathSql() {
+		try {
+			return createPivotJoinSql(null, true);
+		} catch (Throwable t) {
+			LogUtil.warn(t);
+			return null;
+		}
+	}
+
+	/**
+	 * Creates the query joining the table with the tables of the parent browsers (only the chain of ancestors, no child browsers,
+	 * as they would multiply the rows) with the conditions of the browsers.
+	 *
+	 * @param columnTables if not <code>null</code>, gets the display name of the table of each column selected
+	 * @param onlyOwnColumns if <code>true</code>, only the columns of the table are selected, else all columns of all tables
+	 * @return the query
+	 */
+	private String createPivotJoinSql(List<String> columnTables, boolean onlyOwnColumns) {
+		return createPivotJoinSql(columnTables, onlyOwnColumns, null);
+	}
+
+	/**
+	 * Creates the query joining the table with the tables of the parent browsers (only the chain of ancestors, no child browsers,
+	 * as they would multiply the rows) with the conditions of the browsers.
+	 *
+	 * @param columnTables if not <code>null</code>, gets the display name of the table of each column selected
+	 * @param onlyOwnColumns if <code>true</code>, only the columns of the table are selected, else all columns of all tables
+	 * @param tables if not <code>null</code>, gets the display names of the tables joined (the table, its parent, ...)
+	 * @return the query
+	 */
+	private String createPivotJoinSql(List<String> columnTables, boolean onlyOwnColumns, List<String> tables) {
+		QueryBuilderDialog.Relationship root = createQBRelations(true);
+		for (QueryBuilderDialog.Relationship r = root; r != null; r = r.originalParent) {
+			r.children.clear();
+			if (r.originalParent != null) {
+				r.children.add(r.originalParent);
+			}
+			r.selectColumns = !onlyOwnColumns || r == root;
+			Table t = r.association == null ? table : r.association.destination;
+			if (tables != null) {
+				tables.add(dataModel.getDisplayName(t));
+			}
+			if (columnTables != null && r.selectColumns) {
+				for (int i = t.getColumns().size(); i > 0; --i) {
+					columnTables.add(dataModel.getDisplayName(t));
+				}
+			}
+		}
+		return getQueryBuilderDialog().buildSQL(table, root, dataModel, session, getMetaDataSource());
+	}
+
+	/**
+	 * Creates the pivot panel of the join with the tables of the parent browsers. It is based on all rows of the join.
+	 * The columns and their types are taken from the meta data of the query.
+	 *
+	 * @param sql the query
+	 * @param columnTables the display name of the table of each column selected
+	 * @param statement gets the current query
+	 * @param columnsTable gets the table (without rows) providing the columns, to be passed to {@link SQLConsolePivotPanel#setTable(JTable)}
+	 * @return the panel, or <code>null</code> if cancelled
+	 */
+	private SQLConsolePivotPanel createJoinedPivotPanel(String sql, List<String> columnTables, Supplier<String> statement, AtomicReference<JTable> columnsTable, JDialog dialog) throws Exception {
+		List<String> columnNames = new ArrayList<>();
+		List<Integer> columnTypes = new ArrayList<>();
+		AtomicReference<java.sql.Statement> runningStatement = new AtomicReference<>();
+		try {
+			ConcurrentTaskControl.call(dialog, () -> {
+				try (java.sql.Statement stmt = session.getConnection().createStatement()) {
+					runningStatement.set(stmt);
+					stmt.setMaxRows(1);
+					try (ResultSet resultSet = stmt.executeQuery(sql)) {
+						ResultSetMetaData metaData = resultSet.getMetaData();
+						for (int i = 1; i <= metaData.getColumnCount(); ++i) {
+							columnNames.add(metaData.getColumnLabel(i));
+							columnTypes.add(metaData.getColumnType(i));
+						}
+					}
+				}
+				return null;
+			}, "Executing statement for the pivot table...", UIUtil.blinkingInfoLabel(null), true);
+		} catch (java.util.concurrent.CancellationException e) {
+			java.sql.Statement stmt = runningStatement.get();
+			if (stmt != null) {
+				try {
+					stmt.cancel();
+				} catch (Throwable t) {
+					// ignore
+				}
+			}
+			return null;
+		}
+		// column headers like in the SQL Console (with the table, so that the pivot table can tell columns of the same name apart)
+		Object[] headers = new Object[columnNames.size()];
+		boolean withTables = columnTables.size() == columnNames.size();
+		for (int i = 0; i < headers.length; ++i) {
+			headers[i] = withTables
+					? "<html><nobr><font>" + UIUtil.toHTMLFragment(columnTables.get(i), 0) + "</font><br><b>" + UIUtil.toHTMLFragment(columnNames.get(i), 0) + "</b></nobr></html>"
+					: columnNames.get(i);
+		}
+		columnsTable.set(new JTable(new DefaultTableModel(headers, 0)));
+		SQLConsolePivotPanel joinedPivotPanel = new SQLConsolePivotPanel(columnTypes, null);
+		joinedPivotPanel.setAllRowsSource(statement, session, Runnable::run); // the reading runs in the thread of the dialog with "Cancel"
+		joinedPivotPanel.setAllRowsOnly(true);
+		joinedPivotPanel.setSqlSource(columnNames, getSqlConsole(false), executionContext);
+		joinedPivotPanel.setSwitchToConsoleAction(() -> {
+			getSqlConsole(true);
+			if (getOwner() != null) {
+				getOwner().toFront();
+			}
+		});
+		return joinedPivotPanel;
 	}
 
 	@Override

@@ -23,6 +23,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -52,6 +53,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JDialog;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JViewport;
@@ -74,6 +76,7 @@ import javax.swing.table.TableModel;
 
 import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.sqlconsole.TabContentPanel;
+import net.sf.jailer.ui.util.CsvOptionsDialog;
 import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Pair;
 
@@ -504,7 +507,27 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 	private boolean updatePending = false;
 	
     private TabContentPanel tabContentPanel;
-    
+    private final JButton saveCsvButton = new JButton("Save as CSV...");
+
+    /**
+     * Saves the selected cells as CSV file, in the format the user chooses (the headings and rotation are those chosen here).
+     */
+    private void saveAsCsv() {
+    	CsvOptionsDialog.CsvFormat format = CsvOptionsDialog.show(this, false);
+    	if (format == null) {
+    		return;
+    	}
+    	String fileName = CsvOptionsDialog.chooseFile(this);
+    	if (fileName == null) {
+    		return;
+    	}
+    	try {
+    		format.write(fileName, tabContentPanel.getCsvContent(contentTable, format));
+    	} catch (Throwable t) {
+    		UIUtil.showException(this, "Error", t);
+    	}
+    }
+
 	private ExtendetCopyPanel(boolean columnNamesInFirstRow) {
         initComponents(); UIUtil.initComponents(this);
         jToolBar1.setFloatable(false);
@@ -513,7 +536,24 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         copyButton.setIcon(copyIcon);
         closeCloseButton.setIcon(cancelIcon);
         copyCloseButton.setIcon(copyCloseIcon);
-        
+
+        // "Save as CSV..." left of "Copy to Clipboard"
+        saveCsvButton.setIcon(UIUtil.scaleIcon(saveCsvButton, UIUtil.readImage("/save.png")));
+        saveCsvButton.setToolTipText("Saves the selected cells as CSV file (with the headings and rotation chosen here).");
+        saveCsvButton.addActionListener(e -> saveAsCsv());
+        GridBagLayout buttonsLayout = (GridBagLayout) panel.getLayout();
+        GridBagConstraints copyButtonConstraints = buttonsLayout.getConstraints(copyButton);
+        copyButtonConstraints.weightx = 0;
+        copyButtonConstraints.anchor = GridBagConstraints.SOUTHWEST;
+        buttonsLayout.setConstraints(copyButton, copyButtonConstraints);
+        GridBagConstraints saveCsvConstraints = new GridBagConstraints();
+        saveCsvConstraints.gridx = 3;
+        saveCsvConstraints.gridy = 2;
+        saveCsvConstraints.anchor = GridBagConstraints.SOUTHEAST;
+        saveCsvConstraints.weightx = 1.0;
+        saveCsvConstraints.insets = new Insets(0, 0, 4, 4);
+        panel.add(saveCsvButton, saveCsvConstraints);
+
         stopRowLabel.setVisible(false);
         stopColumnLabel.setVisible(false);
         stopBothLabel.setVisible(false);

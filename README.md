@@ -1,19 +1,30 @@
 # Jailer Database Tool
 
-Jailer is a tool for database subsetting and relational data browsing.
+**Free and open source tools for relational data: create referentially intact subsets of production databases, and browse your data along its relationships.**
 
- - The Subsetter creates small slices from your database (consistent and referentially intact)
-   as SQL (topologically sorted), DbUnit records or XML.
-   
-   Ideal for creating small samples of test data or for local problem analysis with relevant production data.
-   
- - The Data Browser lets you navigate through your database following the relationships (foreign key-based or user-defined) between tables.
+[![Release](https://img.shields.io/github/v/release/Wisser/Jailer)](https://github.com/Wisser/Jailer/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/Wisser/Jailer/total)](https://github.com/Wisser/Jailer/releases)
+[![Stars](https://img.shields.io/github/stars/Wisser/Jailer?style=social)](https://github.com/Wisser/Jailer/stargazers)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue)](license.txt)
+
+| | |
+|---|---|
+| **Subsetter** | Extracts small, consistent and referentially intact slices of your database, for test data, development and local problem analysis with relevant production data. Exports topologically sorted SQL, JSON, YAML, XML or DbUnit. |
+| **Data Browser** | Navigates through your database in both directions, following foreign keys or user-defined relationships. Includes an SQL Console with code completion, charts, pivot tables and AI assistance. |
+
+Works with any database that has a JDBC driver, with dedicated support for PostgreSQL, Oracle, MySQL, MariaDB, SQL Server, Db2, SQLite and [more](#supported-databases).
 
 <img src="/docs/screenshot.png" width="500" />
 
 https://user-images.githubusercontent.com/861721/142761281-299bddc4-eea7-4f26-8c24-54fccb31b152.mp4
 
 [More Videos](https://wisser.github.io/Jailer/videos.html)
+
+## Quick Start
+
+1. Download the installer for Windows (`.msi`) or Linux (`.deb`) from the [latest release](https://github.com/Wisser/Jailer/releases/latest), or the zip for any platform with Java (see [Installation](#installation)).
+2. Start Jailer and open the included **demo database**. No configuration needed.
+3. Connect to your own database and start the **Data Browser** or the **Subsetter**.
 
 ## Features
 

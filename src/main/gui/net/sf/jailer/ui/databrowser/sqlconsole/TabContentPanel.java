@@ -93,6 +93,7 @@ import net.sf.jailer.ui.databrowser.geo.SpatialCellSupport;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataDetailsPanel;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithTheme;
+import net.sf.jailer.ui.util.CsvOptionsDialog;
 import net.sf.jailer.util.Pair;
 
 public class TabContentPanel extends javax.swing.JPanel {
@@ -1077,7 +1078,9 @@ public class TabContentPanel extends javax.swing.JPanel {
 					}
 				}
 				String cellContent = value == UIUtil.NULL || value == null? "" : value.toString();
-				if (sep != null && !html) {
+				if (csvFormat != null) {
+					cellContent = isColName? csvFormat.cell(cellContent, true) : csvFormat.value(value);
+				} else if (sep != null && !html) {
 					if (cellContent.contains(sep.toString()) || cellContent.indexOf("\n") >= 0 || cellContent.indexOf("\r") >= 0 || cellContent.indexOf("\"") >= 0) {
 						cellContent = "\"" + (cellContent.replaceAll("\"", "\"\"")) + "\"";
 					}
@@ -1232,7 +1235,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 					if (html) {
 						sb.append("</td></tr>");
 					}
-					sb.append(UIUtil.LINE_SEPARATOR);
+					sb.append(csvFormat != null? csvFormat.lineBreak : UIUtil.LINE_SEPARATOR);
 				}
 				if (y == 0 && sep == null && incHeader && !(rotate ^ columnNamesInFirstRow)) {
 					int o = 2;
@@ -1289,6 +1292,28 @@ public class TabContentPanel extends javax.swing.JPanel {
 	
 	public String getPlainContent(JTable rowsTable, boolean aligned, boolean colored, int maxColumns, int maxRows, boolean[] stopped) {
 		return createContent(rowsTable, getSeparatorFromCombobox(), aligned, colored, null, maxColumns, maxRows, stopped).toString();
+	}
+
+	/**
+	 * The format of the content if it is created as CSV (see {@link #getCsvContent(JTable, CsvOptionsDialog.CsvFormat)}), else <code>null</code>.
+	 */
+	private CsvOptionsDialog.CsvFormat csvFormat = null;
+
+	/**
+	 * Gets the content as CSV (without the limits of the preview). The headings and the rotation are those chosen here,
+	 * the other settings those of the format.
+	 *
+	 * @param rowsTable the table
+	 * @param format the format
+	 * @return the content
+	 */
+	public String getCsvContent(JTable rowsTable, CsvOptionsDialog.CsvFormat format) {
+		csvFormat = format;
+		try {
+			return createContent(rowsTable, format.separator, false, false, null, Integer.MAX_VALUE, Integer.MAX_VALUE, new boolean[2]).toString();
+		} finally {
+			csvFormat = null;
+		}
 	}
 
 	/**

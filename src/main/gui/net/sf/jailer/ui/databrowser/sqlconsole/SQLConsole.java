@@ -3520,23 +3520,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		return tp.executedSQL != null && tp.executedSQL.equals(normalizeSQL(statement));
 	}
 
-	/**
-	 * Whether the caret is at the statement a result tab has executed.
-	 */
-	private boolean isStatementAtCaret(TitelPanel tp) {
-		try {
-			Pair<Integer, Integer> loc = editorPane.getCurrentStatementLocation(true, true, null, false);
-			if (loc == null || loc.a < 0 || tp.statementLoc != loc.a) {
-				return false;
-			}
-			int startOffset = editorPane.getLineStartOffset(loc.a);
-			int endOffset = editorPane.getLineEndOffset(loc.b);
-			return startOffset < endOffset && isExecutedStatement(tp, editorPane.getDocument().getText(startOffset, endOffset - startOffset));
-		} catch (Exception e) {
-			return false;
-		}
-	}
-
 	private static String normalizeSQL(String sql) {
 		if (sql == null) return null;
 		return sql
@@ -4500,11 +4483,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
     	JMenuItem showStatement = new JMenuItem("Show Statement in Editor");
     	showStatement.setIcon(UIUtil.scaleIcon(showStatement, UIUtil.readImage("/select.png")));
-    	boolean atCaret = hasStatement && isStatementAtCaret(tp);
-    	showStatement.setEnabled(hasStatement && !atCaret);
-    	showStatement.setToolTipText(atCaret? "The cursor is at the statement of this result already." : "Selects the statement of this result in the editor.");
+    	showStatement.setEnabled(hasStatement);
+    	showStatement.setToolTipText("Selects the statement of this result in the editor.");
     	showStatement.addActionListener(e -> {
     		if (findAndSetCaretPosition(sql, tp.tabContentPanel)) {
+    			selectStatementAtCaret();
     			editorPane.grabFocus();
     		} else {
     			JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(SQLConsole.this), "The statement is no longer in the editor.",
@@ -4519,6 +4502,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     	copyStatement.setToolTipText("Copies the statement of this result to the clipboard.");
     	copyStatement.addActionListener(e -> Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(sql), null));
     	popup.add(copyStatement);
+    	popup.add(new JSeparator());
+
+    	JMenuItem saveCsv = new JMenuItem("Save as CSV...");
+    	saveCsv.setIcon(UIUtil.scaleIcon(saveCsv, UIUtil.readImage("/save.png")));
+    	saveCsv.setToolTipText("Saves all rows of this result as CSV file (as shown: columns, order, filter).");
+    	saveCsv.addActionListener(e -> tp.rb.saveAsCsv());
+    	popup.add(saveCsv);
     	popup.add(new JSeparator());
 
     	// all rows (the row context menu compares the selected ones)
@@ -4821,6 +4811,46 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	    }
 
 	    return false;
+    }
+
+    /**
+     * Selects the statement at the caret (without leading and trailing white space and the terminating ";").
+     * It's determined like in {@link #executeSelectedStatements(boolean, TabContentPanel, boolean)}, so that it's the one
+     * {@link #findAndSetCaretPosition(String, TabContentPanel)} has found.
+     */
+    private void selectStatementAtCaret() {
+    	try {
+    		int start;
+    		int end;
+    		Pair<Pair<Integer, Integer>, Pair<Integer, Integer>> locFragment = editorPane.getCurrentStatementFragmentLocation();
+    		if (locFragment != null) {
+    			start = locFragment.b.a;
+    			end = locFragment.b.b;
+    		} else {
+    			Pair<Integer, Integer> loc = editorPane.getCurrentStatementLocation(null);
+    			if (loc == null || loc.a < 0) {
+    				return;
+    			}
+    			start = editorPane.getLineStartOffset(loc.a);
+    			end = editorPane.getLineEndOffset(Math.min(loc.b, editorPane.getLineCount() - 1));
+    		}
+    		end = Math.min(end, editorPane.getDocument().getLength());
+    		String text = editorPane.getDocument().getText(start, end - start);
+    		int from = 0;
+    		int length = text.length();
+    		while (from < length && Character.isWhitespace(text.charAt(from))) {
+    			++from;
+    		}
+    		while (length > from && (Character.isWhitespace(text.charAt(length - 1)) || text.charAt(length - 1) == ';')) {
+    			--length;
+    		}
+    		if (from < length) {
+    			editorPane.setCaretPosition(start + from);
+    			editorPane.moveCaretPosition(start + length);
+    		}
+    	} catch (Exception e) {
+    		// keep the caret as it is
+    	}
     }
 
     private String getLineContent(int line) {

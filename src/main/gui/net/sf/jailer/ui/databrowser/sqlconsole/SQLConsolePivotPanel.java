@@ -40,7 +40,6 @@ import java.io.OutputStreamWriter;
 import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.math.MathContext;
-import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.sql.ResultSet;
@@ -121,6 +120,7 @@ import net.sf.jailer.ui.databrowser.BrowserContentPane;
 import net.sf.jailer.ui.databrowser.Row;
 import net.sf.jailer.ui.databrowser.SQLDMLPanel;
 import net.sf.jailer.ui.util.ConcurrentTaskControl;
+import net.sf.jailer.ui.util.CsvOptionsDialog;
 import net.sf.jailer.ui.util.SimpleXlsxWriter;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CellContentConverter;
@@ -231,6 +231,7 @@ public class SQLConsolePivotPanel extends JPanel {
 	 * To generate the SQL of the pivot table (see {@link #setSqlSource(List, SQLConsole, ExecutionContext)}).
 	 */
 	private List<String> resultColumnLabels;
+	private Supplier<String> sqlStatement;
 	private SQLConsole sqlConsole;
 	private ExecutionContext executionContext;
 	private final JButton sqlButton = new JButton("SQL...");
@@ -257,6 +258,8 @@ public class SQLConsolePivotPanel extends JPanel {
 	 */
 	private String allRowsKey;
 	private Aggregation allRowsAggregation;
+
+	private static final String RESULT_TABLE_TOOLTIP = "Click a group label to collapse or expand the group. Double-click a cell to select its rows in the table of the rows";
 	private TooManyColumnKeysException allRowsTooManyColumnKeys;
 
 	public SQLConsolePivotPanel(List<Integer> columnTypes, BrowserContentPane rowBrowser) {
@@ -311,7 +314,7 @@ public class SQLConsolePivotPanel extends JPanel {
 			}
 		});
 		resultTable.setDefaultRenderer(Object.class, new PivotCellRenderer());
-		resultTable.setToolTipText("Click a group label to collapse or expand the group. Double-click a cell to select its rows in the table of the rows");
+		resultTable.setToolTipText(RESULT_TABLE_TOOLTIP);
 		resultTable.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -1363,7 +1366,7 @@ public class SQLConsolePivotPanel extends JPanel {
 		for (int v = 0; v < distinct.length; v++) {
 			distinct[v] = COUNT_DISTINCT.equals(values.get(v).aggregate);
 		}
-		if (rowBrowser == null) {
+		if (rowBrowser == null && !allRowsOnly) {
 			showMessage("No rows.");
 			return;
 		}
@@ -1388,11 +1391,11 @@ public class SQLConsolePivotPanel extends JPanel {
 		}
 
 		// the loaded rows, or all rows of the statement if the row limit is exceeded
-		List<Row> loadedRows = rowBrowser.rows;
+		List<Row> loadedRows = rowBrowser == null ? Collections.emptyList() : rowBrowser.rows;
 		Aggregation aggregation = null;
 		boolean basedOnAllRows;
 		String info;
-		boolean limitExceeded = rowBrowser.isRowLimitExceeded();
+		boolean limitExceeded = allRowsOnly || rowBrowser.isRowLimitExceeded();
 		String allRowsSql = limitExceeded && allRowsStatement != null ? allRowsStatement.get() : null;
 		try {
 			if (allRowsSql != null) {
@@ -1414,6 +1417,10 @@ public class SQLConsolePivotPanel extends JPanel {
 				aggregation = allRowsAggregation;
 			}
 			basedOnAllRows = aggregation != null;
+			if (aggregation == null && allRowsOnly) {
+				showMessage("No pivot table (reading the rows was cancelled or failed).");
+				return;
+			}
 			if (aggregation != null) {
 				info = "based on all " + UIUtil.format(aggregation.rowCount) + " row" + (aggregation.rowCount == 1 ? "" : "s");
 			} else {
@@ -1853,20 +1860,22 @@ public class SQLConsolePivotPanel extends JPanel {
 
 		List<Object> sort(List<Object> prefix, Set<Object> keys) {
 			List<Object> result = sortedKeys(keys);
-			Map<Object, BigDecimal> values = new HashMap<>();
+			Map<Object, Object> values = new HashMap<>();
 			for (Object key: result) {
 				List<Object> subPrefix = new ArrayList<>(prefix);
 				subPrefix.add(key);
-				values.put(key, toBigDecimal(cellValue(cells, subPrefix, column, value)));
+				Object cellValue = cellValue(cells, subPrefix, column, value);
+				BigDecimal number = toBigDecimal(cellValue);
+				values.put(key, number != null ? number : cellValue instanceof Percentage ? null : cellValue); // e.g. the max of texts
 			}
 			// stable: equal values keep the order of the keys
 			result.sort((a, b) -> {
-				BigDecimal va = values.get(a);
-				BigDecimal vb = values.get(b);
+				Object va = values.get(a);
+				Object vb = values.get(b);
 				if (va == null || vb == null) {
 					return va == null ? (vb == null ? 0 : 1) : -1;
 				}
-				return descending ? vb.compareTo(va) : va.compareTo(vb);
+				return descending ? compareValues(vb, va) : compareValues(va, vb);
 			});
 			return result;
 		}
@@ -2025,7 +2034,7 @@ public class SQLConsolePivotPanel extends JPanel {
 	 * @param c column of the pivot table
 	 */
 	private void drillDown(int r, int c) {
-		if (currentTable == null || shownLines == null || r >= shownLines.size()) {
+		if (allRowsOnly || currentTable == null || shownLines == null || r >= shownLines.size()) {
 			return;
 		}
 		// grouping fields: row fields first, then column fields
@@ -2163,10 +2172,44 @@ public class SQLConsolePivotPanel extends JPanel {
 	 * @param executionContext the execution context
 	 */
 	public void setSqlSource(List<String> resultColumnLabels, SQLConsole sqlConsole, ExecutionContext executionContext) {
+		setSqlSource(resultColumnLabels, sqlConsole, executionContext, null);
+	}
+
+	/**
+	 * Enables generating the SQL of the pivot table.
+	 *
+	 * @param resultColumnLabels the labels of the columns of the result, as returned by the JDBC driver
+	 * @param sqlConsole the SQL Console the SQL can be appended to
+	 * @param executionContext the execution context
+	 * @param statement gets the statement of the rows, or <code>null</code> to use the one of {@link #setAllRowsSource(Supplier, Session, Consumer)}
+	 */
+	public void setSqlSource(List<String> resultColumnLabels, SQLConsole sqlConsole, ExecutionContext executionContext, Supplier<String> statement) {
 		this.resultColumnLabels = resultColumnLabels;
 		this.sqlConsole = sqlConsole;
 		this.executionContext = executionContext;
+		this.sqlStatement = statement;
 		updateButtons();
+	}
+
+	/**
+	 * Shows the SQL Console after the SQL of the pivot table has been appended to it.
+	 */
+	private Runnable switchToConsoleAction = () -> {};
+
+	/**
+	 * Sets the action that shows the SQL Console after the SQL of the pivot table has been appended to it
+	 * (needed if the pivot table is not in the SQL Console).
+	 */
+	public void setSwitchToConsoleAction(Runnable switchToConsoleAction) {
+		this.switchToConsoleAction = switchToConsoleAction;
+	}
+
+	/**
+	 * Gets the statement of the rows the SQL of the pivot table is based on.
+	 */
+	private String sqlStatement() {
+		Supplier<String> statement = sqlStatement != null ? sqlStatement : allRowsStatement;
+		return statement == null ? null : statement.get();
 	}
 
 	private static final int MAX_FILTER_VALUES = 1000;
@@ -2252,26 +2295,32 @@ public class SQLConsolePivotPanel extends JPanel {
 
 	/**
 	 * Gets the pivot table shown as text, for exporting it: the header, and one line per line shown
-	 * (the labels of the groups are repeated in each line, numbers have the decimal separator of the locale).
+	 * (the labels of the groups are repeated in each line).
 	 *
+	 * @param decimalSeparator the decimal separator of the numbers
+	 * @param numeric if not <code>null</code>, gets per line which cells are numbers
 	 * @return the lines, or <code>null</code> if there is no pivot table
 	 */
-	private List<String[]> exportLines() {
+	private List<String[]> exportLines(char decimalSeparator, List<boolean[]> numeric) {
 		if (shownLines == null || shownHeaders == null || shownRowsCols == null) {
 			return null;
 		}
 		int n = shownRowsCols.length;
 		TableModel model = resultTable.getModel();
-		char decimalSeparator = DecimalFormatSymbols.getInstance().getDecimalSeparator();
 		List<String[]> result = new ArrayList<>();
 		result.add(shownHeaders.toArray(new String[0]));
+		if (numeric != null) {
+			numeric.add(new boolean[shownHeaders.size()]);
+		}
 		for (int r = 0; r < shownLines.size() && r < model.getRowCount(); r++) {
 			PivotLine line = shownLines.get(r);
 			String[] cells = new String[shownHeaders.size()];
+			boolean[] isNumber = new boolean[cells.length];
 			Arrays.fill(cells, "");
 			int k = line.prefix.size();
 			for (int f = 0; f < k; f++) {
 				cells[f] = String.valueOf(line.prefix.get(f));
+				isNumber[f] = line.prefix.get(f) instanceof Number;
 			}
 			if (line.isTotal && !line.collapsed && k < n) {
 				cells[k] = "Total";
@@ -2281,6 +2330,7 @@ public class SQLConsolePivotPanel extends JPanel {
 				if (value instanceof Percentage) {
 					// e.g. "25,5%" (read as percentage by spreadsheet applications)
 					cells[c] = BigDecimal.valueOf(((Percentage) value).ratio * 100).round(new MathContext(10)).stripTrailingZeros().toPlainString().replace('.', decimalSeparator) + "%";
+					isNumber[c] = true;
 					continue;
 				}
 				if (value instanceof Double || value instanceof Float) {
@@ -2289,11 +2339,16 @@ public class SQLConsolePivotPanel extends JPanel {
 				}
 				if (value instanceof BigDecimal) {
 					cells[c] = ((BigDecimal) value).toPlainString().replace('.', decimalSeparator);
+					isNumber[c] = true;
 				} else if (value != null) {
 					cells[c] = String.valueOf(value);
+					isNumber[c] = value instanceof Number;
 				}
 			}
 			result.add(cells);
+			if (numeric != null) {
+				numeric.add(isNumber);
+			}
 		}
 		return result;
 	}
@@ -2323,17 +2378,25 @@ public class SQLConsolePivotPanel extends JPanel {
 	 * Copies the pivot table (tab separated, with header) to the clipboard.
 	 */
 	private void copyToClipboard() {
-		List<String[]> lines = exportLines();
+		List<String[]> lines = exportLines(DecimalFormatSymbols.getInstance().getDecimalSeparator(), null);
 		if (lines != null) {
 			UIUtil.setClipboardContent(new StringSelection(join(lines, '\t')));
 		}
 	}
 
 	/**
-	 * Saves the pivot table as CSV file (";" separated, with header, UTF-8 with BOM, like a spreadsheet application expects it).
+	 * Saves the pivot table as CSV file, in the format the user chooses (see {@link CsvOptionsDialog}).
 	 */
 	private void saveAsCsv() {
-		List<String[]> lines = exportLines();
+		if (shownLines == null) {
+			return;
+		}
+		CsvOptionsDialog.CsvFormat format = CsvOptionsDialog.show(this);
+		if (format == null) {
+			return;
+		}
+		List<boolean[]> numeric = new ArrayList<>();
+		List<String[]> lines = exportLines(format.decimalSeparator, numeric);
 		if (lines == null) {
 			return;
 		}
@@ -2341,9 +2404,22 @@ public class SQLConsolePivotPanel extends JPanel {
 		if (fileName == null) {
 			return;
 		}
-		try (Writer out = new OutputStreamWriter(new FileOutputStream(fileName), StandardCharsets.UTF_8)) {
-			out.write('﻿');
-			out.write(join(lines, ';'));
+		StringBuilder csv = new StringBuilder();
+		for (int l = format.header ? 0 : 1; l < lines.size(); l++) {
+			String[] line = lines.get(l);
+			for (int i = 0; i < line.length; i++) {
+				if (i > 0) {
+					csv.append(format.separator);
+				}
+				csv.append(format.cell(line[i], !numeric.get(l)[i]));
+			}
+			csv.append(format.lineBreak);
+		}
+		try (Writer out = new OutputStreamWriter(new FileOutputStream(fileName), format.charset)) {
+			if (format.bom) {
+				out.write((char) 0xFEFF);
+			}
+			out.write(csv.toString());
 		} catch (Throwable t) {
 			UIUtil.showException(this, "Error", t);
 		}
@@ -2463,7 +2539,7 @@ public class SQLConsolePivotPanel extends JPanel {
 			if (!streamAllRows(allRowsSql, dataCols::contains, rowWriter)) {
 				return false;
 			}
-		} else {
+		} else if (rowBrowser != null) {
 			for (Row row: rowBrowser.rows) {
 				rowWriter.accept(row.values);
 			}
@@ -2475,10 +2551,16 @@ public class SQLConsolePivotPanel extends JPanel {
 		// the sheet "PivotTable": an Excel pivot table over the sheet "Data" (built by the application when opening the workbook)
 		List<String[]> dataFields = new ArrayList<>();
 		Set<String> dataFieldNames = new HashSet<>(fieldNames);
+		List<String> notInPivotTable = new ArrayList<>();
 		for (int v = 0; v < shownValues.size(); v++) {
 			ValueSpec value = shownValues.get(v);
 			if (COUNT_DISTINCT.equals(value.aggregate)) {
+				notInPivotTable.add("\"" + COUNT_DISTINCT + "\"");
 				continue; // not supported by Excel pivot tables
+			}
+			if ((MIN.equals(value.aggregate) || MAX.equals(value.aggregate)) && shownValueCols[v] >= 0 && !isNumeric(shownValueCols[v])) {
+				notInPivotTable.add("\"" + value.header(shownValueNames.get(v)) + "\"");
+				continue; // Excel pivot tables ignore texts
 			}
 			String name = value.header(shownValueNames.get(v));
 			for (int suffix = 2; dataFieldNames.contains(name); suffix++) {
@@ -2494,8 +2576,8 @@ public class SQLConsolePivotPanel extends JPanel {
 		writer.beginSheet(0);
 		boolean withPivotTable = lastDataRow >= 2 && !dataFields.isEmpty();
 		String note = withPivotTable ? "Excel PivotTable over the sheet \"Data\"" : "No Excel PivotTable (no rows or values)";
-		if (dataFields.size() < shownValues.size()) {
-			note += ". \"" + COUNT_DISTINCT + "\" is only in the sheet \"Pivot\".";
+		if (!notInPivotTable.isEmpty()) {
+			note += ". " + notInPivotTable.stream().distinct().collect(Collectors.joining(", ")) + (notInPivotTable.size() == 1 ? " is" : " are") + " only in the sheet \"Pivot\".";
 		}
 		writer.row(Collections.singletonList(SimpleXlsxWriter.Cell.text(note, false)));
 		writer.endSheet();
@@ -2600,8 +2682,10 @@ public class SQLConsolePivotPanel extends JPanel {
 				Object cached = lineCells == null ? null : cellValue(aggregation.cells, line.prefix, column, value);
 				boolean cellBold = bold || column.isTotal;
 				boolean percent = value.isPercentage();
-				if (noData || COUNT_DISTINCT.equals(value.aggregate)) {
-					cells.add(cached instanceof Number ? SimpleXlsxWriter.Cell.number(cached instanceof Percentage ? (Number) ((Percentage) cached).ratio : toBigDecimal(cached), cellBold, percent) : SimpleXlsxWriter.Cell.empty(cellBold));
+				if (noData || COUNT_DISTINCT.equals(value.aggregate) || isMinMaxOfNonNumbers(value, column)) {
+					// as value (Excel's MIN and MAX ignore texts)
+					cells.add(cached instanceof Number ? SimpleXlsxWriter.Cell.number(cached instanceof Percentage ? (Number) ((Percentage) cached).ratio : toBigDecimal(cached), cellBold, percent)
+							: cached != null ? SimpleXlsxWriter.Cell.text(String.valueOf(cached), cellBold) : SimpleXlsxWriter.Cell.empty(cellBold));
 					continue;
 				}
 				String[] formula = xlsxFormula(line, column, c, rowNumber, true, true, value, range, dataCols);
@@ -2686,6 +2770,14 @@ public class SQLConsolePivotPanel extends JPanel {
 	}
 
 	/**
+	 * Is the value of a column the minimum or maximum of a field that is not numeric (e.g. texts or dates)?
+	 */
+	private boolean isMinMaxOfNonNumbers(ValueSpec value, PivotColumn column) {
+		int valueCol = shownValueCols[column.valueIndex];
+		return (MIN.equals(value.aggregate) || MAX.equals(value.aggregate)) && valueCol >= 0 && !isNumeric(valueCol);
+	}
+
+	/**
 	 * Gets the cell of a key: numbers as numbers, the other values as text (like shown in the pivot table).
 	 */
 	private static SimpleXlsxWriter.Cell keyCell(Object key, boolean bold) {
@@ -2735,7 +2827,7 @@ public class SQLConsolePivotPanel extends JPanel {
 			reason = "No SQL can be generated for this result.";
 		} else if (shownAggregation == null) {
 			reason = "No pivot table.";
-		} else if (allRowsStatement == null || allRowsStatement.get() == null) {
+		} else if (sqlStatement() == null) {
 			reason = "Only for queries (statements starting with SELECT or WITH).";
 		}
 		sqlButton.setEnabled(reason == null);
@@ -2758,7 +2850,7 @@ public class SQLConsolePivotPanel extends JPanel {
 		}
 		Window owner = SwingUtilities.getWindowAncestor(this);
 		JDialog dialog = new JDialog(owner, "Pivot SQL", Dialog.ModalityType.APPLICATION_MODAL);
-		SQLDMLPanel panel = new SQLDMLPanel(sql, sqlConsole, allRowsSession, sqlConsole.metaDataSource, () -> {}, () -> {}, dialog, executionContext);
+		SQLDMLPanel panel = new SQLDMLPanel(sql, sqlConsole, allRowsSession, sqlConsole.metaDataSource, () -> {}, switchToConsoleAction, dialog, executionContext);
 		panel.setExecutable(false);
 		dialog.getContentPane().add(panel);
 		dialog.pack();
@@ -2777,7 +2869,7 @@ public class SQLConsolePivotPanel extends JPanel {
 	 * @return the SQL, or <code>null</code> if there is none
 	 */
 	private String generateSql() throws SQLException {
-		String statement = allRowsStatement == null ? null : allRowsStatement.get();
+		String statement = sqlStatement();
 		if (statement == null || shownAggregation == null || shownValues == null) {
 			return null;
 		}
@@ -2974,6 +3066,30 @@ public class SQLConsolePivotPanel extends JPanel {
 		this.showRowsTabAction = showRowsTabAction;
 	}
 
+	/**
+	 * Whether the pivot table is always based on all rows of the statement (see {@link #setAllRowsSource(Supplier, Session, Consumer)}).
+	 * The table (see {@link #setTable(JTable)}) then only provides the columns, there is no drilldown.
+	 */
+	private boolean allRowsOnly = false;
+
+	/**
+	 * Lets the pivot table always be based on all rows of the statement (see {@link #setAllRowsSource(Supplier, Session, Consumer)}).
+	 * The table (see {@link #setTable(JTable)}) then only provides the columns, there is no drilldown.
+	 */
+	public void setAllRowsOnly(boolean allRowsOnly) {
+		this.allRowsOnly = allRowsOnly;
+		resultTable.setToolTipText(allRowsOnly ? "Click a group label to collapse or expand the group." : RESULT_TABLE_TOOLTIP);
+	}
+
+	/**
+	 * Reads all rows again (if the pivot table is based on them) and updates the pivot table,
+	 * e.g. after the data has changed.
+	 */
+	public void refresh() {
+		allRowsKey = null;
+		updatePivot();
+	}
+
 	private void showMessage(String message) {
 		shownLines = null;
 		shownColumns = null;
@@ -3007,6 +3123,17 @@ public class SQLConsolePivotPanel extends JPanel {
 			}
 			column.setPreferredWidth(Math.min(width + 16, 400));
 		}
+	}
+
+	/**
+	 * Compares two values (not <code>null</code>): naturally if they are of the same comparable class, else as strings.
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private static int compareValues(Object a, Object b) {
+		if (a instanceof Comparable && a.getClass() == b.getClass()) {
+			return ((Comparable) a).compareTo(b);
+		}
+		return String.valueOf(a).compareTo(String.valueOf(b));
 	}
 
 	private static List<Object> sortedKeys(Set<Object> keys) {
@@ -3162,6 +3289,8 @@ public class SQLConsolePivotPanel extends JPanel {
 		private BigDecimal sum = BigDecimal.ZERO;
 		private BigDecimal min = null;
 		private BigDecimal max = null;
+		private Object minObject = null; // of the values that are not numbers (e.g. texts, dates), like in the pivot table
+		private Object maxObject = null;
 		private final Set<Object> distinctValues;
 
 		Accumulator(boolean distinct) {
@@ -3186,6 +3315,16 @@ public class SQLConsolePivotPanel extends JPanel {
 				if (max == null || number.compareTo(max) > 0) {
 					max = number;
 				}
+			} else {
+				Object key = toKey(value);
+				if (key != NULL_KEY) {
+					if (minObject == null || compareValues(key, minObject) < 0) {
+						minObject = key;
+					}
+					if (maxObject == null || compareValues(key, maxObject) > 0) {
+						maxObject = key;
+					}
+				}
 			}
 		}
 
@@ -3195,8 +3334,8 @@ public class SQLConsolePivotPanel extends JPanel {
 				case COUNT_DISTINCT: return (long) distinctValues.size();
 				case SUM: return numCount == 0 ? null : sum;
 				case AVG: return numCount == 0 ? null : sum.divide(BigDecimal.valueOf(numCount), MathContext.DECIMAL64).doubleValue();
-				case MIN: return min;
-				case MAX: return max;
+				case MIN: return min != null ? min : minObject;
+				case MAX: return max != null ? max : maxObject;
 				default: return null;
 			}
 		}

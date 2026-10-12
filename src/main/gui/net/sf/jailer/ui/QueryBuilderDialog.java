@@ -1369,6 +1369,47 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 		if (table == null) {
 			return;
 		}
+		boolean distinct = prepare(table, root, datamodel, session, metaDataSource);
+
+		setLocation(getParent().getX() + (getParent().getWidth() - getWidth())
+				/ 2, getParent().getY()
+				+ (getParent().getHeight() - getHeight()) / 2);
+		UIUtil.fit(this);
+		distinctCheckBox.setSelected(distinct);
+		if (sqlEditButton.isVisible()) {
+			sqlEditButton.grabFocus();
+		}
+		if (openSQLConsole) {
+			sqlEditButton.doClick();
+		}
+		else {
+			setVisible(true);
+		}
+	}
+
+	/**
+	 * Creates the query (without "distinct") without opening the dialog.
+	 *
+	 * @param table subject of query
+	 * @param root root relationship
+	 * @param datamodel the data model
+	 * @param session the database session
+	 * @param metaDataSource the meta data source
+	 * @return the query, columns of the relationships having {@link Relationship#selectColumns} in the order of {@link Relationship#flatten(int, Relationship, boolean)}
+	 */
+	public String buildSQL(Table table, Relationship root, DataModel datamodel, Session session, MetaDataSource metaDataSource) {
+		prepare(table, root, datamodel, session, metaDataSource);
+		distinctCheckBox.setSelected(false);
+		selectDistinct = false;
+		return createSQL(false);
+	}
+
+	/**
+	 * Sets up the relationships and the aliases.
+	 *
+	 * @return whether "distinct" is proposed
+	 */
+	private boolean prepare(Table table, Relationship root, DataModel datamodel, Session session, MetaDataSource metaDataSource) {
 		initAutoCompletion(datamodel, session, metaDataSource);
 		sqlTextArea.setText("");
 		mlmTextField.setText("");
@@ -1402,21 +1443,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 			tf.get(i).setText(as.get(i) + c);
 		}
 		checkAliases();
-
-		setLocation(getParent().getX() + (getParent().getWidth() - getWidth())
-				/ 2, getParent().getY()
-				+ (getParent().getHeight() - getHeight()) / 2);
-		UIUtil.fit(this);
-		distinctCheckBox.setSelected(distinct);
-		if (sqlEditButton.isVisible()) {
-			sqlEditButton.grabFocus();
-		}
-		if (openSQLConsole) {
-			sqlEditButton.doClick();
-		}
-		else {
-			setVisible(true);
-		}
+		return distinct;
 	}
 
 	private List<Association> associationsOnPath;
