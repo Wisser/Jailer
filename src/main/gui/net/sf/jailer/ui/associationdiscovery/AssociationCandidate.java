@@ -141,6 +141,16 @@ public class AssociationCandidate {
 	}
 
 	/**
+	 * Gets a query that joins the child and the parent table over the condition of this candidate.
+	 * A left join, so that child rows without parent row are shown too.
+	 *
+	 * @return the query
+	 */
+	public String getJoinStatement() {
+		return "Select A.*, B.* From " + child.getName() + " A left join " + parent.getName() + " B on " + getCondition();
+	}
+
+	/**
 	 * Gets a human readable summary of the evidence for this candidate.
 	 *
 	 * @return the summary

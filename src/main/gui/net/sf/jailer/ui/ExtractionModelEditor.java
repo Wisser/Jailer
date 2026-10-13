@@ -3774,18 +3774,49 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 	 * Checks if {@link #removeAllRestrictions(Table)} is applicable.
 	 */
 	public boolean isRemovalOfAllRestrictionsApplicable(Table context) {
+		return countRemoval(context) > 0;
+	}
+
+	/**
+	 * Counts the associations {@link #removeAllRestrictions(Table)} would change: the restricted (or disabled) ones,
+	 * dependencies included, as {@link #removeAllRestrictions(Table)} removes their restrictions too.
+	 *
+	 * @param context the table whose associations are considered, <code>null</code> for all
+	 * @return the number of associations
+	 */
+	public int countRemoval(Table context) {
+		int count = 0;
 		for (Table table: dataModel.getTables()) {
 			for (Association association: table.associations) {
-				if (!association.isInsertDestinationBeforeSource()) {
-					if (context == null || association.source.equals(context) || association.destination.equals(context)) {
-						if (association.isRestricted()) {
-							return true;
-						}
+				if (context == null || association.source.equals(context) || association.destination.equals(context)) {
+					if (association.isRestricted()) {
+						++count;
 					}
 				}
 			}
 		}
-		return false;
+		return count;
+	}
+
+	/**
+	 * Counts the dependencies (associations to the parent rows needed for referential integrity),
+	 * which {@link #ignoreAll(Table)} leaves enabled.
+	 *
+	 * @param context the table whose associations are considered, <code>null</code> for all
+	 * @return the number of dependencies
+	 */
+	public int countDependencies(Table context) {
+		int count = 0;
+		for (Table table: dataModel.getTables()) {
+			for (Association association: table.associations) {
+				if (association.isInsertDestinationBeforeSource()) {
+					if (context == null || association.source.equals(context) || association.destination.equals(context)) {
+						++count;
+					}
+				}
+			}
+		}
+		return count;
 	}
 
 	/**
@@ -3811,20 +3842,31 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 	 * Checks if {@link #ignoreAll(Table)} is applicable.
 	 */
 	public boolean isIgnoreAllApplicable(Table context) {
+		return countIgnoreAll(context) > 0;
+	}
+
+	/**
+	 * Counts the associations {@link #ignoreAll(Table)} would disable.
+	 *
+	 * @param context the table whose associations are considered, <code>null</code> for all
+	 * @return the number of associations
+	 */
+	public int countIgnoreAll(Table context) {
+		int count = 0;
 		for (Table table: dataModel.getTables()) {
 			for (Association association: table.associations) {
 				if (!association.isInsertDestinationBeforeSource()) {
 					if (association.getName() != null && !"".equals(association.getName().trim())) {
 						if (context == null || association.source.equals(context) || association.destination.equals(context)) {
 							if (!association.isIgnored()) {
-								return true;
+								++count;
 							}
 						}
 					}
 				}
 			}
 		}
-		return false;
+		return count;
 	}
 
 	/**
@@ -3897,6 +3939,23 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 	}
 
 	/**
+	 * Describes a restriction condition for the undo/redo menu items.
+	 *
+	 * @param condition the condition
+	 * @return the description
+	 */
+	private static String restrictionChangeText(String condition) {
+		if (condition == null || "".equals(condition)) {
+			return "removed restriction";
+		}
+		if ("false".equals(condition) || RestrictionModel.IGNORE.equals(condition)) {
+			// "false" is used by "Disable all associations", "ignore" by the restriction editor
+			return "disabled association";
+		}
+		return "added restriction";
+	}
+
+	/**
 	 * Adds a restriction to a association.
 	 *
 	 * @param association the association
@@ -3934,8 +3993,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 
 		undoManager.push(new CompensationAction(
 				100,
-				"".equals(condition)? "removed restriction" : ("true".equals(condition) || "ignore".equals(condition))? "disabled assocation" : "added restriction",
-				"".equals(oc)? "removed restriction" : ("true".equals(oc) || "ignore".equals(oc))? "disabled assocation" : "added restriction",
+				restrictionChangeText(condition),
+				restrictionChangeText(oc),
 				withWhere? dataModel.getDisplayName(association.destination) : null) {
 			@Override
 			public void run() {

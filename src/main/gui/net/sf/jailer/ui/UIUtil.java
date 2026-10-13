@@ -34,6 +34,7 @@ import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.Window;
@@ -1006,6 +1007,44 @@ public class UIUtil {
             // ignore
         }
     }
+
+	/**
+	 * Moves and, if necessary, shrinks a window so that it lies within the bounds of its owner,
+	 * the same way popup menus are bound to the borders of their parent window.
+	 *
+	 * @param window the window
+	 */
+	public static void fitIntoOwner(Window window) {
+		Window owner = window.getOwner();
+		if (owner != null && owner.isShowing()) {
+			final int margin = 8;
+			Rectangle bounds = owner.getBounds();
+			int x = window.getX();
+			int y = window.getY();
+			int width = window.getWidth();
+			int height = window.getHeight();
+			// y
+			int d = y + height - (bounds.y + bounds.height - margin);
+			if (d > 0) {
+				y -= d;
+			}
+			if (y < bounds.y + margin) {
+				y = bounds.y + margin;
+				height = Math.min(height, bounds.height - 2 * margin);
+			}
+			// x
+			d = x + width - (bounds.x + bounds.width - margin);
+			if (d > 0) {
+				x -= d;
+			}
+			if (x < bounds.x + margin) {
+				x = bounds.x + margin;
+				width = Math.min(width, bounds.width - 2 * margin);
+			}
+			window.setBounds(x, y, Math.max(width, 150), Math.max(height, 150));
+		}
+		fit(window);
+	}
 
     public static void setInitialWindowLocation(Window window, Window owner, int x, int y) {
 		Point p = new Point(x, y);

@@ -31,6 +31,10 @@
       externally" still use the original content.
     - Long lines are wrapped. Line numbers are then shown, so that it can be seen where a line
       actually begins.
+  - New tool "Check Normalization" (menu "Data Model", also in the Data Browser): finds possible
+    violations of the normal forms 1NF to 5NF and foreign keys whose type differs from the
+    referenced column. If connected, 2NF/3NF findings are verified against the data. Findings
+    can be opened in the extraction model editor or in the Data Browser.
   - The shortcut of "Save as..." in the extraction model editor is now Ctrl+Shift+S instead of
     Ctrl+A, which conflicted with "Select all".
 

@@ -52,7 +52,16 @@ public abstract class StartupWizzardDialog extends javax.swing.JDialog {
 	public StartupWizzardDialog(Window parent, boolean withLoad, Point pos) {
 		super(parent, ModalityType.MODELESS);
 		setUndecorated(true);
-		initComponents(); UIUtil.initComponents(this);
+		initComponents();
+		// say what the two kinds of new models contain
+		newModelButton.setText("New Model");
+		newModelButton.setToolTipText("<html>All associations enabled.<br>"
+				+ "The subset follows every association; restrict them afterwards as needed.</html>");
+		newModelWRjButton.setText("New Model with Disabled Associations");
+		newModelWRjButton.setToolTipText("<html>Starts minimal: all associations are disabled except dependencies<br>"
+				+ "(the parent rows needed for referential integrity).<br>"
+				+ "Enable the associations you need afterwards.</html>");
+		UIUtil.initComponents(this);
 		try {
 			iconLabel.setText(null);
 			Icon errorIcon = UIManager.getIcon("OptionPane.questionIcon");

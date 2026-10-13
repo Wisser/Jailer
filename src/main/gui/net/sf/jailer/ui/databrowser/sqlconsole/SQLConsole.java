@@ -5385,11 +5385,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
 	private void checkDirty() {
 		boolean newState = false;
-        if (initialContentSize != editorPane.getDocument().getLength()) {
-        	newState = true;
-        } else {
-        	newState = initialContentHash != editorPane.getText().hashCode();
-        }
+		// a console that is not associated with a file is never dirty: there is nothing to save it into
+		if (file != null) {
+	        if (initialContentSize != editorPane.getDocument().getLength()) {
+	        	newState = true;
+	        } else {
+	        	newState = initialContentHash != editorPane.getText().hashCode();
+	        }
+		}
         if (newState != dirty) {
         	dirty = newState;
             onContentStateChange(file, dirty);

@@ -21,6 +21,7 @@ import java.awt.Container;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
@@ -34,6 +35,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.URI;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.sql.ResultSet;
@@ -98,12 +100,14 @@ import net.sf.jailer.ui.DbConnectionDialog.ConnectionTypeChangeListener;
 import net.sf.jailer.ui.UIUtil.PlafAware;
 import net.sf.jailer.ui.UIUtil.ResultConsumer;
 import net.sf.jailer.ui.associationdiscovery.AssociationDiscoveryView;
+import net.sf.jailer.ui.normalization.NormalizationView;
 import net.sf.jailer.ui.associationproposer.AssociationProposerView;
 import net.sf.jailer.ui.commandline.CommandLineInstance;
 import net.sf.jailer.ui.commandline.UICommandLine;
 import net.sf.jailer.ui.constraintcheck.ConstraintChecker;
 import net.sf.jailer.ui.databrowser.BookmarksPanel.BookmarkId;
 import net.sf.jailer.ui.databrowser.DataBrowser;
+import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.ui.ddl_script_generator.DDLScriptGeneratorPanel;
 import net.sf.jailer.ui.progress.ExportAndDeleteStageProgressListener;
 import net.sf.jailer.ui.progress.RetainedEntityGraphs;
@@ -339,8 +343,29 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 		modelMigrationMenuItem.setToolTipText("Migrate extraction models between different versions of the data model.");
 		checkPKMenuItem.setToolTipText("Check all tables for a defined primary key.");
 		consistencyCheckMenuItem1.setToolTipText("Check the referential integrity of the database (find rows that violate foreign key constraints).");
-		ignoreAll.setToolTipText("Disable all associations of the selected table (excludes them from the extraction model).");
-		removeAllRestrictions.setToolTipText("Remove all restrictions (conditions) from the associations of the selected table.");
+		ignoreAll.setText("Disable all associations...");
+		ignoreAll.setToolTipText("<html>Disable all associations of the extraction model except dependencies<br>"
+				+ "(the parent rows needed for referential integrity).<br>"
+				+ "The subset then contains only the subject rows and the rows they depend on.</html>");
+		removeAllRestrictions.setText("Remove all restrictions...");
+		removeAllRestrictions.setToolTipText("<html>Remove all restrictions of the extraction model and enable all disabled associations.<br>"
+				+ "The subset then follows every association.</html>");
+		// enabled only if there is anything to do
+		editMenu.addMenuListener(new javax.swing.event.MenuListener() {
+			@Override
+			public void menuSelected(javax.swing.event.MenuEvent e) {
+				if (extractionModelEditor != null) {
+					ignoreAll.setEnabled(extractionModelEditor.isIgnoreAllApplicable(null));
+					removeAllRestrictions.setEnabled(extractionModelEditor.isRemovalOfAllRestrictionsApplicable(null));
+				}
+			}
+			@Override
+			public void menuDeselected(javax.swing.event.MenuEvent e) {
+			}
+			@Override
+			public void menuCanceled(javax.swing.event.MenuEvent e) {
+			}
+		});
 		jMenuItem2.setToolTipText("Open the editor for column filters and export transformations.");
 		collapseAll.setToolTipText("Collapse all tables in the graphical view.");
 		expandAll.setToolTipText("Expand all tables in the graphical view.");
@@ -402,6 +427,122 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 		}
 		discoverAssociationsItem.addActionListener(e -> discoverAssociations());
 		insertAfter(jMenu1, analyzeSQLMenuItem, discoverAssociationsItem);
+
+		JMenuItem checkNormalizationItem = new JMenuItem("Check Normalization");
+		checkNormalizationItem.setToolTipText("Look for possible violations of the normal forms 1NF to 5NF, based on keys, foreign keys and column names.");
+		ImageIcon checkNormalizationIcon = UIUtil.readImage("/normalization.png");
+		if (checkNormalizationIcon != null) {
+			// the letters fill the whole image, so they would look larger than the other icons
+			checkNormalizationItem.setIcon(UIUtil.scaleIcon(checkNormalizationItem, checkNormalizationIcon, 0.8));
+		}
+		checkNormalizationItem.addActionListener(e -> checkNormalization());
+		insertAfter(jMenu1, consistencyCheckMenuItem1, checkNormalizationItem);
+	}
+
+	/**
+	 * Selects a table in the extraction model editor.
+	 * A table outside the current closure (or without any association) cannot be selected, so the editor is focused on it.
+	 *
+	 * @param table the table
+	 */
+	private void showTableInEditor(Table table) {
+		if (!extractionModelEditor.select(table)) {
+			extractionModelEditor.setRootSelection(table);
+		}
+	}
+
+	/**
+	 * The open "Check Normalization" dialog, if any.
+	 */
+	private NormalizationView normalizationView;
+
+	/**
+	 * Closes the "Check Normalization" dialog, if open. Its findings refer to the tables of the
+	 * current data model, so it must be closed when the model is replaced.
+	 */
+	private void closeNormalizationView() {
+		if (normalizationView != null) {
+			normalizationView.close();
+			normalizationView = null;
+		}
+	}
+
+	/**
+	 * Opens the (non-modal) "Check Normalization" dialog, which shows possible violations of the normal forms.
+	 * If it is already open, it is brought to the front.
+	 */
+	private void checkNormalization() {
+		if (normalizationView != null && normalizationView.isOpen()) {
+			normalizationView.toFront();
+			return;
+		}
+		if (extractionModelEditor.dataModel.getTables().isEmpty()) {
+			JOptionPane.showMessageDialog(this, "The data model has no tables, so there is nothing to check. "
+					+ "Add tables to the data model first, for instance via \"Analyze Database\".",
+					"Check Normalization", JOptionPane.WARNING_MESSAGE);
+			return;
+		}
+		normalizationView = null;
+		try {
+			// asks for a connection if there is none; without one, the findings are not checked against the data
+			Callable<Session> sessionSupplier = null;
+			if (dbConnectionDialog.isConnected || dbConnectionDialog.connect("Check Normalization")) {
+				final String driverClass = dbConnectionDialog.currentConnection.driverClass;
+				final String url = dbConnectionDialog.currentConnection.url;
+				final String user = dbConnectionDialog.currentConnection.user;
+				final String password = dbConnectionDialog.getPassword();
+				final URL[] jarURLs = dbConnectionDialog.currentJarURLs();
+				final Integer isolationLevel = executionContext.getIsolationLevel();
+				// runs in the background, after the dialog has been opened. Creating the data source already
+				// takes time: it loads the driver and may open a test connection to determine the DBMS
+				sessionSupplier = () -> {
+					BasicDataSource dataSource = new BasicDataSource(driverClass, url, user, password, 0, jarURLs);
+					return new Session(dataSource, dataSource.dbms, isolationLevel);
+				};
+			}
+			// the view owns the session and shuts it down when it is closed
+			normalizationView = new NormalizationView(this, extractionModelEditor.dataModel, sessionSupplier, true, (table, association) -> {
+				if (association != null) {
+					// the association of the foreign key, with both tables visible
+					if (!extractionModelEditor.select(association)) {
+						// outside the current closure: focus on the table, the parent is its neighbor
+						extractionModelEditor.setRootSelection(table);
+					}
+					extractionModelEditor.graphView.setSelection(null);
+					extractionModelEditor.graphView.setSelection(association);
+				} else {
+					showTableInEditor(table);
+				}
+			}, (table, association) -> runWithWaitCursor(() -> {
+				DataBrowser dataBrowser = openDataBrowser(table, "");
+				if (dataBrowser != null && association != null) {
+					// the referenced table too, linked by the foreign key
+					dataBrowser.addAssociatedBrowser(association);
+				}
+			}));
+		} catch (Exception e) {
+			UIUtil.showException(this, "Error", e);
+		}
+	}
+
+	/**
+	 * Runs an action that takes a while (e.g. opens a Data Browser) with a wait cursor on the active window,
+	 * which is where the mouse is (e.g. a dialog), not necessarily this frame. <br>
+	 * The action is deferred, so that the cursor is shown before the work begins.
+	 *
+	 * @param action the action
+	 */
+	private void runWithWaitCursor(Runnable action) {
+		Window activeWindow = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
+		Window component = activeWindow != null? activeWindow : this;
+		UIUtil.setWaitCursor(component);
+		UIUtil.invokeLater(() -> {
+			try {
+				action.run();
+			} finally {
+				UIUtil.resetWaitCursor(component);
+			}
+		});
 	}
 
 	/**
@@ -428,28 +569,60 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 			return;
 		}
 		try {
-			if (dbConnectionDialog.isConnected || dbConnectionDialog.connect("Discover Associations")) {
-				BasicDataSource dataSource = new BasicDataSource(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword(), 0, dbConnectionDialog.currentJarURLs());
-				if (theSession != null) {
-					theSession.shutDown();
-					theSession = null;
+			Session session = createToolSession("Discover Associations");
+			if (session != null) {
+				AssociationDiscoveryView discoveryView;
+				try {
+					discoveryView = new AssociationDiscoveryView(this, extractionModelEditor.dataModel, session, executionContext,
+							table -> showTableInEditor(table), (a, b) -> runWithWaitCursor(() -> {
+								DataBrowser dataBrowser = openDataBrowser(a, "");
+								if (dataBrowser != null) {
+									dataBrowser.addTableBrowser(b);
+								}
+							}), (statements, execute) -> runWithWaitCursor(() -> {
+								DataBrowser dataBrowser = dataBrowserForSqlConsole();
+								if (dataBrowser != null) {
+									// waits until a newly opened browser is connected
+									dataBrowser.withAssociationCheckSqlConsole(sqlConsole -> {
+										for (String sql: statements) {
+											sqlConsole.appendStatement(sql.trim().endsWith(";")? sql : sql + UIUtil.LINE_SEPARATOR + ";", execute);
+										}
+									});
+								}
+							}));
+				} finally {
+					session.shutDown();
 				}
-				Session session = SessionForUI.createSession(dataSource, dataSource.dbms, executionContext.getIsolationLevel(), false, false, this);
-				if (session != null) {
-					boolean accepted;
-					try {
-						accepted = new AssociationDiscoveryView(this, extractionModelEditor.dataModel, session, executionContext).isAccepted();
-					} finally {
-						session.shutDown();
-					}
-					if (accepted) {
-						openDataModelEditor(null, true);
-					}
+				if (discoveryView.isEditRequested()) {
+					// review in the Data Model Editor ("Accept and Edit...")
+					openDataModelEditor(null, true);
+				} else if (discoveryView.isAccepted()) {
+					// already added to the data model, just reload it
+					executeAndReload(() -> true);
 				}
 			}
 		} catch (Exception e) {
 			UIUtil.showException(this, "Error", e);
 		}
+	}
+
+	/**
+	 * Connects to the database, if not already connected, and creates a new session for a tool.
+	 * The caller is responsible for shutting the session down.
+	 *
+	 * @param title the title of the connect dialog
+	 * @return the session, or <code>null</code> if no connection has been established
+	 */
+	private Session createToolSession(String title) throws Exception {
+		if (dbConnectionDialog.isConnected || dbConnectionDialog.connect(title)) {
+			BasicDataSource dataSource = new BasicDataSource(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword(), 0, dbConnectionDialog.currentJarURLs());
+			if (theSession != null) {
+				theSession.shutDown();
+				theSession = null;
+			}
+			return SessionForUI.createSession(dataSource, dataSource.dbms, executionContext.getIsolationLevel(), false, false, this);
+		}
+		return null;
 	}
 
 	/**
@@ -1470,13 +1643,33 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 	}//GEN-LAST:event_helpContentActionPerformed
 
 	private void removeAllRestrictionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeAllRestrictionsActionPerformed
-		if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this, "Remove all restrictions?", "Remove restrictions", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
+		int count = extractionModelEditor.countRemoval(null);
+		if (count == 0) {
+			JOptionPane.showMessageDialog(this, "No association is restricted or disabled, so there is nothing to remove.", "Remove all restrictions", JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
+		if (JOptionPane.OK_OPTION == JOptionPane.showConfirmDialog(this,
+				"This removes the restrictions of " + count + (count == 1? " association" : " associations") + " of the extraction model\n"
+				+ "and enables the disabled ones. The subset then follows every association.\n\n"
+				+ "You can undo this (Edit > Undo).",
+				"Remove all restrictions", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE)) {
 			extractionModelEditor.removeAllRestrictions(null);
 		}
 	}//GEN-LAST:event_removeAllRestrictionsActionPerformed
 
 	private void ignoreAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ignoreAllActionPerformed
-		if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this, "Disable each association (except dependencies)?", "Add restrictions", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
+		int count = extractionModelEditor.countIgnoreAll(null);
+		if (count == 0) {
+			JOptionPane.showMessageDialog(this, "All associations except dependencies are already disabled, so there is nothing to disable.", "Disable all associations", JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
+		int dependencies = extractionModelEditor.countDependencies(null);
+		if (JOptionPane.OK_OPTION == JOptionPane.showConfirmDialog(this,
+				"This disables " + count + (count == 1? " association" : " associations") + " of the extraction model.\n"
+				+ "The " + dependencies + (dependencies == 1? " dependency stays" : " dependencies stay") + " enabled (the parent rows needed for referential integrity),\n"
+				+ "so the subset contains only the subject rows and the rows they depend on.\n\n"
+				+ "You can undo this (Edit > Undo).",
+				"Disable all associations", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE)) {
 			extractionModelEditor.ignoreAll(null);
 		}
 	}//GEN-LAST:event_ignoreAllActionPerformed
@@ -1594,6 +1787,53 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 			// deferred: the caller opens browsers afterwards, and the first call rebuilds the whole
 			// desktop, which maximizes a frame through an invokeLater(2, ...) of its own. An
 			// immediate toFront would be overtaken by that.
+			UIUtil.invokeLater(3, new Runnable() {
+				@Override
+				public void run() {
+					if ((toBeRaised.getExtendedState() & Frame.ICONIFIED) != 0) {
+						toBeRaised.setExtendedState(toBeRaised.getExtendedState() & ~Frame.ICONIFIED);
+					}
+					toBeRaised.toFront();
+				}
+			});
+		}
+		return dataBrowser;
+	}
+
+	/**
+	 * The Data Browser the "SQL Console" button of "Discover Associations" opens its statements in.
+	 */
+	private WeakReference<DataBrowser> sqlConsoleDataBrowser;
+
+	/**
+	 * Whether the Data Browser for the "SQL Console" button of "Discover Associations" is being opened.
+	 */
+	private boolean openingSqlConsoleDataBrowser;
+
+	/**
+	 * Gets the Data Browser the "SQL Console" button of "Discover Associations" opens its statements in,
+	 * and brings it to the front. The one of the last time is reused as long as it is open.
+	 *
+	 * @return the Data Browser, or <code>null</code> if none could be opened
+	 */
+	private DataBrowser dataBrowserForSqlConsole() {
+		DataBrowser dataBrowser = sqlConsoleDataBrowser == null? null : sqlConsoleDataBrowser.get();
+		if (dataBrowser == null || !dataBrowser.isDisplayable()) {
+			if (openingSqlConsoleDataBrowser) {
+				// a further click while the browser is still being opened (modal dialogs run nested event loops)
+				return null;
+			}
+			try {
+				openingSqlConsoleDataBrowser = true;
+				dataBrowser = openDataBrowser(null, "");
+			} finally {
+				openingSqlConsoleDataBrowser = false;
+			}
+			sqlConsoleDataBrowser = dataBrowser == null? null : new WeakReference<DataBrowser>(dataBrowser);
+		}
+		if (dataBrowser != null) {
+			final DataBrowser toBeRaised = dataBrowser;
+			// deferred, as in dataBrowserForAnalysis: a new browser maximizes itself through an invokeLater of its own
 			UIUtil.invokeLater(3, new Runnable() {
 				@Override
 				public void run() {
@@ -2445,6 +2685,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 			}
 			UIUtil.setWaitCursor(this);
 			ExtractionModelEditor newModelEditor = new ExtractionModelEditor(modelFile, this, isHorizontalLayout, getConnectivityState(), getConnectivityStateToolTip(), getDBMSLogo(), executionContext);
+			closeNormalizationView();
 			extractionModelEditor.extractionModelFrame = null;
 			editorPanel.remove(extractionModelEditor);
 			extractionModelEditor = null;
@@ -2479,6 +2720,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 		try {
 			UIUtil.setWaitCursor(this);
 			ExtractionModelEditor newModelEditor = new ExtractionModelEditor(extractionModelEditor.extractionModelFile, this, isHorizontalLayout, getConnectivityState(), getConnectivityStateToolTip(), getDBMSLogo(), executionContext);
+			closeNormalizationView();
 			extractionModelEditor.extractionModelFrame = null;
 			editorPanel.remove(extractionModelEditor);
 			editorPanel.add(extractionModelEditor = newModelEditor, "editor");
@@ -2884,6 +3126,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
                 if (Boolean.TRUE.equals(callable.call())) {
 	        		extractionModelEditor.extractionModelFile = tmpFile.getPath();
 					reload();
+					// open Data Browsers on the same data model would otherwise keep working with the old one
+					DataBrowser.reloadDataModelOfAll(DataModelManager.getCurrentModelSubfolder(executionContext));
 					askForDataModel(this);
 					extractionModelEditor.closureBorderView.refresh();
 					restrictedDependenciesView.refresh();

@@ -185,6 +185,7 @@ import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.UIUtil.PlafAware;
 import net.sf.jailer.ui.UIUtil.ResultConsumer;
 import net.sf.jailer.ui.associationdiscovery.AssociationDiscoveryView;
+import net.sf.jailer.ui.normalization.NormalizationView;
 import net.sf.jailer.ui.associationproposer.AssociationProposerView;
 import net.sf.jailer.ui.commandline.CommandLineInstance;
 import net.sf.jailer.ui.constraintcheck.ConstraintChecker;
@@ -2165,6 +2166,8 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 
 		if (newSession != null) {
 			wasConnected = true;
+			// it uses the old session
+			closeNormalizationView();
 			if (session != null) {
 				try {
 					session.shutDown();
@@ -4846,6 +4849,37 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	/**
 	 * Opens the data model editor.
 	 */
+	/**
+	 * Reloads the data model, e.g. after it has been changed in the extraction model editor.
+	 * The open table browsers are kept.
+	 */
+	public void reloadDataModel() throws Exception {
+		desktop.reloadDataModel(desktop.schemaMapping, true, false, true);
+		dataModelViewFrame = null;
+		updateDataModelView(null);
+		updateStatusBar();
+	}
+
+	/**
+	 * Reloads the data model of all open Data Browsers that work on the given data model.
+	 *
+	 * @param modelSubfolder the folder of the data model
+	 */
+	public static void reloadDataModelOfAll(String modelSubfolder) {
+		for (Window window: Window.getWindows()) {
+			if (window instanceof DataBrowser && window.isDisplayable()) {
+				DataBrowser dataBrowser = (DataBrowser) window;
+				if (Objects.equals(modelSubfolder, DataModelManager.getCurrentModelSubfolder(dataBrowser.executionContext))) {
+					try {
+						dataBrowser.reloadDataModel();
+					} catch (Exception e) {
+						UIUtil.showException(dataBrowser, "Error", e);
+					}
+				}
+			}
+		}
+	}
+
 	private void openDataModelEditor(boolean merge) {
 		try {
 			UIUtil.setWaitCursor(this);
@@ -5456,6 +5490,32 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 				}
 			}
 		});
+	}
+
+	/**
+	 * Opens a table browser for a table, not linked to any other browser.
+	 *
+	 * @param table the table
+	 */
+	public void addTableBrowser(Table table) {
+		desktop.addTableBrowser(null, null, table, null, "", null, true);
+		arrangeLayout(true);
+	}
+
+	/**
+	 * Opens a table browser for the destination of an association, linked to the browser of its source.
+	 * Does nothing if there is no browser of the source.
+	 *
+	 * @param association the association
+	 */
+	public void addAssociatedBrowser(Association association) {
+		for (RowBrowser rb: desktop.tableBrowsers) {
+			if (rb.browserContentPane != null && association.source.equals(rb.browserContentPane.table)) {
+				desktop.addTableBrowser(rb, rb, association.destination, association, "", null, true);
+				arrangeLayout(true);
+				return;
+			}
+		}
 	}
 
 	protected void resolveSelection(Collection<AssociationModel> selection) {
@@ -7654,6 +7714,69 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		}
 		discoverAssociationsItem.addActionListener(e -> discoverAssociations());
 		net.sf.jailer.ui.UIUtil.insertAfter(menuTools, analyseSQLMenuItem1, discoverAssociationsItem);
+
+		JMenuItem checkNormalizationItem = new JMenuItem("Check Normalization");
+		checkNormalizationItem.setToolTipText("Look for possible violations of the normal forms 1NF to 5NF, based on keys, foreign keys and column names.");
+		javax.swing.ImageIcon checkNormalizationIcon = net.sf.jailer.ui.UIUtil.readImage("/normalization.png");
+		if (checkNormalizationIcon != null) {
+			// the letters fill the whole image, so they would look larger than the other icons
+			checkNormalizationItem.setIcon(net.sf.jailer.ui.UIUtil.scaleIcon(checkNormalizationItem, checkNormalizationIcon, 0.8));
+		}
+		checkNormalizationItem.addActionListener(e -> checkNormalization());
+		net.sf.jailer.ui.UIUtil.insertAfter(menuTools, consistencyCheckMenuItem1, checkNormalizationItem);
+	}
+
+	/**
+	 * The open "Check Normalization" dialog, if any.
+	 */
+	private NormalizationView normalizationView;
+
+	/**
+	 * Closes the "Check Normalization" dialog, if open.
+	 */
+	private void closeNormalizationView() {
+		if (normalizationView != null) {
+			normalizationView.close();
+			normalizationView = null;
+		}
+	}
+
+	/**
+	 * Opens the (non-modal) "Check Normalization" dialog, which shows possible violations of the normal forms.
+	 * If it is already open, it is brought to the front. The findings are checked against the data
+	 * using the session of this browser, if connected.
+	 */
+	private void checkNormalization() {
+		if (normalizationView != null && normalizationView.isOpen()) {
+			normalizationView.toFront();
+			return;
+		}
+		if (datamodel.get().getTables().isEmpty()) {
+			JOptionPane.showMessageDialog(this, "The data model has no tables, so there is nothing to check. "
+					+ "Add tables to the data model first, for instance via \"Analyze Database\".",
+					"Check Normalization", JOptionPane.WARNING_MESSAGE);
+			return;
+		}
+		// the session is shared with this browser, so the view must not shut it down
+		final Session theSession = session;
+		normalizationView = new NormalizationView(this, datamodel.get(), theSession == null? null : () -> theSession, false, null, (table, association) -> {
+			// the data model may have been reloaded since the check: use the current objects
+			Table t = datamodel.get().getTable(table.getName());
+			if (t == null) {
+				return;
+			}
+			RowBrowser rb = desktop.addTableBrowser(null, null, t, null, "", null, true);
+			if (rb != null && association != null) {
+				Association a = datamodel.get().namedAssociations.get(association.getName());
+				if (a != null) {
+					// the referenced table too, linked by the foreign key
+					desktop.addTableBrowser(rb, rb, a.destination, a, "", null, true);
+				}
+			}
+			switchToDesktop();
+			arrangeLayout(true);
+			toFront();
+		});
 	}
 
 	private void initDebugMenu() {
@@ -7761,9 +7884,29 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 					"Discover Associations", JOptionPane.WARNING_MESSAGE);
 			return;
 		}
-		AssociationDiscoveryView discoveryView = new AssociationDiscoveryView(this, datamodel.get(), session, executionContext);
-		if (discoveryView.isAccepted()) {
+		// no extraction model editor here, so no "Show Table". "Browse Table A and B" opens the tables in this browser
+		AssociationDiscoveryView discoveryView = new AssociationDiscoveryView(this, datamodel.get(), session, executionContext, null, (a, b) -> {
+			addTableBrowser(a);
+			addTableBrowser(b);
+			switchToDesktop();
+		}, (statements, execute) -> withAssociationCheckSqlConsole(console -> {
+			for (String sql: statements) {
+				console.appendStatement(sql.trim().endsWith(";")? sql : sql + UIUtil.LINE_SEPARATOR + ";", execute);
+			}
+		}));
+		if (discoveryView.isEditRequested()) {
+			// review in the Data Model Editor ("Accept and Edit...")
 			openDataModelEditor(true);
+		} else if (discoveryView.isAccepted()) {
+			// already added to the data model, just reload it
+			try {
+				desktop.reloadDataModel(desktop.schemaMapping);
+				dataModelViewFrame = null;
+				updateDataModelView(null);
+				updateStatusBar();
+			} catch (Exception e) {
+				UIUtil.showException(this, "Error", e, session);
+			}
 		}
 	}
 
@@ -8007,6 +8150,83 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 
 	public SQLConsole getSqlConsole(boolean switchToConsole) {
 		return desktop.getSqlConsole(switchToConsole);
+	}
+
+	/**
+	 * The SQL Console dedicated to the check queries of "Discover Associations".
+	 */
+	private SQLConsole associationCheckConsole;
+
+	/**
+	 * Actions waiting for the SQL Console dedicated to the check queries of "Discover Associations",
+	 * in the order they were requested.
+	 */
+	private final List<Consumer<SQLConsole>> pendingAssociationCheckActions = new ArrayList<Consumer<SQLConsole>>();
+
+	/**
+	 * Polls until this browser is ready for the dedicated console.
+	 */
+	private Timer associationCheckTimer;
+
+	/**
+	 * Maximum time to wait for a newly opened browser to be connected.
+	 */
+	private static final long ASSOCIATION_CHECK_MAX_WAIT_MS = 30000;
+
+	/**
+	 * Runs an action with the SQL Console dedicated to the check queries of "Discover Associations". <br>
+	 * A newly opened browser is not connected yet and gets its first (the user's) console only then.
+	 * Creating the dedicated console before would make it the first one, without a session, and the first one
+	 * would later load its saved content into it. So the action waits until the browser is ready.
+	 * Actions are run in the order they were requested.
+	 *
+	 * @param action the action
+	 */
+	public void withAssociationCheckSqlConsole(Consumer<SQLConsole> action) {
+		pendingAssociationCheckActions.add(action);
+		if (associationCheckTimer != null) {
+			return;
+		}
+		final long start = System.currentTimeMillis();
+		associationCheckTimer = new Timer(100, e -> {
+			boolean ready = session != null && !sqlConsoles.isEmpty();
+			if (!ready && isDisplayable() && System.currentTimeMillis() - start < ASSOCIATION_CHECK_MAX_WAIT_MS) {
+				return;
+			}
+			associationCheckTimer.stop();
+			associationCheckTimer = null;
+			List<Consumer<SQLConsole>> actions = new ArrayList<Consumer<SQLConsole>>(pendingAssociationCheckActions);
+			pendingAssociationCheckActions.clear();
+			if (ready && isDisplayable()) {
+				SQLConsole console = getAssociationCheckSqlConsole();
+				for (Consumer<SQLConsole> a: actions) {
+					a.accept(console);
+				}
+			}
+		});
+		associationCheckTimer.setInitialDelay(0);
+		associationCheckTimer.start();
+	}
+
+	/**
+	 * Gets the SQL Console dedicated to the check queries of "Discover Associations" and selects it.
+	 * It is created on first use (as an additional console, the first one stays the user's own)
+	 * and reused as long as it is open. <br>
+	 * The browser must be connected and have its first console, see {@link #withAssociationCheckSqlConsole(Consumer)}.
+	 *
+	 * @return the console
+	 */
+	private SQLConsole getAssociationCheckSqlConsole() {
+		if (associationCheckConsole == null || !sqlConsoles.contains(associationCheckConsole)) {
+			try {
+				associationCheckConsole = createNewSQLConsole(getMetaDataSource());
+			} catch (SQLException e) {
+				// fall back to the current console
+				return getSqlConsole(true);
+			}
+		}
+		setSelectedWorkbenchTab(associationCheckConsole);
+		return associationCheckConsole;
 	}
 
 	private Dimension outlineMinimumSize = null;

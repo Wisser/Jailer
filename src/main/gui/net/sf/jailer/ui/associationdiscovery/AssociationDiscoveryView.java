@@ -21,7 +21,10 @@ import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Dialog.ModalityType;
 import java.awt.Insets;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
@@ -33,6 +36,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultCellEditor;
@@ -43,8 +48,11 @@ import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -54,6 +62,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter.SortKey;
 import javax.swing.SortOrder;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
@@ -106,6 +115,7 @@ public class AssociationDiscoveryView extends JPanel {
 	private JButton startButton;
 	private JButton rulesButton;
 	private JButton acceptButton;
+	private JButton acceptAndEditButton;
 	private JButton selectAllButton;
 	private JButton deselectAllButton;
 	private JDialog dialog;
@@ -113,6 +123,7 @@ public class AssociationDiscoveryView extends JPanel {
 	private volatile boolean cancelled;
 	private volatile boolean running;
 	private boolean accepted;
+	private boolean editRequested;
 
 	/**
 	 * Maximum number of statements shown in the "Statements" tab. A run against a large
@@ -150,25 +161,53 @@ public class AssociationDiscoveryView extends JPanel {
 	private boolean knownColumnsAdjusted;
 
 	/**
-	 * Creates the view and opens it as a modal dialog.
+	 * Shows a table (e.g. selects it in the extraction model editor), <code>null</code> if there is no such function.
+	 */
+	private final Consumer<Table> showTable;
+
+	/**
+	 * Opens tables A and B of a candidate in the Data Browser, <code>null</code> if there is no such function.
+	 */
+	private final BiConsumer<Table, Table> browseTables;
+
+	/**
+	 * Opens an SQL statement in the SQL Console (statement, execute it), <code>null</code> if there is no such function.
+	 */
+	private final BiConsumer<List<String>, Boolean> openInSqlConsole;
+
+	/**
+	 * The candidates of the "Already known" table, in the order of its model rows.
+	 */
+	private final List<AssociationCandidate> known = new ArrayList<AssociationCandidate>();
+
+	/**
+	 * Creates the view and opens it as a dialog that is modal to the owner's window only
+	 * (so that a Data Browser opened from it can be used).
 	 *
 	 * @param owner the owner frame
 	 * @param dataModel the data model
 	 * @param session the database session used to profile and verify
 	 * @param executionContext the execution context
+	 * @param showTable shows a table, <code>null</code> if there is no such function
+	 * @param browseTables opens tables A and B of a candidate in the Data Browser, <code>null</code> if there is no such function
+	 * @param openInSqlConsole opens SQL statements in the SQL Console (statements, execute them), <code>null</code> if there is no such function
 	 */
-	public AssociationDiscoveryView(JFrame owner, DataModel dataModel, Session session, ExecutionContext executionContext) {
+	public AssociationDiscoveryView(JFrame owner, DataModel dataModel, Session session, ExecutionContext executionContext,
+			Consumer<Table> showTable, BiConsumer<Table, Table> browseTables, BiConsumer<List<String>, Boolean> openInSqlConsole) {
 		this.owner = owner;
 		this.dataModel = dataModel;
 		this.session = session;
 		this.executionContext = executionContext;
+		this.showTable = showTable;
+		this.browseTables = browseTables;
+		this.openInSqlConsole = openInSqlConsole;
 
 		initUI();
 		UIUtil.initComponents(this);
 
 		dialog = new EscapableDialog(owner, "Discover Associations") {
 		};
-		dialog.setModal(true);
+		dialog.setModalityType(ModalityType.DOCUMENT_MODAL);
 		dialog.getContentPane().add(this);
 		dialog.pack();
 		UIUtil.setDialogSize(dialog, 1100, 600);
@@ -190,6 +229,14 @@ public class AssociationDiscoveryView extends JPanel {
 	 */
 	public boolean isAccepted() {
 		return accepted;
+	}
+
+	/**
+	 * @return <code>true</code> if the accepted proposals are to be reviewed in the Data Model Editor
+	 *         ("Accept and Edit..."). Otherwise they have already been added to the data model.
+	 */
+	public boolean isEditRequested() {
+		return editRequested;
 	}
 
 	private void initUI() {
@@ -318,7 +365,8 @@ public class AssociationDiscoveryView extends JPanel {
 
 		JPanel proposalsPanel = new JPanel(new BorderLayout());
 		JLabel info = new JLabel("<html><i>Check the associations you want to add to the data model. "
-				+ "The confidence estimates how likely a candidate is a real foreign key.</i></html>");
+				+ "The confidence estimates how likely a candidate is a real foreign key. "
+				+ "Double-click a row for details, right-click for more.</i></html>");
 		info.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
 		proposalsPanel.add(info, BorderLayout.NORTH);
 		proposalsPanel.add(new JScrollPane(proposalTable), BorderLayout.CENTER);
@@ -335,6 +383,8 @@ public class AssociationDiscoveryView extends JPanel {
 		knownTable.setShowGrid(false);
 		knownTable.setDefaultRenderer(Object.class, createRenderer(knownTable));
 		knownTable.setAutoCreateRowSorter(true);
+		proposalTable.addMouseListener(new CandidateMouseListener(proposalTable, proposals, true));
+		knownTable.addMouseListener(new CandidateMouseListener(knownTable, known, false));
 		tabbedPane.addTab("Already known", UIUtil.scaleIcon(tabbedPane, modelIcon), new JScrollPane(knownTable));
 
 		statementsPane = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false);
@@ -408,8 +458,13 @@ public class AssociationDiscoveryView extends JPanel {
 		acceptButton = new JButton("Accept");
 		acceptButton.setIcon(UIUtil.scaleIcon(acceptButton, okIcon));
 		acceptButton.setToolTipText("Add the checked associations to the data model.");
-		acceptButton.addActionListener(e -> acceptProposals());
+		acceptButton.addActionListener(e -> acceptProposals(false));
 		panel.add(acceptButton);
+		acceptAndEditButton = new JButton("Accept and Edit...");
+		acceptAndEditButton.setIcon(UIUtil.scaleIcon(acceptAndEditButton, editIcon));
+		acceptAndEditButton.setToolTipText("Open the checked associations in the Data Model Editor, to review them before saving.");
+		acceptAndEditButton.addActionListener(e -> acceptProposals(true));
+		panel.add(acceptAndEditButton);
 		JButton closeButton = new JButton("Close");
 		closeButton.setIcon(UIUtil.scaleIcon(closeButton, cancelIcon));
 		closeButton.addActionListener(e -> dialog.dispose());
@@ -440,6 +495,7 @@ public class AssociationDiscoveryView extends JPanel {
 			}
 		}
 		acceptButton.setEnabled(any && !running);
+		acceptAndEditButton.setEnabled(any && !running);
 		selectAllButton.setEnabled(proposalsModel.getRowCount() > 0);
 		deselectAllButton.setEnabled(any);
 	}
@@ -472,6 +528,7 @@ public class AssociationDiscoveryView extends JPanel {
 		cancelled = false;
 		proposals.clear();
 		proposalsModel.setRowCount(0);
+		known.clear();
 		knownModel.setRowCount(0);
 		statementsPane.setText("");
 		problemsPane.setText("");
@@ -738,6 +795,7 @@ public class AssociationDiscoveryView extends JPanel {
 			problemsPane.append(problems);
 		}
 		for (AssociationCandidate candidate: newKnown) {
+			known.add(candidate);
 			knownModel.addRow(new Object[] {
 					dataModel.getDisplayName(candidate.child),
 					dataModel.getDisplayName(candidate.parent),
@@ -760,6 +818,10 @@ public class AssociationDiscoveryView extends JPanel {
 		if (!proposalColumnsAdjusted && proposalsModel.getRowCount() >= ADJUST_COLUMNS_AT) {
 			proposalColumnsAdjusted = true;
 			UIUtil.adjustTableColumnsWidth(proposalTable, true);
+			// the check box column: a little more room than its content needs
+			javax.swing.table.TableColumn checkBoxColumn = proposalTable.getColumnModel().getColumn(0);
+			checkBoxColumn.setPreferredWidth(checkBoxColumn.getPreferredWidth() + 10);
+			checkBoxColumn.setWidth(checkBoxColumn.getPreferredWidth());
 		}
 		if (!knownColumnsAdjusted && knownModel.getRowCount() >= ADJUST_COLUMNS_AT) {
 			knownColumnsAdjusted = true;
@@ -824,7 +886,13 @@ public class AssociationDiscoveryView extends JPanel {
 	/**
 	 * Writes the checked proposals into the model builder's associations file.
 	 */
-	private void acceptProposals() {
+	/**
+	 * Accepts the checked proposals.
+	 *
+	 * @param edit if <code>true</code>, they are handed over to the Data Model Editor (by the caller) for review,
+	 *        otherwise they are added to the data model directly
+	 */
+	private void acceptProposals(boolean edit) {
 		try {
 			List<AssociationProposalWriter.Proposal> accepted = new ArrayList<AssociationProposalWriter.Proposal>();
 			for (int i = 0; i < proposalsModel.getRowCount(); ++i) {
@@ -837,10 +905,21 @@ public class AssociationDiscoveryView extends JPanel {
 			if (accepted.isEmpty()) {
 				return;
 			}
-			int[] counts = AssociationProposalWriter.write(accepted, dataModel, executionContext);
-			this.accepted = true;
-			if (counts[1] > 0) {
-				JOptionPane.showMessageDialog(dialog, counts[1] + " of " + counts[0] + " associations are already known.", "", JOptionPane.INFORMATION_MESSAGE);
+			if (edit) {
+				int[] counts = AssociationProposalWriter.write(accepted, dataModel, executionContext);
+				this.accepted = true;
+				this.editRequested = true;
+				if (counts[1] > 0) {
+					JOptionPane.showMessageDialog(dialog, counts[1] + " of " + counts[0] + " associations are already known.", "", JOptionPane.INFORMATION_MESSAGE);
+				}
+			} else {
+				int[] counts = AssociationProposalWriter.addToDataModel(accepted, dataModel, executionContext);
+				int added = counts[0] - counts[1];
+				this.accepted = added > 0;
+				JOptionPane.showMessageDialog(dialog,
+						added + (added == 1? " association" : " associations") + " added to the data model."
+						+ (counts[1] > 0? "\n" + counts[1] + (counts[1] == 1? " was" : " were") + " already known." : ""),
+						"Accept", JOptionPane.INFORMATION_MESSAGE);
 			}
 			dialog.dispose();
 		} catch (Throwable t) {
@@ -857,6 +936,135 @@ public class AssociationDiscoveryView extends JPanel {
 		}
 	}
 
+	/**
+	 * Opens the details dialog on double-click and the context menu of a row of a table of candidates.
+	 */
+	private class CandidateMouseListener extends MouseAdapter {
+		private final JTable table;
+		private final List<AssociationCandidate> candidates;
+		private final boolean hasCheckBoxColumn;
+
+		/**
+		 * @param table the table
+		 * @param candidates the candidates, in the order of the table model rows
+		 * @param hasCheckBoxColumn whether column 0 is the check box column (clicking it toggles the check box)
+		 */
+		CandidateMouseListener(JTable table, List<AssociationCandidate> candidates, boolean hasCheckBoxColumn) {
+			this.table = table;
+			this.candidates = candidates;
+			this.hasCheckBoxColumn = hasCheckBoxColumn;
+		}
+
+		private AssociationCandidate candidateAt(MouseEvent e) {
+			int row = table.rowAtPoint(e.getPoint());
+			if (row < 0) {
+				return null;
+			}
+			int modelRow = table.convertRowIndexToModel(row);
+			return modelRow < candidates.size()? candidates.get(modelRow) : null;
+		}
+
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e)) {
+				if (hasCheckBoxColumn && table.convertColumnIndexToModel(table.columnAtPoint(e.getPoint())) == 0) {
+					return;
+				}
+				AssociationCandidate candidate = candidateAt(e);
+				if (candidate != null) {
+					showDetails(candidate);
+				}
+			}
+		}
+
+		@Override
+		public void mousePressed(MouseEvent e) {
+			maybeShowPopup(e);
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			maybeShowPopup(e);
+		}
+
+		private void maybeShowPopup(MouseEvent e) {
+			if (!e.isPopupTrigger()) {
+				return;
+			}
+			AssociationCandidate candidate = candidateAt(e);
+			if (candidate == null) {
+				return;
+			}
+			int row = table.rowAtPoint(e.getPoint());
+			if (table.getRowSelectionAllowed()) {
+				table.setRowSelectionInterval(row, row);
+			}
+			JPopupMenu popup = new JPopupMenu();
+			JMenuItem details = new JMenuItem("Details");
+			details.setIcon(UIUtil.scaleIcon(details, detailsIcon));
+			details.setToolTipText("Show all details of the association (same as double-click).");
+			details.addActionListener(ev -> showDetails(candidate));
+			popup.add(details);
+			if (openInSqlConsole != null) {
+				JMenu sqlConsoleMenu = new JMenu("SQL Console");
+				sqlConsoleMenu.setIcon(UIUtil.scaleIcon(sqlConsoleMenu, sqlConsoleIcon));
+				sqlConsoleMenu.setToolTipText("Queries about the proposed association, in the SQL Console.");
+				for (JMenuItem item: CandidateQueries.createMenuItems(candidate, openInSqlConsole, sqlConsoleIcon)) {
+					if (item == null) {
+						sqlConsoleMenu.addSeparator();
+					} else {
+						sqlConsoleMenu.add(item);
+					}
+				}
+				popup.add(sqlConsoleMenu);
+			}
+			if (showTable != null) {
+				popup.addSeparator();
+				popup.add(tableItem("Show Table A", tableIcon, "Select table " + candidate.child.getUnqualifiedName() + " in the extraction model editor.", () -> showTable.accept(candidate.child)));
+				popup.add(tableItem("Show Table B", tableIcon, "Select table " + candidate.parent.getUnqualifiedName() + " in the extraction model editor.", () -> showTable.accept(candidate.parent)));
+			}
+			if (browseTables != null) {
+				popup.addSeparator();
+				popup.add(tableItem("Browse Table A and B", databaseIcon, "Open tables " + candidate.child.getUnqualifiedName() + " and "
+						+ candidate.parent.getUnqualifiedName() + " in the Data Browser.", () -> browseTables.accept(candidate.child, candidate.parent)));
+			}
+			UIUtil.showPopup(table, e.getX(), e.getY(), popup);
+		}
+
+		private JMenuItem tableItem(String text, ImageIcon icon, String toolTip, Runnable action) {
+			JMenuItem item = new JMenuItem(text);
+			item.setIcon(UIUtil.scaleIcon(item, icon));
+			item.setToolTipText(toolTip);
+			item.addActionListener(ev -> action.run());
+			return item;
+		}
+	}
+
+	/**
+	 * Opens the details dialog of a candidate.
+	 */
+	private void showDetails(AssociationCandidate candidate) {
+		// a proposal can be checked for acceptance in the details too
+		int proposalRow = -1;
+		for (int i = 0; i < proposals.size(); ++i) {
+			if (proposals.get(i) == candidate) {
+				proposalRow = i;
+				break;
+			}
+		}
+		Boolean accept = null;
+		Consumer<Boolean> onAccept = null;
+		if (proposalRow >= 0) {
+			final int row = proposalRow;
+			accept = Boolean.TRUE.equals(proposalsModel.getValueAt(row, 0));
+			onAccept = selected -> {
+				proposalsModel.setValueAt(selected, row, 0);
+				proposalTable.repaint();
+			};
+		}
+		new AssociationCandidateDetailsView(dialog, dataModel, candidate, accept, onAccept, openInSqlConsole);
+	}
+
 	private ImageIcon runIcon;
 	private ImageIcon selectIcon;
 	private ImageIcon clearIcon;
@@ -867,6 +1075,10 @@ public class AssociationDiscoveryView extends JPanel {
 	private ImageIcon historyIcon;
 	private ImageIcon warnIcon;
 	private ImageIcon editIcon;
+	private ImageIcon detailsIcon;
+	private ImageIcon tableIcon;
+	private ImageIcon databaseIcon;
+	private ImageIcon sqlConsoleIcon;
 	{
 		// load images
 		runIcon = UIUtil.readImage("/run.png");
@@ -879,6 +1091,10 @@ public class AssociationDiscoveryView extends JPanel {
 		historyIcon = UIUtil.readImage("/history.png");
 		warnIcon = UIUtil.readImage("/wanr.png");
 		editIcon = UIUtil.readImage("/edit.png");
+		detailsIcon = UIUtil.readImage("/editdetails.png");
+		tableIcon = UIUtil.readImage("/table.png");
+		databaseIcon = UIUtil.readImage("/database.png");
+		sqlConsoleIcon = UIUtil.readImage("/sqlconsole.png");
 	}
 
 }

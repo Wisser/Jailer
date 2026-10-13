@@ -382,7 +382,7 @@ public abstract class ClosureView extends javax.swing.JDialog implements PlafAwa
 					final Table table = getDataModel().getTableByDisplayName((String) value);
 					if (table != null) {
 						JMenuItem restrictAll = new JMenuItem("Disable all associations");
-						restrictAll.setToolTipText("disables every non-dependent (child) association with this table");
+						restrictAll.setToolTipText("<html>Disable all associations of this table except dependencies<br>(the parent rows needed for referential integrity).</html>");
 						restrictAll.addActionListener(new ActionListener () {
 							@Override
 							public void actionPerformed(ActionEvent e) {
@@ -399,13 +399,13 @@ public abstract class ClosureView extends javax.swing.JDialog implements PlafAwa
 							}
 						});
 						removeRestrictions.setEnabled(ClosureView.this.extractionModelEditor.isRemovalOfAllRestrictionsApplicable(table));
-						removeRestrictions.setToolTipText("removes all restrictions on all associations with this table");
+						removeRestrictions.setToolTipText("Remove all restrictions of the associations of this table and enable the disabled ones.");
 
 						JMenu restrict = new JScrollMenu("Disable association...");
-						restrict.setToolTipText("disables an association with this table");
+						restrict.setToolTipText("Disable one association of this table.");
 
 						JMenu remove = new JScrollMenu("Remove restrictions on...");
-						remove.setToolTipText("removes all restrictions on an association with this table");
+						remove.setToolTipText("Remove the restriction of one association of this table and enable it, if disabled.");
 
 						List<Association> aLDisable = new ArrayList<Association>();
 						List<Association> aLEnable = new ArrayList<Association>();

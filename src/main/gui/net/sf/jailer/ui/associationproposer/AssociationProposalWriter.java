@@ -16,8 +16,10 @@
 package net.sf.jailer.ui.associationproposer;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -74,6 +76,29 @@ public class AssociationProposalWriter {
 	 * @return an array {number of written proposals + skipped ones, number of skipped ones}
 	 */
 	public static int[] write(List<Proposal> proposals, DataModel dataModel, ExecutionContext executionContext) throws IOException {
+		return write(proposals, dataModel, ModelBuilder.getModelBuilderAssociationsFilename(executionContext), false);
+	}
+
+	/**
+	 * Adds accepted proposals directly to the data model, i.e. appends them to its associations file,
+	 * without going through the {@link DataModelEditor}. The data model has to be reloaded afterwards.
+	 *
+	 * @param proposals the accepted proposals
+	 * @param dataModel the data model
+	 * @param executionContext the execution context
+	 * @return an array {number of added proposals + skipped ones, number of skipped (already known) ones}
+	 */
+	public static int[] addToDataModel(List<Proposal> proposals, DataModel dataModel, ExecutionContext executionContext) throws IOException {
+		return write(proposals, dataModel, DataModel.getAssociationsFile(executionContext), true);
+	}
+
+	/**
+	 * Writes accepted proposals into an associations file.
+	 *
+	 * @param targetFile the file
+	 * @param append append to the file (the data model's file) or overwrite it (the model builder's file)
+	 */
+	private static int[] write(List<Proposal> proposals, DataModel dataModel, String targetFile, boolean append) throws IOException {
 		List<String> names = new ArrayList<String>();
 		for (Proposal proposal: proposals) {
 			names.add("P_" + Quoting.staticUnquote(proposal.fromName) + "_" + Quoting.staticUnquote(proposal.toName));
@@ -102,9 +127,12 @@ public class AssociationProposalWriter {
 
 		int knownCount = 0;
 		int allCount = 0;
-		BufferedWriter out = new BufferedWriter(new FileWriter(ModelBuilder.getModelBuilderAssociationsFilename(executionContext)));
+		boolean needsLineBreak = append && !endsWithLineBreak(new File(targetFile));
+		BufferedWriter out = new BufferedWriter(new FileWriter(targetFile, append));
 		try {
-			out.append("\n");
+			if (!append || needsLineBreak) {
+				out.append("\n");
+			}
 			AssociationProposer ap = new AssociationProposer(dataModel);
 			for (int i = 0; i < proposals.size(); ++i) {
 				Proposal proposal = proposals.get(i);
@@ -128,6 +156,20 @@ public class AssociationProposalWriter {
 			out.close();
 		}
 		return new int[] { allCount, knownCount };
+	}
+
+	/**
+	 * @return <code>true</code> if the file is empty, does not exist or ends with a line break
+	 */
+	private static boolean endsWithLineBreak(File file) throws IOException {
+		if (!file.exists() || file.length() == 0) {
+			return true;
+		}
+		try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
+			raf.seek(file.length() - 1);
+			int last = raf.read();
+			return last == '\n' || last == '\r';
+		}
 	}
 
 	private AssociationProposalWriter() {

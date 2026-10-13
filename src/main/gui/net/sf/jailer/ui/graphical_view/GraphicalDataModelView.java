@@ -960,7 +960,9 @@ public class GraphicalDataModelView extends JPanel {
 			});
 		}
 
-		JMenuItem restrictAll = new JMenuItem("Disable Associations");
+		JMenuItem restrictAll = new JMenuItem("Disable All Associations");
+		restrictAll.setToolTipText("<html>Disable all associations of this table except dependencies<br>"
+				+ "(the parent rows needed for referential integrity).</html>");
 		restrictAll.setIcon(disableIcon);
 		restrictAll.addActionListener(new ActionListener () {
 			@Override
@@ -970,7 +972,8 @@ public class GraphicalDataModelView extends JPanel {
 		});
 		restrictAll.setEnabled(modelEditor.isIgnoreAllApplicable(table));
 
-		JMenuItem removeRestrictions = new JMenuItem("Remove Restrictions");
+		JMenuItem removeRestrictions = new JMenuItem("Remove All Restrictions");
+		removeRestrictions.setToolTipText("Remove all restrictions of the associations of this table and enable the disabled ones.");
 		removeRestrictions.setIcon(enableIcon);
 		removeRestrictions.addActionListener(new ActionListener () {
 			@Override

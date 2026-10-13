@@ -218,7 +218,22 @@ public class TableProfiler {
 	 * @return the limited statement
 	 */
 	private String limited(String select) {
-		String suffix = session.dbms.getSqlLimitSuffix().replace("%s", Integer.toString(SAMPLE_ROWS));
+		return limited(session, select, SAMPLE_ROWS);
+	}
+
+	/**
+	 * Applies the DBMS specific row limit to a Select statement.
+	 *
+	 * @param session the session
+	 * @param select the statement, starting with "Select "
+	 * @param rows the maximum number of rows
+	 * @return the limited statement, or <code>null</code> if the DBMS has no row limit
+	 */
+	public static String limited(Session session, String select, int rows) {
+		if (session.dbms.getSqlLimitSuffix() == null) {
+			return null;
+		}
+		String suffix = session.dbms.getSqlLimitSuffix().replace("%s", Integer.toString(rows));
 		String lcSuffix = suffix.toLowerCase(Locale.ENGLISH);
 		if (lcSuffix.startsWith("top ") || lcSuffix.startsWith("first ")) {
 			return "Select " + suffix + " " + select.substring("Select ".length());
