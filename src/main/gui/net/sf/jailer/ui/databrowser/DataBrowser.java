@@ -7529,8 +7529,11 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		if (sc instanceof SQLConsole) {
 			sqlConsole = (SQLConsole) sc;
 		}
-		saveScriptMenuItem.setEnabled(sqlConsole != null && (sqlConsole.isDirty() && !sqlConsole.isTempFileBased()));
-		saveScriptAsMenuItem.setEnabled(sqlConsole != null && !sqlConsole.isEmpty());
+		// "Save": attached to a file and changed since the last synchronization with it (dirty).
+		// For a temporary file (e.g. a generated script), it does a "Save as" (see saveScriptMenuItemActionPerformed)
+		saveScriptMenuItem.setEnabled(sqlConsole != null && sqlConsole.getFile() != null && sqlConsole.isDirty());
+		// "Save as": for every console
+		saveScriptAsMenuItem.setEnabled(sqlConsole != null);
 		if (sqlConsole != null) {
 			goBackItem.setEnabled(false);
 			goForwardItem.setEnabled(false);
@@ -7582,7 +7585,8 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	private void saveScriptMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_saveScriptMenuItemActionPerformed
 		SQLConsole sqlConsole = getCurrentSQLConsole();
 		if (sqlConsole != null) {
-			if (sqlConsole.getFile() == null && sqlConsole.isTempFileBased()) {
+			// a temporary file (e.g. of a generated script) is not where the user wants the content to be saved
+			if (sqlConsole.getFile() == null || sqlConsole.isTempFileBased()) {
 				saveScriptAsMenuItemActionPerformed(evt);
 			} else {
 				try {
@@ -7837,7 +7841,23 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	private void saveScriptAsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_saveScriptAsMenuItemActionPerformed
 		SQLConsole sqlConsole = getCurrentSQLConsole();
 		if (sqlConsole != null) {
-			String fName = UIUtil.choseFile(null, ".", "Save SQL Script", "", this, false, false);
+			File preselected = null;
+			String startDir = ".";
+			boolean useStartDir = false;
+			File consoleFile = sqlConsole.getFile();
+			if (consoleFile != null) {
+				if (sqlConsole.isTempFileBased()) {
+					// a generated script (temporary file): its name, with ".sql" if it has no extension, in the usual directory
+					String name = consoleFile.getName();
+					preselected = new File(name.contains(".")? name : name + ".sql");
+				} else if (consoleFile.getAbsoluteFile().getParentFile() != null) {
+					// the console's file: its name in its directory
+					preselected = consoleFile;
+					startDir = consoleFile.getAbsoluteFile().getParent();
+					useStartDir = true;
+				}
+			}
+			String fName = UIUtil.choseFile(preselected, startDir, "Save SQL Script", "", this, false, false, true, useStartDir);
 			if (fName != null) {
 				File file = new File(fName);
 				try {

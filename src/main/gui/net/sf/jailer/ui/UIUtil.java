@@ -222,7 +222,24 @@ public class UIUtil {
      */
     public static String choseFile(File selectedFile, String startDir, final String description, final String extension,
             Component parent, boolean addExtension, boolean forLoad, final boolean allowZip) {
-        String newStartDir = restoreCurrentDir(extension);
+        return choseFile(selectedFile, startDir, description, extension, parent, addExtension, forLoad, allowZip, false);
+    }
+
+    /**
+     * Opens file chooser.
+     *
+     * @param selectedFile
+     *            if not <code>null</code> this file will be selected initially
+     * @param startDir
+     *            directory to start with
+     * @param description
+     *            description of file to chose
+     * @param useStartDir
+     *            if <code>true</code>, start with startDir instead of the directory used last
+     */
+    public static String choseFile(File selectedFile, String startDir, final String description, final String extension,
+            Component parent, boolean addExtension, boolean forLoad, final boolean allowZip, boolean useStartDir) {
+        String newStartDir = useStartDir? null : restoreCurrentDir(extension);
         if (newStartDir != null) {
             startDir = newStartDir;
             try {

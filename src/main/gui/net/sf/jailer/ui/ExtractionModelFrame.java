@@ -21,7 +21,6 @@ import java.awt.Container;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Toolkit;
-import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
@@ -526,21 +525,27 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 	}
 
 	/**
-	 * Runs an action that takes a while (e.g. opens a Data Browser) with a wait cursor on the active window,
-	 * which is where the mouse is (e.g. a dialog), not necessarily this frame. <br>
+	 * Runs an action that takes a while (e.g. opens a Data Browser) with a wait cursor on all windows.
+	 * The mouse is not necessarily over the active window, e.g. after clicking a menu that extends beyond a dialog. <br>
 	 * The action is deferred, so that the cursor is shown before the work begins.
 	 *
 	 * @param action the action
 	 */
 	private void runWithWaitCursor(Runnable action) {
-		Window activeWindow = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
-		Window component = activeWindow != null? activeWindow : this;
-		UIUtil.setWaitCursor(component);
+		List<Window> windows = new ArrayList<Window>();
+		for (Window window: Window.getWindows()) {
+			if (window.isShowing()) {
+				windows.add(window);
+				UIUtil.setWaitCursor(window);
+			}
+		}
 		UIUtil.invokeLater(() -> {
 			try {
 				action.run();
 			} finally {
-				UIUtil.resetWaitCursor(component);
+				for (Window window: windows) {
+					UIUtil.resetWaitCursor(window);
+				}
 			}
 		});
 	}

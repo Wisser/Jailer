@@ -19,6 +19,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Dialog.ModalityType;
@@ -199,8 +200,10 @@ public class AssociationDiscoveryView extends JPanel {
 		this.session = session;
 		this.executionContext = executionContext;
 		this.showTable = showTable;
-		this.browseTables = browseTables;
-		this.openInSqlConsole = openInSqlConsole;
+		this.browseTables = browseTables == null? null
+				: (a, b) -> withStatus("Opening the Data Browser...", () -> browseTables.accept(a, b));
+		this.openInSqlConsole = openInSqlConsole == null? null
+				: (statements, execute) -> withStatus("Opening the SQL Console...", () -> openInSqlConsole.accept(statements, execute));
 
 		initUI();
 		UIUtil.initComponents(this);
@@ -209,6 +212,7 @@ public class AssociationDiscoveryView extends JPanel {
 		};
 		dialog.setModalityType(ModalityType.DOCUMENT_MODAL);
 		dialog.getContentPane().add(this);
+		dialog.getRootPane().setDefaultButton(startButton);
 		dialog.pack();
 		UIUtil.setDialogSize(dialog, 1100, 600);
 		dialog.setLocation(owner.getX() + (owner.getWidth() - dialog.getWidth()) / 2, owner.getY() + (owner.getHeight() - dialog.getHeight()) / 2);
@@ -286,6 +290,8 @@ public class AssociationDiscoveryView extends JPanel {
 		panel.add(rulesButton, optionsGbc(0, 2, 2, 1));
 
 		startButton = new JButton("Start discovery");
+		// the main action of the dialog: bold, so that it catches the eye
+		startButton.setFont(startButton.getFont().deriveFont(Font.BOLD));
 		startButton.setIcon(UIUtil.scaleIcon(startButton, runIcon));
 		startButton.setToolTipText("Search the database for associations: profiles the tables, then verifies "
 				+ "every candidate with a query. Closing the dialog cancels a running discovery.");
@@ -1063,6 +1069,32 @@ public class AssociationDiscoveryView extends JPanel {
 			};
 		}
 		new AssociationCandidateDetailsView(dialog, dataModel, candidate, accept, onAccept, openInSqlConsole);
+	}
+
+	/**
+	 * Shows a status while an action that takes a while runs. The wait cursor alone is not enough:
+	 * the main window is blocked by this dialog, and a blocked window always shows the default cursor,
+	 * e.g. if the mouse is outside of this dialog after clicking a menu that extends beyond it.
+	 *
+	 * @param status the status text
+	 * @param action the action. It defers its work (invokeLater), the status is reset afterwards
+	 */
+	private void withStatus(String status, Runnable action) {
+		String oldText = statusLabel.getText();
+		Color oldForeground = statusLabel.getForeground();
+		statusLabel.setForeground(Colors.Color_0_80_200);
+		statusLabel.setText(status);
+		try {
+			action.run();
+		} finally {
+			UIUtil.invokeLater(() -> {
+				// unless the status has changed in the meantime
+				if (status.equals(statusLabel.getText())) {
+					statusLabel.setText(oldText);
+					statusLabel.setForeground(oldForeground);
+				}
+			});
+		}
 	}
 
 	private ImageIcon runIcon;
