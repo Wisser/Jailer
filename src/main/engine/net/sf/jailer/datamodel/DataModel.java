@@ -692,6 +692,7 @@ public class DataModel {
 				}
 			} catch (Throwable t) {
 				// keep defaults
+				_log.warn("unable to read model name file", t);
 			}
 		} catch (IOException e) {
 			_log.error("failed to load data-model " + getDatamodelFolder(executionContext) + File.separator, e);

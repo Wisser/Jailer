@@ -1033,8 +1033,3 @@ public class SqlUtil {
     public static final long PG_POSITIVE_INFINITY = 9223372036825200000L;
     public static final long PG_POSITIVE_SMALLER_INFINITY = 185543533774800000L;
 }
-
-
-//TODO
-//TODO normalization. 1nf-5nf
-

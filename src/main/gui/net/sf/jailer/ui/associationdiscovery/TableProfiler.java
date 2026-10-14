@@ -42,11 +42,6 @@ public class TableProfiler {
 	private static final int MAX_COLUMNS_PER_QUERY = 40;
 
 	/**
-	 * Number of rows read if a table has to be sampled.
-	 */
-	private static final int SAMPLE_ROWS = 100000;
-
-	/**
 	 * If profiling a single table takes longer than this, "count(distinct ...)" is dropped
 	 * for all remaining tables.
 	 */
@@ -55,6 +50,11 @@ public class TableProfiler {
 	private final Session session;
 	private final Object cancellationContext;
 	private final DiscoveryLog log;
+
+	/**
+	 * Number of rows read if a table has to be sampled, or {@link SampleSize#UNLIMITED}: then there is no sampling.
+	 */
+	private final int sampleRows;
 
 	/**
 	 * Set to <code>false</code> as soon as a query with "count(distinct ...)" turns out
@@ -71,11 +71,13 @@ public class TableProfiler {
 	 * @param session the database session
 	 * @param cancellationContext the cancellation context
 	 * @param log receives executed statements and problems
+	 * @param sampleRows number of rows read if a table has to be sampled, or {@link SampleSize#UNLIMITED}
 	 */
-	public TableProfiler(Session session, Object cancellationContext, DiscoveryLog log) {
+	public TableProfiler(Session session, Object cancellationContext, DiscoveryLog log, int sampleRows) {
 		this.session = session;
 		this.cancellationContext = cancellationContext;
 		this.log = log;
+		this.sampleRows = sampleRows;
 	}
 
 	/**
@@ -136,12 +138,13 @@ public class TableProfiler {
 		if (log.isCancelled()) {
 			return false;
 		}
-		// 3. everything, but only over a sample of the table
-		if (session.dbms.getSqlLimitSuffix() != null && execute(table, chunk, profile, true, true)) {
+		// 3. everything, but only over a sample of the table (unless the user does not want samples)
+		if (sampleRows != SampleSize.UNLIMITED && session.dbms.getSqlLimitSuffix() != null && execute(table, chunk, profile, true, true)) {
 			profile.sampled = true;
 			return true;
 		}
-		log.problem("Table " + table.getName() + ": could not be profiled.");
+		log.problem("Table " + table.getName() + ": could not be profiled."
+				+ (sampleRows == SampleSize.UNLIMITED? " Sampling is switched off (sample rows: unlimited)." : ""));
 		return false;
 	}
 
@@ -218,7 +221,7 @@ public class TableProfiler {
 	 * @return the limited statement
 	 */
 	private String limited(String select) {
-		return limited(session, select, SAMPLE_ROWS);
+		return limited(session, select, sampleRows);
 	}
 
 	/**

@@ -88,8 +88,11 @@ public class MDSchema extends MDObject {
 				for (;;) {
 					try {
 						loadTableColumnsQueue.take().run();
+					} catch (InterruptedException e) {
+						return;
 					} catch (Throwable t) {
-						// ignore
+						// the next table may succeed
+						logger.info("loading table columns failed", t);
 					}
 				}
 			}

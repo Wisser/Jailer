@@ -500,7 +500,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 				};
 			}
 			// the view owns the session and shuts it down when it is closed
-			normalizationView = new NormalizationView(this, extractionModelEditor.dataModel, sessionSupplier, true, (table, association) -> {
+			normalizationView = new NormalizationView(this, extractionModelEditor.dataModel, executionContext, sessionSupplier, true, (table, association) -> {
 				if (association != null) {
 					// the association of the foreign key, with both tables visible
 					if (!extractionModelEditor.select(association)) {

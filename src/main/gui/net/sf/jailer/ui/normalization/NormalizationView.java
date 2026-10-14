@@ -30,10 +30,13 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.function.BiConsumer;
@@ -42,6 +45,7 @@ import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
@@ -65,12 +69,15 @@ import org.fife.rsta.ui.EscapableDialog;
 import net.coderazzi.filters.Filter;
 import net.coderazzi.filters.gui.AutoChoices;
 import net.coderazzi.filters.gui.TableFilterHeader;
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ui.associationdiscovery.SampleSize;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.normalization.NormalizationFinding.NormalForm;
+import net.sf.jailer.ui.util.TableExport;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.LogUtil;
 
@@ -97,6 +104,12 @@ public class NormalizationView extends JPanel {
 	private static final int TOOLTIP_LINE_LENGTH = 100;
 
 	private final DataModel dataModel;
+	private final ExecutionContext executionContext;
+
+	/**
+	 * The findings the user has decided to ignore (stored with the data model).
+	 */
+	private final IgnoredFindings ignoredFindings;
 	private final Callable<Session> sessionSupplier;
 	private final boolean shutDownSessionOnClose;
 
@@ -118,6 +131,12 @@ public class NormalizationView extends JPanel {
 	 */
 	private final Map<String, JCheckBox> checkBoxes = new LinkedHashMap<String, JCheckBox>();
 
+	/**
+	 * The checks whose check box has been unchecked because they had no findings (not by the user),
+	 * to be checked again as soon as they have findings again.
+	 */
+	private final Set<String> autoDeselectedRules = new HashSet<String>();
+
 	private DefaultTableModel findingsModel;
 	private LastColumnFillingTable findingsTable;
 	private JLabel statusLabel;
@@ -126,6 +145,10 @@ public class NormalizationView extends JPanel {
 	private JLabel progressLabel;
 	private JProgressBar progressBar;
 	private JButton copyButton;
+	private JCheckBox showIgnoredCheckBox;
+	private JComboBox<String> sampleSizeComboBox;
+	private JButton saveCsvButton;
+	private JButton saveXlsxButton;
 	private JDialog dialog;
 
 	private volatile boolean cancelled;
@@ -144,8 +167,10 @@ public class NormalizationView extends JPanel {
 	 * @param browseTable opens a table, and the destination of an association (if not <code>null</code>), in the Data Browser.
 	 *        <code>null</code> if there is no such function
 	 */
-	public NormalizationView(JFrame owner, DataModel dataModel, Callable<Session> sessionSupplier, boolean shutDownSessionOnClose, BiConsumer<Table, Association> showTable, BiConsumer<Table, Association> browseTable) {
+	public NormalizationView(JFrame owner, DataModel dataModel, ExecutionContext executionContext, Callable<Session> sessionSupplier, boolean shutDownSessionOnClose, BiConsumer<Table, Association> showTable, BiConsumer<Table, Association> browseTable) {
 		this.dataModel = dataModel;
+		this.executionContext = executionContext;
+		this.ignoredFindings = IgnoredFindings.load(executionContext);
 		this.sessionSupplier = sessionSupplier;
 		this.shutDownSessionOnClose = shutDownSessionOnClose;
 		this.showTable = showTable;
@@ -191,6 +216,7 @@ public class NormalizationView extends JPanel {
 	 * and then starts the check against the data.
 	 */
 	private void startCheck() {
+		setCheckRunning(true);
 		progressLabel.setText("Checking the data model...");
 		progressBar.setIndeterminate(true);
 		progressPanel.setVisible(true);
@@ -203,6 +229,7 @@ public class NormalizationView extends JPanel {
 				UIUtil.invokeLater(() -> {
 					progressPanel.setVisible(false);
 					revalidate();
+					setCheckRunning(false);
 					UIUtil.showException(NormalizationView.this, "Error", t);
 				});
 				return;
@@ -238,7 +265,7 @@ public class NormalizationView extends JPanel {
 		updateChecks();
 		updateRowCount();
 		findingsTable.adjustColumnsWidth();
-		copyButton.setEnabled(!shownFindings.isEmpty());
+		updateExportButtons();
 		progressPanel.setVisible(false);
 		statusLabel.setText(findings.isEmpty()? "No findings." : " ");
 		revalidate();
@@ -322,6 +349,7 @@ public class NormalizationView extends JPanel {
 		// the explanations are long and (almost) all different, so a list of choices would be useless and expensive
 		filterHeader.getFilterEditor(findingsModel.findColumn("Explanation")).setAutoChoices(AutoChoices.DISABLED);
 		filterHeader.addFilter(ruleFilter);
+		filterHeader.addFilter(ignoredFilter);
 		findingsTable.adjustColumnsWidth();
 		findingsTable.addMouseListener(new MouseAdapter() {
 			@Override
@@ -367,6 +395,28 @@ public class NormalizationView extends JPanel {
 							browseTableItem.addActionListener(ev -> browseTable(finding));
 							popup.add(browseTableItem);
 						}
+						popup.addSeparator();
+						boolean ignored = ignoredFindings.isIgnored(finding);
+						JMenuItem ignoreItem = new JMenuItem(ignored? "Don't ignore" : "Ignore");
+						ignoreItem.setIcon(UIUtil.scaleIcon(ignoreItem, ignored? undoIcon : ignoreIcon));
+						ignoreItem.setToolTipText(ignored? "Show the finding again in later checks."
+								: "Hide the finding, also in later checks. The decision is stored with the data model.");
+						ignoreItem.addActionListener(ev -> setIgnored(Collections.singletonList(finding), !ignored));
+						popup.add(ignoreItem);
+						List<NormalizationFinding> notIgnored = visibleFindings(false);
+						JMenuItem ignoreAllItem = new JMenuItem("Ignore all visible (" + notIgnored.size() + ")");
+						ignoreAllItem.setIcon(UIUtil.scaleIcon(ignoreAllItem, ignoreIcon));
+						ignoreAllItem.setToolTipText("Hide all findings that are currently visible, i.e. that are not hidden by a filter, also in later checks.");
+						ignoreAllItem.addActionListener(ev -> setIgnored(notIgnored, true));
+						ignoreAllItem.setEnabled(!notIgnored.isEmpty());
+						popup.add(ignoreAllItem);
+						List<NormalizationFinding> visibleIgnored = visibleFindings(true);
+						JMenuItem dontIgnoreAllItem = new JMenuItem("Don't ignore all visible (" + visibleIgnored.size() + ")");
+						dontIgnoreAllItem.setIcon(UIUtil.scaleIcon(dontIgnoreAllItem, undoIcon));
+						dontIgnoreAllItem.setToolTipText("Show all ignored findings that are currently visible again in later checks.");
+						dontIgnoreAllItem.addActionListener(ev -> setIgnored(visibleIgnored, false));
+						dontIgnoreAllItem.setEnabled(!visibleIgnored.isEmpty());
+						popup.add(dontIgnoreAllItem);
 						UIUtil.showPopup(findingsTable, e.getX(), e.getY(), popup);
 					}
 				}
@@ -393,9 +443,27 @@ public class NormalizationView extends JPanel {
 		JPanel labelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
 		rowCountLabel = new JLabel();
 		labelPanel.add(rowCountLabel);
+		showIgnoredCheckBox = new JCheckBox("Show ignored");
+		showIgnoredCheckBox.setEnabled(false);
+		showIgnoredCheckBox.setToolTipText("Also show the findings you have decided to ignore (in gray).");
+		showIgnoredCheckBox.addItemListener(e -> {
+			ignoredFilter.reportFilterUpdatedToObservers();
+			updateChecks();
+		});
+		labelPanel.add(showIgnoredCheckBox);
 		statusLabel = new JLabel(" ");
 		statusLabel.setBorder(BorderFactory.createEmptyBorder(0, 12, 0, 0));
 		labelPanel.add(statusLabel);
+		if (sessionSupplier != null) {
+			JLabel sampleSizeLabel = new JLabel("Sample rows");
+			sampleSizeLabel.setBorder(BorderFactory.createEmptyBorder(0, 12, 0, 0));
+			labelPanel.add(sampleSizeLabel);
+			sampleSizeComboBox = SampleSize.createComboBox(this::restartCheck);
+			sampleSizeComboBox.setToolTipText("<html>Maximum number of rows of a table that are checked against the data. "
+					+ "Changing it repeats the check.<br>"
+					+ "A sample can only confirm a finding wrongly, never refute it wrongly. Also used by \"Discover Associations\".</html>");
+			labelPanel.add(sampleSizeComboBox);
+		}
 		bottomPanel.add(labelPanel, BorderLayout.WEST);
 		updateRowCount();
 		findingsTable.getRowSorter().addRowSorterListener(e -> updateRowCount());
@@ -404,8 +472,19 @@ public class NormalizationView extends JPanel {
 		copyButton.setIcon(UIUtil.scaleIcon(copyButton, copyIcon));
 		copyButton.setToolTipText("Copy the findings that are currently visible, i.e. that are not hidden by a filter, to the clipboard.");
 		copyButton.addActionListener(e -> copyToClipboard());
-		copyButton.setEnabled(!shownFindings.isEmpty());
 		buttonPanel.add(copyButton);
+		saveCsvButton = new JButton("Save as CSV...");
+		saveCsvButton.setIcon(UIUtil.scaleIcon(saveCsvButton, saveIcon));
+		saveCsvButton.setToolTipText("Save the findings that are currently visible, i.e. that are not hidden by a filter, as CSV file.");
+		saveCsvButton.addActionListener(e -> TableExport.saveAsCsv(this, findingsTable, 0));
+		buttonPanel.add(saveCsvButton);
+		saveXlsxButton = new JButton("Save as Excel...");
+		saveXlsxButton.setIcon(UIUtil.scaleIcon(saveXlsxButton, saveIcon));
+		saveXlsxButton.setToolTipText("<html>Save the findings that are currently visible, i.e. that are not hidden by a filter, as Excel file<br>"
+				+ "(.xlsx, can also be opened with LibreOffice).</html>");
+		saveXlsxButton.addActionListener(e -> TableExport.saveAsXlsx(this, findingsTable, 0, "Findings"));
+		buttonPanel.add(saveXlsxButton);
+		updateExportButtons();
 		JButton closeButton = new JButton("Close");
 		closeButton.setIcon(UIUtil.scaleIcon(closeButton, cancelIcon));
 		closeButton.addActionListener(e -> dialog.dispose());
@@ -527,7 +606,14 @@ public class NormalizationView extends JPanel {
 	 */
 	private void updateChecks() {
 		Map<String, Integer> counts = new HashMap<String, Integer>();
+		int ignored = 0;
 		for (NormalizationFinding finding: shownFindings) {
+			if (ignoredFindings.isIgnored(finding)) {
+				++ignored;
+				if (!showIgnoredCheckBox.isSelected()) {
+					continue;
+				}
+			}
 			Integer count = counts.get(finding.rule);
 			counts.put(finding.rule, count == null? 1 : count + 1);
 		}
@@ -537,10 +623,74 @@ public class NormalizationView extends JPanel {
 			JCheckBox checkBox = e.getValue();
 			checkBox.setText(NormalizationChecker.RULES.get(e.getKey()) + ": " + e.getKey() + " (" + n + ")");
 			if (n == 0) {
-				checkBox.setSelected(false);
+				if (checkBox.isSelected()) {
+					checkBox.setSelected(false);
+					autoDeselectedRules.add(e.getKey());
+				}
+			} else if (autoDeselectedRules.remove(e.getKey())) {
+				// it has findings again (shown ignored ones, or a repeated check)
+				checkBox.setSelected(true);
 			}
 			checkBox.setEnabled(n > 0);
 		}
+		showIgnoredCheckBox.setText("Show ignored (" + ignored + ")");
+		showIgnoredCheckBox.setEnabled(ignored > 0 || showIgnoredCheckBox.isSelected());
+	}
+
+	/**
+	 * Hides the findings the user has decided to ignore, unless they are to be shown.
+	 */
+	private final Filter ignoredFilter = new Filter() {
+		@SuppressWarnings("rawtypes")
+		@Override
+		public boolean include(Entry entry) {
+			return showIgnoredCheckBox.isSelected() || !isIgnoredRow((Integer) entry.getIdentifier());
+		}
+	};
+
+	/**
+	 * @param modelRow row of the table model
+	 * @return <code>true</code> if the finding in the row is ignored
+	 */
+	private boolean isIgnoredRow(int modelRow) {
+		return modelRow >= 0 && modelRow < shownFindings.size() && ignoredFindings.isIgnored(shownFindings.get(modelRow));
+	}
+
+	/**
+	 * Gets the findings that are currently visible, i.e. that are not hidden by a filter.
+	 *
+	 * @param ignored <code>true</code> for the ignored ones, <code>false</code> for the others
+	 */
+	private List<NormalizationFinding> visibleFindings(boolean ignored) {
+		List<NormalizationFinding> result = new ArrayList<NormalizationFinding>();
+		for (int i = 0; i < findingsTable.getRowCount(); ++i) {
+			int row = findingsTable.convertRowIndexToModel(i);
+			if (row >= 0 && row < shownFindings.size()) {
+				NormalizationFinding finding = shownFindings.get(row);
+				if (ignoredFindings.isIgnored(finding) == ignored) {
+					result.add(finding);
+				}
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Ignores findings or stops ignoring them, and stores the decision with the data model.
+	 */
+	private void setIgnored(List<NormalizationFinding> findings, boolean ignore) {
+		for (NormalizationFinding finding: findings) {
+			ignoredFindings.setIgnored(finding, ignore);
+		}
+		try {
+			ignoredFindings.store(executionContext);
+		} catch (Throwable t) {
+			UIUtil.showException(this, "Error", t);
+		}
+		ignoredFilter.reportFilterUpdatedToObservers();
+		updateChecks();
+		updateRowCount();
+		findingsTable.repaint();
 	}
 
 	/**
@@ -592,17 +742,17 @@ public class NormalizationView extends JPanel {
 	}
 
 	/**
-	 * Whether the session has been shut down.
+	 * The session that has been shut down last. After a cancelled check, a repeated one may connect anew.
 	 */
-	private boolean sessionShutDown;
+	private Session sessionShutDown;
 
 	/**
-	 * Shuts the session down, once. Called on windowClosed or by the worker thread,
-	 * whichever notices the closing of the dialog last.
+	 * Shuts a session down, once. Called on windowClosed or by the worker thread,
+	 * whichever notices the closing of the dialog (or the cancellation) last.
 	 */
 	private synchronized void shutDown(Session s) {
-		if (!sessionShutDown) {
-			sessionShutDown = true;
+		if (sessionShutDown != s) {
+			sessionShutDown = s;
 			try {
 				s.shutDown();
 			} catch (Throwable t) {
@@ -617,22 +767,27 @@ public class NormalizationView extends JPanel {
 	 */
 	private void startDataCheck() {
 		if (sessionSupplier == null) {
+			setCheckRunning(false);
 			return;
 		}
 		if (cancelled) {
 			// cancelled while the data model was being checked
 			statusLabel.setText("Data check cancelled.");
+			setCheckRunning(false);
 			return;
 		}
 		final List<NormalizationFinding> checkable = new ArrayList<NormalizationFinding>();
 		for (NormalizationFinding finding: shownFindings) {
-			if (finding.isDataCheckable()) {
+			// ignored findings are not worth the queries
+			if (finding.isDataCheckable() && !ignoredFindings.isIgnored(finding)) {
 				checkable.add(finding);
 			}
 		}
 		if (checkable.isEmpty()) {
+			setCheckRunning(false);
 			return;
 		}
+		final int sampleRows = SampleSize.get();
 		progressLabel.setText("Connecting to the database...");
 		progressBar.setIndeterminate(true);
 		progressPanel.setVisible(true);
@@ -645,17 +800,23 @@ public class NormalizationView extends JPanel {
 				int[] removed = new int[1];
 				String[] connectFailure = new String[1];
 				try {
-					// connecting may take a while. It cannot be interrupted, but it can be abandoned (Cancel)
-					Session s;
-					try {
-						s = sessionSupplier.call();
-					} catch (Throwable t) {
-						s = null;
-						connectFailure[0] = t.getMessage() == null? t.getClass().getSimpleName() : t.getMessage();
+					// connecting may take a while. It cannot be interrupted, but it can be abandoned (Cancel).
+					// A repeated check uses the session of the first one
+					Session s = session;
+					if (s == null) {
+						try {
+							s = sessionSupplier.call();
+						} catch (Throwable t) {
+							s = null;
+							connectFailure[0] = t.getMessage() == null? t.getClass().getSimpleName() : t.getMessage();
+						}
 					}
 					if (cancelled) {
 						if (s != null && shutDownSessionOnClose) {
 							shutDown(s);
+							if (session == s) {
+								session = null;
+							}
 						}
 						return;
 					}
@@ -670,10 +831,11 @@ public class NormalizationView extends JPanel {
 						// closed just now, maybe before the session was known to windowClosed
 						if (shutDownSessionOnClose) {
 							shutDown(s);
+							session = null;
 						}
 						return;
 					}
-					final NormalizationDataChecker checker = new NormalizationDataChecker(s, cancellationContext);
+					final NormalizationDataChecker checker = new NormalizationDataChecker(s, cancellationContext, sampleRows);
 					UIUtil.invokeLater(() -> {
 						progressBar.setIndeterminate(false);
 						progressBar.setMaximum(checkable.size());
@@ -720,12 +882,37 @@ public class NormalizationView extends JPanel {
 						}
 						// the "Data check" column has got its content
 						findingsTable.adjustColumnsWidth();
+						setCheckRunning(false);
 					});
 				}
 			}
 		}, "normalization-data-check");
 		thread.setDaemon(true);
 		thread.start();
+	}
+
+	/**
+	 * Repeats the whole check, after the sample size has been changed. Only called while no check is running
+	 * (the combo box is disabled meanwhile), so there is no thread to be stopped.
+	 */
+	private void restartCheck() {
+		cancelled = false;
+		CancellationHandler.reset(cancellationContext);
+		shownFindings.clear();
+		findingsModel.setRowCount(0);
+		updateExportButtons();
+		updateRowCount();
+		statusLabel.setText(" ");
+		startCheck();
+	}
+
+	/**
+	 * Disables the choice of the sample size while a check is running.
+	 */
+	private void setCheckRunning(boolean running) {
+		if (sampleSizeComboBox != null) {
+			sampleSizeComboBox.setEnabled(!running);
+		}
 	}
 
 	/**
@@ -743,7 +930,7 @@ public class NormalizationView extends JPanel {
 		} else {
 			shownFindings.remove(row);
 			findingsModel.removeRow(row);
-			copyButton.setEnabled(!shownFindings.isEmpty());
+			updateExportButtons();
 			updateChecks();
 		}
 		updateRowCount();
@@ -760,6 +947,7 @@ public class NormalizationView extends JPanel {
 				Component render = defaultRenderer.getTableCellRendererComponent(table, value, isSelected, false, row, column);
 				if (!isSelected) {
 					render.setBackground((row % 2 == 0) ? BG1 : BG2);
+					render.setForeground(isIgnoredRow(table.convertRowIndexToModel(row))? Color.GRAY : table.getForeground());
 				}
 				return render;
 			}
@@ -786,7 +974,20 @@ public class NormalizationView extends JPanel {
 		Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
 	}
 
+	/**
+	 * Enables the copy and save buttons if there are findings.
+	 */
+	private void updateExportButtons() {
+		boolean enabled = !shownFindings.isEmpty();
+		copyButton.setEnabled(enabled);
+		saveCsvButton.setEnabled(enabled);
+		saveXlsxButton.setEnabled(enabled);
+	}
+
 	private ImageIcon copyIcon;
+	private ImageIcon saveIcon;
+	private ImageIcon ignoreIcon;
+	private ImageIcon undoIcon;
 	private ImageIcon tableIcon;
 	private ImageIcon databaseIcon;
 	private ImageIcon detailsIcon;
@@ -795,6 +996,9 @@ public class NormalizationView extends JPanel {
 	{
 		// load images
 		copyIcon = UIUtil.readImage("/copy.png");
+		saveIcon = UIUtil.readImage("/save.png");
+		ignoreIcon = UIUtil.readImage("/minus.png");
+		undoIcon = UIUtil.readImage("/undo.png");
 		tableIcon = UIUtil.readImage("/table.png");
 		databaseIcon = UIUtil.readImage("/database.png");
 		detailsIcon = UIUtil.readImage("/editdetails.png");

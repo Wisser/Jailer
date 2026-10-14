@@ -556,7 +556,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 					browserContentCellEditor = BrowserContentCellEditor.forTable(table, rowIdSupport, session);
 					onContentCellEditorCreated(browserContentCellEditor);
 				} catch (Throwable t) {
-					// ignore
+					// the rows could not be loaded either, which has been reported already
+					Session._log.info("cell editor could not be created", t);
 				}
 			}
 			CancellationHandler.reset(this);

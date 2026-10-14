@@ -25,6 +25,7 @@ import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Column;
+import net.sf.jailer.ui.associationdiscovery.SampleSize;
 import net.sf.jailer.ui.associationdiscovery.TableProfiler;
 import net.sf.jailer.ui.normalization.NormalizationFinding.Severity;
 
@@ -42,22 +43,24 @@ public class NormalizationDataChecker {
 	 */
 	private static final long MIN_ROWS = 5;
 
-	/**
-	 * Maximum number of rows of the table that are checked. A sample can only confirm a finding
-	 * wrongly, never refute it wrongly.
-	 */
-	private static final int SAMPLE_ROWS = 100000;
-
 	private final Session session;
 	private final Object cancellationContext;
 
 	/**
+	 * Maximum number of rows of the table that are checked, or {@link SampleSize#UNLIMITED}.
+	 * A sample can only confirm a finding wrongly, never refute it wrongly.
+	 */
+	private final int sampleRows;
+
+	/**
 	 * @param session the database session
 	 * @param cancellationContext the cancellation context
+	 * @param sampleRows maximum number of rows of a table that are checked, or {@link SampleSize#UNLIMITED}
 	 */
-	public NormalizationDataChecker(Session session, Object cancellationContext) {
+	public NormalizationDataChecker(Session session, Object cancellationContext, int sampleRows) {
 		this.session = session;
 		this.cancellationContext = cancellationContext;
+		this.sampleRows = sampleRows;
 	}
 
 	/**
@@ -74,7 +77,7 @@ public class NormalizationDataChecker {
 		boolean show = false;
 		StringBuilder result = new StringBuilder();
 		long[] counts = count(finding);
-		boolean sampled = counts != null && counts[0] >= SAMPLE_ROWS;
+		boolean sampled = sampleRows != SampleSize.UNLIMITED && counts != null && counts[0] >= sampleRows;
 		int i = 0;
 		for (Map.Entry<Column, Column> copy: finding.copies.entrySet()) {
 			String text;
@@ -154,10 +157,13 @@ public class NormalizationDataChecker {
 			columns.append(columns.length() == 0? "" : ", ").append(column);
 		}
 		String sample = "Select " + columns + " From " + finding.table.getName();
-		String limitedSample = TableProfiler.limited(session, sample, SAMPLE_ROWS);
-		if (limitedSample == null && DBMS.ORACLE.equals(session.dbms)) {
-			// Oracle has no limit suffix in the configuration
-			limitedSample = sample + " where rownum <= " + SAMPLE_ROWS;
+		String limitedSample = null;
+		if (sampleRows != SampleSize.UNLIMITED) {
+			limitedSample = TableProfiler.limited(session, sample, sampleRows);
+			if (limitedSample == null && DBMS.ORACLE.equals(session.dbms)) {
+				// Oracle has no limit suffix in the configuration
+				limitedSample = sample + " where rownum <= " + sampleRows;
+			}
 		}
 		String sql = select + " From (" + (limitedSample != null? limitedSample : sample) + ") A"
 				+ " left join " + finding.parent.getName() + " B on " + join;

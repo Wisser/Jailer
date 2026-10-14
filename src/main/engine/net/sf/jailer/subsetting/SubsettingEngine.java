@@ -1929,7 +1929,8 @@ public class SubsettingEngine {
 						try {
 							r.run();
 						} catch (Throwable t) {
-							// ignore
+							// the original error is what counts
+							_log.info("cleanup failed", t);
 						}
 					};
 					tryAndIgnore.accept(() -> entityGraph.truncate(executionContext, false));

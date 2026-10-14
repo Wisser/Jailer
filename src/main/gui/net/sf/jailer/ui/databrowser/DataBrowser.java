@@ -7763,7 +7763,7 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 		}
 		// the session is shared with this browser, so the view must not shut it down
 		final Session theSession = session;
-		normalizationView = new NormalizationView(this, datamodel.get(), theSession == null? null : () -> theSession, false, null, (table, association) -> {
+		normalizationView = new NormalizationView(this, datamodel.get(), executionContext, theSession == null? null : () -> theSession, false, null, (table, association) -> {
 			// the data model may have been reloaded since the check: use the current objects
 			Table t = datamodel.get().getTable(table.getName());
 			if (t == null) {

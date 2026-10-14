@@ -89,6 +89,7 @@ import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.associationproposer.AssociationProposalWriter;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
+import net.sf.jailer.ui.util.TableExport;
 import net.sf.jailer.util.CancellationHandler;
 
 /**
@@ -107,6 +108,13 @@ public class AssociationDiscoveryView extends JPanel {
 	private final DataModel dataModel;
 	private final Session session;
 	private final ExecutionContext executionContext;
+
+	/**
+	 * The candidates the user has rejected (stored with the data model).
+	 */
+	private final RejectedCandidates rejectedCandidates;
+
+	private JCheckBox showRejectedCheckBox;
 	private final Object cancellationContext = new Object();
 
 	private final List<AssociationCandidate> proposals = new ArrayList<AssociationCandidate>();
@@ -137,12 +145,15 @@ public class AssociationDiscoveryView extends JPanel {
 	private Color defaultForeground;
 	private JCheckBox dataScanCheckBox;
 	private JComboBox<String> thresholdComboBox;
+	private JComboBox<String> sampleSizeComboBox;
 	private JButton startButton;
 	private JButton rulesButton;
 	private JButton acceptButton;
 	private JButton acceptAndEditButton;
 	private JButton selectAllButton;
 	private JButton deselectAllButton;
+	private JButton saveCsvButton;
+	private JButton saveXlsxButton;
 	private JDialog dialog;
 
 	private volatile boolean cancelled;
@@ -223,6 +234,7 @@ public class AssociationDiscoveryView extends JPanel {
 		this.dataModel = dataModel;
 		this.session = session;
 		this.executionContext = executionContext;
+		this.rejectedCandidates = RejectedCandidates.load(executionContext);
 		this.showTable = showTable;
 		this.browseTables = browseTables == null? null
 				: (a, b) -> withStatus("Opening the Data Browser...", () -> browseTables.accept(a, b));
@@ -299,11 +311,18 @@ public class AssociationDiscoveryView extends JPanel {
 				+ "child table has a matching row in the parent table.");
 		panel.add(thresholdComboBox, optionsGbc(1, 0, 1, 1));
 
+		panel.add(new JLabel("Sample rows "), optionsGbc(0, 1, 1, 0));
+		sampleSizeComboBox = SampleSize.createComboBox(null);
+		sampleSizeComboBox.setToolTipText("<html>If a table cannot be profiled as a whole (the query fails or takes too long), "
+				+ "only this many of its rows are read.<br>"
+				+ "\"unlimited\": no sampling. Such a table then stays unprofiled. Also used by \"Check Normalization\".</html>");
+		panel.add(sampleSizeComboBox, optionsGbc(1, 1, 1, 1));
+
 		dataScanCheckBox = new JCheckBox("Also find candidates without matching column names");
 		dataScanCheckBox.setToolTipText("Scan the data for columns whose values are contained in a primary key, "
 				+ "even if their names give no hint. Finds keys with cryptic names, but needs considerably more queries. "
 				+ "Composite keys are covered too, with a limited number of column combinations per pair of tables.");
-		panel.add(dataScanCheckBox, optionsGbc(0, 1, 2, 0));
+		panel.add(dataScanCheckBox, optionsGbc(0, 2, 2, 0));
 
 		rulesButton = new JButton(RULES_BUTTON_TEXT);
 		rulesButton.setIcon(UIUtil.scaleIcon(rulesButton, editIcon));
@@ -311,7 +330,7 @@ public class AssociationDiscoveryView extends JPanel {
 				+ "The rules are stored with the data model.");
 		rulesButton.addActionListener(e -> editNamingRules());
 		updateRulesButtonText();
-		panel.add(rulesButton, optionsGbc(0, 2, 2, 1));
+		panel.add(rulesButton, optionsGbc(0, 3, 2, 1));
 
 		startButton = new JButton("Start discovery");
 		// the main action of the dialog: bold, so that it catches the eye
@@ -320,7 +339,7 @@ public class AssociationDiscoveryView extends JPanel {
 		startButton.setToolTipText("Search the database for associations: profiles the tables, then verifies "
 				+ "every candidate with a query. Closing the dialog cancels a running discovery.");
 		startButton.addActionListener(e -> start());
-		GridBagConstraints startGbc = optionsGbc(0, 3, 2, 1);
+		GridBagConstraints startGbc = optionsGbc(0, 4, 2, 1);
 		startGbc.insets = new Insets(6, 4, 2, 4);
 		panel.add(startButton, startGbc);
 
@@ -393,6 +412,7 @@ public class AssociationDiscoveryView extends JPanel {
 		filterHeader.setMaxVisibleRows(20);
 		filterHeader.setRowHeightDelta(2);
 		filterHeader.addFilter(textFilter);
+		filterHeader.addFilter(rejectedFilter);
 
 		JPanel proposalsPanel = new JPanel(new BorderLayout());
 		JLabel info = new JLabel("<html><i>Check the associations you want to add to the data model. "
@@ -424,6 +444,16 @@ public class AssociationDiscoveryView extends JPanel {
 		// consumes Enter, which would otherwise press the default button ("Start discovery") and discard the result
 		filterField.addActionListener(e -> {});
 		filterPanel.add(filterField, BorderLayout.CENTER);
+		showRejectedCheckBox = new JCheckBox("Show rejected");
+		showRejectedCheckBox.setEnabled(false);
+		// no inset, so that it is aligned with the label "Filter" below
+		showRejectedCheckBox.setBorder(BorderFactory.createEmptyBorder(0, 0, 2, 0));
+		showRejectedCheckBox.setToolTipText("Also show the candidates you have rejected (in gray). They are not checked against the data.");
+		showRejectedCheckBox.addItemListener(e -> {
+			rejectedFilter.reportFilterUpdatedToObservers();
+			updateRejectedCount();
+		});
+		filterPanel.add(showRejectedCheckBox, BorderLayout.NORTH);
 		northPanel.add(filterPanel, BorderLayout.SOUTH);
 		proposalsPanel.add(northPanel, BorderLayout.NORTH);
 		proposalsPanel.add(new JScrollPane(proposalTable), BorderLayout.CENTER);
@@ -526,6 +556,92 @@ public class AssociationDiscoveryView extends JPanel {
 		}
 	};
 
+	/**
+	 * Hides the candidates the user has rejected, unless they are to be shown.
+	 */
+	private final Filter rejectedFilter = new Filter() {
+		@SuppressWarnings("rawtypes")
+		@Override
+		public boolean include(Entry entry) {
+			return (showRejectedCheckBox != null && showRejectedCheckBox.isSelected()) || !isRejectedRow((Integer) entry.getIdentifier());
+		}
+	};
+
+	/**
+	 * @param modelRow row of the proposals table model
+	 * @return <code>true</code> if the candidate in the row is rejected
+	 */
+	private boolean isRejectedRow(int modelRow) {
+		return modelRow >= 0 && modelRow < proposals.size() && rejectedCandidates.isRejected(proposals.get(modelRow));
+	}
+
+	/**
+	 * Gets the proposals that are currently visible, i.e. that are not hidden by a filter.
+	 *
+	 * @param rejected <code>true</code> for the rejected ones, <code>false</code> for the others
+	 */
+	private List<AssociationCandidate> visibleProposals(boolean rejected) {
+		List<AssociationCandidate> result = new ArrayList<AssociationCandidate>();
+		for (int i = 0; i < proposalTable.getRowCount(); ++i) {
+			int modelRow = proposalTable.convertRowIndexToModel(i);
+			if (modelRow >= 0 && modelRow < proposals.size() && isRejectedRow(modelRow) == rejected) {
+				result.add(proposals.get(modelRow));
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Gets the checked proposals that are not rejected yet.
+	 */
+	private List<AssociationCandidate> checkedProposals() {
+		List<AssociationCandidate> result = new ArrayList<AssociationCandidate>();
+		for (int i = 0; i < proposals.size() && i < proposalsModel.getRowCount(); ++i) {
+			if (Boolean.TRUE.equals(proposalsModel.getValueAt(i, 0)) && !isRejectedRow(i)) {
+				result.add(proposals.get(i));
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Rejects candidates or stops rejecting them, and stores the decision with the data model.
+	 * A rejected candidate is unchecked, so that it is not accepted unnoticed.
+	 */
+	private void setRejected(List<AssociationCandidate> candidates, boolean reject) {
+		for (AssociationCandidate candidate: candidates) {
+			rejectedCandidates.setRejected(candidate, reject);
+			if (reject) {
+				int row = proposals.indexOf(candidate);
+				if (row >= 0) {
+					proposalsModel.setValueAt(Boolean.FALSE, row, 0);
+				}
+			}
+		}
+		try {
+			rejectedCandidates.store(executionContext);
+		} catch (Throwable t) {
+			UIUtil.showException(this, "Error", t);
+		}
+		rejectedFilter.reportFilterUpdatedToObservers();
+		updateRejectedCount();
+		proposalTable.repaint();
+	}
+
+	/**
+	 * Shows the number of rejected proposals at the "Show rejected" check box.
+	 */
+	private void updateRejectedCount() {
+		int count = 0;
+		for (int i = 0; i < proposals.size(); ++i) {
+			if (isRejectedRow(i)) {
+				++count;
+			}
+		}
+		showRejectedCheckBox.setText("Show rejected (" + count + ")");
+		showRejectedCheckBox.setEnabled(count > 0 || showRejectedCheckBox.isSelected());
+	}
+
 	private TableCellRenderer createRenderer(final JTable table) {
 		final TableCellRenderer defaultRenderer = table.getDefaultRenderer(String.class);
 		return new TableCellRenderer() {
@@ -549,6 +665,7 @@ public class AssociationDiscoveryView extends JPanel {
 				}
 				if (!isSelected) {
 					render.setBackground((row % 2 == 0) ? BG1 : BG2);
+					render.setForeground(table == proposalTable && isRejectedRow(table.convertRowIndexToModel(row))? Color.GRAY : table.getForeground());
 				}
 				if (render instanceof JLabel) {
 					((JLabel) render).setToolTipText(value == null? null : UIUtil.toHTML(String.valueOf(value), 200));
@@ -642,6 +759,17 @@ public class AssociationDiscoveryView extends JPanel {
 		acceptAndEditButton.setToolTipText("Open the checked associations in the Data Model Editor, to review them before saving.");
 		acceptAndEditButton.addActionListener(e -> acceptProposals(true));
 		panel.add(acceptAndEditButton);
+		saveCsvButton = new JButton("Save as CSV...");
+		saveCsvButton.setIcon(UIUtil.scaleIcon(saveCsvButton, saveIcon));
+		saveCsvButton.setToolTipText("Save the proposals that are currently visible, i.e. that are not hidden by a filter, as CSV file.");
+		saveCsvButton.addActionListener(e -> TableExport.saveAsCsv(this, proposalTable, 1));
+		panel.add(saveCsvButton);
+		saveXlsxButton = new JButton("Save as Excel...");
+		saveXlsxButton.setIcon(UIUtil.scaleIcon(saveXlsxButton, saveIcon));
+		saveXlsxButton.setToolTipText("<html>Save the proposals that are currently visible, i.e. that are not hidden by a filter, as Excel file<br>"
+				+ "(.xlsx, can also be opened with LibreOffice).</html>");
+		saveXlsxButton.addActionListener(e -> TableExport.saveAsXlsx(this, proposalTable, 1, "Proposals"));
+		panel.add(saveXlsxButton);
 		JButton closeButton = new JButton("Close");
 		closeButton.setIcon(UIUtil.scaleIcon(closeButton, cancelIcon));
 		closeButton.addActionListener(e -> dialog.dispose());
@@ -658,7 +786,11 @@ public class AssociationDiscoveryView extends JPanel {
 	 */
 	private void setProposalsSelected(boolean selected) {
 		for (int i = 0; i < proposalTable.getRowCount(); ++i) {
-			proposalsModel.setValueAt(selected, proposalTable.convertRowIndexToModel(i), 0);
+			int modelRow = proposalTable.convertRowIndexToModel(i);
+			// rejected ones are only checked one by one, explicitly
+			if (!selected || !isRejectedRow(modelRow)) {
+				proposalsModel.setValueAt(selected, modelRow, 0);
+			}
 		}
 		proposalTable.repaint();
 	}
@@ -678,6 +810,8 @@ public class AssociationDiscoveryView extends JPanel {
 		acceptAndEditButton.setEnabled(any && !running);
 		selectAllButton.setEnabled(proposalsModel.getRowCount() > 0);
 		deselectAllButton.setEnabled(any);
+		saveCsvButton.setEnabled(proposalsModel.getRowCount() > 0);
+		saveXlsxButton.setEnabled(proposalsModel.getRowCount() > 0);
 	}
 
 	/**
@@ -709,6 +843,7 @@ public class AssociationDiscoveryView extends JPanel {
 		proposals.clear();
 		proposalKeys.clear();
 		proposalsModel.setRowCount(0);
+		updateRejectedCount();
 		known.clear();
 		knownModel.setRowCount(0);
 		statementsPane.setText("");
@@ -728,17 +863,19 @@ public class AssociationDiscoveryView extends JPanel {
 		startButton.setEnabled(false);
 		dataScanCheckBox.setEnabled(false);
 		thresholdComboBox.setEnabled(false);
+		sampleSizeComboBox.setEnabled(false);
 		rulesButton.setEnabled(false);
 		updateButtonsState();
 
 		final boolean dataScan = dataScanCheckBox.isSelected();
 		final double threshold = threshold();
 		runThreshold = threshold;
+		final int sampleRows = SampleSize.get();
 		Thread thread = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					discover(dataScan, threshold);
+					discover(dataScan, threshold, sampleRows);
 				} catch (Throwable t) {
 					final Throwable error = t;
 					UIUtil.invokeLater(new Runnable() {
@@ -756,6 +893,7 @@ public class AssociationDiscoveryView extends JPanel {
 							startButton.setEnabled(true);
 							dataScanCheckBox.setEnabled(true);
 							thresholdComboBox.setEnabled(true);
+							sampleSizeComboBox.setEnabled(true);
 							rulesButton.setEnabled(true);
 							progressLabel.setText(cancelled? "Cancelled." : "Done.");
 							updateButtonsState();
@@ -773,8 +911,9 @@ public class AssociationDiscoveryView extends JPanel {
 	 *
 	 * @param dataScan also look for candidates without name evidence
 	 * @param threshold minimum fraction of matching rows
+	 * @param sampleRows number of rows read if a table has to be sampled, or {@link SampleSize#UNLIMITED}
 	 */
-	private void discover(boolean dataScan, double threshold) {
+	private void discover(boolean dataScan, double threshold, int sampleRows) {
 		// the phase the finder is currently in, for its progress messages
 		final String[] phase = new String[] { "Matching names..." };
 		DiscoveryLog log = new DiscoveryLog() {
@@ -833,7 +972,7 @@ public class AssociationDiscoveryView extends JPanel {
 		}
 		Map<Table, TableProfile> profiles = new HashMap<Table, TableProfile>();
 		if (profilingNeeded) {
-			TableProfiler profiler = new TableProfiler(session, cancellationContext, log);
+			TableProfiler profiler = new TableProfiler(session, cancellationContext, log, sampleRows);
 			progress("Profiling tables...", 0, tables.size());
 			int i = 0;
 			for (Table table: tables) {
@@ -880,12 +1019,17 @@ public class AssociationDiscoveryView extends JPanel {
 		int checked = 0;
 		int rejected = 0;
 		int unchecked = 0;
+		int rejectedByUser = 0;
 		progress("Verifying candidates...", 0, candidates.size());
 		for (AssociationCandidate candidate: candidates) {
 			if (cancelled) {
 				return;
 			}
-			if (candidate.withoutDataCheck) {
+			if (rejectedCandidates.isRejected(candidate)) {
+				// not worth the queries. Proposed (hidden) anyway, so that "Show rejected" can show it
+				addProposal(candidate);
+				++rejectedByUser;
+			} else if (candidate.withoutDataCheck) {
 				// the rule that found it is binding according to the user
 				addProposal(candidate);
 				++unchecked;
@@ -900,7 +1044,7 @@ public class AssociationDiscoveryView extends JPanel {
 			++checked;
 			progress("Verifying candidates... (" + checked + " of " + candidates.size() + ")", checked, candidates.size());
 		}
-		status(nameCandidates, candidates.size() - nameCandidates, rejected, statements, unchecked);
+		status(nameCandidates, candidates.size() - nameCandidates, rejected, statements, unchecked, rejectedByUser);
 	}
 
 	/**
@@ -987,7 +1131,7 @@ public class AssociationDiscoveryView extends JPanel {
 			proposals.add(candidate);
 			proposalKeys.add(candidate.key());
 			proposalsModel.addRow(new Object[] {
-					Boolean.valueOf(candidate.evidence != AssociationCandidate.Evidence.DATA_ONLY),
+					Boolean.valueOf(candidate.evidence != AssociationCandidate.Evidence.DATA_ONLY && !rejectedCandidates.isRejected(candidate)),
 					dataModel.getDisplayName(candidate.child),
 					dataModel.getDisplayName(candidate.parent),
 					candidate.getCondition(),
@@ -998,6 +1142,7 @@ public class AssociationDiscoveryView extends JPanel {
 		}
 		if (!newProposals.isEmpty()) {
 			updateButtonsState();
+			updateRejectedCount();
 		}
 		if (!proposalColumnsAdjusted && proposalsModel.getRowCount() >= ADJUST_COLUMNS_AT) {
 			proposalColumnsAdjusted = true;
@@ -1026,22 +1171,26 @@ public class AssociationDiscoveryView extends JPanel {
 	 * @param rejected number of candidates below the threshold
 	 * @param statements number of verification queries executed
 	 * @param unchecked number of candidates accepted without checking the data
+	 * @param rejectedByUser number of candidates not checked because the user has rejected them
 	 */
 	private void status(final int nameCandidates, final int dataCandidates, final int rejected, final int statements,
-			final int unchecked) {
+			final int unchecked, final int rejectedByUser) {
 		UIUtil.invokeLater(new Runnable() {
 			@Override
 			public void run() {
 				flush();
 				int candidateCount = nameCandidates + dataCandidates;
-				StringBuilder text = new StringBuilder(proposals.size() + " of " + candidateCount + " candidates confirmed");
+				StringBuilder text = new StringBuilder((proposals.size() - rejectedByUser) + " of " + candidateCount + " candidates confirmed");
 				text.append(" (" + nameCandidates + " from names, " + dataCandidates + " from the data scan)");
 				int known = knownModel.getRowCount();
 				if (known > 0) {
 					text.append(", " + known + " already known");
 				}
 				if (rejected > 0) {
-					text.append(", " + rejected + " rejected");
+					text.append(", " + rejected + " below the threshold");
+				}
+				if (rejectedByUser > 0) {
+					text.append(", " + rejectedByUser + " rejected by you (not checked)");
 				}
 //				text.append(", " + statements + " verification queries");
 				if (unchecked > 0) {
@@ -1212,6 +1361,32 @@ public class AssociationDiscoveryView extends JPanel {
 				popup.add(tableItem("Browse Table A and B", databaseIcon, "Open tables " + candidate.child.getUnqualifiedName() + " and "
 						+ candidate.parent.getUnqualifiedName() + " in the Data Browser.", () -> browseTables.accept(candidate.child, candidate.parent)));
 			}
+			if (table == proposalTable) {
+				popup.addSeparator();
+				boolean rejected = rejectedCandidates.isRejected(candidate);
+				popup.add(tableItem(rejected? "Don't reject" : "Reject", rejected? undoIcon : rejectIcon,
+						rejected? "Propose the association again in later discoveries (it will be checked against the data then)."
+								: "Hide the association and don't propose it in later discoveries. The decision is stored with the data model.",
+						() -> setRejected(Collections.singletonList(candidate), !rejected)));
+				List<AssociationCandidate> checkedProposals = checkedProposals();
+				JMenuItem rejectSelectedItem = tableItem("Reject selected (" + checkedProposals.size() + ")", rejectIcon,
+						"Reject all proposals that are selected (checked).",
+						() -> setRejected(checkedProposals, true));
+				rejectSelectedItem.setEnabled(!checkedProposals.isEmpty());
+				popup.add(rejectSelectedItem);
+				List<AssociationCandidate> notRejected = visibleProposals(false);
+				JMenuItem rejectVisibleItem = tableItem("Reject all visible (" + notRejected.size() + ")", rejectIcon,
+						"Reject all proposals that are currently visible, i.e. that are not hidden by a filter.",
+						() -> setRejected(notRejected, true));
+				rejectVisibleItem.setEnabled(!notRejected.isEmpty());
+				popup.add(rejectVisibleItem);
+				List<AssociationCandidate> visibleRejected = visibleProposals(true);
+				JMenuItem dontRejectVisibleItem = tableItem("Don't reject all visible (" + visibleRejected.size() + ")", undoIcon,
+						"Propose all rejected associations that are currently visible again in later discoveries.",
+						() -> setRejected(visibleRejected, false));
+				dontRejectVisibleItem.setEnabled(!visibleRejected.isEmpty());
+				popup.add(dontRejectVisibleItem);
+			}
 			UIUtil.showPopup(table, e.getX(), e.getY(), popup);
 		}
 
@@ -1276,8 +1451,11 @@ public class AssociationDiscoveryView extends JPanel {
 	}
 
 	private ImageIcon runIcon;
+	private ImageIcon saveIcon;
 	private ImageIcon selectIcon;
 	private ImageIcon clearIcon;
+	private ImageIcon rejectIcon;
+	private ImageIcon undoIcon;
 	private ImageIcon okIcon;
 	private ImageIcon cancelIcon;
 	private ImageIcon addIcon;
@@ -1292,8 +1470,11 @@ public class AssociationDiscoveryView extends JPanel {
 	{
 		// load images
 		runIcon = UIUtil.readImage("/run.png");
+		saveIcon = UIUtil.readImage("/save.png");
 		selectIcon = UIUtil.readImage("/select.png");
 		clearIcon = UIUtil.readImage("/clear.png");
+		rejectIcon = UIUtil.readImage("/minus.png");
+		undoIcon = UIUtil.readImage("/undo.png");
 		okIcon = UIUtil.readImage("/buttonok.png");
 		cancelIcon = UIUtil.readImage("/buttoncancel.png");
 		addIcon = UIUtil.readImage("/add.png");
