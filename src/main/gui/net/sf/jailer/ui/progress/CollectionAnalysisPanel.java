@@ -50,6 +50,7 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
 
@@ -166,7 +167,7 @@ public class CollectionAnalysisPanel extends JPanel {
 		add(summaryLabel, BorderLayout.NORTH);
 
 		tableModel = new AnalysisTableModel();
-		table = createTable(tableModel, 3);
+		table = createTable(tableModel, 3, tableModel.columnToolTips);
 		TableRowSorter<AnalysisTableModel> sorter = new TableRowSorter<AnalysisTableModel>(tableModel);
 		sorter.setSortKeys(Collections.singletonList(new SortKey(3, SortOrder.DESCENDING)));
 		table.setRowSorter(sorter);
@@ -206,7 +207,7 @@ public class CollectionAnalysisPanel extends JPanel {
 		});
 
 		detailsTableModel = new PredecessorTableModel();
-		detailsTable = createTable(detailsTableModel, 2);
+		detailsTable = createTable(detailsTableModel, 2, detailsTableModel.columnToolTips);
 		TableRowSorter<PredecessorTableModel> detailsSorter = new TableRowSorter<PredecessorTableModel>(detailsTableModel);
 		detailsSorter.setSortKeys(Collections.singletonList(new SortKey(2, SortOrder.DESCENDING)));
 		detailsTable.setRowSorter(detailsSorter);
@@ -271,10 +272,20 @@ public class CollectionAnalysisPanel extends JPanel {
 	 *
 	 * @param model the model
 	 * @param firstRightAlignedColumn index of the first column which is aligned to the right
+	 * @param columnToolTips tool tips of the column headers, by model column
 	 * @return the table
 	 */
-	private JTable createTable(final AbstractTableModel model, final int firstRightAlignedColumn) {
+	private JTable createTable(final AbstractTableModel model, final int firstRightAlignedColumn, final String[] columnToolTips) {
 		final JTable newTable = new JTable(model);
+		newTable.setTableHeader(new JTableHeader(newTable.getColumnModel()) {
+			@Override
+			public String getToolTipText(MouseEvent e) {
+				int column = columnAtPoint(e.getPoint());
+				int modelColumn = column < 0? -1 : newTable.convertColumnIndexToModel(column);
+				return modelColumn >= 0 && modelColumn < columnToolTips.length? columnToolTips[modelColumn] : null;
+			}
+			private static final long serialVersionUID = -2318845710023419533L;
+		});
 		newTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 		newTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		newTable.setShowGrid(false);
@@ -1018,6 +1029,17 @@ public class CollectionAnalysisPanel extends JPanel {
 
 		private final String[] columnNames = new String[] { "Association", "From", "To", "Rows", "Per Source Row", "Share", "Cumulated", "Step" };
 
+		private final String[] columnToolTips = new String[] {
+				"<html>The association through which the rows have been collected.<br>\"(subject)\" stands for the subject rows.</html>",
+				"Source table of the association.",
+				"Destination table, the table the rows have been collected into.",
+				"<html>Rows collected through this association.<br>Each row is counted only for the association that has collected it first.</html>",
+				"<html>Rows divided by the rows collected into the source table.<br>A value far above 1 marks an association that multiplies the subset.</html>",
+				"Share of this association in all collected rows.",
+				"<html>Share of this entry together with all entries that have collected more rows.</html>",
+				"The step, or range of steps, in which this association has collected rows."
+		};
+
 		@Override
 		public int getRowCount() {
 			return rows.size();
@@ -1077,6 +1099,13 @@ public class CollectionAnalysisPanel extends JPanel {
 	private class PredecessorTableModel extends AbstractTableModel {
 
 		private final String[] columnNames = new String[] { "Possible Predecessor", "From", "Rows", "Step" };
+
+		private final String[] columnToolTips = new String[] {
+				"<html>An association which has brought rows into the source table of the selected association<br>one step before the selected association has been resolved.</html>",
+				"Source table of the possible predecessor.",
+				"<html>Rows the predecessor has brought in one step before<br>the selected association has been resolved.</html>",
+				"The step, or range of steps, in which the predecessor has collected rows."
+		};
 
 		@Override
 		public int getRowCount() {

@@ -687,7 +687,11 @@ public class DataModel {
 					if (nameList.size() > 0) {
 						CsvFile.Line line =  nameList.get(0);
 						name = line.cells.get(0);
-						lastModified = Long.parseLong(line.cells.get(1));
+						// the shipped demo models have no timestamp, the file's own one is kept then
+						String modified = line.cells.size() > 1? line.cells.get(1) : null;
+						if (modified != null && modified.trim().length() > 0) {
+							lastModified = Long.parseLong(modified.trim());
+						}
 					}
 				}
 			} catch (Throwable t) {
