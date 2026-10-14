@@ -125,9 +125,6 @@ public class AssociationCandidateDetailsView extends JPanel {
 		addField(header, row++, "Evidence", candidate.getEvidenceText());
 		addField(header, row++, "Confidence", candidate.withoutDataCheck? "100 % (by a naming rule, not checked against the data)"
 				: String.format(Locale.US, "%.1f", candidate.confidence) + " %");
-		if (candidate.cardinality != null) {
-			addField(header, row++, "Cardinality", candidate.cardinality.toString());
-		}
 		if (candidate.nonNullCount >= 0) {
 			long matched = candidate.nonNullCount - Math.max(0, candidate.orphans);
 			addField(header, row++, "Rows", matched + " of " + candidate.nonNullCount + " rows match"

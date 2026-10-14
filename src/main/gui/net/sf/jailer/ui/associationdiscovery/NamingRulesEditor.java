@@ -228,8 +228,8 @@ public class NamingRulesEditor extends JPanel {
 			withoutDataCheckCheckBox = new JCheckBox("Accept without checking the data");
 			withoutDataCheckCheckBox.setToolTipText("Propose what this rule matches without running a verification "
 					+ "query. For a convention you know to be binding, for tables that are empty - where nothing can "
-					+ "be confirmed - and for tables too large to check. Such proposals have no matching quota and no "
-					+ "cardinality, so their confidence stays empty.");
+					+ "be confirmed - and for tables too large to check. Such proposals have no matching quota, "
+					+ "so their confidence stays empty.");
 			c.gridx = 0;
 			c.gridy = 3;
 			c.gridwidth = 2;

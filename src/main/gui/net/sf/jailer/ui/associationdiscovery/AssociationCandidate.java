@@ -17,7 +17,6 @@ package net.sf.jailer.ui.associationdiscovery;
 
 import java.util.List;
 
-import net.sf.jailer.datamodel.Cardinality;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.Quoting;
@@ -87,11 +86,6 @@ public class AssociationCandidate {
 	 * Fraction of child rows that have a matching parent row, <code>-1</code> if not verified.
 	 */
 	public double matchRatio = -1;
-
-	/**
-	 * Cardinality as derived from the profile, <code>null</code> if unknown.
-	 */
-	public Cardinality cardinality;
 
 	/**
 	 * Confidence in percent.
@@ -168,9 +162,6 @@ public class AssociationCandidate {
 				text.append(" (" + orphans + " without parent)");
 			}
 		}
-		if (cardinality != null) {
-			text.append("; " + cardinality.toString());
-		}
 		return text.toString();
 	}
 
@@ -185,6 +176,20 @@ public class AssociationCandidate {
 		for (int i = 0; i < childColumns.size(); ++i) {
 			key.append("|" + Quoting.normalizeIdentifier(childColumns.get(i).name)
 					+ "=" + Quoting.normalizeIdentifier(parentColumns.get(i).name));
+		}
+		return key.toString();
+	}
+
+	/**
+	 * Gets the {@link #key()} of the candidate in the reverse direction (parent to child, with the same columns).
+	 *
+	 * @return the key
+	 */
+	public String reverseKey() {
+		StringBuilder key = new StringBuilder(Quoting.normalizeIdentifier(parent.getName()) + ">" + Quoting.normalizeIdentifier(child.getName()));
+		for (int i = 0; i < parentColumns.size(); ++i) {
+			key.append("|" + Quoting.normalizeIdentifier(parentColumns.get(i).name)
+					+ "=" + Quoting.normalizeIdentifier(childColumns.get(i).name));
 		}
 		return key.toString();
 	}

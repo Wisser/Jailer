@@ -21,7 +21,6 @@ import java.util.Map;
 
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.ResultSetReader;
-import net.sf.jailer.datamodel.Cardinality;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.associationdiscovery.TableProfile.ColumnProfile;
@@ -94,7 +93,6 @@ public class CandidateVerifier {
 		}
 		candidate.orphans = orphans;
 		candidate.matchRatio = (double) (nonNullCount - orphans) / nonNullCount;
-		candidate.cardinality = cardinalityOf(candidate, nonNullCount);
 		candidate.confidence = confidenceOf(candidate);
 		return statements;
 	}
@@ -147,28 +145,6 @@ public class CandidateVerifier {
 			return -1;
 		}
 		return columnProfile.nonNullCount;
-	}
-
-	/**
-	 * Derives the cardinality from the profile of the child columns.
-	 *
-	 * @param candidate the candidate
-	 * @param nonNullCount number of child rows with a complete foreign key
-	 * @return the cardinality, or <code>null</code> if unknown
-	 */
-	private Cardinality cardinalityOf(AssociationCandidate candidate, long nonNullCount) {
-		if (candidate.childColumns.size() != 1) {
-			return null;
-		}
-		TableProfile profile = profiles.get(candidate.child);
-		if (profile == null || profile.failed || profile.sampled) {
-			return null;
-		}
-		ColumnProfile columnProfile = profile.get(candidate.childColumns.get(0));
-		if (columnProfile == null || columnProfile.distinctCount < 0) {
-			return null;
-		}
-		return columnProfile.distinctCount == nonNullCount? Cardinality.ONE_TO_ONE : Cardinality.MANY_TO_ONE;
 	}
 
 	/**

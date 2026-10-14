@@ -24,6 +24,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Dialog.ModalityType;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
@@ -40,12 +42,14 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultCellEditor;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -59,17 +63,22 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter.SortKey;
 import javax.swing.SortOrder;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
 import org.fife.rsta.ui.EscapableDialog;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
+import net.coderazzi.filters.Filter;
 import net.coderazzi.filters.gui.AutoChoices;
 import net.coderazzi.filters.gui.TableFilterHeader;
 import net.sf.jailer.ExecutionContext;
@@ -101,6 +110,21 @@ public class AssociationDiscoveryView extends JPanel {
 	private final Object cancellationContext = new Object();
 
 	private final List<AssociationCandidate> proposals = new ArrayList<AssociationCandidate>();
+
+	/**
+	 * The {@link AssociationCandidate#key()}s of the proposals.
+	 */
+	private final Set<String> proposalKeys = new HashSet<String>();
+
+	/**
+	 * Minimum fraction of matching rows of the last discovery run.
+	 */
+	private double runThreshold;
+
+	/**
+	 * Match ratios that are less than this above the threshold are considered close to it.
+	 */
+	private static final double CLOSE_TO_THRESHOLD = 0.05;
 	private DefaultTableModel proposalsModel;
 	private DefaultTableModel knownModel;
 	private JTable proposalTable;
@@ -326,7 +350,7 @@ public class AssociationDiscoveryView extends JPanel {
 	private JTabbedPane createTabbedPane() {
 		JTabbedPane tabbedPane = new JTabbedPane();
 
-		proposalsModel = new DefaultTableModel(new String[] { " ", "A", "B", "Condition", "Confidence", "Cardinality", "Evidence" }, 0) {
+		proposalsModel = new DefaultTableModel(new String[] { " ", "A", "B", "Condition", "Confidence", "Match", "Evidence" }, 0) {
 			@Override
 			public boolean isCellEditable(int row, int column) {
 				return column == 0;
@@ -341,7 +365,7 @@ public class AssociationDiscoveryView extends JPanel {
 				if (columnIndex == 0) {
 					return Boolean.class;
 				}
-				if (columnIndex == 4) {
+				if (columnIndex == 4 || columnIndex == 5) {
 					return Double.class;
 				}
 				return super.getColumnClass(columnIndex);
@@ -368,13 +392,40 @@ public class AssociationDiscoveryView extends JPanel {
 		filterHeader.setTable(proposalTable);
 		filterHeader.setMaxVisibleRows(20);
 		filterHeader.setRowHeightDelta(2);
+		filterHeader.addFilter(textFilter);
 
 		JPanel proposalsPanel = new JPanel(new BorderLayout());
 		JLabel info = new JLabel("<html><i>Check the associations you want to add to the data model. "
 				+ "The confidence estimates how likely a candidate is a real foreign key. "
-				+ "Double-click a row for details, right-click for more.</i></html>");
+				+ "Match: share of the rows of A that have a matching row in B (green: all rows, orange: close to the threshold). "
+				+ "Double-click a row (or press Enter) for details, Space checks it, right-click for more.</i></html>");
 		info.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
-		proposalsPanel.add(info, BorderLayout.NORTH);
+		JPanel northPanel = new JPanel(new BorderLayout());
+		northPanel.add(info, BorderLayout.NORTH);
+		JPanel filterPanel = new JPanel(new BorderLayout(4, 0));
+		filterPanel.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
+		filterPanel.add(new JLabel("Filter "), BorderLayout.WEST);
+		filterField = new JTextField();
+		filterField.setToolTipText("Shows only the proposals whose table A, table B or condition contains this text (ignoring case).");
+		filterField.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				textFilter.reportFilterUpdatedToObservers();
+			}
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				textFilter.reportFilterUpdatedToObservers();
+			}
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				textFilter.reportFilterUpdatedToObservers();
+			}
+		});
+		// consumes Enter, which would otherwise press the default button ("Start discovery") and discard the result
+		filterField.addActionListener(e -> {});
+		filterPanel.add(filterField, BorderLayout.CENTER);
+		northPanel.add(filterPanel, BorderLayout.SOUTH);
+		proposalsPanel.add(northPanel, BorderLayout.NORTH);
 		proposalsPanel.add(new JScrollPane(proposalTable), BorderLayout.CENTER);
 		tabbedPane.addTab("Proposals", UIUtil.scaleIcon(tabbedPane, addIcon), proposalsPanel);
 
@@ -391,6 +442,7 @@ public class AssociationDiscoveryView extends JPanel {
 		knownTable.setAutoCreateRowSorter(true);
 		proposalTable.addMouseListener(new CandidateMouseListener(proposalTable, proposals, true));
 		knownTable.addMouseListener(new CandidateMouseListener(knownTable, known, false));
+		installKeys();
 		tabbedPane.addTab("Already known", UIUtil.scaleIcon(tabbedPane, modelIcon), new JScrollPane(knownTable));
 
 		statementsPane = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false);
@@ -407,6 +459,73 @@ public class AssociationDiscoveryView extends JPanel {
 		return tabbedPane;
 	}
 
+	/**
+	 * Keyboard support of the proposals table: Enter opens the details of the selected proposal,
+	 * Space checks or unchecks it.
+	 */
+	@SuppressWarnings("serial")
+	private void installKeys() {
+		proposalTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "showProposalDetails");
+		proposalTable.getActionMap().put("showProposalDetails", new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int modelRow = selectedProposalRow();
+				if (modelRow >= 0) {
+					showDetails(proposals.get(modelRow));
+				}
+			}
+		});
+		proposalTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "toggleProposal");
+		proposalTable.getActionMap().put("toggleProposal", new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int modelRow = selectedProposalRow();
+				if (modelRow >= 0) {
+					if (proposalTable.isEditing()) {
+						proposalTable.getCellEditor().cancelCellEditing();
+					}
+					proposalsModel.setValueAt(!Boolean.TRUE.equals(proposalsModel.getValueAt(modelRow, 0)), modelRow, 0);
+					proposalTable.repaint();
+				}
+			}
+		});
+	}
+
+	/**
+	 * @return the model row of the selected proposal, or <code>-1</code> if none is selected
+	 */
+	private int selectedProposalRow() {
+		int row = proposalTable.getSelectedRow();
+		if (row < 0) {
+			return -1;
+		}
+		int modelRow = proposalTable.convertRowIndexToModel(row);
+		return modelRow < proposals.size()? modelRow : -1;
+	}
+
+	private JTextField filterField;
+
+	/**
+	 * Shows only the proposals whose table A, table B or condition contains the text of the filter field.
+	 */
+	private final Filter textFilter = new Filter() {
+		@SuppressWarnings("rawtypes")
+		@Override
+		public boolean include(Entry entry) {
+			String text = filterField == null? "" : filterField.getText().trim().toLowerCase(Locale.ENGLISH);
+			if (text.isEmpty()) {
+				return true;
+			}
+			for (int column = 1; column <= 3; ++column) {
+				Object value = entry.getValue(column);
+				if (value != null && String.valueOf(value).toLowerCase(Locale.ENGLISH).contains(text)) {
+					return true;
+				}
+			}
+			return false;
+		}
+	};
+
 	private TableCellRenderer createRenderer(final JTable table) {
 		final TableCellRenderer defaultRenderer = table.getDefaultRenderer(String.class);
 		return new TableCellRenderer() {
@@ -417,6 +536,9 @@ public class AssociationDiscoveryView extends JPanel {
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 				if (value instanceof Double) {
 					value = String.format(Locale.US, "%.1f", value) + " %";
+				}
+				if (table == proposalTable && table.convertColumnIndexToModel(column) == 6 && isMutual(table.convertRowIndexToModel(row))) {
+					value = value + "; mutual: also proposed in the reverse direction";
 				}
 				Component render = defaultRenderer.getTableCellRendererComponent(table, value, isSelected, false, row, column);
 				if (value instanceof Boolean) {
@@ -431,9 +553,58 @@ public class AssociationDiscoveryView extends JPanel {
 				if (render instanceof JLabel) {
 					((JLabel) render).setToolTipText(value == null? null : UIUtil.toHTML(String.valueOf(value), 200));
 				}
+				if (table == proposalTable && table.convertColumnIndexToModel(column) == 5) {
+					markMatchRatio(table, render, isSelected, row);
+				}
 				return render;
 			}
 		};
+	}
+
+	/**
+	 * Whether a proposal is also proposed in the reverse direction (B to A with the same columns),
+	 * which is typical for tables that share their primary key, or for shared IDs.
+	 *
+	 * @param modelRow the row of the proposal (model index)
+	 */
+	private boolean isMutual(int modelRow) {
+		if (modelRow < 0 || modelRow >= proposals.size()) {
+			return false;
+		}
+		return proposalKeys.contains(proposals.get(modelRow).reverseKey());
+	}
+
+	/**
+	 * Colors the match cell of a proposal: green if all rows match, orange if the match ratio is close to the threshold.
+	 *
+	 * @param table the proposals table
+	 * @param render the cell's render component
+	 * @param isSelected whether the row is selected
+	 * @param row the row (view index)
+	 */
+	private void markMatchRatio(JTable table, Component render, boolean isSelected, int row) {
+		int modelRow = table.convertRowIndexToModel(row);
+		if (modelRow < 0 || modelRow >= proposals.size()) {
+			return;
+		}
+		AssociationCandidate candidate = proposals.get(modelRow);
+		if (candidate.withoutDataCheck || candidate.matchRatio < 0 || candidate.nonNullCount < 0) {
+			return;
+		}
+		boolean all = candidate.orphans == 0;
+		boolean close = !all && candidate.matchRatio < runThreshold + CLOSE_TO_THRESHOLD;
+		if (!isSelected) {
+			if (all) {
+				render.setBackground(Colors.Color_220_255_220);
+			} else if (close) {
+				render.setBackground(Colors.Color_255_230_200);
+			}
+		}
+		if (render instanceof JLabel) {
+			long matched = candidate.nonNullCount - Math.max(0, candidate.orphans);
+			((JLabel) render).setToolTipText(matched + " of " + candidate.nonNullCount + " rows match"
+					+ (close? " (close to the threshold of " + String.format(Locale.US, "%.0f", runThreshold * 100) + " %)" : ""));
+		}
 	}
 
 	private JPanel createProgressPanel() {
@@ -493,13 +664,16 @@ public class AssociationDiscoveryView extends JPanel {
 	}
 
 	private void updateButtonsState() {
-		boolean any = false;
+		int checked = 0;
 		for (int i = 0; i < proposalsModel.getRowCount(); ++i) {
 			if (Boolean.TRUE.equals(proposalsModel.getValueAt(i, 0))) {
-				any = true;
-				break;
+				++checked;
 			}
 		}
+		boolean any = checked > 0;
+		String count = any? " (" + checked + ")" : "";
+		acceptButton.setText("Accept" + count);
+		acceptAndEditButton.setText("Accept and Edit" + count + "...");
 		acceptButton.setEnabled(any && !running);
 		acceptAndEditButton.setEnabled(any && !running);
 		selectAllButton.setEnabled(proposalsModel.getRowCount() > 0);
@@ -533,6 +707,7 @@ public class AssociationDiscoveryView extends JPanel {
 		running = true;
 		cancelled = false;
 		proposals.clear();
+		proposalKeys.clear();
 		proposalsModel.setRowCount(0);
 		known.clear();
 		knownModel.setRowCount(0);
@@ -558,6 +733,7 @@ public class AssociationDiscoveryView extends JPanel {
 
 		final boolean dataScan = dataScanCheckBox.isSelected();
 		final double threshold = threshold();
+		runThreshold = threshold;
 		Thread thread = new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -645,7 +821,7 @@ public class AssociationDiscoveryView extends JPanel {
 			return;
 		}
 
-		// profile all tables: needed for the cardinality, for the confidence and, if the data
+		// profile all tables: needed for the confidence and, if the data
 		// scan is on, for the pre-filter. Not needed at all if every candidate comes from a
 		// rule that is accepted without checking the data
 		boolean profilingNeeded = dataScan;
@@ -809,13 +985,15 @@ public class AssociationDiscoveryView extends JPanel {
 		}
 		for (AssociationCandidate candidate: newProposals) {
 			proposals.add(candidate);
+			proposalKeys.add(candidate.key());
 			proposalsModel.addRow(new Object[] {
 					Boolean.valueOf(candidate.evidence != AssociationCandidate.Evidence.DATA_ONLY),
 					dataModel.getDisplayName(candidate.child),
 					dataModel.getDisplayName(candidate.parent),
 					candidate.getCondition(),
 					candidate.withoutDataCheck? Double.valueOf(100.0) : Double.valueOf(candidate.confidence),
-					candidate.cardinality == null? "" : candidate.cardinality.toString(),
+					// rounded down, so that 100 % is only shown if all rows match
+					candidate.withoutDataCheck || candidate.matchRatio < 0? null : Double.valueOf(Math.floor(candidate.matchRatio * 1000) / 10),
 					candidate.getEvidenceText() });
 		}
 		if (!newProposals.isEmpty()) {

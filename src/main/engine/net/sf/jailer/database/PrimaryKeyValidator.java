@@ -22,9 +22,12 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import net.sf.jailer.datamodel.Association;
+import net.sf.jailer.datamodel.Cardinality;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
@@ -125,9 +128,25 @@ public abstract class PrimaryKeyValidator {
 			});
 		}
 
+		List<JobManager.Job> jobsCardinality = new ArrayList<JobManager.Job>();
+		for (final Table table: tablesWPK) {
+			for (final Association association: table.associations) {
+				if (needsCardinalityCheck(association)) {
+					jobsCardinality.add(() -> {
+						checkCardinality(session, association, Quoting.getQuoting(session));
+						numDone.getAndIncrement();
+						updateProgressBar();
+					});
+				}
+			}
+		}
+		numTotal.addAndGet(jobsCardinality.size());
+		updateProgressBar();
+
 		Collection<Job> jobs = new ArrayList<JobManager.Job>();
 		jobs.addAll(jobsUDPK);
 		jobs.addAll(jobsRealPK);
+		jobs.addAll(jobsCardinality);
 
 		try {
 			jobManager.executeJobs(jobs);
@@ -155,7 +174,7 @@ public abstract class PrimaryKeyValidator {
 					stmts.append((i + 1) + ". " + errorStatements.get(i));
 				}
 			}
-			SqlException e = new SqlException("Invalid Primary Key", msgs.toString(), stmts.toString(), null);
+			SqlException e = new SqlException("Invalid Primary Key or Cardinality",msgs.toString(), stmts.toString(), null);
 			e.setFormatted(true);
 			throw e;
 		}
@@ -209,12 +228,75 @@ public abstract class PrimaryKeyValidator {
 		}
 	}
 
+	/**
+	 * Checks whether the cardinality of an association has to be checked against the data.
+	 * Only the "1" side is a promise (n:1 or 1:1). If the association is an equi-join on the
+	 * complete primary key of the destination, the uniqueness of the primary key ensures it.
+	 */
+	private boolean needsCardinalityCheck(Association association) {
+		Cardinality cardinality = association.getCardinality();
+		if (cardinality != Cardinality.MANY_TO_ONE && cardinality != Cardinality.ONE_TO_ONE) {
+			return false;
+		}
+		if (association.source.primaryKey == null || association.source.primaryKey.getColumns().isEmpty()) {
+			return false;
+		}
+		Table destination = association.destination;
+		if (destination.primaryKey != null && !destination.primaryKey.getColumns().isEmpty()) {
+			Map<Column, Column> mapping = association.createSourceToDestinationKeyMapping();
+			Set<String> destColumns = new HashSet<String>();
+			for (Column column: mapping.values()) {
+				destColumns.add(Quoting.normalizeIdentifier(column.name));
+			}
+			boolean coversPK = true;
+			for (Column pkCol: destination.primaryKey.getColumns()) {
+				if (!destColumns.contains(Quoting.normalizeIdentifier(pkCol.name))) {
+					coversPK = false;
+					break;
+				}
+			}
+			if (coversPK) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private void checkCardinality(Session session, final Association association, Quoting quoting) throws SQLException {
+		// the join condition refers to the source as "A", or as "B" if the association is reversed
+		String sourceAlias = association.reversed? "B" : "A";
+		String destinationAlias = association.reversed? "A" : "B";
+		StringBuilder pks = new StringBuilder();
+		for (Column pkCol: association.source.primaryKey.getColumns()) {
+			if (pks.length() > 0) {
+				pks.append(", ");
+			}
+			pks.append(sourceAlias + "." + quoting.requote(pkCol.name));
+		}
+		final String sql = "Select " + pks + " from " + quoting.requote(association.source.getName()) + " " + sourceAlias + " " +
+				"join " + quoting.requote(association.destination.getName()) + " " + destinationAlias + " " +
+				"on " + association.getUnrestrictedJoinCondition() + " " +
+				"Group by " + pks + " having count(*) > 1";
+		final String description = "Association \"" + association.getName() + "\" (" + association.source.getName() + " -> " + association.destination.getName() + ")";
+		try {
+			session.executeQuery(sql, new Session.AbstractResultSetReader() {
+				@Override
+				public void readCurrentRow(ResultSet resultSet) throws SQLException {
+					addError(null, description + " is declared as " + association.getCardinality() + ", but a row of table \""
+							+ association.source.getName() + "\" has more than one associated row.", sql);
+				}
+			}, null, cancellationContext, 1, true);
+		} catch (SqlException e) {
+			addError(association, description + ": " + e.message, sql);
+		}
+	}
+
 	private List<String> errorMessage = new LinkedList<String>();
 	private List<String> errorStatements = new LinkedList<String>();
 	private List<String> errorMessageLowPrio = new LinkedList<String>();
 	private List<String> errorStatementsLowPrio = new LinkedList<String>();
 
-	private Set<Table> errTables = new HashSet<Table>();
+	private Set<Object> errTables = new HashSet<Object>();
 	
 	protected AtomicInteger numErrors = new AtomicInteger();
 	protected AtomicInteger numDone = new AtomicInteger();
@@ -225,7 +307,7 @@ public abstract class PrimaryKeyValidator {
 	 */
 	protected abstract void updateProgressBar();
 
-	private synchronized void addError(Table table, String message, String sql) {
+	private synchronized void addError(Object table, String message, String sql) {
 		if (table != null) {
 			if (!errTables.add(table)) {
 				return;

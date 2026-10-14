@@ -1716,7 +1716,7 @@ public class UIUtil {
 		final Object cancellationContext = new Object();
 
 		final String infoPrefix = "<html>"
-		+ "Checking the primary key definitions in the data model <br>for uniqueness...<br><br><br>".replace(" ", "&nbsp;");
+		+ "Checking the primary key definitions in the data model <br>for uniqueness and the cardinalities of the associations...<br><br><br>".replace(" ", "&nbsp;");
 		final ConcurrentTaskControl concurrentTaskControl = new ConcurrentTaskControl(null,
 				infoPrefix + "<br><br><br>") {
 				@Override
@@ -1790,7 +1790,7 @@ public class UIUtil {
 						@Override
 						public void run() {
 							if (concurrentTaskControl.master.isShowing()) {
-								Object message = tables.size() == 1? "The primary key definition is valid." : "All primary key definitions are valid.";
+								Object message = tables.size() == 1? "The primary key definition and the cardinalities are valid." : "All primary key definitions and cardinalities are valid.";
 								JOptionPane.showMessageDialog(windowAncestor, message);
 								concurrentTaskControl.closeWindow();
 								if (validatePrimaryKeysPending) {

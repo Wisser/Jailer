@@ -24,7 +24,7 @@ import net.sf.jailer.util.Quoting;
 
 /**
  * Statistical profile of a table, gathered by the {@link TableProfiler}.
- * Used to pre-filter association candidates and to determine their cardinality.
+ * Used to pre-filter association candidates and to rate their confidence.
  *
  * @author Ralf Wisser
  */

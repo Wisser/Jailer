@@ -122,7 +122,7 @@ public class TableProfiler {
 				distinctSupported = false;
 				log.problem("Profiling " + table.getName() + " took " + (lastDurationMs / 1000) + "s. "
 						+ "Continuing without count(distinct ...) for the remaining tables, "
-						+ "so the cardinality of their columns stays unknown.");
+						+ "so the distinct counts of their columns stay unknown.");
 			}
 			return true;
 		}
