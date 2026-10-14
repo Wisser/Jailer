@@ -92,11 +92,29 @@ public class CollectionAnalysisPanel extends JPanel {
 		String from;
 		String to;
 		long rows;
+		Ratio perSourceRow;
 		double share;
 		double cumulatedShare;
 		String step;
 		Association association;
 		CollectionAnalysis.Contribution contribution;
+	}
+
+	/**
+	 * Number of rows an association has brought in per row of its source table. A type of its own,
+	 * so that the renderer can tell it from a share, which is a {@link Double}.
+	 */
+	private static class Ratio implements Comparable<Ratio> {
+		final double value;
+
+		Ratio(double value) {
+			this.value = value;
+		}
+
+		@Override
+		public int compareTo(Ratio other) {
+			return Double.compare(value, other.value);
+		}
 	}
 
 	/**
@@ -130,6 +148,7 @@ public class CollectionAnalysisPanel extends JPanel {
 	private Consumer<Table> tableOpener;
 
 	private final NumberFormat percentFormat = createPercentFormat();
+	private final NumberFormat ratioFormat = createRatioFormat();
 
 	/**
 	 * Constructor.
@@ -141,7 +160,9 @@ public class CollectionAnalysisPanel extends JPanel {
 		summaryLabel.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 4));
 		summaryLabel.setToolTipText(
 				"Each row is counted for the association through which it has been collected first. "
-				+ "Rows which are reachable via several associations are not counted more than once.");
+				+ "Rows which are reachable via several associations are not counted more than once. "
+				+ "\"Per Source Row\" divides them by the rows collected into the source table: "
+				+ "a value far above 1 marks an association that multiplies the subset.");
 		add(summaryLabel, BorderLayout.NORTH);
 
 		tableModel = new AnalysisTableModel();
@@ -153,9 +174,10 @@ public class CollectionAnalysisPanel extends JPanel {
 		table.getColumnModel().getColumn(1).setPreferredWidth(140);
 		table.getColumnModel().getColumn(2).setPreferredWidth(140);
 		table.getColumnModel().getColumn(3).setPreferredWidth(80);
-		table.getColumnModel().getColumn(4).setPreferredWidth(60);
-		table.getColumnModel().getColumn(5).setPreferredWidth(80);
-		table.getColumnModel().getColumn(6).setPreferredWidth(60);
+		table.getColumnModel().getColumn(4).setPreferredWidth(80);
+		table.getColumnModel().getColumn(5).setPreferredWidth(60);
+		table.getColumnModel().getColumn(6).setPreferredWidth(80);
+		table.getColumnModel().getColumn(7).setPreferredWidth(60);
 		table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
@@ -238,6 +260,12 @@ public class CollectionAnalysisPanel extends JPanel {
 		return format;
 	}
 
+	private static NumberFormat createRatioFormat() {
+		NumberFormat format = NumberFormat.getNumberInstance();
+		format.setMaximumFractionDigits(2);
+		return format;
+	}
+
 	/**
 	 * Creates a table with the look of the other tables of the application.
 	 *
@@ -263,6 +291,8 @@ public class CollectionAnalysisPanel extends JPanel {
 					renderedValue = UIUtil.format(((Long) value).longValue());
 				} else if (value instanceof Double) {
 					renderedValue = percentFormat.format(((Double) value).doubleValue());
+				} else if (value instanceof Ratio) {
+					renderedValue = ratioFormat.format(((Ratio) value).value);
 				}
 				Component render = defaultRenderer.getTableCellRendererComponent(table, renderedValue, isSelected, false, row, column);
 				if (!isSelected) {
@@ -334,6 +364,15 @@ public class CollectionAnalysisPanel extends JPanel {
 		this.dataModel = dataModel;
 		contributions = analysis.getContributions();
 		long total = analysis.getTotal();
+		// rows collected into each table, the denominator of "Per Source Row"
+		Map<Table, Long> rowsPerTable = new HashMap<Table, Long>();
+		for (CollectionAnalysis.Contribution contribution: contributions) {
+			Table destination = contribution.getDestination();
+			if (destination != null) {
+				Long rowsOfTable = rowsPerTable.get(destination);
+				rowsPerTable.put(destination, rowsOfTable == null? contribution.getRows() : rowsOfTable + contribution.getRows());
+			}
+		}
 		List<Row> newRows = new ArrayList<Row>(contributions.size());
 		long cumulated = 0;
 		int associations = 0;
@@ -353,6 +392,12 @@ public class CollectionAnalysisPanel extends JPanel {
 			}
 			row.to = destination != null? dataModel.getDisplayName(destination) : "";
 			row.rows = contribution.getRows();
+			if (row.association != null) {
+				Long sourceRows = rowsPerTable.get(row.association.source);
+				if (sourceRows != null && sourceRows > 0) {
+					row.perSourceRow = new Ratio((double) row.rows / sourceRows);
+				}
+			}
 			row.share = total > 0? (double) row.rows / total : 0.0;
 			cumulated += row.rows;
 			row.cumulatedShare = total > 0? (double) cumulated / total : 0.0;
@@ -971,7 +1016,7 @@ public class CollectionAnalysisPanel extends JPanel {
 	 */
 	private class AnalysisTableModel extends AbstractTableModel {
 
-		private final String[] columnNames = new String[] { "Association", "From", "To", "Rows", "Share", "Cumulated", "Step" };
+		private final String[] columnNames = new String[] { "Association", "From", "To", "Rows", "Per Source Row", "Share", "Cumulated", "Step" };
 
 		@Override
 		public int getRowCount() {
@@ -992,8 +1037,9 @@ public class CollectionAnalysisPanel extends JPanel {
 		public Class<?> getColumnClass(int column) {
 			switch (column) {
 			case 3: return Long.class;
-			case 4:
-			case 5: return Double.class;
+			case 4: return Ratio.class;
+			case 5:
+			case 6: return Double.class;
 			default: return String.class;
 			}
 		}
@@ -1014,9 +1060,10 @@ public class CollectionAnalysisPanel extends JPanel {
 			case 1: return row.from;
 			case 2: return row.to;
 			case 3: return Long.valueOf(row.rows);
-			case 4: return Double.valueOf(row.share);
-			case 5: return Double.valueOf(row.cumulatedShare);
-			case 6: return row.step;
+			case 4: return row.perSourceRow;
+			case 5: return Double.valueOf(row.share);
+			case 6: return Double.valueOf(row.cumulatedShare);
+			case 7: return row.step;
 			default: return null;
 			}
 		}
