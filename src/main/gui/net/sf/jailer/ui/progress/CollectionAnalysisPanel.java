@@ -15,13 +15,21 @@
  */
 package net.sf.jailer.ui.progress;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.SQLException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -29,12 +37,16 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -42,15 +54,22 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.JViewport;
 import javax.swing.ListSelectionModel;
+import javax.swing.RowFilter;
 import javax.swing.SwingUtilities;
 import javax.swing.RowSorter.SortKey;
 import javax.swing.SortOrder;
 import javax.swing.SwingConstants;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
 
@@ -60,8 +79,10 @@ import net.sf.jailer.datamodel.ModelElement;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.RowOriginStep;
 import net.sf.jailer.entitygraph.remote.RemoteEntityGraph;
+import net.sf.jailer.ui.Colors;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.util.ConcurrentTaskControl;
+import net.sf.jailer.ui.util.CsvOptionsDialog;
 import net.sf.jailer.util.CancellationException;
 
 /**
@@ -93,10 +114,11 @@ public class CollectionAnalysisPanel extends JPanel {
 		String from;
 		String to;
 		long rows;
+		Change change;
 		Ratio perSourceRow;
 		double share;
 		double cumulatedShare;
-		String step;
+		Steps step;
 		Association association;
 		CollectionAnalysis.Contribution contribution;
 	}
@@ -119,18 +141,60 @@ public class CollectionAnalysisPanel extends JPanel {
 	}
 
 	/**
+	 * Change in the number of rows compared to the previous run. A type of its own, so that the
+	 * renderer can show the sign and the number of the previous run.
+	 */
+	private static class Change implements Comparable<Change> {
+		final long value;
+		final long rows;
+		final long previousRows;
+		/**
+		 * The last step compared, {@link Integer#MAX_VALUE} if the whole runs are compared.
+		 */
+		final int upToStep;
+
+		Change(long rows, long previousRows, int upToStep) {
+			this.value = rows - previousRows;
+			this.rows = rows;
+			this.previousRows = previousRows;
+			this.upToStep = upToStep;
+		}
+
+		/**
+		 * Gets the tool tip of the cell.
+		 *
+		 * @return the tool tip
+		 */
+		String toolTip() {
+			if (upToStep == Integer.MAX_VALUE) {
+				return "Previous run: " + UIUtil.format(previousRows) + " rows";
+			}
+			return "Up to step " + upToStep + " - previous run: " + UIUtil.format(previousRows)
+					+ " rows, this run: " + UIUtil.format(rows) + " rows";
+		}
+
+		@Override
+		public int compareTo(Change other) {
+			return Long.compare(value, other.value);
+		}
+	}
+
+	/**
 	 * A single row of the lower table.
 	 */
 	private static class PredecessorRow {
 		String name;
 		String from;
 		long rows;
-		String step;
+		Steps step;
 		Association association;
 		CollectionAnalysis.Contribution contribution;
 	}
 
 	private final JLabel summaryLabel;
+	private TableRowSorter<AnalysisTableModel> sorter;
+	private JButton dryRunAgainButton;
+	private Runnable dryRunAgain;
 	private final JLabel detailsLabel;
 	private final JTable table;
 	private final JTable detailsTable;
@@ -143,10 +207,19 @@ public class CollectionAnalysisPanel extends JPanel {
 	private DataModel dataModel;
 	private ModelElement selectedModelElement;
 	private Consumer<Association> associationSelector;
+	private Consumer<Association> associationDisabler;
+	private BiConsumer<Table, Association> collectedRowsThroughOpener;
 	private RowOriginContext rowOriginContext;
 	private Runnable discardAction;
 	private Consumer<List<RowOriginStep>> pathOpener;
 	private Consumer<Table> tableOpener;
+	private CollectionAnalysis.Baseline previousRun;
+	/**
+	 * Whether the run has been completed. Before, only the completed steps are compared with the
+	 * previous run: the current one is still being collected.
+	 */
+	private boolean runCompleted = false;
+	private CollectionAnalysis lastAnalysis;
 
 	private final NumberFormat percentFormat = createPercentFormat();
 	private final NumberFormat ratioFormat = createRatioFormat();
@@ -164,11 +237,18 @@ public class CollectionAnalysisPanel extends JPanel {
 				+ "Rows which are reachable via several associations are not counted more than once. "
 				+ "\"Per Source Row\" divides them by the rows collected into the source table: "
 				+ "a value far above 1 marks an association that multiplies the subset.");
-		add(summaryLabel, BorderLayout.NORTH);
+		JPanel northPanel = new JPanel(new BorderLayout());
+		northPanel.add(summaryLabel, BorderLayout.CENTER);
+		// 16 pixels between "Dry Run Again" and the filter
+		JPanel eastPanel = new JPanel(new BorderLayout(16, 0));
+		eastPanel.add(createDryRunAgainButton(), BorderLayout.WEST);
+		eastPanel.add(createFilterPanel(), BorderLayout.CENTER);
+		northPanel.add(eastPanel, BorderLayout.EAST);
+		add(northPanel, BorderLayout.NORTH);
 
 		tableModel = new AnalysisTableModel();
 		table = createTable(tableModel, 3, tableModel.columnToolTips);
-		TableRowSorter<AnalysisTableModel> sorter = new TableRowSorter<AnalysisTableModel>(tableModel);
+		sorter = new TableRowSorter<AnalysisTableModel>(tableModel);
 		sorter.setSortKeys(Collections.singletonList(new SortKey(3, SortOrder.DESCENDING)));
 		table.setRowSorter(sorter);
 		table.getColumnModel().getColumn(0).setPreferredWidth(200);
@@ -176,9 +256,11 @@ public class CollectionAnalysisPanel extends JPanel {
 		table.getColumnModel().getColumn(2).setPreferredWidth(140);
 		table.getColumnModel().getColumn(3).setPreferredWidth(80);
 		table.getColumnModel().getColumn(4).setPreferredWidth(80);
-		table.getColumnModel().getColumn(5).setPreferredWidth(60);
-		table.getColumnModel().getColumn(6).setPreferredWidth(80);
-		table.getColumnModel().getColumn(7).setPreferredWidth(60);
+		table.getColumnModel().getColumn(5).setPreferredWidth(80);
+		table.getColumnModel().getColumn(6).setPreferredWidth(60);
+		table.getColumnModel().getColumn(7).setPreferredWidth(80);
+		table.getColumnModel().getColumn(8).setPreferredWidth(60);
+		fitColumnsToHeaders(table);
 		table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
@@ -215,6 +297,7 @@ public class CollectionAnalysisPanel extends JPanel {
 		detailsTable.getColumnModel().getColumn(1).setPreferredWidth(140);
 		detailsTable.getColumnModel().getColumn(2).setPreferredWidth(80);
 		detailsTable.getColumnModel().getColumn(3).setPreferredWidth(60);
+		fitColumnsToHeaders(detailsTable);
 		detailsTable.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
@@ -255,6 +338,77 @@ public class CollectionAnalysisPanel extends JPanel {
 		updateDetails();
 	}
 
+	/**
+	 * Creates the field which filters the upper table by the names of the associations and their
+	 * tables. It filters as one types, Escape clears it.
+	 *
+	 * @return the panel holding the field
+	 */
+	private JPanel createFilterPanel() {
+		final JTextField filterField = new JTextField(20);
+		String toolTip = "Shows only associations whose name, source or destination table contains this text (case-insensitive).";
+		filterField.setToolTipText(toolTip);
+		filterField.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				applyFilter(filterField.getText());
+			}
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				applyFilter(filterField.getText());
+			}
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				applyFilter(filterField.getText());
+			}
+		});
+		filterField.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_ESCAPE && filterField.getText().length() > 0) {
+					filterField.setText("");
+					e.consume();
+				}
+			}
+		});
+		JLabel label = new JLabel("Filter: ");
+		label.setToolTipText(toolTip);
+		JPanel panel = new JPanel(new BorderLayout());
+		panel.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
+		panel.add(label, BorderLayout.WEST);
+		panel.add(filterField, BorderLayout.CENTER);
+		return panel;
+	}
+
+	/**
+	 * Shows only the rows of the upper table whose association, source or destination contains a
+	 * text, ignoring case.
+	 *
+	 * @param text the text, empty for all rows
+	 */
+	private void applyFilter(String text) {
+		if (sorter == null) {
+			return;
+		}
+		final String pattern = text.trim().toLowerCase(Locale.ENGLISH);
+		if (pattern.isEmpty()) {
+			sorter.setRowFilter(null);
+			return;
+		}
+		sorter.setRowFilter(new RowFilter<AnalysisTableModel, Integer>() {
+			@Override
+			public boolean include(Entry<? extends AnalysisTableModel, ? extends Integer> entry) {
+				for (int column = 0; column <= 2; ++column) {
+					Object value = entry.getValue(column);
+					if (value != null && value.toString().toLowerCase(Locale.ENGLISH).contains(pattern)) {
+						return true;
+					}
+				}
+				return false;
+			}
+		});
+	}
+
 	private static NumberFormat createPercentFormat() {
 		NumberFormat format = NumberFormat.getPercentInstance();
 		format.setMaximumFractionDigits(1);
@@ -268,6 +422,23 @@ public class CollectionAnalysisPanel extends JPanel {
 	}
 
 	/**
+	 * Makes every column at least as wide as its title, so that no title is cut off. Leaves
+	 * columns which are wide enough as they are.
+	 *
+	 * @param theTable the table
+	 */
+	private static void fitColumnsToHeaders(JTable theTable) {
+		TableCellRenderer headerRenderer = theTable.getTableHeader().getDefaultRenderer();
+		for (int i = 0; i < theTable.getColumnModel().getColumnCount(); ++i) {
+			TableColumn column = theTable.getColumnModel().getColumn(i);
+			// room for the sort arrow, the sorted column shows one
+			int width = headerRenderer.getTableCellRendererComponent(theTable, column.getHeaderValue(), false, false, -1, i).getPreferredSize().width + 24;
+			column.setMinWidth(width);
+			column.setPreferredWidth(Math.max(column.getPreferredWidth(), width));
+		}
+	}
+
+	/**
 	 * Creates a table with the look of the other tables of the application.
 	 *
 	 * @param model the model
@@ -276,7 +447,23 @@ public class CollectionAnalysisPanel extends JPanel {
 	 * @return the table
 	 */
 	private JTable createTable(final AbstractTableModel model, final int firstRightAlignedColumn, final String[] columnToolTips) {
-		final JTable newTable = new JTable(model);
+		final JTable newTable = new JTable(model) {
+			@Override
+			public boolean getScrollableTracksViewportWidth() {
+				// fill the width as long as no column has to go below its minimum, scroll otherwise.
+				// Compared with the minimum widths, not with the preferred size, which follows the
+				// current column widths and would keep the table wide once it has been stretched
+				if (!(getParent() instanceof JViewport)) {
+					return super.getScrollableTracksViewportWidth();
+				}
+				int minWidth = 0;
+				for (int i = 0; i < getColumnModel().getColumnCount(); ++i) {
+					minWidth += getColumnModel().getColumn(i).getMinWidth();
+				}
+				return getParent().getWidth() >= minWidth;
+			}
+			private static final long serialVersionUID = 4630297516837306417L;
+		};
 		newTable.setTableHeader(new JTableHeader(newTable.getColumnModel()) {
 			@Override
 			public String getToolTipText(MouseEvent e) {
@@ -304,6 +491,9 @@ public class CollectionAnalysisPanel extends JPanel {
 					renderedValue = percentFormat.format(((Double) value).doubleValue());
 				} else if (value instanceof Ratio) {
 					renderedValue = ratioFormat.format(((Ratio) value).value);
+				} else if (value instanceof Change) {
+					long change = ((Change) value).value;
+					renderedValue = (change > 0? "+" : "") + UIUtil.format(change);
 				}
 				Component render = defaultRenderer.getTableCellRendererComponent(table, renderedValue, isSelected, false, row, column);
 				if (!isSelected) {
@@ -312,6 +502,11 @@ public class CollectionAnalysisPanel extends JPanel {
 				if (render instanceof JLabel) {
 					((JLabel) render).setHorizontalAlignment(column >= firstRightAlignedColumn? SwingConstants.RIGHT : SwingConstants.LEFT);
 					String valueAsString = renderedValue == null? "" : String.valueOf(renderedValue);
+					if (value instanceof Change) {
+						valueAsString = ((Change) value).toolTip();
+					} else if (value instanceof Steps) {
+						valueAsString = ((Steps) value).toolTip();
+					}
 					((JLabel) render).setToolTipText(valueAsString.length() > 0? valueAsString : null);
 				}
 				return render;
@@ -331,6 +526,90 @@ public class CollectionAnalysisPanel extends JPanel {
 	 */
 	public void setAssociationSelector(Consumer<Association> associationSelector) {
 		this.associationSelector = associationSelector;
+	}
+
+	/**
+	 * Sets the consumer which opens a table in a Data Browser, limited to the rows collected
+	 * through an association. If none is set, the corresponding menu item is not offered.
+	 *
+	 * @param collectedRowsThroughOpener the consumer (given the table and the association, which is
+	 *            <code>null</code> for the subject rows), or <code>null</code>
+	 */
+	public void setCollectedRowsThroughOpener(BiConsumer<Table, Association> collectedRowsThroughOpener) {
+		this.collectedRowsThroughOpener = collectedRowsThroughOpener;
+	}
+
+	/**
+	 * Sets the consumer which disables an association in the extraction model.
+	 * If none is set, the corresponding menu item is not offered.
+	 *
+	 * @param associationDisabler the consumer, or <code>null</code>
+	 */
+	public void setAssociationDisabler(Consumer<Association> associationDisabler) {
+		this.associationDisabler = associationDisabler;
+	}
+
+	/**
+	 * Sets the result of the previous run, to compare this one with.
+	 *
+	 * @param previousRun the baseline, or <code>null</code> if there is nothing to compare with
+	 */
+	public void setPreviousRun(CollectionAnalysis.Baseline previousRun) {
+		this.previousRun = previousRun;
+	}
+
+	/**
+	 * Announces that the run is over, whether completed, cancelled or failed, so that it can be
+	 * run again.
+	 */
+	public void setRunOver() {
+		dryRunAgainButton.setEnabled(true);
+	}
+
+	/**
+	 * Sets the action which closes the window and starts a dry run with the same settings again.
+	 * If none is set, the button is not shown.
+	 *
+	 * @param dryRunAgain the action, or <code>null</code>
+	 */
+	public void setDryRunAgain(Runnable dryRunAgain) {
+		this.dryRunAgain = dryRunAgain;
+		dryRunAgainButton.setVisible(dryRunAgain != null);
+	}
+
+	/**
+	 * Creates the "Dry Run Again" button, hidden until an action is set and disabled until the run
+	 * is over.
+	 *
+	 * @return the button
+	 */
+	private JButton createDryRunAgainButton() {
+		dryRunAgainButton = new JButton("Dry Run Again");
+		dryRunAgainButton.setIcon(UIUtil.scaleIcon(dryRunAgainButton, UIUtil.readImage("/dryrun.png")));
+		dryRunAgainButton.setToolTipText("Closes this window and starts a Dry Run with the same settings, to see the effect of a restriction in the \"Change\" column.");
+		dryRunAgainButton.setVisible(false);
+		dryRunAgainButton.setEnabled(false);
+		dryRunAgainButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (dryRunAgain != null) {
+					dryRunAgainButton.setEnabled(false);
+					dryRunAgain.run();
+				}
+			}
+		});
+		return dryRunAgainButton;
+	}
+
+	/**
+	 * Announces that the run has been completed, so that the whole runs are compared with each
+	 * other, not only the steps completed so far.
+	 */
+	public void setRunCompleted() {
+		runCompleted = true;
+		if (lastAnalysis != null && dataModel != null) {
+			setAnalysis(lastAnalysis, dataModel);
+		}
 	}
 
 	/**
@@ -373,8 +652,18 @@ public class CollectionAnalysisPanel extends JPanel {
 	 */
 	public void setAnalysis(CollectionAnalysis analysis, DataModel dataModel) {
 		this.dataModel = dataModel;
+		this.lastAnalysis = analysis;
 		contributions = analysis.getContributions();
 		long total = analysis.getTotal();
+		// while the run is going, only the completed steps are compared with the previous run
+		int firstStep = Integer.MAX_VALUE;
+		int lastStep = -1;
+		for (CollectionAnalysis.Contribution contribution: contributions) {
+			firstStep = Math.min(firstStep, contribution.getFirstDay());
+			lastStep = Math.max(lastStep, contribution.getLastDay());
+		}
+		final int compareUpTo = runCompleted? Integer.MAX_VALUE : lastStep - 1;
+		final boolean comparable = previousRun != null && (runCompleted || compareUpTo >= firstStep);
 		// rows collected into each table, the denominator of "Per Source Row"
 		Map<Table, Long> rowsPerTable = new HashMap<Table, Long>();
 		for (CollectionAnalysis.Contribution contribution: contributions) {
@@ -403,6 +692,12 @@ public class CollectionAnalysisPanel extends JPanel {
 			}
 			row.to = destination != null? dataModel.getDisplayName(destination) : "";
 			row.rows = contribution.getRows();
+			if (comparable) {
+				row.change = runCompleted?
+						new Change(row.rows, previousRun.getRows(contribution.getModelElement()), compareUpTo)
+						: new Change(CollectionAnalysis.sumUpTo(contribution.getRowsPerDay(), compareUpTo),
+								previousRun.getRows(contribution.getModelElement(), compareUpTo), compareUpTo);
+			}
 			if (row.association != null) {
 				Long sourceRows = rowsPerTable.get(row.association.source);
 				if (sourceRows != null && sourceRows > 0) {
@@ -435,16 +730,109 @@ public class CollectionAnalysisPanel extends JPanel {
 			} else {
 				summary.append(".");
 			}
+			if (previousRun != null) {
+				if (!comparable) {
+					summary.append(" Previous run: compared once the first step is complete.");
+				} else {
+					long thisTotal = total;
+					long previousTotal = previousRun.getTotal();
+					if (runCompleted) {
+						summary.append(" Previous run: ");
+					} else {
+						thisTotal = 0;
+						for (CollectionAnalysis.Contribution contribution: contributions) {
+							thisTotal += CollectionAnalysis.sumUpTo(contribution.getRowsPerDay(), compareUpTo);
+						}
+						previousTotal = previousRun.getTotal(compareUpTo);
+						summary.append(" Up to step ").append(compareUpTo).append(": ").append(UIUtil.format(thisTotal))
+							.append(" rows, previous run ");
+					}
+					summary.append(UIUtil.format(previousTotal)).append(" rows");
+					if (previousTotal > 0) {
+						double change = (double) (thisTotal - previousTotal) / previousTotal;
+						summary.append(" (").append(change > 0? "+" : "").append(percentFormat.format(change)).append(")");
+					}
+					summary.append(".");
+				}
+			}
 			summaryLabel.setText(summary.toString());
 		}
 
 		updateDetails();
 	}
 
-	private static String stepOf(CollectionAnalysis.Contribution contribution) {
-		return contribution.getFirstDay() == contribution.getLastDay()?
-				String.valueOf(contribution.getFirstDay())
-				: contribution.getFirstDay() + " - " + contribution.getLastDay();
+	private static Steps stepOf(CollectionAnalysis.Contribution contribution) {
+		return new Steps(contribution);
+	}
+
+	/**
+	 * The steps in which a contribution has collected rows. A type of its own, so that the column
+	 * sorts by number and the renderer can show the rows per step.
+	 */
+	private static class Steps implements Comparable<Steps> {
+		/**
+		 * Maximum number of steps listed in the tool tip.
+		 */
+		private static final int MAX_LINES = 30;
+		/**
+		 * Width of the longest bar in the tool tip, in pixels.
+		 */
+		private static final int MAX_BAR_WIDTH = 120;
+
+		final int firstDay;
+		final int lastDay;
+		final Map<Integer, Long> rowsPerDay;
+
+		Steps(CollectionAnalysis.Contribution contribution) {
+			this.firstDay = contribution.getFirstDay();
+			this.lastDay = contribution.getLastDay();
+			this.rowsPerDay = contribution.getRowsPerDay();
+		}
+
+		@Override
+		public int compareTo(Steps other) {
+			if (firstDay != other.firstDay) {
+				return Integer.compare(firstDay, other.firstDay);
+			}
+			return Integer.compare(lastDay, other.lastDay);
+		}
+
+		@Override
+		public String toString() {
+			return firstDay == lastDay? String.valueOf(firstDay) : firstDay + " - " + lastDay;
+		}
+
+		/**
+		 * Gets the rows per step as a small bar chart.
+		 *
+		 * @return HTML for the tool tip
+		 */
+		String toolTip() {
+			long max = 0;
+			for (Long rows: rowsPerDay.values()) {
+				max = Math.max(max, rows.longValue());
+			}
+			// step green, rows bold, so that the two numbers are told apart at a glance
+			StringBuilder sb = new StringBuilder("<html><table cellspacing=0 cellpadding=1>"
+					+ "<tr><td align=right><font color=" + Colors.HTMLColor_006600 + ">Step</font></td><td align=right>&nbsp;<b>Rows</b>&nbsp;</td><td></td></tr>");
+			int lines = 0;
+			for (Map.Entry<Integer, Long> e: rowsPerDay.entrySet()) {
+				if (++lines > MAX_LINES) {
+					sb.append("<tr><td align=right>...</td><td></td><td></td></tr>");
+					break;
+				}
+				long rows = e.getValue().longValue();
+				int width = max > 0? (int) Math.max(1, rows * MAX_BAR_WIDTH / max) : 1;
+				sb.append("<tr><td align=right><font color=" + Colors.HTMLColor_006600 + ">").append(e.getKey()).append("</font></td>")
+					.append("<td align=right>&nbsp;<b>").append(UIUtil.format(rows)).append("</b>&nbsp;</td>")
+					.append("<td><table cellspacing=0 cellpadding=0><tr><td bgcolor=\"#5070e0\" width=").append(width)
+					// a small blank instead of "height": an empty cell has no fixed height in Swing's
+					// HTML, it came out thinner with a single step than with several
+					.append("><font size=1>&nbsp;</font></td></tr></table></td></tr>");
+			}
+			sb.append("</table></html>");
+			return sb.toString();
+		}
 	}
 
 	/**
@@ -661,8 +1049,11 @@ public class CollectionAnalysisPanel extends JPanel {
 				report(progress, "step " + (steps.size() - i) + " of " + steps.size());
 				// the association which has brought this row, so its source is the table of the
 				// next link - the same meaning the chain has always given this field
-				chain.add(linkFor(step.getTable(), step.getBirthday(), step.getIncomingAssociation(),
-						runDataModel, entityGraph, collected));
+				Link link = linkFor(step.getTable(), step.getBirthday(), step.getIncomingAssociation(),
+						runDataModel, entityGraph, collected);
+				// no association has brought the row the chain ends with: it is a subject row
+				link.subjectEnd = step.getIncomingAssociation() == null;
+				chain.add(link);
 			}
 		}
 
@@ -679,7 +1070,7 @@ public class CollectionAnalysisPanel extends JPanel {
 				path.add(new RowOriginPath.Step(link.table.getName(),
 						ofParent == null? null : reversalNameOf(ofParent),
 						entityGraph.collectedInStepCondition(link.table, link.step, "A",
-								commentFor(link.step, link.main == null? null : link.main.getName())),
+								commentFor(link.step, link.main == null? null : link.main.getName(), link.subjectEnd)),
 						i - 1,
 						link.rowCount));
 			}
@@ -692,7 +1083,7 @@ public class CollectionAnalysisPanel extends JPanel {
 				path.add(new RowOriginPath.Step(link.table.getName(),
 						isRoot || link.main == null? null : link.main.getName(),
 						entityGraph.collectedInStepCondition(link.table, link.step, "A",
-								commentFor(link.step, link.main == null? null : link.main.getName())),
+								commentFor(link.step, link.main == null? null : link.main.getName(), link.subjectEnd)),
 						isRoot? -1 : path.size() - 1,
 						link.rowCount));
 			}
@@ -864,6 +1255,11 @@ public class CollectionAnalysisPanel extends JPanel {
 		 * The association the chain follows out of this link, towards the subject.
 		 */
 		Association main;
+		/**
+		 * Whether this link holds the subject rows the chain ends with. Not every link without an
+		 * association does: if no row of a cell has been found, the way into it is just unknown.
+		 */
+		boolean subjectEnd;
 	}
 
 	/**
@@ -882,7 +1278,7 @@ public class CollectionAnalysisPanel extends JPanel {
 		}
 		path.add(new RowOriginPath.Step(source.getName(), reversalNameOf(association),
 				entityGraph.collectedInStepCondition(source, step - 1, "A",
-						commentFor(step - 1, association.getName()) + ", an alternative way"),
+						commentFor(step - 1, association.getName(), false) + ", an alternative way"),
 				parentIndex,
 				totalOf(collectedIn(source, step - 1, entityGraph, collected))));
 	}
@@ -891,9 +1287,13 @@ public class CollectionAnalysisPanel extends JPanel {
 	 * The comment which goes in front of the condition of a browser, so that the statement says
 	 * what it selects.
 	 */
-	private static String commentFor(int step, String associationName) {
+	private static String commentFor(int step, String associationName, boolean subjectRows) {
+		if (subjectRows) {
+			return "collected in step " + step + " (the subject rows)";
+		}
+		// without an association the way in is unknown, e.g. no row of the cell has been found
 		return associationName == null?
-				"collected in step " + step + " (the subject rows)"
+				"collected in step " + step
 				: "collected in step " + step + " through " + associationName;
 	}
 
@@ -960,15 +1360,67 @@ public class CollectionAnalysisPanel extends JPanel {
 	}
 
 	private void selectInModel(Association association) {
-		if (association != null && associationSelector != null) {
-			// association belongs to the run's own data model, a different load than the editor's -
-			// re-resolve it by name against the editor's model before handing it off, the same way
-			// pathFromCell already has to (see runDataModel.getTable(...) there)
-			Association resolved = dataModel.namedAssociations.get(association.getName());
-			if (resolved != null) {
-				associationSelector.accept(resolved);
-			}
+		Association resolved = resolveInModel(association);
+		if (resolved != null && associationSelector != null) {
+			associationSelector.accept(resolved);
 		}
+	}
+
+	/**
+	 * Resolves an association against the editor's data model.
+	 *
+	 * @param association the association
+	 * @return the association of the editor's model, or <code>null</code>
+	 */
+	private Association resolveInModel(Association association) {
+		if (association == null || dataModel == null) {
+			return null;
+		}
+		// association belongs to the run's own data model, a different load than the editor's -
+		// re-resolve it by name against the editor's model before handing it off, the same way
+		// pathFromCell already has to (see runDataModel.getTable(...) there)
+		return dataModel.namedAssociations.get(association.getName());
+	}
+
+	/**
+	 * Creates a menu item with an icon.
+	 *
+	 * @param title the title
+	 * @param image the resource of the icon
+	 * @return the menu item
+	 */
+	private static JMenuItem menuItem(String title, String image) {
+		JMenuItem item = new JMenuItem(title);
+		item.setIcon(UIUtil.scaleIcon(item, UIUtil.readImage(image)));
+		return item;
+	}
+
+	/**
+	 * Draws a red stroke across an icon, from the lower left to the upper right corner.
+	 *
+	 * @param icon the icon
+	 * @return the struck through icon
+	 */
+	private static ImageIcon struckThrough(ImageIcon icon) {
+		int w = icon.getIconWidth();
+		int h = icon.getIconHeight();
+		if (w <= 0 || h <= 0) {
+			return icon;
+		}
+		BufferedImage image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = image.createGraphics();
+		try {
+			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			g.drawImage(icon.getImage(), 0, 0, null);
+			float width = Math.max(1.5f, Math.min(w, h) / 7f);
+			g.setStroke(new BasicStroke(width, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+			g.setColor(new Color(220, 0, 0));
+			int inset = (int) Math.ceil(width);
+			g.drawLine(inset, h - 1 - inset, w - 1 - inset, inset);
+		} finally {
+			g.dispose();
+		}
+		return new ImageIcon(image);
 	}
 
 	private void maybeShowPopup(MouseEvent e, JTable theTable, final Association association) {
@@ -981,7 +1433,7 @@ public class CollectionAnalysisPanel extends JPanel {
 		}
 		JPopupMenu popup = new JPopupMenu();
 		if (associationSelector != null) {
-			JMenuItem select = new JMenuItem("Select Association");
+			JMenuItem select = menuItem("Select Association", "/select.png");
 			select.setToolTipText("Select this association in the extraction model, in order to restrict it.");
 			select.setEnabled(association != null);
 			select.addActionListener(new ActionListener() {
@@ -991,10 +1443,26 @@ public class CollectionAnalysisPanel extends JPanel {
 				}
 			});
 			popup.add(select);
+			if (associationDisabler != null) {
+				final Association resolved = resolveInModel(association);
+				JMenuItem disable = menuItem("Disable Association", "/select.png");
+				// the icon of "Select Association", struck through
+				disable.setIcon(struckThrough((ImageIcon) disable.getIcon()));
+				disable.setToolTipText("Disables this association in the extraction model. Do a Dry Run again to see the effect in the \"Change\" column.");
+				// as "Disable association..." of the closure view: never a dependency
+				disable.setEnabled(resolved != null && !resolved.isInsertDestinationBeforeSource() && !resolved.isIgnored());
+				disable.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent evt) {
+						associationDisabler.accept(resolved);
+					}
+				});
+				popup.add(disable);
+			}
 			popup.addSeparator();
 		}
 		if (rowOriginContext != null && rowOriginContext.isAvailable()) {
-			JMenuItem showRows = new JMenuItem("Show Collected Rows");
+			JMenuItem showRows = menuItem("Show Collected Rows", "/findcolumn2.png");
 			showRows.setToolTipText("Lists the rows collected through this association, and shows for a selected one how it has found its way into the subset.");
 			showRows.setEnabled(association != null);
 			showRows.addActionListener(new ActionListener() {
@@ -1006,11 +1474,28 @@ public class CollectionAnalysisPanel extends JPanel {
 			});
 			popup.add(showRows);
 		}
+		if (collectedRowsThroughOpener != null) {
+			final Table destination = destinationAt(e, theTable);
+			JMenuItem showInBrowser = menuItem("Show Collected Rows in Data Browser", "/navigation.png");
+			showInBrowser.setToolTipText("Opens the table in the Data Browser, limited to the rows collected through this association.");
+			showInBrowser.setEnabled(destination != null && hasRetainedRows());
+			showInBrowser.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent evt) {
+					collectedRowsThroughOpener.accept(destination, association);
+				}
+			});
+			popup.add(showInBrowser);
+		}
 		if (tableOpener != null) {
 			final Table destination = destinationAt(e, theTable);
-			JMenuItem openInBrowser = new JMenuItem("Open in Data Browser");
-			openInBrowser.setToolTipText("Opens the table these rows have been collected into in the Data Browser, without any condition.");
-			openInBrowser.setEnabled(destination != null);
+			JMenuItem openInBrowser = menuItem("Open in Data Browser", "/table.png");
+			// only beside the analysis of the collected rows: without it, the whole table says nothing about the subset
+			boolean available = hasRetainedRows();
+			openInBrowser.setToolTipText(available?
+					"Opens the table these rows have been collected into in the Data Browser, without any condition."
+					: "Not available: the collected rows of this run have not been kept for the analysis.");
+			openInBrowser.setEnabled(destination != null && available);
 			openInBrowser.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent evt) {
@@ -1019,7 +1504,91 @@ public class CollectionAnalysisPanel extends JPanel {
 			});
 			popup.add(openInBrowser);
 		}
+		if (popup.getComponentCount() > 0) {
+			popup.addSeparator();
+		}
+		JMenuItem export = menuItem("Export as CSV...", "/export.png");
+		export.setToolTipText("Saves this table as CSV file, in the current order, only the rows shown.");
+		export.setEnabled(theTable.getRowCount() > 0);
+		export.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				exportAsCsv(theTable);
+			}
+		});
+		popup.add(export);
 		popup.show(theTable, e.getX(), e.getY());
+	}
+
+	/**
+	 * Saves a table as CSV file, in the format the user chooses (see {@link CsvOptionsDialog}).
+	 * The rows are written in the order the table currently shows them.
+	 *
+	 * @param theTable the table
+	 */
+	private void exportAsCsv(JTable theTable) {
+		CsvOptionsDialog.CsvFormat format = CsvOptionsDialog.show(this);
+		if (format == null) {
+			return;
+		}
+		String fileName = CsvOptionsDialog.chooseFile(this);
+		if (fileName == null) {
+			return;
+		}
+		TableModel model = theTable.getModel();
+		StringBuilder csv = new StringBuilder();
+		if (format.header) {
+			for (int column = 0; column < model.getColumnCount(); ++column) {
+				if (column > 0) {
+					csv.append(format.separator);
+				}
+				// shares are written as percentages
+				String name = model.getColumnName(column) + (model.getColumnClass(column) == Double.class? " (%)" : "");
+				csv.append(format.cell(name, true));
+			}
+			csv.append(format.lineBreak);
+		}
+		for (int viewRow = 0; viewRow < theTable.getRowCount(); ++viewRow) {
+			int modelRow = theTable.convertRowIndexToModel(viewRow);
+			for (int column = 0; column < model.getColumnCount(); ++column) {
+				if (column > 0) {
+					csv.append(format.separator);
+				}
+				csv.append(csvCell(format, model.getValueAt(modelRow, column)));
+			}
+			csv.append(format.lineBreak);
+		}
+		try {
+			format.write(fileName, csv.toString());
+		} catch (Throwable t) {
+			UIUtil.showException(this, "Error", t);
+		}
+	}
+
+	/**
+	 * Gets the CSV cell of a value of the tables: numbers as numbers, shares as percentages.
+	 *
+	 * @param format the format
+	 * @param value the value
+	 * @return the cell
+	 */
+	private static String csvCell(CsvOptionsDialog.CsvFormat format, Object value) {
+		if (value == null) {
+			return "";
+		}
+		if (value instanceof Long) {
+			return format.number(BigDecimal.valueOf(((Long) value).longValue()));
+		}
+		if (value instanceof Change) {
+			return format.number(BigDecimal.valueOf(((Change) value).value));
+		}
+		if (value instanceof Ratio) {
+			return format.number(BigDecimal.valueOf(((Ratio) value).value).setScale(2, RoundingMode.HALF_UP));
+		}
+		if (value instanceof Double) {
+			return format.number(BigDecimal.valueOf(((Double) value).doubleValue() * 100).setScale(1, RoundingMode.HALF_UP));
+		}
+		return format.cell(value.toString(), true);
 	}
 
 	/**
@@ -1027,17 +1596,19 @@ public class CollectionAnalysisPanel extends JPanel {
 	 */
 	private class AnalysisTableModel extends AbstractTableModel {
 
-		private final String[] columnNames = new String[] { "Association", "From", "To", "Rows", "Per Source Row", "Share", "Cumulated", "Step" };
+		private final String[] columnNames = new String[] { "Association", "From", "To", "Rows", "Change", "Per Source Row", "Share", "Cumulated", "Step" };
 
 		private final String[] columnToolTips = new String[] {
 				"<html>The association through which the rows have been collected.<br>\"(subject)\" stands for the subject rows.</html>",
 				"Source table of the association.",
 				"Destination table, the table the rows have been collected into.",
 				"<html>Rows collected through this association.<br>Each row is counted only for the association that has collected it first.</html>",
+				"<html>Change in rows compared to the previous completed run of this extraction model.<br>Empty if there is no such run."
+				+ "<br>While the run is going, the completed steps are compared with the same steps of the previous run.</html>",
 				"<html>Rows divided by the rows collected into the source table.<br>A value far above 1 marks an association that multiplies the subset.</html>",
 				"Share of this association in all collected rows.",
 				"<html>Share of this entry together with all entries that have collected more rows.</html>",
-				"The step, or range of steps, in which this association has collected rows."
+				"<html>The step, or range of steps, in which this association has collected rows.<br>Hover over a cell to see the rows per step.</html>"
 		};
 
 		@Override
@@ -1059,9 +1630,11 @@ public class CollectionAnalysisPanel extends JPanel {
 		public Class<?> getColumnClass(int column) {
 			switch (column) {
 			case 3: return Long.class;
-			case 4: return Ratio.class;
-			case 5:
-			case 6: return Double.class;
+			case 4: return Change.class;
+			case 5: return Ratio.class;
+			case 6:
+			case 7: return Double.class;
+			case 8: return Steps.class;
 			default: return String.class;
 			}
 		}
@@ -1082,10 +1655,11 @@ public class CollectionAnalysisPanel extends JPanel {
 			case 1: return row.from;
 			case 2: return row.to;
 			case 3: return Long.valueOf(row.rows);
-			case 4: return row.perSourceRow;
-			case 5: return Double.valueOf(row.share);
-			case 6: return Double.valueOf(row.cumulatedShare);
-			case 7: return row.step;
+			case 4: return row.change;
+			case 5: return row.perSourceRow;
+			case 6: return Double.valueOf(row.share);
+			case 7: return Double.valueOf(row.cumulatedShare);
+			case 8: return row.step;
 			default: return null;
 			}
 		}
@@ -1104,7 +1678,7 @@ public class CollectionAnalysisPanel extends JPanel {
 				"<html>An association which has brought rows into the source table of the selected association<br>one step before the selected association has been resolved.</html>",
 				"Source table of the possible predecessor.",
 				"<html>Rows the predecessor has brought in one step before<br>the selected association has been resolved.</html>",
-				"The step, or range of steps, in which the predecessor has collected rows."
+				"<html>The step, or range of steps, in which the predecessor has collected rows.<br>Hover over a cell to see the rows per step.</html>"
 		};
 
 		@Override
@@ -1124,7 +1698,7 @@ public class CollectionAnalysisPanel extends JPanel {
 
 		@Override
 		public Class<?> getColumnClass(int column) {
-			return column == 2? Long.class : String.class;
+			return column == 2? Long.class : column == 3? Steps.class : String.class;
 		}
 
 		@Override

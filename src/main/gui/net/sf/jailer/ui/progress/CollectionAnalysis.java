@@ -142,6 +142,71 @@ public class CollectionAnalysis {
 	}
 
 	/**
+	 * Immutable result of a completed run, to compare the next run with.
+	 * <p>
+	 * Keyed by name, see {@link CollectionAnalysis#keyOf(ModelElement)}: the next run belongs to a
+	 * different load of the data model, its associations are not the same objects.
+	 */
+	public static class Baseline {
+
+		private final Map<String, Long> rowsByKey;
+		private final Map<String, Map<Integer, Long>> rowsPerStepByKey;
+		private final long total;
+
+		Baseline(Map<String, Long> rowsByKey, Map<String, Map<Integer, Long>> rowsPerStepByKey, long total) {
+			this.rowsByKey = Collections.unmodifiableMap(rowsByKey);
+			this.rowsPerStepByKey = Collections.unmodifiableMap(rowsPerStepByKey);
+			this.total = total;
+		}
+
+		/**
+		 * Gets the number of rows a model element has collected in that run up to a given step,
+		 * to compare a run which is still going with.
+		 *
+		 * @param modelElement an association or the subject table
+		 * @param upToStep the last step to count
+		 * @return the number of rows, 0 if it has not collected any up to then
+		 */
+		public long getRows(ModelElement modelElement, int upToStep) {
+			return sumUpTo(rowsPerStepByKey.get(keyOf(modelElement)), upToStep);
+		}
+
+		/**
+		 * Gets the total number of rows collected in that run up to a given step.
+		 *
+		 * @param upToStep the last step to count
+		 * @return the number of rows
+		 */
+		public long getTotal(int upToStep) {
+			long sum = 0;
+			for (Map<Integer, Long> rowsPerStep: rowsPerStepByKey.values()) {
+				sum += sumUpTo(rowsPerStep, upToStep);
+			}
+			return sum;
+		}
+
+		/**
+		 * Gets the number of rows a model element has collected in that run.
+		 *
+		 * @param modelElement an association or the subject table
+		 * @return the number of rows, 0 if it has not collected any
+		 */
+		public long getRows(ModelElement modelElement) {
+			Long rows = rowsByKey.get(keyOf(modelElement));
+			return rows == null? 0 : rows.longValue();
+		}
+
+		/**
+		 * Gets the total number of rows collected in that run.
+		 *
+		 * @return the total number of rows
+		 */
+		public long getTotal() {
+			return total;
+		}
+	}
+
+	/**
 	 * Mutable counter per model element.
 	 */
 	private static class Counter {
@@ -216,6 +281,56 @@ public class CollectionAnalysis {
 			}
 		});
 		return result;
+	}
+
+	/**
+	 * Takes the current numbers as the baseline for the next run.
+	 *
+	 * @return the baseline
+	 */
+	public synchronized Baseline toBaseline() {
+		Map<String, Long> rowsByKey = new HashMap<String, Long>();
+		Map<String, Map<Integer, Long>> rowsPerStepByKey = new HashMap<String, Map<Integer, Long>>();
+		for (Map.Entry<ModelElement, Counter> e: counters.entrySet()) {
+			rowsByKey.put(keyOf(e.getKey()), e.getValue().rows);
+			rowsPerStepByKey.put(keyOf(e.getKey()), new TreeMap<Integer, Long>(e.getValue().rowsPerDay));
+		}
+		return new Baseline(rowsByKey, rowsPerStepByKey, total);
+	}
+
+	/**
+	 * Sums up the rows of the steps up to a given one.
+	 *
+	 * @param rowsPerStep rows per step, or <code>null</code>
+	 * @param upToStep the last step to count
+	 * @return the sum
+	 */
+	static long sumUpTo(Map<Integer, Long> rowsPerStep, int upToStep) {
+		long sum = 0;
+		if (rowsPerStep != null) {
+			for (Map.Entry<Integer, Long> e: rowsPerStep.entrySet()) {
+				if (e.getKey().intValue() <= upToStep) {
+					sum += e.getValue().longValue();
+				}
+			}
+		}
+		return sum;
+	}
+
+	/**
+	 * Gets a key for a model element which is the same in every load of the data model.
+	 *
+	 * @param modelElement an association or the subject table
+	 * @return the key
+	 */
+	static String keyOf(ModelElement modelElement) {
+		if (modelElement instanceof Association) {
+			return ((Association) modelElement).getName();
+		}
+		if (modelElement instanceof Table) {
+			return "(subject) " + ((Table) modelElement).getName();
+		}
+		return String.valueOf(modelElement);
 	}
 
 	/**

@@ -21,6 +21,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -187,6 +188,26 @@ public class RemoteEntityGraph extends EntityGraph {
 		session.executeUpdate(
 				"Insert into " + dmlTableReference(ENTITY, session) + "(r_entitygraph, " + universalPrimaryKey.columnList(null) + ", birthday, orig_birthday, type, association) " +
 					"Select " + targetGraphID + ", " + universalPrimaryKey.columnList(null) + ", birthday, birthday, type, association From " + dmlTableReference(ENTITY, session) + " Where r_entitygraph=" + graphID + " and birthday>" + sinceBirthday);
+	}
+
+	/**
+	 * Appends the rows of some tables collected since a given birthday to an already-existing copy
+	 * of this graph, like {@link #appendNewRowsTo(int, int, Session)}, but one table at a time: with
+	 * the type in the condition, the index on (r_entitygraph, type, birthday) bounds the read to the
+	 * new rows. Without it every call reads all the rows collected so far, and a run which takes many
+	 * snapshots reads them again and again.
+	 *
+	 * @param targetGraphID ID of the copy
+	 * @param sinceBirthday rows born after this birthday are copied
+	 * @param tables the tables which have got new rows since then
+	 * @param session the session
+	 */
+	public void appendNewRowsTo(int targetGraphID, int sinceBirthday, Collection<Table> tables, Session session) throws SQLException {
+		for (Table table: tables) {
+			session.executeUpdate(
+					"Insert into " + dmlTableReference(ENTITY, session) + "(r_entitygraph, " + universalPrimaryKey.columnList(null) + ", birthday, orig_birthday, type, association) " +
+						"Select " + targetGraphID + ", " + universalPrimaryKey.columnList(null) + ", birthday, birthday, type, association From " + dmlTableReference(ENTITY, session) + " Where r_entitygraph=" + graphID + " and type=" + typeName(table) + " and birthday>" + sinceBirthday);
+		}
 	}
 
 	/**
@@ -1812,6 +1833,24 @@ public class RemoteEntityGraph extends EntityGraph {
 		return "/* " + comment + " */ exists (select 1 from " + dmlTableReference(ENTITY, session) + " E"
 				+ " where E.r_entitygraph=" + graphID + " and E.type=" + typeName(table)
 				+ " and E.birthday>=0"
+				+ " and " + pkEqualsEntityID(table, tableAlias, "E") + ")";
+	}
+
+	/**
+	 * Gets a condition which holds for exactly those rows of a table which have been collected
+	 * through a given association. See {@link #collectedCondition(Table, String, String)}.
+	 *
+	 * @param table the table
+	 * @param associationId ID of the association, or <code>null</code> for the subject rows
+	 * @param tableAlias the alias the browser uses for the table, "A"
+	 * @param comment tells what the condition means, in plain words
+	 * @return the condition
+	 */
+	public String collectedThroughCondition(Table table, Integer associationId, String tableAlias, String comment) throws SQLException {
+		return "/* " + comment + " */ exists (select 1 from " + dmlTableReference(ENTITY, session) + " E"
+				+ " where E.r_entitygraph=" + graphID + " and E.type=" + typeName(table)
+				+ " and E.birthday>=0"
+				+ " and E.association" + (associationId == null? " is null" : "=" + associationId)
 				+ " and " + pkEqualsEntityID(table, tableAlias, "E") + ")";
 	}
 

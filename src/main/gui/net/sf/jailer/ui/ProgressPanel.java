@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
@@ -72,6 +73,11 @@ public class ProgressPanel extends javax.swing.JPanel {
 	private JPanel subsetInsightContentPanel;
 	private JPanel subsetInsightBox;
 	private boolean subsetInsightApplicable;
+	/**
+	 * Whether the analysis would have been possible, but the run has been started with
+	 * "Export without Analysis". Tells the user the right reason why there is nothing to analyze.
+	 */
+	private boolean analysisSkipped;
 	private boolean subsetInsightTransactional;
 	private Icon subsetInsightWarnIcon;
 
@@ -241,7 +247,8 @@ public class ProgressPanel extends javax.swing.JPanel {
 				boolean available = collectedRowsOpener != null && analysisPanel.hasRetainedRows();
 				JPopupMenu popup = new JPopupMenu();
 				JMenuItem item = new JMenuItem(OPEN_TABLE_TITLE);
-				item.setToolTipText(available? OPEN_TABLE_TOOLTIP : CELL_PATH_NO_GRAPH_TOOLTIP);
+				item.setIcon(UIUtil.scaleIcon(item, UIUtil.readImage("/navigation.png")));
+				item.setToolTipText(available? OPEN_TABLE_TOOLTIP : noRetainedRowsToolTip());
 				item.setEnabled(available);
 				item.addActionListener(evt -> openCollectedRows(tableName));
 				popup.add(item);
@@ -249,7 +256,7 @@ public class ProgressPanel extends javax.swing.JPanel {
 			}
 		};
 		label.addMouseListener(listener);
-		label.setToolTipText(analysisPanel.hasRetainedRows()? OPEN_TABLE_TOOLTIP : CELL_PATH_NO_GRAPH_TOOLTIP);
+		label.setToolTipText(analysisPanel.hasRetainedRows()? OPEN_TABLE_TOOLTIP : noRetainedRowsToolTip());
 	}
 
 	private void openCollectedRows(String tableName) {
@@ -327,6 +334,61 @@ public class ProgressPanel extends javax.swing.JPanel {
 	}
 
 	/**
+	 * Sets the consumer which opens a table in a Data Browser, limited to the rows collected
+	 * through an association.
+	 *
+	 * @param collectedRowsThroughOpener the consumer (given the table and the association, which is
+	 *            <code>null</code> for the subject rows), or <code>null</code>
+	 */
+	public void setCollectedRowsThroughOpener(BiConsumer<Table, Association> collectedRowsThroughOpener) {
+		analysisPanel.setCollectedRowsThroughOpener(collectedRowsThroughOpener);
+	}
+
+	/**
+	 * Sets the consumer which disables an association in the extraction model.
+	 * If none is set, the analysis does not offer to disable an association.
+	 *
+	 * @param associationDisabler the consumer, or <code>null</code>
+	 */
+	public void setAssociationDisabler(Consumer<Association> associationDisabler) {
+		analysisPanel.setAssociationDisabler(associationDisabler);
+	}
+
+	/**
+	 * Sets the result of the previous run, to compare this one with.
+	 *
+	 * @param previousRun the baseline, or <code>null</code> if there is nothing to compare with
+	 */
+	public void setPreviousRun(CollectionAnalysis.Baseline previousRun) {
+		analysisPanel.setPreviousRun(previousRun);
+	}
+
+	/**
+	 * Announces that the run has been completed, so that the analysis compares the whole run with
+	 * the previous one.
+	 */
+	public void setRunCompleted() {
+		analysisPanel.setRunCompleted();
+	}
+
+	/**
+	 * Announces that the run is over, whether completed, cancelled or failed.
+	 */
+	public void setRunOver() {
+		analysisPanel.setRunOver();
+	}
+
+	/**
+	 * Sets the action which closes this window and starts a dry run with the same settings again.
+	 * If none is set, the analysis does not offer it.
+	 *
+	 * @param dryRunAgain the action, or <code>null</code>
+	 */
+	public void setDryRunAgain(Runnable dryRunAgain) {
+		analysisPanel.setDryRunAgain(dryRunAgain);
+	}
+
+	/**
 	 * Sets the consumer which selects an association in the extraction model editor.
 	 * If none is set, the analysis does not offer to jump to an association.
 	 *
@@ -382,7 +444,32 @@ public class ProgressPanel extends javax.swing.JPanel {
 
 	private static final String CELL_PATH_TITLE = "Open Path to Subject";
 	private static final String CELL_PATH_TOOLTIP = "Opens the way of these rows to a subject as table browsers: one per step, each showing exactly the rows collected in it. The chain follows one of these rows back to a subject; where other associations have brought rows into a step, they are shown beside it.";
-	private static final String CELL_PATH_NO_GRAPH_TOOLTIP = "Requires the working table scope \"global tables\".";
+	/**
+	 * Returns whether the rows collected by the run can be analyzed, see
+	 * {@link CollectionAnalysisPanel#hasRetainedRows()}.
+	 *
+	 * @return <code>true</code> if there is something to analyze
+	 */
+	public boolean hasRetainedRows() {
+		return analysisPanel.hasRetainedRows();
+	}
+
+	/**
+	 * Tells why the collected rows cannot be analyzed (yet).
+	 *
+	 * @return the tool tip
+	 */
+	private String noRetainedRowsToolTip() {
+		if (!subsetInsightApplicable) {
+			return analysisSkipped?
+					"Not available: the run has been started with \"Export without Analysis\"."
+					: "Requires the working table scope \"global tables\".";
+		}
+		if (subsetInsightTransactional) {
+			return "Not yet available: this is a -transactional run. Its collected rows can only be analyzed once it has completed, not after a cancellation or an error.";
+		}
+		return "Not yet available: the rows collected so far are made available every few seconds.";
+	}
 
 	private static final String OPEN_TABLE_TITLE = "Open Collected Rows in Data Browser";
 	private static final String OPEN_TABLE_TOOLTIP = "Double-click to open the rows already collected for this table in the Data Browser.";
@@ -429,7 +516,8 @@ public class ProgressPanel extends javax.swing.JPanel {
 				boolean available = cellPathOpener != null && analysisPanel.hasRetainedRows();
 				JPopupMenu popup = new JPopupMenu();
 				JMenuItem item = new JMenuItem(CELL_PATH_TITLE);
-				item.setToolTipText(available? CELL_PATH_TOOLTIP : CELL_PATH_NO_GRAPH_TOOLTIP);
+				item.setIcon(UIUtil.scaleIcon(item, UIUtil.readImage("/source.png")));
+				item.setToolTipText(available? CELL_PATH_TOOLTIP : noRetainedRowsToolTip());
 				item.setEnabled(available);
 				item.addActionListener(new java.awt.event.ActionListener() {
 					@Override
@@ -489,6 +577,15 @@ public class ProgressPanel extends javax.swing.JPanel {
 			}
 		}
 		return components;
+	}
+
+	/**
+	 * Announces that the analysis would have been possible, but the run has been started with
+	 * "Export without Analysis", so that the tool tips give that as the reason.
+	 */
+	public void setAnalysisSkipped() {
+		analysisSkipped = true;
+		updateSubsetInsightInfoBar();
 	}
 
 	/**
@@ -615,10 +712,12 @@ public class ProgressPanel extends javax.swing.JPanel {
 		String status = null;
 		Icon icon = null;
 		if (!subsetInsightApplicable) {
-			status = "Not available for this run: requires the working table scope \"global tables\".";
+			status = analysisSkipped?
+					"Not available for this run: it has been started with \"Export without Analysis\"."
+					: "Not available for this run: requires the working table scope \"global tables\".";
 			icon = subsetInsightWarnIcon;
 		} else if (!analysisPanel.hasRetainedRows() && subsetInsightTransactional) {
-			status = "Not yet available: -transactional run, available once it completes.";
+			status = "Not yet available: -transactional run, available once it has completed (not after a cancellation or an error).";
 		}
 
 		subsetInsightContentPanel.removeAll();

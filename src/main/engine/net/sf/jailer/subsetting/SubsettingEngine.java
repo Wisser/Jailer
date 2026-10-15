@@ -515,6 +515,9 @@ public class SubsettingEngine {
 		}
 		jobManager.executeJobs(jobs);
 
+		synchronized (progress) {
+			tablesSinceSnapshot.addAll(progress.keySet());
+		}
 		maybeUpdateRetainedSnapshot(today);
 
 		return progress;
@@ -1527,6 +1530,45 @@ public class SubsettingEngine {
 	}
 
 	/**
+	 * Whether the retained entity-graph is kept although the run has been cancelled or has failed,
+	 * for instance because the row limit has been exceeded. Such a run is often the very one the
+	 * analysis is needed for: the subset has exploded. What has been collected up to the last
+	 * progressive snapshot is consistent, see {@link #maybeUpdateRetainedSnapshot(int)}.
+	 * <p>
+	 * Not in "-transactional" mode: the rollback takes the snapshot back anyway.
+	 *
+	 * @return <code>true</code> if the retained entity-graph is to be kept
+	 */
+	private boolean keepRetainedEntityGraphAfterAbort() {
+		return retainedEntityGraph != null && keepEntityGraph() && !executionContext.getTransactional();
+	}
+
+	/**
+	 * The tables which have got rows since the last progressive snapshot, see
+	 * {@link #maybeUpdateRetainedSnapshot(int)}. Kept across snapshots which have been skipped by the
+	 * throttling, so that nothing is lost.
+	 */
+	private final Set<Table> tablesSinceSnapshot = new HashSet<Table>();
+
+	/**
+	 * Adds what has been collected since the last progressive snapshot to the retained entity-graph,
+	 * before the cleanup after an abort removes the working graph. The snapshot is throttled, so it
+	 * may lag behind by a step or more. Including what the step the run has been aborted in had
+	 * collected so far - the progress table shows those rows as well.
+	 */
+	private void topUpRetainedEntityGraphAfterAbort() {
+		if (!keepRetainedEntityGraphAfterAbort()) {
+			return;
+		}
+		try {
+			((RemoteEntityGraph) entityGraph).appendNewRowsTo(retainedEntityGraph.graphID, retainedSnapshotBirthday, entityGraph.getSession());
+		} catch (Throwable t) {
+			// the snapshot taken before is kept then
+			_log.info("could not top up the retained entity-graph", t);
+		}
+	}
+
+	/**
 	 * The entity-graph retained for row origin analysis, updated progressively during collection -
 	 * see {@link #maybeUpdateRetainedSnapshot()}.
 	 */
@@ -1568,8 +1610,10 @@ public class SubsettingEngine {
 		if (retainedEntityGraph == null) {
 			retainedEntityGraph = entityGraph.copy(EntityGraph.createUniqueGraphID(), entityGraph.getSession());
 		} else {
-			((RemoteEntityGraph) entityGraph).appendNewRowsTo(retainedEntityGraph.graphID, retainedSnapshotBirthday, entityGraph.getSession());
+			// only the tables which have got rows, one at a time, see appendNewRowsTo
+			((RemoteEntityGraph) entityGraph).appendNewRowsTo(retainedEntityGraph.graphID, retainedSnapshotBirthday, tablesSinceSnapshot, entityGraph.getSession());
 		}
+		tablesSinceSnapshot.clear();
 		// not entityGraph.getAge(): the caller already bumped that one day ahead of "today", the
 		// birthday the rows just inserted this call actually carry (RemoteEntityGraph.java:613 etc.)
 		retainedSnapshotBirthday = today;
@@ -1902,6 +1946,8 @@ public class SubsettingEngine {
 					_log.info("cleaning up after cancellation...");
 					CancellationHandler.reset(null);
 					entityGraph.getSession().rollbackAll();
+					// before the working graph is gone
+					topUpRetainedEntityGraphAfterAbort();
 					entityGraph.truncate(executionContext, false);
 					entityGraph.delete();
 					if (exportedEntities != null) {
@@ -1912,7 +1958,12 @@ public class SubsettingEngine {
 						}
 					}
 					if (retainedEntityGraph != null && entityGraph.getSession().scope == WorkingTableScope.GLOBAL) {
-						retainedEntityGraph.delete();
+						if (keepRetainedEntityGraphAfterAbort()) {
+							_log.info("keeping entity-graph " + retainedEntityGraph.graphID + " (rows collected so far) for row origin analysis");
+							executionContext.getProgressListenerRegistry().fireEntityGraphRetained(retainedEntityGraph.graphID);
+						} else {
+							retainedEntityGraph.delete();
+						}
 					}
 					_log.info("cleaned up");
 					entityGraph.close();
@@ -1933,6 +1984,8 @@ public class SubsettingEngine {
 							_log.info("cleanup failed", t);
 						}
 					};
+					// before the working graph is gone
+					tryAndIgnore.accept(() -> topUpRetainedEntityGraphAfterAbort());
 					tryAndIgnore.accept(() -> entityGraph.truncate(executionContext, false));
 					tryAndIgnore.accept(() -> entityGraph.delete());
 					if (exportedEntities != null) {
@@ -1945,7 +1998,12 @@ public class SubsettingEngine {
 					}
 					if (retainedEntityGraph != null && entityGraph.getSession().scope == WorkingTableScope.GLOBAL) {
 						EntityGraph finalRetainedEntityGraph = retainedEntityGraph;
-						tryAndIgnore.accept(() -> finalRetainedEntityGraph.delete());
+						if (keepRetainedEntityGraphAfterAbort()) {
+							_log.info("keeping entity-graph " + finalRetainedEntityGraph.graphID + " (rows collected so far) for row origin analysis");
+							tryAndIgnore.accept(() -> executionContext.getProgressListenerRegistry().fireEntityGraphRetained(finalRetainedEntityGraph.graphID));
+						} else {
+							tryAndIgnore.accept(() -> finalRetainedEntityGraph.delete());
+						}
 					}
 					tryAndIgnore.accept(() -> entityGraph.getSession().rollbackAll());
 					tryAndIgnore.accept(() -> entityGraph.close());

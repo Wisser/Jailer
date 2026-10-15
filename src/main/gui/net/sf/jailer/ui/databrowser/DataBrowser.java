@@ -2288,16 +2288,32 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	 * @param dbUrl URL of the database whose working tables were just dropped
 	 */
 	public static void closeAllConnectedTo(String dbUrl) {
+		for (DataBrowser dataBrowser : analysisBrowsersConnectedTo(dbUrl)) {
+			dataBrowser.dispatchEvent(new WindowEvent(dataBrowser, WindowEvent.WINDOW_CLOSING));
+		}
+	}
+
+	/**
+	 * Gets every currently open Data Browser window opened for row-origin analysis and connected
+	 * to the given database, the ones {@link #closeAllConnectedTo(String)} closes.
+	 *
+	 * @param dbUrl URL of the database
+	 * @return the windows
+	 */
+	public static List<DataBrowser> analysisBrowsersConnectedTo(String dbUrl) {
+		List<DataBrowser> result = new ArrayList<DataBrowser>();
 		for (Window window : Window.getWindows()) {
 			if (window instanceof DataBrowser) {
 				DataBrowser dataBrowser = (DataBrowser) window;
 				Desktop desktop = dataBrowser.desktop;
-				if (dataBrowser.originAnalysisBrowser && desktop != null && desktop.session != null
+				// not one that has been closed already: it is still listed until it is garbage collected
+				if (dataBrowser.originAnalysisBrowser && dataBrowser.isDisplayable() && desktop != null && desktop.session != null
 						&& dbUrl.equals(desktop.session.dbUrl)) {
-					window.dispatchEvent(new WindowEvent(window, WindowEvent.WINDOW_CLOSING));
+					result.add(dataBrowser);
 				}
 			}
 		}
+		return result;
 	}
 
 	private String currentDatabaseName;

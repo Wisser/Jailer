@@ -108,6 +108,7 @@ import net.sf.jailer.ui.databrowser.BookmarksPanel.BookmarkId;
 import net.sf.jailer.ui.databrowser.DataBrowser;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.ui.ddl_script_generator.DDLScriptGeneratorPanel;
+import net.sf.jailer.ui.progress.CollectionAnalysis;
 import net.sf.jailer.ui.progress.ExportAndDeleteStageProgressListener;
 import net.sf.jailer.ui.progress.RetainedEntityGraphs;
 import net.sf.jailer.ui.progress.RowOriginContext;
@@ -1768,6 +1769,20 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 	private WeakReference<DataBrowser> rowOriginDataBrowser;
 
 	/**
+	 * Result of the last completed run, which the analysis of the next one is compared with, and
+	 * the editor it belongs to. Loading another model replaces the editor, and the result no longer
+	 * applies.
+	 */
+	private CollectionAnalysis.Baseline previousRun;
+	private ExtractionModelEditor previousRunEditor;
+
+	/**
+	 * Set by "Dry Run Again" of the progress window: the next export dialog starts a dry run with
+	 * its restored settings right away, without being shown.
+	 */
+	private boolean startDryRunImmediately = false;
+
+	/**
 	 * Gets the Data Browser the analysis works in, opening one if there is none yet.
 	 * <p>
 	 * The one of the last time is reused: the list of collected rows is not modal, so one path
@@ -2109,6 +2124,13 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 
 								exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), extractionModelEditor.extractionModel.additionalSubjects, session, args, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), checkRI, dbConnectionDialog, extractionModelEditor.extractionModelFile, jmFile, tmpFileName, defaultExportFileName, executionContext) { // lgtm [java/dereferenced-value-may-be-null]
 									@Override
+									protected boolean startDryRunImmediately() {
+										// once only, see "Dry Run Again"
+										boolean start = startDryRunImmediately;
+										startDryRunImmediately = false;
+										return start;
+									}
+									@Override
 									protected boolean checkForPKs(JRadioButton rowidButton, Runnable saveSettings) {
 										try {
 											extractionModelEditor.dataModel.checkForPrimaryKey(new HashSet<Table>(toCheck), false);
@@ -2260,6 +2282,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 										ProgressTable progressTable = new ProgressTable();
 										ProgressTable progressTableForDelete = new ProgressTable();
 										final ProgressPanel progressPanel = new ProgressPanel(progressTable, progressTableForDelete, exportDialog.hasDeleteScript());
+										if (previousRunEditor == extractionModelEditor) {
+											progressPanel.setPreviousRun(previousRun);
+										}
 										if (isVisible()) {
 											// selecting an association in the editor and raising this frame makes
 											// no sense if it isn't visible - e.g. when Export is triggered from
@@ -2267,6 +2292,32 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 											progressPanel.setAssociationSelector(association -> {
 												extractionModelEditor.select(association);
 												ExtractionModelFrame.this.toFront();
+											});
+											progressPanel.setAssociationDisabler(association -> {
+												extractionModelEditor.ignorAssociation(association);
+												// shows what has been disabled, and can be undone from there
+												extractionModelEditor.select(association);
+												ExtractionModelFrame.this.toFront();
+											});
+											progressPanel.setDryRunAgain(() -> {
+												// the new run discards the retained graph and closes its analysis Data
+												// Browser anyway, so there is nothing to ask when the console is closed.
+												// Asking would not even work: the modal question runs the queued start of
+												// the new run, which closes the browser underneath it
+												RetainedEntityGraphs.discardCurrent();
+												Window console = SwingUtilities.getWindowAncestor(progressPanel);
+												if (console != null) {
+													console.dispose();
+												}
+												UIUtil.invokeLater(() -> {
+													startDryRunImmediately = true;
+													try {
+														openExportDialog(true, null, null);
+													} finally {
+														// not left over if no dialog has been created, e.g. after a question was declined
+														startDryRunImmediately = false;
+													}
+												});
 											});
 										}
 										progressPanel.setTableOpener(table -> {
@@ -2288,6 +2339,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 											originExecutionContext.setWorkingTableSchema(exportDialog.getWorkingTableSchema());
 											originExecutionContext.setUseRowid(exportDialog.isUseRowId());
 											originExecutionContext.setUseRowIdsOnlyForTablesWithoutPK(exportDialog.isUseRowIdsOnlyForTablesWithoutPK());
+											// the run gets it as "-transactional" on its command line only, but the
+											// progress window has to know it: nothing is visible before the end of such a run
+											originExecutionContext.setTransactional(exportDialog.transactional.isSelected());
 											// the restrictions are evaluated again during the analysis, so their
 											// "${...}" placeholders need the values of this run
 											for (Map.Entry<String, String> e: exportDialog.getParameterValues().entrySet()) {
@@ -2321,6 +2375,31 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 														if (originTable != null && editorTable != null) {
 															try {
 																String condition = rowOriginContext.getEntityGraph().collectedCondition(originTable, "A", "collected rows");
+																dataBrowser.refreshForAnalysis();
+																dataBrowser.openRootBrowser(editorTable, condition);
+															} catch (Exception e) {
+																UIUtil.showException(ExtractionModelFrame.this, "Error", e);
+															}
+														}
+													}
+												} finally {
+													UIUtil.resetWaitCursor(progressPanel);
+												}
+											});
+											progressPanel.setCollectedRowsThroughOpener((table, association) -> {
+												UIUtil.setWaitCursor(progressPanel);
+												try {
+													DataBrowser dataBrowser = dataBrowserForAnalysis();
+													if (dataBrowser != null) {
+														Table originTable = rowOriginContext.getDataModel().getTable(table.getName());
+														Table editorTable = extractionModelEditor.dataModel.getTable(table.getName());
+														// the ID must be the one of the run's model, see RowOriginContext
+														Association originAssociation = association == null? null : rowOriginContext.getDataModel().namedAssociations.get(association.getName());
+														if (originTable != null && editorTable != null && (association == null || originAssociation != null)) {
+															try {
+																String comment = association == null? "collected as subject" : "collected through " + association.getName().replace("*/", "* /");
+																String condition = rowOriginContext.getEntityGraph().collectedThroughCondition(originTable,
+																		originAssociation == null? null : originAssociation.getId(), "A", comment);
 																dataBrowser.refreshForAnalysis();
 																dataBrowser.openRootBrowser(editorTable, condition);
 															} catch (Exception e) {
@@ -2370,9 +2449,32 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 											});
 										} else {
 											rowOriginContext = null;
+											if (exportDialog.isAnalysisPossible()) {
+												// "Export without Analysis": the progress window tells that, not the scope
+												progressPanel.setAnalysisSkipped();
+											}
 										}
 										boolean confirm = exportDialog.scriptFormat == ScriptFormat.INTRA_DATABASE && exportDialog.getConfirmExport();
+										final ExtractionModelEditor runEditor = extractionModelEditor;
 										final ExportAndDeleteStageProgressListener progressListener = new ExportAndDeleteStageProgressListener(progressTable, progressTableForDelete, progressPanel, extractionModelEditor.dataModel, confirm, exportDialog.getTargetSchemaSet(), !exportDialog.scriptFormat.isObjectNotation() && !exportDialog.insertScripFileNameFieldIsEmpty()) {
+											@Override
+											public synchronized void newStage(String stage, boolean isErrorStage, boolean isFinalStage) {
+												super.newStage(stage, isErrorStage, isFinalStage);
+												if (isFinalStage) {
+													// whether finished, cancelled or failed: now it can be run again
+													UIUtil.invokeLater(progressPanel::setRunOver);
+												}
+												// only a completed run is something to compare with, see UIUtil.runJailer
+												if ("finished".equals(stage) && isFinalStage && !isErrorStage) {
+													final CollectionAnalysis.Baseline baseline = getCollectionAnalysis().toBaseline();
+													UIUtil.invokeLater(() -> {
+														previousRun = baseline;
+														previousRunEditor = runEditor;
+														// from now on the whole run is compared, not only its completed steps
+														progressPanel.setRunCompleted();
+													});
+												}
+											}
 											@Override
 											public void entityGraphRetained(int graphId) {
 												if (rowOriginContext != null) {

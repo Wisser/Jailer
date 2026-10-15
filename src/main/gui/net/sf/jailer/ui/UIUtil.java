@@ -428,6 +428,32 @@ public class UIUtil {
     	public void cleanUp();
     }
 
+	/**
+	 * If a run has been stopped by the row limit, adds to the message that the progress window
+	 * shows what has been collected up to then: often the very reason for setting the limit.
+	 *
+	 * @param t the error of the run
+	 * @param progressPanel the progress window's panel, or <code>null</code>
+	 * @return the error to show
+	 */
+	private static Throwable withAnalysisHint(Throwable t, ProgressPanel progressPanel) {
+		if (progressPanel == null) {
+			return t;
+		}
+		Throwable cause = t;
+		while (cause.getCause() != null && cause != cause.getCause()) {
+			cause = cause.getCause();
+		}
+		if (!(cause instanceof RowLimitExceededException)) {
+			return t;
+		}
+		String hint = "The \"Analysis\" tab of this window shows which associations have brought in the rows collected so far.";
+		if (progressPanel.hasRetainedRows()) {
+			hint += " Their way into the subset can be traced there with \"Show Collected Rows\".";
+		}
+		return new RowLimitExceededException(cause.getMessage() + "\n\n" + hint);
+	}
+
     /**
      * Calls the Jailer export engine via CLI.
      *
@@ -695,7 +721,7 @@ public class UIUtil {
                                         closeDialog();
                                     } else if (showExeptions && exp[0] != null
                                             && !(exp[0] instanceof CancellationException)) {
-                                        UIUtil.showException(outputView.dialog, "Error", exp[0], arglist);
+                                        UIUtil.showException(outputView.dialog, "Error", withAnalysisHint(exp[0], progressPanel), arglist);
                                         exceptionShown[0] = true;
                                         if (closeAfterExceptionShown) {
                                             closeDialog();

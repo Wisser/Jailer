@@ -114,7 +114,7 @@ public class RowOriginPanel extends JPanel {
 		add(new JScrollPane(table), BorderLayout.CENTER);
 
 		openPathButton = new JButton(" Open Path in Data Browser ");
-		openPathButton.setIcon(UIUtil.scaleIcon(openPathButton, UIUtil.readImage("/subject.png")));
+		openPathButton.setIcon(UIUtil.scaleIcon(openPathButton, UIUtil.readImage("/source.png")));
 		openPathButton.setToolTipText("Opens the chain as table browsers of the Data Browser: one per step, each showing the single row of that step.");
 		openPathButton.addActionListener(new ActionListener() {
 			@Override

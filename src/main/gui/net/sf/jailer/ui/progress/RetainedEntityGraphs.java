@@ -15,13 +15,19 @@
  */
 package net.sf.jailer.ui.progress;
 
+import java.awt.Frame;
 import java.awt.Window;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+
+import javax.swing.JOptionPane;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.BasicDataSource;
@@ -49,7 +55,9 @@ import net.sf.jailer.util.LogUtil;
  * The rows are needed by whoever looks at them, and that is not only the progress window: a
  * row origin can also be asked for from the Data Browser. Views therefore announce themselves
  * with {@link #addUser()} and {@link #removeUser()}, and closing the progress window
- * discards through {@link #discardWhenUnused()}, which waits for the last view to close.
+ * discards through {@link #discardWhenUnused()}, which waits for the last view to close. If the
+ * Data Browser the analysis opens its tables in is still open then, the user is asked whether to
+ * close it, or to keep the rows until it is closed.
  *
  * @author Ralf Wisser
  */
@@ -139,7 +147,7 @@ public class RetainedEntityGraphs {
 			discardNow = users == 0 && discardRequested;
 		}
 		if (discardNow) {
-			discardCurrent();
+			discardOrKeepForBrowsers();
 		}
 	}
 
@@ -154,7 +162,61 @@ public class RetainedEntityGraphs {
 				return;
 			}
 		}
-		discardCurrent();
+		discardOrKeepForBrowsers();
+	}
+
+	/**
+	 * Discards the retained graph now that the last view of it has gone, but asks first if an
+	 * analysis Data Browser still shows its rows: closing it is what {@link #discardCurrent()} does.
+	 * If the user wants to keep it, the browsers become views of their own, and the graph is
+	 * discarded when the last of them is closed.
+	 * <p>
+	 * Called on the event dispatch thread, when a window has been closed.
+	 */
+	private static void discardOrKeepForBrowsers() {
+		RowOriginContext context;
+		synchronized (RetainedEntityGraphs.class) {
+			context = current;
+		}
+		List<DataBrowser> browsers = context == null || !context.isAvailable()?
+				Collections.<DataBrowser>emptyList() : DataBrowser.analysisBrowsersConnectedTo(context.getDbUrl());
+		if (browsers.isEmpty()) {
+			discardCurrent();
+			return;
+		}
+		// the question is about these windows, so they are to be seen
+		for (DataBrowser browser: browsers) {
+			if ((browser.getExtendedState() & Frame.ICONIFIED) != 0) {
+				browser.setExtendedState(browser.getExtendedState() & ~Frame.ICONIFIED);
+			}
+			browser.toFront();
+		}
+		int answer = JOptionPane.showConfirmDialog(browsers.get(0),
+				"The Data Browser still shows rows of the subset analysis.\n"
+				+ "Close it as well?\n\n"
+				+ "If not, the retained rows are kept until it is closed.",
+				"Close Data Browser", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+		if (answer == JOptionPane.YES_OPTION) {
+			discardCurrent();
+			return;
+		}
+		for (DataBrowser browser: browsers) {
+			addUser();
+			browser.addWindowListener(new WindowAdapter() {
+				private boolean removed = false;
+				@Override
+				public void windowClosed(WindowEvent e) {
+					// once only, a closed window may be told to close again
+					if (!removed) {
+						removed = true;
+						removeUser();
+					}
+				}
+			});
+		}
+		synchronized (RetainedEntityGraphs.class) {
+			discardRequested = true;
+		}
 	}
 
 	/**

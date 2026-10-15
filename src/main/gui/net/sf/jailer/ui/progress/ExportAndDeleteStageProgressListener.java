@@ -118,6 +118,15 @@ public abstract class ExportAndDeleteStageProgressListener implements ProgressLi
 		currentProgressListener.prepareExport();
 	}
 
+	/**
+	 * Gets the number of collected rows per association of the export stage.
+	 *
+	 * @return the collection analysis
+	 */
+	public CollectionAnalysis getCollectionAnalysis() {
+		return exportProgressListener.getCollectionAnalysis();
+	}
+
 	public void stop() {
 		exportProgressListener.stop();
 		deleteProgressListener.stop();

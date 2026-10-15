@@ -15,11 +15,15 @@
  */
 package net.sf.jailer.ui;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
+import java.awt.RenderingHints;
 import java.awt.Window;
+import java.awt.image.BufferedImage;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -111,6 +115,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	 * Starts a dry run. Created after {@link #initComponents()}.
 	 */
 	private javax.swing.JButton dryRunButton;
+	private javax.swing.JButton exportWithoutAnalysisButton;
 
 	/**
 	 * Xml/Sql switch.
@@ -728,7 +733,26 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 				super.windowOpened(e);
 			}
 		});
-		setVisible(true);
+		boolean started = false;
+		if (startDryRunImmediately()) {
+			// "Dry Run Again" of the progress window: the settings have been restored above. The scope
+			// has to be known before, it decides whether a dry run is possible at all
+			try {
+				if (initScopeButtonThread != null) {
+					initScopeButtonThread.join();
+				}
+			} catch (InterruptedException e1) {
+			}
+			if (dryRunButton.isEnabled()) {
+				run(true);
+				started = isOk;
+			}
+		}
+		// also if the dry run has been refused, so that the user can see why and fix it - unless
+		// the refusal has disposed the dialog, e.g. to edit a table without primary key
+		if (!started && isDisplayable()) {
+			setVisible(true);
+		}
 		try {
 			if (initScopeButtonThread != null) {
 				initScopeButtonThread.join();
@@ -2509,6 +2533,15 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			}
 		});
 
+		exportWithoutAnalysisButton = new javax.swing.JButton(" Export without Analysis ");
+		exportWithoutAnalysisButton.setIcon(withoutAnalysisIcon(dryRunIcon));
+		exportWithoutAnalysisButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				run(false, true);
+			}
+		});
+
 		jPanel2.remove(jButton1);
 		jPanel2.remove(cancelButton);
 
@@ -2527,10 +2560,18 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
 		gridBagConstraints.weighty = 1.0;
 		gridBagConstraints.insets = new java.awt.Insets(4, 0, 2, 2);
-		jPanel2.add(jButton1, gridBagConstraints);
+		jPanel2.add(exportWithoutAnalysisButton, gridBagConstraints);
 
 		gridBagConstraints = new java.awt.GridBagConstraints();
 		gridBagConstraints.gridx = 3;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+		gridBagConstraints.weighty = 1.0;
+		gridBagConstraints.insets = new java.awt.Insets(4, 0, 2, 2);
+		jPanel2.add(jButton1, gridBagConstraints);
+
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 4;
 		gridBagConstraints.gridy = 1;
 		gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
 		gridBagConstraints.weighty = 1.0;
@@ -2539,16 +2580,98 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	}
 
 	/**
+	 * The icon of "Dry Run" with its question mark, the analysis, struck through in red.
+	 *
+	 * @param icon the icon of "Dry Run"
+	 * @return the icon of "Export without Analysis"
+	 */
+	private static Icon withoutAnalysisIcon(ImageIcon icon) {
+		if (icon == null || icon.getIconWidth() <= 0 || icon.getIconHeight() <= 0) {
+			return icon;
+		}
+		int w = icon.getIconWidth();
+		int h = icon.getIconHeight();
+		BufferedImage image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = image.createGraphics();
+		try {
+			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			g.drawImage(icon.getImage(), 0, 0, null);
+			float width = Math.max(1.5f, h / 7f);
+			g.setStroke(new BasicStroke(width, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+			g.setColor(new Color(220, 0, 0));
+			int inset = (int) Math.ceil(width);
+			// the question mark takes the right half of the icon
+			g.drawLine((int) (w * 0.55), h - 1 - inset, w - 1 - inset, inset);
+		} finally {
+			g.dispose();
+		}
+		return new ImageIcon(image);
+	}
+
+	/**
+	 * What "-transactional" means for the analysis of the subset: nothing is visible to another
+	 * connection before the single final commit, and a rollback takes the retained rows back.
+	 */
+	private static final String TRANSACTIONAL_ANALYSIS_HINT =
+			"With \"transactional\", the analysis of the subset is only possible after the run has completed:"
+			+ "<br>not while it is running, and not after a cancellation or an error.";
+
+	/**
+	 * The tool tip "transactional" has been given in {@link #initComponents()}.
+	 */
+	private String transactionalToolTip;
+
+	/**
+	 * Adds the hint about the analysis of the subset to the tool tip of "transactional", as long as
+	 * the analysis is possible at all (working table scope "global tables").
+	 */
+	private void updateTransactionalToolTip() {
+		if (transactionalToolTip == null) {
+			transactionalToolTip = transactional.getToolTipText();
+		}
+		if (transactionalToolTip != null && transactionalToolTip.endsWith("</html>") && isAnalysisPossible()) {
+			transactional.setToolTipText(transactionalToolTip.substring(0, transactionalToolTip.length() - "</html>".length())
+					+ "<br><br>" + TRANSACTIONAL_ANALYSIS_HINT + "</html>");
+		} else {
+			transactional.setToolTipText(transactionalToolTip);
+		}
+	}
+
+	/**
 	 * Enables the "Dry Run" button only when row-origin analysis will be available afterwards -
 	 * see {@link #isKeepEntityGraph()}. Dry-running is pointless otherwise: its only purpose beyond
 	 * "Export Data" is analyzing the result, and this could be no different from a full export.
 	 */
+	/**
+	 * Whether a dry run is to be started right away with the restored settings, without showing
+	 * the dialog ("Dry Run Again" of the progress window). Asked once, while the dialog is
+	 * constructed.
+	 *
+	 * @return <code>true</code> to start a dry run immediately
+	 */
+	protected boolean startDryRunImmediately() {
+		return false;
+	}
+
 	private void updateDryRunButtonState() {
-		boolean available = isKeepEntityGraph();
+		updateTransactionalToolTip();
+		boolean available = isAnalysisPossible();
 		dryRunButton.setEnabled(available);
+		exportWithoutAnalysisButton.setEnabled(available);
+		exportWithoutAnalysisButton.setToolTipText(available?
+				"<html>Exports like \"Export Data\", but without keeping the collected rows for the analysis of the subset."
+				+ "<br>That is faster: the rows are not copied during the collection, and the working tables stay smaller."
+				+ "<br>The Analysis tab still shows the rows per association,"
+				+ "<br>\"Show Collected Rows\" and the paths to the subject are not available.</html>"
+				:
+				"\"Export Data\" doesn't keep anything for the analysis with this working table scope anyway.");
 		dryRunButton.setToolTipText(available ?
 				"<html>Collect the rows and analyze the result, but don't write an export file."
-				+ "<br>Note that this saves the time needed to write the file, not the time needed to collect the rows.</html>"
+				+ "<br>Note that this saves the time needed to write the file, not the time needed to collect the rows."
+				+ "<br><br>Tip: \"Maximum number of exported rows\" stops a subset that explodes early,"
+				+ "<br>during the collection already. The Analysis tab then shows what has been collected up to that point."
+				+ (transactional.isSelected()? "<br><br>" + TRANSACTIONAL_ANALYSIS_HINT : "")
+				+ "</html>"
 				:
 				"<html>Requires the working table scope \"global tables\": the other scopes create the working tables"
 				+ "<br>as temporary tables or in a local database, so nothing would survive the run to analyze.</html>");
@@ -2635,13 +2758,25 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	 * @param dryRun <code>true</code> to collect and analyze the rows without writing an export file
 	 */
 	private void run(boolean dryRun) {
+		run(dryRun, false);
+	}
+
+	/**
+	 * Starts the export, or the collection of the rows alone.
+	 *
+	 * @param dryRun <code>true</code> to collect and analyze the rows without writing an export file
+	 * @param withoutAnalysis <code>true</code> not to keep the collected rows for the analysis
+	 */
+	private void run(boolean dryRun, boolean withoutAnalysis) {
 		isDryRun = dryRun;
+		this.withoutAnalysis = withoutAnalysis;
 		try {
 			doRun(dryRun);
 		} finally {
 			if (!isOk) {
 				// nothing has been started and the dialog stays open, so the state must not stick
 				isDryRun = false;
+				this.withoutAnalysis = false;
 			}
 		}
 	}
@@ -2998,15 +3133,30 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
 	/**
 	 * Returns whether the entity-graph is to be kept after the run, so that the origin of a
-	 * single row can be analyzed. Follows the working table scope: only "global tables" survives
-	 * the run, the other scopes create the working tables as temporary tables or in a local
-	 * database.
+	 * single row can be analyzed: if it is possible at all, see {@link #isAnalysisPossible()}, and
+	 * the run has not been started with "Export without Analysis".
 	 *
 	 * @return <code>true</code> if the entity-graph is to be kept
 	 */
 	public boolean isKeepEntityGraph() {
+		return isAnalysisPossible() && !withoutAnalysis;
+	}
+
+	/**
+	 * Returns whether the collected rows can be kept for the analysis at all. Follows the working
+	 * table scope: only "global tables" survives the run, the other scopes create the working tables
+	 * as temporary tables or in a local database.
+	 *
+	 * @return <code>true</code> if the analysis is possible
+	 */
+	public boolean isAnalysisPossible() {
 		return scopeGlobal.isSelected();
 	}
+
+	/**
+	 * Set by "Export without Analysis": the run does not keep the collected rows.
+	 */
+	private boolean withoutAnalysis = false;
 
 	/**
 	 * Fills field content into cli-args.
