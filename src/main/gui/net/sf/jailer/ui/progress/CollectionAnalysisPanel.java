@@ -19,6 +19,7 @@ import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.FlowLayout;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -231,7 +232,7 @@ public class CollectionAnalysisPanel extends JPanel {
 		setLayout(new BorderLayout());
 
 		summaryLabel = new JLabel(" ");
-		summaryLabel.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 4));
+		summaryLabel.setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 4));
 		summaryLabel.setToolTipText(
 				"Each row is counted for the association through which it has been collected first. "
 				+ "Rows which are reachable via several associations are not counted more than once. "
@@ -239,11 +240,11 @@ public class CollectionAnalysisPanel extends JPanel {
 				+ "a value far above 1 marks an association that multiplies the subset.");
 		JPanel northPanel = new JPanel(new BorderLayout());
 		northPanel.add(summaryLabel, BorderLayout.CENTER);
-		// 16 pixels between "Dry Run Again" and the filter
-		JPanel eastPanel = new JPanel(new BorderLayout(16, 0));
-		eastPanel.add(createDryRunAgainButton(), BorderLayout.WEST);
-		eastPanel.add(createFilterPanel(), BorderLayout.CENTER);
-		northPanel.add(eastPanel, BorderLayout.EAST);
+		northPanel.add(createDryRunAgainButton(), BorderLayout.EAST);
+		// second row: filter (both rows start without left inset, aligned with the table)
+		JPanel controlsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+		controlsPanel.add(createFilterPanel());
+		northPanel.add(controlsPanel, BorderLayout.SOUTH);
 		add(northPanel, BorderLayout.NORTH);
 
 		tableModel = new AnalysisTableModel();
@@ -374,7 +375,7 @@ public class CollectionAnalysisPanel extends JPanel {
 		JLabel label = new JLabel("Filter: ");
 		label.setToolTipText(toolTip);
 		JPanel panel = new JPanel(new BorderLayout());
-		panel.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
+		panel.setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 4));
 		panel.add(label, BorderLayout.WEST);
 		panel.add(filterField, BorderLayout.CENTER);
 		return panel;
