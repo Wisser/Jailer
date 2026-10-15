@@ -2598,10 +2598,11 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			g.drawImage(icon.getImage(), 0, 0, null);
 			float width = Math.max(1.5f, h / 7f);
 			g.setStroke(new BasicStroke(width, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-			g.setColor(new Color(220, 0, 0));
-			int inset = (int) Math.ceil(width);
-			// the question mark takes the right half of the icon
-			g.drawLine((int) (w * 0.55), h - 1 - inset, w - 1 - inset, inset);
+			// translucent, so that the question mark shows through
+			g.setColor(new Color(220, 0, 0, 124));
+			double inset = width / 2 + 0.5;
+			// the question mark spans 58% to 99% of the width (dryrun.png: 107 to 184 of 186 pixels)
+			g.draw(new java.awt.geom.Line2D.Double(w * 0.58, h - inset, w - inset, inset));
 		} finally {
 			g.dispose();
 		}

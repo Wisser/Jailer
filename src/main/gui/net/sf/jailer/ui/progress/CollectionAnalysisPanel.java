@@ -232,7 +232,7 @@ public class CollectionAnalysisPanel extends JPanel {
 		setLayout(new BorderLayout());
 
 		summaryLabel = new JLabel(" ");
-		summaryLabel.setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 4));
+		summaryLabel.setBorder(BorderFactory.createEmptyBorder(4, 2, 4, 4));
 		summaryLabel.setToolTipText(
 				"Each row is counted for the association through which it has been collected first. "
 				+ "Rows which are reachable via several associations are not counted more than once. "
@@ -241,7 +241,7 @@ public class CollectionAnalysisPanel extends JPanel {
 		JPanel northPanel = new JPanel(new BorderLayout());
 		northPanel.add(summaryLabel, BorderLayout.CENTER);
 		northPanel.add(createDryRunAgainButton(), BorderLayout.EAST);
-		// second row: filter (both rows start without left inset, aligned with the table)
+		// second row: filter (2 pixels left inset, like the summary label)
 		JPanel controlsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 		controlsPanel.add(createFilterPanel());
 		northPanel.add(controlsPanel, BorderLayout.SOUTH);
@@ -321,7 +321,7 @@ public class CollectionAnalysisPanel extends JPanel {
 		});
 
 		detailsLabel = new JLabel(" ");
-		detailsLabel.setBorder(BorderFactory.createEmptyBorder(4, 6, 2, 4));
+		detailsLabel.setBorder(BorderFactory.createEmptyBorder(4, 2, 2, 4));
 		detailsLabel.setToolTipText(
 				"<html>Associations which have brought rows into the source table of the selected association"
 				+ "<br>one step earlier. This is an assignment by step and table, not the origin of a single row:"
@@ -375,7 +375,7 @@ public class CollectionAnalysisPanel extends JPanel {
 		JLabel label = new JLabel("Filter: ");
 		label.setToolTipText(toolTip);
 		JPanel panel = new JPanel(new BorderLayout());
-		panel.setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 4));
+		panel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 4));
 		panel.add(label, BorderLayout.WEST);
 		panel.add(filterField, BorderLayout.CENTER);
 		return panel;
