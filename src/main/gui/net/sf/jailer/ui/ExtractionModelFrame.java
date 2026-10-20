@@ -56,6 +56,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -108,6 +109,7 @@ import net.sf.jailer.ui.databrowser.BookmarksPanel.BookmarkId;
 import net.sf.jailer.ui.databrowser.DataBrowser;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.ui.ddl_script_generator.DDLScriptGeneratorPanel;
+import net.sf.jailer.ui.graphical_view.LayoutActions;
 import net.sf.jailer.ui.progress.CollectionAnalysis;
 import net.sf.jailer.ui.progress.ExportAndDeleteStageProgressListener;
 import net.sf.jailer.ui.progress.RetainedEntityGraphs;
@@ -374,6 +376,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 		jMenuItem4.setToolTipText("Release all fixed table positions so automatic layout can move them again.");
 		refresh.setToolTipText("Reset the graphical view (re-layout all tables).");
 		zoomToFit.setToolTipText("Scale the graphical view so that all tables are visible.");
+		int layoutItemIndex = viewMenu.getPopupMenu().getComponentIndex(zoomToFit);
+		for (Action layoutAction: LayoutActions.create(() -> extractionModelEditor == null? null : extractionModelEditor.graphView)) {
+			viewMenu.insert(new JMenuItem(layoutAction), ++layoutItemIndex);
+		}
 		showIgnored.setToolTipText("Show associations that have been disabled (excluded from the extraction model).");
 		showTableDetails.setToolTipText("Show columns and other details inside each table box.");
 		dataExport.setToolTipText("Export rows from the database to a file (e.g. SQL, CSV, XML, DBUnit).");

@@ -65,7 +65,10 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import javax.swing.AbstractButton;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
@@ -90,7 +93,9 @@ import javax.swing.JTree;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -136,6 +141,7 @@ import net.sf.jailer.ui.databrowser.BrowserContentCellEditor;
 import net.sf.jailer.ui.databrowser.whereconditioneditor.WhereConditionEditorPanel;
 import net.sf.jailer.ui.graphical_view.AssociationRenderer;
 import net.sf.jailer.ui.graphical_view.GraphicalDataModelView;
+import net.sf.jailer.ui.graphical_view.LayoutActions;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
@@ -1153,10 +1159,106 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 				navigateBack();
 			}
 		});
+		initLayoutToolPanel();
 
 		updateLeftButton();
 		updateAdditionalSubjectsButton();
 		UIUtil.invokeLater(() -> checkShowIgnored(null));
+	}
+
+	private static final String LAYOUT_TOOL_PANEL_COLLAPSED = "layoutToolPanelCollapsed";
+
+	/**
+	 * Adds the collapsible panel offering the layout actions below the "back" button.
+	 */
+	private void initLayoutToolPanel() {
+		final JPanel content = new JPanel();
+		content.setOpaque(false);
+		content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+		content.setAlignmentX(Component.LEFT_ALIGNMENT);
+		for (Action action: LayoutActions.create(() -> graphView)) {
+			content.add(createLayoutToolButton(action));
+		}
+
+		final ImageIcon collapsedIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/next.png"));
+		final ImageIcon expandedIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/dropdown.png"));
+		final JButton header = createLayoutToolButton(null);
+		header.setText("Layout");
+		header.setToolTipText("Show or hide the layout tools.");
+		boolean collapsed = !Boolean.FALSE.equals(UISettings.restore(LAYOUT_TOOL_PANEL_COLLAPSED));
+		content.setVisible(!collapsed);
+		header.setIcon(collapsed? collapsedIcon : expandedIcon);
+		header.addActionListener(e -> {
+			boolean collapse = content.isVisible();
+			content.setVisible(!collapse);
+			header.setIcon(collapse? collapsedIcon : expandedIcon);
+			UISettings.store(LAYOUT_TOOL_PANEL_COLLAPSED, collapse);
+			focusPanel.revalidate();
+			layeredPane.repaint();
+		});
+
+		// translucent background, painted here because a non-opaque panel doesn't paint it
+		JPanel panel = new JPanel() {
+			@Override
+			protected void paintComponent(Graphics g) {
+				g.setColor(getBackground());
+				g.fillRect(0, 0, getWidth(), getHeight());
+				super.paintComponent(g);
+			}
+		};
+		panel.setOpaque(false);
+		panel.setBackground(Colors.Color_255_255_255_200);
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+		panel.add(header);
+		panel.add(content);
+
+		GridBagConstraints gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 3;
+		// spans the whole row, so that its width doesn't widen the columns above
+		gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+		gridBagConstraints.anchor = GridBagConstraints.WEST;
+		gridBagConstraints.insets = new Insets(2, 4, 0, 0);
+		focusPanel.add(panel, gridBagConstraints);
+
+		// keeps the height of the "back" button's row, so that the panel doesn't move when the button is shown or hidden
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 2;
+		focusPanel.add(Box.createVerticalStrut(leftButton.getPreferredSize().height), gridBagConstraints);
+	}
+
+	/**
+	 * Creates a flat button for the layout tool panel. On mouse-over, it is highlighted like a popup menu item.
+	 *
+	 * @param action the action, or <code>null</code>
+	 */
+	private static JButton createLayoutToolButton(Action action) {
+		final JButton button = new JButton(action) {
+			@Override
+			protected void paintComponent(Graphics g) {
+				if (getModel().isRollover()) {
+					g.setColor(UIManager.getColor("MenuItem.selectionBackground"));
+					g.fillRect(0, 0, getWidth(), getHeight());
+				}
+				super.paintComponent(g);
+			}
+			@Override
+			public Dimension getMaximumSize() {
+				// as wide as the panel, so that the highlight spans the whole row
+				return new Dimension(Integer.MAX_VALUE, getPreferredSize().height);
+			}
+		};
+		button.setRolloverEnabled(true);
+		button.getModel().addChangeListener(e -> button.setForeground(
+				UIManager.getColor(button.getModel().isRollover()? "MenuItem.selectionForeground" : "Button.foreground")));
+		button.setContentAreaFilled(false);
+		button.setBorderPainted(false);
+		button.setFocusPainted(false);
+		button.setHorizontalAlignment(SwingConstants.LEFT);
+		button.setMargin(new Insets(1, 4, 1, 4));
+		button.setAlignmentX(Component.LEFT_ALIGNMENT);
+		return button;
 	}
 
 	public void onXAggregateCheckboxAction(Association association, AbstractButton checkBox) {
@@ -4107,6 +4209,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 	private static class Layout {
 		Table root;
 		Map<String, double[]> positions = new HashMap<String,double[]>();
+		// only the positions change, not the set of visible tables
+		boolean positionsOnly;
 	}
 
 	private Deque<Layout> navigationStack = new ArrayDeque<Layout>();
@@ -4130,7 +4234,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 				executionContext.getLayoutStorage().setTempStorage(layout.positions);
 				graphView.storeLayout();
 
-				if (!navigationStack.isEmpty()) {
+				if (!navigationStack.isEmpty() && !navigationStack.peek().positionsOnly) {
 					if (navigationStack.peek().positions.keySet().equals(layout.positions.keySet())) {
 						return;
 					}
@@ -4147,6 +4251,29 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 				executionContext.getLayoutStorage().setTempStorage(null);
 			}
 			++captureLevel;
+		}
+	}
+
+	/**
+	 * Captures the current layout before the tables are rearranged, so that "back" restores it.
+	 * Unlike {@link #captureLayout()}, the set of visible tables does not change.
+	 */
+	public synchronized void captureLayoutBeforeArrangement() {
+		if (graphView != null && captureLevel == 0) {
+			Layout layout = new Layout();
+			layout.root = root;
+			layout.positionsOnly = true;
+			try {
+				executionContext.getLayoutStorage().setTempStorage(layout.positions);
+				graphView.storeLayout();
+			} finally {
+				executionContext.getLayoutStorage().setTempStorage(null);
+			}
+			navigationStack.push(layout);
+			if (navigationStack.size() > MAX_NAVIGATIONSTACKSIZE) {
+				navigationStack.removeLast();
+			}
+			updateLeftButton();
 		}
 	}
 
@@ -4167,6 +4294,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 	public void navigateBack() {
 		if (!navigationStack.isEmpty()) {
 			Layout layout = navigationStack.pop();
+			if (layout.positionsOnly && layout.root == root && graphView != null && graphView.animateToPositions(layout.positions)) {
+				// same tables, only the positions differ: no need to rebuild the view
+				updateLeftButton();
+				return;
+			}
 			try {
 				++captureLevel;
 				executionContext.getLayoutStorage().setTempStorage(layout.positions);

@@ -69,15 +69,22 @@ import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.undo.CompensationAction;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.SqlUtil;
+import prefuse.Constants;
 import prefuse.Display;
 import prefuse.Visualization;
 import prefuse.action.Action;
 import prefuse.action.ActionList;
 import prefuse.action.RepaintAction;
+import prefuse.action.animate.LocationAnimator;
 import prefuse.action.assignment.ColorAction;
 import prefuse.action.filter.GraphDistanceFilter;
 import prefuse.action.layout.graph.ForceDirectedLayout;
+import prefuse.action.layout.graph.NodeLinkTreeLayout;
+import prefuse.action.layout.graph.RadialTreeLayout;
+import prefuse.action.layout.graph.TreeLayout;
 import prefuse.activity.Activity;
+import prefuse.activity.ActivityAdapter;
+import prefuse.activity.SlowInSlowOutPacer;
 import prefuse.controls.Control;
 import prefuse.controls.FocusControl;
 import prefuse.controls.ToolTipControl;
@@ -87,8 +94,10 @@ import prefuse.data.Edge;
 import prefuse.data.Graph;
 import prefuse.data.Node;
 import prefuse.data.Schema;
+import prefuse.data.Tree;
 import prefuse.data.Tuple;
 import prefuse.data.event.TupleSetListener;
+import prefuse.data.expression.AbstractPredicate;
 import prefuse.data.expression.BooleanLiteral;
 import prefuse.data.tuple.TupleSet;
 import prefuse.render.Renderer;
@@ -96,11 +105,13 @@ import prefuse.render.RendererFactory;
 import prefuse.render.ShapeRenderer;
 import prefuse.util.GraphicsLib;
 import prefuse.util.display.DisplayLib;
+import prefuse.util.force.DragForce;
 import prefuse.util.force.Force;
 import prefuse.util.force.ForceItem;
 import prefuse.util.force.ForceSimulator;
 import prefuse.util.force.Integrator;
 import prefuse.util.force.NBodyForce;
+import prefuse.util.force.SpringForce;
 import prefuse.util.ui.UILib;
 import prefuse.visual.EdgeItem;
 import prefuse.visual.NodeItem;
@@ -568,7 +579,7 @@ public class GraphicalDataModelView extends JPanel {
 			display.panToAbs(new Point2D.Double(bounds.getCenterX(), bounds.getCenterY()));
 		}
 
-		layout = new ForceDirectedLayout(graph) {
+		layout = new ForceDirectedLayout(graph, createForceSimulator(), false) {
 			@Override
 			protected float getMassValue(VisualItem n) {
 				if (zoomBoxControl.getRenderer().isBoxItem(n)) {
@@ -614,6 +625,8 @@ public class GraphicalDataModelView extends JPanel {
 		layout.getForceSimulator().setIntegrator(new Integrator() {
 			@Override
 			public void integrate(ForceSimulator sim, long timestep) {
+				// the forces have already been accumulated by the simulator
+				limitForces(sim);
 				float speedLimit = sim.getSpeedLimit();
 				float vx, vy, v, coeff;
 				float[][] k, l;
@@ -639,6 +652,7 @@ public class GraphicalDataModelView extends JPanel {
 
 				// recalculate forces
 				sim.accumulate();
+				limitForces(sim);
 
 				iter = sim.getItems();
 				while ( iter.hasNext() ) {
@@ -665,6 +679,7 @@ public class GraphicalDataModelView extends JPanel {
 
 				// recalculate forces
 				sim.accumulate();
+				limitForces(sim);
 
 				iter = sim.getItems();
 				while ( iter.hasNext() ) {
@@ -691,6 +706,7 @@ public class GraphicalDataModelView extends JPanel {
 
 				// recalculate forces
 				sim.accumulate();
+				limitForces(sim);
 
 				iter = sim.getItems();
 				while ( iter.hasNext() ) {
@@ -785,6 +801,64 @@ public class GraphicalDataModelView extends JPanel {
 				}
 			}
 		});
+	}
+
+	private static final float MAX_FORCE = 1e6f;
+
+	/**
+	 * Makes all forces finite. The n-body force is G*m1*m2/r^3, which overflows to infinity for items that are
+	 * almost (but not exactly) at the same place. The speed limit of the integrator would turn that into NaN
+	 * (infinity / infinity) instead of pushing the items apart.
+	 */
+	private static void limitForces(ForceSimulator sim) {
+		@SuppressWarnings("rawtypes")
+		Iterator items = sim.getItems();
+		while (items.hasNext()) {
+			float[] force = ((ForceItem) items.next()).force;
+			for (int i = 0; i < force.length; ++i) {
+				if (Float.isNaN(force[i])) {
+					force[i] = 0;
+				} else if (Math.abs(force[i]) > MAX_FORCE) {
+					force[i] = Math.signum(force[i]) * MAX_FORCE;
+				}
+			}
+		}
+	}
+
+	/**
+	 * Creates the force simulator of the layout, with the same forces as prefuse's default one.
+	 * The n-body force repairs items with a non-finite location before building its quadtree.
+	 * prefuse's quadtree recurses endlessly on such an item (StackOverflowError, printed on every simulation step).
+	 */
+	private static ForceSimulator createForceSimulator() {
+		ForceSimulator fsim = new ForceSimulator();
+		fsim.addForce(new NBodyForce() {
+			@Override
+			public void init(ForceSimulator fsim) {
+				@SuppressWarnings("rawtypes")
+				Iterator items = fsim.getItems();
+				while (items.hasNext()) {
+					ForceItem item = (ForceItem) items.next();
+					if (!isFinite(item.location)) {
+						if (isFinite(item.plocation)) {
+							item.location[0] = item.plocation[0];
+							item.location[1] = item.plocation[1];
+						} else {
+							item.location[0] = item.location[1] = 0;
+						}
+						item.velocity[0] = item.velocity[1] = 0;
+						item.force[0] = item.force[1] = 0;
+					}
+				}
+				super.init(fsim);
+			}
+			private boolean isFinite(float[] p) {
+				return Float.isFinite(p[0]) && Float.isFinite(p[1]);
+			}
+		});
+		fsim.addForce(new SpringForce());
+		fsim.addForce(new DragForce());
+		return fsim;
 	}
 
 	/**
@@ -1315,6 +1389,7 @@ public class GraphicalDataModelView extends JPanel {
 	 * @param removeLayout <code>true</code> to delete the stored layout
 	 */
 	public void close(boolean storeLayout, boolean removeLayout) {
+		visualization.cancel(ARRANGE_ACTION);
 		if (storeLayout) {
 			storeLayout();
 		} else if (removeLayout) {
@@ -1341,6 +1416,573 @@ public class GraphicalDataModelView extends JPanel {
 	 */
 	public void zoomToFit(long duration) {
 		zoomToFitControl.zoomToFit(duration);
+	}
+
+	/**
+	 * Creates the tree layout used by {@link GraphicalDataModelView#arrangeTree(TreeLayoutFactory)}.
+	 */
+	private interface TreeLayoutFactory {
+		/**
+		 * Creates the layout.
+		 *
+		 * @param group the group of the auxiliary graph
+		 * @param spanningTree the spanning tree, rooted at the subject table
+		 * @param sizes the size of the table box per node of the auxiliary graph
+		 */
+		TreeLayout create(String group, Tree spanningTree, Map<Tuple, Rectangle2D> sizes);
+
+		/**
+		 * Gets the schema of the parameter column the layout adds to the nodes.
+		 */
+		Schema paramsSchema();
+	}
+
+	/**
+	 * Arranges the visible tables as a tree from left to right, rooted at the subject table, and fixes their positions.
+	 * The tree is the breadth-first spanning tree of the tables. Association nodes are placed
+	 * between their tables and remain movable.
+	 */
+	public void arrangeLayout() {
+		arrangeTree(new NodeLinkTreeLayoutFactory(Constants.ORIENT_LEFT_RIGHT));
+	}
+
+	/**
+	 * Arranges the visible tables as a tree from top to bottom, rooted at the subject table, and fixes their positions.
+	 *
+	 * @see #arrangeLayout()
+	 */
+	public void arrangeLayoutTopDown() {
+		arrangeTree(new NodeLinkTreeLayoutFactory(Constants.ORIENT_TOP_BOTTOM));
+	}
+
+	/**
+	 * Arranges the visible tables radially around the subject table, one ring per tree level, and fixes their positions.
+	 *
+	 * @see #arrangeLayout()
+	 */
+	public void arrangeRadial() {
+		arrangeTree(new TreeLayoutFactory() {
+			@Override
+			public TreeLayout create(String group, Tree spanningTree, Map<Tuple, Rectangle2D> sizes) {
+				final double gap = 20;
+				double maxDiagonal = 0;
+				Map<Integer, Double> diagonalSumPerDepth = new HashMap<Integer, Double>();
+				Map<Integer, Integer> countPerDepth = new HashMap<Integer, Integer>();
+				@SuppressWarnings("rawtypes")
+				Iterator nodes = spanningTree.nodes();
+				while (nodes.hasNext()) {
+					Node node = (Node) nodes.next();
+					if (node.getParent() == null) {
+						// the root, or not reachable from it
+						continue;
+					}
+					Rectangle2D size = sizes.get(((VisualItem) node).getSourceTuple());
+					double diagonal = size == null? 0 : Math.sqrt(size.getWidth() * size.getWidth() + size.getHeight() * size.getHeight());
+					maxDiagonal = Math.max(maxDiagonal, diagonal);
+					int depth = spanningTree.getDepth(node.getRow());
+					Double sum = diagonalSumPerDepth.get(depth);
+					diagonalSumPerDepth.put(depth, (sum == null? 0 : sum) + diagonal);
+					Integer count = countPerDepth.get(depth);
+					countPerDepth.put(depth, (count == null? 0 : count) + 1);
+				}
+				// the rings must be far enough apart, and each ring long enough for the tables on it
+				double radiusIncrement = maxDiagonal + 2 * gap;
+				for (Map.Entry<Integer, Double> e: diagonalSumPerDepth.entrySet()) {
+					double circumference = e.getValue() + countPerDepth.get(e.getKey()) * gap;
+					radiusIncrement = Math.max(radiusIncrement, circumference / (2 * Math.PI * e.getKey()));
+				}
+				// with an explicit radius, the layout doesn't scale itself to the (here non-existent) display
+				return new RadialTreeLayout(group, (int) Math.ceil(radiusIncrement));
+			}
+
+			@Override
+			public Schema paramsSchema() {
+				return RadialTreeLayout.PARAMS_SCHEMA;
+			}
+		});
+	}
+
+	private static class NodeLinkTreeLayoutFactory implements TreeLayoutFactory {
+		private final int orientation;
+
+		NodeLinkTreeLayoutFactory(int orientation) {
+			this.orientation = orientation;
+		}
+
+		@Override
+		public TreeLayout create(String group, Tree spanningTree, Map<Tuple, Rectangle2D> sizes) {
+			return new NodeLinkTreeLayout(group, orientation, 80, 20, 40);
+		}
+
+		@Override
+		public Schema paramsSchema() {
+			return NodeLinkTreeLayout.PARAMS_SCHEMA;
+		}
+	}
+
+	/**
+	 * Arranges the visible tables as a tree, rooted at the subject table, and fixes their positions.
+	 * The tree is the breadth-first spanning tree of the tables. Association nodes are placed
+	 * between their tables and remain movable.
+	 *
+	 * @param factory creates the tree layout
+	 */
+	private void arrangeTree(TreeLayoutFactory factory) {
+		if (root == null || tableNodes.get(root) == null) {
+			return;
+		}
+		// outside of the synchronized block: locks the model editor first, then the visualization
+		modelEditor.captureLayoutBeforeArrangement();
+		synchronized (visualization) {
+			List<NodeItem> associationItems = new ArrayList<NodeItem>();
+			Map<Table, NodeItem> tableItems = collectTableItems(associationItems);
+
+			// The tree is laid out on an auxiliary graph containing only the tables.
+			// In the visual graph, association nodes would occupy a tree level of their own.
+			Graph tableGraph = new Graph();
+			Map<Table, Node> auxNodes = new HashMap<Table, Node>();
+			final Map<Tuple, Rectangle2D> sizes = new HashMap<Tuple, Rectangle2D>();
+			for (Map.Entry<Table, NodeItem> e: tableItems.entrySet()) {
+				Node auxNode = tableGraph.addNode();
+				auxNodes.put(e.getKey(), auxNode);
+				sizes.put(auxNode, e.getValue().getBounds());
+			}
+			Node auxRoot = auxNodes.get(root);
+			if (auxRoot == null) {
+				return;
+			}
+			@SuppressWarnings("rawtypes")
+			Iterator edges = visualGraph.edges();
+			while (edges.hasNext()) {
+				Object association = ((EdgeItem) edges.next()).get("association");
+				if (association instanceof Association) {
+					Node s = auxNodes.get(((Association) association).source);
+					Node d = auxNodes.get(((Association) association).destination);
+					if (s != null && d != null && s != d) {
+						tableGraph.addEdge(s, d);
+					}
+				}
+			}
+
+			// the auxiliary items get the size of the table boxes, which the tree layout uses for spacing
+			Visualization auxVisualization = new Visualization();
+			final Renderer sizeRenderer = new Renderer() {
+				@Override
+				public void render(Graphics2D g, VisualItem item) {
+				}
+				@Override
+				public boolean locatePoint(Point2D p, VisualItem item) {
+					return false;
+				}
+				@Override
+				public void setBounds(VisualItem item) {
+					Rectangle2D size = sizes.get(item.getSourceTuple());
+					double w = size == null? 0 : size.getWidth();
+					double h = size == null? 0 : size.getHeight();
+					item.setBounds(item.getX() - w / 2, item.getY() - h / 2, w, h);
+				}
+			};
+			auxVisualization.setRendererFactory(item -> sizeRenderer);
+			final String tables = "tables";
+			VisualGraph auxGraph = auxVisualization.addGraph(tables, tableGraph);
+			// tables not reachable from the root are not touched by the tree layout
+			@SuppressWarnings("rawtypes")
+			Iterator auxItems = auxGraph.nodes();
+			while (auxItems.hasNext()) {
+				((NodeItem) auxItems.next()).setX(Double.NaN);
+			}
+			NodeItem auxRootItem = (NodeItem) auxVisualization.getVisualItem(tables, auxRoot);
+			// the tree layout adds its parameter column on run(), which would discard the spanning tree;
+			// adding it beforehand keeps the tree rooted at the subject table
+			auxGraph.getNodes().addColumns(factory.paramsSchema());
+			// without an explicit root, prefuse would build the spanning tree from the first node
+			Tree spanningTree = auxGraph.getSpanningTree(auxRootItem);
+
+			NodeItem rootItem = tableItems.get(root);
+			TreeLayout treeLayout = factory.create(tables, spanningTree, sizes);
+			treeLayout.setLayoutRoot(auxRootItem);
+			treeLayout.setLayoutAnchor(new Point2D.Double(rootItem.getX(), rootItem.getY()));
+			treeLayout.setVisualization(auxVisualization);
+			treeLayout.run(0);
+
+			Map<VisualItem, Point2D> targets = new HashMap<VisualItem, Point2D>();
+			for (Map.Entry<Table, NodeItem> e: tableItems.entrySet()) {
+				VisualItem auxItem = auxVisualization.getVisualItem(tables, auxNodes.get(e.getKey()));
+				if (!Double.isNaN(auxItem.getX())) {
+					targets.put(e.getValue(), new Point2D.Double(auxItem.getX(), auxItem.getY()));
+				}
+			}
+			arrangeTo(targets, tableItems, associationItems);
+		}
+	}
+
+	/**
+	 * Arranges the visible tables in layers, parent tables left, child tables right, and fixes their positions.
+	 * The order within the layers is chosen so that only few associations cross.
+	 * Association nodes are placed between their tables and remain movable.
+	 *
+	 * @see LayeredLayout
+	 */
+	public void arrangeLayered() {
+		if (root == null || tableNodes.get(root) == null) {
+			return;
+		}
+		// outside of the synchronized block: locks the model editor first, then the visualization
+		modelEditor.captureLayoutBeforeArrangement();
+		synchronized (visualization) {
+			List<NodeItem> associationItems = new ArrayList<NodeItem>();
+			Map<Table, NodeItem> tableItems = collectTableItems(associationItems);
+			NodeItem rootItem = tableItems.get(root);
+			if (rootItem == null) {
+				return;
+			}
+			List<Table> tables = new ArrayList<Table>(tableItems.keySet());
+			Collections.sort(tables);
+			Map<Table, Rectangle2D> sizes = new HashMap<Table, Rectangle2D>();
+			for (Map.Entry<Table, NodeItem> e: tableItems.entrySet()) {
+				sizes.put(e.getKey(), e.getValue().getBounds());
+			}
+			LayeredLayout<Table> layeredLayout = new LayeredLayout<Table>(tables, sizes);
+			@SuppressWarnings("rawtypes")
+			Iterator edges = visualGraph.edges();
+			while (edges.hasNext()) {
+				Object association = ((EdgeItem) edges.next()).get("association");
+				if (association instanceof Association) {
+					Association a = (Association) association;
+					if (a.isInsertDestinationBeforeSource()) {
+						layeredLayout.addEdge(a.destination, a.source);
+					} else if (a.isInsertSourceBeforeDestination()) {
+						layeredLayout.addEdge(a.source, a.destination);
+					}
+				}
+			}
+			Map<Table, Point2D> positions = layeredLayout.layout();
+
+			// the subject table stays where it is
+			Point2D rootPosition = positions.get(root);
+			double dx = rootItem.getX() - rootPosition.getX();
+			double dy = rootItem.getY() - rootPosition.getY();
+			Map<VisualItem, Point2D> targets = new HashMap<VisualItem, Point2D>();
+			for (Map.Entry<Table, Point2D> e: positions.entrySet()) {
+				targets.put(tableItems.get(e.getKey()), new Point2D.Double(e.getValue().getX() + dx, e.getValue().getY() + dy));
+			}
+			arrangeTo(targets, tableItems, associationItems);
+		}
+	}
+
+	/**
+	 * Arranges the visible tables in a circle and fixes their positions. The order is the breadth-first order
+	 * starting at the subject table, so that associated tables are close to each other.
+	 * The subject table stays where it is. Association nodes are placed between their tables and remain movable.
+	 */
+	public void arrangeCircle() {
+		if (root == null || tableNodes.get(root) == null) {
+			return;
+		}
+		// outside of the synchronized block: locks the model editor first, then the visualization
+		modelEditor.captureLayoutBeforeArrangement();
+		synchronized (visualization) {
+			List<NodeItem> associationItems = new ArrayList<NodeItem>();
+			Map<Table, NodeItem> tableItems = collectTableItems(associationItems);
+			NodeItem rootItem = tableItems.get(root);
+			if (rootItem == null) {
+				return;
+			}
+			Map<Table, List<Table>> neighbors = new HashMap<Table, List<Table>>();
+			@SuppressWarnings("rawtypes")
+			Iterator edges = visualGraph.edges();
+			while (edges.hasNext()) {
+				Object association = ((EdgeItem) edges.next()).get("association");
+				if (association instanceof Association) {
+					Table s = ((Association) association).source;
+					Table d = ((Association) association).destination;
+					if (s != d && tableItems.containsKey(s) && tableItems.containsKey(d)) {
+						neighbors.computeIfAbsent(s, t -> new ArrayList<Table>()).add(d);
+						neighbors.computeIfAbsent(d, t -> new ArrayList<Table>()).add(s);
+					}
+				}
+			}
+
+			// breadth-first order, tables not reachable from the root at the end
+			List<Table> order = new ArrayList<Table>();
+			Set<Table> visited = new HashSet<Table>();
+			order.add(root);
+			visited.add(root);
+			for (int i = 0; i < order.size(); ++i) {
+				List<Table> next = neighbors.get(order.get(i));
+				if (next != null) {
+					Collections.sort(next);
+					for (Table t: next) {
+						if (visited.add(t)) {
+							order.add(t);
+						}
+					}
+				}
+			}
+			List<Table> unreachable = new ArrayList<Table>(tableItems.keySet());
+			unreachable.removeAll(visited);
+			Collections.sort(unreachable);
+			order.addAll(unreachable);
+
+			// each table gets an arc proportional to the diagonal of its box
+			final double gap = 20;
+			double[] arcs = new double[order.size()];
+			double circumference = 0;
+			for (int i = 0; i < arcs.length; ++i) {
+				Rectangle2D bounds = tableItems.get(order.get(i)).getBounds();
+				arcs[i] = Math.sqrt(bounds.getWidth() * bounds.getWidth() + bounds.getHeight() * bounds.getHeight()) + gap;
+				circumference += arcs[i];
+			}
+			double radius = Math.max(100, circumference / (2 * Math.PI));
+
+			// the root is at angle 0, the center is placed so that the root stays where it is
+			double centerX = rootItem.getX() - radius;
+			double centerY = rootItem.getY();
+			Map<VisualItem, Point2D> targets = new HashMap<VisualItem, Point2D>();
+			double arcPosition = 0;
+			for (int i = 0; i < arcs.length; ++i) {
+				double angle = 2 * Math.PI * (arcPosition + arcs[i] / 2 - arcs[0] / 2) / circumference;
+				targets.put(tableItems.get(order.get(i)), new Point2D.Double(centerX + radius * Math.cos(angle), centerY + radius * Math.sin(angle)));
+				arcPosition += arcs[i];
+			}
+			arrangeTo(targets, tableItems, associationItems);
+		}
+	}
+
+	/**
+	 * Pushes overlapping tables apart, keeping the arrangement otherwise, and fixes their positions.
+	 * Only overlaps between tables are removed, association nodes and edges are not taken into account.
+	 * The subject table stays where it is. Association nodes are placed between their tables and remain movable.
+	 */
+	public void removeTableOverlaps() {
+		if (root == null || tableNodes.get(root) == null) {
+			return;
+		}
+		// outside of the synchronized block: locks the model editor first, then the visualization
+		modelEditor.captureLayoutBeforeArrangement();
+		synchronized (visualization) {
+			List<NodeItem> associationItems = new ArrayList<NodeItem>();
+			Map<Table, NodeItem> tableItems = collectTableItems(associationItems);
+			List<NodeItem> items = new ArrayList<NodeItem>(tableItems.values());
+			NodeItem rootItem = tableItems.get(root);
+
+			// the boxes, enlarged by the gap
+			final double gap = 10;
+			int n = items.size();
+			Rectangle2D[] boxes = new Rectangle2D[n];
+			for (int i = 0; i < n; ++i) {
+				Rectangle2D bounds = items.get(i).getBounds();
+				boxes[i] = new Rectangle2D.Double(bounds.getX() - gap / 2, bounds.getY() - gap / 2, bounds.getWidth() + gap, bounds.getHeight() + gap);
+			}
+			final int maxRounds = 100;
+			boolean overlapping = true;
+			for (int round = 0; round < maxRounds && overlapping; ++round) {
+				overlapping = false;
+				for (int i = 0; i < n; ++i) {
+					for (int j = i + 1; j < n; ++j) {
+						Rectangle2D a = boxes[i];
+						Rectangle2D b = boxes[j];
+						double overlapX = Math.min(a.getMaxX(), b.getMaxX()) - Math.max(a.getMinX(), b.getMinX());
+						double overlapY = Math.min(a.getMaxY(), b.getMaxY()) - Math.max(a.getMinY(), b.getMinY());
+						if (overlapX <= 0 || overlapY <= 0) {
+							continue;
+						}
+						overlapping = true;
+						// the subject table doesn't move, the other one takes the full distance
+						double shareA = items.get(i) == rootItem? 0 : items.get(j) == rootItem? 1 : 0.5;
+						double shareB = 1 - shareA;
+						// pushed apart along the axis with the smaller overlap, j away from i
+						if (overlapX < overlapY) {
+							double dir = b.getCenterX() >= a.getCenterX()? 1 : -1;
+							move(a, -dir * overlapX * shareA, 0);
+							move(b, dir * overlapX * shareB, 0);
+						} else {
+							double dir = b.getCenterY() >= a.getCenterY()? 1 : -1;
+							move(a, 0, -dir * overlapY * shareA);
+							move(b, 0, dir * overlapY * shareB);
+						}
+					}
+				}
+			}
+
+			Map<VisualItem, Point2D> targets = new HashMap<VisualItem, Point2D>();
+			for (int i = 0; i < n; ++i) {
+				NodeItem item = items.get(i);
+				Rectangle2D bounds = item.getBounds();
+				double dx = boxes[i].getX() + gap / 2 - bounds.getX();
+				double dy = boxes[i].getY() + gap / 2 - bounds.getY();
+				targets.put(item, new Point2D.Double(item.getX() + dx, item.getY() + dy));
+			}
+			arrangeTo(targets, tableItems, associationItems);
+		}
+	}
+
+	private static void move(Rectangle2D r, double dx, double dy) {
+		r.setRect(r.getX() + dx, r.getY() + dy, r.getWidth(), r.getHeight());
+	}
+
+	/**
+	 * Collects the visible tables and association nodes.
+	 * Must be called while holding the visualization lock.
+	 *
+	 * @param associationItems to put the association nodes into
+	 * @return the node per table
+	 */
+	private Map<Table, NodeItem> collectTableItems(List<NodeItem> associationItems) {
+		Map<Table, NodeItem> tableItems = new HashMap<Table, NodeItem>();
+		@SuppressWarnings("rawtypes")
+		Iterator nodes = visualGraph.nodes();
+		while (nodes.hasNext()) {
+			NodeItem item = (NodeItem) nodes.next();
+			Table table = item.canGetString("label")? model.getTable(item.getString("label")) : null;
+			if (table != null) {
+				tableItems.put(table, item);
+			} else if (item.get("association") instanceof Association) {
+				associationItems.add(item);
+			}
+		}
+		return tableItems;
+	}
+
+	/**
+	 * Moves the tables to their new positions, animated, and fixes them there. Association nodes are placed
+	 * between their tables and released to the force-directed layout afterwards.
+	 * Must be called while holding the visualization lock.
+	 *
+	 * @param targets the new position per table node
+	 * @param tableItems the node per table
+	 * @param associationItems the association nodes
+	 */
+	private void arrangeTo(Map<VisualItem, Point2D> targets, Map<Table, NodeItem> tableItems, List<NodeItem> associationItems) {
+		Map<VisualItem, Boolean> fixedAfterwards = new HashMap<VisualItem, Boolean>();
+		for (VisualItem item: targets.keySet()) {
+			fixedAfterwards.put(item, true);
+		}
+		for (NodeItem item: associationItems) {
+			Association association = (Association) item.get("association");
+			NodeItem s = tableItems.get(association.source);
+			NodeItem d = tableItems.get(association.destination);
+			if (s != null && d != null) {
+				Point2D ps = target(targets, s);
+				Point2D pd = target(targets, d);
+				if (s == d) {
+					targets.put(item, new Point2D.Double(ps.getX(), ps.getY() - s.getBounds().getHeight() / 2 - REFLEXIVE_NODE_MARGIN));
+				} else {
+					targets.put(item, new Point2D.Double((ps.getX() + pd.getX()) / 2, (ps.getY() + pd.getY()) / 2));
+				}
+				// released to the force-directed layout again
+				fixedAfterwards.put(item, false);
+			}
+		}
+		animateArrangement(targets, fixedAfterwards, true);
+	}
+
+	/**
+	 * Moves the tables back to the given positions, animated. Only possible if the same tables are
+	 * visible, i.e. only the positions differ.
+	 *
+	 * @param positions the positions (x, y, fixed) per item label, as stored by {@link #storeLayout()}
+	 * @return <code>false</code> if the visible tables differ, nothing has been changed then
+	 */
+	public boolean animateToPositions(Map<String, double[]> positions) {
+		if (!visibleItems().equals(positions.keySet())) {
+			return false;
+		}
+		synchronized (visualization) {
+			Map<VisualItem, Point2D> targets = new HashMap<VisualItem, Point2D>();
+			Map<VisualItem, Boolean> fixedAfterwards = new HashMap<VisualItem, Boolean>();
+			@SuppressWarnings("rawtypes")
+			Iterator nodes = visualGraph.nodes();
+			while (nodes.hasNext()) {
+				NodeItem item = (NodeItem) nodes.next();
+				double[] pos = item.canGetString("label")? positions.get(item.getString("label")) : null;
+				if (pos != null) {
+					targets.put(item, new Point2D.Double(pos[0], pos[1]));
+					fixedAfterwards.put(item, pos[2] == 1.0);
+				}
+			}
+			animateArrangement(targets, fixedAfterwards, false);
+		}
+		return true;
+	}
+
+	private static Point2D target(Map<VisualItem, Point2D> targets, VisualItem item) {
+		Point2D target = targets.get(item);
+		return target != null? target : new Point2D.Double(item.getX(), item.getY());
+	}
+
+	private static final String ARRANGE_ACTION = "arrange";
+	private static final long ARRANGE_DURATION = 1000;
+
+	/**
+	 * The running arrangement transition, if any.
+	 */
+	private ActionList arrangeTransition;
+
+	/**
+	 * Moves the items from their current to the target positions, animated.
+	 * Must be called while holding the visualization lock.
+	 *
+	 * @param targets the target position per item
+	 * @param fixedAfterwards the "fixed" state per item once the transition is over
+	 * @param zoomToFitAfterwards <code>true</code> to zoom to fit once the transition is over
+	 */
+	private void animateArrangement(Map<VisualItem, Point2D> targets, final Map<VisualItem, Boolean> fixedAfterwards, final boolean zoomToFitAfterwards) {
+		for (Map.Entry<VisualItem, Point2D> e: targets.entrySet()) {
+			VisualItem item = e.getKey();
+			item.setStartX(item.getX());
+			item.setStartY(item.getY());
+			item.setEndX(e.getValue().getX());
+			item.setEndY(e.getValue().getY());
+			// fixed during the transition, so that the force-directed layout doesn't interfere
+			item.setFixed(true);
+		}
+		final Set<VisualItem> items = new HashSet<VisualItem>(targets.keySet());
+		LocationAnimator animator = new LocationAnimator(graph);
+		animator.setFilterPredicate(new AbstractPredicate() {
+			@Override
+			public boolean getBoolean(Tuple t) {
+				return items.contains(t);
+			}
+		});
+		final ActionList transition = new ActionList(ARRANGE_DURATION);
+		transition.setPacingFunction(new SlowInSlowOutPacer());
+		transition.add(animator);
+		transition.add(new RepaintAction());
+		transition.addActivityListener(new ActivityAdapter() {
+			@Override
+			public void activityFinished(Activity a) {
+				release();
+				if (zoomToFitAfterwards) {
+					SwingUtilities.invokeLater(() -> zoomToFit());
+				}
+			}
+			@Override
+			public void activityCancelled(Activity a) {
+				release();
+			}
+			private void release() {
+				synchronized (visualization) {
+					if (arrangeTransition != transition) {
+						// superseded by a newer arrangement, which releases the items itself
+						return;
+					}
+					arrangeTransition = null;
+					for (Map.Entry<VisualItem, Boolean> e: fixedAfterwards.entrySet()) {
+						// the item may have been removed in the meantime (table collapsed or view closed)
+						if (e.getKey().isValid()) {
+							e.getKey().setFixed(e.getValue());
+						}
+					}
+					layout.reset();
+					visualization.invalidateAll();
+				}
+			}
+		});
+		arrangeTransition = transition;
+		visualization.cancel(ARRANGE_ACTION);
+		visualization.putAction(ARRANGE_ACTION, transition);
+		visualization.run(ARRANGE_ACTION);
 	}
 
 	/**
