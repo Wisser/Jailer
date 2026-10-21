@@ -115,10 +115,9 @@ public class UISettings {
 		}
 		File file = Environment.newFile(FILENAME);
 		if (file.exists()) {
-			try {
-				ObjectInputStream in = new ObjectInputStream(new FileInputStream(file)); // lgtm [java/input-resource-leak]
+			// try-with-resources: ein offenes Handle verhindert unter Windows das Ersetzen der Datei beim Speichern
+			try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
 				properties = (Map<String, Object>) in.readObject();
-				in.close();
 			} catch (Exception e) {
 				// ignore
 			}
@@ -135,17 +134,22 @@ public class UISettings {
 		loadUISettings();
 		properties.put(name, value);
 		File file = Environment.newFile(FILENAME);
-		for (int retry = 0; retry < 4; ++retry) {
+		// Andere Prozesse (zweite Instanz, Virenscanner, Indexer) koennen die Datei kurz sperren
+		final int maxRetries = 10;
+		for (int retry = 1; retry <= maxRetries; ++retry) {
 			try {
 				synchronized (UISettings.class) {
 					SafeFileWriter.writeObjects(file, properties);
 				}
 				return;
 			} catch (Exception e) {
-				e.printStackTrace();
+				if (retry == maxRetries) {
+					e.printStackTrace();
+					return;
+				}
 			}
 			try {
-				Thread.sleep(100);
+				Thread.sleep(Math.min(50L * retry, 500L));
 			} catch (InterruptedException e) {
 				// ignore
 			}
