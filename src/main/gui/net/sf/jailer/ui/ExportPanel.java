@@ -79,6 +79,7 @@ import net.sf.jailer.util.Pair;
 public class ExportPanel extends javax.swing.JPanel {
 
     private static final String EXPORT_MARKER = "JailerModelAndConnectionArchiv";
+    private static final String EXPORT_MARKER_SUFFIX = "ModelAndConnectionArchiv";
     private static final String EXPORT_FILE_EXTENSION = ".jmarc.zip";
 
 	/**
@@ -639,7 +640,7 @@ public class ExportPanel extends javax.swing.JPanel {
 					boolean ok = false;
 					while (entry != null) {
 						String name2 = entry.getName();
-						if (name2.endsWith(EXPORT_MARKER)) {
+						if (name2.endsWith(EXPORT_MARKER_SUFFIX)) {
 							ok = true;
 						}
 						zipIn.closeEntry();
@@ -663,7 +664,7 @@ public class ExportPanel extends javax.swing.JPanel {
 					// iterates over entries in the zip file
 					while (entry != null) {
 						String name = entry.getName();
-						if (!name.endsWith(EXPORT_MARKER) && (selectedModels == null || selectedModels.stream().anyMatch(m -> name.startsWith(m + "/") || name.startsWith(m + "\\")))) {
+						if (!name.endsWith(EXPORT_MARKER_SUFFIX) &&(selectedModels == null || selectedModels.stream().anyMatch(m -> name.startsWith(m + "/") || name.startsWith(m + "\\")))) {
 							if (name.equals(DbConnectionDialog.CONNECTIONS_FILE)) {
 								File cFile = Configuration.getInstance().createTempFile();
 								BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(cFile));
