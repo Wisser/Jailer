@@ -35,6 +35,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,28 +46,17 @@ import java.util.regex.Pattern;
  * <pre>
  *   java Mirror.java sync &lt;A&gt; &lt;B&gt; [--dry-run] [--verbose]
  * </pre>
- *
- * Erstkopie = sync gegen ein leeres oder nicht existierendes Verzeichnis. Der letzte Abgleichstand liegt in
- * {@code ~/.eclipse-mirror/<key>.tsv}; damit werden Loeschungen erkannt und propagiert. Konflikte (beide Seiten
- * geaendert) entscheidet die neuere Aenderungszeit, die unterlegene Version wandert nach
- * {@code <Seite>/.mirror/backup/<Zeitstempel>/}. Geloeschte Dateien landen ebenfalls dort.
- * <p>
- * Eclipse-Konfiguration ({@code .project}, {@code .classpath}, {@code .factorypath}, {@code .settings/}) wird nur
- * bei der Erstkopie (noch kein Abgleichstand) kopiert, und nur wenn sie auf einer Seite fehlt; danach pflegt jede
- * Seite ihre eigene.
- * <p>
- * Mit {@code --map net.abit=de.kunde.abit} darf das Paket-Praefix in B anders heissen: Verzeichnispfade und der
- * Inhalt von .java-Dateien (Punkt- und Slashform, auch {@code "/net/abit/...} am Stringanfang) werden beim Kopieren
- * umgeschrieben. Abgleichstand und Hashes
- * beziehen sich immer auf die A-Form. Nicht-Java-Dateien aus B, die das B-Praefix enthalten, werden nicht nach A
- * uebertragen, sondern gemeldet. Verzeichnisse aus {@link #NO_MAP_DIRS} werden auch mit --map 1:1 gespiegelt.
  */
 public class Mirror {
 
     static final String USAGE = """
-            Aufruf: java Mirror.java sync <A> <B> [--map <praefixA>=<praefixB>] [--remap] [--dry-run] [--verbose]
+            Aufruf: java Mirror.java sync <A> <B> [--map <praefixA>=<praefixB>] [--replace <textA>=<textB>]
+                                       [--remap] [--dry-run] [--verbose]
               --map       Paket-Praefix in A und B, z. B. --map net.abit=de.kunde.abit (Pfade + .java-Inhalt)
                           (ausgenommen: Basis/Garnishment/docs wird immer 1:1 gespiegelt)
+              --replace   Text in A und B, in allen Textdateien ersetzt, z. B. --replace net/sf/jailer=net/abit/gtool
+                          (woertlich, Inhalt der Textdateien und Dateinamen, nicht Ordnernamen;
+                           hoechstens zweimal, A->B in Reihenfolge, B->A umgekehrt; ausgenommen wie bei --map)
               --remap     Abbildung bewusst aendern (sonst Abbruch, wenn sie vom Abgleichstand abweicht)
               --dry-run   nur anzeigen, was passieren wuerde (keine Datei- und keine State-Aenderung)
               --verbose   jede Aktion einzeln ausgeben
@@ -74,11 +64,12 @@ public class Mirror {
             Eclipse-Dateien (.project, .classpath, .factorypath, .settings/) nur bei der Erstkopie""";
 
     static final Set<String> DEFAULT_EXCLUDED_DIRS = Set.of(
-            ".git", ".gradle", "build", "bin", "classes", "node_modules", ".codegraph", ".mirror");
+            ".git", ".gradle", "build", "bin", "classes", "node_modules", ".codegraph", ".mirror", "api");
     static final String TMP_SUFFIX = ".mirror-tmp";
     static final String IGNORE_FILE = ".mirrorignore";
     static final String STATE_HEADER_V1 = "# eclipse-mirror v1";
-    static final String STATE_HEADER = "# eclipse-mirror v2";
+    static final String STATE_HEADER_V2 = "# eclipse-mirror v2";
+    static final String STATE_HEADER = "# eclipse-mirror v3";
     static final int MAX_PRINTED_ERRORS = 200;
     static final String GIT_EXCLUDE_LINE = "/.mirror/";
     static final Set<String> ECLIPSE_FILES = Set.of(".project", ".classpath", ".factorypath");
@@ -90,7 +81,12 @@ public class Mirror {
             + "|jailer(GUI)?\\.(bat|sh)"
             + "|config/log4j2?\\.xml"
             + "|admin/[^/]+\\.(java|sh|xml)"
-            + "|src/main/gui/net/abit/gtool/ui/[^/]+\\.form)$");
+            + "|\\.dockerignore|\\.gitignore|\\.classpath|\\.project)$");
+    /** Endungen der Textdateien, in denen --replace ersetzt. */
+    static final Set<String> TEXT_EXTENSIONS = Set.of(
+            "java", "json", "xml", "form", "properties", "txt", "md", "html", "htm", "css", "js", "sh", "bat", "cmd",
+            "sql", "csv", "tsv", "yml", "yaml", "gradle", "jm", "mf", "ini", "conf", "cfg", "inc", "jsp", "pom");
+
     enum Side {
         A, B;
 
@@ -142,6 +138,8 @@ public class Mirror {
         private final Pattern pathB;
         private final Pattern[] javaA;
         private final Pattern[] javaB;
+        /** Alle Formen des B-Praefix in einem Pattern, fuer {@link #outsideB}. */
+        private final Pattern anyB;
 
         PrefixMap(String a, String b) {
             this.a = a;
@@ -150,6 +148,26 @@ public class Mirror {
             this.pathB = pathPattern(b);
             this.javaA = javaPatterns(a);
             this.javaB = javaPatterns(b);
+            this.anyB = javaB == null ? null
+                    : Pattern.compile(javaB[0].pattern() + "|" + javaB[1].pattern() + "|" + javaB[2].pattern());
+        }
+
+        /**
+         * Wendet op nur auf die Abschnitte zwischen den Vorkommen des B-Praefix an; die Vorkommen selbst bleiben
+         * unveraendert. So schreibt --replace nicht in die Praefixe, die --map erzeugt hat.
+         */
+        String outsideB(String content, UnaryOperator<String> op) {
+            if (anyB == null) {
+                return op.apply(content);
+            }
+            Matcher m = anyB.matcher(content);
+            StringBuilder sb = new StringBuilder(content.length());
+            int last = 0;
+            while (m.find()) {
+                sb.append(op.apply(content.substring(last, m.start()))).append(m.group());
+                last = m.end();
+            }
+            return sb.append(op.apply(content.substring(last))).toString();
         }
 
         static PrefixMap parse(String spec) {
@@ -252,13 +270,187 @@ public class Mirror {
         }
     }
 
+    /** Woertliche Textersetzung von A nach B in Textdateien; {@link #IDENTITY}, wenn nicht angegeben. */
+    static final class Replacement {
+        static final Replacement IDENTITY = new Replacement("", "");
+
+        final String a;
+        final String b;
+        /** a und b als UTF-8-Bytes in Latin1-Sicht, passend zu {@link Mirror#readLatin1}. */
+        private final String bytesA;
+        private final String bytesB;
+
+        Replacement(String a, String b) {
+            this.a = a;
+            this.b = b;
+            this.bytesA = latin1View(a);
+            this.bytesB = latin1View(b);
+        }
+
+        static Replacement parse(String spec) {
+            String[] parts = spec.split("=", -1);
+            if (parts.length != 2) {
+                throw new IllegalArgumentException("--replace erwartet <textA>=<textB>: " + spec);
+            }
+            String a = parts[0];
+            String b = parts[1];
+            if (a.isEmpty() || b.isEmpty() || a.equals(b)) {
+                throw new IllegalArgumentException("--replace: beide Texte muessen angegeben und verschieden sein: "
+                        + spec);
+            }
+            if (spec.contains("\t") || spec.contains("\n") || spec.contains("\r")) {
+                throw new IllegalArgumentException("--replace: Tabulator und Zeilenumbruch sind nicht erlaubt: " + spec);
+            }
+            return new Replacement(a, b);
+        }
+
+        boolean isIdentity() {
+            return a.isEmpty();
+        }
+
+        Replacement reversed() {
+            return isIdentity() ? this : new Replacement(b, a);
+        }
+
+        String spec() {
+            return isIdentity() ? "" : a + "=" + b;
+        }
+
+        String toB(String content) {
+            return isIdentity() ? content : content.replace(bytesA, bytesB);
+        }
+
+        String toA(String content) {
+            return isIdentity() ? content : content.replace(bytesB, bytesA);
+        }
+
+        boolean containsA(String content) {
+            return !isIdentity() && content.contains(bytesA);
+        }
+
+        /** Ersetzt nur im Dateinamen (letztes Segment von rel), nicht in Ordnernamen. */
+        String nameToB(String rel) {
+            return replaceInName(rel, a, b);
+        }
+
+        String nameToA(String rel) {
+            return replaceInName(rel, b, a);
+        }
+
+        private String replaceInName(String rel, String from, String to) {
+            if (isIdentity()) {
+                return rel;
+            }
+            int start = rel.lastIndexOf('/') + 1;
+            return rel.substring(0, start) + rel.substring(start).replace(from, to);
+        }
+
+        private static String latin1View(String s) {
+            return new String(s.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
+        }
+    }
+
+    /**
+     * Bis zu {@link #MAX} Textersetzungen: A-&gt;B in der angegebenen Reihenfolge, B-&gt;A in umgekehrter Reihenfolge.
+     * Jede Ersetzung wirkt nur ausserhalb der B-Praefixe von --map ({@link PrefixMap#outsideB}).
+     */
+    static final class Replacements {
+        static final int MAX = 12;
+        static final Replacements NONE = new Replacements(List.of());
+
+        final List<Replacement> list;
+
+        Replacements(List<Replacement> list) {
+            this.list = List.copyOf(list);
+        }
+
+        /** Haengt eine Ersetzung an; Abbruch bei mehr als {@link #MAX} oder gleichem Text auf einer Seite. */
+        Replacements plus(Replacement r) {
+            if (list.size() >= MAX) {
+                throw new IllegalArgumentException("--replace darf hoechstens " + MAX + "-mal angegeben werden");
+            }
+            for (Replacement o : list) {
+                if (o.a.equals(r.a) || o.b.equals(r.b)) {
+                    throw new IllegalArgumentException("--replace: " + o.spec() + " und " + r.spec()
+                            + " ersetzen denselben Text");
+                }
+            }
+            List<Replacement> l = new ArrayList<>(list);
+            l.add(r);
+            return new Replacements(l);
+        }
+
+        boolean isIdentity() {
+            return list.isEmpty();
+        }
+
+        Replacements reversed() {
+            List<Replacement> l = new ArrayList<>();
+            for (Replacement r : list) {
+                l.add(0, r.reversed());
+            }
+            return new Replacements(l);
+        }
+
+        /** Fuer Kopfzeile und Vergleich mit dem Abgleichstand: Paare durch Tabulator getrennt. */
+        String spec() {
+            List<String> specs = new ArrayList<>();
+            list.forEach(r -> specs.add(r.spec()));
+            return String.join("\t", specs);
+        }
+
+        String toB(String content, PrefixMap map) {
+            String c = content;
+            for (Replacement r : list) {
+                c = map.outsideB(c, r::toB);
+            }
+            return c;
+        }
+
+        String toA(String content, PrefixMap map) {
+            String c = content;
+            for (int i = list.size() - 1; i >= 0; i--) {
+                c = map.outsideB(c, list.get(i)::toA);
+            }
+            return c;
+        }
+
+        String nameToB(String rel) {
+            String p = rel;
+            for (Replacement r : list) {
+                p = r.nameToB(p);
+            }
+            return p;
+        }
+
+        String nameToA(String rel) {
+            String p = rel;
+            for (int i = list.size() - 1; i >= 0; i--) {
+                p = list.get(i).nameToA(p);
+            }
+            return p;
+        }
+
+        /** Die erste Ersetzung, deren A-Text im Inhalt vorkommt, sonst {@code null}. */
+        Replacement findA(String content) {
+            for (Replacement r : list) {
+                if (r.containsA(content)) {
+                    return r;
+                }
+            }
+            return null;
+        }
+    }
+
     private final Map<Side, Path> roots = new EnumMap<>(Side.class);
     private final PrefixMap map;
+    private final Replacements replace;
     private final boolean remap;
     private final boolean dryRun;
     private final boolean verbose;
     private final List<String> warnings = Collections.synchronizedList(new ArrayList<>());
     private String storedMap = "";
+    private String storedReplace = "";
     private final List<IgnoreRule> ignoreRules = new ArrayList<>();
     private final Map<Side, Map<String, FileInfo>> scans = new EnumMap<>(Side.class);
     private final Set<String> unreadable = ConcurrentHashMap.newKeySet();
@@ -267,10 +459,11 @@ public class Mirror {
     private Map<String, Entry> state;
     private boolean initialRun;
 
-    Mirror(Path a, Path b, PrefixMap map, boolean remap, boolean dryRun, boolean verbose) {
+    Mirror(Path a, Path b, PrefixMap map, Replacements replace, boolean remap, boolean dryRun, boolean verbose) {
         roots.put(Side.A, a);
         roots.put(Side.B, b);
         this.map = map;
+        this.replace = replace;
         this.remap = remap;
         this.dryRun = dryRun;
         this.verbose = verbose;
@@ -291,6 +484,7 @@ public class Mirror {
         boolean verbose = false;
         boolean remap = false;
         PrefixMap map = PrefixMap.IDENTITY;
+        Replacements replace = Replacements.NONE;
         List<String> positional = new ArrayList<>();
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
@@ -304,6 +498,16 @@ public class Mirror {
                     }
                     try {
                         map = PrefixMap.parse(args[++i]);
+                    } catch (IllegalArgumentException e) {
+                        return usage(e.getMessage());
+                    }
+                }
+                case "--replace" -> {
+                    if (i + 1 >= args.length) {
+                        return usage("--replace ohne Wert");
+                    }
+                    try {
+                        replace = replace.plus(Replacement.parse(args[++i]));
                     } catch (IllegalArgumentException e) {
                         return usage(e.getMessage());
                     }
@@ -336,8 +540,14 @@ public class Mirror {
             a = b;
             b = t;
             map = map.reversed();
+            replace = replace.reversed();
         }
-        return new Mirror(a, b, map, remap, dryRun, verbose).sync();
+        return new Mirror(a, b, map, replace, remap, dryRun, verbose).sync();
+    }
+
+    static String describeMapping(String mapSpec, String replaceSpec) {
+        String m = mapSpec.isEmpty() ? "ohne --map" : "mit --map " + mapSpec;
+        return replaceSpec.isEmpty() ? m : m + " und --replace " + replaceSpec.replace("\t", " --replace ");
     }
 
     static int usage(String message) {
@@ -367,9 +577,13 @@ public class Mirror {
         if (!map.isIdentity()) {
             System.out.println("Paketabbildung: A " + map.a + " <-> B " + map.b);
         }
-        if (!initialRun && !storedMap.equals(map.spec())) {
-            String stored = storedMap.isEmpty() ? "ohne --map" : "mit --map " + storedMap;
-            String now = map.isIdentity() ? "ohne --map" : "mit --map " + map.spec();
+        for (Replacement r : replace.list) {
+            System.out.println("Textersetzung: A \"" + r.a + "\" <-> B \"" + r.b + "\"");
+        }
+        boolean replaceChanged = !initialRun && !storedReplace.equals(replace.spec());
+        if (!initialRun && (!storedMap.equals(map.spec()) || replaceChanged)) {
+            String stored = describeMapping(storedMap, storedReplace);
+            String now = describeMapping(map.spec(), replace.spec());
             if (!remap) {
                 System.err.println("Abbruch: der Abgleichstand wurde " + stored + " erstellt, dieser Aufruf ist " + now
                         + ". Ist die Aenderung gewollt, zusaetzlich --remap angeben.");
@@ -394,6 +608,9 @@ public class Mirror {
             if (state.isEmpty() && !scans.get(Side.A).isEmpty() && !scans.get(Side.B).isEmpty()) {
                 System.out.println("Hinweis: kein Abgleichstand vorhanden - Erstabgleich, es wird nichts geloescht;"
                         + " abweichende Dateien entscheidet die neuere Aenderungszeit.");
+            }
+            if (replaceChanged) {
+                reportUnreplaced();
             }
 
             List<Action> actions = decideAll(pool);
@@ -480,7 +697,7 @@ public class Mirror {
     }
 
     boolean isExcluded(String rel, String name, boolean isDir) {
-        if (isDir && DEFAULT_EXCLUDED_DIRS.contains(name.toLowerCase(Locale.ROOT))) {
+        if (isDir && DEFAULT_EXCLUDED_DIRS.contains(name.toLowerCase(Locale.ROOT)) && !(name.equals("api") && !rel.contains("docs"))) {
             return true;
         }
         if (!isDir && name.endsWith(TMP_SUFFIX)) {
@@ -503,8 +720,8 @@ public class Mirror {
     /** {@link #EXCLUDE_FILES} gilt fuer beide Seiten: Pfad in A- und in B-Form pruefen. */
     boolean isExcludedFile(String rel) {
         return EXCLUDE_FILES.matcher(rel).matches()
-                || EXCLUDE_FILES.matcher(map.toA(rel)).matches()
-                || EXCLUDE_FILES.matcher(map.toB(rel)).matches();
+                || EXCLUDE_FILES.matcher(relToA(rel)).matches()
+                || EXCLUDE_FILES.matcher(relToB(rel)).matches();
     }
 
     // ---------------------------------------------------------------- Scan
@@ -545,7 +762,7 @@ public class Mirror {
             public FileVisitResult visitFileFailed(Path file, IOException exc) {
                 // nicht lesbar: alles darunter bleibt unangetastet, sonst saehe es wie eine Loeschung aus
                 String rel = rel(root, file);
-                block(side == Side.B ? map.toA(rel) : rel, "Scan " + side + ": " + rel + ": " + exc);
+                block(side == Side.B ? relToA(rel) : rel, "Scan " + side + ": " + rel + ": " + exc);
                 return FileVisitResult.CONTINUE;
             }
         });
@@ -554,11 +771,24 @@ public class Mirror {
 
     /**
      * Schluessel im Abgleichstand (A-Form). Liegt eine Datei unter dem Praefixpfad der jeweils anderen Seite
-     * (z. B. B noch nicht vollstaendig umbenannt), wird der Pfad gesperrt und {@code null} geliefert.
+     * (z. B. B noch nicht vollstaendig umbenannt) oder ist sein Dateiname nicht eindeutig per --replace
+     * umrechenbar, wird der Pfad gesperrt und {@code null} geliefert.
      */
     String key(Side side, String rel) {
+        if (replacesName(rel)) {
+            boolean reversible = side == Side.A
+                    ? replace.nameToA(replace.nameToB(rel)).equals(rel)
+                    : replace.nameToB(replace.nameToA(rel)).equals(rel);
+            if (!reversible) {
+                // auch das Gegenstueck auf der anderen Seite sperren, sonst saehe es wie eine Loeschung aus
+                block(side == Side.B ? relToA(rel) : rel, "Scan " + side + ": Dateiname " + rel
+                        + " passt nicht zu --replace (enthaelt den Text der anderen Seite oder ist noch nicht"
+                        + " umbenannt)");
+                return null;
+            }
+        }
         if (!isMapped(rel)) {
-            return rel;
+            return side == Side.B ? relToA(rel) : rel;
         }
         if (side == Side.A) {
             if (map.underB(rel)) {
@@ -571,7 +801,7 @@ public class Mirror {
             block(rel, "Scan B: " + rel + " liegt noch unter dem A-Praefix " + map.a + " (Umbenennung unvollstaendig?)");
             return null;
         }
-        return map.toA(rel);
+        return relToA(rel);
     }
 
     /** Pfad (und alles darunter) fuer diesen Lauf von jeder Aktion ausnehmen. */
@@ -648,11 +878,36 @@ public class Mirror {
         return actions;
     }
 
+    /**
+     * Nur melden: Textdateien, die vor Einfuehrung von --replace 1:1 nach B kopiert wurden und den A-Text noch
+     * enthalten. Ihr Hash stimmt mit A ueberein, deshalb wuerden sie sonst nie angeglichen.
+     */
+    void reportUnreplaced() {
+        if (replace.isIdentity()) {
+            return;
+        }
+        for (String rel : new TreeSet<>(state.keySet())) {
+            if (!replacesContent(rel) || isUnreadable(rel)
+                    || !scans.get(Side.A).containsKey(rel) || !scans.get(Side.B).containsKey(rel)) {
+                continue;
+            }
+            try {
+                Replacement r = replace.findA(readLatin1(path(Side.B, rel)));
+                if (r != null) {
+                    warnings.add(relToB(rel) + ": enthaelt noch \"" + r.a
+                            + "\" (vor --replace 1:1 kopiert), bitte angleichen");
+                }
+            } catch (IOException e) {
+                errors.add("Pruefung " + rel + ": " + e);
+            }
+        }
+    }
+
     Action decide(String rel) throws IOException {
         Action action = decideRaw(rel);
         if (action != null && action.kind() == Kind.COPY && action.side() == Side.B && isMapped(rel)
-                && !isJavaOrJSon(rel) && map.containsB(readLatin1(path(Side.B, rel)))) {
-            warnings.add(map.toB(rel) + ": enthaelt B-Praefix " + map.b + ", nicht nach A uebertragen");
+                && !isJavaOrJSon(rel) && map.containsB(replaceToA(rel, readLatin1(path(Side.B, rel))))) {
+            warnings.add(relToB(rel) + ": enthaelt B-Praefix " + map.b + ", nicht nach A uebertragen");
             return null;
         }
         return action;
@@ -824,16 +1079,16 @@ public class Mirror {
         return HexFormat.of().formatHex(md.digest());
     }
 
-    /** Kopiert eine .java-Datei mit Paket-Umschreibung; liefert den Hash der A-Form. */
+    /** Kopiert eine Datei mit Paket-Umschreibung und/oder Textersetzung; liefert den Hash der A-Form. */
     String copyRewritten(Side src, String rel) throws IOException {
         Path from = path(src, rel);
         Path to = path(src.other(), rel);
         String content = readLatin1(from);
-        String converted = src == Side.A ? map.javaToB(content) : map.javaToA(content);
-        String back = src == Side.A ? map.javaToA(converted) : map.javaToB(converted);
+        String converted = src == Side.A ? contentToB(rel, content) : contentToA(rel, content);
+        String back = src == Side.A ? contentToA(rel, converted) : contentToB(rel, converted);
         if (!back.equals(content)) {
-            throw new IOException("Paket-Umschreibung nicht eindeutig umkehrbar (Datei enthaelt bereits das Praefix"
-                    + " der Zielseite) - nicht kopiert");
+            throw new IOException("Umschreibung nicht eindeutig umkehrbar (Datei enthaelt bereits das Praefix bzw."
+                    + " den Ersatztext der Zielseite) - nicht kopiert");
         }
         Files.createDirectories(to.getParent());
         Path tmp = to.resolveSibling(to.getFileName() + TMP_SUFFIX);
@@ -929,14 +1184,27 @@ public class Mirror {
             return result;
         }
         List<String> lines = Files.readAllLines(file, StandardCharsets.UTF_8);
-        // v1: "# eclipse-mirror v1 \t A \t B", v2 zusaetzlich "\t map=<a>=<b>"
+        // v1: "# eclipse-mirror v1 \t A \t B", v2 zusaetzlich "\t map=<a>=<b>",
+        // v3 zusaetzlich je --replace "\t replace=<a>=<b>" (ohne --replace genau ein leeres "\t replace=")
         String[] h = lines.isEmpty() ? new String[0] : lines.get(0).split("\t", -1);
         boolean v1 = h.length == 3 && h[0].equals(STATE_HEADER_V1);
-        boolean v2 = h.length == 4 && h[0].equals(STATE_HEADER) && h[3].startsWith("map=");
-        if (!(v1 || v2) || !h[1].equals(roots.get(Side.A).toString()) || !h[2].equals(roots.get(Side.B).toString())) {
+        boolean v2 = h.length == 4 && h[0].equals(STATE_HEADER_V2) && h[3].startsWith("map=");
+        boolean v3 = h.length >= 5 && h.length <= 4 + Replacements.MAX && h[0].equals(STATE_HEADER)
+                && h[3].startsWith("map=");
+        List<String> replaceSpecs = new ArrayList<>();
+        for (int i = 4; v3 && i < h.length; i++) {
+            v3 = h[i].startsWith("replace=");
+            String spec = v3 ? h[i].substring("replace=".length()) : "";
+            if (!spec.isEmpty()) {
+                replaceSpecs.add(spec);
+            }
+        }
+        if (!(v1 || v2 || v3) || !h[1].equals(roots.get(Side.A).toString())
+                || !h[2].equals(roots.get(Side.B).toString())) {
             throw new IOException("Abgleichstand " + file + " passt nicht zu den Verzeichnissen (Kopfzeile)");
         }
-        storedMap = v2 ? h[3].substring("map=".length()) : "";
+        storedMap = v2 || v3 ? h[3].substring("map=".length()) : "";
+        storedReplace = String.join("\t", replaceSpecs);
         for (String line : lines.subList(1, lines.size())) {
             String[] f = line.split("\t", -1);
             if (f.length != 6) {
@@ -961,7 +1229,8 @@ public class Mirror {
     }
 
     String header() {
-        return STATE_HEADER + "\t" + roots.get(Side.A) + "\t" + roots.get(Side.B) + "\tmap=" + map.spec();
+        return STATE_HEADER + "\t" + roots.get(Side.A) + "\t" + roots.get(Side.B) + "\tmap=" + map.spec()
+                + "\treplace=" + replace.spec().replace("\t", "\treplace=");
     }
 
     // ---------------------------------------------------------------- Ausgabe
@@ -1043,35 +1312,85 @@ public class Mirror {
 
     /** Physischer Pfad; {@code rel} ist der Schluessel in A-Form, auf B wird das Paket-Praefix abgebildet. */
     Path path(Side side, String rel) {
-        return roots.get(side).resolve(side == Side.B && isMapped(rel) ? map.toB(rel) : rel);
+        return roots.get(side).resolve(side == Side.B ? relToB(rel) : rel);
+    }
+
+    /** Schluessel (A-Form) -&gt; Pfad in B: Paket-Praefix abbilden, dann --replace im Dateinamen. */
+    String relToB(String rel) {
+        String p = isMapped(rel) ? map.toB(rel) : rel;
+        return replacesName(rel) ? replace.nameToB(p) : p;
+    }
+
+    /** Pfad in B -&gt; Schluessel (A-Form): genau umgekehrt zu {@link #relToB}. */
+    String relToA(String rel) {
+        String p = isMapped(rel) ? map.toA(rel) : rel;
+        return replacesName(rel) ? replace.nameToA(p) : p;
+    }
+
+    /** --replace im Dateinamen; nicht fuer {@link #NO_MAP_DIRS}. */
+    boolean replacesName(String rel) {
+        return !replace.isIdentity() && !inNoMapDir(rel);
     }
 
     /** Gilt die Paketabbildung fuer diesen Pfad? Nicht fuer {@link #NO_MAP_DIRS}. */
     boolean isMapped(String rel) {
-        if (map.isIdentity()) {
-            return false;
-        }
+        return !map.isIdentity() && !inNoMapDir(rel);
+    }
+
+    static boolean inNoMapDir(String rel) {
         String lower = rel.toLowerCase(Locale.ROOT);
         for (String dir : NO_MAP_DIRS) {
             if (lower.equals(dir) || lower.startsWith(dir + "/")) {
-                return false;
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     boolean rewrites(String rel) {
+        return mapsContent(rel) || replacesContent(rel);
+    }
+
+    /** Paket-Umschreibung des Inhalts (.java/.json). */
+    boolean mapsContent(String rel) {
         return isMapped(rel) && isJavaOrJSon(rel);
+    }
+
+    /** Textersetzung (--replace) des Inhalts. */
+    boolean replacesContent(String rel) {
+        return !replace.isIdentity() && !inNoMapDir(rel) && isText(rel);
     }
 
     static boolean isJavaOrJSon(String rel) {
         return rel.toLowerCase(Locale.ROOT).endsWith(".java") || rel.toLowerCase(Locale.ROOT).endsWith(".json");
     }
 
-    /** Hash der A-Form: B-seitige .java-Dateien werden vor dem Hashen zurueckuebersetzt. */
+    static boolean isText(String rel) {
+        String name = rel.substring(rel.lastIndexOf('/') + 1);
+        int dot = name.lastIndexOf('.');
+        return dot >= 0 && TEXT_EXTENSIONS.contains(name.substring(dot + 1).toLowerCase(Locale.ROOT));
+    }
+
+    /** A-Form -&gt; B-Form: erst Paket-Umschreibung, dann Textersetzung. */
+    String contentToB(String rel, String content) {
+        String c = mapsContent(rel) ? map.javaToB(content) : content;
+        return replacesContent(rel) ? replace.toB(c, map) : c;
+    }
+
+    /** B-Form -&gt; A-Form: genau umgekehrte Reihenfolge von {@link #contentToB}. */
+    String contentToA(String rel, String content) {
+        String c = replaceToA(rel, content);
+        return mapsContent(rel) ? map.javaToA(c) : c;
+    }
+
+    String replaceToA(String rel, String content) {
+        return replacesContent(rel) ? replace.toA(content, map) : content;
+    }
+
+    /** Hash der A-Form: umgeschriebene B-seitige Dateien werden vor dem Hashen zurueckuebersetzt. */
     String hashOf(Side side, String rel) throws IOException {
         if (side == Side.B && rewrites(rel)) {
-            return sha1Hex(map.javaToA(readLatin1(path(side, rel))));
+            return sha1Hex(contentToA(rel, readLatin1(path(side, rel))));
         }
         return hash(path(side, rel));
     }
