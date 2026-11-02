@@ -31,6 +31,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.QuadCurve2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import net.sf.jailer.datamodel.AggregationSchema;
@@ -45,6 +46,7 @@ import prefuse.render.EdgeRenderer;
 import prefuse.util.ColorLib;
 import prefuse.util.GraphicsLib;
 import prefuse.visual.EdgeItem;
+import prefuse.visual.NodeItem;
 import prefuse.visual.VisualItem;
 
 /**
@@ -120,10 +122,12 @@ public class AssociationRenderer extends EdgeRenderer {
 	private static final double CROWS_FOOT_GAP = 2.0;
 
 	/**
-	 * Arc shape for the two edges of a reflexive association. Both edges connect the same
+	 * Shape of a curved edge. The two edges of a reflexive association connect the same
 	 * pair of nodes, so they are bowed to opposite sides to keep them visible and selectable.
+	 * The two edges of any other association with a node of its own are the halves of one smooth
+	 * curve through that node, see {@link #setMiddleNodeControlPoint(EdgeItem)}.
 	 */
-	private final QuadCurve2D.Double m_reflexiveCurve = new QuadCurve2D.Double();
+	private final QuadCurve2D.Double m_curve = new QuadCurve2D.Double();
 	private static final double REFLEXIVE_BOW_FACTOR = 0.11;
 	private static final double REFLEXIVE_MIN_BOW = 8;
 	private static final double REFLEXIVE_MAX_BOW = 18;
@@ -205,10 +209,17 @@ public class AssociationRenderer extends EdgeRenderer {
 			}
 		}
 
+		// a curved edge is a quadratic curve through m_ctrlPoints[0]: the arc of a reflexive association,
+		// or one half of the smooth curve through the node of a non-unique association
+		boolean curved = reflexive;
+		if (!reflexive && full && association != null && Boolean.FALSE.equals(item.get("full"))) {
+			curved = setMiddleNodeControlPoint(e);
+		}
+
 		// create the arrow head, if needed
 		if ( e.isDirected() && m_edgeArrow != Constants.EDGE_ARROW_NONE) {
 			// the arc arrives from its control point, a straight edge from its start point
-			Point2D arrowFrom = reflexive? m_ctrlPoints[0] : start;
+			Point2D arrowFrom = curved? m_ctrlPoints[0] : start;
 
 			// compute the intersection with the target bounding box
 			VisualItem dest = forward ? e.getTargetItem() : e.getSourceItem();
@@ -252,9 +263,9 @@ public class AssociationRenderer extends EdgeRenderer {
 		double n1y = m_tmpPoints[0].getY();
 		double n2x = m_tmpPoints[1].getX();
 		double n2y = m_tmpPoints[1].getY();
-		if (reflexive) {
-			m_reflexiveCurve.setCurve(n1x, n1y, m_ctrlPoints[0].getX(), m_ctrlPoints[0].getY(), n2x, n2y);
-			shape = m_reflexiveCurve;
+		if (curved) {
+			m_curve.setCurve(n1x, n1y, m_ctrlPoints[0].getX(), m_ctrlPoints[0].getY(), n2x, n2y);
+			shape = m_curve;
 		} else {
 			m_line.setLine(n1x, n1y, n2x, n2y);
 			shape = m_line;
@@ -266,7 +277,7 @@ public class AssociationRenderer extends EdgeRenderer {
 
 		crowsFootBounds = null;
 		crowsFoot = null;
-		if (reflexive) {
+		if (curved) {
 			// apex of the arc, so that the marker sits on the visible curve
 			midPosition = new Point2D.Double(
 					0.25 * n1x + 0.5 * m_ctrlPoints[0].getX() + 0.25 * n2x,
@@ -285,10 +296,10 @@ public class AssociationRenderer extends EdgeRenderer {
 			double len = Math.min(CROWS_FOOT_LENGTH * scale, 0.45 * m_tmpPoints[0].distance(m_tmpPoints[1]));
 			if (len > 1) {
 				// both anchors are taken from the edge itself, so the foot bends with the arc of
-				// a reflexive association instead of drifting off it along the end tangent
+				// a curved edge instead of drifting off it along the end tangent
 				Point2D tangent = new Point2D.Double();
-				Point2D toe = pointBack(reflexive, forward, gap, tangent);
-				Point2D apex = pointBack(reflexive, forward, gap + len, null);
+				Point2D toe = pointBack(curved, forward, gap, tangent);
+				Point2D apex = pointBack(curved, forward, gap + len, null);
 				double nx = -tangent.getY(), ny = tangent.getX();
 				// no middle toe: the association line is the third stroke of the notation, and on
 				// a curved edge a straight middle toe is the prong that diverges most visibly
@@ -325,7 +336,51 @@ public class AssociationRenderer extends EdgeRenderer {
 	}
 
 	/**
-	 * Number of steps used to walk the arc of a reflexive association in {@link #pointBack}.
+	 * Sets the control point of an edge between the node of a non-unique association and one of its
+	 * tables. The two edges of the association are the halves of one smooth curve from table to
+	 * table: at the node, both run parallel to the line between the two tables, in opposite
+	 * directions, so that the curve has no kink there. If the node lies on that line, the curve is
+	 * the straight line.
+	 *
+	 * @param edge the edge from the node of the association to a table
+	 * @return <code>false</code> if the edge is to be drawn straight
+	 */
+	private boolean setMiddleNodeControlPoint(EdgeItem edge) {
+		VisualItem node = edge.getSourceItem();
+		VisualItem table = edge.getTargetItem();
+		if (!(node instanceof NodeItem)) {
+			return false;
+		}
+		VisualItem otherTable = null;
+		Iterator<?> edges = ((NodeItem) node).edges();
+		while (edges.hasNext()) {
+			Object other = edges.next();
+			if (other != edge && other instanceof EdgeItem && ((EdgeItem) other).getSourceItem() == node) {
+				otherTable = ((EdgeItem) other).getTargetItem();
+				break;
+			}
+		}
+		if (otherTable == null || otherTable == table) {
+			return false;
+		}
+		Rectangle2D tb = table.getBounds();
+		Rectangle2D ob = otherTable.getBounds();
+		double ux = tb.getCenterX() - ob.getCenterX();
+		double uy = tb.getCenterY() - ob.getCenterY();
+		double ulen = Math.hypot(ux, uy);
+		// m_tmpPoints[0] is the node (source item), m_tmpPoints[1] the table
+		Point2D m = m_tmpPoints[0];
+		double dist = m.distance(m_tmpPoints[1]);
+		if (ulen < 1 || dist < 1) {
+			return false;
+		}
+		double reach = dist / 2;
+		m_ctrlPoints[0].setLocation(m.getX() + ux / ulen * reach, m.getY() + uy / ulen * reach);
+		return true;
+	}
+
+	/**
+	 * Number of steps used to walk a curved edge in {@link #pointBack}.
 	 */
 	private static final int ARC_STEPS = 64;
 
@@ -338,14 +393,14 @@ public class AssociationRenderer extends EdgeRenderer {
 	 * drifting off its chord. The end of the arc already is the base of the arrow head, because
 	 * the bias by <code>m_arrowHeight</code> is applied before the curve is built.
 	 *
-	 * @param reflexive <code>true</code> to follow the arc instead of the straight line
+	 * @param curved <code>true</code> to follow the arc instead of the straight line
 	 * @param forward <code>true</code> if the arrow head sits at the second end point
 	 * @param dist arc distance from that end
 	 * @param tangentOut receives the unit tangent, may be <code>null</code>
 	 * @return the point on the edge
 	 */
-	private Point2D pointBack(boolean reflexive, boolean forward, double dist, Point2D tangentOut) {
-		if (!reflexive) {
+	private Point2D pointBack(boolean curved, boolean forward, double dist, Point2D tangentOut) {
+		if (!curved) {
 			Point2D tip = m_tmpPoints[forward? 1:0];
 			double ux = Math.cos(markerTheta), uy = Math.sin(markerTheta);
 			if (tangentOut != null) {

@@ -75,7 +75,7 @@ public class ProgressPanel extends javax.swing.JPanel {
 	private boolean subsetInsightApplicable;
 	/**
 	 * Whether the analysis would have been possible, but the run has been started with
-	 * "Export without Analysis". Tells the user the right reason why there is nothing to analyze.
+	 * "Export Data", which runs without analysis. Tells the user the right reason why there is nothing to analyze.
 	 */
 	private boolean analysisSkipped;
 	private boolean subsetInsightTransactional;
@@ -462,7 +462,8 @@ public class ProgressPanel extends javax.swing.JPanel {
 	private String noRetainedRowsToolTip() {
 		if (!subsetInsightApplicable) {
 			return analysisSkipped?
-					"Not available: the run has been started with \"Export without Analysis\"."
+					"<html>Not available: the run has been started with \"Export Data\", without analysis."
+					+ "<br>Use \"Export with Analysis\" to keep the collected rows.</html>"
 					: "Requires the working table scope \"global tables\".";
 		}
 		if (subsetInsightTransactional) {
@@ -581,7 +582,7 @@ public class ProgressPanel extends javax.swing.JPanel {
 
 	/**
 	 * Announces that the analysis would have been possible, but the run has been started with
-	 * "Export without Analysis", so that the tool tips give that as the reason.
+	 * "Export Data", which runs without analysis, so that the tool tips give that as the reason.
 	 */
 	public void setAnalysisSkipped() {
 		analysisSkipped = true;
@@ -713,7 +714,7 @@ public class ProgressPanel extends javax.swing.JPanel {
 		Icon icon = null;
 		if (!subsetInsightApplicable) {
 			status = analysisSkipped?
-					"Not available for this run: it has been started with \"Export without Analysis\"."
+					"Not available for this run: it has been started with \"Export Data\", without analysis. Use \"Export with Analysis\" to keep the collected rows."
 					: "Not available for this run: requires the working table scope \"global tables\".";
 			icon = subsetInsightWarnIcon;
 		} else if (!analysisPanel.hasRetainedRows() && subsetInsightTransactional) {

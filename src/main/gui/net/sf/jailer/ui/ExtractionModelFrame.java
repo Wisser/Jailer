@@ -2456,7 +2456,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 										} else {
 											rowOriginContext = null;
 											if (exportDialog.isAnalysisPossible()) {
-												// "Export without Analysis": the progress window tells that, not the scope
+												// "Export Data", without analysis: the progress window tells that, not the scope
 												progressPanel.setAnalysisSkipped();
 											}
 										}
@@ -2877,12 +2877,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame implements Connecti
 	}//GEN-LAST:event_collapseAllActionPerformed
 
 	private void refreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshActionPerformed
-		extractionModelEditor.captureLayout();
-		try {
-			extractionModelEditor.refresh(false, true, false, false);
-		} finally {
-			extractionModelEditor.checkLayoutStack();
-		}
+		extractionModelEditor.resetLayout();
 	}//GEN-LAST:event_refreshActionPerformed
 
 	private void saveAsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsActionPerformed

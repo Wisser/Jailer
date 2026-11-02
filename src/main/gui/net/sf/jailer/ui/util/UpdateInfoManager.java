@@ -36,7 +36,7 @@ public class UpdateInfoManager {
 	private static final String[] versionURL = new String[] {
 			"https://jailer.4lima.de/currentVersion.php"
 	};
-	private static final String downloadURL = "https://sourceforge.net/projects/jailer/files/";
+	private static final String downloadURL = "https://github.com/Wisser/Jailer/releases";
 	private static final long CHECK_INTERVALL = 1000L * 60 * 60 * 46;
 	private static final long DELAY = 1000L * 6;
 	private static final String LAST_TS_FILE = ".lastcuats";

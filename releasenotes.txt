@@ -1,3 +1,19 @@
+17.3.1
+  - Export dialog: "Export Data" no longer keeps the collected rows for the analysis of the subset,
+    which makes it faster. The new button "Export with Analysis" exports and keeps them ("Show
+    Collected Rows", paths to the subject). "Dry Run" keeps them as before.
+  - Graphical view of the extraction model editor: new layout tools, in the "View" menu and in the
+    collapsible "Layout" panel at the top left of the view:
+    - "Arrange as tree", "Arrange as tree (top-down)", "Arrange radially", "Arrange in a circle"
+      and "Arrange in layers" arrange the tables starting at the subject table.
+    - "Separate overlapping tables" pushes overlapping tables apart, keeping the arrangement
+      otherwise.
+    - "Compact" and "Spread" move the tables closer together or further apart. They can be
+      applied repeatedly.
+    - "Reset" (also in the "View" menu) lays out all tables anew.
+    The subject table stays where it is, the tables are moved animated and fixed afterwards.
+    Each step can be undone with "Back".
+
 17.3
   - SQL Console: new result tab "Pivot" next to "Chart". It shows a cross table of the rows:
     - The fields are chosen in a side bar. Row fields and column fields can be nested (e.g.

@@ -15,7 +15,6 @@
  */
 package net.sf.jailer.ui;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -115,7 +114,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	 * Starts a dry run. Created after {@link #initComponents()}.
 	 */
 	private javax.swing.JButton dryRunButton;
-	private javax.swing.JButton exportWithoutAnalysisButton;
+	private javax.swing.JButton exportWithAnalysisButton;
 
 	/**
 	 * Xml/Sql switch.
@@ -2533,12 +2532,12 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			}
 		});
 
-		exportWithoutAnalysisButton = new javax.swing.JButton(" Export without Analysis ");
-		exportWithoutAnalysisButton.setIcon(withoutAnalysisIcon(dryRunIcon));
-		exportWithoutAnalysisButton.addActionListener(new java.awt.event.ActionListener() {
+		exportWithAnalysisButton = new javax.swing.JButton(" Export with Analysis ");
+		exportWithAnalysisButton.setIcon(withAnalysisIcon(dryRunIcon, UIUtil.readImage("/search.png")));
+		exportWithAnalysisButton.addActionListener(new java.awt.event.ActionListener() {
 			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				run(false, true);
+				run(false, false);
 			}
 		});
 
@@ -2560,7 +2559,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
 		gridBagConstraints.weighty = 1.0;
 		gridBagConstraints.insets = new java.awt.Insets(4, 0, 2, 2);
-		jPanel2.add(exportWithoutAnalysisButton, gridBagConstraints);
+		jPanel2.add(exportWithAnalysisButton, gridBagConstraints);
 
 		gridBagConstraints = new java.awt.GridBagConstraints();
 		gridBagConstraints.gridx = 3;
@@ -2580,29 +2579,31 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	}
 
 	/**
-	 * The icon of "Dry Run" with its question mark, the analysis, struck through in red.
+	 * The icon of "Export with Analysis": the run arrow of "Dry Run", with a magnifier instead of
+	 * the question mark, so that it can be told apart from "Dry Run".
 	 *
-	 * @param icon the icon of "Dry Run"
-	 * @return the icon of "Export without Analysis"
+	 * @param dryRun the icon of "Dry Run"
+	 * @param magnifier the magnifier
+	 * @return the icon of "Export with Analysis"
 	 */
-	private static Icon withoutAnalysisIcon(ImageIcon icon) {
-		if (icon == null || icon.getIconWidth() <= 0 || icon.getIconHeight() <= 0) {
-			return icon;
+	private static Icon withAnalysisIcon(ImageIcon dryRun, ImageIcon magnifier) {
+		if (dryRun == null || magnifier == null || dryRun.getIconWidth() <= 0 || dryRun.getIconHeight() <= 0) {
+			return dryRun;
 		}
-		int w = icon.getIconWidth();
-		int h = icon.getIconHeight();
+		int w = dryRun.getIconWidth();
+		int h = dryRun.getIconHeight();
 		BufferedImage image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = image.createGraphics();
 		try {
 			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			g.drawImage(icon.getImage(), 0, 0, null);
-			float width = Math.max(1.5f, h / 7f);
-			g.setStroke(new BasicStroke(width, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-			// translucent, so that the question mark shows through
-			g.setColor(new Color(220, 0, 0, 124));
-			double inset = width / 2 + 0.5;
-			// the question mark spans 58% to 99% of the width (dryrun.png: 107 to 184 of 186 pixels)
-			g.draw(new java.awt.geom.Line2D.Double(w * 0.58, h - inset, w - inset, inset));
+			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+			g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+			// the arrow only: the question mark spans 58% to 99% of the width (dryrun.png: 107 to 184 of 186 pixels)
+			int arrowWidth = (int) (w * 0.57);
+			g.drawImage(dryRun.getImage(), 0, 0, arrowWidth, h, 0, 0, arrowWidth, h, null);
+			// the magnifier in place of the question mark
+			int size = Math.min(h, w - arrowWidth);
+			g.drawImage(magnifier.getImage(), w - size, (h - size) / 2, size, size, null);
 		} finally {
 			g.dispose();
 		}
@@ -2658,14 +2659,20 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		updateTransactionalToolTip();
 		boolean available = isAnalysisPossible();
 		dryRunButton.setEnabled(available);
-		exportWithoutAnalysisButton.setEnabled(available);
-		exportWithoutAnalysisButton.setToolTipText(available?
-				"<html>Exports like \"Export Data\", but without keeping the collected rows for the analysis of the subset."
-				+ "<br>That is faster: the rows are not copied during the collection, and the working tables stay smaller."
-				+ "<br>The Analysis tab still shows the rows per association,"
-				+ "<br>\"Show Collected Rows\" and the paths to the subject are not available.</html>"
+		exportWithAnalysisButton.setEnabled(available);
+		exportWithAnalysisButton.setToolTipText(available?
+				"<html>Exports like \"Export Data\", and keeps the collected rows for the analysis of the subset"
+				+ "<br>(\"Show Collected Rows\", paths to the subject)."
+				+ "<br>That is slower: the rows are copied during the collection, and the working tables get bigger."
+				+ (transactional.isSelected()? "<br><br>" + TRANSACTIONAL_ANALYSIS_HINT : "")
+				+ "</html>"
 				:
-				"\"Export Data\" doesn't keep anything for the analysis with this working table scope anyway.");
+				"<html>Requires the working table scope \"global tables\": the other scopes create the working tables"
+				+ "<br>as temporary tables or in a local database, so nothing would survive the run to analyze.</html>");
+		jButton1.setToolTipText(available?
+				"<html>Exports the subset. The collected rows are not kept for the analysis of the subset;"
+				+ "<br>use \"Export with Analysis\" for that. The Analysis tab still shows the rows per association.</html>"
+				: null);
 		dryRunButton.setToolTipText(available ?
 				"<html>Collect the rows and analyze the result, but don't write an export file."
 				+ "<br>Note that this saves the time needed to write the file, not the time needed to collect the rows."
@@ -2750,7 +2757,8 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	}
 
 	private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-		run(false);
+		// the plain export doesn't keep the collected rows, "Export with Analysis" does
+		run(false, true);
 	}//GEN-LAST:event_jButton1ActionPerformed
 
 	/**
@@ -3135,7 +3143,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	/**
 	 * Returns whether the entity-graph is to be kept after the run, so that the origin of a
 	 * single row can be analyzed: if it is possible at all, see {@link #isAnalysisPossible()}, and
-	 * the run has not been started with "Export without Analysis".
+	 * the run has been started with "Dry Run" or "Export with Analysis" (not with "Export Data").
 	 *
 	 * @return <code>true</code> if the entity-graph is to be kept
 	 */
@@ -3155,7 +3163,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	}
 
 	/**
-	 * Set by "Export without Analysis": the run does not keep the collected rows.
+	 * Set by "Export Data", which runs without analysis: the run does not keep the collected rows.
 	 */
 	private boolean withoutAnalysis = false;
 

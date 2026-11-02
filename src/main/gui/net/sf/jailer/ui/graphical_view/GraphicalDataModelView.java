@@ -537,7 +537,7 @@ public class GraphicalDataModelView extends JPanel {
 			}
 
 		});
-		zoomToFitControl = new ZoomToFitControlExtension(Visualization.ALL_ITEMS, 50, 800, Control.RIGHT_MOUSE_BUTTON,	model);
+		zoomToFitControl = new ZoomToFitControlExtension(Visualization.ALL_ITEMS, 50, ZOOM_DURATION, Control.RIGHT_MOUSE_BUTTON,	model);
 		display.addControlListener(zoomToFitControl);
 		display.addControlListener(new ToolTipControl("tooltip"));
 
@@ -1764,56 +1764,125 @@ public class GraphicalDataModelView extends JPanel {
 			List<NodeItem> associationItems = new ArrayList<NodeItem>();
 			Map<Table, NodeItem> tableItems = collectTableItems(associationItems);
 			List<NodeItem> items = new ArrayList<NodeItem>(tableItems.values());
-			NodeItem rootItem = tableItems.get(root);
-
-			// the boxes, enlarged by the gap
-			final double gap = 10;
-			int n = items.size();
-			Rectangle2D[] boxes = new Rectangle2D[n];
-			for (int i = 0; i < n; ++i) {
-				Rectangle2D bounds = items.get(i).getBounds();
-				boxes[i] = new Rectangle2D.Double(bounds.getX() - gap / 2, bounds.getY() - gap / 2, bounds.getWidth() + gap, bounds.getHeight() + gap);
+			Map<VisualItem, Point2D> targets = new HashMap<VisualItem, Point2D>();
+			for (NodeItem item: items) {
+				targets.put(item, new Point2D.Double(item.getX(), item.getY()));
 			}
-			final int maxRounds = 100;
-			boolean overlapping = true;
-			for (int round = 0; round < maxRounds && overlapping; ++round) {
-				overlapping = false;
-				for (int i = 0; i < n; ++i) {
-					for (int j = i + 1; j < n; ++j) {
-						Rectangle2D a = boxes[i];
-						Rectangle2D b = boxes[j];
-						double overlapX = Math.min(a.getMaxX(), b.getMaxX()) - Math.max(a.getMinX(), b.getMinX());
-						double overlapY = Math.min(a.getMaxY(), b.getMaxY()) - Math.max(a.getMinY(), b.getMinY());
-						if (overlapX <= 0 || overlapY <= 0) {
-							continue;
-						}
-						overlapping = true;
-						// the subject table doesn't move, the other one takes the full distance
-						double shareA = items.get(i) == rootItem? 0 : items.get(j) == rootItem? 1 : 0.5;
-						double shareB = 1 - shareA;
-						// pushed apart along the axis with the smaller overlap, j away from i
-						if (overlapX < overlapY) {
-							double dir = b.getCenterX() >= a.getCenterX()? 1 : -1;
-							move(a, -dir * overlapX * shareA, 0);
-							move(b, dir * overlapX * shareB, 0);
-						} else {
-							double dir = b.getCenterY() >= a.getCenterY()? 1 : -1;
-							move(a, 0, -dir * overlapY * shareA);
-							move(b, 0, dir * overlapY * shareB);
-						}
+			pushApart(items, targets, tableItems.get(root));
+			arrangeTo(targets, tableItems, associationItems);
+		}
+	}
+
+	/**
+	 * Moves the tables closer together, keeping the arrangement otherwise, and fixes their positions.
+	 * The subject table stays where it is. Overlaps caused by this are removed.
+	 */
+	public void compact() {
+		scaleArrangement(1 / SCALE_STEP, true);
+	}
+
+	/**
+	 * Scale factor of {@link #spread()}; {@link #compact()} uses its inverse.
+	 */
+	private static final double SCALE_STEP = 1.5;
+
+	/**
+	 * Moves the tables further apart, keeping the arrangement otherwise, and fixes their positions.
+	 * The subject table stays where it is.
+	 */
+	public void spread() {
+		scaleArrangement(SCALE_STEP, false);
+	}
+
+	/**
+	 * Scales the distances of all tables to the subject table and fixes their positions.
+	 *
+	 * @param factor the scale factor
+	 * @param separate whether to remove overlaps afterwards
+	 */
+	private void scaleArrangement(double factor, boolean separate) {
+		if (root == null || tableNodes.get(root) == null) {
+			return;
+		}
+		// outside of the synchronized block: locks the model editor first, then the visualization
+		modelEditor.captureLayoutBeforeArrangement();
+		synchronized (visualization) {
+			List<NodeItem> associationItems = new ArrayList<NodeItem>();
+			Map<Table, NodeItem> tableItems = collectTableItems(associationItems);
+			NodeItem rootItem = tableItems.get(root);
+			if (rootItem == null) {
+				return;
+			}
+			List<NodeItem> items = new ArrayList<NodeItem>(tableItems.values());
+			Map<VisualItem, Point2D> targets = new HashMap<VisualItem, Point2D>();
+			for (NodeItem item: items) {
+				targets.put(item, new Point2D.Double(
+						rootItem.getX() + (item.getX() - rootItem.getX()) * factor,
+						rootItem.getY() + (item.getY() - rootItem.getY()) * factor));
+			}
+			if (separate) {
+				pushApart(items, targets, rootItem);
+			}
+			arrangeTo(targets, tableItems, associationItems);
+		}
+	}
+
+	/**
+	 * Pushes overlapping tables apart, along the axis with the smaller overlap.
+	 *
+	 * @param items the table nodes
+	 * @param targets the position per table node, to be adjusted
+	 * @param fixed the node that doesn't move (the subject table), or <code>null</code>
+	 */
+	private static void pushApart(List<NodeItem> items, Map<VisualItem, Point2D> targets, NodeItem fixed) {
+		// the boxes at the target positions, enlarged by the gap
+		final double gap = 10;
+		int n = items.size();
+		Rectangle2D[] boxes = new Rectangle2D[n];
+		for (int i = 0; i < n; ++i) {
+			NodeItem item = items.get(i);
+			Rectangle2D bounds = item.getBounds();
+			Point2D target = targets.get(item);
+			double dx = target.getX() - item.getX();
+			double dy = target.getY() - item.getY();
+			boxes[i] = new Rectangle2D.Double(bounds.getX() + dx - gap / 2, bounds.getY() + dy - gap / 2, bounds.getWidth() + gap, bounds.getHeight() + gap);
+		}
+		final int maxRounds = 100;
+		boolean overlapping = true;
+		for (int round = 0; round < maxRounds && overlapping; ++round) {
+			overlapping = false;
+			for (int i = 0; i < n; ++i) {
+				for (int j = i + 1; j < n; ++j) {
+					Rectangle2D a = boxes[i];
+					Rectangle2D b = boxes[j];
+					double overlapX = Math.min(a.getMaxX(), b.getMaxX()) - Math.max(a.getMinX(), b.getMinX());
+					double overlapY = Math.min(a.getMaxY(), b.getMaxY()) - Math.max(a.getMinY(), b.getMinY());
+					if (overlapX <= 0 || overlapY <= 0) {
+						continue;
+					}
+					overlapping = true;
+					// the subject table doesn't move, the other one takes the full distance
+					double shareA = items.get(i) == fixed? 0 : items.get(j) == fixed? 1 : 0.5;
+					double shareB = 1 - shareA;
+					// pushed apart along the axis with the smaller overlap, j away from i
+					if (overlapX < overlapY) {
+						double dir = b.getCenterX() >= a.getCenterX()? 1 : -1;
+						move(a, -dir * overlapX * shareA, 0);
+						move(b, dir * overlapX * shareB, 0);
+					} else {
+						double dir = b.getCenterY() >= a.getCenterY()? 1 : -1;
+						move(a, 0, -dir * overlapY * shareA);
+						move(b, 0, dir * overlapY * shareB);
 					}
 				}
 			}
-
-			Map<VisualItem, Point2D> targets = new HashMap<VisualItem, Point2D>();
-			for (int i = 0; i < n; ++i) {
-				NodeItem item = items.get(i);
-				Rectangle2D bounds = item.getBounds();
-				double dx = boxes[i].getX() + gap / 2 - bounds.getX();
-				double dy = boxes[i].getY() + gap / 2 - bounds.getY();
-				targets.put(item, new Point2D.Double(item.getX() + dx, item.getY() + dy));
-			}
-			arrangeTo(targets, tableItems, associationItems);
+		}
+		for (int i = 0; i < n; ++i) {
+			NodeItem item = items.get(i);
+			Rectangle2D bounds = item.getBounds();
+			double dx = boxes[i].getX() + gap / 2 - bounds.getX();
+			double dy = boxes[i].getY() + gap / 2 - bounds.getY();
+			targets.put(item, new Point2D.Double(item.getX() + dx, item.getY() + dy));
 		}
 	}
 
@@ -1846,7 +1915,9 @@ public class GraphicalDataModelView extends JPanel {
 
 	/**
 	 * Moves the tables to their new positions, animated, and fixes them there. Association nodes are placed
-	 * between their tables and released to the force-directed layout afterwards.
+	 * between their tables and released to the force-directed layout afterwards. The nodes of several
+	 * associations between the same tables are fanned out, so that they don't lie on top of each other
+	 * and their curves are visible right away, not only once the force-directed layout has pushed them apart.
 	 * Must be called while holding the visualization lock.
 	 *
 	 * @param targets the new position per table node
@@ -1858,17 +1929,40 @@ public class GraphicalDataModelView extends JPanel {
 		for (VisualItem item: targets.keySet()) {
 			fixedAfterwards.put(item, true);
 		}
+		// the association nodes per pair of tables (one table for a reflexive association)
+		Map<Set<Table>, List<NodeItem>> groups = new HashMap<Set<Table>, List<NodeItem>>();
 		for (NodeItem item: associationItems) {
 			Association association = (Association) item.get("association");
-			NodeItem s = tableItems.get(association.source);
-			NodeItem d = tableItems.get(association.destination);
-			if (s != null && d != null) {
-				Point2D ps = target(targets, s);
-				Point2D pd = target(targets, d);
-				if (s == d) {
-					targets.put(item, new Point2D.Double(ps.getX(), ps.getY() - s.getBounds().getHeight() / 2 - REFLEXIVE_NODE_MARGIN));
+			if (tableItems.get(association.source) != null && tableItems.get(association.destination) != null) {
+				Set<Table> pair = new HashSet<Table>();
+				pair.add(association.source);
+				pair.add(association.destination);
+				groups.computeIfAbsent(pair, p -> new ArrayList<NodeItem>()).add(item);
+			}
+		}
+		for (List<NodeItem> group: groups.values()) {
+			// stable order, so that repeated arrangements give the same result
+			group.sort(Comparator.comparing((NodeItem i) -> ((Association) i.get("association")).getName()));
+			int k = group.size();
+			for (int i = 0; i < k; ++i) {
+				NodeItem item = group.get(i);
+				Association association = (Association) item.get("association");
+				double offset = (i - (k - 1) / 2.0) * FAN_SPACING;
+				if (association.source == association.destination) {
+					NodeItem t = tableItems.get(association.source);
+					Point2D pt = target(targets, t);
+					targets.put(item, new Point2D.Double(pt.getX() + offset, pt.getY() - t.getBounds().getHeight() / 2 - REFLEXIVE_NODE_MARGIN));
 				} else {
-					targets.put(item, new Point2D.Double((ps.getX() + pd.getX()) / 2, (ps.getY() + pd.getY()) / 2));
+					// the same side for all associations of the pair, no matter which table is their source
+					boolean sourceFirst = association.source.compareTo(association.destination) < 0;
+					Point2D p1 = target(targets, tableItems.get(sourceFirst? association.source : association.destination));
+					Point2D p2 = target(targets, tableItems.get(sourceFirst? association.destination : association.source));
+					double dx = p2.getX() - p1.getX();
+					double dy = p2.getY() - p1.getY();
+					double len = Math.hypot(dx, dy);
+					double nx = len > 0? -dy / len : 0;
+					double ny = len > 0? dx / len : 1;
+					targets.put(item, new Point2D.Double((p1.getX() + p2.getX()) / 2 + nx * offset, (p1.getY() + p2.getY()) / 2 + ny * offset));
 				}
 				// released to the force-directed layout again
 				fixedAfterwards.put(item, false);
@@ -1876,6 +1970,11 @@ public class GraphicalDataModelView extends JPanel {
 		}
 		animateArrangement(targets, fixedAfterwards, true);
 	}
+
+	/**
+	 * Distance between the nodes of several associations between the same tables, see {@link #arrangeTo}.
+	 */
+	private static final double FAN_SPACING = 40;
 
 	/**
 	 * Moves the tables back to the given positions, animated. Only possible if the same tables are
@@ -1938,6 +2037,7 @@ public class GraphicalDataModelView extends JPanel {
 			item.setFixed(true);
 		}
 		final Set<VisualItem> items = new HashSet<VisualItem>(targets.keySet());
+		final int arrangement = ++arrangementCount;
 		LocationAnimator animator = new LocationAnimator(graph);
 		animator.setFilterPredicate(new AbstractPredicate() {
 			@Override
@@ -1954,7 +2054,10 @@ public class GraphicalDataModelView extends JPanel {
 			public void activityFinished(Activity a) {
 				release();
 				if (zoomToFitAfterwards) {
-					SwingUtilities.invokeLater(() -> zoomToFit());
+					SwingUtilities.invokeLater(() -> {
+						zoomToFit();
+						scheduleFollowUpZoom(arrangement);
+					});
 				}
 			}
 			@Override
@@ -1983,6 +2086,46 @@ public class GraphicalDataModelView extends JPanel {
 		visualization.cancel(ARRANGE_ACTION);
 		visualization.putAction(ARRANGE_ACTION, transition);
 		visualization.run(ARRANGE_ACTION);
+	}
+
+	/**
+	 * Counts the arrangements, so that a follow-up zoom can tell whether it has been superseded.
+	 */
+	private int arrangementCount = 0;
+
+	/**
+	 * Time the zoom to fit after an arrangement takes, see {@link #zoomToFitControl}.
+	 */
+	private static final int ZOOM_DURATION = 800;
+
+	/**
+	 * Zooms to fit once more right after the zoom to fit that follows an arrangement: meanwhile the
+	 * force-directed layout has moved the released association nodes, and the curves of several
+	 * associations between the same tables may reach beyond the view. Only zooms if something is outside
+	 * the view, and not if the arrangement has been superseded.
+	 *
+	 * @param arrangement the arrangement, see {@link #arrangementCount}
+	 */
+	private void scheduleFollowUpZoom(final int arrangement) {
+		Timer afterZoom = new Timer(ZOOM_DURATION + 50, e -> {
+			if (arrangement == arrangementCount && !contentFitsView()) {
+				zoomToFit();
+			}
+		});
+		afterZoom.setRepeats(false);
+		afterZoom.start();
+	}
+
+	/**
+	 * @return <code>true</code> if all items are inside the visible area of the display
+	 */
+	private boolean contentFitsView() {
+		synchronized (visualization) {
+			Rectangle2D bounds = visualization.getBounds(Visualization.ALL_ITEMS);
+			Rectangle2D view = display.getInverseTransform().createTransformedShape(
+					new Rectangle2D.Double(0, 0, display.getWidth(), display.getHeight())).getBounds2D();
+			return view.contains(bounds);
+		}
 	}
 
 	/**

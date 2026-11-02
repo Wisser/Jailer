@@ -19,6 +19,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -64,6 +65,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -469,10 +471,13 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 		UIUtil.setLeadingComponent(subjectTable, sb);
 		
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
         focusPanel.add(sb = StringSearchPanel.createSearchButton(extractionModelFrame, rootTable, "Focus on Table", null), gridBagConstraints);
         UIUtil.setLeadingComponent(rootTable, sb);
+        if (rootTable.getToolTipText() == null) {
+        	rootTable.setToolTipText(jLabel9.getToolTipText());
+        }
         resetFocus.setIcon(UIUtil.scaleIcon(resetFocus, resetIcon));
         UIUtil.setTrailingComponent(rootTable, resetFocus);
         rootTable.setPreferredSize(new Dimension(rootTable.getPreferredSize().width + 40, rootTable.getPreferredSize().height));
@@ -1150,8 +1155,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 			}
 		});
 
-		leftButton.setIcon(UIUtil.scaleIcon(leftIcon, (48 * 48) / 64, (48 * 48) / 64));
-		leftButton.setPressedIcon(UIUtil.scaleIcon(leftIconP, (48 * 48) / 64, (48 * 48) / 64));
+		// same size as the icon of the "Layout" tool panel header
+		leftButton.setIcon(UIUtil.scaleIcon(new JLabel(""), leftIcon));
+		leftButton.setPressedIcon(UIUtil.scaleIcon(new JLabel(""), leftIconP));
 
 		leftButton.addActionListener(new ActionListener() {
 			@Override
@@ -1169,63 +1175,145 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 	private static final String LAYOUT_TOOL_PANEL_COLLAPSED = "layoutToolPanelCollapsed";
 
 	/**
-	 * Adds the collapsible panel offering the layout actions below the "back" button.
+	 * Resets the graphical view, all tables are arranged anew. Can be undone with "Back".
+	 */
+	public void resetLayout() {
+		captureLayout();
+		try {
+			refresh(false, true, false, false);
+		} finally {
+			checkLayoutStack();
+		}
+	}
+
+	/**
+	 * Adds the collapsible panel offering the layout actions. Its "Layout" header is the first
+	 * element of the row containing the "back" button and the "Focus on" selection, the actions are shown below that row.
 	 */
 	private void initLayoutToolPanel() {
+		// matching chevrons: "v" opens the tools, "^" closes them
+		final ImageIcon collapsedIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/next.png"));
+		final ImageIcon expandedIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/prev.png"));
+		final JButton header = createLayoutToolButton(null);
+		header.setText("Layout");
+		header.setToolTipText("Show or hide the layout tools.");
+
 		final JPanel content = new JPanel();
 		content.setOpaque(false);
 		content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
 		content.setAlignmentX(Component.LEFT_ALIGNMENT);
-		for (Action action: LayoutActions.create(() -> graphView)) {
-			content.add(createLayoutToolButton(action));
+		List<Action> actions = new ArrayList<Action>(LayoutActions.create(() -> graphView));
+		// same as "View" -> "Reset"
+		Action reset = new AbstractAction("Reset", UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/reset_64.png"))) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				resetLayout();
+			}
+		};
+		reset.putValue(Action.SHORT_DESCRIPTION, "Reset the graphical view (re-layout all tables).");
+		actions.add(reset);
+		boolean previousIsArrangement = false;
+		for (Action action: actions) {
+			boolean isArrangement = Boolean.TRUE.equals(action.getValue(LayoutActions.ARRANGEMENT));
+			// separators after the last "Arrange ..." action and before "Reset"
+			if ((previousIsArrangement && !isArrangement) || action == reset) {
+				content.add(createLayoutToolSeparator());
+			}
+			previousIsArrangement = isArrangement;
+			JButton button = createLayoutToolButton(action);
+			button.setMargin(new Insets(1, 4, 1, 6));
+			button.setIconTextGap(button.getIconTextGap() + 4);
+			content.add(button);
 		}
 
-		final ImageIcon collapsedIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/next.png"));
-		final ImageIcon expandedIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/dropdown.png"));
-		final JButton header = createLayoutToolButton(null);
-		header.setText("Layout");
-		header.setToolTipText("Show or hide the layout tools.");
+		// the open menu looks like a tab (the header) on top of a box (the actions)
+		final LayoutToolBox headerBox = new LayoutToolBox(false, null);
+		headerBox.add(Box.createVerticalGlue());
+		headerBox.add(header);
+		headerBox.add(Box.createVerticalGlue());
+		LayoutToolBox contentBox = new LayoutToolBox(true, headerBox);
+		contentBox.add(content);
+
 		boolean collapsed = !Boolean.FALSE.equals(UISettings.restore(LAYOUT_TOOL_PANEL_COLLAPSED));
 		content.setVisible(!collapsed);
+		headerBox.outlined = !collapsed;
 		header.setIcon(collapsed? collapsedIcon : expandedIcon);
 		header.addActionListener(e -> {
 			boolean collapse = content.isVisible();
 			content.setVisible(!collapse);
+			headerBox.outlined = !collapse;
 			header.setIcon(collapse? collapsedIcon : expandedIcon);
 			UISettings.store(LAYOUT_TOOL_PANEL_COLLAPSED, collapse);
 			focusPanel.revalidate();
 			layeredPane.repaint();
 		});
 
-		// translucent background, painted here because a non-opaque panel doesn't paint it
-		JPanel panel = new JPanel() {
-			@Override
-			protected void paintComponent(Graphics g) {
-				g.setColor(getBackground());
-				g.fillRect(0, 0, getWidth(), getHeight());
-				super.paintComponent(g);
-			}
-		};
-		panel.setOpaque(false);
-		panel.setBackground(Colors.Color_255_255_255_200);
-		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-		panel.add(header);
-		panel.add(content);
-
+		// header: first element of the row with the "back" button and the "Focus on" selection
 		GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 3;
-		// spans the whole row, so that its width doesn't widen the columns above
-		gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
-		gridBagConstraints.anchor = GridBagConstraints.WEST;
-		gridBagConstraints.insets = new Insets(2, 4, 0, 0);
-		focusPanel.add(panel, gridBagConstraints);
+		gridBagConstraints.gridy = 1;
+		// fills the row height, so that the tab touches the box below
+		gridBagConstraints.fill = GridBagConstraints.VERTICAL;
+		gridBagConstraints.insets = new Insets(0, 4, 0, 0);
+		focusPanel.add(headerBox, gridBagConstraints);
 
-		// keeps the height of the "back" button's row, so that the panel doesn't move when the button is shown or hidden
+		// actions: below that row
 		gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.gridx = 0;
 		gridBagConstraints.gridy = 2;
-		focusPanel.add(Box.createVerticalStrut(leftButton.getPreferredSize().height), gridBagConstraints);
+		// spans the whole row, so that its width doesn't widen the columns above
+		gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+		gridBagConstraints.anchor = GridBagConstraints.WEST;
+		gridBagConstraints.insets = new Insets(0, 4, 0, 0);
+		focusPanel.add(contentBox, gridBagConstraints);
+	}
+
+	/**
+	 * Part of the layout tool panel: translucent background and, while the menu is open, an outline
+	 * that joins the header (tab) and the actions (box) into one shape.
+	 */
+	private static class LayoutToolBox extends JPanel {
+		private final boolean isBox;
+		private final JComponent tab;
+		boolean outlined = true;
+
+		/**
+		 * @param isBox <code>true</code> for the box with the actions, <code>false</code> for the tab with the header
+		 * @param tab the tab above the box, or <code>null</code>
+		 */
+		LayoutToolBox(boolean isBox, JComponent tab) {
+			this.isBox = isBox;
+			this.tab = tab;
+			setOpaque(false);
+			setBackground(Colors.Color_255_255_255_200);
+			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+		}
+
+		@Override
+		protected void paintComponent(Graphics g) {
+			// translucent background, painted here because a non-opaque panel doesn't paint it
+			g.setColor(getBackground());
+			g.fillRect(0, 0, getWidth(), getHeight());
+			super.paintComponent(g);
+			if (outlined && getWidth() > 0 && getHeight() > 0) {
+				Color line = UIManager.getColor("Separator.foreground");
+				g.setColor(line != null? line : Color.GRAY);
+				int w = getWidth() - 1;
+				int h = getHeight() - 1;
+				g.drawLine(0, 0, 0, h);
+				g.drawLine(w, 0, w, h);
+				if (isBox) {
+					// top edge only to the right of the tab, so that the tab opens into the box
+					int tabWidth = tab != null? tab.getWidth() - 1 : 0;
+					if (tabWidth < w) {
+						g.drawLine(Math.max(0, tabWidth), 0, w, 0);
+					}
+					g.drawLine(0, h, w, h);
+				} else {
+					g.drawLine(0, 0, w, 0);
+				}
+			}
+		}
 	}
 
 	/**
@@ -1233,6 +1321,27 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 	 *
 	 * @param action the action, or <code>null</code>
 	 */
+	/**
+	 * Creates a separator between groups of the layout tool panel's actions.
+	 */
+	private static JComponent createLayoutToolSeparator() {
+		JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL) {
+			@Override
+			public Dimension getMaximumSize() {
+				// as wide as the panel, but not stretched vertically
+				return new Dimension(Integer.MAX_VALUE, getPreferredSize().height);
+			}
+		};
+		separator.setAlignmentX(Component.LEFT_ALIGNMENT);
+		JPanel panel = new JPanel(new BorderLayout());
+		panel.setOpaque(false);
+		panel.setBorder(BorderFactory.createEmptyBorder(3, 4, 3, 4));
+		panel.add(separator, BorderLayout.CENTER);
+		panel.setAlignmentX(Component.LEFT_ALIGNMENT);
+		panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, panel.getPreferredSize().height));
+		return panel;
+	}
+
 	private static JButton createLayoutToolButton(Action action) {
 		final JButton button = new JButton(action) {
 			@Override
@@ -1780,12 +1889,14 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
         focusPanel.setOpaque(false);
         focusPanel.setLayout(new java.awt.GridBagLayout());
 
-        jLabel9.setText("   Focus on ");
+        jLabel9.setText("Focus on ");
+        jLabel9.setToolTipText("Show the graph starting from this table instead of the subject table. Reset returns to the subject.");
         focusLabelPanel.add(jLabel9);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 11, 0, 0);
         focusPanel.add(focusLabelPanel, gridBagConstraints);
 
         rootTable.setMaximumRowCount(18);
@@ -1796,7 +1907,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 1;
         focusPanel.add(rootTable, gridBagConstraints);
 
@@ -1807,21 +1918,21 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = 1;
         focusPanel.add(resetFocus, gridBagConstraints);
 
-        leftButton.setToolTipText("back");
+        leftButton.setToolTipText("Back: restore the previous focus table and arrangement of the tables.");
         leftButton.setBorderPainted(false);
         leftButton.setContentAreaFilled(false);
         leftButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        leftButton.setIconTextGap(0);
+        leftButton.setText("Back");
+        leftButton.setIconTextGap(4);
         leftButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         focusPanel.add(leftButton, gridBagConstraints);
 
         activateDesictionPendingButton.setBackground(/* Renaming also in *.form! */ Colors.Color_255_153_152);
@@ -4326,7 +4437,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 	}
 
 	private void updateLeftButton() {
-		leftButton.setVisible(!navigationStack.isEmpty());
+		boolean canGoBack = !navigationStack.isEmpty();
+		leftButton.setEnabled(canGoBack);
+		leftButton.setToolTipText(canGoBack
+				? "Back: restore the previous focus table and arrangement of the tables."
+				: "Back: no previous view yet.");
 	}
 
 	/**
