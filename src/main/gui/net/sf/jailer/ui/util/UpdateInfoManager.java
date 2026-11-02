@@ -26,6 +26,7 @@ import net.sf.jailer.ui.DataModelManagerDialog;
 import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.UIUtil.PLAF;
+import net.sf.jailer.util.LogUtil;
 
 /**
  * Checks for available updates and displays a notification to the user.
@@ -33,9 +34,7 @@ import net.sf.jailer.ui.UIUtil.PLAF;
 public class UpdateInfoManager {
 
 	private static final String[] versionURL = new String[] {
-			"https://jailer.sourceforge.net/currentVersion.php",
-			"https://jailer.sourceforge.io/currentVersion.php",
-			"http://jailer.sourceforge.net/currentVersion.php",
+			"https://jailer.4lima.de/currentVersion.php"
 	};
 	private static final String downloadURL = "https://sourceforge.net/projects/jailer/files/";
 	private static final long CHECK_INTERVALL = 1000L * 60 * 60 * 46;
@@ -116,7 +115,7 @@ public class UpdateInfoManager {
 					        	break;
 					        }
 						} catch (Throwable t) {
-							// ignore
+							LogUtil.warn(t);
 						}
 					}
 					

@@ -1344,9 +1344,7 @@ public class UIUtil {
 						++i;
 					} while (url.length() > MAX_CL && maxEIssueLength > 100);
 					for (String res: new String[] {
-							"http://jailer.sourceforge.net/issueReport.php",
-							"https://jailer.sourceforge.net/issueReport.php",
-							"https://jailer.sourceforge.io/issueReport.php"
+							"http://jailer.4lima.de/issueReport.php"
 					}) {
 						try {
 							String result = HttpUtil.get(res + url);
