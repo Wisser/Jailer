@@ -56,7 +56,9 @@ public class Mirror {
                           (ausgenommen: Basis/Garnishment/docs wird immer 1:1 gespiegelt)
               --replace   Text in A und B, in allen Textdateien ersetzt, z. B. --replace net/sf/jailer=net/abit/gtool
                           (woertlich, Inhalt der Textdateien und Dateinamen, nicht Ordnernamen;
-                           hoechstens zweimal, A->B in Reihenfolge, B->A umgekehrt; ausgenommen wie bei --map)
+                           hoechstens zweimal, A->B in Reihenfolge, B->A umgekehrt; ausgenommen wie bei --map;
+                           .jar-Dateien, deren Name einen der Texte enthaelt und deren Gegenstueck
+                           ebenfalls .jar ist, werden nicht gespiegelt)
               --remap     Abbildung bewusst aendern (sonst Abbruch, wenn sie vom Abgleichstand abweicht)
               --dry-run   nur anzeigen, was passieren wuerde (keine Datei- und keine State-Aenderung)
               --verbose   jede Aktion einzeln ausgeben
@@ -696,7 +698,7 @@ public class Mirror {
         return Pattern.compile(sb.toString(), Pattern.CASE_INSENSITIVE);
     }
 
-    boolean isExcluded(String rel, String name, boolean isDir) {
+    boolean isExcluded(Side side, String rel, String name, boolean isDir) {
         if (isDir && DEFAULT_EXCLUDED_DIRS.contains(name.toLowerCase(Locale.ROOT)) && !(name.equals("api") && !rel.contains("docs"))) {
             return true;
         }
@@ -704,6 +706,9 @@ public class Mirror {
             return true;
         }
         if (!isDir && isExcludedFile(rel)) {
+            return true;
+        }
+        if (!isDir && isReplacedJar(side, name)) {
             return true;
         }
         for (IgnoreRule rule : ignoreRules) {
@@ -724,6 +729,30 @@ public class Mirror {
                 || EXCLUDE_FILES.matcher(relToB(rel)).matches();
     }
 
+    /**
+     * .jar, deren Gegenstueck auf der anderen Seite ebenfalls .jar ist und deren Name einen --replace-Text
+     * (A oder B) enthaelt: Build-Ergebnis jeder Seite, nie gespiegelt.
+     */
+    boolean isReplacedJar(Side side, String name) {
+        if (replace.isIdentity() || !isJar(name)) {
+            return false;
+        }
+        String other = side == Side.A ? replace.nameToB(name) : replace.nameToA(name);
+        if (!isJar(other)) {
+            return false;
+        }
+        for (Replacement r : replace.list) {
+            if (name.contains(r.a) || name.contains(r.b)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static boolean isJar(String name) {
+        return name.toLowerCase(Locale.ROOT).endsWith(".jar");
+    }
+
     // ---------------------------------------------------------------- Scan
 
     Map<String, FileInfo> scan(Side side) throws IOException {
@@ -738,7 +767,7 @@ public class Mirror {
                 if (dir.equals(root)) {
                     return FileVisitResult.CONTINUE;
                 }
-                return isExcluded(rel(root, dir), dir.getFileName().toString(), true)
+                return isExcluded(side, rel(root, dir), dir.getFileName().toString(), true)
                         ? FileVisitResult.SKIP_SUBTREE
                         : FileVisitResult.CONTINUE;
             }
@@ -747,7 +776,7 @@ public class Mirror {
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
                 if (attrs.isRegularFile()) {
                     String rel = rel(root, file);
-                    if (!isExcluded(rel, file.getFileName().toString(), false)) {
+                    if (!isExcluded(side, rel, file.getFileName().toString(), false)) {
                         String key = key(side, rel);
                         if (key != null && result.put(key, new FileInfo(attrs.size(),
                                 attrs.lastModifiedTime().toMillis())) != null) {

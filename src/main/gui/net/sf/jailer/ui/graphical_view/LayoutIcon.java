@@ -47,8 +47,6 @@ public class LayoutIcon implements Icon {
 		TREE_TOP_DOWN,
 		/** rings around a center */
 		RADIAL,
-		/** circle */
-		CIRCLE,
 		/** columns, parents left */
 		LAYERS,
 		/** overlapping tables pushed apart */
@@ -138,18 +136,6 @@ public class LayoutIcon implements Icon {
 				}
 				smallBox(0.5, 0.5);
 				for (double[] p: outer) {
-					smallBox(p[0], p[1]);
-				}
-				break;
-			}
-			case CIRCLE: {
-				double[][] points = onCircle(6, 0.35, -Math.PI / 2);
-				for (int i = 0; i < points.length; ++i) {
-					double[] a = points[i];
-					double[] b = points[(i + 1) % points.length];
-					edge(a[0], a[1], b[0], b[1]);
-				}
-				for (double[] p: points) {
 					smallBox(p[0], p[1]);
 				}
 				break;

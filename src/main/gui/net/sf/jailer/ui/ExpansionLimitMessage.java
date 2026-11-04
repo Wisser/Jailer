@@ -33,8 +33,21 @@ public abstract class ExpansionLimitMessage extends javax.swing.JPanel {
         if (limit >= numAllTables) {
         	limit = numAllTables;
         }
+        jLabel2.setText(jLabel2.getText().replace("?", "" + numAllTables));
+        jLabel2.setToolTipText("To keep the view clear, expansion stops at a limit.");
         showMoreButton.setText(showMoreButton.getText().replace("?", "" + limit));
+        showMoreButton.setToolTipText("Show the next " + limit + " tables.");
         showAllButton.setText(showAllButton.getText().replace("?", "" + numAllTables));
+        showAllButton.setToolTipText("Show all hidden tables. With many tables, this can make the view hard to read.");
+    }
+
+    /**
+     * Whether the message is no longer relevant, because all the tables it offers to show are visible meanwhile.
+     *
+     * @return <code>true</code> if the message can be removed
+     */
+    public boolean isObsolete() {
+        return false;
     }
 
     /**
@@ -62,7 +75,7 @@ public abstract class ExpansionLimitMessage extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         add(jLabel1, gridBagConstraints);
 
-        jLabel2.setText("Expansion limit reached");
+        jLabel2.setText("Not all tables are shown: ? hidden.");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -70,7 +83,7 @@ public abstract class ExpansionLimitMessage extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(jLabel2, gridBagConstraints);
 
-        showMoreButton.setText("Show ? tables more");
+        showMoreButton.setText("Show ? more");
         showMoreButton.setOpaque(false);
         showMoreButton.addActionListener(new java.awt.event.ActionListener() {
             @Override
@@ -86,7 +99,7 @@ public abstract class ExpansionLimitMessage extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 0);
         add(showMoreButton, gridBagConstraints);
 
-        showAllButton.setText("Show all ? tables");
+        showAllButton.setText("Show all ? hidden");
         showAllButton.setOpaque(false);
         showAllButton.addActionListener(new java.awt.event.ActionListener() {
             @Override

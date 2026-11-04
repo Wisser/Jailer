@@ -32,7 +32,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel2">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Expansion limit reached"/>
+        <Property name="text" type="java.lang.String" value="Not all tables are shown: ? hidden."/>
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -42,7 +42,7 @@
     </Component>
     <Component class="javax.swing.JButton" name="showMoreButton">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Show ? tables more"/>
+        <Property name="text" type="java.lang.String" value="Show ? more"/>
         <Property name="opaque" type="boolean" value="false"/>
       </Properties>
       <Events>
@@ -56,7 +56,7 @@
     </Component>
     <Component class="javax.swing.JButton" name="showAllButton">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Show all ? tables"/>
+        <Property name="text" type="java.lang.String" value="Show all ? hidden"/>
         <Property name="opaque" type="boolean" value="false"/>
       </Properties>
       <Events>

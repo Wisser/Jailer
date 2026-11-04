@@ -1612,7 +1612,7 @@ public class GraphicalDataModelView extends JPanel {
 					targets.put(e.getValue(), new Point2D.Double(auxItem.getX(), auxItem.getY()));
 				}
 			}
-			arrangeTo(targets, tableItems, associationItems);
+			arrangeTo(targets, tableItems, associationItems, true);
 		}
 	}
 
@@ -1666,86 +1666,7 @@ public class GraphicalDataModelView extends JPanel {
 			for (Map.Entry<Table, Point2D> e: positions.entrySet()) {
 				targets.put(tableItems.get(e.getKey()), new Point2D.Double(e.getValue().getX() + dx, e.getValue().getY() + dy));
 			}
-			arrangeTo(targets, tableItems, associationItems);
-		}
-	}
-
-	/**
-	 * Arranges the visible tables in a circle and fixes their positions. The order is the breadth-first order
-	 * starting at the subject table, so that associated tables are close to each other.
-	 * The subject table stays where it is. Association nodes are placed between their tables and remain movable.
-	 */
-	public void arrangeCircle() {
-		if (root == null || tableNodes.get(root) == null) {
-			return;
-		}
-		// outside of the synchronized block: locks the model editor first, then the visualization
-		modelEditor.captureLayoutBeforeArrangement();
-		synchronized (visualization) {
-			List<NodeItem> associationItems = new ArrayList<NodeItem>();
-			Map<Table, NodeItem> tableItems = collectTableItems(associationItems);
-			NodeItem rootItem = tableItems.get(root);
-			if (rootItem == null) {
-				return;
-			}
-			Map<Table, List<Table>> neighbors = new HashMap<Table, List<Table>>();
-			@SuppressWarnings("rawtypes")
-			Iterator edges = visualGraph.edges();
-			while (edges.hasNext()) {
-				Object association = ((EdgeItem) edges.next()).get("association");
-				if (association instanceof Association) {
-					Table s = ((Association) association).source;
-					Table d = ((Association) association).destination;
-					if (s != d && tableItems.containsKey(s) && tableItems.containsKey(d)) {
-						neighbors.computeIfAbsent(s, t -> new ArrayList<Table>()).add(d);
-						neighbors.computeIfAbsent(d, t -> new ArrayList<Table>()).add(s);
-					}
-				}
-			}
-
-			// breadth-first order, tables not reachable from the root at the end
-			List<Table> order = new ArrayList<Table>();
-			Set<Table> visited = new HashSet<Table>();
-			order.add(root);
-			visited.add(root);
-			for (int i = 0; i < order.size(); ++i) {
-				List<Table> next = neighbors.get(order.get(i));
-				if (next != null) {
-					Collections.sort(next);
-					for (Table t: next) {
-						if (visited.add(t)) {
-							order.add(t);
-						}
-					}
-				}
-			}
-			List<Table> unreachable = new ArrayList<Table>(tableItems.keySet());
-			unreachable.removeAll(visited);
-			Collections.sort(unreachable);
-			order.addAll(unreachable);
-
-			// each table gets an arc proportional to the diagonal of its box
-			final double gap = 20;
-			double[] arcs = new double[order.size()];
-			double circumference = 0;
-			for (int i = 0; i < arcs.length; ++i) {
-				Rectangle2D bounds = tableItems.get(order.get(i)).getBounds();
-				arcs[i] = Math.sqrt(bounds.getWidth() * bounds.getWidth() + bounds.getHeight() * bounds.getHeight()) + gap;
-				circumference += arcs[i];
-			}
-			double radius = Math.max(100, circumference / (2 * Math.PI));
-
-			// the root is at angle 0, the center is placed so that the root stays where it is
-			double centerX = rootItem.getX() - radius;
-			double centerY = rootItem.getY();
-			Map<VisualItem, Point2D> targets = new HashMap<VisualItem, Point2D>();
-			double arcPosition = 0;
-			for (int i = 0; i < arcs.length; ++i) {
-				double angle = 2 * Math.PI * (arcPosition + arcs[i] / 2 - arcs[0] / 2) / circumference;
-				targets.put(tableItems.get(order.get(i)), new Point2D.Double(centerX + radius * Math.cos(angle), centerY + radius * Math.sin(angle)));
-				arcPosition += arcs[i];
-			}
-			arrangeTo(targets, tableItems, associationItems);
+			arrangeTo(targets, tableItems, associationItems, true);
 		}
 	}
 
@@ -1753,6 +1674,7 @@ public class GraphicalDataModelView extends JPanel {
 	 * Pushes overlapping tables apart, keeping the arrangement otherwise, and fixes their positions.
 	 * Only overlaps between tables are removed, association nodes and edges are not taken into account.
 	 * The subject table stays where it is. Association nodes are placed between their tables and remain movable.
+	 * The zoom stays as it is.
 	 */
 	public void removeTableOverlaps() {
 		if (root == null || tableNodes.get(root) == null) {
@@ -1769,13 +1691,13 @@ public class GraphicalDataModelView extends JPanel {
 				targets.put(item, new Point2D.Double(item.getX(), item.getY()));
 			}
 			pushApart(items, targets, tableItems.get(root));
-			arrangeTo(targets, tableItems, associationItems);
+			arrangeTo(targets, tableItems, associationItems, false);
 		}
 	}
 
 	/**
 	 * Moves the tables closer together, keeping the arrangement otherwise, and fixes their positions.
-	 * The subject table stays where it is. Overlaps caused by this are removed.
+	 * The subject table stays where it is. Overlaps caused by this are removed. The zoom stays as it is.
 	 */
 	public void compact() {
 		scaleArrangement(1 / SCALE_STEP, true);
@@ -1788,7 +1710,7 @@ public class GraphicalDataModelView extends JPanel {
 
 	/**
 	 * Moves the tables further apart, keeping the arrangement otherwise, and fixes their positions.
-	 * The subject table stays where it is.
+	 * The subject table stays where it is. The zoom stays as it is.
 	 */
 	public void spread() {
 		scaleArrangement(SCALE_STEP, false);
@@ -1823,7 +1745,7 @@ public class GraphicalDataModelView extends JPanel {
 			if (separate) {
 				pushApart(items, targets, rootItem);
 			}
-			arrangeTo(targets, tableItems, associationItems);
+			arrangeTo(targets, tableItems, associationItems, false);
 		}
 	}
 
@@ -1923,8 +1845,10 @@ public class GraphicalDataModelView extends JPanel {
 	 * @param targets the new position per table node
 	 * @param tableItems the node per table
 	 * @param associationItems the association nodes
+	 * @param zoomToFitAfterwards <code>true</code> to zoom to fit once the transition is over (new arrangements),
+	 *            <code>false</code> to keep the zoom as it is (adjustments of the current arrangement)
 	 */
-	private void arrangeTo(Map<VisualItem, Point2D> targets, Map<Table, NodeItem> tableItems, List<NodeItem> associationItems) {
+	private void arrangeTo(Map<VisualItem, Point2D> targets, Map<Table, NodeItem> tableItems, List<NodeItem> associationItems, boolean zoomToFitAfterwards) {
 		Map<VisualItem, Boolean> fixedAfterwards = new HashMap<VisualItem, Boolean>();
 		for (VisualItem item: targets.keySet()) {
 			fixedAfterwards.put(item, true);
@@ -1968,7 +1892,7 @@ public class GraphicalDataModelView extends JPanel {
 				fixedAfterwards.put(item, false);
 			}
 		}
-		animateArrangement(targets, fixedAfterwards, true);
+		animateArrangement(targets, fixedAfterwards, zoomToFitAfterwards);
 	}
 
 	/**
@@ -2535,6 +2459,8 @@ public class GraphicalDataModelView extends JPanel {
 				}
 			}
 			checkForExpansion(theGraph, tablesToKeep, false);
+			// hidden tables may make the expansion limit message obsolete
+			scheduleMessageBoxCheck();
 		}
 	}
 
@@ -2610,6 +2536,13 @@ public class GraphicalDataModelView extends JPanel {
 							modelEditor.clearMessageBox();
 							expandTable(g, table, toRender, false, null);
 						}
+
+						@Override
+						public boolean isObsolete() {
+							synchronized (visualization) {
+								return !tableNodes.containsKey(table) || expandedTables.contains(table);
+							}
+						}
 					});
 				}
 			}
@@ -2643,10 +2576,12 @@ public class GraphicalDataModelView extends JPanel {
 	 * @param toCheck set of tables to check
 	 */
 	private void checkForExpansion(Graph g, java.util.Collection<Table> toCheck, boolean dontAddEdges) {
+		// visible tables that got a new edge to a checked table, see below
+		List<Table> touched = new ArrayList<Table>();
 		for (Table t: toCheck) {
 			if (!expandedTables.contains(t)) {
 				if (!dontAddEdges) {
-					addEdges(g, t, null, new ArrayList<Table>(), true, null);
+					addEdges(g, t, null, touched, true, null);
 				}
 				boolean isExpanded = true;
 				for (Association a: t.associations) {
@@ -2664,8 +2599,40 @@ public class GraphicalDataModelView extends JPanel {
 				}
 				if (isExpanded) {
 					expandedTables.add(t);
+					scheduleMessageBoxCheck();
 				}
 			}
+		}
+		// A table that was already visible may have just got its last missing edge. It has been checked
+		// before, when the table now checked wasn't visible yet, so it has to be checked again.
+		// Terminates, as addEdges only reports tables it has drawn a new edge to.
+		Set<Table> recheck = new HashSet<Table>();
+		for (Table t: touched) {
+			if (!toCheck.contains(t) && !expandedTables.contains(t) && tableNodes.containsKey(t)) {
+				recheck.add(t);
+			}
+		}
+		if (!recheck.isEmpty()) {
+			checkForExpansion(g, recheck, dontAddEdges);
+		}
+	}
+
+	/**
+	 * Whether a {@link #scheduleMessageBoxCheck() check of the message box} is already pending.
+	 */
+	private boolean messageBoxCheckPending = false;
+
+	/**
+	 * Lets the model editor check (later, on the event dispatch thread) whether the expansion limit message is
+	 * still relevant. Called whenever tables are expanded or hidden. Several calls in a row result in one check.
+	 */
+	private void scheduleMessageBoxCheck() {
+		if (!messageBoxCheckPending) {
+			messageBoxCheckPending = true;
+			UIUtil.invokeLater(() -> {
+				messageBoxCheckPending = false;
+				modelEditor.checkMessageBox();
+			});
 		}
 	}
 
@@ -2946,6 +2913,7 @@ public class GraphicalDataModelView extends JPanel {
 		try {
 			List<Table> toExpand = new LinkedList<Table>();
 			toExpand.addAll(tableNodes.keySet());
+			final Set<Table> initiallyVisibleTables = new HashSet<Table>(toExpand);
 			Set<Table> allowedTables = null;
 			int initialNumTabs = tableNodes.size();
 			int initialNumAllowedWOLimit = 0;
@@ -3030,6 +2998,18 @@ public class GraphicalDataModelView extends JPanel {
 								protected void showAll() {
 									modelEditor.clearMessageBox();
 									expandAll(expandOnlyVisibleTables, false);
+								}
+
+								@Override
+								public boolean isObsolete() {
+									synchronized (visualization) {
+										for (Table t: expandOnlyVisibleTables? initiallyVisibleTables : tableNodes.keySet()) {
+											if (tableNodes.containsKey(t) && !expandedTables.contains(t)) {
+												return false;
+											}
+										}
+										return true;
+									}
 								}
 							});
 						}

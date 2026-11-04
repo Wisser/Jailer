@@ -57,9 +57,6 @@ public class LayoutActions {
 		actions.add(create(view, "Arrange radially", Kind.RADIAL,
 				"Arrange the tables in rings around the subject table, one ring per level, and fix their positions.",
 				GraphicalDataModelView::arrangeRadial));
-		actions.add(create(view, "Arrange in a circle", Kind.CIRCLE,
-				"Arrange the tables in a circle, associated tables next to each other, and fix their positions.",
-				GraphicalDataModelView::arrangeCircle));
 		actions.add(create(view, "Arrange in layers", Kind.LAYERS,
 				"Arrange the tables in layers, parent tables left, child tables right, and fix their positions.",
 				GraphicalDataModelView::arrangeLayered));

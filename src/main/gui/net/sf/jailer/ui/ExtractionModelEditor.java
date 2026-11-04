@@ -1203,6 +1203,15 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 		content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
 		content.setAlignmentX(Component.LEFT_ALIGNMENT);
 		List<Action> actions = new ArrayList<Action>(LayoutActions.create(() -> graphView));
+		// same as "View" -> "Zoom to fit"
+		Action zoom = new AbstractAction("Zoom to fit", UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/maximizec.png"))) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				zoomToFit();
+			}
+		};
+		zoom.putValue(Action.SHORT_DESCRIPTION, "Scale the graphical view so that all tables are visible.");
+		actions.add(zoom);
 		// same as "View" -> "Reset"
 		Action reset = new AbstractAction("Reset", UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/reset_64.png"))) {
 			@Override
@@ -1215,8 +1224,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 		boolean previousIsArrangement = false;
 		for (Action action: actions) {
 			boolean isArrangement = Boolean.TRUE.equals(action.getValue(LayoutActions.ARRANGEMENT));
-			// separators after the last "Arrange ..." action and before "Reset"
-			if ((previousIsArrangement && !isArrangement) || action == reset) {
+			// separators after the last "Arrange ..." action and before "Zoom to fit" and "Reset"
+			if ((previousIsArrangement && !isArrangement) || action == zoom) {
 				content.add(createLayoutToolSeparator());
 			}
 			previousIsArrangement = isArrangement;
@@ -4471,6 +4480,17 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 		if (messageBox != null) {
 			messagePanel.remove(messageBox);
 			messageBox = null;
+		}
+	}
+
+	/**
+	 * Removes the expansion limit message once it is no longer relevant (all tables it offers to show are visible).
+	 */
+	public void checkMessageBox() {
+		if (messageBox instanceof ExpansionLimitMessage && ((ExpansionLimitMessage) messageBox).isObsolete()) {
+			clearMessageBox();
+			messagePanel.revalidate();
+			messagePanel.repaint();
 		}
 	}
 
