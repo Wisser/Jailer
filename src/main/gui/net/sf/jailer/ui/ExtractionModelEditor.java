@@ -28,6 +28,7 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -77,6 +78,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -1173,6 +1175,19 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 	}
 
 	private static final String LAYOUT_TOOL_PANEL_COLLAPSED = "layoutToolPanelCollapsed";
+	private static final String AUTO_ZOOM = "autoZoom";
+
+	/**
+	 * Whether the graphical view zooms to fit after each layout change made via the layout actions.
+	 */
+	private boolean autoZoom = !Boolean.FALSE.equals(UISettings.restore(AUTO_ZOOM));
+
+	/**
+	 * @return <code>true</code> if the graphical view zooms to fit after each layout change made via the layout actions
+	 */
+	public boolean isAutoZoom() {
+		return autoZoom;
+	}
 
 	/**
 	 * Resets the graphical view, all tables are arranged anew. Can be undone with "Back".
@@ -1234,6 +1249,17 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 			button.setIconTextGap(button.getIconTextGap() + 4);
 			content.add(button);
 		}
+		// last item, separated from the actions
+		content.add(createLayoutToolSeparator());
+		final JCheckBox autoZoomCheckBox = createLayoutToolCheckBox("Auto zoom", autoZoom);
+		autoZoomCheckBox.setToolTipText("Zoom to fit automatically after each layout change.");
+		autoZoomCheckBox.setMargin(new Insets(1, 4, 1, 6));
+		autoZoomCheckBox.setIconTextGap(autoZoomCheckBox.getIconTextGap() + 4);
+		autoZoomCheckBox.addActionListener(e -> {
+			autoZoom = autoZoomCheckBox.isSelected();
+			UISettings.store(AUTO_ZOOM, autoZoom);
+		});
+		content.add(autoZoomCheckBox);
 
 		// the open menu looks like a tab (the header) on top of a box (the actions)
 		final LayoutToolBox headerBox = new LayoutToolBox(false, null);
@@ -1242,6 +1268,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 		headerBox.add(Box.createVerticalGlue());
 		LayoutToolBox contentBox = new LayoutToolBox(true, headerBox);
 		contentBox.add(content);
+		layoutToolContent = content;
+		layoutToolContentBox = contentBox;
 
 		boolean collapsed = !Boolean.FALSE.equals(UISettings.restore(LAYOUT_TOOL_PANEL_COLLAPSED));
 		content.setVisible(!collapsed);
@@ -1275,6 +1303,74 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 		gridBagConstraints.anchor = GridBagConstraints.WEST;
 		gridBagConstraints.insets = new Insets(0, 4, 0, 0);
 		focusPanel.add(contentBox, gridBagConstraints);
+	}
+
+	/**
+	 * The box with the actions of the layout tool panel, and its content (visible while the panel is open).
+	 */
+	private JComponent layoutToolContentBox;
+	private JComponent layoutToolContent;
+
+	/**
+	 * Minimum width and height of the free area, see {@link #getFreeGraphArea(Component, double, double)}.
+	 */
+	private static final int MIN_FREE_GRAPH_AREA_SIZE = 100;
+
+	/**
+	 * Gets the area of the graphical view that is not covered by the panel at the top left
+	 * (the row with "Layout", "Back" and "Focus on", and the layout tools while they are open).
+	 * Of the area below that panel and the area to the right of the open layout tools, the one into which
+	 * content of the given size fits at the larger scale is chosen.
+	 *
+	 * @param display the component showing the graph
+	 * @param contentWidth width of the content to fit in, or 0 to choose the larger area
+	 * @param contentHeight height of the content to fit in, or 0 to choose the larger area
+	 * @return the free area, in coordinates of <code>display</code>. The whole component if the panel doesn't cover it
+	 *         or if the free area would be too small.
+	 */
+	public Rectangle getFreeGraphArea(Component display, double contentWidth, double contentHeight) {
+		Rectangle all = new Rectangle(0, 0, display.getWidth(), display.getHeight());
+		if (!focusPanel.isShowing() || !display.isShowing()
+				|| SwingUtilities.getWindowAncestor(focusPanel) != SwingUtilities.getWindowAncestor(display)) {
+			return all;
+		}
+		Rectangle strip = null;
+		for (Component c: focusPanel.getComponents()) {
+			if (c.isVisible() && c != layoutToolContentBox) {
+				Rectangle r = SwingUtilities.convertRectangle(focusPanel, c.getBounds(), display);
+				strip = strip == null? r : strip.union(r);
+			}
+		}
+		Rectangle box = null;
+		if (layoutToolContentBox != null && layoutToolContentBox.isVisible() && layoutToolContent != null && layoutToolContent.isVisible()) {
+			box = SwingUtilities.convertRectangle(focusPanel, layoutToolContentBox.getBounds(), display);
+		}
+		int stripBottom = strip == null? 0 : Math.max(0, strip.y + strip.height);
+		int boxBottom = box == null? stripBottom : Math.max(stripBottom, box.y + box.height);
+
+		List<Rectangle> candidates = new ArrayList<Rectangle>();
+		// below the panel
+		candidates.add(new Rectangle(0, boxBottom, all.width, all.height - boxBottom));
+		if (box != null) {
+			// right of the open layout tools
+			int left = Math.max(0, box.x + box.width);
+			candidates.add(new Rectangle(left, stripBottom, all.width - left, all.height - stripBottom));
+		}
+		Rectangle best = null;
+		double bestValue = -1;
+		for (Rectangle c: candidates) {
+			if (c.width < MIN_FREE_GRAPH_AREA_SIZE || c.height < MIN_FREE_GRAPH_AREA_SIZE) {
+				continue;
+			}
+			double value = contentWidth > 0 && contentHeight > 0?
+					Math.min(c.width / contentWidth, c.height / contentHeight)
+					: (double) c.width * c.height;
+			if (value > bestValue) {
+				bestValue = value;
+				best = c;
+			}
+		}
+		return best != null? best : all;
 	}
 
 	/**
@@ -1377,6 +1473,40 @@ public class ExtractionModelEditor extends javax.swing.JPanel implements PlafAwa
 		button.setMargin(new Insets(1, 4, 1, 4));
 		button.setAlignmentX(Component.LEFT_ALIGNMENT);
 		return button;
+	}
+
+	/**
+	 * Creates a flat check box for the layout tool panel, looking like the buttons created by {@link #createLayoutToolButton(Action)}.
+	 *
+	 * @param text the label
+	 * @param selected the initial state
+	 */
+	private static JCheckBox createLayoutToolCheckBox(String text, boolean selected) {
+		final JCheckBox checkBox = new JCheckBox(text, selected) {
+			@Override
+			protected void paintComponent(Graphics g) {
+				if (getModel().isRollover()) {
+					g.setColor(UIManager.getColor("MenuItem.selectionBackground"));
+					g.fillRect(0, 0, getWidth(), getHeight());
+				}
+				super.paintComponent(g);
+			}
+			@Override
+			public Dimension getMaximumSize() {
+				// as wide as the panel, so that the highlight spans the whole row
+				return new Dimension(Integer.MAX_VALUE, getPreferredSize().height);
+			}
+		};
+		checkBox.setRolloverEnabled(true);
+		checkBox.getModel().addChangeListener(e -> checkBox.setForeground(
+				UIManager.getColor(checkBox.getModel().isRollover()? "MenuItem.selectionForeground" : "CheckBox.foreground")));
+		checkBox.setOpaque(false);
+		checkBox.setContentAreaFilled(false);
+		checkBox.setBorderPainted(false);
+		checkBox.setFocusPainted(false);
+		checkBox.setHorizontalAlignment(SwingConstants.LEFT);
+		checkBox.setAlignmentX(Component.LEFT_ALIGNMENT);
+		return checkBox;
 	}
 
 	public void onXAggregateCheckboxAction(Association association, AbstractButton checkBox) {

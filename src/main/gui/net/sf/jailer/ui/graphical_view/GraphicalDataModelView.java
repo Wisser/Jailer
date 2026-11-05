@@ -19,9 +19,15 @@ import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.geom.Point2D;
@@ -578,6 +584,7 @@ public class GraphicalDataModelView extends JPanel {
 		if (bounds != null) {
 			display.panToAbs(new Point2D.Double(bounds.getCenterX(), bounds.getCenterY()));
 		}
+		centerInFreeAreaWhenShown();
 
 		layout = new ForceDirectedLayout(graph, createForceSimulator(), false) {
 			@Override
@@ -1612,7 +1619,7 @@ public class GraphicalDataModelView extends JPanel {
 					targets.put(e.getValue(), new Point2D.Double(auxItem.getX(), auxItem.getY()));
 				}
 			}
-			arrangeTo(targets, tableItems, associationItems, true);
+			arrangeTo(targets, tableItems, associationItems);
 		}
 	}
 
@@ -1666,7 +1673,7 @@ public class GraphicalDataModelView extends JPanel {
 			for (Map.Entry<Table, Point2D> e: positions.entrySet()) {
 				targets.put(tableItems.get(e.getKey()), new Point2D.Double(e.getValue().getX() + dx, e.getValue().getY() + dy));
 			}
-			arrangeTo(targets, tableItems, associationItems, true);
+			arrangeTo(targets, tableItems, associationItems);
 		}
 	}
 
@@ -1674,7 +1681,7 @@ public class GraphicalDataModelView extends JPanel {
 	 * Pushes overlapping tables apart, keeping the arrangement otherwise, and fixes their positions.
 	 * Only overlaps between tables are removed, association nodes and edges are not taken into account.
 	 * The subject table stays where it is. Association nodes are placed between their tables and remain movable.
-	 * The zoom stays as it is.
+	 * Zooms to fit afterwards if auto zoom is on.
 	 */
 	public void removeTableOverlaps() {
 		if (root == null || tableNodes.get(root) == null) {
@@ -1691,13 +1698,13 @@ public class GraphicalDataModelView extends JPanel {
 				targets.put(item, new Point2D.Double(item.getX(), item.getY()));
 			}
 			pushApart(items, targets, tableItems.get(root));
-			arrangeTo(targets, tableItems, associationItems, false);
+			arrangeTo(targets, tableItems, associationItems);
 		}
 	}
 
 	/**
 	 * Moves the tables closer together, keeping the arrangement otherwise, and fixes their positions.
-	 * The subject table stays where it is. Overlaps caused by this are removed. The zoom stays as it is.
+	 * The subject table stays where it is. Overlaps caused by this are removed. Zooms to fit afterwards if auto zoom is on.
 	 */
 	public void compact() {
 		scaleArrangement(1 / SCALE_STEP, true);
@@ -1710,7 +1717,7 @@ public class GraphicalDataModelView extends JPanel {
 
 	/**
 	 * Moves the tables further apart, keeping the arrangement otherwise, and fixes their positions.
-	 * The subject table stays where it is. The zoom stays as it is.
+	 * The subject table stays where it is. Zooms to fit afterwards if auto zoom is on.
 	 */
 	public void spread() {
 		scaleArrangement(SCALE_STEP, false);
@@ -1745,7 +1752,7 @@ public class GraphicalDataModelView extends JPanel {
 			if (separate) {
 				pushApart(items, targets, rootItem);
 			}
-			arrangeTo(targets, tableItems, associationItems, false);
+			arrangeTo(targets, tableItems, associationItems);
 		}
 	}
 
@@ -1845,10 +1852,9 @@ public class GraphicalDataModelView extends JPanel {
 	 * @param targets the new position per table node
 	 * @param tableItems the node per table
 	 * @param associationItems the association nodes
-	 * @param zoomToFitAfterwards <code>true</code> to zoom to fit once the transition is over (new arrangements),
-	 *            <code>false</code> to keep the zoom as it is (adjustments of the current arrangement)
+	 * @see ExtractionModelEditor#isAutoZoom()
 	 */
-	private void arrangeTo(Map<VisualItem, Point2D> targets, Map<Table, NodeItem> tableItems, List<NodeItem> associationItems, boolean zoomToFitAfterwards) {
+	private void arrangeTo(Map<VisualItem, Point2D> targets, Map<Table, NodeItem> tableItems, List<NodeItem> associationItems) {
 		Map<VisualItem, Boolean> fixedAfterwards = new HashMap<VisualItem, Boolean>();
 		for (VisualItem item: targets.keySet()) {
 			fixedAfterwards.put(item, true);
@@ -1892,7 +1898,7 @@ public class GraphicalDataModelView extends JPanel {
 				fixedAfterwards.put(item, false);
 			}
 		}
-		animateArrangement(targets, fixedAfterwards, zoomToFitAfterwards);
+		animateArrangement(targets, fixedAfterwards, modelEditor.isAutoZoom());
 	}
 
 	/**
@@ -1924,7 +1930,8 @@ public class GraphicalDataModelView extends JPanel {
 					fixedAfterwards.put(item, pos[2] == 1.0);
 				}
 			}
-			animateArrangement(targets, fixedAfterwards, false);
+			// undoes a layout change, so it zooms to fit like the layout change itself
+			animateArrangement(targets, fixedAfterwards, modelEditor.isAutoZoom());
 		}
 		return true;
 	}
@@ -2041,13 +2048,62 @@ public class GraphicalDataModelView extends JPanel {
 	}
 
 	/**
-	 * @return <code>true</code> if all items are inside the visible area of the display
+	 * Once the display has its size, moves the center of the view into the center of the area that is not covered
+	 * by the panel at the top left, so that the initially visible tables aren't hidden under it. The zoom stays as it is.
+	 */
+	private void centerInFreeAreaWhenShown() {
+		// the display either gets its size while it is showing (resize) or is shown with its size already set (hierarchy)
+		final ComponentAdapter resizeListener = new ComponentAdapter() {
+			@Override
+			public void componentResized(ComponentEvent e) {
+				tryCenterInFreeArea(this, null);
+			}
+		};
+		final HierarchyListener showingListener = new HierarchyListener() {
+			@Override
+			public void hierarchyChanged(HierarchyEvent e) {
+				if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0) {
+					tryCenterInFreeArea(resizeListener, this);
+				}
+			}
+		};
+		display.addComponentListener(resizeListener);
+		display.addHierarchyListener(showingListener);
+		centerInFreeAreaShowingListener = showingListener;
+	}
+
+	/**
+	 * The hierarchy listener of {@link #centerInFreeAreaWhenShown()}, removed together with the resize listener.
+	 */
+	private HierarchyListener centerInFreeAreaShowingListener;
+
+	private void tryCenterInFreeArea(ComponentListener resizeListener, HierarchyListener showingListener) {
+		if (display.getWidth() <= 0 || display.getHeight() <= 0 || !display.isShowing()) {
+			return;
+		}
+		display.removeComponentListener(resizeListener);
+		display.removeHierarchyListener(showingListener != null? showingListener : centerInFreeAreaShowingListener);
+		// later, so that the panel at the top left has been laid out
+		UIUtil.invokeLater(() -> {
+			Rectangle free = modelEditor.getFreeGraphArea(display, 0, 0);
+			double dx = free.getCenterX() - display.getWidth() / 2.0;
+			double dy = free.getCenterY() - display.getHeight() / 2.0;
+			if (dx != 0 || dy != 0) {
+				display.pan(dx, dy);
+				display.repaint();
+			}
+		});
+	}
+
+	/**
+	 * @return <code>true</code> if all items are inside the visible area of the display that is not covered
+	 *         by the panel at the top left
 	 */
 	private boolean contentFitsView() {
 		synchronized (visualization) {
 			Rectangle2D bounds = visualization.getBounds(Visualization.ALL_ITEMS);
-			Rectangle2D view = display.getInverseTransform().createTransformedShape(
-					new Rectangle2D.Double(0, 0, display.getWidth(), display.getHeight())).getBounds2D();
+			Rectangle free = modelEditor.getFreeGraphArea(display, bounds.getWidth(), bounds.getHeight());
+			Rectangle2D view = display.getInverseTransform().createTransformedShape(free).getBounds2D();
 			return view.contains(bounds);
 		}
 	}
@@ -2799,12 +2855,22 @@ public class GraphicalDataModelView extends JPanel {
 
 		private final DataModel model;
 		private final long duration;
+		private final int button;
 
 		private ZoomToFitControlExtension(String group, int margin,
 				long duration, int button, DataModel model) {
 			super(group, margin, duration, button);
 			this.duration = duration;
+			this.button = button;
 			this.model = model;
+		}
+
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			// like the super class, but leaves the area under the panel at the top left free
+			if (!display.isTranformInProgress() && UILib.isButtonPressed(e, button)) {
+				zoomToFit();
+			}
 		}
 
 		@Override
@@ -2835,7 +2901,8 @@ public class GraphicalDataModelView extends JPanel {
 		}
 
 		/**
-		 * Zooms to fit.
+		 * Zooms to fit. The content is fitted into the area that is not covered by the panel at the top left,
+		 * see {@link ExtractionModelEditor#getFreeGraphArea(java.awt.Component, double, double)}.
 		 */
 		public void zoomToFit(long dur) {
 			resetScrollTimer();
@@ -2843,7 +2910,23 @@ public class GraphicalDataModelView extends JPanel {
 			synchronized (visualization) {
 				Rectangle2D bounds = vis.getBounds(Visualization.ALL_ITEMS);
 				GraphicsLib.expand(bounds, 50 + (int)(1/display.getScale()));
-				DisplayLib.fitViewToBounds(display, bounds, dur);
+				if (bounds.getWidth() <= 0 || bounds.getHeight() <= 0 || display.getWidth() <= 0 || display.getHeight() <= 0) {
+					DisplayLib.fitViewToBounds(display, bounds, dur);
+					return;
+				}
+				Rectangle free = modelEditor.getFreeGraphArea(display, bounds.getWidth(), bounds.getHeight());
+				// same as DisplayLib.fitViewToBounds, but the center of the content ends up in the center of the free area
+				double scale = Math.min(free.getWidth() / bounds.getWidth(), free.getHeight() / bounds.getHeight());
+				Point2D center = new Point2D.Double(
+						bounds.getCenterX() + (display.getWidth() / 2.0 - free.getCenterX()) / scale,
+						bounds.getCenterY() + (display.getHeight() / 2.0 - free.getCenterY()) / scale);
+				double zoom = scale / display.getScale();
+				if (dur == 0) {
+					display.panToAbs(center);
+					display.zoomAbs(center, zoom);
+				} else {
+					display.animatePanAndZoomToAbs(center, zoom, dur);
+				}
 			}
 		}
 	}
