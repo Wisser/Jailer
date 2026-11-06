@@ -104,6 +104,9 @@ public class DesktopUndoManager {
 	}
 
 	private void undo() {
+		if (groupDepth > 0) {
+			return; // a group of modifications is still in progress
+		}
 		if (!undoStack.isEmpty()) {
 			State state = undoStack.pop();
 			try {
@@ -165,6 +168,9 @@ public class DesktopUndoManager {
 	}
 	
 	private void redo() {
+		if (groupDepth > 0) {
+			return; // a group of modifications is still in progress
+		}
 		Runnable swapStacks = () -> {
 			Stack<State> h;
 			h = redoStack;
@@ -188,11 +194,12 @@ public class DesktopUndoManager {
 	}
 	
 	void updateUI() {
-		undoButton.setEnabled(!undoStack.isEmpty());
-		undoMenuItem.setEnabled(!undoStack.isEmpty());
+		boolean inGroup = groupDepth > 0;
+		undoButton.setEnabled(!inGroup && !undoStack.isEmpty());
+		undoMenuItem.setEnabled(!inGroup && !undoStack.isEmpty());
 		undoButton.setToolTipText("<html>Go Back" + toHTMLList(undoStack, e -> e.undoDescription) + "</html>");
-		redoButton.setEnabled(!redoStack.isEmpty());
-		redoMenuItem.setEnabled(!redoStack.isEmpty());
+		redoButton.setEnabled(!inGroup && !redoStack.isEmpty());
+		redoMenuItem.setEnabled(!inGroup && !redoStack.isEmpty());
 		redoButton.setToolTipText("<html>Go Forward" + toHTMLList(redoStack, e -> e.redoDescription) + "</html>");
 	}
 
@@ -222,7 +229,41 @@ public class DesktopUndoManager {
 	}
 
 	private int numPending = 0;
-	
+
+	/** Nesting depth of {@link #beginGroup()}. */
+	private int groupDepth = 0;
+	/** State before the first modification of the current group, <code>null</code> if there was none yet. */
+	private State groupState = null;
+	/** Number of modifications of the current group. */
+	private int groupMods = 0;
+
+	/**
+	 * Starts a group: all modifications until the matching {@link #endGroup()} become a single entry,
+	 * however many events they are spread over. Back and Forward are disabled meanwhile.
+	 */
+	public void beginGroup() {
+		++groupDepth;
+		updateUI();
+	}
+
+	/**
+	 * Ends a group started with {@link #beginGroup()} and records its modifications as one entry.
+	 */
+	public void endGroup() {
+		if (groupDepth <= 0) {
+			return;
+		}
+		--groupDepth;
+		if (groupDepth == 0 && groupState != null) {
+			groupState.numMods = groupMods;
+			undoStack.push(groupState);
+			redoStack.clear();
+			groupState = null;
+			groupMods = 0;
+		}
+		updateUI();
+	}
+
 	/**
 	 * Must be called before a modification to capture the current state for undo.
 	 *
@@ -231,6 +272,23 @@ public class DesktopUndoManager {
 	 */
 	public void beforeModification(String undoDescription, String redoDescription) {
 		if (!restoring && enabled) {
+			if (groupDepth > 0) {
+				// within a group only the state before its first modification counts; it is
+				// recorded when the group ends, not after a number of events
+				if (groupState == null) {
+					try {
+						groupState = captureState(undoDescription, redoDescription);
+						groupMods = 1;
+					} catch (Throwable t) {
+						LogUtil.warn(t);
+						undoStack.clear();
+						redoStack.clear();
+					}
+				} else {
+					++groupMods;
+				}
+				return;
+			}
 			if (numPending > 0) {
 				++numPending;
 			} else {
@@ -315,6 +373,8 @@ public class DesktopUndoManager {
 		if (!enabled) {
 			undoStack.clear();
 			redoStack.clear();
+			groupState = null;
+			groupMods = 0;
 			updateUI();
 		}
 	}

@@ -1342,6 +1342,25 @@ public abstract class Desktop extends JDesktopPane {
 			}
 
 			@Override
+			protected void catchUpLayout() {
+				Desktop.this.catchUpLastArrangeLayoutOnNewTableBrowser();
+			}
+
+			@Override
+			protected void beginUndoGroup() {
+				if (desktopUndoManager != null) {
+					desktopUndoManager.beginGroup();
+				}
+			}
+
+			@Override
+			protected void endUndoGroup() {
+				if (desktopUndoManager != null) {
+					desktopUndoManager.endGroup();
+				}
+			}
+
+			@Override
 			protected void setReloadLimit(int limit) {
 				Desktop.this.setRowLimit(limit);
 			}

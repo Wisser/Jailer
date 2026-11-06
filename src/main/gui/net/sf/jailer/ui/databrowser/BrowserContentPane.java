@@ -3156,12 +3156,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
+					if (StepwiseBrowserOpener.isRunning()) {
+						return; // still opening the browsers of a previous click
+					}
 					Component parent = SwingUtilities.getWindowAncestor(BrowserContentPane.this);
 					if (parent == null) {
 						parent = BrowserContentPane.this;
 					}
 					if (todoList.size() <= MAX_COUNT) {
-						open(todoList, parent, e);
+						open(todoList, todoNames, parent, e);
 						return;
 					}
 					List<Integer> chosen = OpenRelatedTablesDialog.choose(parent, todoNames, todoCounts, MAX_COUNT);
@@ -3169,38 +3172,47 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 						return;
 					}
 					List<ActionListener> actions = new ArrayList<ActionListener>();
+					List<String> names = new ArrayList<String>();
 					for (int i: chosen) {
 						actions.add(todoList.get(i));
+						names.add(todoNames.get(i));
 					}
-					open(actions, parent, e);
+					open(actions, names, parent, e);
 				}
 			});
 		}
 
 		/**
 		 * Opens a table browser for each action, arranging the layout once at the end.
+		 * Several browsers are opened one per event, so that the user interface stays operable
+		 * and the user can cancel (see {@link StepwiseBrowserOpener}).
 		 */
-		private void open(List<ActionListener> actions, Component parent, ActionEvent e) {
-			UIUtil.setWaitCursor(parent);
-			try {
-				Desktop.noArrangeLayoutOnNewTableBrowser = true;
-				Desktop.noArrangeLayoutOnNewTableBrowserWithAnchor = actions.size() > 1;
-				Desktop.resetLastArrangeLayoutOnNewTableBrowser();
-				for (int i = 0; i < actions.size(); ++i) {
-					if (i == actions.size() - 1) {
-						Desktop.noArrangeLayoutOnNewTableBrowser = false;
-					}
-					actions.get(i).actionPerformed(e);
+		private void open(List<ActionListener> actions, List<String> names, Component parent, ActionEvent e) {
+			if (actions.size() == 1) {
+				UIUtil.setWaitCursor(parent);
+				try {
+					Desktop.resetLastArrangeLayoutOnNewTableBrowser();
+					actions.get(0).actionPerformed(e);
+				} finally {
+					UIUtil.resetWaitCursor(parent);
 				}
-				if (actions.size() > 1) {
-					UIUtil.invokeLater(4, () -> {
-						rowsClosure.hAlignedPath.clear();
-					});
-				}
-			} finally {
-				Desktop.noArrangeLayoutOnNewTableBrowser = false;
-				Desktop.noArrangeLayoutOnNewTableBrowserWithAnchor = false;
-				UIUtil.resetWaitCursor(parent);
+				return;
+			}
+			final List<ActionListener> theActions = new ArrayList<ActionListener>(actions);
+			// one entry for Back/Forward, although the browsers are opened over many events
+			// (and also if the user cancels: Back then goes to the state before, Forward to the cancel point)
+			beginUndoGroup();
+			boolean started = new StepwiseBrowserOpener(theActions, new ArrayList<String>(names), e, parent,
+					// cancelled: the last browser opened so far has not arranged the desktop, catch up on it
+					BrowserContentPane.this::catchUpLayout,
+					() -> {
+						endUndoGroup();
+						UIUtil.invokeLater(4, () -> {
+							rowsClosure.hAlignedPath.clear();
+						});
+					}).start();
+			if (!started) {
+				endUndoGroup();
 			}
 		}
 
@@ -8868,6 +8880,23 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	protected void changeColumnOrder(Table table) {
 	}
 	protected void onLayoutChanged() {
+	}
+	/**
+	 * Arranges the desktop for browsers opened with the arranging suppressed, if the one which
+	 * would have done it has not been opened (e.g. because the opening has been cancelled).
+	 */
+	protected void catchUpLayout() {
+	}
+	/**
+	 * Starts a group of desktop modifications which Back/Forward treat as one step,
+	 * see {@link DesktopUndoManager#beginGroup()}.
+	 */
+	protected void beginUndoGroup() {
+	}
+	/**
+	 * Ends a group started with {@link #beginUndoGroup()}.
+	 */
+	protected void endUndoGroup() {
 	}
 	protected void rebase() {
 	}
