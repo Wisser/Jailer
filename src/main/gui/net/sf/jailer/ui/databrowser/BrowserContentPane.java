@@ -3141,9 +3141,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		int done;
 		private List<ActionListener> todoList = new ArrayList<ActionListener>();
 		private List<String> todoNames = new ArrayList<String>();
+		/** Row counts as shown in the menu (e.g. ">1000"), parallel to {@link #todoNames}. */
+		private List<String> todoCounts = new ArrayList<String>();
 		private final String initText = "Counting rows... ";
 		private final String baseToolTip = "Open a table browser for every non-empty association group at once.";
 		private final int MAX_TOOLTIP_ENTRIES = 12;
+		/** Number of table browsers opened without letting the user choose. */
+		private final int MAX_COUNT = 12;
 
 		AllNonEmptyItem() {
 			setEnabled(false);
@@ -3152,36 +3156,52 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					final int MAX_COUNT = 12; // TODO create a dialog to let the user select the items to perform if there are more than that
 					Component parent = SwingUtilities.getWindowAncestor(BrowserContentPane.this);
 					if (parent == null) {
 						parent = BrowserContentPane.this;
 					}
-					if (todoList.size() <= MAX_COUNT || JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(parent, "Do you really want to open " + todoList.size() + " table browser?", "Opening a lot of table browsers", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
-						UIUtil.setWaitCursor(parent);
-						try {
-							Desktop.noArrangeLayoutOnNewTableBrowser = true;
-							Desktop.noArrangeLayoutOnNewTableBrowserWithAnchor = todoList.size() > 1;
-							Desktop.resetLastArrangeLayoutOnNewTableBrowser();
-							for (int i = 0; i < todoList.size(); ++i) {
-								if (i == todoList.size() - 1) {
-									Desktop.noArrangeLayoutOnNewTableBrowser = false;
-								}
-								todoList.get(i).actionPerformed(e);
-							}
-							if (todoList.size() > 1) {
-								UIUtil.invokeLater(4, () -> {
-									rowsClosure.hAlignedPath.clear();
-								});
-							}
-						} finally {
-							Desktop.noArrangeLayoutOnNewTableBrowser = false;
-							Desktop.noArrangeLayoutOnNewTableBrowserWithAnchor = false;
-							UIUtil.resetWaitCursor(parent);
-						}
+					if (todoList.size() <= MAX_COUNT) {
+						open(todoList, parent, e);
+						return;
 					}
+					List<Integer> chosen = OpenRelatedTablesDialog.choose(parent, todoNames, todoCounts, MAX_COUNT);
+					if (chosen == null || chosen.isEmpty()) {
+						return;
+					}
+					List<ActionListener> actions = new ArrayList<ActionListener>();
+					for (int i: chosen) {
+						actions.add(todoList.get(i));
+					}
+					open(actions, parent, e);
 				}
 			});
+		}
+
+		/**
+		 * Opens a table browser for each action, arranging the layout once at the end.
+		 */
+		private void open(List<ActionListener> actions, Component parent, ActionEvent e) {
+			UIUtil.setWaitCursor(parent);
+			try {
+				Desktop.noArrangeLayoutOnNewTableBrowser = true;
+				Desktop.noArrangeLayoutOnNewTableBrowserWithAnchor = actions.size() > 1;
+				Desktop.resetLastArrangeLayoutOnNewTableBrowser();
+				for (int i = 0; i < actions.size(); ++i) {
+					if (i == actions.size() - 1) {
+						Desktop.noArrangeLayoutOnNewTableBrowser = false;
+					}
+					actions.get(i).actionPerformed(e);
+				}
+				if (actions.size() > 1) {
+					UIUtil.invokeLater(4, () -> {
+						rowsClosure.hAlignedPath.clear();
+					});
+				}
+			} finally {
+				Desktop.noArrangeLayoutOnNewTableBrowser = false;
+				Desktop.noArrangeLayoutOnNewTableBrowserWithAnchor = false;
+				UIUtil.resetWaitCursor(parent);
+			}
 		}
 
 		@Override
@@ -3192,11 +3212,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			super.print(g);
 		}
 
-		public void rowsCounted(long count, ActionListener itemAction, String name) {
+		public void rowsCounted(long count, String countText, ActionListener itemAction, String name) {
 			++done;
 			if (count != 0) {
 				todoList.add(itemAction);
 				todoNames.add(name);
+				todoCounts.add(countText == null ? "" : countText.trim());
 			}
 			int p = todo > 0? (100 * done) / todo : 0;
 			if (done < todo) {
@@ -4880,7 +4901,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 									countLabel.setForeground(Colors.Color_192_192_192);
 								}
 								if (!fExcludeFromANEmpty) {
-									allNonEmptyItem.rowsCounted(count.count, itemAction, name.substring(1));
+									allNonEmptyItem.rowsCounted(count.count, cs, itemAction, name.substring(1));
 								}
 							}
 						});
@@ -4969,7 +4990,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 			reloadRows(inputResultSet, andCond, rows, loadJob, limit, selectDistinct, null);
 			return;
 		} catch (Throwable e) { // embedded DBMS may throw non-SQLException
-			Session._log.warn("failed, try another strategy (" +  e.getMessage() + ")");
+			CancellationHandler.rethrowIfCancelled(e, loadJob);
+			Session._log.warn("failed, try another strategy (" + CancellationHandler.describe(e) + ")");
 		} finally {
 			session.setSilent(false);
 		}
@@ -5096,32 +5118,37 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 						return;
 					}
 				} catch (Throwable e) { // embedded DBMS may throw non-SQLException
-					Session._log.warn("failed, try another blocking-size (" +  e.getMessage() + ")");
+					CancellationHandler.rethrowIfCancelled(e, loadJob);
+					Session._log.warn("failed, try another blocking-size (" + CancellationHandler.describe(e) + ")");
 				}
 			}
 			try {
 				loadRowBlocks(inputResultSet, null, andCond, rows, loadJob, limit, selectDistinct, pRows, rowSet, 510, existingColumnsLowerCase);
 				return;
 			} catch (Throwable e) { // embedded DBMS may throw non-SQLException
-				Session._log.warn("failed, try another blocking-size (" +  e.getMessage() + ")");
+				CancellationHandler.rethrowIfCancelled(e, loadJob);
+				Session._log.warn("failed, try another blocking-size (" + CancellationHandler.describe(e) + ")");
 			}
 			try {
 				loadRowBlocks(inputResultSet, null, andCond, rows, loadJob, limit, selectDistinct, pRows, rowSet, 300, existingColumnsLowerCase);
 				return;
 			} catch (Throwable e) { // embedded DBMS may throw non-SQLException
-				Session._log.warn("failed, try another blocking-size (" +  e.getMessage() + ")");
+				CancellationHandler.rethrowIfCancelled(e, loadJob);
+				Session._log.warn("failed, try another blocking-size (" + CancellationHandler.describe(e) + ")");
 			}
 			try {
 				loadRowBlocks(inputResultSet, null, andCond, rows, loadJob, limit, selectDistinct, pRows, rowSet, 100, existingColumnsLowerCase);
 				return;
 			} catch (Throwable e) { // embedded DBMS may throw non-SQLException
-				Session._log.warn("failed, try another blocking-size (" +  e.getMessage() + ")");
+				CancellationHandler.rethrowIfCancelled(e, loadJob);
+				Session._log.warn("failed, try another blocking-size (" + CancellationHandler.describe(e) + ")");
 			}
 			try {
 				loadRowBlocks(inputResultSet, null, andCond, rows, loadJob, limit, selectDistinct, pRows, rowSet, 40, existingColumnsLowerCase);
 				return;
 			} catch (Throwable e) { // embedded DBMS may throw non-SQLException
-				Session._log.warn("failed, try another blocking-size (" +  e.getMessage() + ")");
+				CancellationHandler.rethrowIfCancelled(e, loadJob);
+				Session._log.warn("failed, try another blocking-size (" + CancellationHandler.describe(e) + ")");
 			}
 		}
 
@@ -5191,7 +5218,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 					reloadRows(inputResultSet, inlineViewStyle, andCond, pRowBlock, newBlockRows, loadJob, limit, false, session.dbms.getSqlLimitSuffix(), existingColumnsLowerCase);
 					loaded = true;
 				} catch (Throwable e) { // embedded DBMS may throw non-SQLException
-					Session._log.warn("failed, try another limit-strategy (" +  e.getMessage() + ")");
+					CancellationHandler.rethrowIfCancelled(e, loadJob);
+					Session._log.warn("failed, try another limit-strategy (" + CancellationHandler.describe(e) + ")");
 				} finally {
 					session.setSilent(false);
 				}
@@ -5202,7 +5230,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 					reloadRows(inputResultSet, inlineViewStyle, andCond, pRowBlock, newBlockRows, loadJob, limit, true, null, existingColumnsLowerCase);
 					loaded = true;
 				} catch (Throwable e) { // embedded DBMS may throw non-SQLException
-					Session._log.warn("failed, try another limit-strategy (" +  e.getMessage() + ")");
+					CancellationHandler.rethrowIfCancelled(e, loadJob);
+					Session._log.warn("failed, try another limit-strategy (" + CancellationHandler.describe(e) + ")");
 				} finally {
 					session.setSilent(false);
 				}
@@ -7351,7 +7380,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		if (limitExceeded || theParentWithExceededLimit != null) {
 			if (emptyDueToLimitAbove) {
 				// " 0 rows" alone would read as "there is nothing", which is not what happened here
-				rowsCount.setText(" 0 rows, row limit above exceeded");
+				// the browser that cut the rows is an ancestor, which the Data Browser places to the left
+				rowsCount.setText(" 0 rows, row limit exceeded to the left");
 			} else {
 				// no width check: a truncated hint still beats a silently missing one, and the
 				// tool tip carries the full wording anyway
@@ -7373,68 +7403,65 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		}
 
 		if (emptyDueToLimitAbove) {
-			rowsCount.setToolTipText("empty because " + theParentWithExceededLimit.getTitle() + " exceeded row limit");
+			rowsCount.setToolTipText("empty because " + theParentWithExceededLimit.getTitle() + " exceeded row limit"
+					+ " - the limit of " + theParentWithExceededLimit.getTitle() + " can be raised there");
 		} else if (cle && cleRelevant) {
 			rowsCount.setToolTipText("row selection incomplete");
 		} else if (!limitExceeded && theParentWithExceededLimit != null) {
-			rowsCount.setToolTipText("potentially incomplete because " + theParentWithExceededLimit.getTitle() + " exceeded row limit");
+			rowsCount.setToolTipText("potentially incomplete because " + theParentWithExceededLimit.getTitle() + " exceeded row limit"
+					+ " - the limit of " + theParentWithExceededLimit.getTitle() + " can be raised there");
 		} else {
 			rowsCount.setToolTipText(rowsCount.getText().trim());
 		}
 
-		moreLimits = Arrays.stream(DataBrowser.ROW_LIMITS).filter(l -> l > limit).collect(Collectors.toList());
-
-		allowNewLimit = limitExceeded && !moreLimits.isEmpty();
-		if (allowNewLimit) {
-			if (!UIUtil.plaf.isFlat) {
-				rowsCount.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
-			}
-			rowsCount.setIcon(dropDownIcon);
-			if (!rowsCountHasListener) {
-				rowsCountHasListener = true;
-				rowsCount.addMouseListener(new java.awt.event.MouseAdapter() {
+		// the limit can always be changed, in both directions: also lowered, and also when the
+		// rows fit or a browser further left is the one that cut them
+		if (!UIUtil.plaf.isFlat) {
+			rowsCount.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+		}
+		rowsCount.setIcon(dropDownIcon);
+		if (!rowsCountHasListener) {
+			rowsCountHasListener = true;
+			rowsCount.addMouseListener(new java.awt.event.MouseAdapter() {
 					private JPopupMenu popup;
 					private boolean in = false;
 
 					@Override
 					public void mousePressed(MouseEvent e) {
-						if (!allowNewLimit) {
-							return;
-						}
 						loadButton.grabFocus();
 						UIUtil.invokeLater(new Runnable() {
 							@Override
 							public void run() {
 								popup = new JPopupMenu();
-								JMenuItem title = new JMenuItem("new limit");
+								JMenuItem title = new JMenuItem("row limit");
 								title.setEnabled(false);
 								popup.add(title);
 								popup.add(new JSeparator());
-								JMenu toAddTo = null;
-								int nr = 0;
-								for (Integer l: moreLimits) {
+								// read now, not when the label was updated: a limit chosen meanwhile counts
+								int currentLimit = getOwnReloadLimit();
+								for (Integer l: DataBrowser.ROW_LIMITS) {
+									if (l == currentLimit) {
+										JCheckBoxMenuItem item = new JCheckBoxMenuItem(l.toString(), true);
+										// ticking it again must not untick it, and there is nothing to reload
+										item.addActionListener(ev -> item.setSelected(true));
+										popup.add(item);
+										continue;
+									}
 									JMenuItem item = new JMenuItem(l.toString());
+									if (l > currentLimit) {
+										// higher limits stand out: they are the way to the rows that are missing
+										item.setFont(item.getFont().deriveFont(item.getFont().getStyle() | Font.BOLD));
+										if (lastLimitExceeded) {
+											item.setToolTipText("loads more rows");
+										}
+									}
 									item.addActionListener(new ActionListener() {
 										@Override
 										public void actionPerformed(ActionEvent e) {
 											setOwnReloadLimit(l);
 										}
 									});
-									++nr;
-									if (nr == 3 && moreLimits.size() > 3) {
-										JMenu subAdd = new JMenu("more limits");
-										if (toAddTo == null) {
-											popup.add(subAdd);
-										} else {
-											toAddTo.add(subAdd);
-										}
-										toAddTo = subAdd;
-									}
-									if (toAddTo == null) {
-										popup.add(item);
-									} else {
-										toAddTo.add(item);
-									}
+									popup.add(item);
 								}
 								updateBorder();
 								popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
@@ -7453,18 +7480,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
 					@Override
 					public void mouseEntered(java.awt.event.MouseEvent evt) {
-						if (!allowNewLimit) {
-							return;
-						}
 						in = true;
 						updateBorder();
 					}
 
 					@Override
 					public void mouseExited(java.awt.event.MouseEvent evt) {
-						if (!allowNewLimit) {
-							return;
-						}
 						in = false;
 						updateBorder();
 					}
@@ -7478,16 +7499,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 						}
 					}
 				});
-			}
-		} else {
-			rowsCount.setBorder(null);
-			rowsCount.setIcon(null);
 		}
 	}
 
 	private boolean rowsCountHasListener = false;
-	private boolean allowNewLimit = false;
-	private List<Integer> moreLimits = new ArrayList<Integer>();
 
 	private int getDefaultSortColumn() {
 		if (table == null || table instanceof SqlStatementTable || getQueryBuilderDialog() == null /* SQL Console */) {
@@ -8823,6 +8838,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	}
 
 	protected Integer ownLimit = null;
+	/**
+	 * <code>true</code> if {@link #ownLimit} has been chosen by the user in the row count drop-down.
+	 * Then it applies even if it is lower than the global limit; a limit only raised automatically
+	 * or restored from a session gives way to a higher global limit.
+	 */
+	protected boolean ownLimitChosen = false;
 
 	/**
 	 * Returns the effective reload limit for this pane, taking into account any pane-specific override.
@@ -8830,7 +8851,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	 * @return the reload limit
 	 */
 	public int getOwnReloadLimit() {
-		if (ownLimit != null && ownLimit > getReloadLimit()) {
+		if (ownLimit != null && (ownLimitChosen || ownLimit > getReloadLimit())) {
 			return ownLimit;
 		}
 		return getReloadLimit();
@@ -8838,6 +8859,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 
 	protected void setOwnReloadLimit(int limit) {
 		ownLimit = limit;
+		ownLimitChosen = true;
 		reloadRows();
 	}
 

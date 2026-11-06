@@ -147,5 +147,33 @@ public class CancellationHandler {
 			throw new CancellationException();
 		}
 	}
-	
+
+	/**
+	 * To be called first in catch blocks of fallback strategies ("try another ..."):
+	 * propagates a cancellation instead of letting the fallback retry.<br>
+	 * Covers both a {@link CancellationException} and an SQLException caused by a cancelled statement
+	 * (the driver then throws its own exception, but the context is marked as cancelled).
+	 *
+	 * @param e the caught exception
+	 * @param context cancellation context, <code>null</code> for default context
+	 * @throws CancellationException if <code>e</code> is a cancellation or cancellation has been requested
+	 */
+	public static void rethrowIfCancelled(Throwable e, Object context) throws CancellationException {
+		if (e instanceof CancellationException) {
+			throw (CancellationException) e;
+		}
+		checkForCancellation(context);
+	}
+
+	/**
+	 * Describes an exception for a log message. Unlike {@link Throwable#getMessage()} never "null".
+	 *
+	 * @param e the exception
+	 * @return class name and message
+	 */
+	public static String describe(Throwable e) {
+		String message = e.getMessage();
+		return e.getClass().getSimpleName() + (message == null ? "" : ": " + message);
+	}
+
 }

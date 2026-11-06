@@ -29,6 +29,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
@@ -117,7 +118,8 @@ public class RowCounter {
 					if (System.currentTimeMillis() >= maxTime) {
 						return new RowCount(-1, true);
 					}
-					Session._log.warn("failed, try another blocking-size (" +  e.getMessage() + ")");
+					CancellationHandler.rethrowIfCancelled(e, context);
+					Session._log.warn("failed, try another blocking-size (" + CancellationHandler.describe(e) + ")");
 				}
 			}
 			try {
@@ -126,7 +128,8 @@ public class RowCounter {
 				if (System.currentTimeMillis() >= maxTime) {
 					return new RowCount(-1, true);
 				}
-				Session._log.warn("failed, try another blocking-size (" +  e.getMessage() + ")");
+				CancellationHandler.rethrowIfCancelled(e, context);
+				Session._log.warn("failed, try another blocking-size (" + CancellationHandler.describe(e) + ")");
 			}
 			try {
 				return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 100, maxTime, null);
@@ -134,7 +137,8 @@ public class RowCounter {
 				if (System.currentTimeMillis() >= maxTime) {
 					return new RowCount(-1, true);
 				}
-				Session._log.warn("failed, try another blocking-size (" +  e.getMessage() + ")");
+				CancellationHandler.rethrowIfCancelled(e, context);
+				Session._log.warn("failed, try another blocking-size (" + CancellationHandler.describe(e) + ")");
 			}
 			try {
 				return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 40, maxTime, null);
@@ -142,7 +146,8 @@ public class RowCounter {
 				if (System.currentTimeMillis() >= maxTime) {
 					return new RowCount(-1, true);
 				}
-				Session._log.warn("failed, try another blocking-size (" +  e.getMessage() + ")");
+				CancellationHandler.rethrowIfCancelled(e, context);
+				Session._log.warn("failed, try another blocking-size (" + CancellationHandler.describe(e) + ")");
 			}
 		}
 
@@ -196,7 +201,8 @@ public class RowCounter {
 					if (System.currentTimeMillis() >= maxTime) {
 						return new RowCount(-1, true);
 					}
-					Session._log.warn("failed, try another limit-strategy (" +  e.getMessage() + ")");
+					CancellationHandler.rethrowIfCancelled(e, context);
+					Session._log.warn("failed, try another limit-strategy (" + CancellationHandler.describe(e) + ")");
 				} finally {
 					session.setSilent(false);
 				}
@@ -210,7 +216,8 @@ public class RowCounter {
 					if (System.currentTimeMillis() >= maxTime) {
 						return new RowCount(-1, true);
 					}
-					Session._log.warn("failed, try another limit-strategy (" +  e.getMessage() + ")");
+					CancellationHandler.rethrowIfCancelled(e, context);
+					Session._log.warn("failed, try another limit-strategy (" + CancellationHandler.describe(e) + ")");
 				} finally {
 					session.setSilent(false);
 				}
@@ -276,8 +283,10 @@ public class RowCounter {
 			}
 
 			if (association != null) {
-				olapPrefix += " From (Select distinct ";
-				olapSuffix += ") S2 Where S2." + ROWNUMBERALIAS + " <= " + limit;
+				// The row number must be computed one level below the restriction on it:
+				// Select 1 From (Select S2.*, row_number() ... as RN From (Select distinct S.<pk> From (<sql>) S) S2) S3 Where S3.RN <= limit
+				olapPrefix = "Select 1 From (Select S2.*, row_number() over(order by -1) as " + ROWNUMBERALIAS + " From (Select distinct ";
+				olapSuffix += ") S2) S3 Where S3." + ROWNUMBERALIAS + " <= " + limit;
 				boolean f = true;
 				for (Column pkColumn: rowIdSupport.getPrimaryKey(association.destination).getColumns()) {
 					if (!f) {

@@ -1456,6 +1456,7 @@ public abstract class Desktop extends JDesktopPane {
 					}
 				}
 				tb.browserContentPane.ownLimit = ownLimit;
+				tb.browserContentPane.ownLimitChosen = ownLimitChosen;
 				return tb;
 			}
 

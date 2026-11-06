@@ -17,12 +17,17 @@ package net.sf.jailer.ui.databrowser.lob;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Frame;
+import java.awt.GraphicsConfiguration;
 import java.awt.Image;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
@@ -47,6 +52,7 @@ import java.util.zip.ZipInputStream;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -57,6 +63,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 
@@ -197,7 +204,33 @@ public class LobViewerPanel extends JPanel {
 			n.setBorder(BorderFactory.createEmptyBorder(0, 12, 0, 0));
 			bar.add(n);
 		}
-		return bar;
+
+		// a JDialog has no maximize button in its title bar (at least not on Windows);
+		// just the icon, top right, where such a button is expected
+		maximizeButton = new JButton();
+		maximizeButton.setFocusable(false);
+		maximizeButton.setBorderPainted(false);
+		maximizeButton.setContentAreaFilled(false);
+		maximizeButton.setFocusPainted(false);
+		maximizeButton.setOpaque(false);
+		maximizeButton.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+		maximizeButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		maximizeButton.setHorizontalTextPosition(SwingConstants.RIGHT);
+		maximizeButton.setIconTextGap(4);
+		maximizeButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				toggleMaximized();
+			}
+		});
+		updateMaximizeButton();
+		JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 2));
+		right.add(maximizeButton);
+
+		JPanel infoBar = new JPanel(new BorderLayout());
+		infoBar.add(bar, BorderLayout.CENTER);
+		infoBar.add(right, BorderLayout.EAST);
+		return infoBar;
 	}
 
 	private JComponent buildBody() {
@@ -520,6 +553,13 @@ public class LobViewerPanel extends JPanel {
 	private static final ImageIcon COPY_ICON = loadButtonIcon("/copy.png");
 	private static final ImageIcon CLOSE_ICON = loadButtonIcon("/Cancel.png");
 	private static final ImageIcon FORMAT_ICON = loadButtonIcon("/formatsql.png");
+	/** Painted in the button's foreground color, so the same icon serves the light and the dark theme. */
+	private static final Icon MAXIMIZE_ICON = new MaximizeIcon(MaximizeIcon.Kind.MAXIMIZE);
+	private static final Icon RESTORE_ICON = new MaximizeIcon(MaximizeIcon.Kind.RESTORE);
+
+	/** Bounds of the dialog before "Maximize", <code>null</code> if it is not maximized. */
+	private Rectangle restoreBounds;
+	private JButton maximizeButton;
 
 	private static ImageIcon loadButtonIcon(String resource) {
 		try {
@@ -602,6 +642,83 @@ public class LobViewerPanel extends JPanel {
 		});
 		bar.add(close);
 		return toolBar;
+	}
+
+	/**
+	 * Maximizes the viewer dialog to the top-level frame (the Data Browser or SQL Console window,
+	 * like the details view does), or restores its previous bounds.
+	 */
+	void toggleMaximized() {
+		Window dialog = SwingUtilities.getWindowAncestor(this);
+		if (dialog == null) {
+			return;
+		}
+		if (restoreBounds != null) {
+			dialog.setBounds(restoreBounds);
+			restoreBounds = null;
+		} else {
+			restoreBounds = dialog.getBounds();
+			dialog.setBounds(maximizedBounds(dialog));
+		}
+		updateMaximizeButton();
+		dialog.validate();
+	}
+
+	/**
+	 * The area a maximized viewer covers: the inner area of the top-level frame on its screen, or
+	 * the usable area of the screen if there is no visible frame.
+	 */
+	private static Rectangle maximizedBounds(Window dialog) {
+		GraphicsConfiguration gc = dialog.getGraphicsConfiguration();
+		Rectangle screen = gc != null ? gc.getBounds()
+				: java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+		if (gc != null) {
+			Insets si = Toolkit.getDefaultToolkit().getScreenInsets(gc);
+			screen = new Rectangle(screen.x + si.left, screen.y + si.top,
+					screen.width - si.left - si.right, screen.height - si.top - si.bottom);
+		}
+		Window top = topLevelOwner(dialog.getOwner());
+		if (top != null && top.isShowing()) {
+			Rectangle b = top.getBounds();
+			Insets in = top.getInsets();
+			Rectangle inner = new Rectangle(b.x + in.left, b.y + in.top,
+					b.width - in.left - in.right, b.height - in.top - in.bottom);
+			Rectangle r = inner.intersection(screen);
+			if (!r.isEmpty()) {
+				return r;
+			}
+		}
+		return screen;
+	}
+
+	/**
+	 * Follows the owner chain up to the top-level window.
+	 *
+	 * @return the top-level window, <code>null</code> if <code>window</code> is <code>null</code>
+	 */
+	private static Window topLevelOwner(Window window) {
+		Window top = window;
+		if (top != null) {
+			while (top.getOwner() != null) {
+				top = top.getOwner();
+			}
+		}
+		return top;
+	}
+
+	private void updateMaximizeButton() {
+		if (maximizeButton == null) {
+			return;
+		}
+		if (restoreBounds != null) {
+			maximizeButton.setIcon(RESTORE_ICON);
+			maximizeButton.setText("Restore");
+			maximizeButton.setToolTipText("Restore (F11)");
+		} else {
+			maximizeButton.setIcon(MAXIMIZE_ICON);
+			maximizeButton.setText("Maximize");
+			maximizeButton.setToolTipText("Maximize (F11)");
+		}
 	}
 
 	/**
@@ -769,6 +886,8 @@ public class LobViewerPanel extends JPanel {
 		});
 		dialog.getRootPane().registerKeyboardAction(e -> dialog.dispose(),
 				KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
+		dialog.getRootPane().registerKeyboardAction(e -> viewer.toggleMaximized(),
+				KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
 		// Size the dialog to the content's own preferred size (e.g. an image's
 		// natural dimensions, a short text's extent), then keep both the initial
 		// size and position within the top-level parent window (the DataBrowser /
@@ -777,12 +896,7 @@ public class LobViewerPanel extends JPanel {
 		Dimension pref = dialog.getSize();
 		// the ultimate owner is the top-level frame; a small intermediate owner
 		// (e.g. a details-view popup) must not let the viewer spill past the frame.
-		Window top = owner;
-		if (top != null) {
-			while (top.getOwner() != null) {
-				top = top.getOwner();
-			}
-		}
+		Window top = topLevelOwner(owner);
 		java.awt.Rectangle bounds;
 		if (top != null && top.isShowing()) {
 			bounds = top.getBounds();
