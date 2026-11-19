@@ -82,15 +82,21 @@ public class OpenRelatedTablesDialog extends JDialog {
 	private final List<Integer> order;
 	private final boolean[] selected;
 	private final int manyLimit;
+	/** What the entries are, for the warning, e.g. "non-empty associations". */
+	private final String what;
+	/** <code>false</code> if there are no row counts; then the "Rows" column is left out. */
+	private final boolean withCounts;
 	private final JButton openButton = new JButton();
 	private final AbstractTableModel model;
 	private List<Integer> result;
 
-	private OpenRelatedTablesDialog(Window owner, List<String> names, List<String> counts, int manyLimit) {
+	private OpenRelatedTablesDialog(Window owner, List<String> names, List<String> counts, int manyLimit, String what) {
 		super(owner, "Open related tables", Dialog.ModalityType.APPLICATION_MODAL);
 		this.names = names;
 		this.counts = counts;
+		this.withCounts = counts != null;
 		this.manyLimit = manyLimit;
+		this.what = what;
 		this.order = new ArrayList<Integer>();
 		for (int i = 0; i < names.size(); ++i) {
 			order.add(i);
@@ -110,7 +116,7 @@ public class OpenRelatedTablesDialog extends JDialog {
 
 			@Override
 			public int getColumnCount() {
-				return 3;
+				return withCounts ? 3 : 2;
 			}
 
 			@Override
@@ -167,7 +173,7 @@ public class OpenRelatedTablesDialog extends JDialog {
 	}
 
 	private JComponent createWarning() {
-		JLabel warning = new JLabel("<html>" + names.size() + " non-empty associations. Opening a table browser for each "
+		JLabel warning = new JLabel("<html>" + names.size() + " " + what + ". Opening a table browser for each "
 				+ "of them can make the desktop hard to read and takes time.<br>Choose the tables to open.</html>");
 		warning.setIcon(UIManager.getIcon("OptionPane.warningIcon"));
 		warning.setIconTextGap(12);
@@ -181,17 +187,22 @@ public class OpenRelatedTablesDialog extends JDialog {
 		table.getTableHeader().setReorderingAllowed(false);
 		table.getColumnModel().getColumn(0).setMaxWidth(32);
 		table.getColumnModel().getColumn(0).setMinWidth(32);
-		DefaultTableCellRenderer right = new DefaultTableCellRenderer();
-		right.setHorizontalAlignment(SwingConstants.RIGHT);
-		table.getColumnModel().getColumn(2).setCellRenderer(right);
-		int countWidth = table.getFontMetrics(table.getFont()).stringWidth(" >99999 ") + 16;
-		table.getColumnModel().getColumn(2).setMaxWidth(countWidth * 2);
-		table.getColumnModel().getColumn(2).setPreferredWidth(countWidth);
+		int countWidth = 0;
+		if (withCounts) {
+			DefaultTableCellRenderer right = new DefaultTableCellRenderer();
+			right.setHorizontalAlignment(SwingConstants.RIGHT);
+			table.getColumnModel().getColumn(2).setCellRenderer(right);
+			countWidth = table.getFontMetrics(table.getFont()).stringWidth(" >99999 ") + 16;
+			table.getColumnModel().getColumn(2).setMaxWidth(countWidth * 2);
+			table.getColumnModel().getColumn(2).setPreferredWidth(countWidth);
+		}
 
 		// sortable by clicking the column headers; initially sorted by name (the model's own order)
 		TableRowSorter<AbstractTableModel> sorter = new TableRowSorter<AbstractTableModel>(model);
 		sorter.setComparator(1, String.CASE_INSENSITIVE_ORDER);
-		sorter.setComparator(2, Comparator.comparingLong(OpenRelatedTablesDialog::countSortKey));
+		if (withCounts) {
+			sorter.setComparator(2, Comparator.comparingLong(OpenRelatedTablesDialog::countSortKey));
+		}
 		table.setRowSorter(sorter);
 
 		// space: toggles all selected rows, so a block can be ticked or unticked at once
@@ -314,12 +325,28 @@ public class OpenRelatedTablesDialog extends JDialog {
 	 *         or <code>null</code> if cancelled
 	 */
 	public static List<Integer> choose(Component parent, List<String> names, List<String> counts, int manyLimit) {
+		return choose(parent, names, counts, manyLimit, "non-empty associations");
+	}
+
+	/**
+	 * Lets the user choose the tables to open.
+	 *
+	 * @param parent component of the window the dialog belongs to
+	 * @param names the names of the tables (associations)
+	 * @param counts the row counts, parallel to <code>names</code>, or <code>null</code> if there are none
+	 *               (then the "Rows" column is left out)
+	 * @param manyLimit number of tables above which the choice is marked as "many"
+	 * @param what what the entries are, for the warning, e.g. "associations"
+	 * @return the indices (into <code>names</code>) of the chosen tables, in the order of their names,
+	 *         or <code>null</code> if cancelled
+	 */
+	public static List<Integer> choose(Component parent, List<String> names, List<String> counts, int manyLimit, String what) {
 		Window owner = parent == null ? null
 				: parent instanceof Window ? (Window) parent : SwingUtilities.getWindowAncestor(parent);
 		if (owner != null && !(owner instanceof Frame) && !(owner instanceof Dialog)) {
 			owner = null;
 		}
-		OpenRelatedTablesDialog dialog = new OpenRelatedTablesDialog(owner, names, counts, manyLimit);
+		OpenRelatedTablesDialog dialog = new OpenRelatedTablesDialog(owner, names, counts, manyLimit, what);
 		dialog.setVisible(true);
 		return dialog.result;
 	}

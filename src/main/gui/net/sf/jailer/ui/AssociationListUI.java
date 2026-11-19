@@ -963,10 +963,25 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 	}//GEN-LAST:event_unhideButtonActionPerformed
 
 	private void doItButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doItButtonActionPerformed
-		if (selection.size() < 12 || JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this, "Do you really want to resolve " + selection.size() + " associations?", "Resolve many associations", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
-			applyAction(new ArrayList<AssociationListUI.AssociationModel>(selection));
+		Collection<AssociationModel> confirmed = confirmSelection(new ArrayList<AssociationListUI.AssociationModel>(selection));
+		if (confirmed != null && !confirmed.isEmpty()) {
+			applyAction(confirmed);
 		}
 	}//GEN-LAST:event_doItButtonActionPerformed
+
+	/**
+	 * Lets the user confirm the action for the selected associations. Asks whether to go ahead if
+	 * there are many of them.
+	 *
+	 * @param selection the selected associations
+	 * @return the associations to perform the action on, <code>null</code> or empty if it is not to be performed
+	 */
+	protected Collection<AssociationModel> confirmSelection(Collection<AssociationModel> selection) {
+		if (selection.size() < 12 || JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this, "Do you really want to resolve " + selection.size() + " associations?", "Resolve many associations", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
+			return selection;
+		}
+		return null;
+	}
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

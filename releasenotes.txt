@@ -1,3 +1,11 @@
+17.3.2
+  - Stepwise Browser opening
+    - If there are more than 12 connected data browsers waiting to be opened,
+      a dialog box appears offering a selection.
+      The selected browsers are then opened one after another,
+      and the process can be stopped at any time.
+  - Max/Min buttons for LobViewerPanel
+
 17.3.1
   - Export dialog: "Export Data" no longer keeps the collected rows for the analysis of the subset,
     which makes it faster. The new button "Export with Analysis" exports and keeps them ("Show

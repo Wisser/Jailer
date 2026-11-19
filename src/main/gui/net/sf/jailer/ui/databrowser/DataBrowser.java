@@ -385,6 +385,28 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 			protected void applyAction(Collection<AssociationModel> selection) {
 				resolveSelection(selection);
 			}
+
+			@Override
+			protected Collection<AssociationModel> confirmSelection(Collection<AssociationModel> selection) {
+				if (selection.size() < 12) {
+					return selection;
+				}
+				// many: let the user choose instead of just asking yes or no
+				List<AssociationModel> models = new ArrayList<AssociationModel>(selection);
+				List<String> names = new ArrayList<String>();
+				for (AssociationModel m: models) {
+					names.add(m.getDestinationName() + "  (from " + m.getSourceName() + ")");
+				}
+				List<Integer> chosen = OpenRelatedTablesDialog.choose(DataBrowser.this, names, null, 12, "associations");
+				if (chosen == null) {
+					return null;
+				}
+				List<AssociationModel> result = new ArrayList<AssociationModel>();
+				for (int i: chosen) {
+					result.add(models.get(i));
+				}
+				return result;
+			}
 		};
 		executionContext.setUseRowIdsOnlyForTablesWithoutPK(true);
 		initComponents();
@@ -5535,17 +5557,21 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 	}
 
 	protected void resolveSelection(Collection<AssociationModel> selection) {
-		try {
-			UIUtil.setWaitCursor(this);
-
-			disableBorderBrowserUpdates = true;
-			JInternalFrame currentSelection = desktop.getSelectedFrame();
-			for (AssociationModel a : selection) {
-				BrowserAssociationModel associationModel = (BrowserAssociationModel) a;
-				desktop.addTableBrowser(associationModel.getRowBrowser(), associationModel.getRowBrowser(),
-						associationModel.getAssociation().destination, associationModel.getAssociation(), "", null,
-						true);
-			}
+		if (selection.size() > 1 && StepwiseBrowserOpener.isRunning()) {
+			return; // still opening the browsers of a previous action
+		}
+		disableBorderBrowserUpdates = true;
+		final JInternalFrame currentSelection = desktop.getSelectedFrame();
+		List<ActionListener> actions = new ArrayList<ActionListener>();
+		List<String> names = new ArrayList<String>();
+		for (AssociationModel a : selection) {
+			final BrowserAssociationModel associationModel = (BrowserAssociationModel) a;
+			actions.add(e -> desktop.addTableBrowser(associationModel.getRowBrowser(), associationModel.getRowBrowser(),
+					associationModel.getAssociation().destination, associationModel.getAssociation(), "", null,
+					true));
+			names.add(a.getDestinationName());
+		}
+		Runnable finish = () -> {
 			if (currentSelection != null) {
 				try {
 					currentSelection.setSelected(true);
@@ -5555,10 +5581,48 @@ public class DataBrowser extends javax.swing.JFrame implements ConnectionTypeCha
 				}
 			}
 			arrangeLayout(true);
-		} finally {
-			UIUtil.resetWaitCursor(this);
 			disableBorderBrowserUpdates = false;
 			updateBorderBrowser(null);
+		};
+
+		if (actions.size() <= 1) {
+			try {
+				UIUtil.setWaitCursor(this);
+				for (ActionListener action: actions) {
+					action.actionPerformed(null);
+				}
+				finish.run();
+			} finally {
+				UIUtil.resetWaitCursor(this);
+				disableBorderBrowserUpdates = false;
+			}
+			return;
+		}
+
+		// several: one browser per event, so that the user interface stays operable and the user can cancel;
+		// one entry for Back/Forward, also if cancelled
+		if (desktopUndoManager != null) {
+			desktopUndoManager.beginGroup();
+		}
+		Runnable endGroup = () -> {
+			if (desktopUndoManager != null) {
+				desktopUndoManager.endGroup();
+			}
+		};
+		boolean started = new StepwiseBrowserOpener(actions, names, null, this,
+				// cancelled: the last browser opened so far has not arranged the desktop, catch up on it
+				() -> desktop.catchUpLastArrangeLayoutOnNewTableBrowser(),
+				() -> {
+					try {
+						finish.run();
+					} finally {
+						disableBorderBrowserUpdates = false;
+						endGroup.run();
+					}
+				}).start();
+		if (!started) {
+			disableBorderBrowserUpdates = false;
+			endGroup.run();
 		}
 	}
 
