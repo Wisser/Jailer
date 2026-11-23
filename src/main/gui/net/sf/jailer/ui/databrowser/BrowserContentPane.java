@@ -1973,7 +1973,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 										}
 									});
 								}
-								if (guessedType == LobContentType.ZIP && placeholder.markSingleEntryTypeRequested()) {
+								if ((guessedType == LobContentType.ZIP || guessedType == LobContentType.GZIP) && placeholder.markSingleEntryTypeRequested()) {
 									final Row zipRow = r;
 									final int zipColumn = convertedColumnIndex;
 									final Object zipContext = new Object();
@@ -9346,6 +9346,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 	 * holding more than {@link LobContent#HEAD_SIZE} bytes of it in memory.
 	 * Gives up (returns <code>null</code>) as soon as a second entry appears, or
 	 * once more than {@link #ZIP_ENTRY_SCAN_MAX_BYTES} has been read.
+	 * A GZIP stream (magic bytes <code>1F 8B</code>) always holds exactly one
+	 * file, so for it only the first {@link LobContent#HEAD_SIZE} decompressed
+	 * bytes are read and classified.
 	 */
 	private static LobContentType detectSingleZipEntryType(Object obj, Object context) throws IOException, SQLException {
 		InputStream binaryIn;
@@ -9356,7 +9359,27 @@ public abstract class BrowserContentPane extends javax.swing.JPanel implements P
 		} else {
 			return null;
 		}
-		try (ZipInputStream zis = new ZipInputStream(binaryIn)) {
+		java.io.BufferedInputStream in = new java.io.BufferedInputStream(binaryIn);
+		in.mark(2);
+		int magic0 = in.read();
+		int magic1 = in.read();
+		in.reset();
+		if (magic0 == 0x1F && magic1 == 0x8B) {
+			try (InputStream gzis = new java.util.zip.GZIPInputStream(in)) {
+				byte[] head = new byte[LobContent.HEAD_SIZE];
+				int headLen = 0;
+				int n;
+				while (headLen < head.length && (n = gzis.read(head, headLen, head.length - headLen)) != -1) {
+					CancellationHandler.checkForCancellation(context);
+					headLen += n;
+				}
+				if (headLen == 0) {
+					return null;
+				}
+				return LobTypeDetector.detect(headLen == head.length ? head : java.util.Arrays.copyOf(head, headLen), -1);
+			}
+		}
+		try (ZipInputStream zis = new ZipInputStream(in)) {
 			ZipEntry entry = nextZipFileEntry(zis);
 			if (entry == null) {
 				return null;

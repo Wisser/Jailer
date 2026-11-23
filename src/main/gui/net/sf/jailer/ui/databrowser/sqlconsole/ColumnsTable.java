@@ -125,6 +125,9 @@ public class ColumnsTable extends JTable {
 	private final Map<Integer, LobContentType> lobTypeCache = new HashMap<Integer, LobContentType>();
 	private final Map<Integer, ImageIcon> lobThumbCache = new HashMap<Integer, ImageIcon>();
 	private final Set<Integer> lobRequested = new HashSet<Integer>();
+	/** Type of the one entry of a single-file ZIP archive, per table row (see buildLobCell). */
+	private final Map<Integer, LobContentType> lobSingleEntryTypeCache = new HashMap<Integer, LobContentType>();
+	private final Set<Integer> lobSingleEntryRequested = new HashSet<Integer>();
 
 	/**
 	 * Whether LOB cells in this table show a content-type label, thumbnail and
@@ -981,10 +984,20 @@ public class ColumnsTable extends JTable {
 		if (type == null) {
 			type = LobContentSupport.detectType(rawValue);
 		}
+		// a ZIP archive holding exactly one entry is shown with that entry's type,
+		// as in BrowserContentPane / DetailsView: from our own scan, or from the
+		// placeholder if the row browser's table has already scanned it.
+		LobContentType displayType = lobSingleEntryTypeCache.get(tableRow);
+		if (displayType == null && rawValue instanceof BlobLengthPlaceholder) {
+			displayType = ((BlobLengthPlaceholder) rawValue).getSingleEntryType();
+		}
+		if (displayType == null) {
+			displayType = type;
+		}
 		String buttonText;
 		boolean reloadable = true;
-		if (isDisplayableLobType(type)) {
-			buttonText = type.displayName;
+		if (isDisplayableLobType(displayType)) {
+			buttonText = displayType.displayName;
 		} else if (rawValue instanceof BlobLengthPlaceholder) {
 			buttonText = ((BlobLengthPlaceholder) rawValue).plainText();
 			reloadable = dataRow != null && rb.isLobReloadable(dataRow, dataCol);
@@ -1032,6 +1045,19 @@ public class ColumnsTable extends JTable {
 					});
 				}
 			}
+		}
+		// second stage, only for a ZIP archive whose entry type isn't known yet; also
+		// reached on the rebuild after the async type lookup above has found a ZIP.
+		if ((type == LobContentType.ZIP || type == LobContentType.GZIP) && displayType == type && dataRow != null && lobSingleEntryRequested.add(tableRow)) {
+			rb.retrieveZipSingleEntryType(dataRow, dataCol, new Object(), entryType -> {
+				if (entryType != null) {
+					lobSingleEntryTypeCache.put(tableRow, entryType);
+					if (rawValue instanceof BlobLengthPlaceholder) {
+						((BlobLengthPlaceholder) rawValue).setSingleEntryType(entryType);
+					}
+					refreshLobCell();
+				}
+			});
 		}
 
 		return lobPanel;

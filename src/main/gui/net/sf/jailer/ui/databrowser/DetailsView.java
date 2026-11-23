@@ -820,7 +820,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 								// type already known from the cached value (e.g. materialized bytes)
 								if (lobType.isImage()) {
 									requestImagePreview.run();
-								} else if (lobType == LobContentType.ZIP) {
+								} else if (lobType == LobContentType.ZIP || lobType == LobContentType.GZIP) {
 									requestSingleEntryType.run();
 								}
 							} else {
@@ -838,7 +838,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 									}
 									if (t != null && t.isImage()) {
 										requestImagePreview.run();
-									} else if (t == LobContentType.ZIP) {
+									} else if (t == LobContentType.ZIP || t == LobContentType.GZIP) {
 										requestSingleEntryType.run();
 									}
 								});
