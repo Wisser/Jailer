@@ -1,11 +1,12 @@
 17.3.3
   - BLOB viewing
-    - What a BLOB contains is visible in the result itself - no external tool needed 
-       to find out that a column holds e.g. PDF documents, even if they are stored compressed.
     - One click opens the content in the viewer: PDF documents page by page with zoom,
       images (also SVG), JSON/XML/HTML with syntax highlighting and "Format", a text preview
       of Word, Excel and PowerPoint files, and a hex dump for anything else. Compressed
       content is shown decompressed.
+    - What a BLOB contains is visible at a glance in the result itself - no export, no
+      decompressing and no external tool needed to find out that a column holds e.g. PDF
+      documents, even if they are stored compressed.
     - "Save to file...", "Open externally" and "Copy to clipboard" pass the content on
       directly, always in its original form.
 
