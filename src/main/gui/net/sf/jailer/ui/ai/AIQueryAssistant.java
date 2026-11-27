@@ -399,7 +399,7 @@ public class AIQueryAssistant {
             }
             String finishReason = firstChoice.path("finish_reason").asText("");
             if ("length".equals(finishReason)) {
-                throw new IOException("Model response was cut off (finish_reason=length). Consider increasing the max_tokens limit.");
+                throw new IOException("Model response was cut off (finish_reason=length). Consider increasing the max tokens limit.");
             }
         }
         // Ollama-compatible: message.content
@@ -656,10 +656,54 @@ public class AIQueryAssistant {
         }
     }
 
+    private static final String MAX_TOKENS = "max_tokens";
+    private static final String MAX_COMPLETION_TOKENS = "max_completion_tokens";
+
+    // Newer OpenAI models (o-series, gpt-5 and later) reject "max_tokens" in Chat Completions and require
+    // "max_completion_tokens", which older OpenAI models accept as well. Other OpenAI-compatible servers
+    // (OpenRouter, Ollama, vLLM, ...) may only know "max_tokens", so the switch is limited to OpenAI's own hosts.
+    private static String maxTokensParam(AIProviderConfig config, boolean isAnthropic, boolean isResponsesApi) {
+        if (isResponsesApi) {
+            return "max_output_tokens";
+        }
+        if (isAnthropic) {
+            return MAX_TOKENS;
+        }
+        return isOpenAIHost(config.apiUrl) ? MAX_COMPLETION_TOKENS : MAX_TOKENS;
+    }
+
+    private static boolean isOpenAIHost(String apiUrl) {
+        try {
+            String host = new URL(apiUrl).getHost();
+            if (host == null) {
+                return false;
+            }
+            host = host.toLowerCase(Locale.ENGLISH);
+            return host.equals("api.openai.com") || host.endsWith(".openai.azure.com");
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    // If the endpoint rejects the token-limit field name, returns the alternative name to retry with, else null.
+    private static String alternativeMaxTokensParam(ObjectNode body, IOException e) {
+        String msg = e.getMessage();
+        if (msg == null || !msg.contains("Unsupported parameter")) {
+            return null;
+        }
+        if (body.has(MAX_TOKENS) && msg.contains("'" + MAX_TOKENS + "'")) {
+            return MAX_COMPLETION_TOKENS;
+        }
+        if (body.has(MAX_COMPLETION_TOKENS) && msg.contains("'" + MAX_COMPLETION_TOKENS + "'")) {
+            return MAX_TOKENS;
+        }
+        return null;
+    }
+
     private static ArrayNode newRequestBody(ObjectNode body, AIProviderConfig config, String systemPrompt,
             boolean isAnthropic, boolean isResponsesApi) {
         body.put("model", config.model);
-        body.put(isResponsesApi ? "max_output_tokens" : "max_tokens", config.maxTokens);
+        body.put(maxTokensParam(config, isAnthropic, isResponsesApi), config.maxTokens);
         body.put("stream", false);
         ArrayNode messages = body.putArray(isResponsesApi ? "input" : "messages");
         if (isAnthropic) {
@@ -710,6 +754,23 @@ public class AIQueryAssistant {
     // Tries HttpURLConnection first; falls back to curl if the Authorization header
     // was silently dropped by a proxy (common in corporate environments).
     private static JsonNode post(AIProviderConfig config, ObjectNode body,
+            AtomicReference<Runnable> abortRef) throws IOException {
+        try {
+            return postOnce(config, body, abortRef);
+        } catch (IOException e) {
+            String alternative = alternativeMaxTokensParam(body, e);
+            if (alternative == null || Thread.currentThread().isInterrupted()) {
+                throw e;
+            }
+            String rejected = MAX_TOKENS.equals(alternative) ? MAX_COMPLETION_TOKENS : MAX_TOKENS;
+            _log.info("Endpoint rejected '" + rejected + "', retrying with '" + alternative + "'");
+            ObjectNode retryBody = body.deepCopy();
+            retryBody.set(alternative, retryBody.remove(rejected));
+            return postOnce(config, retryBody, abortRef);
+        }
+    }
+
+    private static JsonNode postOnce(AIProviderConfig config, ObjectNode body,
             AtomicReference<Runnable> abortRef) throws IOException {
         if (Thread.currentThread().isInterrupted()) {
             throw new IOException("Request cancelled");
